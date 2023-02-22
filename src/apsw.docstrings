@@ -1507,6 +1507,12 @@
 "\n" \
 "Calls: `sqlite3_interrupt <https://sqlite.org/c3ref/interrupt.html>`__\n" 
 
+#define  Connection_is_interrupted_DOC ":type: bool\n" \
+"\n" \
+"Indicates if this connection has been interrupted.\n" \
+"\n" \
+"XXXX link once tocdb is ready sqlite3_is_interrupted\n" 
+
 #define  Connection_last_insert_rowid_DOC "last_insert_rowid($self)\n--\n\nConnection.last_insert_rowid() -> int\n\n" \
 "Returns the integer key of the most recent insert in the database.\n" \
 "\n" \

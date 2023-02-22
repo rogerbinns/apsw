@@ -58,6 +58,7 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
 #undef PyObject_Str
 #undef PySequence_GetItem
 #undef PySequence_GetSlice
+#undef PySequence_Length
 #undef PySequence_List
 #undef PySequence_SetItem
 #undef PySequence_Size
@@ -86,7 +87,7 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
 #undef sqlite3_clear_bindings
 #undef sqlite3_close
 #undef sqlite3_collation_needed
-#undef sqlite3_column_type
+#undef sqlite3_column_name
 #undef sqlite3_config
 #undef sqlite3_create_module_v2
 #undef sqlite3_db_config
@@ -101,7 +102,6 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
 #undef sqlite3_shutdown
 #undef sqlite3_status64
 #undef sqlite3_threadsafe
-#undef sqlite3_value_type
 #undef sqlite3_vfs_register
 #undef sqlite3_wal_autocheckpoint
 #undef sqlite3_wal_checkpoint_v2
@@ -962,6 +962,36 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
     PyGILState_Release(gilstate);                                                                                          \
     _res;                                                                                                                  \
 })
+#define PySequence_Length(...) \
+({                                                                                                            \
+    PyObject *_res2=0;                                                                                        \
+    __auto_type _res = 0 ? PySequence_Length(__VA_ARGS__) : 0;                                                \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                          \
+    switch (APSW_FaultInjectControl("PySequence_Length", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
+    {                                                                                                         \
+    case 0x1FACADE:                                                                                           \
+        assert(_res == 0);                                                                                    \
+        _res = PySequence_Length(__VA_ARGS__);                                                                \
+        break;                                                                                                \
+    default:                                                                                                  \
+        if(PyTuple_Check(_res2))                                                                              \
+        {                                                                                                     \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                             \
+            _res =  (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                              \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                              \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));  \
+        }                                                                                                     \
+        else                                                                                                  \
+        {                                                                                                     \
+            assert(PyLong_Check(_res2));                                                                      \
+            _res = PyLong_AsLong_fi(_res2);                                                                   \
+        }                                                                                                     \
+        break;                                                                                                \
+    }                                                                                                         \
+    Py_XDECREF(_res2);                                                                                        \
+    PyGILState_Release(gilstate);                                                                             \
+    _res;                                                                                                     \
+})
 #define PySequence_List(...) \
 ({                                                                                                                     \
     __auto_type _res = 0 ? PySequence_List(__VA_ARGS__) : 0;                                                           \
@@ -1372,922 +1402,1226 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
     _res;                                                                                                              \
 })
 #define sqlite3_autovacuum_pages(...) \
-({                                                                                                                   \
-    PyObject *_res2 = 0;                                                                                             \
-    __auto_type _res = 0 ? sqlite3_autovacuum_pages(__VA_ARGS__) : 0;                                                \
-    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                 \
-    switch (APSW_FaultInjectControl("sqlite3_autovacuum_pages", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
-    {                                                                                                                \
-    case 0x1FACADE:                                                                                                  \
-        assert(_res2 == 0);                                                                                          \
-        PyGILState_Release(gilstate);                                                                                \
-        _res = sqlite3_autovacuum_pages(__VA_ARGS__);                                                                \
-        gilstate = PyGILState_Ensure();                                                                              \
-        break;                                                                                                       \
-    default:                                                                                                         \
-        if(!_res2) PyErr_Print();                                                                                    \
-        assert(_res2);                                                                                               \
-        if(PyTuple_Check(_res2))                                                                                     \
-        {                                                                                                            \
-            assert(3 == PyTuple_GET_SIZE(_res2));                                                                    \
-            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                      \
-            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                     \
-            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));         \
-        }                                                                                                            \
-        else                                                                                                         \
-        {                                                                                                            \
-            assert(PyLong_Check(_res2));                                                                             \
-            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                           \
-        }                                                                                                            \
-        break;                                                                                                       \
-    }                                                                                                                \
-    Py_XDECREF(_res2);                                                                                               \
-    PyGILState_Release(gilstate);                                                                                    \
-    _res;                                                                                                            \
+({                                                                                                                                                                                 \
+    PyObject *_res2 = 0;                                                                                                                                                           \
+    __auto_type _res = 0 ? sqlite3_autovacuum_pages(__VA_ARGS__) : 0;                                                                                                              \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                                                                               \
+    switch (APSW_FaultInjectControl("sqlite3_autovacuum_pages", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))                                                               \
+    {                                                                                                                                                                              \
+    case 0x1FACADE:                                                                                                                                                                \
+        assert(_res2 == 0);                                                                                                                                                        \
+        PyGILState_Release(gilstate);                                                                                                                                              \
+        _res = sqlite3_autovacuum_pages(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                            \
+        break;                                                                                                                                                                     \
+    default:                                                                                                                                                                       \
+        if(!_res2) {                                                                                                                                                               \
+            fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_autovacuum_pages", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+            PyObject *_p1, *_p2, *_p3;                                                                                                                                             \
+            PyErr_Fetch(&_p1, &_p2, &_p3);                                                                                                                                         \
+            fprintf(stderr, "Exception type: ");                                                                                                                                   \
+            PyObject_Print(_p1, stderr, 0);                                                                                                                                        \
+            fprintf(stderr, "\nException value: ");                                                                                                                                \
+            PyObject_Print(_p2, stderr, 0);                                                                                                                                        \
+            fprintf(stderr, "\nException tb: ");                                                                                                                                   \
+            PyObject_Print(_p3, stderr, 0);                                                                                                                                        \
+            fprintf(stderr, "\nPyErr_Display:\n");                                                                                                                                 \
+            PyErr_Display(_p1, _p2, _p3);                                                                                                                                          \
+            fprintf(stderr, "\nEnd of exception information\n");                                                                                                                   \
+        };                                                                                                                                                                         \
+        assert(_res2);                                                                                                                                                             \
+        if(PyTuple_Check(_res2))                                                                                                                                                   \
+        {                                                                                                                                                                          \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                                                                                  \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                                                                                    \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                                                                                   \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));                                                                       \
+        }                                                                                                                                                                          \
+        else                                                                                                                                                                       \
+        {                                                                                                                                                                          \
+            assert(PyLong_Check(_res2));                                                                                                                                           \
+            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                                                                                         \
+        }                                                                                                                                                                          \
+        break;                                                                                                                                                                     \
+    }                                                                                                                                                                              \
+    Py_XDECREF(_res2);                                                                                                                                                             \
+    PyGILState_Release(gilstate);                                                                                                                                                  \
+    _res;                                                                                                                                                                          \
 })
 #define sqlite3_backup_init(...) \
-({                                                                                                              \
-    PyObject *_res2 = 0;                                                                                        \
-    __auto_type _res = 0 ? sqlite3_backup_init(__VA_ARGS__) : 0;                                                \
-    PyGILState_STATE gilstate = PyGILState_Ensure();                                                            \
-    switch (APSW_FaultInjectControl("sqlite3_backup_init", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
-    {                                                                                                           \
-    case 0x1FACADE:                                                                                             \
-        assert(_res2 == 0);                                                                                     \
-        PyGILState_Release(gilstate);                                                                           \
-        _res = sqlite3_backup_init(__VA_ARGS__);                                                                \
-        gilstate = PyGILState_Ensure();                                                                         \
-        break;                                                                                                  \
-    default:                                                                                                    \
-        if(!_res2) PyErr_Print();                                                                               \
-        assert(_res2);                                                                                          \
-        if(PyTuple_Check(_res2))                                                                                \
-        {                                                                                                       \
-            assert(3 == PyTuple_GET_SIZE(_res2));                                                               \
-            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                 \
-            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                \
-            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));    \
-        }                                                                                                       \
-        else                                                                                                    \
-        {                                                                                                       \
-            assert(PyLong_Check(_res2));                                                                        \
-            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                      \
-        }                                                                                                       \
-        break;                                                                                                  \
-    }                                                                                                           \
-    Py_XDECREF(_res2);                                                                                          \
-    PyGILState_Release(gilstate);                                                                               \
-    _res;                                                                                                       \
+({                                                                                                                                                                            \
+    PyObject *_res2 = 0;                                                                                                                                                      \
+    __auto_type _res = 0 ? sqlite3_backup_init(__VA_ARGS__) : 0;                                                                                                              \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                                                                          \
+    switch (APSW_FaultInjectControl("sqlite3_backup_init", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))                                                               \
+    {                                                                                                                                                                         \
+    case 0x1FACADE:                                                                                                                                                           \
+        assert(_res2 == 0);                                                                                                                                                   \
+        PyGILState_Release(gilstate);                                                                                                                                         \
+        _res = sqlite3_backup_init(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                       \
+        break;                                                                                                                                                                \
+    default:                                                                                                                                                                  \
+        if(!_res2) {                                                                                                                                                          \
+            fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_backup_init", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+            PyObject *_p1, *_p2, *_p3;                                                                                                                                        \
+            PyErr_Fetch(&_p1, &_p2, &_p3);                                                                                                                                    \
+            fprintf(stderr, "Exception type: ");                                                                                                                              \
+            PyObject_Print(_p1, stderr, 0);                                                                                                                                   \
+            fprintf(stderr, "\nException value: ");                                                                                                                           \
+            PyObject_Print(_p2, stderr, 0);                                                                                                                                   \
+            fprintf(stderr, "\nException tb: ");                                                                                                                              \
+            PyObject_Print(_p3, stderr, 0);                                                                                                                                   \
+            fprintf(stderr, "\nPyErr_Display:\n");                                                                                                                            \
+            PyErr_Display(_p1, _p2, _p3);                                                                                                                                     \
+            fprintf(stderr, "\nEnd of exception information\n");                                                                                                              \
+        };                                                                                                                                                                    \
+        assert(_res2);                                                                                                                                                        \
+        if(PyTuple_Check(_res2))                                                                                                                                              \
+        {                                                                                                                                                                     \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                                                                             \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                                                                               \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                                                                              \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));                                                                  \
+        }                                                                                                                                                                     \
+        else                                                                                                                                                                  \
+        {                                                                                                                                                                     \
+            assert(PyLong_Check(_res2));                                                                                                                                      \
+            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                                                                                    \
+        }                                                                                                                                                                     \
+        break;                                                                                                                                                                \
+    }                                                                                                                                                                         \
+    Py_XDECREF(_res2);                                                                                                                                                        \
+    PyGILState_Release(gilstate);                                                                                                                                             \
+    _res;                                                                                                                                                                     \
 })
 #define sqlite3_blob_read(...) \
-({                                                                                                            \
-    PyObject *_res2 = 0;                                                                                      \
-    __auto_type _res = 0 ? sqlite3_blob_read(__VA_ARGS__) : 0;                                                \
-    PyGILState_STATE gilstate = PyGILState_Ensure();                                                          \
-    switch (APSW_FaultInjectControl("sqlite3_blob_read", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
-    {                                                                                                         \
-    case 0x1FACADE:                                                                                           \
-        assert(_res2 == 0);                                                                                   \
-        PyGILState_Release(gilstate);                                                                         \
-        _res = sqlite3_blob_read(__VA_ARGS__);                                                                \
-        gilstate = PyGILState_Ensure();                                                                       \
-        break;                                                                                                \
-    default:                                                                                                  \
-        if(!_res2) PyErr_Print();                                                                             \
-        assert(_res2);                                                                                        \
-        if(PyTuple_Check(_res2))                                                                              \
-        {                                                                                                     \
-            assert(3 == PyTuple_GET_SIZE(_res2));                                                             \
-            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                               \
-            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                              \
-            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));  \
-        }                                                                                                     \
-        else                                                                                                  \
-        {                                                                                                     \
-            assert(PyLong_Check(_res2));                                                                      \
-            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                    \
-        }                                                                                                     \
-        break;                                                                                                \
-    }                                                                                                         \
-    Py_XDECREF(_res2);                                                                                        \
-    PyGILState_Release(gilstate);                                                                             \
-    _res;                                                                                                     \
+({                                                                                                                                                                          \
+    PyObject *_res2 = 0;                                                                                                                                                    \
+    __auto_type _res = 0 ? sqlite3_blob_read(__VA_ARGS__) : 0;                                                                                                              \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                                                                        \
+    switch (APSW_FaultInjectControl("sqlite3_blob_read", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))                                                               \
+    {                                                                                                                                                                       \
+    case 0x1FACADE:                                                                                                                                                         \
+        assert(_res2 == 0);                                                                                                                                                 \
+        PyGILState_Release(gilstate);                                                                                                                                       \
+        _res = sqlite3_blob_read(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                     \
+        break;                                                                                                                                                              \
+    default:                                                                                                                                                                \
+        if(!_res2) {                                                                                                                                                        \
+            fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_blob_read", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+            PyObject *_p1, *_p2, *_p3;                                                                                                                                      \
+            PyErr_Fetch(&_p1, &_p2, &_p3);                                                                                                                                  \
+            fprintf(stderr, "Exception type: ");                                                                                                                            \
+            PyObject_Print(_p1, stderr, 0);                                                                                                                                 \
+            fprintf(stderr, "\nException value: ");                                                                                                                         \
+            PyObject_Print(_p2, stderr, 0);                                                                                                                                 \
+            fprintf(stderr, "\nException tb: ");                                                                                                                            \
+            PyObject_Print(_p3, stderr, 0);                                                                                                                                 \
+            fprintf(stderr, "\nPyErr_Display:\n");                                                                                                                          \
+            PyErr_Display(_p1, _p2, _p3);                                                                                                                                   \
+            fprintf(stderr, "\nEnd of exception information\n");                                                                                                            \
+        };                                                                                                                                                                  \
+        assert(_res2);                                                                                                                                                      \
+        if(PyTuple_Check(_res2))                                                                                                                                            \
+        {                                                                                                                                                                   \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                                                                           \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                                                                             \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                                                                            \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));                                                                \
+        }                                                                                                                                                                   \
+        else                                                                                                                                                                \
+        {                                                                                                                                                                   \
+            assert(PyLong_Check(_res2));                                                                                                                                    \
+            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                                                                                  \
+        }                                                                                                                                                                   \
+        break;                                                                                                                                                              \
+    }                                                                                                                                                                       \
+    Py_XDECREF(_res2);                                                                                                                                                      \
+    PyGILState_Release(gilstate);                                                                                                                                           \
+    _res;                                                                                                                                                                   \
 })
 #define sqlite3_blob_write(...) \
-({                                                                                                             \
-    PyObject *_res2 = 0;                                                                                       \
-    __auto_type _res = 0 ? sqlite3_blob_write(__VA_ARGS__) : 0;                                                \
-    PyGILState_STATE gilstate = PyGILState_Ensure();                                                           \
-    switch (APSW_FaultInjectControl("sqlite3_blob_write", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
-    {                                                                                                          \
-    case 0x1FACADE:                                                                                            \
-        assert(_res2 == 0);                                                                                    \
-        PyGILState_Release(gilstate);                                                                          \
-        _res = sqlite3_blob_write(__VA_ARGS__);                                                                \
-        gilstate = PyGILState_Ensure();                                                                        \
-        break;                                                                                                 \
-    default:                                                                                                   \
-        if(!_res2) PyErr_Print();                                                                              \
-        assert(_res2);                                                                                         \
-        if(PyTuple_Check(_res2))                                                                               \
-        {                                                                                                      \
-            assert(3 == PyTuple_GET_SIZE(_res2));                                                              \
-            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                \
-            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                               \
-            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));   \
-        }                                                                                                      \
-        else                                                                                                   \
-        {                                                                                                      \
-            assert(PyLong_Check(_res2));                                                                       \
-            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                     \
-        }                                                                                                      \
-        break;                                                                                                 \
-    }                                                                                                          \
-    Py_XDECREF(_res2);                                                                                         \
-    PyGILState_Release(gilstate);                                                                              \
-    _res;                                                                                                      \
+({                                                                                                                                                                           \
+    PyObject *_res2 = 0;                                                                                                                                                     \
+    __auto_type _res = 0 ? sqlite3_blob_write(__VA_ARGS__) : 0;                                                                                                              \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                                                                         \
+    switch (APSW_FaultInjectControl("sqlite3_blob_write", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))                                                               \
+    {                                                                                                                                                                        \
+    case 0x1FACADE:                                                                                                                                                          \
+        assert(_res2 == 0);                                                                                                                                                  \
+        PyGILState_Release(gilstate);                                                                                                                                        \
+        _res = sqlite3_blob_write(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                      \
+        break;                                                                                                                                                               \
+    default:                                                                                                                                                                 \
+        if(!_res2) {                                                                                                                                                         \
+            fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_blob_write", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+            PyObject *_p1, *_p2, *_p3;                                                                                                                                       \
+            PyErr_Fetch(&_p1, &_p2, &_p3);                                                                                                                                   \
+            fprintf(stderr, "Exception type: ");                                                                                                                             \
+            PyObject_Print(_p1, stderr, 0);                                                                                                                                  \
+            fprintf(stderr, "\nException value: ");                                                                                                                          \
+            PyObject_Print(_p2, stderr, 0);                                                                                                                                  \
+            fprintf(stderr, "\nException tb: ");                                                                                                                             \
+            PyObject_Print(_p3, stderr, 0);                                                                                                                                  \
+            fprintf(stderr, "\nPyErr_Display:\n");                                                                                                                           \
+            PyErr_Display(_p1, _p2, _p3);                                                                                                                                    \
+            fprintf(stderr, "\nEnd of exception information\n");                                                                                                             \
+        };                                                                                                                                                                   \
+        assert(_res2);                                                                                                                                                       \
+        if(PyTuple_Check(_res2))                                                                                                                                             \
+        {                                                                                                                                                                    \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                                                                            \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                                                                              \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                                                                             \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));                                                                 \
+        }                                                                                                                                                                    \
+        else                                                                                                                                                                 \
+        {                                                                                                                                                                    \
+            assert(PyLong_Check(_res2));                                                                                                                                     \
+            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                                                                                   \
+        }                                                                                                                                                                    \
+        break;                                                                                                                                                               \
+    }                                                                                                                                                                        \
+    Py_XDECREF(_res2);                                                                                                                                                       \
+    PyGILState_Release(gilstate);                                                                                                                                            \
+    _res;                                                                                                                                                                    \
 })
 #define sqlite3_busy_handler(...) \
-({                                                                                                               \
-    PyObject *_res2 = 0;                                                                                         \
-    __auto_type _res = 0 ? sqlite3_busy_handler(__VA_ARGS__) : 0;                                                \
-    PyGILState_STATE gilstate = PyGILState_Ensure();                                                             \
-    switch (APSW_FaultInjectControl("sqlite3_busy_handler", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
-    {                                                                                                            \
-    case 0x1FACADE:                                                                                              \
-        assert(_res2 == 0);                                                                                      \
-        PyGILState_Release(gilstate);                                                                            \
-        _res = sqlite3_busy_handler(__VA_ARGS__);                                                                \
-        gilstate = PyGILState_Ensure();                                                                          \
-        break;                                                                                                   \
-    default:                                                                                                     \
-        if(!_res2) PyErr_Print();                                                                                \
-        assert(_res2);                                                                                           \
-        if(PyTuple_Check(_res2))                                                                                 \
-        {                                                                                                        \
-            assert(3 == PyTuple_GET_SIZE(_res2));                                                                \
-            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                  \
-            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                 \
-            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));     \
-        }                                                                                                        \
-        else                                                                                                     \
-        {                                                                                                        \
-            assert(PyLong_Check(_res2));                                                                         \
-            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                       \
-        }                                                                                                        \
-        break;                                                                                                   \
-    }                                                                                                            \
-    Py_XDECREF(_res2);                                                                                           \
-    PyGILState_Release(gilstate);                                                                                \
-    _res;                                                                                                        \
+({                                                                                                                                                                             \
+    PyObject *_res2 = 0;                                                                                                                                                       \
+    __auto_type _res = 0 ? sqlite3_busy_handler(__VA_ARGS__) : 0;                                                                                                              \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                                                                           \
+    switch (APSW_FaultInjectControl("sqlite3_busy_handler", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))                                                               \
+    {                                                                                                                                                                          \
+    case 0x1FACADE:                                                                                                                                                            \
+        assert(_res2 == 0);                                                                                                                                                    \
+        PyGILState_Release(gilstate);                                                                                                                                          \
+        _res = sqlite3_busy_handler(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                        \
+        break;                                                                                                                                                                 \
+    default:                                                                                                                                                                   \
+        if(!_res2) {                                                                                                                                                           \
+            fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_busy_handler", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+            PyObject *_p1, *_p2, *_p3;                                                                                                                                         \
+            PyErr_Fetch(&_p1, &_p2, &_p3);                                                                                                                                     \
+            fprintf(stderr, "Exception type: ");                                                                                                                               \
+            PyObject_Print(_p1, stderr, 0);                                                                                                                                    \
+            fprintf(stderr, "\nException value: ");                                                                                                                            \
+            PyObject_Print(_p2, stderr, 0);                                                                                                                                    \
+            fprintf(stderr, "\nException tb: ");                                                                                                                               \
+            PyObject_Print(_p3, stderr, 0);                                                                                                                                    \
+            fprintf(stderr, "\nPyErr_Display:\n");                                                                                                                             \
+            PyErr_Display(_p1, _p2, _p3);                                                                                                                                      \
+            fprintf(stderr, "\nEnd of exception information\n");                                                                                                               \
+        };                                                                                                                                                                     \
+        assert(_res2);                                                                                                                                                         \
+        if(PyTuple_Check(_res2))                                                                                                                                               \
+        {                                                                                                                                                                      \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                                                                              \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                                                                                \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                                                                               \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));                                                                   \
+        }                                                                                                                                                                      \
+        else                                                                                                                                                                   \
+        {                                                                                                                                                                      \
+            assert(PyLong_Check(_res2));                                                                                                                                       \
+            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                                                                                     \
+        }                                                                                                                                                                      \
+        break;                                                                                                                                                                 \
+    }                                                                                                                                                                          \
+    Py_XDECREF(_res2);                                                                                                                                                         \
+    PyGILState_Release(gilstate);                                                                                                                                              \
+    _res;                                                                                                                                                                      \
 })
 #define sqlite3_clear_bindings(...) \
-({                                                                                                                 \
-    PyObject *_res2 = 0;                                                                                           \
-    __auto_type _res = 0 ? sqlite3_clear_bindings(__VA_ARGS__) : 0;                                                \
-    PyGILState_STATE gilstate = PyGILState_Ensure();                                                               \
-    switch (APSW_FaultInjectControl("sqlite3_clear_bindings", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
-    {                                                                                                              \
-    case 0x1FACADE:                                                                                                \
-        assert(_res2 == 0);                                                                                        \
-        PyGILState_Release(gilstate);                                                                              \
-        _res = sqlite3_clear_bindings(__VA_ARGS__);                                                                \
-        gilstate = PyGILState_Ensure();                                                                            \
-        break;                                                                                                     \
-    default:                                                                                                       \
-        if(!_res2) PyErr_Print();                                                                                  \
-        assert(_res2);                                                                                             \
-        if(PyTuple_Check(_res2))                                                                                   \
-        {                                                                                                          \
-            assert(3 == PyTuple_GET_SIZE(_res2));                                                                  \
-            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                    \
-            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                   \
-            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));       \
-        }                                                                                                          \
-        else                                                                                                       \
-        {                                                                                                          \
-            assert(PyLong_Check(_res2));                                                                           \
-            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                         \
-        }                                                                                                          \
-        break;                                                                                                     \
-    }                                                                                                              \
-    Py_XDECREF(_res2);                                                                                             \
-    PyGILState_Release(gilstate);                                                                                  \
-    _res;                                                                                                          \
+({                                                                                                                                                                               \
+    PyObject *_res2 = 0;                                                                                                                                                         \
+    __auto_type _res = 0 ? sqlite3_clear_bindings(__VA_ARGS__) : 0;                                                                                                              \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                                                                             \
+    switch (APSW_FaultInjectControl("sqlite3_clear_bindings", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))                                                               \
+    {                                                                                                                                                                            \
+    case 0x1FACADE:                                                                                                                                                              \
+        assert(_res2 == 0);                                                                                                                                                      \
+        PyGILState_Release(gilstate);                                                                                                                                            \
+        _res = sqlite3_clear_bindings(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                          \
+        break;                                                                                                                                                                   \
+    default:                                                                                                                                                                     \
+        if(!_res2) {                                                                                                                                                             \
+            fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_clear_bindings", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+            PyObject *_p1, *_p2, *_p3;                                                                                                                                           \
+            PyErr_Fetch(&_p1, &_p2, &_p3);                                                                                                                                       \
+            fprintf(stderr, "Exception type: ");                                                                                                                                 \
+            PyObject_Print(_p1, stderr, 0);                                                                                                                                      \
+            fprintf(stderr, "\nException value: ");                                                                                                                              \
+            PyObject_Print(_p2, stderr, 0);                                                                                                                                      \
+            fprintf(stderr, "\nException tb: ");                                                                                                                                 \
+            PyObject_Print(_p3, stderr, 0);                                                                                                                                      \
+            fprintf(stderr, "\nPyErr_Display:\n");                                                                                                                               \
+            PyErr_Display(_p1, _p2, _p3);                                                                                                                                        \
+            fprintf(stderr, "\nEnd of exception information\n");                                                                                                                 \
+        };                                                                                                                                                                       \
+        assert(_res2);                                                                                                                                                           \
+        if(PyTuple_Check(_res2))                                                                                                                                                 \
+        {                                                                                                                                                                        \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                                                                                \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                                                                                  \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                                                                                 \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));                                                                     \
+        }                                                                                                                                                                        \
+        else                                                                                                                                                                     \
+        {                                                                                                                                                                        \
+            assert(PyLong_Check(_res2));                                                                                                                                         \
+            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                                                                                       \
+        }                                                                                                                                                                        \
+        break;                                                                                                                                                                   \
+    }                                                                                                                                                                            \
+    Py_XDECREF(_res2);                                                                                                                                                           \
+    PyGILState_Release(gilstate);                                                                                                                                                \
+    _res;                                                                                                                                                                        \
 })
 #define sqlite3_close(...) \
-({                                                                                                           \
-    PyObject *_res2 = 0;                                                                                     \
-    __auto_type _res = 0 ? sqlite3_close(__VA_ARGS__) : 0;                                                   \
-    PyGILState_STATE gilstate = PyGILState_Ensure();                                                         \
-    switch (APSW_FaultInjectControl("sqlite3_close", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))    \
-    {                                                                                                        \
-    case 0x1FACADE:                                                                                          \
-        assert(_res2 == 0);                                                                                  \
-        PyGILState_Release(gilstate);                                                                        \
-        _res = sqlite3_close(__VA_ARGS__);                                                                   \
-        gilstate = PyGILState_Ensure();                                                                      \
-        break;                                                                                               \
-    default:                                                                                                 \
-        if(!_res2) PyErr_Print();                                                                            \
-        assert(_res2);                                                                                       \
-        if(PyTuple_Check(_res2))                                                                             \
-        {                                                                                                    \
-            assert(3 == PyTuple_GET_SIZE(_res2));                                                            \
-            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                              \
-            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                             \
-            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2))); \
-        }                                                                                                    \
-        else                                                                                                 \
-        {                                                                                                    \
-            assert(PyLong_Check(_res2));                                                                     \
-            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                   \
-        }                                                                                                    \
-        break;                                                                                               \
-    }                                                                                                        \
-    Py_XDECREF(_res2);                                                                                       \
-    PyGILState_Release(gilstate);                                                                            \
-    _res;                                                                                                    \
+({                                                                                                                                                                      \
+    PyObject *_res2 = 0;                                                                                                                                                \
+    __auto_type _res = 0 ? sqlite3_close(__VA_ARGS__) : 0;                                                                                                              \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                                                                    \
+    switch (APSW_FaultInjectControl("sqlite3_close", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))                                                               \
+    {                                                                                                                                                                   \
+    case 0x1FACADE:                                                                                                                                                     \
+        assert(_res2 == 0);                                                                                                                                             \
+        PyGILState_Release(gilstate);                                                                                                                                   \
+        _res = sqlite3_close(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                 \
+        break;                                                                                                                                                          \
+    default:                                                                                                                                                            \
+        if(!_res2) {                                                                                                                                                    \
+            fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_close", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+            PyObject *_p1, *_p2, *_p3;                                                                                                                                  \
+            PyErr_Fetch(&_p1, &_p2, &_p3);                                                                                                                              \
+            fprintf(stderr, "Exception type: ");                                                                                                                        \
+            PyObject_Print(_p1, stderr, 0);                                                                                                                             \
+            fprintf(stderr, "\nException value: ");                                                                                                                     \
+            PyObject_Print(_p2, stderr, 0);                                                                                                                             \
+            fprintf(stderr, "\nException tb: ");                                                                                                                        \
+            PyObject_Print(_p3, stderr, 0);                                                                                                                             \
+            fprintf(stderr, "\nPyErr_Display:\n");                                                                                                                      \
+            PyErr_Display(_p1, _p2, _p3);                                                                                                                               \
+            fprintf(stderr, "\nEnd of exception information\n");                                                                                                        \
+        };                                                                                                                                                              \
+        assert(_res2);                                                                                                                                                  \
+        if(PyTuple_Check(_res2))                                                                                                                                        \
+        {                                                                                                                                                               \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                                                                       \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                                                                         \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                                                                        \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));                                                            \
+        }                                                                                                                                                               \
+        else                                                                                                                                                            \
+        {                                                                                                                                                               \
+            assert(PyLong_Check(_res2));                                                                                                                                \
+            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                                                                              \
+        }                                                                                                                                                               \
+        break;                                                                                                                                                          \
+    }                                                                                                                                                                   \
+    Py_XDECREF(_res2);                                                                                                                                                  \
+    PyGILState_Release(gilstate);                                                                                                                                       \
+    _res;                                                                                                                                                               \
 })
 #define sqlite3_collation_needed(...) \
-({                                                                                                                   \
-    PyObject *_res2 = 0;                                                                                             \
-    __auto_type _res = 0 ? sqlite3_collation_needed(__VA_ARGS__) : 0;                                                \
-    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                 \
-    switch (APSW_FaultInjectControl("sqlite3_collation_needed", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
-    {                                                                                                                \
-    case 0x1FACADE:                                                                                                  \
-        assert(_res2 == 0);                                                                                          \
-        PyGILState_Release(gilstate);                                                                                \
-        _res = sqlite3_collation_needed(__VA_ARGS__);                                                                \
-        gilstate = PyGILState_Ensure();                                                                              \
-        break;                                                                                                       \
-    default:                                                                                                         \
-        if(!_res2) PyErr_Print();                                                                                    \
-        assert(_res2);                                                                                               \
-        if(PyTuple_Check(_res2))                                                                                     \
-        {                                                                                                            \
-            assert(3 == PyTuple_GET_SIZE(_res2));                                                                    \
-            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                      \
-            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                     \
-            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));         \
-        }                                                                                                            \
-        else                                                                                                         \
-        {                                                                                                            \
-            assert(PyLong_Check(_res2));                                                                             \
-            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                           \
-        }                                                                                                            \
-        break;                                                                                                       \
-    }                                                                                                                \
-    Py_XDECREF(_res2);                                                                                               \
-    PyGILState_Release(gilstate);                                                                                    \
-    _res;                                                                                                            \
+({                                                                                                                                                                                 \
+    PyObject *_res2 = 0;                                                                                                                                                           \
+    __auto_type _res = 0 ? sqlite3_collation_needed(__VA_ARGS__) : 0;                                                                                                              \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                                                                               \
+    switch (APSW_FaultInjectControl("sqlite3_collation_needed", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))                                                               \
+    {                                                                                                                                                                              \
+    case 0x1FACADE:                                                                                                                                                                \
+        assert(_res2 == 0);                                                                                                                                                        \
+        PyGILState_Release(gilstate);                                                                                                                                              \
+        _res = sqlite3_collation_needed(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                            \
+        break;                                                                                                                                                                     \
+    default:                                                                                                                                                                       \
+        if(!_res2) {                                                                                                                                                               \
+            fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_collation_needed", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+            PyObject *_p1, *_p2, *_p3;                                                                                                                                             \
+            PyErr_Fetch(&_p1, &_p2, &_p3);                                                                                                                                         \
+            fprintf(stderr, "Exception type: ");                                                                                                                                   \
+            PyObject_Print(_p1, stderr, 0);                                                                                                                                        \
+            fprintf(stderr, "\nException value: ");                                                                                                                                \
+            PyObject_Print(_p2, stderr, 0);                                                                                                                                        \
+            fprintf(stderr, "\nException tb: ");                                                                                                                                   \
+            PyObject_Print(_p3, stderr, 0);                                                                                                                                        \
+            fprintf(stderr, "\nPyErr_Display:\n");                                                                                                                                 \
+            PyErr_Display(_p1, _p2, _p3);                                                                                                                                          \
+            fprintf(stderr, "\nEnd of exception information\n");                                                                                                                   \
+        };                                                                                                                                                                         \
+        assert(_res2);                                                                                                                                                             \
+        if(PyTuple_Check(_res2))                                                                                                                                                   \
+        {                                                                                                                                                                          \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                                                                                  \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                                                                                    \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                                                                                   \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));                                                                       \
+        }                                                                                                                                                                          \
+        else                                                                                                                                                                       \
+        {                                                                                                                                                                          \
+            assert(PyLong_Check(_res2));                                                                                                                                           \
+            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                                                                                         \
+        }                                                                                                                                                                          \
+        break;                                                                                                                                                                     \
+    }                                                                                                                                                                              \
+    Py_XDECREF(_res2);                                                                                                                                                             \
+    PyGILState_Release(gilstate);                                                                                                                                                  \
+    _res;                                                                                                                                                                          \
 })
-#define sqlite3_column_type(...) \
-({                                                                                                              \
-    PyObject *_res2 = 0;                                                                                        \
-    __auto_type _res = 0 ? sqlite3_column_type(__VA_ARGS__) : 0;                                                \
-    PyGILState_STATE gilstate = PyGILState_Ensure();                                                            \
-    switch (APSW_FaultInjectControl("sqlite3_column_type", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
-    {                                                                                                           \
-    case 0x1FACADE:                                                                                             \
-        assert(_res2 == 0);                                                                                     \
-        PyGILState_Release(gilstate);                                                                           \
-        _res = sqlite3_column_type(__VA_ARGS__);                                                                \
-        gilstate = PyGILState_Ensure();                                                                         \
-        break;                                                                                                  \
-    default:                                                                                                    \
-        if(!_res2) PyErr_Print();                                                                               \
-        assert(_res2);                                                                                          \
-        if(PyTuple_Check(_res2))                                                                                \
-        {                                                                                                       \
-            assert(3 == PyTuple_GET_SIZE(_res2));                                                               \
-            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                 \
-            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                \
-            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));    \
-        }                                                                                                       \
-        else                                                                                                    \
-        {                                                                                                       \
-            assert(PyLong_Check(_res2));                                                                        \
-            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                      \
-        }                                                                                                       \
-        break;                                                                                                  \
-    }                                                                                                           \
-    Py_XDECREF(_res2);                                                                                          \
-    PyGILState_Release(gilstate);                                                                               \
-    _res;                                                                                                       \
+#define sqlite3_column_name(...) \
+({                                                                                                                                                                            \
+    PyObject *_res2 = 0;                                                                                                                                                      \
+    __auto_type _res = 0 ? sqlite3_column_name(__VA_ARGS__) : 0;                                                                                                              \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                                                                          \
+    switch (APSW_FaultInjectControl("sqlite3_column_name", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))                                                               \
+    {                                                                                                                                                                         \
+    case 0x1FACADE:                                                                                                                                                           \
+        assert(_res2 == 0);                                                                                                                                                   \
+        PyGILState_Release(gilstate);                                                                                                                                         \
+        _res = sqlite3_column_name(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                       \
+        break;                                                                                                                                                                \
+    default:                                                                                                                                                                  \
+        if(!_res2) {                                                                                                                                                          \
+            fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_column_name", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+            PyObject *_p1, *_p2, *_p3;                                                                                                                                        \
+            PyErr_Fetch(&_p1, &_p2, &_p3);                                                                                                                                    \
+            fprintf(stderr, "Exception type: ");                                                                                                                              \
+            PyObject_Print(_p1, stderr, 0);                                                                                                                                   \
+            fprintf(stderr, "\nException value: ");                                                                                                                           \
+            PyObject_Print(_p2, stderr, 0);                                                                                                                                   \
+            fprintf(stderr, "\nException tb: ");                                                                                                                              \
+            PyObject_Print(_p3, stderr, 0);                                                                                                                                   \
+            fprintf(stderr, "\nPyErr_Display:\n");                                                                                                                            \
+            PyErr_Display(_p1, _p2, _p3);                                                                                                                                     \
+            fprintf(stderr, "\nEnd of exception information\n");                                                                                                              \
+        };                                                                                                                                                                    \
+        assert(_res2);                                                                                                                                                        \
+        if(PyTuple_Check(_res2))                                                                                                                                              \
+        {                                                                                                                                                                     \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                                                                             \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                                                                               \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                                                                              \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));                                                                  \
+        }                                                                                                                                                                     \
+        else                                                                                                                                                                  \
+        {                                                                                                                                                                     \
+            assert(PyLong_Check(_res2));                                                                                                                                      \
+            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                                                                                    \
+        }                                                                                                                                                                     \
+        break;                                                                                                                                                                \
+    }                                                                                                                                                                         \
+    Py_XDECREF(_res2);                                                                                                                                                        \
+    PyGILState_Release(gilstate);                                                                                                                                             \
+    _res;                                                                                                                                                                     \
 })
 #define sqlite3_config(...) \
-({                                                                                                           \
-    PyObject *_res2 = 0;                                                                                     \
-    __auto_type _res = 0 ? sqlite3_config(__VA_ARGS__) : 0;                                                  \
-    PyGILState_STATE gilstate = PyGILState_Ensure();                                                         \
-    switch (APSW_FaultInjectControl("sqlite3_config", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))   \
-    {                                                                                                        \
-    case 0x1FACADE:                                                                                          \
-        assert(_res2 == 0);                                                                                  \
-        PyGILState_Release(gilstate);                                                                        \
-        _res = sqlite3_config(__VA_ARGS__);                                                                  \
-        gilstate = PyGILState_Ensure();                                                                      \
-        break;                                                                                               \
-    default:                                                                                                 \
-        if(!_res2) PyErr_Print();                                                                            \
-        assert(_res2);                                                                                       \
-        if(PyTuple_Check(_res2))                                                                             \
-        {                                                                                                    \
-            assert(3 == PyTuple_GET_SIZE(_res2));                                                            \
-            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                              \
-            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                             \
-            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2))); \
-        }                                                                                                    \
-        else                                                                                                 \
-        {                                                                                                    \
-            assert(PyLong_Check(_res2));                                                                     \
-            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                   \
-        }                                                                                                    \
-        break;                                                                                               \
-    }                                                                                                        \
-    Py_XDECREF(_res2);                                                                                       \
-    PyGILState_Release(gilstate);                                                                            \
-    _res;                                                                                                    \
+({                                                                                                                                                                       \
+    PyObject *_res2 = 0;                                                                                                                                                 \
+    __auto_type _res = 0 ? sqlite3_config(__VA_ARGS__) : 0;                                                                                                              \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                                                                     \
+    switch (APSW_FaultInjectControl("sqlite3_config", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))                                                               \
+    {                                                                                                                                                                    \
+    case 0x1FACADE:                                                                                                                                                      \
+        assert(_res2 == 0);                                                                                                                                              \
+        PyGILState_Release(gilstate);                                                                                                                                    \
+        _res = sqlite3_config(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                  \
+        break;                                                                                                                                                           \
+    default:                                                                                                                                                             \
+        if(!_res2) {                                                                                                                                                     \
+            fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_config", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+            PyObject *_p1, *_p2, *_p3;                                                                                                                                   \
+            PyErr_Fetch(&_p1, &_p2, &_p3);                                                                                                                               \
+            fprintf(stderr, "Exception type: ");                                                                                                                         \
+            PyObject_Print(_p1, stderr, 0);                                                                                                                              \
+            fprintf(stderr, "\nException value: ");                                                                                                                      \
+            PyObject_Print(_p2, stderr, 0);                                                                                                                              \
+            fprintf(stderr, "\nException tb: ");                                                                                                                         \
+            PyObject_Print(_p3, stderr, 0);                                                                                                                              \
+            fprintf(stderr, "\nPyErr_Display:\n");                                                                                                                       \
+            PyErr_Display(_p1, _p2, _p3);                                                                                                                                \
+            fprintf(stderr, "\nEnd of exception information\n");                                                                                                         \
+        };                                                                                                                                                               \
+        assert(_res2);                                                                                                                                                   \
+        if(PyTuple_Check(_res2))                                                                                                                                         \
+        {                                                                                                                                                                \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                                                                        \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                                                                          \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                                                                         \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));                                                             \
+        }                                                                                                                                                                \
+        else                                                                                                                                                             \
+        {                                                                                                                                                                \
+            assert(PyLong_Check(_res2));                                                                                                                                 \
+            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                                                                               \
+        }                                                                                                                                                                \
+        break;                                                                                                                                                           \
+    }                                                                                                                                                                    \
+    Py_XDECREF(_res2);                                                                                                                                                   \
+    PyGILState_Release(gilstate);                                                                                                                                        \
+    _res;                                                                                                                                                                \
 })
 #define sqlite3_create_module_v2(...) \
-({                                                                                                                   \
-    PyObject *_res2 = 0;                                                                                             \
-    __auto_type _res = 0 ? sqlite3_create_module_v2(__VA_ARGS__) : 0;                                                \
-    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                 \
-    switch (APSW_FaultInjectControl("sqlite3_create_module_v2", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
-    {                                                                                                                \
-    case 0x1FACADE:                                                                                                  \
-        assert(_res2 == 0);                                                                                          \
-        PyGILState_Release(gilstate);                                                                                \
-        _res = sqlite3_create_module_v2(__VA_ARGS__);                                                                \
-        gilstate = PyGILState_Ensure();                                                                              \
-        break;                                                                                                       \
-    default:                                                                                                         \
-        if(!_res2) PyErr_Print();                                                                                    \
-        assert(_res2);                                                                                               \
-        if(PyTuple_Check(_res2))                                                                                     \
-        {                                                                                                            \
-            assert(3 == PyTuple_GET_SIZE(_res2));                                                                    \
-            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                      \
-            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                     \
-            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));         \
-        }                                                                                                            \
-        else                                                                                                         \
-        {                                                                                                            \
-            assert(PyLong_Check(_res2));                                                                             \
-            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                           \
-        }                                                                                                            \
-        break;                                                                                                       \
-    }                                                                                                                \
-    Py_XDECREF(_res2);                                                                                               \
-    PyGILState_Release(gilstate);                                                                                    \
-    _res;                                                                                                            \
+({                                                                                                                                                                                 \
+    PyObject *_res2 = 0;                                                                                                                                                           \
+    __auto_type _res = 0 ? sqlite3_create_module_v2(__VA_ARGS__) : 0;                                                                                                              \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                                                                               \
+    switch (APSW_FaultInjectControl("sqlite3_create_module_v2", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))                                                               \
+    {                                                                                                                                                                              \
+    case 0x1FACADE:                                                                                                                                                                \
+        assert(_res2 == 0);                                                                                                                                                        \
+        PyGILState_Release(gilstate);                                                                                                                                              \
+        _res = sqlite3_create_module_v2(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                            \
+        break;                                                                                                                                                                     \
+    default:                                                                                                                                                                       \
+        if(!_res2) {                                                                                                                                                               \
+            fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_create_module_v2", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+            PyObject *_p1, *_p2, *_p3;                                                                                                                                             \
+            PyErr_Fetch(&_p1, &_p2, &_p3);                                                                                                                                         \
+            fprintf(stderr, "Exception type: ");                                                                                                                                   \
+            PyObject_Print(_p1, stderr, 0);                                                                                                                                        \
+            fprintf(stderr, "\nException value: ");                                                                                                                                \
+            PyObject_Print(_p2, stderr, 0);                                                                                                                                        \
+            fprintf(stderr, "\nException tb: ");                                                                                                                                   \
+            PyObject_Print(_p3, stderr, 0);                                                                                                                                        \
+            fprintf(stderr, "\nPyErr_Display:\n");                                                                                                                                 \
+            PyErr_Display(_p1, _p2, _p3);                                                                                                                                          \
+            fprintf(stderr, "\nEnd of exception information\n");                                                                                                                   \
+        };                                                                                                                                                                         \
+        assert(_res2);                                                                                                                                                             \
+        if(PyTuple_Check(_res2))                                                                                                                                                   \
+        {                                                                                                                                                                          \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                                                                                  \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                                                                                    \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                                                                                   \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));                                                                       \
+        }                                                                                                                                                                          \
+        else                                                                                                                                                                       \
+        {                                                                                                                                                                          \
+            assert(PyLong_Check(_res2));                                                                                                                                           \
+            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                                                                                         \
+        }                                                                                                                                                                          \
+        break;                                                                                                                                                                     \
+    }                                                                                                                                                                              \
+    Py_XDECREF(_res2);                                                                                                                                                             \
+    PyGILState_Release(gilstate);                                                                                                                                                  \
+    _res;                                                                                                                                                                          \
 })
 #define sqlite3_db_config(...) \
-({                                                                                                            \
-    PyObject *_res2 = 0;                                                                                      \
-    __auto_type _res = 0 ? sqlite3_db_config(__VA_ARGS__) : 0;                                                \
-    PyGILState_STATE gilstate = PyGILState_Ensure();                                                          \
-    switch (APSW_FaultInjectControl("sqlite3_db_config", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
-    {                                                                                                         \
-    case 0x1FACADE:                                                                                           \
-        assert(_res2 == 0);                                                                                   \
-        PyGILState_Release(gilstate);                                                                         \
-        _res = sqlite3_db_config(__VA_ARGS__);                                                                \
-        gilstate = PyGILState_Ensure();                                                                       \
-        break;                                                                                                \
-    default:                                                                                                  \
-        if(!_res2) PyErr_Print();                                                                             \
-        assert(_res2);                                                                                        \
-        if(PyTuple_Check(_res2))                                                                              \
-        {                                                                                                     \
-            assert(3 == PyTuple_GET_SIZE(_res2));                                                             \
-            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                               \
-            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                              \
-            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));  \
-        }                                                                                                     \
-        else                                                                                                  \
-        {                                                                                                     \
-            assert(PyLong_Check(_res2));                                                                      \
-            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                    \
-        }                                                                                                     \
-        break;                                                                                                \
-    }                                                                                                         \
-    Py_XDECREF(_res2);                                                                                        \
-    PyGILState_Release(gilstate);                                                                             \
-    _res;                                                                                                     \
+({                                                                                                                                                                          \
+    PyObject *_res2 = 0;                                                                                                                                                    \
+    __auto_type _res = 0 ? sqlite3_db_config(__VA_ARGS__) : 0;                                                                                                              \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                                                                        \
+    switch (APSW_FaultInjectControl("sqlite3_db_config", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))                                                               \
+    {                                                                                                                                                                       \
+    case 0x1FACADE:                                                                                                                                                         \
+        assert(_res2 == 0);                                                                                                                                                 \
+        PyGILState_Release(gilstate);                                                                                                                                       \
+        _res = sqlite3_db_config(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                     \
+        break;                                                                                                                                                              \
+    default:                                                                                                                                                                \
+        if(!_res2) {                                                                                                                                                        \
+            fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_db_config", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+            PyObject *_p1, *_p2, *_p3;                                                                                                                                      \
+            PyErr_Fetch(&_p1, &_p2, &_p3);                                                                                                                                  \
+            fprintf(stderr, "Exception type: ");                                                                                                                            \
+            PyObject_Print(_p1, stderr, 0);                                                                                                                                 \
+            fprintf(stderr, "\nException value: ");                                                                                                                         \
+            PyObject_Print(_p2, stderr, 0);                                                                                                                                 \
+            fprintf(stderr, "\nException tb: ");                                                                                                                            \
+            PyObject_Print(_p3, stderr, 0);                                                                                                                                 \
+            fprintf(stderr, "\nPyErr_Display:\n");                                                                                                                          \
+            PyErr_Display(_p1, _p2, _p3);                                                                                                                                   \
+            fprintf(stderr, "\nEnd of exception information\n");                                                                                                            \
+        };                                                                                                                                                                  \
+        assert(_res2);                                                                                                                                                      \
+        if(PyTuple_Check(_res2))                                                                                                                                            \
+        {                                                                                                                                                                   \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                                                                           \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                                                                             \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                                                                            \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));                                                                \
+        }                                                                                                                                                                   \
+        else                                                                                                                                                                \
+        {                                                                                                                                                                   \
+            assert(PyLong_Check(_res2));                                                                                                                                    \
+            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                                                                                  \
+        }                                                                                                                                                                   \
+        break;                                                                                                                                                              \
+    }                                                                                                                                                                       \
+    Py_XDECREF(_res2);                                                                                                                                                      \
+    PyGILState_Release(gilstate);                                                                                                                                           \
+    _res;                                                                                                                                                                   \
 })
 #define sqlite3_enable_load_extension(...) \
-({                                                                                                                        \
-    PyObject *_res2 = 0;                                                                                                  \
-    __auto_type _res = 0 ? sqlite3_enable_load_extension(__VA_ARGS__) : 0;                                                \
-    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                      \
-    switch (APSW_FaultInjectControl("sqlite3_enable_load_extension", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
-    {                                                                                                                     \
-    case 0x1FACADE:                                                                                                       \
-        assert(_res2 == 0);                                                                                               \
-        PyGILState_Release(gilstate);                                                                                     \
-        _res = sqlite3_enable_load_extension(__VA_ARGS__);                                                                \
-        gilstate = PyGILState_Ensure();                                                                                   \
-        break;                                                                                                            \
-    default:                                                                                                              \
-        if(!_res2) PyErr_Print();                                                                                         \
-        assert(_res2);                                                                                                    \
-        if(PyTuple_Check(_res2))                                                                                          \
-        {                                                                                                                 \
-            assert(3 == PyTuple_GET_SIZE(_res2));                                                                         \
-            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                           \
-            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                          \
-            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));              \
-        }                                                                                                                 \
-        else                                                                                                              \
-        {                                                                                                                 \
-            assert(PyLong_Check(_res2));                                                                                  \
-            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                                \
-        }                                                                                                                 \
-        break;                                                                                                            \
-    }                                                                                                                     \
-    Py_XDECREF(_res2);                                                                                                    \
-    PyGILState_Release(gilstate);                                                                                         \
-    _res;                                                                                                                 \
+({                                                                                                                                                                                      \
+    PyObject *_res2 = 0;                                                                                                                                                                \
+    __auto_type _res = 0 ? sqlite3_enable_load_extension(__VA_ARGS__) : 0;                                                                                                              \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                                                                                    \
+    switch (APSW_FaultInjectControl("sqlite3_enable_load_extension", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))                                                               \
+    {                                                                                                                                                                                   \
+    case 0x1FACADE:                                                                                                                                                                     \
+        assert(_res2 == 0);                                                                                                                                                             \
+        PyGILState_Release(gilstate);                                                                                                                                                   \
+        _res = sqlite3_enable_load_extension(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                                 \
+        break;                                                                                                                                                                          \
+    default:                                                                                                                                                                            \
+        if(!_res2) {                                                                                                                                                                    \
+            fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_enable_load_extension", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+            PyObject *_p1, *_p2, *_p3;                                                                                                                                                  \
+            PyErr_Fetch(&_p1, &_p2, &_p3);                                                                                                                                              \
+            fprintf(stderr, "Exception type: ");                                                                                                                                        \
+            PyObject_Print(_p1, stderr, 0);                                                                                                                                             \
+            fprintf(stderr, "\nException value: ");                                                                                                                                     \
+            PyObject_Print(_p2, stderr, 0);                                                                                                                                             \
+            fprintf(stderr, "\nException tb: ");                                                                                                                                        \
+            PyObject_Print(_p3, stderr, 0);                                                                                                                                             \
+            fprintf(stderr, "\nPyErr_Display:\n");                                                                                                                                      \
+            PyErr_Display(_p1, _p2, _p3);                                                                                                                                               \
+            fprintf(stderr, "\nEnd of exception information\n");                                                                                                                        \
+        };                                                                                                                                                                              \
+        assert(_res2);                                                                                                                                                                  \
+        if(PyTuple_Check(_res2))                                                                                                                                                        \
+        {                                                                                                                                                                               \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                                                                                       \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                                                                                         \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                                                                                        \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));                                                                            \
+        }                                                                                                                                                                               \
+        else                                                                                                                                                                            \
+        {                                                                                                                                                                               \
+            assert(PyLong_Check(_res2));                                                                                                                                                \
+            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                                                                                              \
+        }                                                                                                                                                                               \
+        break;                                                                                                                                                                          \
+    }                                                                                                                                                                                   \
+    Py_XDECREF(_res2);                                                                                                                                                                  \
+    PyGILState_Release(gilstate);                                                                                                                                                       \
+    _res;                                                                                                                                                                               \
 })
 #define sqlite3_enable_shared_cache(...) \
-({                                                                                                                      \
-    PyObject *_res2 = 0;                                                                                                \
-    __auto_type _res = 0 ? sqlite3_enable_shared_cache(__VA_ARGS__) : 0;                                                \
-    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                    \
-    switch (APSW_FaultInjectControl("sqlite3_enable_shared_cache", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
-    {                                                                                                                   \
-    case 0x1FACADE:                                                                                                     \
-        assert(_res2 == 0);                                                                                             \
-        PyGILState_Release(gilstate);                                                                                   \
-        _res = sqlite3_enable_shared_cache(__VA_ARGS__);                                                                \
-        gilstate = PyGILState_Ensure();                                                                                 \
-        break;                                                                                                          \
-    default:                                                                                                            \
-        if(!_res2) PyErr_Print();                                                                                       \
-        assert(_res2);                                                                                                  \
-        if(PyTuple_Check(_res2))                                                                                        \
-        {                                                                                                               \
-            assert(3 == PyTuple_GET_SIZE(_res2));                                                                       \
-            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                         \
-            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                        \
-            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));            \
-        }                                                                                                               \
-        else                                                                                                            \
-        {                                                                                                               \
-            assert(PyLong_Check(_res2));                                                                                \
-            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                              \
-        }                                                                                                               \
-        break;                                                                                                          \
-    }                                                                                                                   \
-    Py_XDECREF(_res2);                                                                                                  \
-    PyGILState_Release(gilstate);                                                                                       \
-    _res;                                                                                                               \
+({                                                                                                                                                                                    \
+    PyObject *_res2 = 0;                                                                                                                                                              \
+    __auto_type _res = 0 ? sqlite3_enable_shared_cache(__VA_ARGS__) : 0;                                                                                                              \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                                                                                  \
+    switch (APSW_FaultInjectControl("sqlite3_enable_shared_cache", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))                                                               \
+    {                                                                                                                                                                                 \
+    case 0x1FACADE:                                                                                                                                                                   \
+        assert(_res2 == 0);                                                                                                                                                           \
+        PyGILState_Release(gilstate);                                                                                                                                                 \
+        _res = sqlite3_enable_shared_cache(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                               \
+        break;                                                                                                                                                                        \
+    default:                                                                                                                                                                          \
+        if(!_res2) {                                                                                                                                                                  \
+            fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_enable_shared_cache", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+            PyObject *_p1, *_p2, *_p3;                                                                                                                                                \
+            PyErr_Fetch(&_p1, &_p2, &_p3);                                                                                                                                            \
+            fprintf(stderr, "Exception type: ");                                                                                                                                      \
+            PyObject_Print(_p1, stderr, 0);                                                                                                                                           \
+            fprintf(stderr, "\nException value: ");                                                                                                                                   \
+            PyObject_Print(_p2, stderr, 0);                                                                                                                                           \
+            fprintf(stderr, "\nException tb: ");                                                                                                                                      \
+            PyObject_Print(_p3, stderr, 0);                                                                                                                                           \
+            fprintf(stderr, "\nPyErr_Display:\n");                                                                                                                                    \
+            PyErr_Display(_p1, _p2, _p3);                                                                                                                                             \
+            fprintf(stderr, "\nEnd of exception information\n");                                                                                                                      \
+        };                                                                                                                                                                            \
+        assert(_res2);                                                                                                                                                                \
+        if(PyTuple_Check(_res2))                                                                                                                                                      \
+        {                                                                                                                                                                             \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                                                                                     \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                                                                                       \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                                                                                      \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));                                                                          \
+        }                                                                                                                                                                             \
+        else                                                                                                                                                                          \
+        {                                                                                                                                                                             \
+            assert(PyLong_Check(_res2));                                                                                                                                              \
+            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                                                                                            \
+        }                                                                                                                                                                             \
+        break;                                                                                                                                                                        \
+    }                                                                                                                                                                                 \
+    Py_XDECREF(_res2);                                                                                                                                                                \
+    PyGILState_Release(gilstate);                                                                                                                                                     \
+    _res;                                                                                                                                                                             \
 })
 #define sqlite3_exec(...) \
-({                                                                                                           \
-    PyObject *_res2 = 0;                                                                                     \
-    __auto_type _res = 0 ? sqlite3_exec(__VA_ARGS__) : 0;                                                    \
-    PyGILState_STATE gilstate = PyGILState_Ensure();                                                         \
-    switch (APSW_FaultInjectControl("sqlite3_exec", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))     \
-    {                                                                                                        \
-    case 0x1FACADE:                                                                                          \
-        assert(_res2 == 0);                                                                                  \
-        PyGILState_Release(gilstate);                                                                        \
-        _res = sqlite3_exec(__VA_ARGS__);                                                                    \
-        gilstate = PyGILState_Ensure();                                                                      \
-        break;                                                                                               \
-    default:                                                                                                 \
-        if(!_res2) PyErr_Print();                                                                            \
-        assert(_res2);                                                                                       \
-        if(PyTuple_Check(_res2))                                                                             \
-        {                                                                                                    \
-            assert(3 == PyTuple_GET_SIZE(_res2));                                                            \
-            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                              \
-            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                             \
-            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2))); \
-        }                                                                                                    \
-        else                                                                                                 \
-        {                                                                                                    \
-            assert(PyLong_Check(_res2));                                                                     \
-            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                   \
-        }                                                                                                    \
-        break;                                                                                               \
-    }                                                                                                        \
-    Py_XDECREF(_res2);                                                                                       \
-    PyGILState_Release(gilstate);                                                                            \
-    _res;                                                                                                    \
+({                                                                                                                                                                     \
+    PyObject *_res2 = 0;                                                                                                                                               \
+    __auto_type _res = 0 ? sqlite3_exec(__VA_ARGS__) : 0;                                                                                                              \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                                                                   \
+    switch (APSW_FaultInjectControl("sqlite3_exec", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))                                                               \
+    {                                                                                                                                                                  \
+    case 0x1FACADE:                                                                                                                                                    \
+        assert(_res2 == 0);                                                                                                                                            \
+        PyGILState_Release(gilstate);                                                                                                                                  \
+        _res = sqlite3_exec(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                \
+        break;                                                                                                                                                         \
+    default:                                                                                                                                                           \
+        if(!_res2) {                                                                                                                                                   \
+            fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_exec", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+            PyObject *_p1, *_p2, *_p3;                                                                                                                                 \
+            PyErr_Fetch(&_p1, &_p2, &_p3);                                                                                                                             \
+            fprintf(stderr, "Exception type: ");                                                                                                                       \
+            PyObject_Print(_p1, stderr, 0);                                                                                                                            \
+            fprintf(stderr, "\nException value: ");                                                                                                                    \
+            PyObject_Print(_p2, stderr, 0);                                                                                                                            \
+            fprintf(stderr, "\nException tb: ");                                                                                                                       \
+            PyObject_Print(_p3, stderr, 0);                                                                                                                            \
+            fprintf(stderr, "\nPyErr_Display:\n");                                                                                                                     \
+            PyErr_Display(_p1, _p2, _p3);                                                                                                                              \
+            fprintf(stderr, "\nEnd of exception information\n");                                                                                                       \
+        };                                                                                                                                                             \
+        assert(_res2);                                                                                                                                                 \
+        if(PyTuple_Check(_res2))                                                                                                                                       \
+        {                                                                                                                                                              \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                                                                      \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                                                                        \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                                                                       \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));                                                           \
+        }                                                                                                                                                              \
+        else                                                                                                                                                           \
+        {                                                                                                                                                              \
+            assert(PyLong_Check(_res2));                                                                                                                               \
+            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                                                                             \
+        }                                                                                                                                                              \
+        break;                                                                                                                                                         \
+    }                                                                                                                                                                  \
+    Py_XDECREF(_res2);                                                                                                                                                 \
+    PyGILState_Release(gilstate);                                                                                                                                      \
+    _res;                                                                                                                                                              \
 })
 #define sqlite3_initialize(...) \
-({                                                                                                             \
-    PyObject *_res2 = 0;                                                                                       \
-    __auto_type _res = 0 ? sqlite3_initialize(__VA_ARGS__) : 0;                                                \
-    PyGILState_STATE gilstate = PyGILState_Ensure();                                                           \
-    switch (APSW_FaultInjectControl("sqlite3_initialize", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
-    {                                                                                                          \
-    case 0x1FACADE:                                                                                            \
-        assert(_res2 == 0);                                                                                    \
-        PyGILState_Release(gilstate);                                                                          \
-        _res = sqlite3_initialize(__VA_ARGS__);                                                                \
-        gilstate = PyGILState_Ensure();                                                                        \
-        break;                                                                                                 \
-    default:                                                                                                   \
-        if(!_res2) PyErr_Print();                                                                              \
-        assert(_res2);                                                                                         \
-        if(PyTuple_Check(_res2))                                                                               \
-        {                                                                                                      \
-            assert(3 == PyTuple_GET_SIZE(_res2));                                                              \
-            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                \
-            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                               \
-            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));   \
-        }                                                                                                      \
-        else                                                                                                   \
-        {                                                                                                      \
-            assert(PyLong_Check(_res2));                                                                       \
-            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                     \
-        }                                                                                                      \
-        break;                                                                                                 \
-    }                                                                                                          \
-    Py_XDECREF(_res2);                                                                                         \
-    PyGILState_Release(gilstate);                                                                              \
-    _res;                                                                                                      \
+({                                                                                                                                                                           \
+    PyObject *_res2 = 0;                                                                                                                                                     \
+    __auto_type _res = 0 ? sqlite3_initialize(__VA_ARGS__) : 0;                                                                                                              \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                                                                         \
+    switch (APSW_FaultInjectControl("sqlite3_initialize", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))                                                               \
+    {                                                                                                                                                                        \
+    case 0x1FACADE:                                                                                                                                                          \
+        assert(_res2 == 0);                                                                                                                                                  \
+        PyGILState_Release(gilstate);                                                                                                                                        \
+        _res = sqlite3_initialize(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                      \
+        break;                                                                                                                                                               \
+    default:                                                                                                                                                                 \
+        if(!_res2) {                                                                                                                                                         \
+            fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_initialize", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+            PyObject *_p1, *_p2, *_p3;                                                                                                                                       \
+            PyErr_Fetch(&_p1, &_p2, &_p3);                                                                                                                                   \
+            fprintf(stderr, "Exception type: ");                                                                                                                             \
+            PyObject_Print(_p1, stderr, 0);                                                                                                                                  \
+            fprintf(stderr, "\nException value: ");                                                                                                                          \
+            PyObject_Print(_p2, stderr, 0);                                                                                                                                  \
+            fprintf(stderr, "\nException tb: ");                                                                                                                             \
+            PyObject_Print(_p3, stderr, 0);                                                                                                                                  \
+            fprintf(stderr, "\nPyErr_Display:\n");                                                                                                                           \
+            PyErr_Display(_p1, _p2, _p3);                                                                                                                                    \
+            fprintf(stderr, "\nEnd of exception information\n");                                                                                                             \
+        };                                                                                                                                                                   \
+        assert(_res2);                                                                                                                                                       \
+        if(PyTuple_Check(_res2))                                                                                                                                             \
+        {                                                                                                                                                                    \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                                                                            \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                                                                              \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                                                                             \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));                                                                 \
+        }                                                                                                                                                                    \
+        else                                                                                                                                                                 \
+        {                                                                                                                                                                    \
+            assert(PyLong_Check(_res2));                                                                                                                                     \
+            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                                                                                   \
+        }                                                                                                                                                                    \
+        break;                                                                                                                                                               \
+    }                                                                                                                                                                        \
+    Py_XDECREF(_res2);                                                                                                                                                       \
+    PyGILState_Release(gilstate);                                                                                                                                            \
+    _res;                                                                                                                                                                    \
 })
 #define sqlite3_malloc64(...) \
-({                                                                                                           \
-    PyObject *_res2 = 0;                                                                                     \
-    __auto_type _res = 0 ? sqlite3_malloc64(__VA_ARGS__) : 0;                                                \
-    PyGILState_STATE gilstate = PyGILState_Ensure();                                                         \
-    switch (APSW_FaultInjectControl("sqlite3_malloc64", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
-    {                                                                                                        \
-    case 0x1FACADE:                                                                                          \
-        assert(_res2 == 0);                                                                                  \
-        PyGILState_Release(gilstate);                                                                        \
-        _res = sqlite3_malloc64(__VA_ARGS__);                                                                \
-        gilstate = PyGILState_Ensure();                                                                      \
-        break;                                                                                               \
-    default:                                                                                                 \
-        if(!_res2) PyErr_Print();                                                                            \
-        assert(_res2);                                                                                       \
-        if(PyTuple_Check(_res2))                                                                             \
-        {                                                                                                    \
-            assert(3 == PyTuple_GET_SIZE(_res2));                                                            \
-            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                              \
-            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                             \
-            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2))); \
-        }                                                                                                    \
-        else                                                                                                 \
-        {                                                                                                    \
-            assert(PyLong_Check(_res2));                                                                     \
-            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                   \
-        }                                                                                                    \
-        break;                                                                                               \
-    }                                                                                                        \
-    Py_XDECREF(_res2);                                                                                       \
-    PyGILState_Release(gilstate);                                                                            \
-    _res;                                                                                                    \
+({                                                                                                                                                                         \
+    PyObject *_res2 = 0;                                                                                                                                                   \
+    __auto_type _res = 0 ? sqlite3_malloc64(__VA_ARGS__) : 0;                                                                                                              \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                                                                       \
+    switch (APSW_FaultInjectControl("sqlite3_malloc64", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))                                                               \
+    {                                                                                                                                                                      \
+    case 0x1FACADE:                                                                                                                                                        \
+        assert(_res2 == 0);                                                                                                                                                \
+        PyGILState_Release(gilstate);                                                                                                                                      \
+        _res = sqlite3_malloc64(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                    \
+        break;                                                                                                                                                             \
+    default:                                                                                                                                                               \
+        if(!_res2) {                                                                                                                                                       \
+            fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_malloc64", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+            PyObject *_p1, *_p2, *_p3;                                                                                                                                     \
+            PyErr_Fetch(&_p1, &_p2, &_p3);                                                                                                                                 \
+            fprintf(stderr, "Exception type: ");                                                                                                                           \
+            PyObject_Print(_p1, stderr, 0);                                                                                                                                \
+            fprintf(stderr, "\nException value: ");                                                                                                                        \
+            PyObject_Print(_p2, stderr, 0);                                                                                                                                \
+            fprintf(stderr, "\nException tb: ");                                                                                                                           \
+            PyObject_Print(_p3, stderr, 0);                                                                                                                                \
+            fprintf(stderr, "\nPyErr_Display:\n");                                                                                                                         \
+            PyErr_Display(_p1, _p2, _p3);                                                                                                                                  \
+            fprintf(stderr, "\nEnd of exception information\n");                                                                                                           \
+        };                                                                                                                                                                 \
+        assert(_res2);                                                                                                                                                     \
+        if(PyTuple_Check(_res2))                                                                                                                                           \
+        {                                                                                                                                                                  \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                                                                          \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                                                                            \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                                                                           \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));                                                               \
+        }                                                                                                                                                                  \
+        else                                                                                                                                                               \
+        {                                                                                                                                                                  \
+            assert(PyLong_Check(_res2));                                                                                                                                   \
+            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                                                                                 \
+        }                                                                                                                                                                  \
+        break;                                                                                                                                                             \
+    }                                                                                                                                                                      \
+    Py_XDECREF(_res2);                                                                                                                                                     \
+    PyGILState_Release(gilstate);                                                                                                                                          \
+    _res;                                                                                                                                                                  \
 })
 #define sqlite3_mprintf(...) \
-({                                                                                                           \
-    PyObject *_res2 = 0;                                                                                     \
-    __auto_type _res = 0 ? sqlite3_mprintf(__VA_ARGS__) : 0;                                                 \
-    PyGILState_STATE gilstate = PyGILState_Ensure();                                                         \
-    switch (APSW_FaultInjectControl("sqlite3_mprintf", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))  \
-    {                                                                                                        \
-    case 0x1FACADE:                                                                                          \
-        assert(_res2 == 0);                                                                                  \
-        PyGILState_Release(gilstate);                                                                        \
-        _res = sqlite3_mprintf(__VA_ARGS__);                                                                 \
-        gilstate = PyGILState_Ensure();                                                                      \
-        break;                                                                                               \
-    default:                                                                                                 \
-        if(!_res2) PyErr_Print();                                                                            \
-        assert(_res2);                                                                                       \
-        if(PyTuple_Check(_res2))                                                                             \
-        {                                                                                                    \
-            assert(3 == PyTuple_GET_SIZE(_res2));                                                            \
-            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                              \
-            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                             \
-            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2))); \
-        }                                                                                                    \
-        else                                                                                                 \
-        {                                                                                                    \
-            assert(PyLong_Check(_res2));                                                                     \
-            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                   \
-        }                                                                                                    \
-        break;                                                                                               \
-    }                                                                                                        \
-    Py_XDECREF(_res2);                                                                                       \
-    PyGILState_Release(gilstate);                                                                            \
-    _res;                                                                                                    \
+({                                                                                                                                                                        \
+    PyObject *_res2 = 0;                                                                                                                                                  \
+    __auto_type _res = 0 ? sqlite3_mprintf(__VA_ARGS__) : 0;                                                                                                              \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                                                                      \
+    switch (APSW_FaultInjectControl("sqlite3_mprintf", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))                                                               \
+    {                                                                                                                                                                     \
+    case 0x1FACADE:                                                                                                                                                       \
+        assert(_res2 == 0);                                                                                                                                               \
+        PyGILState_Release(gilstate);                                                                                                                                     \
+        _res = sqlite3_mprintf(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                   \
+        break;                                                                                                                                                            \
+    default:                                                                                                                                                              \
+        if(!_res2) {                                                                                                                                                      \
+            fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_mprintf", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+            PyObject *_p1, *_p2, *_p3;                                                                                                                                    \
+            PyErr_Fetch(&_p1, &_p2, &_p3);                                                                                                                                \
+            fprintf(stderr, "Exception type: ");                                                                                                                          \
+            PyObject_Print(_p1, stderr, 0);                                                                                                                               \
+            fprintf(stderr, "\nException value: ");                                                                                                                       \
+            PyObject_Print(_p2, stderr, 0);                                                                                                                               \
+            fprintf(stderr, "\nException tb: ");                                                                                                                          \
+            PyObject_Print(_p3, stderr, 0);                                                                                                                               \
+            fprintf(stderr, "\nPyErr_Display:\n");                                                                                                                        \
+            PyErr_Display(_p1, _p2, _p3);                                                                                                                                 \
+            fprintf(stderr, "\nEnd of exception information\n");                                                                                                          \
+        };                                                                                                                                                                \
+        assert(_res2);                                                                                                                                                    \
+        if(PyTuple_Check(_res2))                                                                                                                                          \
+        {                                                                                                                                                                 \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                                                                         \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                                                                           \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                                                                          \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));                                                              \
+        }                                                                                                                                                                 \
+        else                                                                                                                                                              \
+        {                                                                                                                                                                 \
+            assert(PyLong_Check(_res2));                                                                                                                                  \
+            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                                                                                \
+        }                                                                                                                                                                 \
+        break;                                                                                                                                                            \
+    }                                                                                                                                                                     \
+    Py_XDECREF(_res2);                                                                                                                                                    \
+    PyGILState_Release(gilstate);                                                                                                                                         \
+    _res;                                                                                                                                                                 \
 })
 #define sqlite3_overload_function(...) \
-({                                                                                                                    \
-    PyObject *_res2 = 0;                                                                                              \
-    __auto_type _res = 0 ? sqlite3_overload_function(__VA_ARGS__) : 0;                                                \
-    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                  \
-    switch (APSW_FaultInjectControl("sqlite3_overload_function", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
-    {                                                                                                                 \
-    case 0x1FACADE:                                                                                                   \
-        assert(_res2 == 0);                                                                                           \
-        PyGILState_Release(gilstate);                                                                                 \
-        _res = sqlite3_overload_function(__VA_ARGS__);                                                                \
-        gilstate = PyGILState_Ensure();                                                                               \
-        break;                                                                                                        \
-    default:                                                                                                          \
-        if(!_res2) PyErr_Print();                                                                                     \
-        assert(_res2);                                                                                                \
-        if(PyTuple_Check(_res2))                                                                                      \
-        {                                                                                                             \
-            assert(3 == PyTuple_GET_SIZE(_res2));                                                                     \
-            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                       \
-            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                      \
-            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));          \
-        }                                                                                                             \
-        else                                                                                                          \
-        {                                                                                                             \
-            assert(PyLong_Check(_res2));                                                                              \
-            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                            \
-        }                                                                                                             \
-        break;                                                                                                        \
-    }                                                                                                                 \
-    Py_XDECREF(_res2);                                                                                                \
-    PyGILState_Release(gilstate);                                                                                     \
-    _res;                                                                                                             \
+({                                                                                                                                                                                  \
+    PyObject *_res2 = 0;                                                                                                                                                            \
+    __auto_type _res = 0 ? sqlite3_overload_function(__VA_ARGS__) : 0;                                                                                                              \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                                                                                \
+    switch (APSW_FaultInjectControl("sqlite3_overload_function", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))                                                               \
+    {                                                                                                                                                                               \
+    case 0x1FACADE:                                                                                                                                                                 \
+        assert(_res2 == 0);                                                                                                                                                         \
+        PyGILState_Release(gilstate);                                                                                                                                               \
+        _res = sqlite3_overload_function(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                             \
+        break;                                                                                                                                                                      \
+    default:                                                                                                                                                                        \
+        if(!_res2) {                                                                                                                                                                \
+            fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_overload_function", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+            PyObject *_p1, *_p2, *_p3;                                                                                                                                              \
+            PyErr_Fetch(&_p1, &_p2, &_p3);                                                                                                                                          \
+            fprintf(stderr, "Exception type: ");                                                                                                                                    \
+            PyObject_Print(_p1, stderr, 0);                                                                                                                                         \
+            fprintf(stderr, "\nException value: ");                                                                                                                                 \
+            PyObject_Print(_p2, stderr, 0);                                                                                                                                         \
+            fprintf(stderr, "\nException tb: ");                                                                                                                                    \
+            PyObject_Print(_p3, stderr, 0);                                                                                                                                         \
+            fprintf(stderr, "\nPyErr_Display:\n");                                                                                                                                  \
+            PyErr_Display(_p1, _p2, _p3);                                                                                                                                           \
+            fprintf(stderr, "\nEnd of exception information\n");                                                                                                                    \
+        };                                                                                                                                                                          \
+        assert(_res2);                                                                                                                                                              \
+        if(PyTuple_Check(_res2))                                                                                                                                                    \
+        {                                                                                                                                                                           \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                                                                                   \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                                                                                     \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                                                                                    \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));                                                                        \
+        }                                                                                                                                                                           \
+        else                                                                                                                                                                        \
+        {                                                                                                                                                                           \
+            assert(PyLong_Check(_res2));                                                                                                                                            \
+            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                                                                                          \
+        }                                                                                                                                                                           \
+        break;                                                                                                                                                                      \
+    }                                                                                                                                                                               \
+    Py_XDECREF(_res2);                                                                                                                                                              \
+    PyGILState_Release(gilstate);                                                                                                                                                   \
+    _res;                                                                                                                                                                           \
 })
 #define sqlite3_set_authorizer(...) \
-({                                                                                                                 \
-    PyObject *_res2 = 0;                                                                                           \
-    __auto_type _res = 0 ? sqlite3_set_authorizer(__VA_ARGS__) : 0;                                                \
-    PyGILState_STATE gilstate = PyGILState_Ensure();                                                               \
-    switch (APSW_FaultInjectControl("sqlite3_set_authorizer", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
-    {                                                                                                              \
-    case 0x1FACADE:                                                                                                \
-        assert(_res2 == 0);                                                                                        \
-        PyGILState_Release(gilstate);                                                                              \
-        _res = sqlite3_set_authorizer(__VA_ARGS__);                                                                \
-        gilstate = PyGILState_Ensure();                                                                            \
-        break;                                                                                                     \
-    default:                                                                                                       \
-        if(!_res2) PyErr_Print();                                                                                  \
-        assert(_res2);                                                                                             \
-        if(PyTuple_Check(_res2))                                                                                   \
-        {                                                                                                          \
-            assert(3 == PyTuple_GET_SIZE(_res2));                                                                  \
-            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                    \
-            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                   \
-            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));       \
-        }                                                                                                          \
-        else                                                                                                       \
-        {                                                                                                          \
-            assert(PyLong_Check(_res2));                                                                           \
-            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                         \
-        }                                                                                                          \
-        break;                                                                                                     \
-    }                                                                                                              \
-    Py_XDECREF(_res2);                                                                                             \
-    PyGILState_Release(gilstate);                                                                                  \
-    _res;                                                                                                          \
+({                                                                                                                                                                               \
+    PyObject *_res2 = 0;                                                                                                                                                         \
+    __auto_type _res = 0 ? sqlite3_set_authorizer(__VA_ARGS__) : 0;                                                                                                              \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                                                                             \
+    switch (APSW_FaultInjectControl("sqlite3_set_authorizer", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))                                                               \
+    {                                                                                                                                                                            \
+    case 0x1FACADE:                                                                                                                                                              \
+        assert(_res2 == 0);                                                                                                                                                      \
+        PyGILState_Release(gilstate);                                                                                                                                            \
+        _res = sqlite3_set_authorizer(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                          \
+        break;                                                                                                                                                                   \
+    default:                                                                                                                                                                     \
+        if(!_res2) {                                                                                                                                                             \
+            fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_set_authorizer", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+            PyObject *_p1, *_p2, *_p3;                                                                                                                                           \
+            PyErr_Fetch(&_p1, &_p2, &_p3);                                                                                                                                       \
+            fprintf(stderr, "Exception type: ");                                                                                                                                 \
+            PyObject_Print(_p1, stderr, 0);                                                                                                                                      \
+            fprintf(stderr, "\nException value: ");                                                                                                                              \
+            PyObject_Print(_p2, stderr, 0);                                                                                                                                      \
+            fprintf(stderr, "\nException tb: ");                                                                                                                                 \
+            PyObject_Print(_p3, stderr, 0);                                                                                                                                      \
+            fprintf(stderr, "\nPyErr_Display:\n");                                                                                                                               \
+            PyErr_Display(_p1, _p2, _p3);                                                                                                                                        \
+            fprintf(stderr, "\nEnd of exception information\n");                                                                                                                 \
+        };                                                                                                                                                                       \
+        assert(_res2);                                                                                                                                                           \
+        if(PyTuple_Check(_res2))                                                                                                                                                 \
+        {                                                                                                                                                                        \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                                                                                \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                                                                                  \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                                                                                 \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));                                                                     \
+        }                                                                                                                                                                        \
+        else                                                                                                                                                                     \
+        {                                                                                                                                                                        \
+            assert(PyLong_Check(_res2));                                                                                                                                         \
+            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                                                                                       \
+        }                                                                                                                                                                        \
+        break;                                                                                                                                                                   \
+    }                                                                                                                                                                            \
+    Py_XDECREF(_res2);                                                                                                                                                           \
+    PyGILState_Release(gilstate);                                                                                                                                                \
+    _res;                                                                                                                                                                        \
 })
 #define sqlite3_shutdown(...) \
-({                                                                                                           \
-    PyObject *_res2 = 0;                                                                                     \
-    __auto_type _res = 0 ? sqlite3_shutdown(__VA_ARGS__) : 0;                                                \
-    PyGILState_STATE gilstate = PyGILState_Ensure();                                                         \
-    switch (APSW_FaultInjectControl("sqlite3_shutdown", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
-    {                                                                                                        \
-    case 0x1FACADE:                                                                                          \
-        assert(_res2 == 0);                                                                                  \
-        PyGILState_Release(gilstate);                                                                        \
-        _res = sqlite3_shutdown(__VA_ARGS__);                                                                \
-        gilstate = PyGILState_Ensure();                                                                      \
-        break;                                                                                               \
-    default:                                                                                                 \
-        if(!_res2) PyErr_Print();                                                                            \
-        assert(_res2);                                                                                       \
-        if(PyTuple_Check(_res2))                                                                             \
-        {                                                                                                    \
-            assert(3 == PyTuple_GET_SIZE(_res2));                                                            \
-            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                              \
-            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                             \
-            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2))); \
-        }                                                                                                    \
-        else                                                                                                 \
-        {                                                                                                    \
-            assert(PyLong_Check(_res2));                                                                     \
-            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                   \
-        }                                                                                                    \
-        break;                                                                                               \
-    }                                                                                                        \
-    Py_XDECREF(_res2);                                                                                       \
-    PyGILState_Release(gilstate);                                                                            \
-    _res;                                                                                                    \
+({                                                                                                                                                                         \
+    PyObject *_res2 = 0;                                                                                                                                                   \
+    __auto_type _res = 0 ? sqlite3_shutdown(__VA_ARGS__) : 0;                                                                                                              \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                                                                       \
+    switch (APSW_FaultInjectControl("sqlite3_shutdown", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))                                                               \
+    {                                                                                                                                                                      \
+    case 0x1FACADE:                                                                                                                                                        \
+        assert(_res2 == 0);                                                                                                                                                \
+        PyGILState_Release(gilstate);                                                                                                                                      \
+        _res = sqlite3_shutdown(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                    \
+        break;                                                                                                                                                             \
+    default:                                                                                                                                                               \
+        if(!_res2) {                                                                                                                                                       \
+            fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_shutdown", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+            PyObject *_p1, *_p2, *_p3;                                                                                                                                     \
+            PyErr_Fetch(&_p1, &_p2, &_p3);                                                                                                                                 \
+            fprintf(stderr, "Exception type: ");                                                                                                                           \
+            PyObject_Print(_p1, stderr, 0);                                                                                                                                \
+            fprintf(stderr, "\nException value: ");                                                                                                                        \
+            PyObject_Print(_p2, stderr, 0);                                                                                                                                \
+            fprintf(stderr, "\nException tb: ");                                                                                                                           \
+            PyObject_Print(_p3, stderr, 0);                                                                                                                                \
+            fprintf(stderr, "\nPyErr_Display:\n");                                                                                                                         \
+            PyErr_Display(_p1, _p2, _p3);                                                                                                                                  \
+            fprintf(stderr, "\nEnd of exception information\n");                                                                                                           \
+        };                                                                                                                                                                 \
+        assert(_res2);                                                                                                                                                     \
+        if(PyTuple_Check(_res2))                                                                                                                                           \
+        {                                                                                                                                                                  \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                                                                          \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                                                                            \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                                                                           \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));                                                               \
+        }                                                                                                                                                                  \
+        else                                                                                                                                                               \
+        {                                                                                                                                                                  \
+            assert(PyLong_Check(_res2));                                                                                                                                   \
+            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                                                                                 \
+        }                                                                                                                                                                  \
+        break;                                                                                                                                                             \
+    }                                                                                                                                                                      \
+    Py_XDECREF(_res2);                                                                                                                                                     \
+    PyGILState_Release(gilstate);                                                                                                                                          \
+    _res;                                                                                                                                                                  \
 })
 #define sqlite3_status64(...) \
-({                                                                                                           \
-    PyObject *_res2 = 0;                                                                                     \
-    __auto_type _res = 0 ? sqlite3_status64(__VA_ARGS__) : 0;                                                \
-    PyGILState_STATE gilstate = PyGILState_Ensure();                                                         \
-    switch (APSW_FaultInjectControl("sqlite3_status64", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
-    {                                                                                                        \
-    case 0x1FACADE:                                                                                          \
-        assert(_res2 == 0);                                                                                  \
-        PyGILState_Release(gilstate);                                                                        \
-        _res = sqlite3_status64(__VA_ARGS__);                                                                \
-        gilstate = PyGILState_Ensure();                                                                      \
-        break;                                                                                               \
-    default:                                                                                                 \
-        if(!_res2) PyErr_Print();                                                                            \
-        assert(_res2);                                                                                       \
-        if(PyTuple_Check(_res2))                                                                             \
-        {                                                                                                    \
-            assert(3 == PyTuple_GET_SIZE(_res2));                                                            \
-            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                              \
-            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                             \
-            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2))); \
-        }                                                                                                    \
-        else                                                                                                 \
-        {                                                                                                    \
-            assert(PyLong_Check(_res2));                                                                     \
-            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                   \
-        }                                                                                                    \
-        break;                                                                                               \
-    }                                                                                                        \
-    Py_XDECREF(_res2);                                                                                       \
-    PyGILState_Release(gilstate);                                                                            \
-    _res;                                                                                                    \
+({                                                                                                                                                                         \
+    PyObject *_res2 = 0;                                                                                                                                                   \
+    __auto_type _res = 0 ? sqlite3_status64(__VA_ARGS__) : 0;                                                                                                              \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                                                                       \
+    switch (APSW_FaultInjectControl("sqlite3_status64", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))                                                               \
+    {                                                                                                                                                                      \
+    case 0x1FACADE:                                                                                                                                                        \
+        assert(_res2 == 0);                                                                                                                                                \
+        PyGILState_Release(gilstate);                                                                                                                                      \
+        _res = sqlite3_status64(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                    \
+        break;                                                                                                                                                             \
+    default:                                                                                                                                                               \
+        if(!_res2) {                                                                                                                                                       \
+            fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_status64", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+            PyObject *_p1, *_p2, *_p3;                                                                                                                                     \
+            PyErr_Fetch(&_p1, &_p2, &_p3);                                                                                                                                 \
+            fprintf(stderr, "Exception type: ");                                                                                                                           \
+            PyObject_Print(_p1, stderr, 0);                                                                                                                                \
+            fprintf(stderr, "\nException value: ");                                                                                                                        \
+            PyObject_Print(_p2, stderr, 0);                                                                                                                                \
+            fprintf(stderr, "\nException tb: ");                                                                                                                           \
+            PyObject_Print(_p3, stderr, 0);                                                                                                                                \
+            fprintf(stderr, "\nPyErr_Display:\n");                                                                                                                         \
+            PyErr_Display(_p1, _p2, _p3);                                                                                                                                  \
+            fprintf(stderr, "\nEnd of exception information\n");                                                                                                           \
+        };                                                                                                                                                                 \
+        assert(_res2);                                                                                                                                                     \
+        if(PyTuple_Check(_res2))                                                                                                                                           \
+        {                                                                                                                                                                  \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                                                                          \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                                                                            \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                                                                           \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));                                                               \
+        }                                                                                                                                                                  \
+        else                                                                                                                                                               \
+        {                                                                                                                                                                  \
+            assert(PyLong_Check(_res2));                                                                                                                                   \
+            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                                                                                 \
+        }                                                                                                                                                                  \
+        break;                                                                                                                                                             \
+    }                                                                                                                                                                      \
+    Py_XDECREF(_res2);                                                                                                                                                     \
+    PyGILState_Release(gilstate);                                                                                                                                          \
+    _res;                                                                                                                                                                  \
 })
 #define sqlite3_threadsafe(...) \
-({                                                                                                             \
-    PyObject *_res2 = 0;                                                                                       \
-    __auto_type _res = 0 ? sqlite3_threadsafe(__VA_ARGS__) : 0;                                                \
-    PyGILState_STATE gilstate = PyGILState_Ensure();                                                           \
-    switch (APSW_FaultInjectControl("sqlite3_threadsafe", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
-    {                                                                                                          \
-    case 0x1FACADE:                                                                                            \
-        assert(_res2 == 0);                                                                                    \
-        PyGILState_Release(gilstate);                                                                          \
-        _res = sqlite3_threadsafe(__VA_ARGS__);                                                                \
-        gilstate = PyGILState_Ensure();                                                                        \
-        break;                                                                                                 \
-    default:                                                                                                   \
-        if(!_res2) PyErr_Print();                                                                              \
-        assert(_res2);                                                                                         \
-        if(PyTuple_Check(_res2))                                                                               \
-        {                                                                                                      \
-            assert(3 == PyTuple_GET_SIZE(_res2));                                                              \
-            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                \
-            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                               \
-            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));   \
-        }                                                                                                      \
-        else                                                                                                   \
-        {                                                                                                      \
-            assert(PyLong_Check(_res2));                                                                       \
-            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                     \
-        }                                                                                                      \
-        break;                                                                                                 \
-    }                                                                                                          \
-    Py_XDECREF(_res2);                                                                                         \
-    PyGILState_Release(gilstate);                                                                              \
-    _res;                                                                                                      \
-})
-#define sqlite3_value_type(...) \
-({                                                                                                             \
-    PyObject *_res2 = 0;                                                                                       \
-    __auto_type _res = 0 ? sqlite3_value_type(__VA_ARGS__) : 0;                                                \
-    PyGILState_STATE gilstate = PyGILState_Ensure();                                                           \
-    switch (APSW_FaultInjectControl("sqlite3_value_type", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
-    {                                                                                                          \
-    case 0x1FACADE:                                                                                            \
-        assert(_res2 == 0);                                                                                    \
-        PyGILState_Release(gilstate);                                                                          \
-        _res = sqlite3_value_type(__VA_ARGS__);                                                                \
-        gilstate = PyGILState_Ensure();                                                                        \
-        break;                                                                                                 \
-    default:                                                                                                   \
-        if(!_res2) PyErr_Print();                                                                              \
-        assert(_res2);                                                                                         \
-        if(PyTuple_Check(_res2))                                                                               \
-        {                                                                                                      \
-            assert(3 == PyTuple_GET_SIZE(_res2));                                                              \
-            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                \
-            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                               \
-            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));   \
-        }                                                                                                      \
-        else                                                                                                   \
-        {                                                                                                      \
-            assert(PyLong_Check(_res2));                                                                       \
-            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                     \
-        }                                                                                                      \
-        break;                                                                                                 \
-    }                                                                                                          \
-    Py_XDECREF(_res2);                                                                                         \
-    PyGILState_Release(gilstate);                                                                              \
-    _res;                                                                                                      \
+({                                                                                                                                                                           \
+    PyObject *_res2 = 0;                                                                                                                                                     \
+    __auto_type _res = 0 ? sqlite3_threadsafe(__VA_ARGS__) : 0;                                                                                                              \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                                                                         \
+    switch (APSW_FaultInjectControl("sqlite3_threadsafe", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))                                                               \
+    {                                                                                                                                                                        \
+    case 0x1FACADE:                                                                                                                                                          \
+        assert(_res2 == 0);                                                                                                                                                  \
+        PyGILState_Release(gilstate);                                                                                                                                        \
+        _res = sqlite3_threadsafe(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                      \
+        break;                                                                                                                                                               \
+    default:                                                                                                                                                                 \
+        if(!_res2) {                                                                                                                                                         \
+            fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_threadsafe", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+            PyObject *_p1, *_p2, *_p3;                                                                                                                                       \
+            PyErr_Fetch(&_p1, &_p2, &_p3);                                                                                                                                   \
+            fprintf(stderr, "Exception type: ");                                                                                                                             \
+            PyObject_Print(_p1, stderr, 0);                                                                                                                                  \
+            fprintf(stderr, "\nException value: ");                                                                                                                          \
+            PyObject_Print(_p2, stderr, 0);                                                                                                                                  \
+            fprintf(stderr, "\nException tb: ");                                                                                                                             \
+            PyObject_Print(_p3, stderr, 0);                                                                                                                                  \
+            fprintf(stderr, "\nPyErr_Display:\n");                                                                                                                           \
+            PyErr_Display(_p1, _p2, _p3);                                                                                                                                    \
+            fprintf(stderr, "\nEnd of exception information\n");                                                                                                             \
+        };                                                                                                                                                                   \
+        assert(_res2);                                                                                                                                                       \
+        if(PyTuple_Check(_res2))                                                                                                                                             \
+        {                                                                                                                                                                    \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                                                                            \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                                                                              \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                                                                             \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));                                                                 \
+        }                                                                                                                                                                    \
+        else                                                                                                                                                                 \
+        {                                                                                                                                                                    \
+            assert(PyLong_Check(_res2));                                                                                                                                     \
+            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                                                                                   \
+        }                                                                                                                                                                    \
+        break;                                                                                                                                                               \
+    }                                                                                                                                                                        \
+    Py_XDECREF(_res2);                                                                                                                                                       \
+    PyGILState_Release(gilstate);                                                                                                                                            \
+    _res;                                                                                                                                                                    \
 })
 #define sqlite3_vfs_register(...) \
-({                                                                                                               \
-    PyObject *_res2 = 0;                                                                                         \
-    __auto_type _res = 0 ? sqlite3_vfs_register(__VA_ARGS__) : 0;                                                \
-    PyGILState_STATE gilstate = PyGILState_Ensure();                                                             \
-    switch (APSW_FaultInjectControl("sqlite3_vfs_register", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
-    {                                                                                                            \
-    case 0x1FACADE:                                                                                              \
-        assert(_res2 == 0);                                                                                      \
-        PyGILState_Release(gilstate);                                                                            \
-        _res = sqlite3_vfs_register(__VA_ARGS__);                                                                \
-        gilstate = PyGILState_Ensure();                                                                          \
-        break;                                                                                                   \
-    default:                                                                                                     \
-        if(!_res2) PyErr_Print();                                                                                \
-        assert(_res2);                                                                                           \
-        if(PyTuple_Check(_res2))                                                                                 \
-        {                                                                                                        \
-            assert(3 == PyTuple_GET_SIZE(_res2));                                                                \
-            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                  \
-            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                 \
-            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));     \
-        }                                                                                                        \
-        else                                                                                                     \
-        {                                                                                                        \
-            assert(PyLong_Check(_res2));                                                                         \
-            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                       \
-        }                                                                                                        \
-        break;                                                                                                   \
-    }                                                                                                            \
-    Py_XDECREF(_res2);                                                                                           \
-    PyGILState_Release(gilstate);                                                                                \
-    _res;                                                                                                        \
+({                                                                                                                                                                             \
+    PyObject *_res2 = 0;                                                                                                                                                       \
+    __auto_type _res = 0 ? sqlite3_vfs_register(__VA_ARGS__) : 0;                                                                                                              \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                                                                           \
+    switch (APSW_FaultInjectControl("sqlite3_vfs_register", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))                                                               \
+    {                                                                                                                                                                          \
+    case 0x1FACADE:                                                                                                                                                            \
+        assert(_res2 == 0);                                                                                                                                                    \
+        PyGILState_Release(gilstate);                                                                                                                                          \
+        _res = sqlite3_vfs_register(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                        \
+        break;                                                                                                                                                                 \
+    default:                                                                                                                                                                   \
+        if(!_res2) {                                                                                                                                                           \
+            fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_vfs_register", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+            PyObject *_p1, *_p2, *_p3;                                                                                                                                         \
+            PyErr_Fetch(&_p1, &_p2, &_p3);                                                                                                                                     \
+            fprintf(stderr, "Exception type: ");                                                                                                                               \
+            PyObject_Print(_p1, stderr, 0);                                                                                                                                    \
+            fprintf(stderr, "\nException value: ");                                                                                                                            \
+            PyObject_Print(_p2, stderr, 0);                                                                                                                                    \
+            fprintf(stderr, "\nException tb: ");                                                                                                                               \
+            PyObject_Print(_p3, stderr, 0);                                                                                                                                    \
+            fprintf(stderr, "\nPyErr_Display:\n");                                                                                                                             \
+            PyErr_Display(_p1, _p2, _p3);                                                                                                                                      \
+            fprintf(stderr, "\nEnd of exception information\n");                                                                                                               \
+        };                                                                                                                                                                     \
+        assert(_res2);                                                                                                                                                         \
+        if(PyTuple_Check(_res2))                                                                                                                                               \
+        {                                                                                                                                                                      \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                                                                              \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                                                                                \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                                                                               \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));                                                                   \
+        }                                                                                                                                                                      \
+        else                                                                                                                                                                   \
+        {                                                                                                                                                                      \
+            assert(PyLong_Check(_res2));                                                                                                                                       \
+            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                                                                                     \
+        }                                                                                                                                                                      \
+        break;                                                                                                                                                                 \
+    }                                                                                                                                                                          \
+    Py_XDECREF(_res2);                                                                                                                                                         \
+    PyGILState_Release(gilstate);                                                                                                                                              \
+    _res;                                                                                                                                                                      \
 })
 #define sqlite3_wal_autocheckpoint(...) \
-({                                                                                                                     \
-    PyObject *_res2 = 0;                                                                                               \
-    __auto_type _res = 0 ? sqlite3_wal_autocheckpoint(__VA_ARGS__) : 0;                                                \
-    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                   \
-    switch (APSW_FaultInjectControl("sqlite3_wal_autocheckpoint", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
-    {                                                                                                                  \
-    case 0x1FACADE:                                                                                                    \
-        assert(_res2 == 0);                                                                                            \
-        PyGILState_Release(gilstate);                                                                                  \
-        _res = sqlite3_wal_autocheckpoint(__VA_ARGS__);                                                                \
-        gilstate = PyGILState_Ensure();                                                                                \
-        break;                                                                                                         \
-    default:                                                                                                           \
-        if(!_res2) PyErr_Print();                                                                                      \
-        assert(_res2);                                                                                                 \
-        if(PyTuple_Check(_res2))                                                                                       \
-        {                                                                                                              \
-            assert(3 == PyTuple_GET_SIZE(_res2));                                                                      \
-            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                        \
-            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                       \
-            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));           \
-        }                                                                                                              \
-        else                                                                                                           \
-        {                                                                                                              \
-            assert(PyLong_Check(_res2));                                                                               \
-            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                             \
-        }                                                                                                              \
-        break;                                                                                                         \
-    }                                                                                                                  \
-    Py_XDECREF(_res2);                                                                                                 \
-    PyGILState_Release(gilstate);                                                                                      \
-    _res;                                                                                                              \
+({                                                                                                                                                                                   \
+    PyObject *_res2 = 0;                                                                                                                                                             \
+    __auto_type _res = 0 ? sqlite3_wal_autocheckpoint(__VA_ARGS__) : 0;                                                                                                              \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                                                                                 \
+    switch (APSW_FaultInjectControl("sqlite3_wal_autocheckpoint", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))                                                               \
+    {                                                                                                                                                                                \
+    case 0x1FACADE:                                                                                                                                                                  \
+        assert(_res2 == 0);                                                                                                                                                          \
+        PyGILState_Release(gilstate);                                                                                                                                                \
+        _res = sqlite3_wal_autocheckpoint(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                              \
+        break;                                                                                                                                                                       \
+    default:                                                                                                                                                                         \
+        if(!_res2) {                                                                                                                                                                 \
+            fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_wal_autocheckpoint", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+            PyObject *_p1, *_p2, *_p3;                                                                                                                                               \
+            PyErr_Fetch(&_p1, &_p2, &_p3);                                                                                                                                           \
+            fprintf(stderr, "Exception type: ");                                                                                                                                     \
+            PyObject_Print(_p1, stderr, 0);                                                                                                                                          \
+            fprintf(stderr, "\nException value: ");                                                                                                                                  \
+            PyObject_Print(_p2, stderr, 0);                                                                                                                                          \
+            fprintf(stderr, "\nException tb: ");                                                                                                                                     \
+            PyObject_Print(_p3, stderr, 0);                                                                                                                                          \
+            fprintf(stderr, "\nPyErr_Display:\n");                                                                                                                                   \
+            PyErr_Display(_p1, _p2, _p3);                                                                                                                                            \
+            fprintf(stderr, "\nEnd of exception information\n");                                                                                                                     \
+        };                                                                                                                                                                           \
+        assert(_res2);                                                                                                                                                               \
+        if(PyTuple_Check(_res2))                                                                                                                                                     \
+        {                                                                                                                                                                            \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                                                                                    \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                                                                                      \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                                                                                     \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));                                                                         \
+        }                                                                                                                                                                            \
+        else                                                                                                                                                                         \
+        {                                                                                                                                                                            \
+            assert(PyLong_Check(_res2));                                                                                                                                             \
+            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                                                                                           \
+        }                                                                                                                                                                            \
+        break;                                                                                                                                                                       \
+    }                                                                                                                                                                                \
+    Py_XDECREF(_res2);                                                                                                                                                               \
+    PyGILState_Release(gilstate);                                                                                                                                                    \
+    _res;                                                                                                                                                                            \
 })
 #define sqlite3_wal_checkpoint_v2(...) \
-({                                                                                                                    \
-    PyObject *_res2 = 0;                                                                                              \
-    __auto_type _res = 0 ? sqlite3_wal_checkpoint_v2(__VA_ARGS__) : 0;                                                \
-    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                  \
-    switch (APSW_FaultInjectControl("sqlite3_wal_checkpoint_v2", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
-    {                                                                                                                 \
-    case 0x1FACADE:                                                                                                   \
-        assert(_res2 == 0);                                                                                           \
-        PyGILState_Release(gilstate);                                                                                 \
-        _res = sqlite3_wal_checkpoint_v2(__VA_ARGS__);                                                                \
-        gilstate = PyGILState_Ensure();                                                                               \
-        break;                                                                                                        \
-    default:                                                                                                          \
-        if(!_res2) PyErr_Print();                                                                                     \
-        assert(_res2);                                                                                                \
-        if(PyTuple_Check(_res2))                                                                                      \
-        {                                                                                                             \
-            assert(3 == PyTuple_GET_SIZE(_res2));                                                                     \
-            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                       \
-            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                      \
-            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));          \
-        }                                                                                                             \
-        else                                                                                                          \
-        {                                                                                                             \
-            assert(PyLong_Check(_res2));                                                                              \
-            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                            \
-        }                                                                                                             \
-        break;                                                                                                        \
-    }                                                                                                                 \
-    Py_XDECREF(_res2);                                                                                                \
-    PyGILState_Release(gilstate);                                                                                     \
-    _res;                                                                                                             \
+({                                                                                                                                                                                  \
+    PyObject *_res2 = 0;                                                                                                                                                            \
+    __auto_type _res = 0 ? sqlite3_wal_checkpoint_v2(__VA_ARGS__) : 0;                                                                                                              \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                                                                                \
+    switch (APSW_FaultInjectControl("sqlite3_wal_checkpoint_v2", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))                                                               \
+    {                                                                                                                                                                               \
+    case 0x1FACADE:                                                                                                                                                                 \
+        assert(_res2 == 0);                                                                                                                                                         \
+        PyGILState_Release(gilstate);                                                                                                                                               \
+        _res = sqlite3_wal_checkpoint_v2(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                             \
+        break;                                                                                                                                                                      \
+    default:                                                                                                                                                                        \
+        if(!_res2) {                                                                                                                                                                \
+            fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_wal_checkpoint_v2", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+            PyObject *_p1, *_p2, *_p3;                                                                                                                                              \
+            PyErr_Fetch(&_p1, &_p2, &_p3);                                                                                                                                          \
+            fprintf(stderr, "Exception type: ");                                                                                                                                    \
+            PyObject_Print(_p1, stderr, 0);                                                                                                                                         \
+            fprintf(stderr, "\nException value: ");                                                                                                                                 \
+            PyObject_Print(_p2, stderr, 0);                                                                                                                                         \
+            fprintf(stderr, "\nException tb: ");                                                                                                                                    \
+            PyObject_Print(_p3, stderr, 0);                                                                                                                                         \
+            fprintf(stderr, "\nPyErr_Display:\n");                                                                                                                                  \
+            PyErr_Display(_p1, _p2, _p3);                                                                                                                                           \
+            fprintf(stderr, "\nEnd of exception information\n");                                                                                                                    \
+        };                                                                                                                                                                          \
+        assert(_res2);                                                                                                                                                              \
+        if(PyTuple_Check(_res2))                                                                                                                                                    \
+        {                                                                                                                                                                           \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                                                                                   \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                                                                                     \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                                                                                    \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));                                                                        \
+        }                                                                                                                                                                           \
+        else                                                                                                                                                                        \
+        {                                                                                                                                                                           \
+            assert(PyLong_Check(_res2));                                                                                                                                            \
+            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                                                                                          \
+        }                                                                                                                                                                           \
+        break;                                                                                                                                                                      \
+    }                                                                                                                                                                               \
+    Py_XDECREF(_res2);                                                                                                                                                              \
+    PyGILState_Release(gilstate);                                                                                                                                                   \
+    _res;                                                                                                                                                                           \
 })
 #endif
 #endif

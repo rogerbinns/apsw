@@ -1315,6 +1315,11 @@ class Connection:
         Calls: `sqlite3_interrupt <https://sqlite.org/c3ref/interrupt.html>`__"""
         ...
 
+    is_interrupted: bool
+    """Indicates if this connection has been interrupted.
+
+    XXXX link once tocdb is ready sqlite3_is_interrupted"""
+
     def last_insert_rowid(self) -> int:
         """Returns the integer key of the most recent insert in the database.
 
