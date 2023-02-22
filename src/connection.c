@@ -4858,6 +4858,22 @@ Connection_get_system_errno(Connection *self)
   return PyLong_FromLong(sqlite3_system_errno(self->db)); /* PYSQLITE_CON_CALL not needed - no mutex taken */
 }
 
+/** .. attribute:: is_interrupted
+   :type: bool
+
+   Indicates if this connection has been interrupted.
+
+   -* sqlite3_is_interrupted
+*/
+static PyObject *
+Connection_is_interrupted(Connection *self)
+{
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  return Py_NewRef(sqlite3_is_interrupted(self->db) ? Py_True : Py_False);
+}
+
 static PyGetSetDef Connection_getseters[] = {
     /* name getter setter doc closure */
     {"filename",
@@ -4873,6 +4889,7 @@ static PyGetSetDef Connection_getseters[] = {
     {"rowtrace", (getter)Connection_get_rowtrace_attr, (setter)Connection_set_rowtrace_attr, Connection_rowtrace_DOC},
     {"authorizer", (getter)Connection_get_authorizer_attr, (setter)Connection_set_authorizer_attr, Connection_authorizer_DOC},
     {"system_errno", (getter)Connection_get_system_errno, NULL, Connection_system_errno_DOC},
+    {"is_interrupted", (getter)Connection_is_interrupted, NULL, Connection_is_interrupted_DOC},
     /* Sentinel */
     {
         NULL, NULL, NULL, NULL, NULL}};
