@@ -369,9 +369,9 @@ APSWCursor_tp_traverse(APSWCursor *self, visitproc visit, void *arg)
 }
 
 static const char *description_formats[] = {
-    "(O&O&)",
-    "(O&O&OOOOO)",
-    "(O&O&O&O&O&)"};
+    "(ss)",
+    "(ssOOOOO)",
+    "(sssss)"};
 
 static PyObject *
 APSWCursor_internal_getdescription(APSWCursor *self, int fmtnum)
@@ -406,22 +406,30 @@ APSWCursor_internal_getdescription(APSWCursor *self, int fmtnum)
 
   for (i = 0; i < ncols; i++)
   {
+
 #define INDEX self->statement->vdbestatement, i
 /* this is needed because msvc chokes with the ifdef inside */
 #ifdef SQLITE_ENABLE_COLUMN_METADATA
-#define DESCFMT2 Py_BuildValue(description_formats[fmtnum],                            \
-                               convertutf8string, sqlite3_column_name(INDEX),          \
-                               convertutf8string, sqlite3_column_decltype(INDEX),      \
-                               convertutf8string, sqlite3_column_database_name(INDEX), \
-                               convertutf8string, sqlite3_column_table_name(INDEX),    \
-                               convertutf8string, sqlite3_column_origin_name(INDEX))
+#define DESCFMT2 Py_BuildValue(description_formats[fmtnum],         \
+                               column_name,                         \
+                               sqlite3_column_decltype(INDEX),      \
+                               sqlite3_column_database_name(INDEX), \
+                               sqlite3_column_table_name(INDEX),    \
+                               sqlite3_column_origin_name(INDEX))
 #else
 #define DESCFMT2 NULL
 #endif
+    /* only column_name is described as returning NULL on error */
+    const char *column_name = sqlite3_column_name(INDEX);
+    if (!column_name)
+    {
+      PyErr_Format(PyExc_MemoryError, "SQLite call sqlite3_column_name ran out of memory");
+      goto error;
+    }
     INUSE_CALL(
         column = (fmtnum < 2) ? Py_BuildValue(description_formats[fmtnum],
-                                              convertutf8string, sqlite3_column_name(INDEX),
-                                              convertutf8string, sqlite3_column_decltype(INDEX),
+                                              column_name,
+                                              sqlite3_column_decltype(INDEX),
                                               Py_None,
                                               Py_None,
                                               Py_None,
