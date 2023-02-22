@@ -9019,73 +9019,6 @@ shell.write(shell.stdout, "hello world\\n")
         # that an exception is always thrown.  If we catch that then
         # it means earlier expected exceptions were not thrown.
 
-        ## RollbackHookExistingError
-        apsw.faultdict["RollbackHookExistingError"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.setrollbackhook(dummy)
-            db.cursor().execute("create table foo(a); begin ; insert into foo values(3); rollback")
-            1 / 0
-        except MemoryError:
-            pass
-
-        ## CommitHookExceptionAlready
-        apsw.faultdict["CommitHookExistingError"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.setcommithook(dummy)
-            db.cursor().execute("begin; create table foo(a); insert into foo values(3); commit")
-            1 / 0
-        except MemoryError:
-            pass
-
-        ## AuthorizerExistingError
-        apsw.faultdict["AuthorizerExistingError"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.setauthorizer(dummy)
-            db.cursor().execute("create table foo(a)")
-            1 / 0
-        except MemoryError:
-            pass
-
-        ## AutovacuumPagesFails
-        apsw.faultdict["AutovacuumPagesFails"] = True
-        self.assertRaises(apsw.NoMemError, self.db.autovacuum_pages, lambda x: x)
-
-        ## CBDispatchExistingError
-        apsw.faultdict["CBDispatchExistingError"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.createscalarfunction("foo", dummy)
-            db.cursor().execute("select foo(3)")
-            1 / 0
-        except MemoryError:
-            pass
-
-        ## CBDispatchFinalError
-        apsw.faultdict["CBDispatchFinalError"] = True
-        try:
-
-            def f():
-                db = apsw.Connection(":memory:")
-
-                def foo():
-                    return None, dummy, dummy2
-
-                db.createaggregatefunction("foo", foo)
-                for row in db.cursor().execute("create table bar(x);insert into bar values(3); select foo(x) from bar"):
-                    pass
-                1 / 0
-
-            self.assertRaisesUnraisable(Exception, f)
-        except ZeroDivisionError:
-            pass
-
-        ## DeserializeMallocFail
-        apsw.faultdict["DeserializeMallocFail"] = True
-        self.assertRaises(MemoryError, self.db.deserialize, "main", b"aaaaaa")
-
         ## Virtual table code
         class Source:
 
@@ -9139,15 +9072,6 @@ shell.write(shell.stdout, "hello world\\n")
             def Close(self):
                 pass
 
-        ## VtabRenameBadName
-        apsw.faultdict["CreateModuleFail"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.createmodule("foo", Source())
-            1 / 0
-        except apsw.IOError:
-            pass
-
         ## BlobDeallocException
         def f():
             db = apsw.Connection(":memory:")
@@ -9163,17 +9087,6 @@ shell.write(shell.stdout, "hello world\\n")
             gc.collect()
 
         self.assertRaisesUnraisable(apsw.ReadOnlyError, f)
-
-        ## DoExecTraceBadSlice
-        apsw.faultdict["DoExecTraceBadSlice"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            c = db.cursor()
-            c.setexectrace(dummy)
-            c.execute("select ?; select ?; select ?", (1, 2, 3))
-            1 / 0
-        except MemoryError:
-            pass
 
         ### vfs routines
 

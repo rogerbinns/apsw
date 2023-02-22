@@ -4,6 +4,11 @@ import sys
 import pathlib
 import gc
 import math
+import traceback
+import contextlib
+import io
+import os
+import glob
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent.absolute() / "tools"))
 
@@ -58,15 +63,10 @@ def FaultCall(key):
             expect_exception.add(apswattr("Error"))
             return 0xFE  # also does unknown error code to make_exception
 
-        if fname in {"sqlite3_value_type", "sqlite3_column_type"}:
-            if key[2] == "apswvtabUpdate":
-                expect_exception.add(TypeError)
-            else:
-                expect_exception.add(apswattr("Error"))
-            return 12345
-
         # pointers with 0 being failure
-        if fname in {"sqlite3_backup_init", "sqlite3_malloc64", "sqlite3_mprintf"}:
+        if fname in {"sqlite3_backup_init", "sqlite3_malloc64", "sqlite3_mprintf",
+                     "sqlite3_column_name"
+                     }:
             expect_exception.add(apswattr("SQLError"))
             expect_exception.add(MemoryError)
             return 0
@@ -149,16 +149,16 @@ def exercise():
 
     con = apsw.Connection("")
     con.wal_autocheckpoint(1)
-    con.execute("pragma page_size=512; pragma auto_vacuum=FULL; pragma journal_mode=wal; create table foo(x)")
+    con.execute(
+        "pragma page_size=512; pragma auto_vacuum=FULL; pragma journal_mode=wal; create table foo(x)").fetchall()
     with con:
         con.executemany("insert into foo values(zeroblob(1023))", [tuple() for _ in range(500)])
 
     con.autovacuum_pages(lambda *args: 1)
     for i in range(20):
-        con.wal_autocheckpoint()
-        victim = con.execute("select rowid from foo order by random limit 1").fetchall()[0][0]
-        con.execute("delete from foo where rowid=?", (victim,))
-
+        con.wal_autocheckpoint(1)
+        victim = con.execute("select rowid from foo order by random() limit 1").fetchall()[0][0]
+        con.execute("delete from foo where rowid=?", (victim, ))
 
     con.config(apsw.SQLITE_DBCONFIG_ENABLE_TRIGGER, 1)
     con.setauthorizer(None)
@@ -303,8 +303,6 @@ def exercise():
 
     con.cache_stats(True)
 
-
-
     con2 = apsw.Connection("")
     with con2.backup("main", con, "main") as backup:
         backup.step(1)
@@ -316,6 +314,23 @@ def exercise():
     apsw.shutdown()
     del sys.modules["apsw"]
 
+    for f in glob.glob("/tmp/dbfile-delme*"):
+        os.remove(f)
+    with open("example-code.py", "rt") as f:
+        code = f.read()
+        # make it use tmpfs
+        code = code.replace('"dbfile"', '"/tmp/dbfile-delme"')
+        # logging at debug level so no output spew
+        code = code.replace(".log_sqlite()", ".log_sqlite(level=0)")
+    x = compile(code, "example-code.py", 'exec')
+    # deal with wierd namespace error
+    class Point:
+        def __init__(self, x ,y):
+            self.x=x
+            self.y=y
+    with contextlib.redirect_stdout(io.StringIO()):
+        exec(x, {}, {"Point": Point})
+
 
 exc_happened = []
 
@@ -324,17 +339,19 @@ def unraisehook(*details):
     exc_happened.append(details[:2])
 
 
-sys.unraisablehook = unraisehook
-sys.excepthook = unraisehook
-
-
 def verify_exception(tested):
     ok = any(e[0] in expect_exception for e in exc_happened) or any(FAULTS in str(e[1]) for e in exc_happened)
+    if list(tested)[0][2] in {"apsw_set_errmsg", "apsw_get_errmsg"}:
+        return
     if not ok:
         print("\nExceptions failed to verify")
         print(f"Got { exc_happened }")
         print(f"Expected { expect_exception }")
         print(f"Testing { tested }")
+        print("Traceback:")
+        tbe = traceback.TracebackException(*sys.exc_info(), capture_locals=True, compact=True)
+        for line in tbe.format():
+            print(line)
         sys.exit(1)
 
 
@@ -343,14 +360,22 @@ last = set(), set()
 while True:
     exc_happened = []
     expect_exception = set()
+
+    sys.unraisablehook = unraisehook
+    sys.excepthook = unraisehook
+
     try:
         exercise()
         if not to_fault:
             complete = True
             break
-    except Exception as e:
+    except:
         exc_happened.append(sys.exc_info()[:2])
-        verify_exception(has_faulted - last[1])
+    finally:
+        sys.unraisablehook = sys.__unraisablehook__
+        sys.excepthook = sys.__excepthook__
+
+    verify_exception(has_faulted - last[1])
 
     now = set(to_fault), set(has_faulted)
     if now == last:

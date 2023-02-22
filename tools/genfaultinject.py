@@ -188,19 +188,20 @@ returns = {
     "no_gil": """
             sqlite3_threadsafe sqlite3_close sqlite3_db_config sqlite3_enable_shared_cache
             sqlite3_set_authorizer sqlite3_collation_needed
-            sqlite3_enable_load_extension sqlite3_busy_handler sqlite3_value_type
-            sqlite3_column_type sqlite3_status64 sqlite3_initialize sqlite3_shutdown
+            sqlite3_enable_load_extension sqlite3_busy_handler
+            sqlite3_status64 sqlite3_initialize sqlite3_shutdown
             sqlite3_config sqlite3_blob_read sqlite3_blob_write sqlite3_backup_init
             sqlite3_autovacuum_pages sqlite3_malloc64 sqlite3_wal_autocheckpoint
             sqlite3_wal_checkpoint_v2 sqlite3_create_module_v2 sqlite3_overload_function
             sqlite3_exec sqlite3_clear_bindings sqlite3_vfs_register sqlite3_mprintf
+            sqlite3_column_name
             """.split(),
     # py functions that return a number to indicate failure
     "with_gil": """
         PyType_Ready PyModule_AddObject PyModule_AddIntConstant PyLong_AsLong
         PyLong_AsLongLong PyObject_GetBuffer PyList_Append PyDict_SetItemString
         PyObject_SetAttrString _PyBytes_Resize PyDict_SetItem PyList_SetSlice
-        PyObject_IsTrue PySequence_Size PySet_Add
+        PyObject_IsTrue PySequence_Size PySequence_Length PySet_Add
         """.split(),
 }
 
