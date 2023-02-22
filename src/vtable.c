@@ -875,7 +875,8 @@ apswvtabCreateOrConnect(sqlite3 *db,
      the table and an object implementing it */
   if (!PySequence_Check(pyres) || PySequence_Size(pyres) != 2)
   {
-    PyErr_Format(PyExc_TypeError, "Expected two values - a string with the table schema and a vtable object implementing it");
+    if(!PyErr_Occurred())
+      PyErr_Format(PyExc_TypeError, "Expected two values - a string with the table schema and a vtable object implementing it");
     goto pyexception;
   }
 
