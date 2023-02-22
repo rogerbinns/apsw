@@ -187,10 +187,10 @@ across.
   PyErr_Fetch(&etype, &eval, &etb); \
   CHECKVFS;
 
-#define VFSPOSTAMBLE                                     \
-  if (PyErr_Occurred())                                  \
+#define VFSPOSTAMBLE                                    \
+  if (PyErr_Occurred())                                 \
     apsw_write_unraisable((PyObject *)(vfs->pAppData)); \
-  PyErr_Restore(etype, eval, etb);                       \
+  PyErr_Restore(etype, eval, etb);                      \
   PyGILState_Release(gilstate);
 
 #define FILEPREAMBLE                                           \
@@ -202,10 +202,10 @@ across.
   PyErr_Fetch(&etype, &eval, &etb);                            \
   CHECKVFSFILE;
 
-#define FILEPOSTAMBLE                       \
-  if (PyErr_Occurred())                     \
+#define FILEPOSTAMBLE                      \
+  if (PyErr_Occurred())                    \
     apsw_write_unraisable(apswfile->file); \
-  PyErr_Restore(etype, eval, etb);          \
+  PyErr_Restore(etype, eval, etb);         \
   PyGILState_Release(gilstate);
 
 typedef struct
@@ -667,7 +667,7 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *args, PyObject *kwds)
   if (PyErr_Occurred())
     goto finally;
 
-  apswfile = (APSWVFSFile*)_PyObject_New(&APSWVFSFileType);
+  apswfile = (APSWVFSFile *)_PyObject_New(&APSWVFSFileType);
   if (!apswfile)
     goto finally;
   apswfile->base = file;
@@ -1264,7 +1264,7 @@ apswvfspy_xGetLastError(APSWVFS *self)
   msglen = strnlen(PyBytes_AS_STRING(text), size);
   if (msglen > 0)
   {
-    if(_PyBytes_Resize(&text, msglen))
+    if (_PyBytes_Resize(&text, msglen))
       goto error;
   }
   else
@@ -1771,8 +1771,7 @@ static PyTypeObject APSWVFSType =
         0,                                                                      /* tp_subclasses */
         0,                                                                      /* tp_weaklist */
         0,                                                                      /* tp_del */
-        PyType_TRAILER
-};
+        PyType_TRAILER};
 
 /** .. class:: VFSFile
 
@@ -2832,8 +2831,7 @@ static PyTypeObject APSWVFSFileType =
         0,                                                                      /* tp_subclasses */
         0,                                                                      /* tp_weaklist */
         0,                                                                      /* tp_del */
-        PyType_TRAILER
-};
+        PyType_TRAILER};
 
 /** .. class:: URIFilename
 
@@ -2988,5 +2986,4 @@ static PyTypeObject APSWURIFilenameType =
         0,                                                                      /* tp_subclasses */
         0,                                                                      /* tp_weaklist */
         0,                                                                      /* tp_del */
-        PyType_TRAILER
-};
+        PyType_TRAILER};
