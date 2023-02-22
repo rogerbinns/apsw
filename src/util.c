@@ -258,9 +258,6 @@ convert_value_to_pyobject(sqlite3_value *value, int in_constraint_possible, int 
 
   case SQLITE_BLOB:
     return PyBytes_FromStringAndSize(sqlite3_value_blob(value), sqlite3_value_bytes(value));
-
-  default:
-    return PyErr_Format(APSWException, "Unknown sqlite column type %d!", coltype);
   }
   /* can't get here */
   assert(0);
@@ -316,9 +313,6 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
     _PYSQLITE_CALL_V((data = sqlite3_column_blob(stmt, col), len = sqlite3_column_bytes(stmt, col)));
     return PyBytes_FromStringAndSize(data, len);
   }
-
-  default:
-    return PyErr_Format(APSWException, "Unknown sqlite column type %d!", coltype);
   }
   /* can't get here */
   assert(0);
