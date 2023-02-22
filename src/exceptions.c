@@ -241,7 +241,8 @@ static void make_exception(int res, sqlite3 *db)
       if (!tmp)
         goto error;
 
-      PyObject_SetAttrString(eval, "extendedresult", tmp);
+      if (PyObject_SetAttrString(eval, "extendedresult", tmp))
+        goto error;
       Py_DECREF(tmp);
 
       tmp = PyLong_FromLong(error_offset);
