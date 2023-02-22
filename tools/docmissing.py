@@ -42,12 +42,10 @@ vfsfile = apsw.VFSFile("", ":memory:",
 
 
 # virtual tables aren't real - just check their size hasn't changed
-assert len(classes['VTModule']) == 2
-del classes['VTModule']
-assert len(classes['VTTable']) == 14
-del classes['VTTable']
-assert len(classes['VTCursor']) == 6
-del classes['VTCursor']
+for n, e in (("VTModule", 3), ("VTTable", 16), ("VTCursor", 7)):
+    if len(classes[n]) != e:
+        sys.exit(f"Expexted len({ n }) to be { e } not { len(classes[n]) }")
+    del classes[n]
 
 for name, obj in (
     ('Connection', con),
