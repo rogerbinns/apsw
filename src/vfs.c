@@ -197,6 +197,7 @@ across.
   PyObject *etype, *eval, *etb;                                \
   PyGILState_STATE gilstate;                                   \
   gilstate = PyGILState_Ensure();                              \
+  MakeExistingException();                                     \
   PyErr_Fetch(&etype, &eval, &etb);                            \
   CHECKVFSFILE;
 

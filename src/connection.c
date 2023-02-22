@@ -1009,6 +1009,8 @@ updatecb(void *context, int updatetype, char const *databasename, char const *ta
 
   gilstate = PyGILState_Ensure();
 
+  MakeExistingException();
+
   if (PyErr_Occurred())
     goto finally; /* abort hook due to outstanding exception */
 
@@ -1161,6 +1163,8 @@ profilecb(void *context, const char *statement, sqlite_uint64 runtime)
 
   gilstate = PyGILState_Ensure();
 
+  MakeExistingException();
+
   if (PyErr_Occurred())
     goto finally; /* abort hook due to outstanding exception */
 
@@ -1225,6 +1229,9 @@ tracehook_cb(unsigned code, void *vconnection, void *one, void *two)
   sqlite3_int64 *nanoseconds = NULL;
 
   gilstate = PyGILState_Ensure();
+
+  MakeExistingException();
+
   if (PyErr_Occurred())
     goto finally;
 
@@ -1498,6 +1505,8 @@ walhookcb(void *context, sqlite3 *db, const char *dbname, int npages)
 
   gilstate = PyGILState_Ensure();
 
+  MakeExistingException();
+
   retval = PyObject_CallFunction(self->walhook, "(OO&i)", self, convertutf8string, dbname, npages);
   if (!retval)
   {
@@ -1588,6 +1597,8 @@ progresshandlercb(void *context)
   assert(self->progresshandler);
 
   gilstate = PyGILState_Ensure();
+
+  MakeExistingException();
 
   retval = PyObject_CallObject(self->progresshandler, NULL);
 
@@ -1780,6 +1791,8 @@ autovacuum_pages_cb(void *callable, const char *schema, unsigned int nPages, uns
   long res = 0;
   gilstate = PyGILState_Ensure();
 
+  MakeExistingException();
+
   retval = PyObject_CallFunction((PyObject *)callable, AVPCB_CALL, convertutf8string, schema, nPages, nFreePages, nBytesPerPage);
 
   if (retval && PyLong_Check(retval))
@@ -1864,6 +1877,9 @@ collationneeded_cb(void *pAux, sqlite3 *Py_UNUSED(db), int eTextRep, const char 
   assert(self->collationneeded);
   if (!self->collationneeded)
     goto finally;
+
+  MakeExistingException();
+
   if (PyErr_Occurred())
     goto finally;
   pyname = convertutf8string(name);
@@ -1962,6 +1978,8 @@ busyhandlercb(void *context, int ncall)
   assert(self->busyhandler);
 
   gilstate = PyGILState_Ensure();
+
+  MakeExistingException();
 
   retval = PyObject_CallFunction(self->busyhandler, "i", ncall);
 
@@ -2565,6 +2583,8 @@ cbdispatch_step(sqlite3_context *context, int argc, sqlite3_value **argv)
 
   gilstate = PyGILState_Ensure();
 
+  MakeExistingException();
+
   if (PyErr_Occurred())
     goto finalfinally;
 
@@ -2614,6 +2634,8 @@ cbdispatch_final(sqlite3_context *context)
   PyObject *err_type = NULL, *err_value = NULL, *err_traceback = NULL;
 
   gilstate = PyGILState_Ensure();
+
+  MakeExistingException();
 
   PyErr_Fetch(&err_type, &err_value, &err_traceback);
 
@@ -2809,6 +2831,8 @@ cbw_step(sqlite3_context *context, int argc, sqlite3_value **argv)
 
   gilstate = PyGILState_Ensure();
 
+  MakeExistingException();
+
   winfc = get_window_function_context(context);
   if (!winfc)
     goto error;
@@ -2844,6 +2868,8 @@ cbw_final(sqlite3_context *context)
   int ok;
 
   gilstate = PyGILState_Ensure();
+
+  MakeExistingException();
 
   winfc = get_window_function_context(context);
   if (!winfc)
@@ -2911,6 +2937,8 @@ cbw_value(sqlite3_context *context)
 
   gilstate = PyGILState_Ensure();
 
+  MakeExistingException();
+
   winfc = get_window_function_context(context);
   if (!winfc)
     goto error;
@@ -2947,6 +2975,8 @@ cbw_inverse(sqlite3_context *context, int argc, sqlite3_value **argv)
   PyObject *pyargs = NULL, *retval = NULL;
 
   gilstate = PyGILState_Ensure();
+
+  MakeExistingException();
 
   winfc = get_window_function_context(context);
   if (!winfc)
@@ -3259,6 +3289,8 @@ collation_cb(void *context,
   assert(cbinfo);
 
   gilstate = PyGILState_Ensure();
+
+  MakeExistingException();
 
   if (PyErr_Occurred())
     goto finally; /* outstanding error */

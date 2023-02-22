@@ -843,6 +843,8 @@ apswvtabCreateOrConnect(sqlite3 *db,
 
   gilstate = PyGILState_Ensure();
 
+  MakeExistingException();
+
   vti = (vtableinfo *)pAux;
   assert(db == vti->connection->db);
 
@@ -1093,6 +1095,8 @@ apswvtabDestroyOrDisconnect(sqlite3_vtab *pVtab, int stringindex)
   gilstate = PyGILState_Ensure();
   vtable = ((apsw_vtable *)pVtab)->vtable;
 
+  MakeExistingException();
+
   /* mandatory for Destroy, optional for Disconnect */
   res = Call_PythonMethod(vtable, destroy_disconnect_strings[stringindex].methodname, (stringindex == 0), NULL);
 
@@ -1167,6 +1171,9 @@ apswvtabBestIndexObject(sqlite3_vtab *pVtab, sqlite3_index_info *in_index_info)
   struct SqliteIndexInfo *index_info = NULL;
 
   gilstate = PyGILState_Ensure();
+
+  MakeExistingException();
+
   vtable = ((apsw_vtable *)pVtab)->vtable;
   index_info = (struct SqliteIndexInfo *)_PyObject_New(&SqliteIndexInfoType);
   if (!index_info)
@@ -1397,6 +1404,8 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
     return apswvtabBestIndexObject(pVtab, indexinfo);
 
   gilstate = PyGILState_Ensure();
+
+  MakeExistingException();
 
   vtable = ((apsw_vtable *)pVtab)->vtable;
 
@@ -1691,6 +1700,9 @@ apswvtabTransactionMethod(sqlite3_vtab *pVtab, int stringindex)
   int sqliteres = SQLITE_OK;
 
   gilstate = PyGILState_Ensure();
+
+  MakeExistingException();
+
   vtable = ((apsw_vtable *)pVtab)->vtable;
 
   res = Call_PythonMethod(vtable, transaction_strings[stringindex].methodname, 0, NULL);
@@ -1753,6 +1765,8 @@ apswvtabOpen(sqlite3_vtab *pVtab, sqlite3_vtab_cursor **ppCursor)
   int sqliteres = SQLITE_OK;
 
   gilstate = PyGILState_Ensure();
+
+  MakeExistingException();
 
   vtable = ((apsw_vtable *)pVtab)->vtable;
 
@@ -1818,6 +1832,8 @@ apswvtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite3_int6
   assert(argc); /* should always be >0 */
 
   gilstate = PyGILState_Ensure();
+
+  MakeExistingException();
 
   vtable = ((apsw_vtable *)pVtab)->vtable;
   Connection *self = ((apsw_vtable *)pVtab)->connection;
@@ -1976,6 +1992,8 @@ apswvtabFindFunction(sqlite3_vtab *pVtab, int nArg, const char *zName,
   gilstate = PyGILState_Ensure();
   vtable = av->vtable;
 
+  MakeExistingException();
+
   res = Call_PythonMethodV(vtable, "FindFunction", 0, "(Ni)", convertutf8string(zName), nArg);
   if (!res)
   {
@@ -2069,6 +2087,8 @@ apswvtabRename(sqlite3_vtab *pVtab, const char *zNew)
   gilstate = PyGILState_Ensure();
   vtable = ((apsw_vtable *)pVtab)->vtable;
 
+  MakeExistingException();
+
   /* Marked as optional since sqlite does the actual renaming */
   res = Call_PythonMethodV(vtable, "Rename", 0, "(s)", zNew);
   if (!res)
@@ -2099,6 +2119,8 @@ apswvtabSavepoint(sqlite3_vtab *pVtab, int level)
   gilstate = PyGILState_Ensure();
   vtable = ((apsw_vtable *)pVtab)->vtable;
 
+  MakeExistingException();
+
   res = Call_PythonMethodV(vtable, "Savepoint", 0, "(i)", level);
   if (!res)
   {
@@ -2128,6 +2150,8 @@ apswvtabRelease(sqlite3_vtab *pVtab, int level)
   gilstate = PyGILState_Ensure();
   vtable = ((apsw_vtable *)pVtab)->vtable;
 
+  MakeExistingException();
+
   res = Call_PythonMethodV(vtable, "Release", 0, "(i)", level);
   if (!res)
   {
@@ -2156,6 +2180,8 @@ apswvtabRollbackTo(sqlite3_vtab *pVtab, int level)
 
   gilstate = PyGILState_Ensure();
   vtable = ((apsw_vtable *)pVtab)->vtable;
+
+  MakeExistingException();
 
   res = Call_PythonMethodV(vtable, "RollbackTo", 0, "(i)", level);
   if (!res)
@@ -2216,6 +2242,8 @@ apswvtabFilter(sqlite3_vtab_cursor *pCursor, int idxNum, const char *idxStr,
 
   gilstate = PyGILState_Ensure();
 
+  MakeExistingException();
+
   cursor = ((apsw_vtable_cursor *)pCursor)->cursor;
 
   argv = PyTuple_New(argc);
@@ -2267,6 +2295,8 @@ apswvtabEof(sqlite3_vtab_cursor *pCursor)
   int sqliteres = 0; /* nb a true/false value not error code */
 
   gilstate = PyGILState_Ensure();
+
+  MakeExistingException();
 
   /* is there already an error? */
   if (PyErr_Occurred())
@@ -2338,6 +2368,8 @@ apswvtabColumn(sqlite3_vtab_cursor *pCursor, sqlite3_context *result, int ncolum
 
   gilstate = PyGILState_Ensure();
 
+  MakeExistingException();
+
   cursor = ((apsw_vtable_cursor *)pCursor)->cursor;
 
   nc = ((apsw_vtable_cursor *)pCursor)->use_no_change && sqlite3_vtab_nochange(result);
@@ -2391,6 +2423,8 @@ apswvtabNext(sqlite3_vtab_cursor *pCursor)
 
   gilstate = PyGILState_Ensure();
 
+  MakeExistingException();
+
   cursor = ((apsw_vtable_cursor *)pCursor)->cursor;
 
   res = Call_PythonMethod(cursor, "Next", 1, NULL);
@@ -2424,6 +2458,8 @@ apswvtabClose(sqlite3_vtab_cursor *pCursor)
 
   gilstate = PyGILState_Ensure();
 
+  MakeExistingException();
+
   cursor = ((apsw_vtable_cursor *)pCursor)->cursor;
 
   res = Call_PythonMethod(cursor, "Close", 1, NULL);
@@ -2456,6 +2492,8 @@ apswvtabRowid(sqlite3_vtab_cursor *pCursor, sqlite3_int64 *pRowid)
   int sqliteres = SQLITE_OK;
 
   gilstate = PyGILState_Ensure();
+
+  MakeExistingException();
 
   cursor = ((apsw_vtable_cursor *)pCursor)->cursor;
 
@@ -2641,6 +2679,9 @@ apswvtabShadowName(int which, const char *table_suffix)
   int sqliteres = 0;
 
   gilstate = PyGILState_Ensure();
+
+  MakeExistingException();
+
   SN_CHECK(which);
   res = Call_PythonMethodV(shadowname_allocation[which].source, "ShadowName", 0, "(s)", table_suffix);
   if (!res)
