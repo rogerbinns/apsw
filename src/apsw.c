@@ -92,7 +92,7 @@ API Reference
 #include <pythread.h>
 #include "structmember.h"
 
-static int MakeExistingException() { return 0;  }
+static int MakeExistingException() { return 0; }
 #include "faultinject.h"
 
 #ifdef APSW_TESTFIXTURES
@@ -2334,20 +2334,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
   PyErr_Fetch(&etype, &evalue, &etraceback);
 
   callable = PySys_GetObject("apsw_fault_inject_control");
-  if (!callable)
+  if (!callable || Py_IsNone(callable))
   {
+    /* during interpreter shutdown the attribute becomes None */
     static int whined;
-    if (!whined)
+    if (!whined && !Py_IsNone(callable))
     {
       whined++;
       fprintf(stderr, "Missing sys.apsw_fault_inject_control\n");
     }
+    PyErr_Restore(etype, evalue, etraceback);
     return 0x1FACADE;
   }
 
   res = PyObject_CallFunction(callable, "((sssis))", faultfunction,
                               filename, funcname, linenum, args);
-
   if (res)
   {
     if (PyLong_Check(res))
