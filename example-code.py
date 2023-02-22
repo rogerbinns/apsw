@@ -452,9 +452,9 @@ class Point(apsw.ext.SQLiteTypeAdapter):
         return f"{ self.x };{ self.y }"
 
     # This converter will be registered
-    @staticmethod
-    def convert_from_sqlite(value: str) -> Point:
-        return Point(*(float(part) for part in value.split(";")))
+    @classmethod
+    def convert_from_sqlite(cls, value: str) -> Point:
+        return cls(*(float(part) for part in value.split(";")))
 
 
 # An existing type
