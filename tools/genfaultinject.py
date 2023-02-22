@@ -42,7 +42,7 @@ pyobject_return = """
 
 
 # note this releases the gil around calls.
-return_no_gil = """
+return_no_gil = r"""
 ({
     PyObject *_res2 = 0;
     __auto_type _res = 0 ? sqlite3_threadsafe(__VA_ARGS__) : 0;
@@ -56,7 +56,20 @@ return_no_gil = """
         gilstate = PyGILState_Ensure();
         break;
     default:
-        if(!_res2) PyErr_Print();
+        if(!_res2) {
+            fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_threadsafe", __FILE__, __func__, __LINE__, #__VA_ARGS__);
+            PyObject *_p1, *_p2, *_p3;
+            PyErr_Fetch(&_p1, &_p2, &_p3);
+            fprintf(stderr, "Exception type: ");
+            PyObject_Print(_p1, stderr, 0);
+            fprintf(stderr, "\nException value: ");
+            PyObject_Print(_p2, stderr, 0);
+            fprintf(stderr, "\nException tb: ");
+            PyObject_Print(_p3, stderr, 0);
+            fprintf(stderr, "\nPyErr_Display:\n");
+            PyErr_Display(_p1, _p2, _p3);
+            fprintf(stderr, "\nEnd of exception information\n");
+        };
         assert(_res2);
         if(PyTuple_Check(_res2))
         {
