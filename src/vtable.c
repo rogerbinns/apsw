@@ -1055,9 +1055,6 @@ apswvtabFree(void *context)
   PyGILState_STATE gilstate;
   gilstate = PyGILState_Ensure();
 
-#if SQLITE_VERSION_NUMBER < 3041000
-/* https://sqlite.org/forum/forumpost/b68391eb71fdff73 */
-#else
   vtableinfo *vti = (vtableinfo *)context;
 
   if (vti->sqlite3_module_def && vti->sqlite3_module_def->xShadowName)
@@ -1067,7 +1064,6 @@ apswvtabFree(void *context)
   PyMem_Free(vti->sqlite3_module_def);
   /* connection was a borrowed reference so no decref needed */
   PyMem_Free(vti);
-#endif
 
   PyGILState_Release(gilstate);
 }
