@@ -40,14 +40,15 @@ def dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug, sysconfig):
     pyflags += " -W ignore::DeprecationWarning:setuptools"
     if "3.6" in pybin:
         # sometimes the above doesn't work, so ignore all
-        pyflags+=" -W ignore::DeprecationWarning"
+        pyflags += " -W ignore::DeprecationWarning"
     if "3.10" in pybin:
         # distutils -> configparser
-        pyflags+=" -W ignore::EncodingWarning"
+        pyflags += " -W ignore::EncodingWarning"
     extdebug = "--debug" if debug else ""
     logf = os.path.abspath(os.path.join(logdir, "buildruntests.txt"))
     # this is used to alternate support for full metadata and test --definevalues flags
-    build_ext_flags="--definevalues SQLITE_ENABLE_COLUMN_METADATA,SQLITE_DEFAULT_CACHE_SIZE=-1" if random.choice((False, True)) else ""
+    build_ext_flags = "--definevalues SQLITE_ENABLE_COLUMN_METADATA,SQLITE_DEFAULT_CACHE_SIZE=-1" if random.choice(
+        (False, True)) else ""
     if pyver == "system" or sysconfig:
         build_ext_flags += " --use-system-sqlite-config"
 
@@ -84,29 +85,34 @@ def main(PYVERS, SQLITEVERS, BITS, concurrency):
                         for bits in BITS:
                             if pyver == "system" and bits != 64: continue
                             if sysconfig and bits != 64: continue
-                            print(f"Python { pyver } { bits }bit  SQLite { sqlitever }  debug { debug } sysconfig { sysconfig }")
+                            print(
+                                f"Python { pyver } { bits }bit  SQLite { sqlitever }  debug { debug } sysconfig { sysconfig }"
+                            )
                             workdir = os.path.abspath(
-                                os.path.join(topworkdir,
-                                            "py%s-%d-sq%s%s%s" % (pyver, bits, sqlitever, "-debug" if debug else "", "-sysconfig" if sysconfig else "")))
+                                os.path.join(
+                                    topworkdir, "py%s-%d-sq%s%s%s" % (pyver, bits, sqlitever, "-debug" if debug else "",
+                                                                      "-sysconfig" if sysconfig else "")))
                             logdir = os.path.abspath(
-                                os.path.join("megatestresults",
-                                            "py%s-%d-sq%s%s%s" % (pyver, bits, sqlitever, "-debug" if debug else "", "-sysconfig" if sysconfig else "")))
+                                os.path.join(
+                                    "megatestresults",
+                                    "py%s-%d-sq%s%s%s" % (pyver, bits, sqlitever, "-debug" if debug else "",
+                                                          "-sysconfig" if sysconfig else "")))
                             os.makedirs(logdir)
                             os.makedirs(workdir)
                             copy_git_files(workdir)
                             job = executor.submit(runtest,
-                                                workdir=workdir,
-                                                bits=bits,
-                                                pyver=pyver,
-                                                sqlitever=sqlitever,
-                                                logdir=logdir,
-                                                debug=debug,
-                                                sysconfig=sysconfig)
+                                                  workdir=workdir,
+                                                  bits=bits,
+                                                  pyver=pyver,
+                                                  sqlitever=sqlitever,
+                                                  logdir=logdir,
+                                                  debug=debug,
+                                                  sysconfig=sysconfig)
                             job.info = f"py { pyver } sqlite { sqlitever } debug { debug } bits { bits } sysconfig { sysconfig }"
                             jobs.append(job)
 
         print(f"\nAll { len(jobs) } builds started, now waiting for them to finish ({ concurrency } concurrency)\n")
-        start= time.time()
+        start = time.time()
         for job in concurrent.futures.as_completed(jobs):
             print(job.info, "-> ", end="", flush=True)
             try:
@@ -167,7 +173,7 @@ def buildpython(workdir, pyver, bits, logfilename):
             rm -rf lib/test lib/idlelib lib/encodings ;
             find { workdir } -type d -name __pycache__ -print0 | xargs -0 --no-run-if-empty rm -rf ;
             make clean >/dev/null
-    """ )
+    """)
     suf = "3"
     pybin = os.path.join(workdir, "pyinst", "bin", "python" + suf)
     return pybin, os.path.join(workdir, "pyinst", "lib")
@@ -202,7 +208,7 @@ PYVERS = (
     'system',
 )
 
-SQLITEVERS = ('3.39.0', '3.39.1', '3.39.2', '3.39.3', '3.39.4', '3.40.0','3.40.1', )
+SQLITEVERS = ('3.41.0', )
 
 BITS = (64, 32)
 

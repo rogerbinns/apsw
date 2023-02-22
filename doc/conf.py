@@ -13,6 +13,12 @@ extensions = [
     "sphinx.ext.autosummary"
 ]
 
+try:
+    import rst2pdf.pdfbuilder
+    extensions.append("rst2pdf.pdfbuilder")
+except Exception:
+    pass
+
 extlinks = {
     'issue': ('https://github.com/rogerbinns/apsw/issues/%s', 'APSW issue %s'),
     'source': ('https://github.com/rogerbinns/apsw/blob/master/%s', '%s'),
@@ -30,8 +36,9 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General substitutions.
-project = u'APSW'
-copyright = u'2004-2023, Roger Binns <rogerb@rogerbinns.com>'
+project = 'APSW'
+author = "Roger Binns <rogerb@rogerbinns.com>"
+copyright = f'2004-2023, { author }'
 html_logo = "apswlogo.png"
 
 # The default replacements for |version| and |release|, also used in various
@@ -53,8 +60,8 @@ add_module_names = False
 smartquotes = False
 
 # Options for HTML output
-# -----------------------
 
+html_title = f"{ project } { version } documentation"
 html_theme = 'default'
 html_theme_options = {'stickysidebar': True, 'externalrefs': True, 'globaltoc_maxdepth': 1}
 html_favicon = "favicon.ico"
@@ -62,9 +69,25 @@ html_favicon = "favicon.ico"
 html_static_path = ['.static']
 html_last_updated_fmt = '%b %d, %Y'
 
-htmlhelp_basename = 'apsw'
-
 html_sidebars = {'**': ['searchbox.html', 'relations.html', 'localtoc.html', 'globaltoc.html', 'sourcelink.html']}
+
+# epub
+
+epub_basename = f"{ project } { version }"
+epub_description = f"Documentation for APSW { version } Python package"
+epub_identifier = "https://github.com/rogerbinns/apsw"
+epub_scheme = "URL"
+
+# pdf using rst2pdf
+pdf_documents = [
+    ("index", f"{ project } { version }", html_title, author),
+]
+
+pdf_stylesheets = ["sphinx", "a4"]
+pdf_fit_mode = "shrink"
+# https://github.com/rst2pdf/rst2pdf/issues/1122
+pdf_page_template = "no_template_exists"
+
 ### Extra gunk
 
 
