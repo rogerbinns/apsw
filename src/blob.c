@@ -417,7 +417,7 @@ APSWBlob_readinto(APSWBlob *self, PyObject *args, PyObject *kwds)
   if (length > bloblen - self->curoffset)
     ERREXIT(PyErr_Format(PyExc_ValueError, "More data requested than blob length"));
 
-  res = sqlite3_blob_read(self->pBlob, (char *)(py3buffer.buf) + offset, length, self->curoffset);
+  PYSQLITE_BLOB_CALL(res = sqlite3_blob_read(self->pBlob, (char *)(py3buffer.buf) + offset, length, self->curoffset));
 
   assert(!PyErr_Occurred());
 
