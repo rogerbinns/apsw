@@ -92,7 +92,9 @@ API Reference
 #include <pythread.h>
 #include "structmember.h"
 
-static int MakeExistingException() { return 0; }
+/* This function does nothing in regular builds, but in faultinjection
+builds allows for an existing exception to be injected in callbacks */
+static int MakeExistingException(void) { return 0; }
 #include "faultinject.h"
 
 #ifdef APSW_TESTFIXTURES
@@ -344,6 +346,7 @@ apsw_logger(void *arg, int errcode, const char *message)
   PyObject *msgaspystring = NULL;
 
   gilstate = PyGILState_Ensure();
+  MakeExistingException();
   assert(arg == logger_cb);
   assert(arg);
   PyErr_Fetch(&etype, &evalue, &etraceback);
