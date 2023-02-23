@@ -111,6 +111,7 @@ def do_mappings():
         "Flags for sqlite3_deserialize()",
         "Flags for sqlite3_serialize",
         "Win32 Directory Types",
+        "Prepared Statement Scan Status",
     }
 
     for d in sorted(consts.keys()):

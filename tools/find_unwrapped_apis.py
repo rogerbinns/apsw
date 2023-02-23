@@ -109,6 +109,7 @@ nowrap = {
     "sqlite3_test_control",
     "sqlite3_stmt_scanstatus",
     "sqlite3_stmt_scanstatus_reset",
+    "sqlite3_stmt_scanstatus_v2",
     "sqlite3_snapshot_cmp",
     "sqlite3_snapshot_free",
     "sqlite3_snapshot_get",
