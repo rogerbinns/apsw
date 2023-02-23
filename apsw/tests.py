@@ -4938,7 +4938,7 @@ class APSW(unittest.TestCase):
                                                 "|column_name|column_decltype|column_database_name|column_table_name|column_origin_name"
                                                 "|stmt_isexplain|stmt_readonly|filename_journal|filename_wal|stmt_status|sql|log|vtab_collation"
                                                 "|vtab_rhs_value|vtab_distinct|vtab_config|vtab_on_conflict|vtab_in_first|vtab_in_next|vtab_in"
-                                                "|vtab_nochange|is_interrupted)$"),
+                                                "|vtab_nochange|is_interrupted|extended_errcode)$"),
                         # error message
                         'desc': "sqlite3_ calls must wrap with PYSQLITE_CALL",
                         },
@@ -4968,6 +4968,10 @@ class APSW(unittest.TestCase):
                                   (filename, name, i, func, v['desc'], line.strip()))
 
     def sourceCheckFunction(self, filename, name, lines):
+        # existing exception in callbacks
+        if any("PyGILState_Ensure" in line for line in lines):
+            if not any("MakeExistingException" in line for line in lines):
+                self.fail(f"file { filename } function { name } calls PyGILState_Ensure but does not have MakeExistingException")
         # not further checked
         if name.split("_")[0] in ("ZeroBlobBind", "APSWVFS", "APSWVFSFile", "APSWBuffer", "FunctionCBInfo",
                                   "apswurifilename"):
