@@ -347,7 +347,7 @@ def memoryused() -> int:
     Calls: `sqlite3_memory_used <https://sqlite.org/c3ref/memory_highwater.html>`__"""
     ...
 
-no_change: 
+no_change:
 """A sentinel value used to indicate no change in a value when
 used with :meth:`VTCursor.ColumnNoChange` and
 :meth:`VTTable.UpdateChangeRow`"""
@@ -1318,7 +1318,7 @@ class Connection:
     is_interrupted: bool
     """Indicates if this connection has been interrupted.
 
-    XXXX link once tocdb is ready sqlite3_is_interrupted"""
+    Calls: `sqlite3_is_interrupted <https://sqlite.org/c3ref/interrupt.html>`__"""
 
     def last_insert_rowid(self) -> int:
         """Returns the integer key of the most recent insert in the database.
@@ -3923,7 +3923,7 @@ SQLITE_IOERR_ROLLBACK_ATOMIC SQLITE_IOERR_SEEK SQLITE_IOERR_SHMLOCK
 SQLITE_IOERR_SHMMAP SQLITE_IOERR_SHMOPEN SQLITE_IOERR_SHMSIZE
 SQLITE_IOERR_SHORT_READ SQLITE_IOERR_TRUNCATE SQLITE_IOERR_UNLOCK
 SQLITE_IOERR_VNODE SQLITE_IOERR_WRITE SQLITE_LOCKED_SHAREDCACHE
-SQLITE_LOCKED_VTAB SQLITE_NOTICE_RECOVER_ROLLBACK
+SQLITE_LOCKED_VTAB SQLITE_NOTICE_RBU SQLITE_NOTICE_RECOVER_ROLLBACK
 SQLITE_NOTICE_RECOVER_WAL SQLITE_OK_LOAD_PERMANENTLY SQLITE_OK_SYMLINK
 SQLITE_READONLY_CANTINIT SQLITE_READONLY_CANTLOCK
 SQLITE_READONLY_DBMOVED SQLITE_READONLY_DIRECTORY

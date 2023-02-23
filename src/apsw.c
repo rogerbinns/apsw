@@ -1925,6 +1925,7 @@ modules etc. For example::
         ADDINT(SQLITE_BUSY_TIMEOUT),
         ADDINT(SQLITE_IOERR_CORRUPTFS),
         ADDINT(SQLITE_CONSTRAINT_DATATYPE),
+        ADDINT(SQLITE_NOTICE_RBU),
         END,
 
         /* error codes */
