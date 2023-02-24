@@ -58,7 +58,6 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
 #undef PyObject_Str
 #undef PySequence_GetItem
 #undef PySequence_GetSlice
-#undef PySequence_Length
 #undef PySequence_List
 #undef PySequence_SetItem
 #undef PySequence_Size
@@ -961,36 +960,6 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
     }                                                                                                                      \
     PyGILState_Release(gilstate);                                                                                          \
     _res;                                                                                                                  \
-})
-#define PySequence_Length(...) \
-({                                                                                                            \
-    PyObject *_res2=0;                                                                                        \
-    __auto_type _res = 0 ? PySequence_Length(__VA_ARGS__) : 0;                                                \
-    PyGILState_STATE gilstate = PyGILState_Ensure();                                                          \
-    switch (APSW_FaultInjectControl("PySequence_Length", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
-    {                                                                                                         \
-    case 0x1FACADE:                                                                                           \
-        assert(_res == 0);                                                                                    \
-        _res = PySequence_Length(__VA_ARGS__);                                                                \
-        break;                                                                                                \
-    default:                                                                                                  \
-        if(PyTuple_Check(_res2))                                                                              \
-        {                                                                                                     \
-            assert(3 == PyTuple_GET_SIZE(_res2));                                                             \
-            _res =  (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                              \
-            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                              \
-            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));  \
-        }                                                                                                     \
-        else                                                                                                  \
-        {                                                                                                     \
-            assert(PyLong_Check(_res2));                                                                      \
-            _res = PyLong_AsLong_fi(_res2);                                                                   \
-        }                                                                                                     \
-        break;                                                                                                \
-    }                                                                                                         \
-    Py_XDECREF(_res2);                                                                                        \
-    PyGILState_Release(gilstate);                                                                             \
-    _res;                                                                                                     \
 })
 #define PySequence_List(...) \
 ({                                                                                                                     \
