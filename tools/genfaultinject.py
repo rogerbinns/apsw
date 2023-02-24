@@ -201,7 +201,7 @@ returns = {
         PyType_Ready PyModule_AddObject PyModule_AddIntConstant PyLong_AsLong
         PyLong_AsLongLong PyObject_GetBuffer PyList_Append PyDict_SetItemString
         PyObject_SetAttrString _PyBytes_Resize PyDict_SetItem PyList_SetSlice
-        PyObject_IsTrue PySequence_Size PySequence_Length PySet_Add
+        PyObject_IsTrue PySequence_Size PySet_Add
         """.split(),
 }
 

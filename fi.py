@@ -9,6 +9,7 @@ import contextlib
 import io
 import os
 import glob
+import inspect
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent.absolute() / "tools"))
 
@@ -96,20 +97,33 @@ def FaultCall(key):
 
 
 def called(key):
-    # we can't do this because it messes up the import machinery
-    if key[0] == "PyUnicode_AsUTF8" and key[2] == "apsw_getattr":
-        return Proceed
 
     if expect_exception:
         # already have faulted this round
         if key not in has_faulted:
             to_fault.add(key)
         return Proceed
+    assert not(key in to_fault and key in has_faulted)
     if key in has_faulted:
         return Proceed
-    print(key)
-    return FaultCall(key)
+    # we are going to fault this one
+    line, percent = get_progress()
+    print(f"{ int(percent): 3}%  L{ line } { key }")
+    try:
+        return FaultCall(key)
+    finally:
+        assert expect_exception
 
+def get_progress():
+    lines, start = inspect.getsourcelines(exercise)
+    end = start + len(lines)
+    # work out what lines in exercise are executing
+    ss = traceback.extract_stack()
+    curline = start
+    for frame in ss:
+        if frame.filename == __file__ and frame.name == "exercise":
+            curline = max(curline, frame.lineno)
+    return curline, 100 * (curline-start)/(end - start)
 
 sys.apsw_fault_inject_control = called
 sys.apsw_should_fault = lambda *args: False
@@ -132,6 +146,9 @@ def exercise():
         pass
 
     apsw.initialize()
+    apsw.log(3, "A message")
+    if expect_exception:
+        return
     apsw.status(apsw.SQLITE_STATUS_MEMORY_USED)
 
     for n in """
@@ -175,10 +192,16 @@ def exercise():
         cur.description_full
         cur.getdescription()
 
+    if expect_exception:
+        return
+
     apsw.allow_missing_dict_bindings(True)
     con.execute("select :a,:b,$c", {'a': 1, 'c': 3})
     con.execute("select ?, ?, ?, ?", (None, "dsadas", b"xxx", 3.14))
     apsw.allow_missing_dict_bindings(False)
+
+    if expect_exception:
+        return
 
     class Source:
 
@@ -251,6 +274,9 @@ def exercise():
     con.createscalarfunction("func", func)
     con.execute("select func(1,null,'abc',x'aabb')")
 
+    if expect_exception:
+        return
+
     class SumInt:
 
         def __init__(self):
@@ -301,6 +327,9 @@ def exercise():
     blob.read(10)
     blob.close()
 
+    if expect_exception:
+        return
+
     con.cache_stats(True)
 
     con2 = apsw.Connection("")
@@ -309,10 +338,9 @@ def exercise():
     del con2
 
     con.close()
-    del sys.modules["apsw.ext"]
-    gc.collect()
-    apsw.shutdown()
-    del sys.modules["apsw"]
+
+    if expect_exception:
+        return
 
     for f in glob.glob("/tmp/dbfile-delme*"):
         os.remove(f)
@@ -320,17 +348,26 @@ def exercise():
         code = f.read()
         # make it use tmpfs
         code = code.replace('"dbfile"', '"/tmp/dbfile-delme"')
-        # logging at debug level so no output spew
-        code = code.replace(".log_sqlite()", ".log_sqlite(level=0)")
+        # logging will fail
+        code = code.replace("apsw.ext.log_sqlite()", "try:\n apsw.ext.log_sqlite(level=0)\nexcept: pass")
     x = compile(code, "example-code.py", 'exec')
-    # deal with wierd namespace error
-    class Point:
-        def __init__(self, x ,y):
-            self.x=x
-            self.y=y
     with contextlib.redirect_stdout(io.StringIO()):
-        exec(x, {}, {"Point": Point})
+        exec(x, {}, None)
 
+    if expect_exception:
+        return
+
+    del sys.modules["apsw.ext"]
+    gc.collect()
+    apsw.shutdown()
+    del apsw
+
+orig_exercise = exercise
+def exercise():
+    try:
+        orig_exercise()
+    finally:
+        gc.collect()
 
 exc_happened = []
 
@@ -339,7 +376,7 @@ def unraisehook(*details):
     exc_happened.append(details[:2])
 
 
-def verify_exception(tested):
+def verify_exception(tested, exc):
     ok = any(e[0] in expect_exception for e in exc_happened) or any(FAULTS in str(e[1]) for e in exc_happened)
     if list(tested)[0][2] in {"apsw_set_errmsg", "apsw_get_errmsg"}:
         return
@@ -348,10 +385,11 @@ def verify_exception(tested):
         print(f"Got { exc_happened }")
         print(f"Expected { expect_exception }")
         print(f"Testing { tested }")
-        print("Traceback:")
-        tbe = traceback.TracebackException(*sys.exc_info(), capture_locals=True, compact=True)
-        for line in tbe.format():
-            print(line)
+        if exc:
+            print("Traceback:")
+            tbe = traceback.TracebackException(type(exc), exc, exc.__traceback__, capture_locals=True, compact=True)
+            for line in tbe.format():
+                print(line)
         sys.exit(1)
 
 
@@ -365,17 +403,21 @@ while True:
     sys.excepthook = unraisehook
 
     try:
+        did_exc = None
         exercise()
         if not to_fault:
             complete = True
             break
-    except:
-        exc_happened.append(sys.exc_info()[:2])
+    except Exception as e:
+        did_exc = e
+        while e:
+            exc_happened.append((type(e), e))
+            e = e.__context__
     finally:
         sys.unraisablehook = sys.__unraisablehook__
         sys.excepthook = sys.__excepthook__
 
-    verify_exception(has_faulted - last[1])
+    verify_exception(has_faulted - last[1], did_exc)
 
     now = set(to_fault), set(has_faulted)
     if now == last:
