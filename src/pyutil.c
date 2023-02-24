@@ -204,4 +204,31 @@ parameters for AddTraceBackHere to be provided.
     }                                                                                   \
                                                                                         \
   } while (0)
-;
+
+/* similar space to the above but if there was an
+   exception coming in and the call to `x` results
+   in an exception, then the incoming exception
+   is chained to the `x` exception so you'd get
+
+   Exception in `x`
+     which happened while handling
+        incoming exception
+   */
+#define CHAIN_EXC(x)                           \
+  do                                           \
+  {                                            \
+    PyObject *_exc = PyErr_Occurred();         \
+    PyObject *_e1, *_e2, *_e3;                 \
+    if (_exc)                                  \
+      PyErr_Fetch(&_e1, &_e2, &_e3);           \
+    {                                          \
+      x;                                       \
+    }                                          \
+    if (_exc)                                  \
+    {                                          \
+      if (PyErr_Occurred())                    \
+        _PyErr_ChainExceptions(_e1, _e2, _e3); \
+      else                                     \
+        PyErr_Restore(_e1, _e2, _e3);          \
+    }                                          \
+  } while (0)

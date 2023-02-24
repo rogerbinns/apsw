@@ -252,9 +252,8 @@ Connection_close_internal(Connection *self, int force)
 
   Connection_internal_cleanup(self);
 
-  if (PyErr_Occurred())
+  if (PyErr_Occurred() && force != 2)
   {
-    assert(force != 2);
     AddTraceBackHere(__FILE__, __LINE__, "Connection.close", NULL);
     return 1;
   }
@@ -364,9 +363,11 @@ Connection_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSE
     self->open_vfs = 0;
     self->weakreflist = 0;
     CALL_TRACK_INIT(xConnect);
+    if (self->dependents)
+      return (PyObject *)self;
   }
 
-  return self->dependents ? (PyObject *)self : NULL;
+  return NULL;
 }
 
 /** .. method:: __init__(filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: Optional[str] = None, statementcachesize: int = 100)
@@ -439,14 +440,14 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
 
   /* record information */
   self->open_flags = PyLong_FromLong(flags);
-  if(!self->open_flags)
+  if (!self->open_flags)
     goto pyexception;
   if (vfsused)
-    {
-      self->open_vfs = convertutf8string(vfsused->zName);
-      if(!self->open_vfs)
-       goto pyexception;
-    }
+  {
+    self->open_vfs = convertutf8string(vfsused->zName);
+    if (!self->open_vfs)
+      goto pyexception;
+  }
 
   /* get detailed error codes */
   PYSQLITE_VOID_CALL(sqlite3_extended_result_codes(self->db, 1));
@@ -659,11 +660,10 @@ Connection_backup(Connection *self, PyObject *args, PyObject *kwds)
 
   PYSQLITE_CON_CALL(backup = sqlite3_backup_init(self->db, databasename, sourceconnection->db, sourcedatabasename));
 
-
   if (!backup)
   {
     res = sqlite3_extended_errcode(self->db);
-    if(res==SQLITE_OK) /* this happens when doing fault injection */
+    if (res == SQLITE_OK) /* this happens when doing fault injection */
       res = SQLITE_ERROR;
     SET_EXC(res, self->db);
     goto finally;
@@ -1793,16 +1793,20 @@ autovacuum_pages_cb(void *callable, const char *schema, unsigned int nPages, uns
 
   MakeExistingException();
 
-  retval = PyObject_CallFunction((PyObject *)callable, AVPCB_CALL, convertutf8string, schema, nPages, nFreePages, nBytesPerPage);
+  CHAIN_EXC(
+      retval = PyObject_CallFunction((PyObject *)callable, AVPCB_CALL, convertutf8string, schema, nPages, nFreePages, nBytesPerPage));
 
   if (retval && PyLong_Check(retval))
   {
-    res = PyLong_AsLong(retval);
-    goto finally;
+    CHAIN_EXC(
+        res = PyLong_AsLong(retval));
+    if (!PyErr_Occurred())
+      goto finally;
   }
 
   if (retval)
-    PyErr_Format(PyExc_TypeError, "autovacuum_pages callback must return a number not %R", retval ? retval : Py_None);
+    CHAIN_EXC(
+        PyErr_Format(PyExc_TypeError, "autovacuum_pages callback must return a number that fits in 'int' not %R", OBJ(retval)));
   AddTraceBackHere(__FILE__, __LINE__, "autovacuum_pages_callback", AVPCB_TB,
                    "callback", OBJ((PyObject *)callable), "schema", schema, "nPages", nPages, "nFreePages", nFreePages, "nBytesPerPage", nBytesPerPage,
                    "result", OBJ(retval));
@@ -2833,6 +2837,9 @@ cbw_step(sqlite3_context *context, int argc, sqlite3_value **argv)
 
   MakeExistingException();
 
+  if (PyErr_Occurred())
+    goto error;
+
   winfc = get_window_function_context(context);
   if (!winfc)
     goto error;
@@ -2939,6 +2946,9 @@ cbw_value(sqlite3_context *context)
 
   MakeExistingException();
 
+  if (PyErr_Occurred())
+    goto error;
+
   winfc = get_window_function_context(context);
   if (!winfc)
     goto error;
@@ -2977,6 +2987,9 @@ cbw_inverse(sqlite3_context *context, int argc, sqlite3_value **argv)
   gilstate = PyGILState_Ensure();
 
   MakeExistingException();
+
+  if (PyErr_Occurred())
+    goto error;
 
   winfc = get_window_function_context(context);
   if (!winfc)

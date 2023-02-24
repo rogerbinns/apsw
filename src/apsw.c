@@ -277,10 +277,11 @@ initialize(void)
 
   res = sqlite3_initialize();
 
-  SET_EXC(res, NULL);
-
-  if (res != SQLITE_OK)
+  if (res)
+  {
+    SET_EXC(res, NULL);
     return NULL;
+  }
 
   Py_RETURN_NONE;
 }
@@ -1323,6 +1324,9 @@ apsw_log(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
   }
   sqlite3_log(errorcode, "%s", message); /* PYSQLITE_CALL not needed */
 
+  if (PyErr_Occurred())
+    return NULL;
+
   Py_RETURN_NONE;
 }
 
@@ -1525,7 +1529,10 @@ static PyObject *
 apsw_getattr(PyObject *module, PyObject *name)
 {
   PyObject *shellmodule = NULL, *res = NULL;
+#undef PyUnicode_AsUTF8
+  /* we can't do this because it messes up the import machinery */
   const char *cname = PyUnicode_AsUTF8(name);
+#include "faultinject.h"
 
   if (!cname)
     return NULL;

@@ -54,15 +54,14 @@ apsw_set_errmsg(const char *msg)
   assert(tls_errmsg);
 
   key = PyLong_FromLong(PyThread_get_thread_ident());
-  if (!key)
-    goto finally;
-  value = PyBytes_FromStringAndSize(msg, strlen(msg));
-  if (!value)
-    goto finally;
+  if(key)
+    value = PyBytes_FromStringAndSize(msg, strlen(msg));
 
-  PyDict_SetItem(tls_errmsg, key, value);
+  if(key && value && 0==PyDict_SetItem(tls_errmsg, key, value))
+    ;
+  else
+    apsw_write_unraisable(NULL);
 
-finally:
   Py_XDECREF(key);
   Py_XDECREF(value);
   PyErr_Restore(etype, eval, etb);
@@ -232,10 +231,15 @@ static void make_exception(int res, sqlite3 *db)
       PyErr_Format(exc_descriptors[i].cls, "%sError: %s", exc_descriptors[i].name, errmsg);
       PyErr_Fetch(&etype, &eval, &etb);
       PyErr_NormalizeException(&etype, &eval, &etb);
+
+      assert(!PyErr_Occurred());
       tmp = PyLong_FromLongLong(res & 0xff);
       if (!tmp)
         goto error;
-      PyObject_SetAttrString(eval, "result", tmp);
+
+      if (PyObject_SetAttrString(eval, "result", tmp))
+        goto error;
+
       Py_DECREF(tmp);
       tmp = PyLong_FromLongLong(res);
       if (!tmp)
@@ -248,6 +252,7 @@ static void make_exception(int res, sqlite3 *db)
       tmp = PyLong_FromLong(error_offset);
       if (!tmp)
         goto error;
+
       PyObject_SetAttrString(eval, "error_offset", tmp);
     error:
       Py_XDECREF(tmp);

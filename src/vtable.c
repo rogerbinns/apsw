@@ -851,6 +851,9 @@ apswvtabCreateOrConnect(sqlite3 *db,
   Connection *self = vti->connection;
   CALL_ENTER(xConnect);
 
+  if (PyErr_Occurred())
+    goto pyexception;
+
   args = PyTuple_New(1 + argc);
   if (!args)
     goto pyexception;
@@ -875,7 +878,7 @@ apswvtabCreateOrConnect(sqlite3 *db,
      the table and an object implementing it */
   if (!PySequence_Check(pyres) || PySequence_Size(pyres) != 2)
   {
-    if(!PyErr_Occurred())
+    if (!PyErr_Occurred())
       PyErr_Format(PyExc_TypeError, "Expected two values - a string with the table schema and a vtable object implementing it");
     goto pyexception;
   }
@@ -1094,8 +1097,9 @@ apswvtabDestroyOrDisconnect(sqlite3_vtab *pVtab, int stringindex)
 
   MakeExistingException();
 
-  /* mandatory for Destroy, optional for Disconnect */
-  res = Call_PythonMethod(vtable, destroy_disconnect_strings[stringindex].methodname, (stringindex == 0), NULL);
+  CHAIN_EXC(
+      /* mandatory for Destroy, optional for Disconnect */
+      res = Call_PythonMethod(vtable, destroy_disconnect_strings[stringindex].methodname, (stringindex == 0), NULL););
 
   if (!res)
   {
@@ -1111,6 +1115,9 @@ apswvtabDestroyOrDisconnect(sqlite3_vtab *pVtab, int stringindex)
   }
 
   Py_XDECREF(res);
+
+  if (PyErr_Occurred())
+    apsw_write_unraisable(NULL);
 
   PyGILState_Release(gilstate);
   return sqliteres;
@@ -1765,6 +1772,9 @@ apswvtabOpen(sqlite3_vtab *pVtab, sqlite3_vtab_cursor **ppCursor)
 
   MakeExistingException();
 
+  if (PyErr_Occurred())
+    goto pyexception;
+
   vtable = ((apsw_vtable *)pVtab)->vtable;
 
   res = Call_PythonMethod(vtable, "Open", 1, NULL);
@@ -2238,10 +2248,12 @@ apswvtabFilter(sqlite3_vtab_cursor *pCursor, int idxNum, const char *idxStr,
   int i;
 
   gilstate = PyGILState_Ensure();
+  cursor = ((apsw_vtable_cursor *)pCursor)->cursor;
 
   MakeExistingException();
 
-  cursor = ((apsw_vtable_cursor *)pCursor)->cursor;
+  if (PyErr_Occurred())
+    goto pyexception;
 
   argv = PyTuple_New(argc);
   if (!argv)
@@ -2292,14 +2304,13 @@ apswvtabEof(sqlite3_vtab_cursor *pCursor)
   int sqliteres = 0; /* nb a true/false value not error code */
 
   gilstate = PyGILState_Ensure();
+  cursor = ((apsw_vtable_cursor *)pCursor)->cursor;
 
   MakeExistingException();
 
   /* is there already an error? */
   if (PyErr_Occurred())
-    goto finally;
-
-  cursor = ((apsw_vtable_cursor *)pCursor)->cursor;
+    goto pyexception;
 
   res = Call_PythonMethod(cursor, "Eof", 1, NULL);
   if (!res)
@@ -2364,12 +2375,13 @@ apswvtabColumn(sqlite3_vtab_cursor *pCursor, sqlite3_context *result, int ncolum
   int nc;
 
   gilstate = PyGILState_Ensure();
+  cursor = ((apsw_vtable_cursor *)pCursor)->cursor;
+  nc = ((apsw_vtable_cursor *)pCursor)->use_no_change && sqlite3_vtab_nochange(result);
 
   MakeExistingException();
 
-  cursor = ((apsw_vtable_cursor *)pCursor)->cursor;
-
-  nc = ((apsw_vtable_cursor *)pCursor)->use_no_change && sqlite3_vtab_nochange(result);
+  if (PyErr_Occurred())
+    goto pyexception;
 
   if (nc)
     res = Call_PythonMethodV(cursor, "ColumnNoChange", 1, "(i)", ncolumn);
