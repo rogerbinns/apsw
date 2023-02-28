@@ -5,8 +5,6 @@ import pathlib
 import gc
 import math
 import traceback
-import contextlib
-import io
 import os
 import glob
 import inspect
@@ -16,7 +14,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).parent.absolute() / "tools"))
 import genfaultinject
 
 
-def exercise(expect_exception):
+def exercise(example_code, expect_exception):
     "This function exercises the code paths where we have fault injection"
 
     # The module is not imported outside because the init function has
@@ -231,15 +229,7 @@ def exercise(expect_exception):
 
     for f in glob.glob("/tmp/dbfile-delme*"):
         os.remove(f)
-    with open("example-code.py", "rt") as f:
-        code = f.read()
-        # make it use tmpfs
-        code = code.replace('"dbfile"', '"/tmp/dbfile-delme"')
-        # logging will fail
-        code = code.replace("apsw.ext.log_sqlite()", "try:\n apsw.ext.log_sqlite(level=0)\nexcept: pass")
-    x = compile(code, "example-code.py", 'exec')
-    with contextlib.redirect_stdout(io.StringIO()):
-        exec(x, {"apsw": apsw, "sys": sys}, None)
+    exec(example_code, {"print": lambda *args: None}, None)
 
     if expect_exception:
         return
@@ -248,6 +238,7 @@ def exercise(expect_exception):
     gc.collect()
     apsw.shutdown()
     del apsw
+
 
 class Tester:
 
@@ -270,6 +261,19 @@ class Tester:
         end = start + len(lines)
         self.start_line = start
         self.end_line = end
+
+        with open("example-code.py", "rt") as f:
+            code = f.read()
+            # we do various transformations but must keep the line numbers the same
+            code = code.replace("import os", "import os,contextlib")
+            # make it use tmpfs
+            code = code.replace('"dbfile"', '"/tmp/dbfile-delme"')
+            code = code.replace("myobfudb", "/tmp/myobfudb")
+            # logging will fail
+            code = code.replace("apsw.ext.log_sqlite()",
+                                "with contextlib.suppress(apsw.MisuseError): apsw.ext.log_sqlite(level=0)")
+        self.example_code_lines = len(code.split("\n"))
+        self.example_code = compile(code, "example-code.py", 'exec')
 
     @staticmethod
     def apsw_attr(name: str):
@@ -338,7 +342,7 @@ class Tester:
             return self.Proceed
 
         line, percent = self.get_progress()
-        print(f"faulted: { len(self.has_faulted_ever) } / new: { len(self.to_fault) }"
+        print(f"faulted: { len(self.has_faulted_ever): 4} / new: { len(self.to_fault): 3}"
               f" cur: { int(percent): 3}%  L{ line } { key }")
         try:
             return self.FaultCall(key)
@@ -368,10 +372,25 @@ class Tester:
         # work out what progress in exercise
         ss = traceback.extract_stack()
         curline = self.start_line
+        exercise_ok = True
         for frame in ss:
-            if frame.filename == __file__ and frame.name == "exercise":
+            if frame.filename == __file__ and exercise_ok and frame.name == "exercise":
                 curline = max(curline, frame.lineno)
-        return curline, 100 * (curline - self.start_line) / (self.end_line - self.start_line)
+            if frame.filename == "example-code.py":
+                if exercise_ok:
+                    exercise_ok = False
+                    curline = frame.lineno
+                curline = max(curline, frame.lineno)
+
+        total_lines = self.end_line - self.start_line + self.example_code_lines
+        if exercise_ok:
+            curline_pretty = f"{ curline }(exercise)"
+            pos = curline - self.start_line
+        else:
+            curline_pretty = f"{ curline }(example) "
+            pos = curline + (self.end_line - self.start_line)
+
+        return curline_pretty, 100 * pos / total_lines
 
     def verify_exception(self, tested):
         ok = any(e[0] in self.expect_exception for e in self.exc_happened) or any(self.FAULTS in str(e[1])
@@ -389,7 +408,7 @@ class Tester:
                 tbe = traceback.TracebackException(type(self.last_exc),
                                                    self.last_exc,
                                                    self.last_exc.__traceback__,
-                                                   capture_locals=True,
+                                                   capture_locals=False,
                                                    compact=True)
                 for line in tbe.format():
                     print(line)
@@ -419,7 +438,7 @@ class Tester:
             self.last_exc = None
             with self:
                 try:
-                    exercise(self.expect_exception)
+                    exercise(self.example_code, self.expect_exception)
                 finally:
                     gc.collect()
                 if not self.to_fault:
