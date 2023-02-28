@@ -46,7 +46,7 @@ doc: docs ## Builds all the doc
 docs: build_ext $(GENDOCS) doc/example.rst doc/.static doc/typing.rstgen
 	env PYTHONPATH=. $(PYTHON) tools/docmissing.py
 	env PYTHONPATH=. $(PYTHON) tools/docupdate.py $(VERSION)
-	make PYTHONPATH="`pwd`" VERSION=$(VERSION) RELEASEDATE=$(RELEASEDATE) -C doc clean html
+	make PYTHONPATH="`pwd`" VERSION=$(VERSION) RELEASEDATE=$(RELEASEDATE) -C doc clean html epub
 	tools/spellcheck.sh
 
 doc/example.rst: example-code.py tools/example2rst.py src/apswversion.h
