@@ -331,7 +331,7 @@ class Tester:
     def fault_inject_control(self, key):
         if self.expect_exception:
             # already have faulted this round
-            if key not in self.has_faulted_ever:
+            if key not in self.has_faulted_ever and key not in self.to_fault:
                 self.to_fault[key] = self.faulted_this_round[:]
             return self.Proceed
         if key in self.has_faulted_ever:
