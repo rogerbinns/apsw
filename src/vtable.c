@@ -520,10 +520,17 @@ SqliteIndexInfo_set_idxStr(SqliteIndexInfo *self, PyObject *value)
 
   if (!Py_IsNone(value))
   {
-    self->index_info->idxStr = sqlite3_mprintf(PyUnicode_AsUTF8(value));
-    self->index_info->needToFreeIdxStr = 1;
-    if (!self->index_info->idxStr || PyErr_Occurred())
+    const char *svalue = PyUnicode_AsUTF8(value);
+    if (!svalue)
       return -1;
+    const char *isvalue = sqlite3_mprintf("%s", svalue);
+    if (!isvalue)
+    {
+      PyErr_NoMemory();
+      return -1;
+    }
+    self->index_info->idxStr = isvalue;
+    self->index_info->needToFreeIdxStr = 1;
   }
 
   return 0;
@@ -1171,14 +1178,17 @@ apswvtabBestIndexObject(sqlite3_vtab *pVtab, sqlite3_index_info *in_index_info)
   PyGILState_STATE gilstate;
   PyObject *vtable;
   PyObject *res = NULL;
-  int sqlite_res = SQLITE_OK;
+  int sqlite_res = SQLITE_ERROR;
   struct SqliteIndexInfo *index_info = NULL;
 
   gilstate = PyGILState_Ensure();
+  vtable = ((apsw_vtable *)pVtab)->vtable;
 
   MakeExistingException();
 
-  vtable = ((apsw_vtable *)pVtab)->vtable;
+  if (PyErr_Occurred())
+    goto finally;
+
   index_info = (struct SqliteIndexInfo *)_PyObject_New(&SqliteIndexInfoType);
   if (!index_info)
     goto finally;
@@ -1589,7 +1599,20 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
         goto pyexception;
       }
       assert(indexinfo->idxStr == NULL);
-      indexinfo->idxStr = sqlite3_mprintf("%s", PyUnicode_AsUTF8(idxstr));
+      const char *svalue = PyUnicode_AsUTF8(idxstr);
+      if (!svalue)
+      {
+        Py_DECREF(idxstr);
+        goto pyexception;
+      }
+      const char *isvalue = sqlite3_mprintf("%s", svalue);
+      if (!isvalue)
+      {
+        PyErr_NoMemory();
+        Py_DECREF(idxstr);
+        goto pyexception;
+      }
+      indexinfo->idxStr = isvalue;
       indexinfo->needToFreeIdxStr = 1;
     }
   }

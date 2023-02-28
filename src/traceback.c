@@ -30,16 +30,15 @@ static void AddTraceBackHere(const char *filename, int lineno, const char *funct
   assert(PyErr_Occurred());
   PyErr_Fetch(&one, &two, &three);
   empty_dict = PyDict_New();
+  if (!empty_dict)
+    goto end;
 
   assert(!localsformat || localsformat[0] == '{');
   localargs = localsformat ? (Py_VaBuildValue((char *)localsformat, localargsva)) : NULL;
   /* this will typically happen due to error in Py_BuildValue, usually
      because NULL was passed to O (PyObject*) format */
-  if(PyErr_Occurred())
-  {
-    apsw_write_unraisable(NULL);
+  if (PyErr_Occurred())
     goto end;
-  }
 
   /* make the dummy code object */
   code = PyCode_NewEmpty(filename, functionname, lineno);
@@ -61,9 +60,12 @@ static void AddTraceBackHere(const char *filename, int lineno, const char *funct
 #endif
 
 end:
+  /* try to report errors that happened above */
+  if (PyErr_Occurred())
+    apsw_write_unraisable(NULL);
   /* add dummy frame to traceback after restoring exception info */
   PyErr_Restore(one, two, three);
-  if(frame)
+  if (frame)
     PyTraceBack_Here(frame);
 
   va_end(localargsva);

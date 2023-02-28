@@ -1600,6 +1600,9 @@ progresshandlercb(void *context)
 
   MakeExistingException();
 
+  if (PyErr_Occurred())
+    goto finally;
+
   retval = PyObject_CallObject(self->progresshandler, NULL);
 
   if (!retval)

@@ -58,6 +58,8 @@ Call_PythonMethod(PyObject *obj, const char *methodname, int mandatory, PyObject
     goto finally;
   }
 
+  assert(!PyErr_Occurred());
+
   res = PyObject_CallObject(method, args);
   if (!pyerralreadyoccurred && PyErr_Occurred())
     AddTraceBackHere(__FILE__, __LINE__, "Call_PythonMethod", "{s: s, s: i, s: O, s: O}",
