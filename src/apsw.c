@@ -344,7 +344,6 @@ apsw_logger(void *arg, int errcode, const char *message)
   PyGILState_STATE gilstate;
   PyObject *etype = NULL, *evalue = NULL, *etraceback = NULL;
   PyObject *res = NULL;
-  PyObject *msgaspystring = NULL;
 
   gilstate = PyGILState_Ensure();
   MakeExistingException();
@@ -352,9 +351,7 @@ apsw_logger(void *arg, int errcode, const char *message)
   assert(arg);
   PyErr_Fetch(&etype, &evalue, &etraceback);
 
-  msgaspystring = convertutf8string(message);
-  if (msgaspystring)
-    res = PyObject_CallFunction(arg, "iO", errcode, msgaspystring);
+  res = PyObject_CallFunction(arg, "is", errcode, message);
   if (!res)
   {
     AddTraceBackHere(__FILE__, __LINE__, "apsw_sqlite3_log_receiver",
@@ -367,7 +364,6 @@ apsw_logger(void *arg, int errcode, const char *message)
   else
     Py_DECREF(res);
 
-  Py_XDECREF(msgaspystring);
   if (etype || evalue || etraceback)
     PyErr_Restore(etype, evalue, etraceback);
   PyGILState_Release(gilstate);

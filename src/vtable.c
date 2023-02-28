@@ -2024,7 +2024,7 @@ apswvtabFindFunction(sqlite3_vtab *pVtab, int nArg, const char *zName,
 
   MakeExistingException();
 
-  res = Call_PythonMethodV(vtable, "FindFunction", 0, "(Ni)", convertutf8string(zName), nArg);
+  res = Call_PythonMethodV(vtable, "FindFunction", 0, "(si)", zName, nArg);
   if (!res)
   {
     AddTraceBackHere(__FILE__, __LINE__, "apswvtabFindFunction", "{s: s, s: i}", "zName", zName, "nArg", nArg);
@@ -2289,7 +2289,7 @@ apswvtabFilter(sqlite3_vtab_cursor *pCursor, int idxNum, const char *idxStr,
     PyTuple_SET_ITEM(argv, i, value);
   }
 
-  res = Call_PythonMethodV(cursor, "Filter", 1, "(iO&O)", idxNum, convertutf8string, idxStr, argv);
+  res = Call_PythonMethodV(cursor, "Filter", 1, "(isO)", idxNum, idxStr, argv);
   if (res)
     goto finally; /* result is ignored */
 

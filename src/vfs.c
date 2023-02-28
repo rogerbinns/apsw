@@ -293,7 +293,7 @@ apswvfs_xDelete(sqlite3_vfs *vfs, const char *zName, int syncDir)
 
   VFSPREAMBLE;
 
-  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xDelete", 1, "(Ni)", convertutf8string(zName), syncDir);
+  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xDelete", 1, "(si)", zName, syncDir);
   if (!pyresult)
   {
     result = MakeSqliteMsgFromPyException(NULL);
@@ -353,7 +353,7 @@ apswvfs_xAccess(sqlite3_vfs *vfs, const char *zName, int flags, int *pResOut)
 
   VFSPREAMBLE;
 
-  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xAccess", 1, "(Ni)", convertutf8string(zName), flags);
+  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xAccess", 1, "(si)", zName, flags);
   if (!pyresult)
     goto finally;
 
@@ -415,11 +415,14 @@ static int
 apswvfs_xFullPathname(sqlite3_vfs *vfs, const char *zName, int nOut, char *zOut)
 {
   PyObject *pyresult = NULL;
-  int result = SQLITE_OK;
+  int result = SQLITE_ERROR;
 
   VFSPREAMBLE;
 
-  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xFullPathname", 1, "(N)", convertutf8string(zName));
+  if(PyErr_Occurred())
+    goto finally;
+
+  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xFullPathname", 1, "(s)", zName);
   if (!pyresult || !PyUnicode_Check(pyresult))
   {
     if (pyresult)
@@ -450,6 +453,7 @@ apswvfs_xFullPathname(sqlite3_vfs *vfs, const char *zName, int nOut, char *zOut)
     memcpy(zOut, utf8, utf8len + 1); /* Python always null terminates hence +1 */
   }
 
+  result = SQLITE_OK;
 finally:
   Py_XDECREF(pyresult);
 
@@ -693,7 +697,7 @@ apswvfs_xDlOpen(sqlite3_vfs *vfs, const char *zName)
 
   VFSPREAMBLE;
 
-  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xDlOpen", 1, "(N)", convertutf8string(zName));
+  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xDlOpen", 1, "(s)", zName);
   if (pyresult)
   {
     if (PyLong_Check(pyresult))
@@ -751,7 +755,7 @@ static void (*apswvfs_xDlSym(sqlite3_vfs *vfs, void *handle, const char *zName))
 
   VFSPREAMBLE;
 
-  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xDlSym", 1, "(NN)", PyLong_FromVoidPtr(handle), convertutf8string(zName));
+  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xDlSym", 1, "(Ns)", PyLong_FromVoidPtr(handle), zName);
   if (pyresult)
   {
     if (PyLong_Check(pyresult))
@@ -1300,8 +1304,8 @@ apswvfs_xSetSystemCall(sqlite3_vfs *vfs, const char *zName, sqlite3_syscall_ptr 
   PyObject *pyresult = NULL;
 
   VFSPREAMBLE;
-  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xSetSystemCall", 1, "(NN)",
-                                convertutf8string(zName),
+  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xSetSystemCall", 1, "(sN)",
+                                zName,
                                 PyLong_FromVoidPtr(call));
   if (!pyresult)
     res = MakeSqliteMsgFromPyException(NULL);
@@ -1380,8 +1384,8 @@ apswvfs_xGetSystemCall(sqlite3_vfs *vfs, const char *zName)
   PyObject *pyresult = NULL;
 
   VFSPREAMBLE;
-  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xGetSystemCall", 1, "(N)",
-                                convertutf8string(zName));
+  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xGetSystemCall", 1, "(s)",
+                                zName);
   if (!pyresult)
     goto finally;
 
@@ -1433,8 +1437,8 @@ apswvfs_xNextSystemCall(sqlite3_vfs *vfs, const char *zName)
   const char *res = NULL;
 
   VFSPREAMBLE;
-  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xNextSystemCall", 1, "(N)",
-                                convertutf8string(zName));
+  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xNextSystemCall", 1, "(s)",
+                                zName);
 
   if (pyresult && pyresult != Py_None)
   {
@@ -1659,6 +1663,8 @@ APSWVFS_init(APSWVFS *self, PyObject *args, PyObject *kwds)
   else
     self->containingvfs->mxPathname = maxpathname;
   self->containingvfs->zName = apsw_strdup(name);
+  if(!self->containingvfs->zName)
+    goto error;
   self->containingvfs->pAppData = self;
 #define METHOD(meth) \
   self->containingvfs->x##meth = apswvfs_x##meth;

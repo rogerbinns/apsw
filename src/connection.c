@@ -428,7 +428,9 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
       vfsused = sqlite3_vfs_find(vfs); res = sqlite3_open_v2(filename, &self->db, flags, vfs); if (res != SQLITE_OK) apsw_set_errmsg(sqlite3_errmsg(self->db)););
   SET_EXC(res, self->db); /* nb sqlite3_open always allocates the db even on error */
 
-  if (res != SQLITE_OK)
+  /* normally sqlite will have an error code but some internal vfs
+     error codes aren't propagated by PyErr_Occurred will be set*/
+  if (res != SQLITE_OK || PyErr_Occurred())
     goto pyexception;
 
   if (vfsused && vfsused->xAccess == apswvfs_xAccess)
@@ -1014,7 +1016,7 @@ updatecb(void *context, int updatetype, char const *databasename, char const *ta
   if (PyErr_Occurred())
     goto finally; /* abort hook due to outstanding exception */
 
-  retval = PyObject_CallFunction(self->updatehook, "(iO&O&L)", updatetype, convertutf8string, databasename, convertutf8string, tablename, rowid);
+  retval = PyObject_CallFunction(self->updatehook, "(issL)", updatetype, databasename, tablename, rowid);
 
 finally:
   Py_XDECREF(retval);
@@ -1168,7 +1170,7 @@ profilecb(void *context, const char *statement, sqlite_uint64 runtime)
   if (PyErr_Occurred())
     goto finally; /* abort hook due to outstanding exception */
 
-  retval = PyObject_CallFunction(self->profile, "(O&K)", convertutf8string, statement, runtime);
+  retval = PyObject_CallFunction(self->profile, "(sK)", statement, runtime);
 
 finally:
   Py_XDECREF(retval);
@@ -1507,7 +1509,7 @@ walhookcb(void *context, sqlite3 *db, const char *dbname, int npages)
 
   MakeExistingException();
 
-  retval = PyObject_CallFunction(self->walhook, "(OO&i)", self, convertutf8string, dbname, npages);
+  retval = PyObject_CallFunction(self->walhook, "(Osi)", self, dbname, npages);
   if (!retval)
   {
     assert(PyErr_Occurred());
@@ -1692,9 +1694,9 @@ authorizercb(void *context, int operation, const char *paramone, const char *par
   if (PyErr_Occurred())
     goto finally; /* abort due to earlier exception */
 
-  retval = PyObject_CallFunction(self->authorizer, "(iO&O&O&O&)", operation, convertutf8string, paramone,
-                                 convertutf8string, paramtwo, convertutf8string, databasename,
-                                 convertutf8string, triggerview);
+  retval = PyObject_CallFunction(self->authorizer, "(issss)", operation, paramone,
+                                 paramtwo, databasename,
+                                 triggerview);
 
   if (!retval)
     goto finally; /* abort due to exception */
@@ -1783,7 +1785,7 @@ autovacuum_pages_cleanup(void *callable)
   PyGILState_Release(gilstate);
 }
 
-#define AVPCB_CALL "(O&III)"
+#define AVPCB_CALL "(sIII)"
 #define AVPCB_TB "{s: O, s: s:, s: I, s: I, s: I, s: O}"
 
 static unsigned int
@@ -1797,7 +1799,7 @@ autovacuum_pages_cb(void *callable, const char *schema, unsigned int nPages, uns
   MakeExistingException();
 
   CHAIN_EXC(
-      retval = PyObject_CallFunction((PyObject *)callable, AVPCB_CALL, convertutf8string, schema, nPages, nFreePages, nBytesPerPage));
+      retval = PyObject_CallFunction((PyObject *)callable, AVPCB_CALL, schema, nPages, nFreePages, nBytesPerPage));
 
   if (retval && PyLong_Check(retval))
   {
@@ -1877,7 +1879,7 @@ Connection_autovacuum_pages(Connection *self, PyObject *args, PyObject *kwds)
 static void
 collationneeded_cb(void *pAux, sqlite3 *Py_UNUSED(db), int eTextRep, const char *name)
 {
-  PyObject *res = NULL, *pyname = NULL;
+  PyObject *res = NULL;
   Connection *self = (Connection *)pAux;
   PyGILState_STATE gilstate = PyGILState_Ensure();
 
@@ -1889,16 +1891,13 @@ collationneeded_cb(void *pAux, sqlite3 *Py_UNUSED(db), int eTextRep, const char 
 
   if (PyErr_Occurred())
     goto finally;
-  pyname = convertutf8string(name);
-  if (pyname)
-    res = PyObject_CallFunction(self->collationneeded, "(OO)", self, pyname);
-  if (!pyname || !res)
+  res = PyObject_CallFunction(self->collationneeded, "(Os)", self, name);
+  if (!res)
     AddTraceBackHere(__FILE__, __LINE__, "collationneeded callback", "{s: O, s: i, s: s}",
                      "Connection", self, "eTextRep", eTextRep, "name", name);
   Py_XDECREF(res);
 
 finally:
-  Py_XDECREF(pyname);
   PyGILState_Release(gilstate);
 }
 
