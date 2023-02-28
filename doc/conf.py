@@ -77,6 +77,11 @@ epub_basename = f"{ project } { version }"
 epub_description = f"Documentation for APSW { version } Python package"
 epub_identifier = "https://github.com/rogerbinns/apsw"
 epub_scheme = "URL"
+epub_cover = (html_logo, "")
+viewcode_enable_epub = True
+epub_theme = "default"
+epub_theme_options = {'nosidebar': True, 'externalrefs': True, 'globaltoc_maxdepth': 1}
+epub_show_urls = "no"
 
 # pdf using rst2pdf
 pdf_documents = [
@@ -106,6 +111,8 @@ nitpicky = True
 
 ### Google analytics
 def add_ga_javascript(app, pagename, templatename, context, doctree):
+    if "epub" in str(app.builder):
+        return
     context["metatags"] = context.get("metatags", "") + \
     """
         <!-- Google tag (gtag.js) -->
