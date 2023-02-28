@@ -419,7 +419,7 @@ apswvfs_xFullPathname(sqlite3_vfs *vfs, const char *zName, int nOut, char *zOut)
 
   VFSPREAMBLE;
 
-  if(PyErr_Occurred())
+  if (PyErr_Occurred())
     goto finally;
 
   pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xFullPathname", 1, "(s)", zName);
@@ -1663,7 +1663,7 @@ APSWVFS_init(APSWVFS *self, PyObject *args, PyObject *kwds)
   else
     self->containingvfs->mxPathname = maxpathname;
   self->containingvfs->zName = apsw_strdup(name);
-  if(!self->containingvfs->zName)
+  if (!self->containingvfs->zName)
     goto error;
   self->containingvfs->pAppData = self;
 #define METHOD(meth) \
@@ -1904,8 +1904,9 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
     vfs = NULL;
   }
 
-  assert(PyList_Check(flags) && PySequence_Length(flags) == 2);
   pyflagsin = PySequence_GetItem(flags, 0);
+  if (!pyflagsin)
+    goto finally;
 
   flagsin = PyLong_AsLong(pyflagsin);
   if (flagsin != (int)flagsin)
@@ -1937,6 +1938,8 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
   }
 
   pyflagsout = PyLong_FromLong(flagsout);
+  if (!pyflagsout)
+    goto finally;
 
   if (-1 == PySequence_SetItem(flags, 1, pyflagsout))
   {
@@ -1971,6 +1974,9 @@ apswvfsfile_xRead(sqlite3_file *file, void *bufout, int amount, sqlite3_int64 of
   Py_buffer py3buffer;
 
   FILEPREAMBLE;
+
+  if (PyErr_Occurred())
+    goto finally;
 
   pybuf = Call_PythonMethodV(apswfile->file, "xRead", 1, "(iL)", amount, offset);
   if (!pybuf)
@@ -2061,7 +2067,9 @@ apswvfsfilepy_xRead(APSWVFSFile *self, PyObject *args, PyObject *kwds)
          https://sqlite.org/cvstrac/chngview?cn=5867 */
     while (amount && PyBytes_AS_STRING(buffy)[amount - 1] == 0)
       amount--;
-    _PyBytes_Resize(&buffy, amount);
+    if (_PyBytes_Resize(&buffy, amount))
+      return NULL;
+
     return buffy;
   }
 
