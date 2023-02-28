@@ -1994,7 +1994,7 @@ apswvfsfile_xRead(sqlite3_file *file, void *bufout, int amount, sqlite3_int64 of
   asrb = PyObject_GetBuffer(pybuf, &py3buffer, PyBUF_SIMPLE);
   if (asrb != 0)
   {
-    PyErr_Format(PyExc_TypeError, "Object returned from xRead doesn't do read buffer");
+    assert(PyErr_Occurred());
     goto finally;
   }
 
