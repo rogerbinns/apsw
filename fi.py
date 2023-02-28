@@ -312,7 +312,7 @@ class Tester:
                 self.expect_exception.add(OverflowError)
                 return (-1, OverflowError, self.FAULTS)
 
-            if fname.startswith("Py"):
+            if fname.startswith("Py") or fname in {"_PyBytes_Resize"}:
                 # for ones returning -1 on error
                 self.expect_exception.add(self.FAULTT)
                 return (-1, *self.FAULT)
