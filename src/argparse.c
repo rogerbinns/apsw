@@ -79,7 +79,8 @@ argcheck_List_int_int(PyObject *object, void *vparam)
 
     if (PySequence_Length(object) != 2)
     {
-        PyErr_Format(PyExc_ValueError, "Function argument expected a two item list: %s", param->message);
+        if (!PyErr_Occurred())
+            PyErr_Format(PyExc_ValueError, "Function argument expected a two item list: %s", param->message);
         return 0;
     }
 
