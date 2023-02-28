@@ -362,7 +362,7 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
 
 #undef apsw_strdup
 /* This adds double nulls on the end - needed if string is a filename
-   used near vfs as it puts extra info after the first null */
+   used near vfs as SQLite puts extra info after the first null */
 static char *apsw_strdup(const char *source)
 {
 #include "faultinject.h"
