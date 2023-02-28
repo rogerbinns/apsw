@@ -529,7 +529,7 @@ SqliteIndexInfo_set_idxStr(SqliteIndexInfo *self, PyObject *value)
       PyErr_NoMemory();
       return -1;
     }
-    self->index_info->idxStr = isvalue;
+    self->index_info->idxStr = (char *)isvalue;
     self->index_info->needToFreeIdxStr = 1;
   }
 
@@ -1612,7 +1612,7 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
         Py_DECREF(idxstr);
         goto pyexception;
       }
-      indexinfo->idxStr = isvalue;
+      indexinfo->idxStr = (char *)isvalue;
       indexinfo->needToFreeIdxStr = 1;
     }
   }
