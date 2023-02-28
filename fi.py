@@ -15,121 +15,8 @@ sys.path.insert(0, str(pathlib.Path(__file__).parent.absolute() / "tools"))
 
 import genfaultinject
 
-returns = genfaultinject.returns
 
-call_remap = {v: k for k, v in genfaultinject.call_map.items()}
-
-has_faulted = set()
-
-to_fault = set()
-
-Proceed = 0x1FACADE
-"magic value keep going (ie do not inject a return value)"
-
-expect_exception = set()
-
-FAULTT = ZeroDivisionError
-FAULTS = "Fault injection synthesized failure"
-
-FAULT = FAULTT, FAULTS
-
-
-def apswattr(name):
-    # this is need because we don't do the top level import of apsw
-    assert "apsw" in sys.modules
-    return getattr(sys.modules["apsw"], name)
-
-
-previous_func = None
-
-
-def FaultCall(key):
-    global previous_func
-    fname = call_remap.get(key[0], key[0])
-    try:
-        if fname in returns["pyobject"]:
-            expect_exception.add(MemoryError)
-            raise MemoryError(FAULTS)
-
-        if fname == "sqlite3_threadsafe":
-            expect_exception.add(EnvironmentError)
-            return 0
-
-        if fname == "sqlite3_close":
-            expect_exception.add(apswattr("ConnectionNotClosedError"))
-            expect_exception.add(apswattr("IOError"))
-            return apswattr("SQLITE_IOERR")
-
-        if fname == "sqlite3_enable_shared_cache":
-            expect_exception.add(apswattr("Error"))
-            return 0xFE  # also does unknown error code to make_exception
-
-        # pointers with 0 being failure
-        if fname in {"sqlite3_backup_init", "sqlite3_malloc64", "sqlite3_mprintf",
-                     "sqlite3_column_name"
-                     }:
-            expect_exception.add(apswattr("SQLError"))
-            expect_exception.add(MemoryError)
-            return 0
-
-        if fname.startswith("sqlite3_"):
-            expect_exception.add(apswattr("TooBigError"))
-            return apswattr("SQLITE_TOOBIG")
-
-        if fname.startswith("PyLong_As"):
-            expect_exception.add(OverflowError)
-            return (-1, OverflowError, FAULTS)
-
-        if fname.startswith("Py"):
-            # for ones returning -1 on error
-            expect_exception.add(FAULTT)
-            return (-1, *FAULT)
-
-    finally:
-        to_fault.discard(key)
-        has_faulted.add(key)
-        if key[2] == "apswvtabFindFunction" or previous_func == "apswvtabFindFunction":
-            expect_exception.update({TypeError, ValueError})
-        previous_func = key[2]
-
-    print("Unhandled", key)
-    breakpoint()
-
-
-def called(key):
-
-    if expect_exception:
-        # already have faulted this round
-        if key not in has_faulted:
-            to_fault.add(key)
-        return Proceed
-    assert not(key in to_fault and key in has_faulted)
-    if key in has_faulted:
-        return Proceed
-    # we are going to fault this one
-    line, percent = get_progress()
-    print(f"{ int(percent): 3}%  L{ line } { key }")
-    try:
-        return FaultCall(key)
-    finally:
-        assert expect_exception
-
-def get_progress():
-    lines, start = inspect.getsourcelines(exercise)
-    end = start + len(lines)
-    # work out what lines in exercise are executing
-    ss = traceback.extract_stack()
-    curline = start
-    for frame in ss:
-        if frame.filename == __file__ and frame.name == "exercise":
-            curline = max(curline, frame.lineno)
-    return curline, 100 * (curline-start)/(end - start)
-
-sys.apsw_fault_inject_control = called
-sys.apsw_should_fault = lambda *args: False
-
-
-def exercise():
+def exercise(expect_exception):
     "This function exercises the code paths where we have fault injection"
 
     # The module is not imported outside because the init function has
@@ -352,7 +239,7 @@ def exercise():
         code = code.replace("apsw.ext.log_sqlite()", "try:\n apsw.ext.log_sqlite(level=0)\nexcept: pass")
     x = compile(code, "example-code.py", 'exec')
     with contextlib.redirect_stdout(io.StringIO()):
-        exec(x, {}, None)
+        exec(x, {"apsw": apsw, "sys": sys}, None)
 
     if expect_exception:
         return
@@ -362,84 +249,213 @@ def exercise():
     apsw.shutdown()
     del apsw
 
-orig_exercise = exercise
-def exercise():
-    try:
-        orig_exercise()
-    finally:
-        gc.collect()
+class Tester:
 
-exc_happened = []
+    Proceed = 0x1FACADE
+    "magic value keep going (ie do not inject a return value)"
 
+    FAULTT = ZeroDivisionError
+    FAULTS = "Fault injection synthesized failure"
 
-def unraisehook(*details):
-    exc_happened.append(details[:2])
+    FAULT = FAULTT, FAULTS
 
+    def __init__(self):
+        self.returns = genfaultinject.returns
+        self.call_remap = {v: k for k, v in genfaultinject.call_map.items()}
 
-def verify_exception(tested, exc):
-    ok = any(e[0] in expect_exception for e in exc_happened) or any(FAULTS in str(e[1]) for e in exc_happened)
-    if list(tested)[0][2] in {"apsw_set_errmsg", "apsw_get_errmsg"}:
-        return
-    if not ok:
-        print("\nExceptions failed to verify")
-        print(f"Got { exc_happened }")
-        print(f"Expected { expect_exception }")
-        print(f"Testing { tested }")
-        if exc:
-            print("Traceback:")
-            tbe = traceback.TracebackException(type(exc), exc, exc.__traceback__, capture_locals=True, compact=True)
-            for line in tbe.format():
-                print(line)
-        sys.exit(1)
+        sys.apsw_fault_inject_control = self.fault_inject_control
+        sys.apsw_should_fault = lambda *args: False
 
+        lines, start = inspect.getsourcelines(exercise)
+        end = start + len(lines)
+        self.start_line = start
+        self.end_line = end
 
-complete = False
-last = set(), set()
-while True:
-    exc_happened = []
-    expect_exception = set()
+    @staticmethod
+    def apsw_attr(name: str):
+        # this is need because we don't do the top level import of apsw
+        assert "apsw" in sys.modules
+        return getattr(sys.modules["apsw"], name)
 
-    sys.unraisablehook = unraisehook
-    sys.excepthook = unraisehook
+    def FaultCall(self, key):
+        apsw_attr = self.apsw_attr
+        fname = self.call_remap.get(key[0], key[0])
+        try:
+            if fname in self.returns["pyobject"]:
+                self.expect_exception.add(MemoryError)
+                raise MemoryError(self.FAULTS)
 
-    try:
-        did_exc = None
-        exercise()
-        if not to_fault:
-            complete = True
-            break
-    except Exception as e:
-        did_exc = e
+            if fname == "sqlite3_threadsafe":
+                self.expect_exception.add(EnvironmentError)
+                return 0
+
+            if fname == "sqlite3_close":
+                self.expect_exception.add(apsw_attr("ConnectionNotClosedError"))
+                self.expect_exception.add(apsw_attr("IOError"))
+                return self.apsw_attr("SQLITE_IOERR")
+
+            if fname == "sqlite3_enable_shared_cache":
+                self.expect_exception.add(apsw_attr("Error"))
+                return 0xFE  # also does unknown error code to make_exception
+
+            # pointers with 0 being failure
+            if fname in {"sqlite3_backup_init", "sqlite3_malloc64", "sqlite3_mprintf", "sqlite3_column_name"}:
+                self.expect_exception.add(apsw_attr("SQLError"))
+                self.expect_exception.add(MemoryError)
+                return 0
+
+            if fname.startswith("sqlite3_"):
+                self.expect_exception.add(apsw_attr("TooBigError"))
+                return self.apsw_attr("SQLITE_TOOBIG")
+
+            if fname.startswith("PyLong_As"):
+                self.expect_exception.add(OverflowError)
+                return (-1, OverflowError, self.FAULTS)
+
+            if fname.startswith("Py"):
+                # for ones returning -1 on error
+                self.expect_exception.add(self.FAULTT)
+                return (-1, *self.FAULT)
+
+        finally:
+            self.to_fault.pop(key, None)
+            self.has_faulted_ever.add(key)
+            self.faulted_this_round.append(key)
+            if key[2] == "apswvtabFindFunction" or (self.last_key and self.last_key[2] == "apswvtabFindFunction"):
+                self.expect_exception.update({TypeError, ValueError})
+            self.last_key = key
+
+        print("Unhandled", key)
+        breakpoint()
+
+    def fault_inject_control(self, key):
+        if self.expect_exception:
+            # already have faulted this round
+            if key not in self.has_faulted_ever:
+                self.to_fault[key] = self.faulted_this_round[:]
+            return self.Proceed
+        if key in self.has_faulted_ever:
+            return self.Proceed
+
+        line, percent = self.get_progress()
+        print(f"faulted: { len(self.has_faulted_ever) } / new: { len(self.to_fault) }"
+              f" cur: { int(percent): 3}%  L{ line } { key }")
+        try:
+            return self.FaultCall(key)
+        finally:
+            assert self.expect_exception
+            assert key in self.has_faulted_ever
+
+    def exchook(self, e1, e2, e3):
+        self.add_exc(e2)
+
+    def add_exc(self, e):
+        if e:
+            self.last_exc = e
         while e:
-            exc_happened.append((type(e), e))
+            self.exc_happened.append((type(e), e))
             e = e.__context__
-    finally:
-        sys.unraisablehook = sys.__unraisablehook__
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, e1, e2, e3):
+        if e2:
+            self.add_exc(e2)
+        return True  # do not raise
+
+    def get_progress(self):
+        # work out what progress in exercise
+        ss = traceback.extract_stack()
+        curline = self.start_line
+        for frame in ss:
+            if frame.filename == __file__ and frame.name == "exercise":
+                curline = max(curline, frame.lineno)
+        return curline, 100 * (curline - self.start_line) / (self.end_line - self.start_line)
+
+    def verify_exception(self, tested):
+        ok = any(e[0] in self.expect_exception for e in self.exc_happened) or any(self.FAULTS in str(e[1])
+                                                                                  for e in self.exc_happened)
+
+        if tested and list(tested)[0][2] in {"apsw_set_errmsg", "apsw_get_errmsg"}:
+            return
+        if not ok:
+            print("\nExceptions failed to verify")
+            print(f"Got { self.exc_happened }")
+            print(f"Expected { self.expect_exception }")
+            print(f"Testing { tested }")
+            if self.last_exc:
+                print("Traceback:")
+                tbe = traceback.TracebackException(type(self.last_exc),
+                                                   self.last_exc,
+                                                   self.last_exc.__traceback__,
+                                                   capture_locals=True,
+                                                   compact=True)
+                for line in tbe.format():
+                    print(line)
+            sys.exit(1)
+
+    def run(self):
+        # keys that we will fault in the future.  we saw these keys while a
+        # call had already faulted, so we have to do those same faults again
+        # to see this one.  value is list of those previous faults
+        self.to_fault = {}
+        # keys that have ever faulted across all loops
+        self.has_faulted_ever = set()
+
+        self.last_key = None
+        complete = False
+        last = set(), set()
+
+        sys.excepthook = sys.unraisablehook = self.exchook
+        while True:
+            # exceptions that happened this loop
+            self.exc_happened = []
+            # exceptions we expected to happen this loop
+            self.expect_exception = set()
+            # keys we faulted this round
+            self.faulted_this_round = []
+
+            self.last_exc = None
+            with self:
+                try:
+                    exercise(self.expect_exception)
+                finally:
+                    gc.collect()
+                if not self.to_fault:
+                    complete = True
+                    break
+
+            self.verify_exception(self.faulted_this_round)
+
+            now = set(self.to_fault), set(self.has_faulted_ever)
+            if now == last:
+                print("\nUnable to make progress")
+                exercise(None)
+                break
+            else:
+                last = now
+
+        if complete:
+            print("\nExercise code reached end")
+
+        for n in sorted(self.has_faulted_ever):
+            print(n)
+
+        print(f"Total faults: { len(self.has_faulted_ever) }")
+
+        if self.to_fault:
+            t = f"Failed to fault { len(self.to_fault) }"
+            print("=" * len(t))
+            print(t)
+            print("=" * len(t))
+            for f in sorted(self.to_fault):
+                print(f)
+            sys.exit(1)
+
         sys.excepthook = sys.__excepthook__
+        sys.unraisablehook = sys.__unraisablehook__
 
-    verify_exception(has_faulted - last[1], did_exc)
 
-    now = set(to_fault), set(has_faulted)
-    if now == last:
-        print("\nUnable to make progress")
-        exercise()
-        break
-    else:
-        last = now
-
-if complete:
-    print("\nComplete")
-
-for n in sorted(has_faulted):
-    print(n)
-
-print(f"Total faults: { len(has_faulted) }")
-
-if to_fault:
-    t = f"Failed to fault { len(to_fault) }"
-    print("=" * len(t))
-    print(t)
-    print("=" * len(t))
-    for f in sorted(to_fault):
-        print(f)
-    sys.exit(1)
+t = Tester()
+t.run()
