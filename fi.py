@@ -223,7 +223,7 @@ def exercise(example_code, expect_exception):
     del con2
 
     con.close()
-
+    del con
     if expect_exception:
         return
 
@@ -236,7 +236,6 @@ def exercise(example_code, expect_exception):
 
     del sys.modules["apsw.ext"]
     gc.collect()
-    apsw.shutdown()
     del apsw
 
 
@@ -333,15 +332,25 @@ class Tester:
         breakpoint()
 
     def fault_inject_control(self, key):
-        if self.expect_exception:
-            # already have faulted this round
-            if key not in self.has_faulted_ever and key not in self.to_fault:
-                self.to_fault[key] = self.faulted_this_round[:]
-            return self.Proceed
-        if key in self.has_faulted_ever:
-            return self.Proceed
+        if self.runplan is not None:
+            if not self.runplan:
+                return self.Proceed
+            if key == self.runplan[0]:
+                self.runplan.pop(0)
+            else:
+                return self.Proceed
+        else:
+            if self.expect_exception:
+                # already have faulted this round
+                if key not in self.has_faulted_ever and key not in self.to_fault:
+                    self.to_fault[key] = self.faulted_this_round[:]
+                return self.Proceed
+            if key in self.has_faulted_ever:
+                return self.Proceed
 
         line, percent = self.get_progress()
+        if self.runplan is not None:
+            print("  Pre" if self.runplan else "Fault", end=" ")
         print(f"faulted: { len(self.has_faulted_ever): 4} / new: { len(self.to_fault): 3}"
               f" cur: { int(percent): 3}%  L{ line } { key }")
         try:
@@ -398,11 +407,15 @@ class Tester:
 
         if tested and list(tested)[0][2] in {"apsw_set_errmsg", "apsw_get_errmsg"}:
             return
+        if len(self.exc_happened) < len(tested):
+            ok = False
         if not ok:
             print("\nExceptions failed to verify")
             print(f"Got { self.exc_happened }")
             print(f"Expected { self.expect_exception }")
             print(f"Testing { tested }")
+            if len(self.exc_happened) < len(tested):
+                print("Fewer exceptions observed than faults generated")
             if self.last_exc:
                 print("Traceback:")
                 tbe = traceback.TracebackException(type(self.last_exc),
@@ -423,8 +436,9 @@ class Tester:
         self.has_faulted_ever = set()
 
         self.last_key = None
-        complete = False
+        use_runplan = False
         last = set(), set()
+        complete = False
 
         sys.excepthook = sys.unraisablehook = self.exchook
         while True:
@@ -435,15 +449,26 @@ class Tester:
             # keys we faulted this round
             self.faulted_this_round = []
 
+            if use_runplan:
+                if len(self.to_fault) == 0:
+                    complete = True
+                    break
+                for k, v in self.to_fault.items():
+                    self.runplan = v + [k]
+                    break
+            else:
+                self.runplan = None
+
             self.last_exc = None
             with self:
                 try:
                     exercise(self.example_code, self.expect_exception)
+                    if not use_runplan and not self.faulted_this_round:
+                        use_runplan = True
+                        print("Exercising locations that require multiple failures")
+                        continue
                 finally:
                     gc.collect()
-                if not self.to_fault:
-                    complete = True
-                    break
 
             self.verify_exception(self.faulted_this_round)
 
@@ -456,7 +481,7 @@ class Tester:
                 last = now
 
         if complete:
-            print("\nExercise code reached end")
+            print("\nAll faults exercised")
 
         for n in sorted(self.has_faulted_ever):
             print(n)
