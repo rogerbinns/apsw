@@ -21,7 +21,6 @@ see what gets printed when you run the code.
    import apsw
    import apsw.ext
    import random
-   import ast
    
    # Note: this code uses Python's optional typing annotations.  You can
    # ignore them and do not need to use them
@@ -59,9 +58,9 @@ Checking APSW and SQLite versions
 .. code-block:: output
 
           Using APSW file /space/apsw/./apsw/__init__.cpython-310-x86_64-linux-gnu.so
-             APSW version 3.40.1.0
-    SQLite header version 3040001
-       SQLite lib version 3.40.1
+             APSW version 3.41.0.0
+    SQLite header version 3041000
+       SQLite lib version 3.41.0
        Using amalgamation True
 
 
@@ -553,7 +552,7 @@ documentation
            ) AS sum_y
            FROM t3 ORDER BY x;
        """):
-           print("ROW", row)
+       print("ROW", row)
    
 
 
@@ -673,8 +672,8 @@ instead
    
    connection.execute("""
        create table books(id, title, author, year);
-       insert into books values(7, "Animal Farm", "George Orwell", 1945);
-       insert into books values(37, "The Picture of Dorian Gray", "Oscar Wilde", 1890);
+       insert into books values(7, 'Animal Farm', 'George Orwell', 1945);
+       insert into books values(37, 'The Picture of Dorian Gray', 'Oscar Wilde', 1890);
        """)
    
    # Normally you use column numbers
@@ -1165,7 +1164,7 @@ feedback and allows cancelling.
     progress handler called
     progress handler called
     progress handler called
-    (9550133018,)
+    (9907402823,)
 
 
 .. index:: Commit hook (example code)
@@ -1205,7 +1204,8 @@ with  :meth:`Connection.setcommithook`.
 .. code-block:: output
 
     in commit hook
-    commits okay at this time
+    no commits out of hours
+    commit was not allowed
 
 
 .. index:: Update hook (example code)
@@ -1256,123 +1256,263 @@ Virtual tables let you provide data on demand as a SQLite table so
 you can use SQL queries against that data. :ref:`Read more about
 virtual tables <virtualtables>`.
 
+Writing your own virtual table requires understanding the
+`BestIndex <https://www.sqlite.org/vtab.html#the_xbestindex_method>`__ method
+as it is how you return less than all of the data.
+
+These examples use :func:`apsw.ext.make_virtual_module` to wrap a
+Python function, so you can have a virtual table in 3 lines of code.
+For the first example you'll find :meth:`apsw.ext.generate_series`
+useful instead.
+
 .. code-block:: python
 
-   # This example provides information about all the files in Python's
-   # path.  The minimum amount of code needed is shown, and lets SQLite
-   # do all the heavy lifting.  A more advanced table would use indices
-   # and filters to reduce the number of rows shown to SQLite.
    
-   # these first columns are used by our virtual table
-   vtcolumns = ["rowid", "name", "directory"]
+   # 3 lines of code ...
+   def table_range(start=1, stop=100, step=1):
+       for i in range(start, stop + 1, step):
+           yield (i, )
    
    
-   def get_file_data(directories):
-       "Returns a list of column names, and a list of all the files with their attributes"
-       columns = None
-       data = []
-       counter = 1
-       for directory in directories:
-           for f in os.listdir(directory):
-               if not os.path.isfile(os.path.join(directory, f)):
-                   continue
-               counter += 1
-               st = os.stat(os.path.join(directory, f))
-               if columns is None:
-                   # we add on all the fields from os.stat
-                   columns = vtcolumns + [x for x in dir(st) if x.startswith("st_")]
-               data.append([counter, f, directory] + [getattr(st, x) for x in columns[3:]])
-       return columns, data
+   # set column names
+   table_range.columns = ("value", )
+   # set how to access what table_range returns
+   table_range.column_access = apsw.ext.VTColumnAccess.By_Index
    
+   # register it
+   apsw.ext.make_virtual_module(connection, "range", table_range)
    
-   # This gets registered with the Connection
-   class Source:
-   
-       def Create(self, db, modulename, dbname, tablename, *args):
-           # the eval strips off layer of quotes
-           columns, data = get_file_data([ast.literal_eval(a.replace("\\", "\\\\")) for a in args])
-           schema = "create table foo(" + ','.join(["'%s'" % (x, ) for x in columns[1:]]) + ")"
-           return schema, Table(columns, data)
-   
-       Connect = Create
-   
-   
-   # Represents a table
-   class Table:
-   
-       def __init__(self, columns, data):
-           self.columns = columns
-           self.data = data
-   
-       def BestIndex(self, *args):
-           return None
-   
-       def Open(self):
-           return Cursor(self)
-   
-       def Disconnect(self):
-           pass
-   
-       Destroy = Disconnect
-   
-   
-   # Represents a cursor used during SQL query processing
-   class Cursor:
-   
-       def __init__(self, table):
-           self.table = table
-   
-       def Filter(self, *args):
-           self.pos = 0
-   
-       def Eof(self):
-           return self.pos >= len(self.table.data)
-   
-       def Rowid(self):
-           return self.table.data[self.pos][0]
-   
-       def Column(self, col):
-           return self.table.data[self.pos][1 + col]
-   
-       def Next(self):
-           self.pos += 1
-   
-       def Close(self):
-           pass
-   
-   
-   # Register the module as filesource
-   connection.createmodule("filesource", Source())
-   
-   # Arguments to module - all directories in sys.path
-   sysdirs = ",".join(["'%s'" % (x, ) for x in sys.path[1:] if len(x) and os.path.isdir(x)])
-   connection.execute("create virtual table sysfiles using filesource(" + sysdirs + ")")
-   
-   print("3 biggest files")
-   for size, directory, file in connection.execute(
-           "select st_size,directory,name from sysfiles order by st_size desc limit 3"):
-       print(size, file, directory)
-   
-   print()
-   print("3 oldest files")
-   for ctime, directory, file in connection.execute(
-           "select st_ctime,directory,name from sysfiles order by st_ctime limit 3"):
-       print(ctime, file, directory)
-   
+   # see it work.  we can provide both positional and keyword
+   # arguments
+   query = "SELECT * FROM range(90) WHERE step=2"
+   print(apsw.ext.format_query_table(connection, query))
 
 
 .. code-block:: output
 
-    3 biggest files
-    5894672 apsw.o .
-    5199987 apsw.gcno .
-    546696 _ctypes.cpython-310d-x86_64-linux-gnu.so /usr/lib/python3.10/lib-dynload
+    ┌───────┐
+    │ value │
+    │ 90    │
+    │ 92    │
+    │ 94    │
+    │ 96    │
+    │ 98    │
+    │ 100   │
+    └───────┘
     
-    3 oldest files
-    1641597423.5541885 sitecustomize.py /usr/lib/python3.10
-    1664920933.397524 _gdbm.cpython-310-x86_64-linux-gnu.so /usr/lib/python3.10/lib-dynload
-    1664921015.6046188 _tkinter.cpython-310-x86_64-linux-gnu.so /usr/lib/python3.10/lib-dynload
 
+
+.. code-block:: python
+
+   
+   # the parameters are hidden columns so '*' doesn't select them
+   # but you can ask
+   query = "SELECT *, start, stop, step FROM range(89) WHERE step=3"
+   print(apsw.ext.format_query_table(connection, query))
+
+
+.. code-block:: output
+
+    ┌───────┬───────┬──────┬──────┐
+    │ value │ start │ stop │ step │
+    │ 89    │ 89    │ 100  │ 3    │
+    │ 92    │ 89    │ 100  │ 3    │
+    │ 95    │ 89    │ 100  │ 3    │
+    │ 98    │ 89    │ 100  │ 3    │
+    └───────┴───────┴──────┴──────┘
+    
+
+
+.. code-block:: python
+
+   
+   # Expose the unicode database.
+   import unicodedata
+   
+   # The methods we will call on each codepoint
+   unicode_methods = (unicodedata.name, unicodedata.decimal, unicodedata.digit, unicodedata.numeric, unicodedata.category,
+                      unicodedata.bidirectional, unicodedata.combining, unicodedata.east_asian_width, unicodedata.mirrored,
+                      unicodedata.decomposition)
+   
+   
+   # the function we will turn into a virtual table
+   def unicode_data(start=0, stop=sys.maxunicode):
+   
+       # some methods raise ValueError on some codepoints
+       def call(meth, c):
+           try:
+               return meth(c)
+           except ValueError:
+               return None
+   
+       for c in range(start, stop + 1):
+           c = chr(c)
+           yield tuple(call(func, c) for func in unicode_methods)
+   
+   
+   # setup column names and access
+   unicode_data.columns = tuple(func.__name__ for func in unicode_methods)
+   unicode_data.column_access = apsw.ext.VTColumnAccess.By_Index
+   
+   # register
+   apsw.ext.make_virtual_module(connection, "unicode_data", unicode_data)
+   
+   # how many codepoints are in each category?
+   query = """
+       SELECT count(*), category FROM unicode_data
+          WHERE start = 0x1000 AND stop = 0xffff
+          GROUP BY category
+          ORDER BY category
+          LIMIT 10"""
+   print(apsw.ext.format_query_table(connection, query))
+
+
+.. code-block:: output
+
+    ┌──────────┬──────────┐
+    │ count(*) │ category │
+    │ 30       │ Cf       │
+    │ 998      │ Cn       │
+    │ 6400     │ Co       │
+    │ 2048     │ Cs       │
+    │ 867      │ Ll       │
+    │ 180      │ Lm       │
+    │ 44918    │ Lo       │
+    │ 27       │ Lt       │
+    │ 654      │ Lu       │
+    │ 154      │ Mc       │
+    └──────────┴──────────┘
+    
+
+
+.. code-block:: python
+
+   
+   
+   # A more complex example - given a list of directories return information about the files within
+   def get_files_info(directories: str,
+                      sep: str = os.pathsep,
+                      *,
+                      ignore_symlinks: bool = True) -> Iterator[dict[str, Any]]:
+       """Scan directories returning information about the files within"""
+       for root in directories.split(sep):
+           for entry in os.scandir(root):
+               if entry.is_symlink() and ignore_symlinks:
+                   continue
+               if entry.is_dir():
+                   yield from get_files_info(os.path.join(root, entry.name), ignore_symlinks=ignore_symlinks)
+               elif entry.is_file():
+                   s = entry.stat()
+                   yield {
+                       **{
+                           "directory": root,
+                           "name": entry.name,
+                           "extension": os.path.splitext(entry.name)[1],
+                       },
+                       **{k: getattr(s, k)
+                          for k in get_files_info.stat_columns}
+                   }
+   
+   
+   # which stat columns do we want?
+   get_files_info.stat_columns = tuple(n for n in dir(os.stat(".")) if n.startswith("st_"))
+   # setup columns and access by providing an example of the first entry returned
+   get_files_info.columns, get_files_info.column_access = \
+       apsw.ext.get_column_names(next(get_files_info(".")))
+   
+   apsw.ext.make_virtual_module(connection, "files_info", get_files_info)
+   
+   # all the sys.path directories except our current one
+   bindings = (os.pathsep.join(p for p in sys.path if os.path.isdir(p) and not os.path.samefile(p, ".")), )
+   
+   # Find the 3 biggest files that aren't libraries
+   query = """SELECT st_size, directory, name
+               FROM files_info(?)
+               WHERE extension NOT IN ('.a', '.so')
+               ORDER BY st_size DESC
+               LIMIT 3"""
+   print(apsw.ext.format_query_table(connection, query, bindings))
+
+
+.. code-block:: output
+
+    ┌─────────┬────────────────────────────────────────────┬───────────────────────┐
+    │ st_size │                 directory                  │         name          │
+    │ 744430  │ /usr/lib/python3.10/pydoc_data             │ topics.py             │
+    │ 472737  │ /usr/lib/python3.10/pydoc_data/__pycache__ │ topics.cpython-       │
+    │         │                                            │ 310.pyc               │
+    │ 228676  │ /usr/lib/python3.10                        │ _pydecimal.py         │
+    └─────────┴────────────────────────────────────────────┴───────────────────────┘
+    
+
+
+.. code-block:: python
+
+   
+   # Find the 3 oldest Python files
+   query = """SELECT DATE(st_ctime, 'auto') AS date, directory, name
+               FROM files_info(?)
+               WHERE extension='.py'
+               ORDER BY st_size DESC
+               LIMIT 3"""
+   print(apsw.ext.format_query_table(connection, query, bindings))
+
+
+.. code-block:: output
+
+    ┌────────────┬────────────────────────────────┬───────────────┐
+    │    date    │           directory            │     name      │
+    │ 2022-12-09 │ /usr/lib/python3.10/pydoc_data │ topics.py     │
+    │ 2022-12-09 │ /usr/lib/python3.10            │ _pydecimal.py │
+    │ 2022-10-04 │ /usr/lib/python3.10/tkinter    │ __init__.py   │
+    └────────────┴────────────────────────────────┴───────────────┘
+    
+
+
+.. code-block:: python
+
+   
+   # find space used by filename extension
+   query = """SELECT extension, SUM(st_size) as total_size
+               FROM files_info(?)
+               GROUP BY extension
+               ORDER BY extension"""
+   print(apsw.ext.format_query_table(connection, query, bindings))
+
+
+.. code-block:: output
+
+    ┌────────────┬────────────┐
+    │ extension  │ total_size │
+    │            │ 267878     │
+    │ .a         │ 84439776   │
+    │ .allowlist │ 86         │
+    │ .c         │ 10714      │
+    │ .cfg       │ 279        │
+    │ .csh       │ 935        │
+    │ .css       │ 96         │
+    │ .fish      │ 2077       │
+    │ .in        │ 3246       │
+    │ .local     │ 3040       │
+    │ .o         │ 20200      │
+    │ .ps1       │ 9033       │
+    │ .py        │ 11471734   │
+    │ .pyc       │ 8226799    │
+    │ .rst       │ 9561       │
+    │ .sh        │ 3728       │
+    │ .so        │ 19362544   │
+    │ .supp      │ 70         │
+    │ .txt       │ 23420      │
+    └────────────┴────────────┘
+    
+
+
+.. code-block:: python
+
+   
+   # unregister a virtual table by passing None
+   connection.createmodule("files_info", None)
+   
 
 .. index:: VFS - Virtual File System (example code)
 
@@ -1612,9 +1752,9 @@ Python.
     
     Dump output
     
-    -- SQLite dump (by APSW 3.40.1.0)
-    -- SQLite version 3.40.1
-    -- Date: Sun Jan 15 10:16:17 2023
+    -- SQLite dump (by APSW 3.41.0.0)
+    -- SQLite version 3.41.0
+    -- Date: Wed Mar  1 07:16:50 2023
     -- Tables like: csvtest%
     -- Database: /space/apsw/dbfile
     -- User: rogerb @ clamps
@@ -1657,7 +1797,7 @@ SQLite provides statistics by :meth:`status`
 
 .. code-block:: output
 
-    SQLite memory usage 308160 max 354920
+    SQLite memory usage 318416 max 2236272
 
 
 .. index:: Tracing (example code)
@@ -1707,31 +1847,164 @@ This shows using :meth:`Connection.trace_v2`
    for _ in connection.execute(query):
        pass
    
+   # Turn off tracing
+   connection.trace_v2(0, None)
+   
 
 
 .. code-block:: output
 
     code is  SQLITE_TRACE_STMT
-    {'code': 1, 'connection': <apsw.Connection object at 0x7fa2ba4f3760>} 
+    {'code': 1, 'connection': <apsw.Connection object at 0x7fa93d6d8e50>} 
     
     code is  SQLITE_TRACE_ROW
-    {'code': 4, 'connection': <apsw.Connection object at 0x7fa2ba4f3760>} 
+    {'code': 4, 'connection': <apsw.Connection object at 0x7fa93d6d8e50>} 
     
     code is  SQLITE_TRACE_PROFILE
     {'code': 2,
-     'connection': <apsw.Connection object at 0x7fa2ba4f3760>,
+     'connection': <apsw.Connection object at 0x7fa93d6d8e50>,
      'nanoseconds': 35000000,
      'stmt_status': {'SQLITE_STMTSTATUS_AUTOINDEX': 0,
                      'SQLITE_STMTSTATUS_FILTER_HIT': 0,
                      'SQLITE_STMTSTATUS_FILTER_MISS': 0,
-                     'SQLITE_STMTSTATUS_FULLSCAN_STEP': 1429,
-                     'SQLITE_STMTSTATUS_MEMUSED': 15800,
+                     'SQLITE_STMTSTATUS_FULLSCAN_STEP': 1365,
+                     'SQLITE_STMTSTATUS_MEMUSED': 15784,
                      'SQLITE_STMTSTATUS_REPREPARE': 0,
                      'SQLITE_STMTSTATUS_RUN': 1,
                      'SQLITE_STMTSTATUS_SORT': 2,
-                     'SQLITE_STMTSTATUS_VM_STEP': 1013989}} 
+                     'SQLITE_STMTSTATUS_VM_STEP': 1015351}} 
     
 
+
+.. index:: Formatting query results table (example code)
+
+.. _example_format_query:
+
+Formatting query results table
+------------------------------
+
+:meth:`apsw.ext.format_query_table` makes it easy
+to format the results of a query in an automatic
+adjusting table, colour, sanitizing strings,
+truncation etc
+
+.. code-block:: python
+
+   # Create a table with some dummy data
+   connection.execute(
+       """CREATE TABLE dummy(quantity, [spaces in name], last);
+       INSERT INTO dummy VALUES(3, 'some regular text to make this row interesting', x'030709');
+       INSERT INTO dummy VALUES(3.14, 'Tiếng Việt', null);
+       INSERT INTO dummy VALUES('', ?, ' ');
+   """, ('special \t\n\f\0 cha\\rs', ))
+   
+   query = "SELECT * FROM dummy"
+   # default
+   print(apsw.ext.format_query_table(connection, query))
+
+
+.. code-block:: output
+
+    ┌───────┬─────────────────────────────────────────────────────────────┬────────┐
+    │ quant │                       spaces in name                        │  last  │
+    │  ity  │                                                             │        │
+    ├───────┼─────────────────────────────────────────────────────────────┼────────┤
+    │ 3     │ some regular text to make this row interesting              │ [ 3    │
+    │       │                                                             │ bytes  │
+    │       │                                                             │ ]      │
+    ├───────┼─────────────────────────────────────────────────────────────┼────────┤
+    │ 3.14  │ Ti{LATIN SMALL LETTER E WITH CIRCUMFLEX AND ACUTE}ng        │ (null) │
+    │       │ Vi{LATIN SMALL LETTER E WITH CIRCUMFLEX AND DOT BELOW}t     │        │
+    ├───────┼─────────────────────────────────────────────────────────────┼────────┤
+    │       │ special                                                     │        │
+    │       │ \0 cha\\rs                                                  │        │
+    └───────┴─────────────────────────────────────────────────────────────┴────────┘
+    
+
+
+.. code-block:: python
+
+   
+   # no unicode and maximum sanitize the text
+   kwargs = {"use_unicode": False, "string_sanitize": 2}
+   print(apsw.ext.format_query_table(connection, query, **kwargs))
+
+
+.. code-block:: output
+
+    +----------+------------------------------------------------+-------------+
+    | quantity |                 spaces in name                 |    last     |
+    +----------+------------------------------------------------+-------------+
+    | 3        | some.regular.text.to.make.this.row.interesting | [ 3 bytes ] |
+    +----------+------------------------------------------------+-------------+
+    | 3.14     | Ti.ng.Vi.t                                     | (null)      |
+    +----------+------------------------------------------------+-------------+
+    |          | special..                                      | .           |
+    |          | ...cha\rs                                      |             |
+    +----------+------------------------------------------------+-------------+
+    
+
+
+.. code-block:: python
+
+   
+   # lets have unicode and make things narrow with no word wrap
+   kwargs = {"use_unicode": True, "string_sanitize": 0, "text_width": 30, "word_wrap": False}
+   print(apsw.ext.format_query_table(connection, query, **kwargs))
+
+
+.. code-block:: output
+
+    ┌─────┬────────────────┬─────┐
+    │ qua │ spaces in name │ las │
+    │ nti │                │  t  │
+    │ ty  │                │     │
+    ├─────┼────────────────┼─────┤
+    │ 3   │ some regular t │ [ 3 │
+    │     │ ext to make th │  by │
+    │     │ is row interes │ tes │
+    │     │ ting           │  ]  │
+    ├─────┼────────────────┼─────┤
+    │ 3.1 │ Tiếng Việt     │ (nu │
+    │ 4   │                │ ll) │
+    ├─────┼────────────────┼─────┤
+    │     │ special        │     │
+    │     │ \0 cha\\rs     │     │
+    └─────┴────────────────┴─────┘
+    
+
+
+.. code-block:: python
+
+   
+   # have the values in SQL syntax
+   kwargs = {"quote": True}
+   print(apsw.ext.format_query_table(connection, query, **kwargs))
+
+
+.. code-block:: output
+
+    ┌───────┬──────────────────────────────────────────────────────────────┬───────┐
+    │ quant │                        spaces in name                        │ last  │
+    │  ity  │                                                              │       │
+    ├───────┼──────────────────────────────────────────────────────────────┼───────┤
+    │ 3     │ 'some regular text to make this row interesting'             │ X'030 │
+    │       │                                                              │ 709'  │
+    ├───────┼──────────────────────────────────────────────────────────────┼───────┤
+    │ 3.14  │ 'Ti{LATIN SMALL LETTER E WITH CIRCUMFLEX AND ACUTE}ng        │ NULL  │
+    │       │ Vi{LATIN SMALL LETTER E WITH CIRCUMFLEX AND DOT BELOW}t'     │       │
+    ├───────┼──────────────────────────────────────────────────────────────┼───────┤
+    │ ''    │ 'special                                                     │ ' '   │
+    │       │ \0 cha\\rs'                                                  │       │
+    └───────┴──────────────────────────────────────────────────────────────┴───────┘
+    
+
+
+.. code-block:: python
+
+   
+   # do look at the format_query_table doc for more output tweaking
+   
 
 .. index:: Cleanup (example code)
 
@@ -1752,7 +2025,3 @@ rollback the partial data.
    connection.close()
    #  You can call close multiple times, and also indicate to ignore exceptions
    connection.close(True)
-   
-   # Deleting the database file. Note that there can be additional files
-   # with suffixes like -wal, -shm, and -journal.
-   os.remove("dbfile")

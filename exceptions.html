@@ -4,35 +4,32 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Exceptions and Errors &#8212; APSW 3.40.1.0 documentation</title>
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+        <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-2NR9GDCQLT');
+        </script>
+    
+    <title>Exceptions and Errors &#8212; APSW 3.41.0.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/sphinx_highlight.js"></script>
     
+    <link rel="icon" href="_static/favicon.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
     <link rel="next" title="Types" href="types.html" />
-    <link rel="prev" title="Various interesting and useful bits of functionality" href="ext.html" />
- 
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-2NR9GDCQLT');
-</script>
-
+    <link rel="prev" title="Various interesting and useful bits of functionality" href="ext.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -49,7 +46,7 @@
         <li class="right" >
           <a href="ext.html" title="Various interesting and useful bits of functionality"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.41.0.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Exceptions and Errors</a></li> 
       </ul>
     </div>  
@@ -186,7 +183,7 @@ named style or entirely numeric (unnamed) style:</p>
 </pre></div>
 </div>
 <p><em>b</em> and <em>c</em> are not in the dict.  For missing keys, None/NULL
-will be used. This is so you don’t have to add lots of spurious
+will be used. This is so you don't have to add lots of spurious
 values to the supplied dict. If your schema requires every column
 have a value, then SQLite will generate an error due to some
 values being None/NULL so that case will be caught.</p>
@@ -360,7 +357,7 @@ attempt up to 5 times before giving up and returning this error.</p>
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ConstraintError</span></span><a class="headerlink" href="#apsw.ConstraintError" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>SQLITE_CONSTRAINT</em>. Abort due to <a class="reference external" href="https://sqlite.org/lang_createtable.html">constraint</a> violation.  This
 would happen if the schema required a column to be within a specific
-range.  If you have multiple constraints, you <a class="reference external" href="https://sqlite.org/src/tktview/23b212820161c6599cbf414aa99bf8a5bfa5e7a3">can’t tell</a>
+range.  If you have multiple constraints, you <a class="reference external" href="https://sqlite.org/src/tktview/23b212820161c6599cbf414aa99bf8a5bfa5e7a3">can't tell</a>
 which one was the cause.</p>
 </dd></dl>
 
@@ -453,9 +450,6 @@ traceback:</p>
 </pre></div>
 </div>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 100%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Original Traceback</p></th>
 </tr>
@@ -474,9 +468,6 @@ traceback:</p>
 </tbody>
 </table>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 100%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Augmented Traceback</p></th>
 </tr>
@@ -496,7 +487,7 @@ traceback:</p>
 </tr>
 </tbody>
 </table>
-<p>In the original traceback you can’t even see that code in apsw was
+<p>In the original traceback you can't even see that code in apsw was
 involved. The augmented traceback shows that there were indeed two
 function calls within apsw and gives you line numbers should you need
 to examine the code. Also note how you are told that the call was in
@@ -557,8 +548,31 @@ almost completely useless!</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/apswlogo.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
   <div>
-    <h3><a href="index.html">Table of Contents</a></h3>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="ext.html"
+                          title="previous chapter">Various interesting and useful bits of functionality</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="types.html"
+                          title="next chapter">Types</a></p>
+  </div>
+  <div>
+    <h3><a href="index.html">On this page</a></h3>
     <ul>
 <li><a class="reference internal" href="#">Exceptions and Errors</a><ul>
 <li><a class="reference internal" href="#unraisable">Unraisable</a></li>
@@ -636,16 +650,32 @@ almost completely useless!</p>
 </ul>
 
   </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="ext.html"
-                          title="previous chapter">Various interesting and useful bits of functionality</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="types.html"
-                          title="next chapter">Types</a></p>
-  </div>
+<h3><a href="index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="download.html">Download</a></li>
+<li class="toctree-l1"><a class="reference internal" href="build.html">Building</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apsw.html">APSW Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="connection.html">Connections to a database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cursor.html">Cursors (executing SQL)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="blob.html">Blob Input/Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Exceptions and Errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="types.html">Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmarking.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="copyright.html">Copyright and License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changes.html">Change History</a></li>
+</ul>
+
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -653,16 +683,6 @@ almost completely useless!</p>
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -682,19 +702,14 @@ almost completely useless!</p>
         <li class="right" >
           <a href="ext.html" title="Various interesting and useful bits of functionality"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.41.0.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Exceptions and Errors</a></li> 
       </ul>
     </div>
-
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Jan 15, 2023.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.0.
+      Last updated on Mar 01, 2023.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
     </div>
-<div class="footer">This page uses <a href="http://analytics.google.com/">
-Google Analytics</a> to collect statistics.
-</div>
-
   </body>
 </html>

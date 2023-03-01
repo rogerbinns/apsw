@@ -4,35 +4,32 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>sqlite3 module differences &#8212; APSW 3.40.1.0 documentation</title>
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+        <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-2NR9GDCQLT');
+        </script>
+    
+    <title>sqlite3 module differences &#8212; APSW 3.41.0.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/sphinx_highlight.js"></script>
     
+    <link rel="icon" href="_static/favicon.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
     <link rel="next" title="Benchmarking" href="benchmarking.html" />
-    <link rel="prev" title="DBAPI notes" href="dbapi.html" />
- 
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-2NR9GDCQLT');
-</script>
-
+    <link rel="prev" title="DBAPI notes" href="dbapi.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -49,7 +46,7 @@
         <li class="right" >
           <a href="dbapi.html" title="DBAPI notes"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.41.0.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">sqlite3 module differences</a></li> 
       </ul>
     </div>  
@@ -68,13 +65,13 @@ to SQLite from Python from fundamentally different directions.</p>
 no effort to hide how SQLite is different from other databases.</p>
 <p>sqlite3 tries to provide a DBAPI compliant wrapper for SQLite and in
 doing so needs to make it have the same behaviour as other databases.
-Consequently it does hide some of SQLite’s nuances.</p>
+Consequently it does hide some of SQLite's nuances.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>I suggest using APSW when you want to directly use SQLite and its
 functionality or are using your own code to deal with database
 independence rather than DBAPI.  Use sqlite3 and DBAPI if your
-needs are simple, and you don’t want to use SQLite features.</p>
+needs are simple, and you don't want to use SQLite features.</p>
 </div>
 <section id="what-apsw-does-better">
 <h2>What APSW does better<a class="headerlink" href="#what-apsw-does-better" title="Permalink to this heading">¶</a></h2>
@@ -99,7 +96,7 @@ SQLite.</p></li>
 manage transactions (for DBAPI compliance) by parsing your SQL for
 you, but you can turn it off. This can result in very unexpected
 behaviour with sqlite3.</p></li>
-<li><p>When using a <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> as a <a class="reference internal" href="connection.html#apsw.Connection.__enter__" title="apsw.Connection.__enter__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">context</span> <span class="pre">manager</span></code></a> APSW uses SQLite’s ability to have <a class="reference external" href="https://sqlite.org/lang_savepoint.html">nested
+<li><p>When using a <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> as a <a class="reference internal" href="connection.html#apsw.Connection.__enter__" title="apsw.Connection.__enter__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">context</span> <span class="pre">manager</span></code></a> APSW uses SQLite's ability to have <a class="reference external" href="https://sqlite.org/lang_savepoint.html">nested
 transactions</a>. sqlite3
 has a context manager, but does not implement nesting.</p></li>
 <li><p>You can use semi-colons at the end of commands and you can have
@@ -127,7 +124,7 @@ work fine in APSW but is not allowed in sqlite3:</p>
 </li>
 <li><p><a class="reference internal" href="cursor.html#apsw.Cursor.executemany" title="apsw.Cursor.executemany"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.executemany()</span></code></a> also works with statements that return
 data such as selects, and you can have multiple statements.
-sqlite3’s <em>executescript</em> method doesn’t allow any form of
+sqlite3's <em>executescript</em> method doesn't allow any form of
 data being returned (it silently ignores any returned data).</p></li>
 <li><p>sqlite3 swallows exceptions in your callbacks making it far harder
 to debug problems. That also prevents you from raising exceptions in
@@ -195,8 +192,8 @@ example of the difference in approach of the two wrappers.</p></li>
 failure condition is tested including running out of memory, error
 returns etc. Code coverage by the test suite is 99.6%. sqlite3 is
 good at 81% for C code although there are several places that
-coverage can be improved. I haven’t measured code coverage for
-sqlite3’s Python code.  The consequences of this are that APSW
+coverage can be improved. I haven't measured code coverage for
+sqlite3's Python code.  The consequences of this are that APSW
 catches issues earlier and gives far better diagnostics.  As an
 example try returning an unsupported type from a registered scalar
 function.</p></li>
@@ -220,34 +217,9 @@ libraries that abstract away the database layer</p></li>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <div>
-    <h3><a href="index.html">Table of Contents</a></h3>
-    <ul>
-<li><a class="reference internal" href="#">sqlite3 module differences</a><ul>
-<li><a class="reference internal" href="#what-apsw-does-better">What APSW does better</a></li>
-<li><a class="reference internal" href="#what-sqlite3-does-better">What sqlite3 does better</a></li>
-</ul>
-</li>
-</ul>
-
-  </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="dbapi.html"
-                          title="previous chapter">DBAPI notes</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="benchmarking.html"
-                          title="next chapter">Benchmarking</a></p>
-  </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/pysqlite.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/apswlogo.png" alt="Logo"/>
+            </a></p>
 <div id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
@@ -258,6 +230,60 @@ libraries that abstract away the database layer</p></li>
     </div>
 </div>
 <script>document.getElementById('searchbox').style.display = "block"</script>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="dbapi.html"
+                          title="previous chapter">DBAPI notes</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="benchmarking.html"
+                          title="next chapter">Benchmarking</a></p>
+  </div>
+  <div>
+    <h3><a href="index.html">On this page</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">sqlite3 module differences</a><ul>
+<li><a class="reference internal" href="#what-apsw-does-better">What APSW does better</a></li>
+<li><a class="reference internal" href="#what-sqlite3-does-better">What sqlite3 does better</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+<h3><a href="index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="download.html">Download</a></li>
+<li class="toctree-l1"><a class="reference internal" href="build.html">Building</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apsw.html">APSW Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="connection.html">Connections to a database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cursor.html">Cursors (executing SQL)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="blob.html">Blob Input/Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="types.html">Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">sqlite3 module differences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmarking.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="copyright.html">Copyright and License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changes.html">Change History</a></li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/pysqlite.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
         </div>
       </div>
       <div class="clearer"></div>
@@ -277,19 +303,14 @@ libraries that abstract away the database layer</p></li>
         <li class="right" >
           <a href="dbapi.html" title="DBAPI notes"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.41.0.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">sqlite3 module differences</a></li> 
       </ul>
     </div>
-
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Jan 15, 2023.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.0.
+      Last updated on Mar 01, 2023.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
     </div>
-<div class="footer">This page uses <a href="http://analytics.google.com/">
-Google Analytics</a> to collect statistics.
-</div>
-
   </body>
 </html>

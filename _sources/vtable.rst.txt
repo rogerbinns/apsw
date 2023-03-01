@@ -30,16 +30,162 @@ Some examples of how you might use this:
 
 * There are other examples on the `SQLite page <https://sqlite.org/vtab.html>`__
 
-You need to have 3 types of object. A :class:`module <VTModule>`, a
-:class:`virtual table <VTTable>` and a :class:`cursor
-<VTCursor>`. These are documented below. You can also read the `SQLite
-C method documentation <https://sqlite.org/vtab.html>`__.  At the C
-level, they are just one set of methods. At the Python/APSW level,
+.. tip::
+
+  You'll find initial development a lot quicker by using
+  :meth:`apsw.ext.make_virtual_module`.  To write your own
+  you will need to understand `xBestIndex <https://www.sqlite.org/vtab.html#the_xbestindex_method>`__.
+
+To write a virtual table, you need to have 3 types of object. A
+:class:`module <VTModule>`, a :class:`virtual table <VTTable>` and a
+:class:`cursor <VTCursor>`. These are documented below. You can also
+read the `SQLite C method documentation <https://sqlite.org/vtab.html>`__.
+At the C level, they are just one set of methods. At the Python/APSW level,
 they are split over the 3 types of object. The leading **x** is
 omitted in Python. You can return SQLite error codes (eg
 *SQLITE_READONLY*) by raising the appropriate exceptions (eg
 :exc:`ReadOnlyError`).  :meth:`exceptionfor` is a useful helper
 function to do the mapping.
+
+IndexInfo class
+===============
+
+.. class:: IndexInfo
+
+  IndexInfo represents the `sqlite3_index_info
+  <https://www.sqlite.org/c3ref/index_info.html>`__ and associated
+  methods used in the :meth:`VTTable.BestIndexObject` method.  The
+  structure values are not altered or made friendlier in any way.
+
+  Naming is identical to the C structure rather than Pythonic.  You can
+  access members directly while needing to use get/set methods for array
+  members.
+
+  You will get :exc:`ValueError` if you use the object outside of an
+  BestIndex method.
+
+  :meth:`apsw.ext.index_info_to_dict` provides a convenient
+  representation of this object as a :class:`dict`.
+
+.. attribute:: IndexInfo.colUsed
+  :type: set[int]
+
+  (Read-only) Columns used by the statement.  Note that a set is returned, not
+  the underlying integer.
+
+.. index:: sqlite3_vtab_distinct
+
+.. attribute:: IndexInfo.distinct
+  :type: int
+
+  (Read-only) How the query planner would like output ordered
+
+  Calls: `sqlite3_vtab_distinct <https://sqlite.org/c3ref/vtab_distinct.html>`__
+
+.. attribute:: IndexInfo.estimatedCost
+  :type: float
+
+  Estimated cost of using this index
+
+.. attribute:: IndexInfo.estimatedRows
+  :type: int
+
+  Estimated number of rows returned
+
+.. method:: IndexInfo.get_aConstraintUsage_argvIndex(which: int) -> int
+
+ Returns *argvIndex* for *aConstraintUsage[which]*
+
+.. index:: sqlite3_vtab_in
+
+.. method:: IndexInfo.get_aConstraintUsage_in(which: int) -> bool
+
+ Returns True if the constraint is *in* - eg column in (3, 7, 9)
+
+ Calls: `sqlite3_vtab_in <https://sqlite.org/c3ref/vtab_in.html>`__
+
+.. method:: IndexInfo.get_aConstraintUsage_omit(which: int) -> bool
+
+ Returns *omit* for *aConstraintUsage[which]*
+
+.. index:: sqlite3_vtab_collation
+
+.. method:: IndexInfo.get_aConstraint_collation(which: int) -> str
+
+ Returns collation name for *aConstraint[which]*
+
+ Calls: `sqlite3_vtab_collation <https://sqlite.org/c3ref/vtab_collation.html>`__
+
+.. method:: IndexInfo.get_aConstraint_iColumn(which: int) -> int
+
+ Returns *iColumn* for *aConstraint[which]*
+
+.. method:: IndexInfo.get_aConstraint_op(which: int) -> int
+
+ Returns *op* for *aConstraint[which]*
+
+.. index:: sqlite3_vtab_rhs_value
+
+.. method:: IndexInfo.get_aConstraint_rhs(which: int) -> SQLiteValue
+
+ Returns right hand side value if known, else None.
+
+ Calls: `sqlite3_vtab_rhs_value <https://sqlite.org/c3ref/vtab_rhs_value.html>`__
+
+.. method:: IndexInfo.get_aConstraint_usable(which: int) -> bool
+
+ Returns *usable* for *aConstraint[which]*
+
+.. method:: IndexInfo.get_aOrderBy_desc(which: int) -> bool
+
+ Returns *desc* for *aOrderBy[which]*
+
+.. method:: IndexInfo.get_aOrderBy_iColumn(which: int) -> int
+
+ Returns *iColumn* for *aOrderBy[which]*
+
+.. attribute:: IndexInfo.idxFlags
+  :type: int
+
+  Mask of :attr:`SQLITE_INDEX_SCAN flags <apsw.mapping_virtual_table_scan_flags>`
+
+.. attribute:: IndexInfo.idxNum
+  :type: int
+
+  Number used to identify the index
+
+.. attribute:: IndexInfo.idxStr
+  :type: Optional[str]
+
+  Name used to identify the index
+
+.. attribute:: IndexInfo.nConstraint
+  :type: int
+
+  (Read-only) Number of constraint entries
+
+.. attribute:: IndexInfo.nOrderBy
+  :type: int
+
+  (Read-only) Number of order by  entries
+
+.. attribute:: IndexInfo.orderByConsumed
+  :type: bool
+
+  True if index output is already ordered
+
+.. method:: IndexInfo.set_aConstraintUsage_argvIndex(which: int, argvIndex: int) -> None
+
+ Sets *argvIndex* for *aConstraintUsage[which]*
+
+.. method:: IndexInfo.set_aConstraintUsage_in(which: int, filter_all: bool) -> None
+
+ If *which* is an *in* constraint, and *filter_all* is True then your :meth:`VTCursor.Filter`
+ method will have all of the values at once.
+
+.. method:: IndexInfo.set_aConstraintUsage_omit(which: int, omit: bool) -> None
+
+ Sets *omit* for *aConstraintUsage[which]*
 
 VTModule class
 ==============
@@ -110,6 +256,19 @@ way.  Note the (optional) arguments which are passed to the module.
 
    The corresponding call is :meth:`VTTable.Destroy`.
 
+.. method:: VTModule.ShadowName(table_suffix: str) -> bool
+
+  This method is called to check if
+  *table_suffix* is a `shadow name
+  <https://www.sqlite.org/vtab.html#the_xshadowname_method>`__
+
+  The default implementation always returns *False*.
+
+  If a virtual table is created using this module
+  named :code:`example` and then a  real table is created
+  named :code:`example_content`, this would be called with
+  a *table_suffix* of :code:`content`
+
 VTTable class
 =============
 
@@ -128,7 +287,7 @@ VTTable class
   .. _vtablestructure:
 
   A virtual table is structured as a series of rows, each of which has
-  the same columns.  The value in a column must be one of the `5
+  the same number of columns.  The value in a column must be one of the `5
   supported types <https://sqlite.org/datatype3.html>`_, but the
   type can be different between rows for the same column.  The virtual
   table routines identify the columns by number, starting at zero.
@@ -139,6 +298,9 @@ VTTable class
   the :class:`Table <VTTable>` routines such as :meth:`UpdateChangeRow
   <VTTable.UpdateChangeRow>`.
 
+  It is possible to not have a rowid - read more at `the SQLite
+  site <https://www.sqlite.org/vtab.html#_without_rowid_virtual_tables_>`__
+
 .. method:: VTTable.Begin() -> None
 
   This function is used as part of transactions.  You do not have to
@@ -147,9 +309,12 @@ VTTable class
 .. method:: VTTable.BestIndex(constraints: Sequence[Tuple[int, int], ...], orderbys: Sequence[Tuple[int, int], ...]) -> Any
 
   This is a complex method. To get going initially, just return
-  *None* and you will be fine. Implementing this method reduces
-  the number of rows scanned in your table to satisfy queries, but
-  only if you have an index or index like mechanism available.
+  *None* and you will be fine. You should also consider using
+  :meth:`BestIndexObject` instead.
+
+  Implementing this method reduces the number of rows scanned
+  in your table to satisfy queries, but only if you have an
+  index or index like mechanism available.
 
   .. note::
 
@@ -214,10 +379,11 @@ VTTable class
 
      (integer, boolean)
        By default SQLite will check what you return. For example if
-       you said that you had an index on price, SQLite will still
-       check that each row you returned is greater than 74.99. If you
-       set the boolean to False then SQLite won't do that double
-       checking.
+       you said that you had an index on price and so would only
+       return rows greater than 74.99, then SQLite will still
+       check that each row you returned is greater than 74.99.
+       If the boolean is True then SQLite will not double
+       check, while False retains the default double checking.
 
   Example query: ``select * from foo where price > 74.99 and
   quantity<=10 and customer=='Acme Widgets'``.  customer is column 0,
@@ -316,6 +482,20 @@ VTTable class
     "Acme Widgets",  # constraintarg[0] - customer
     74.99            # constraintarg[1] - price
 
+.. method:: VTTable.BestIndexObject(index_info: IndexInfo) -> bool
+
+  This method is called instead of :meth:`BestIndex` if
+  *use_bestindex_object* was *True* in the call to
+  :meth:`Connection.createmodule`.
+
+  Use the :class:`IndexInfo` to tell SQLite about your indexes, and
+  extract other information.
+
+  Return *True* to indicate all is well.  If you return *False* or there is an error,
+  then `SQLITE_CONSTRAINT
+  <https://www.sqlite.org/vtab.html#return_value>`__ is returned to
+  SQLite.
+
 .. method:: VTTable.Commit() -> None
 
   This function is used as part of transactions.  You do not have to
@@ -335,29 +515,39 @@ VTTable class
   a reference to a virtual table is no longer used, but :meth:`VTTable.Destroy` will
   be called when the table is no longer used.
 
-.. method:: VTTable.FindFunction(name: str, nargs: int)
+.. method:: VTTable.FindFunction(name: str, nargs: int) -> Union[None, Callable, Sequence[int, Callable]]
 
   Called to find if the virtual table has its own implementation of a
-  particular scalar function. You should return the function if you
-  have it, else return None. You do not have to provide this method.
-
-  This method is called while SQLite is `preparing
-  <https://sqlite.org/c3ref/prepare.html>`_ a query.  If a query is
-  in the :ref:`statement cache <statementcache>` then *FindFunction*
-  won't be called again.  If you want to return different
-  implementations for the same function over time then you will need
-  to disable the :ref:`statement cache <statementcache>`.
+  particular scalar function. You do not have to provide this method.
 
   :param name: The function name
   :param nargs: How many arguments the function takes
 
+  Return *None* if you don't have the function.  Zero is then returned to SQLite.
+
+  Return a callable if you have one.  One is then returned to SQLite with the function.
+
+  Return a sequence of int, callable.  The int is returned to SQLite with the function.
+  This is useful for *SQLITE_INDEX_CONSTRAINT_FUNCTION* returns.
+
+  It isn't possible to tell SQLite about exceptions in this function, so an
+  :ref:`unraisable exception <unraisable>` is used.
+
   .. seealso::
 
     * :meth:`Connection.overloadfunction`
+    * `FindFunction documentation <https://www.sqlite.org/vtab.html#xfindfunction>`__
 
 .. method:: VTTable.Open() -> VTCursor
 
   Returns a :class:`cursor <VTCursor>` object.
+
+.. method:: VTTable.Release(level: int) -> None
+
+  Release nested transactions back to *level*.
+
+  If you do not provide this method then the call succeeds (matching
+  SQLite behaviour when no callback is provided).
 
 .. method:: VTTable.Rename(newname: str) -> None
 
@@ -371,12 +561,19 @@ VTTable class
   This function is used as part of transactions.  You do not have to
   provide the method.
 
+.. method:: VTTable.Savepoint(level: int) -> None
+
+  Set nested transaction to *level*.
+
+  If you do not provide this method then the call succeeds (matching
+  SQLite behaviour when no callback is provided).
+
 .. method:: VTTable.Sync() -> None
 
   This function is used as part of transactions.  You do not have to
   provide the method.
 
-.. method:: VTTable.UpdateChangeRow(row: int, newrowid: int, fields: Tuple[SQLiteValue, ...])
+.. method:: VTTable.UpdateChangeRow(row: int, newrowid: int, fields: Tuple[SQLiteValue, ...]) -> None
 
   Change an existing row.  You may also need to change the rowid - for example if the query was
   ``UPDATE table SET rowid=rowid+100 WHERE ...``
@@ -385,7 +582,7 @@ VTTable class
   :param newrowid: If not the same as *row* then also change the rowid to this.
   :param fields: A tuple of values the same length and order as columns in your table
 
-.. method:: VTTable.UpdateDeleteRow(rowid: int)
+.. method:: VTTable.UpdateDeleteRow(rowid: int) -> None
 
   Delete the row with the specified *rowid*.
 
@@ -438,6 +635,24 @@ it is.
   :returns: Must be one one of the :ref:`5
     supported types <types>`
 
+.. index:: sqlite3_vtab_nochange
+
+.. method:: VTCursor.ColumnNoChange(number: int) -> SQLiteValue
+
+  :meth:`VTTable.UpdateChangeRow` is going to be called which includes
+  values for all columns.  However this column is not going to be changed
+  in that update.
+
+  If you return :attr:`apsw.no_change` then :meth:`VTTable.UpdateChangeRow`
+  will have :attr:`apsw.no_change` for this column.  If you return
+  anything else then it will have that value - as though :meth:`VTCursor.Column`
+  had been called.
+
+  This method will only be called if *use_no_change* was *True* in the
+  call to :meth:`Connection.createmodule`.
+
+  Calls: `sqlite3_vtab_nochange <https://sqlite.org/c3ref/vtab_nochange.html>`__
+
 .. method:: VTCursor.Eof() -> bool
 
   Called to ask if we are at the end of the table. It is called after each call to Filter and Next.
@@ -450,14 +665,23 @@ it is.
     an exception in the method or provide a non-boolean return then
     True (no more data) will be returned to SQLite.
 
+.. index:: sqlite3_vtab_in_first, sqlite3_vtab_in_next
+
 .. method:: VTCursor.Filter(indexnum: int, indexname: str, constraintargs: Optional[Tuple]) -> None
 
   This method is always called first to initialize an iteration to the
   first row of the table. The arguments come from the
-  :meth:`~VTTable.BestIndex` method in the :class:`table <VTTable>`
-  object with constraintargs being a tuple of the constraints you
+  :meth:`~VTTable.BestIndex` or :meth:`~VTTable.BestIndexObject`
+  with constraintargs being a tuple of the constraints you
   requested. If you always return None in BestIndex then indexnum will
   be zero, indexstring will be None and constraintargs will be empty).
+
+  If you had an *in* constraint and set :meth:`IndexInfo.set_aConstraintUsage_in`
+  then that value will be a :class:`set`.
+
+  Calls:
+    * `sqlite3_vtab_in_first <https://sqlite.org/c3ref/vtab_in_first.html>`__
+    * `sqlite3_vtab_in_next <https://sqlite.org/c3ref/vtab_in_first.html>`__
 
 .. method:: VTCursor.Next() -> None
 

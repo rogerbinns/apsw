@@ -4,35 +4,32 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Download &#8212; APSW 3.40.1.0 documentation</title>
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+        <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-2NR9GDCQLT');
+        </script>
+    
+    <title>Download &#8212; APSW 3.41.0.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/sphinx_highlight.js"></script>
     
+    <link rel="icon" href="_static/favicon.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
     <link rel="next" title="Building" href="build.html" />
-    <link rel="prev" title="Example/Tour" href="example.html" />
- 
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-2NR9GDCQLT');
-</script>
-
+    <link rel="prev" title="Example/Tour" href="example.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -49,7 +46,7 @@
         <li class="right" >
           <a href="example.html" title="Example/Tour"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.41.0.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Download</a></li> 
       </ul>
     </div>  
@@ -64,7 +61,7 @@
 <section id="pypi-pip">
 <h2>PyPI/pip<a class="headerlink" href="#pypi-pip" title="Permalink to this heading">¶</a></h2>
 <p>APSW is <a class="reference external" href="https://pypi.org/project/apsw/">available</a> at PyPI.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python3 -m pip install apsw
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python3<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>apsw
 </pre></div>
 </div>
 <p>It includes binary downloads for popular platforms, and source for all
@@ -92,9 +89,9 @@ on your platform</p></li>
 <p>See the <a class="reference internal" href="build.html#recommended-build"><span class="std std-ref">recommended</span></a> way to build or all the
 <a class="reference internal" href="build.html#building"><span class="std std-ref">options available</span></a>.</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.40.1.0/apsw-3.40.1.0.zip">apsw-3.40.1.0.zip</a>
+<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.41.0.0/apsw-3.41.0.0.zip">apsw-3.41.0.0.zip</a>
 (Source, includes this HTML Help)</p></li>
-<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.40.1.0/apsw-3.40.1.0-sigs.zip">apsw-3.40.1.0-sigs.zip</a>
+<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.41.0.0/apsw-3.41.0.0-sigs.zip">apsw-3.41.0.0-sigs.zip</a>
 GPG signatures for all files</p></li>
 </ul>
 </section>
@@ -106,10 +103,6 @@ RPMs and DEB packages from the source, although this involves setting
 up package management tools and various dependencies on your build
 machine.</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 16%" />
-<col style="width: 84%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td><p>Debian</p></td>
 <td><p>Install <a class="reference external" href="http://packages.debian.org/python3-apsw">python3-apsw</a></p></td>
@@ -140,14 +133,14 @@ above.  These instructions are for <a class="reference external" href="http://ww
 Unix/Linux platforms and can be downloaded for Windows.)</p>
 <p>Verify</p>
 <blockquote>
-<div><p>To verify a file just use –verify specifying the corresponding
+<div><p>To verify a file just use --verify specifying the corresponding
 <code class="docutils literal notranslate"><span class="pre">.asc</span></code> filename.  This example verifies the source:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ gpg --verify apsw-3.40.1.0.zip.asc
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ gpg --verify apsw-3.41.0.0.zip.asc
 gpg: Signature made ... date ... using DSA key ID 0DFBD904
 gpg: Good signature from &quot;Roger Binns &lt;rogerb@rogerbinns.com&gt;&quot;
 </pre></div>
 </div>
-<p>If you get a “good signature” then the file has not been tampered with
+<p>If you get a &quot;good signature&quot; then the file has not been tampered with
 and you are good to go.</p>
 </div></blockquote>
 <p>Getting the signing key</p>
@@ -183,8 +176,31 @@ gpg:               imported: 1
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/apswlogo.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
   <div>
-    <h3><a href="index.html">Table of Contents</a></h3>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="example.html"
+                          title="previous chapter">Example/Tour</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="build.html"
+                          title="next chapter">Building</a></p>
+  </div>
+  <div>
+    <h3><a href="index.html">On this page</a></h3>
     <ul>
 <li><a class="reference internal" href="#">Download</a><ul>
 <li><a class="reference internal" href="#pypi-pip">PyPI/pip</a></li>
@@ -197,16 +213,32 @@ gpg:               imported: 1
 </ul>
 
   </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="example.html"
-                          title="previous chapter">Example/Tour</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="build.html"
-                          title="next chapter">Building</a></p>
-  </div>
+<h3><a href="index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example/Tour</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Download</a></li>
+<li class="toctree-l1"><a class="reference internal" href="build.html">Building</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apsw.html">APSW Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="connection.html">Connections to a database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cursor.html">Cursors (executing SQL)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="blob.html">Blob Input/Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="types.html">Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmarking.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="copyright.html">Copyright and License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changes.html">Change History</a></li>
+</ul>
+
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -214,16 +246,6 @@ gpg:               imported: 1
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -243,19 +265,14 @@ gpg:               imported: 1
         <li class="right" >
           <a href="example.html" title="Example/Tour"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.41.0.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Download</a></li> 
       </ul>
     </div>
-
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Jan 15, 2023.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.0.
+      Last updated on Mar 01, 2023.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
     </div>
-<div class="footer">This page uses <a href="http://analytics.google.com/">
-Google Analytics</a> to collect statistics.
-</div>
-
   </body>
 </html>

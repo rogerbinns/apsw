@@ -4,34 +4,31 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Change History &#8212; APSW 3.40.1.0 documentation</title>
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+        <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-2NR9GDCQLT');
+        </script>
+    
+    <title>Change History &#8212; APSW 3.41.0.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/sphinx_highlight.js"></script>
     
+    <link rel="icon" href="_static/favicon.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="prev" title="Copyright and License" href="copyright.html" />
- 
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-2NR9GDCQLT');
-</script>
-
+    <link rel="prev" title="Copyright and License" href="copyright.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -45,7 +42,7 @@
         <li class="right" >
           <a href="copyright.html" title="Copyright and License"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.41.0.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Change History</a></li> 
       </ul>
     </div>  
@@ -58,7 +55,49 @@
   <section id="change-history">
 <h1>Change History<a class="headerlink" href="#change-history" title="Permalink to this heading">¶</a></h1>
 <section id="id1">
-<h2>3.40.1.0<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h2>
+<h2>3.41.0.0<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h2>
+<p><strong>Backwards incompatible change</strong>:  Bindings using a dictionary with a
+missing key now result in a <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#KeyError" title="(in Python v3.11)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">KeyError</span></code></a> exception.  You can use
+<a class="reference internal" href="apsw.html#apsw.allow_missing_dict_bindings" title="apsw.allow_missing_dict_bindings"><code class="xref py py-meth docutils literal notranslate"><span class="pre">allow_missing_dict_bindings()</span></code></a> to restore the old behaviour.
+(<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/392">APSW issue 392</a>)</p>
+<p>Virtual table updates:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="vtable.html#apsw.VTTable.BestIndexObject" title="apsw.VTTable.BestIndexObject"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTTable.BestIndexObject()</span></code></a> is now available which provides
+<a class="reference internal" href="vtable.html#apsw.IndexInfo" title="apsw.IndexInfo"><code class="xref py py-class docutils literal notranslate"><span class="pre">IndexInfo</span></code></a> exposing full control (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/332">APSW issue 332</a>, <a class="reference external" href="https://github.com/rogerbinns/apsw/issues/329">APSW issue 329</a>,
+<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/278">APSW issue 278</a>, <a class="reference external" href="https://github.com/rogerbinns/apsw/issues/188">APSW issue 188</a>)</p></li>
+<li><p><a class="reference internal" href="vtable.html#apsw.IndexInfo.set_aConstraintUsage_in" title="apsw.IndexInfo.set_aConstraintUsage_in"><code class="xref py py-meth docutils literal notranslate"><span class="pre">IndexInfo.set_aConstraintUsage_in()</span></code></a> can have <em>in</em> values
+passed all at once to <a class="reference internal" href="vtable.html#apsw.VTCursor.Filter" title="apsw.VTCursor.Filter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTCursor.Filter()</span></code></a></p></li>
+<li><p>Exceptions in <a class="reference internal" href="vtable.html#apsw.VTTable.FindFunction" title="apsw.VTTable.FindFunction"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTTable.FindFunction()</span></code></a> are now reported as
+an <a class="reference internal" href="exceptions.html#unraisable"><span class="std std-ref">unraisable exception</span></a> because it isn't
+possible to tell SQLite about the error.</p></li>
+<li><p><a class="reference internal" href="vtable.html#apsw.VTTable.FindFunction" title="apsw.VTTable.FindFunction"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTTable.FindFunction()</span></code></a> can now return (int, callable)
+to allow for virtual table specific function overloads. (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/269">APSW issue 269</a>)</p></li>
+<li><p>Added <a class="reference internal" href="connection.html#apsw.Connection.vtab_config" title="apsw.Connection.vtab_config"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.vtab_config()</span></code></a> and
+<a class="reference internal" href="connection.html#apsw.Connection.vtab_on_conflict" title="apsw.Connection.vtab_on_conflict"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.vtab_on_conflict()</span></code></a> (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/189">APSW issue 189</a>, <a class="reference external" href="https://github.com/rogerbinns/apsw/issues/190">APSW issue 190</a>)</p></li>
+<li><p><a class="reference internal" href="connection.html#apsw.Connection.createmodule" title="apsw.Connection.createmodule"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.createmodule()</span></code></a> lets you have <a class="reference external" href="https://sqlite.org/vtab.html#eponymous_virtual_tables">eponymous</a>,
+<a class="reference external" href="https://sqlite.org/vtab.html#eponymous_only_virtual_tables">eponymous_only</a>, and
+read_only modules. (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/196">APSW issue 196</a>)</p></li>
+<li><p>Virtual table updates can avoid having to provide all column
+values when only a subset are changing.  See <a class="reference internal" href="apsw.html#apsw.no_change" title="apsw.no_change"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.no_change</span></code></a>,
+<a class="reference internal" href="connection.html#apsw.Connection.createmodule" title="apsw.Connection.createmodule"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.createmodule()</span></code></a> <em>use_no_change</em> parameter,
+<a class="reference internal" href="vtable.html#apsw.VTCursor.ColumnNoChange" title="apsw.VTCursor.ColumnNoChange"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTCursor.ColumnNoChange()</span></code></a> and <a class="reference internal" href="vtable.html#apsw.VTTable.UpdateChangeRow" title="apsw.VTTable.UpdateChangeRow"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTTable.UpdateChangeRow()</span></code></a>
+(<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/402">APSW issue 402</a>)</p></li>
+<li><p>All <a class="reference external" href="https://www.sqlite.org/c3ref/module.html">virtual table methods</a>
+are supported - added <em>iVersion</em> 2 and 3.  You can specify the
+<em>iVersion</em> in <a class="reference internal" href="connection.html#apsw.Connection.createmodule" title="apsw.Connection.createmodule"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.createmodule()</span></code></a> (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/128">APSW issue 128</a>)</p></li>
+<li><p><a class="reference internal" href="ext.html#apsw.ext.make_virtual_module" title="apsw.ext.make_virtual_module"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.ext.make_virtual_module()</span></code></a> makes it very easy to turn
+a Python function into a virtual table module.</p></li>
+<li><p><a class="reference internal" href="ext.html#apsw.ext.generate_series" title="apsw.ext.generate_series"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.ext.generate_series()</span></code></a> and <a class="reference internal" href="ext.html#apsw.ext.generate_series_sqlite" title="apsw.ext.generate_series_sqlite"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.ext.generate_series_sqlite()</span></code></a>
+added. (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/380">APSW issue 380</a>)</p></li>
+</ul>
+<p><a class="reference internal" href="apsw.html#apsw.format_sql_value" title="apsw.format_sql_value"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.format_sql_value()</span></code></a> now outputs floating point NaN, positive
+and negative infinity, and signed zero exactly as SQLite does (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/398">APSW issue 398</a>)</p>
+<p>Added <a class="reference internal" href="ext.html#apsw.ext.format_query_table" title="apsw.ext.format_query_table"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.ext.format_query_table()</span></code></a> for handy table output
+with auto column sizes, colour, word wrap etc.</p>
+<p>Added <a class="reference internal" href="connection.html#apsw.Connection.is_interrupted" title="apsw.Connection.is_interrupted"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.is_interrupted()</span></code></a>.</p>
+</section>
+<section id="id2">
+<h2>3.40.1.0<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h2>
 <p>Implemented <a class="reference external" href="https://www.sqlite.org/windowfunctions.html#udfwinfunc">window functions</a>
 (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/292">APSW issue 292</a>)</p>
 <p><a class="reference external" href="https://www.sqlite.org/c3ref/c_deterministic.html">Function flags</a>
@@ -77,8 +116,8 @@ and <a class="reference internal" href="apsw.html#apsw.mapping_statement_status"
 (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/382">APSW issue 382</a>)</p>
 <p>When an <a class="reference internal" href="exceptions.html#unraisable"><span class="std std-ref">unraisable exception</span></a> happens,
 <a class="reference external" href="https://www.sqlite.org/c3ref/log.html">sqlite3_log</a> is now called
-so you will have context within SQLite’s actions.  <a class="reference external" href="https://docs.python.org/3/library/sys.html#sys.unraisablehook">sys.unraisablehook</a> is
-now called first, and if it doesn’t exist then <a class="reference external" href="https://docs.python.org/3/library/sys.html#sys.excepthook">sys.excepthook</a> as
+so you will have context within SQLite's actions.  <a class="reference external" href="https://docs.python.org/3/library/sys.html#sys.unraisablehook">sys.unraisablehook</a> is
+now called first, and if it doesn't exist then <a class="reference external" href="https://docs.python.org/3/library/sys.html#sys.excepthook">sys.excepthook</a> as
 before.  (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/385">APSW issue 385</a>)</p>
 <p>When the wrong type is given for a function argument, the error
 message now includes the parameter name and function signature.
@@ -91,8 +130,8 @@ forwards SQLite messages to the <a class="reference external" href="https://docs
 names.  The test suite also unregisters <a class="reference external" href="https://www.sqlite.org/zipvfs/doc/trunk/www/index.wiki">ZipVFS</a>
 (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/394">APSW issue 394</a>)</p>
 </section>
-<section id="id2">
-<h2>3.40.0.0<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h2>
+<section id="id3">
+<h2>3.40.0.0<a class="headerlink" href="#id3" title="Permalink to this heading">¶</a></h2>
 <p>Fixed regression in statement cache update (version 3.38.1-r1) where
 trailing whitespace in queries would be incorrectly treated as
 incomplete execution (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/376">APSW issue 376</a>)</p>
@@ -113,8 +152,8 @@ extracted to make this documentation, docstrings, and docstrings in
 the type stubs.</p>
 <p><a class="reference internal" href="example.html"><span class="doc">Example/Tour</span></a> updated and appearance improved (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/367">APSW issue 367</a>).</p>
 </section>
-<section id="id3">
-<h2>3.39.4.0<a class="headerlink" href="#id3" title="Permalink to this heading">¶</a></h2>
+<section id="id4">
+<h2>3.39.4.0<a class="headerlink" href="#id4" title="Permalink to this heading">¶</a></h2>
 <p>Added <a class="reference internal" href="connection.html#apsw.Connection.cache_stats" title="apsw.Connection.cache_stats"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.cache_stats()</span></code></a> to provide more information about
 the statement cache.</p>
 <p><a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.execute()</span></code></a> now uses <a class="reference external" href="https://sqlite.org/c3ref/prepare.html">sqlite_prepare_v3</a> which allows supplying
@@ -122,7 +161,7 @@ the statement cache.</p>
 <p><a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.execute()</span></code></a> has a new <cite>can_cache</cite> parameter to control
 whether the query can use the statement cache.  One example use is
 with <a class="reference internal" href="connection.html#apsw.Connection.setauthorizer" title="apsw.Connection.setauthorizer"><code class="xref py py-meth docutils literal notranslate"><span class="pre">authorizers</span></code></a> because they only
-run during prepare, which doesn’t happen with already cached
+run during prepare, which doesn't happen with already cached
 statements.</p>
 <p>(The <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.execute()</span></code></a> additional parameters are keyword only and
 also present in <a class="reference internal" href="cursor.html#apsw.Cursor.executemany" title="apsw.Cursor.executemany"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.executemany()</span></code></a>, and the corresponding
@@ -135,17 +174,17 @@ methods.)</p>
 <a class="reference external" href="https://docs.python.org/3/library/collections.html#collections.UserDict" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">collections.UserDict</span></code></a>) will also be treated as dictionaries.
 (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/373">APSW issue 373</a>)</p>
 </section>
-<section id="id4">
-<h2>3.39.3.0<a class="headerlink" href="#id4" title="Permalink to this heading">¶</a></h2>
+<section id="id5">
+<h2>3.39.3.0<a class="headerlink" href="#id5" title="Permalink to this heading">¶</a></h2>
 <p>Test no longer fails if APSW was compiled without
 SQLITE_ENABLE_COLUMN_METADATA but sqlite3 was separately compiled with
 it.  APSW should be compiled with the same flags as sqlite3 to match
 functionality and APIs. (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/363">APSW issue 363</a>)</p>
-<p><cite>–use-system-sqlite-config</cite> setup.py <cite>build_ext</cite> option added to
+<p><cite>--use-system-sqlite-config</cite> setup.py <cite>build_ext</cite> option added to
 allow <a class="reference internal" href="build.html#matching-sqlite-options"><span class="std std-ref">Matching APSW and SQLite options</span></a>. (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/364">APSW issue 364</a>)</p>
 </section>
-<section id="id5">
-<h2>3.39.2.1<a class="headerlink" href="#id5" title="Permalink to this heading">¶</a></h2>
+<section id="id6">
+<h2>3.39.2.1<a class="headerlink" href="#id6" title="Permalink to this heading">¶</a></h2>
 <p>PyPI now includes Python 3.11 builds.</p>
 <p>Instead of using scripts, you can now run several tools directly:</p>
 <ul class="simple">
@@ -159,7 +198,7 @@ allow <a class="reference internal" href="build.html#matching-sqlite-options"><s
 existing code will not break, except on Python 3.6).</p>
 <p><a class="reference internal" href="shell.html#shell"><span class="std std-ref">Shell</span></a>: On Windows the native console support for colour is now used
 (previously a third party module was supported).</p>
-<p>You <a class="reference internal" href="build.html#setup-build-flags"><span class="std std-ref">can use –definevalues in setup.py build_ext</span></a> to provide compiler defines used for configuring
+<p>You <a class="reference internal" href="build.html#setup-build-flags"><span class="std std-ref">can use --definevalues in setup.py build_ext</span></a> to provide compiler defines used for configuring
 SQLite. (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/357">APSW issue 357</a>)</p>
 <p>If SQLITE_ENABLE_COLUMN_METADATA is enabled then
 <a class="reference internal" href="cursor.html#apsw.Cursor.description_full" title="apsw.Cursor.description_full"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Cursor.description_full</span></code></a> is available providing all the column
@@ -171,8 +210,8 @@ automatically obtain the underlying cursor.  See <a class="reference internal" h
 connections and cursors</span></a> in the
 <a class="reference internal" href="tips.html"><span class="doc">Tips</span></a>.  (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/361">APSW issue 361</a>)</p>
 </section>
-<section id="id6">
-<h2>3.39.2.0<a class="headerlink" href="#id6" title="Permalink to this heading">¶</a></h2>
+<section id="id7">
+<h2>3.39.2.0<a class="headerlink" href="#id7" title="Permalink to this heading">¶</a></h2>
 <p><strong>Version numbering scheme change:</strong> Instead of a <em>-r1</em> style suffix,
 there is <em>.0</em> style suffix (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/340">APSW issue 340</a>)</p>
 <p>Updated building for PyPI to include more compiled platforms,
@@ -197,15 +236,15 @@ result code (<a class="reference external" href="https://github.com/rogerbinns/a
 to make this happen.)</p>
 <p>Removed support for setup.py downloading the in-development (aka
 fossil) version of SQLite.</p>
-<p>Shell exit for –version etc cleanly exits (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/210">APSW issue 210</a>)</p>
+<p>Shell exit for --version etc cleanly exits (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/210">APSW issue 210</a>)</p>
 <p>Python 3.11 (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/326">APSW issue 326</a>) now works.</p>
 <p>PyPy3 compiles and mostly works (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/323">APSW issue 323</a>).</p>
 </section>
-<section id="id7">
-<h2>3.38.1-r1<a class="headerlink" href="#id7" title="Permalink to this heading">¶</a></h2>
+<section id="id8">
+<h2>3.38.1-r1<a class="headerlink" href="#id8" title="Permalink to this heading">¶</a></h2>
 <p>All items now have full docstrings including type information.
 (Previously just one line summaries).  Note the C implemented
-functions and data (ie almost all of APSW) can’t provide the same
+functions and data (ie almost all of APSW) can't provide the same
 level of type information as regular Python code.</p>
 <p>A pyi file is included which does provide all the typing
 information in <a class="reference external" href="https://typing.readthedocs.io/en/latest/source/stubs.html">type stub</a> format,
@@ -216,15 +255,15 @@ before 3.7.  (Python 3.6 does still work, but is end of life.)</p>
 <p>The statement cache implementation changed from a dictionary to a
 list.  This allows the cache to be used for the same query text
 multiple times.  (The code is also a quarter of the size and simpler).</p>
-<p>The default for setup.py’s fetch command is to get the SQLite version
-corresponding to APSW’s release.  (Previously it got the latest release.)</p>
+<p>The default for setup.py's fetch command is to get the SQLite version
+corresponding to APSW's release.  (Previously it got the latest release.)</p>
 <p>Added constants:</p>
 <ul class="simple">
 <li><p>SQLITE_INDEX_CONSTRAINT_OFFSET, SQLITE_INDEX_CONSTRAINT_LIMIT</p></li>
 </ul>
 </section>
-<section id="id8">
-<h2>3.37.0-r1<a class="headerlink" href="#id8" title="Permalink to this heading">¶</a></h2>
+<section id="id9">
+<h2>3.37.0-r1<a class="headerlink" href="#id9" title="Permalink to this heading">¶</a></h2>
 <p>Allow breaking of reference cycles between objects that contain a
 <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Connection</span></code></a> or <a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Cursor</span></code></a>, and also use callbacks from that
 object (eg busy handler). (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/314">APSW issue 314</a>)</p>
@@ -247,8 +286,8 @@ greater than 2 billion).</p>
 <li><p>SQLITE_CONSTRAINT_DATATYPE, SQLITE_OPEN_EXRESCODE</p></li>
 </ul>
 </section>
-<section id="id9">
-<h2>3.36.0-r1<a class="headerlink" href="#id9" title="Permalink to this heading">¶</a></h2>
+<section id="id10">
+<h2>3.36.0-r1<a class="headerlink" href="#id10" title="Permalink to this heading">¶</a></h2>
 <p>Implemented <a class="reference internal" href="connection.html#apsw.Connection.serialize" title="apsw.Connection.serialize"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.serialize()</span></code></a> and
 <a class="reference internal" href="connection.html#apsw.Connection.deserialize" title="apsw.Connection.deserialize"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.deserialize()</span></code></a>.  They turn a database into bytes, and
 bytes into a database respectively.</p>
@@ -259,16 +298,16 @@ subclasses.  (<a class="reference external" href="https://github.com/rogerbinns/
 <li><p>SQLITE_FCNTL_EXTERNAL_READER, SQLITE_FCNTL_CKSM_FILE</p></li>
 </ul>
 </section>
-<section id="id10">
-<h2>3.35.4-r1<a class="headerlink" href="#id10" title="Permalink to this heading">¶</a></h2>
+<section id="id11">
+<h2>3.35.4-r1<a class="headerlink" href="#id11" title="Permalink to this heading">¶</a></h2>
 <p>Updates for SQLite download url (the year is part of the urls).</p>
 <p>Added enable flag for built-in SQL math functions, and enable it
-by default with –enable-all-extensions.</p>
+by default with --enable-all-extensions.</p>
 <p>Use the newer buffer API for Python 3 (old API removed in Python
 3.10).</p>
 </section>
-<section id="id11">
-<h2>3.34.0-r1<a class="headerlink" href="#id11" title="Permalink to this heading">¶</a></h2>
+<section id="id12">
+<h2>3.34.0-r1<a class="headerlink" href="#id12" title="Permalink to this heading">¶</a></h2>
 <p>Windows MSI installer files are now provided in addition to the exe
 files (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/294">APSW issue 294</a>), as well as wheels for Python 3.6+.  Python 3.9
 binaries are also now available.  The wheels can be installed via pip.</p>
@@ -278,8 +317,8 @@ binaries are also now available.  The wheels can be installed via pip.</p>
 <li><p>SQLITE_IOERR_CORRUPTFS</p></li>
 </ul>
 </section>
-<section id="id12">
-<h2>3.33.0-r1<a class="headerlink" href="#id12" title="Permalink to this heading">¶</a></h2>
+<section id="id13">
+<h2>3.33.0-r1<a class="headerlink" href="#id13" title="Permalink to this heading">¶</a></h2>
 <p>Small performance improvement in string handling</p>
 <p>apsw module exposes Cursor, Blob, and Backup types (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/273">APSW issue 273</a>)</p>
 <p>pkg-config is used to detect <a class="reference external" href="http://userguide.icu-project.org/howtouseicu">International Components for Unicode (ICU) sdk</a> when the <a class="reference external" href="https://www.sqlite.org/src/artifact?ci=trunk&amp;filename=ext/icu/README.txt">SQLite ICU extension</a> is
@@ -289,8 +328,8 @@ enabled.  It falls back to icu-config as before. (<a class="reference external" 
 <li><p>SQLITE_OPEN_SUPER_JOURNAL</p></li>
 </ul>
 </section>
-<section id="id13">
-<h2>3.32.2-r1<a class="headerlink" href="#id13" title="Permalink to this heading">¶</a></h2>
+<section id="id14">
+<h2>3.32.2-r1<a class="headerlink" href="#id14" title="Permalink to this heading">¶</a></h2>
 <p>Added constants:</p>
 <ul class="simple">
 <li><p>SQLITE_IOERR_DATA, SQLITE_CORRUPT_INDEX, SQLITE_BUSY_TIMEOUT, SQLITE_FCNTL_CKPT_START,
@@ -298,8 +337,8 @@ SQLITE_FCNTL_RESERVE_BYTES</p></li>
 </ul>
 <p>Minor documentation updates</p>
 </section>
-<section id="id14">
-<h2>3.31.1-r1<a class="headerlink" href="#id14" title="Permalink to this heading">¶</a></h2>
+<section id="id15">
+<h2>3.31.1-r1<a class="headerlink" href="#id15" title="Permalink to this heading">¶</a></h2>
 <p>Various updates due to year change</p>
 <p>Fix deprecated universal newline use in shell (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/283">APSW issue 283</a>)</p>
 <p>Shell now uses <cite>pragma function_list</cite> to get list of functions for tab completion</p>
@@ -310,8 +349,8 @@ SQLITE_CONSTRAINT_PINNED, SQLITE_OK_SYMLINK, SQLITE_CANTOPEN_SYMLINK,
 SQLITE_FCNTL_CKPT_DONE, SQLITE_OPEN_NOFOLLOW, SQLITE_VTAB_DIRECTONLY</p></li>
 </ul>
 </section>
-<section id="id15">
-<h2>3.30.1-r1<a class="headerlink" href="#id15" title="Permalink to this heading">¶</a></h2>
+<section id="id16">
+<h2>3.30.1-r1<a class="headerlink" href="#id16" title="Permalink to this heading">¶</a></h2>
 <p>Added constants:</p>
 <ul class="simple">
 <li><p>SQLITE_DBCONFIG_ENABLE_VIEW</p></li>
@@ -319,8 +358,8 @@ SQLITE_FCNTL_CKPT_DONE, SQLITE_OPEN_NOFOLLOW, SQLITE_VTAB_DIRECTONLY</p></li>
 <p>Updated hashing of SQL statements (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/274">APSW issue 274</a>)</p>
 <p>Python 3.8 Windows binaries available.</p>
 </section>
-<section id="id16">
-<h2>3.29.0-r1<a class="headerlink" href="#id16" title="Permalink to this heading">¶</a></h2>
+<section id="id17">
+<h2>3.29.0-r1<a class="headerlink" href="#id17" title="Permalink to this heading">¶</a></h2>
 <p>Added constants:</p>
 <ul class="simple">
 <li><p>SQLITE_DBCONFIG_DQS_DML, SQLITE_DBCONFIG_DQS_DDL, SQLITE_DBCONFIG_LEGACY_ALTER_TABLE</p></li>
@@ -328,31 +367,31 @@ SQLITE_FCNTL_CKPT_DONE, SQLITE_OPEN_NOFOLLOW, SQLITE_VTAB_DIRECTONLY</p></li>
 <p>Updated <a class="reference internal" href="connection.html#apsw.Connection.config" title="apsw.Connection.config"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.config()</span></code></a> with all current <a class="reference external" href="https://sqlite.org/c3ref/c_dbconfig_defensive.html">SQLITE_DBCONFIG</a> constants. Also fixes
 <a class="reference external" href="https://github.com/rogerbinns/apsw/issues/249">APSW issue 249</a>.</p>
 </section>
-<section id="id17">
-<h2>3.28.0-r1<a class="headerlink" href="#id17" title="Permalink to this heading">¶</a></h2>
+<section id="id18">
+<h2>3.28.0-r1<a class="headerlink" href="#id18" title="Permalink to this heading">¶</a></h2>
 <p>Added constant:</p>
 <ul class="simple">
 <li><p>SQLITE_DBCONFIG_WRITABLE_SCHEMA</p></li>
 </ul>
 </section>
-<section id="id18">
-<h2>3.27.2-r1<a class="headerlink" href="#id18" title="Permalink to this heading">¶</a></h2>
+<section id="id19">
+<h2>3.27.2-r1<a class="headerlink" href="#id19" title="Permalink to this heading">¶</a></h2>
 <p>Added constants:</p>
 <ul class="simple">
 <li><p>SQLITE_CONFIG_MEMDB_MAXSIZE, SQLITE_FCNTL_SIZE_LIMIT</p></li>
 </ul>
 <p>Added support for the geopoly extension (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/253">APSW issue 253</a>)</p>
-<p>Removed hash optimisation that isn’t useful any more (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/256">APSW issue 256</a>)</p>
+<p>Removed hash optimisation that isn't useful any more (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/256">APSW issue 256</a>)</p>
 </section>
-<section id="id19">
-<h2>3.26.0-r1<a class="headerlink" href="#id19" title="Permalink to this heading">¶</a></h2>
+<section id="id20">
+<h2>3.26.0-r1<a class="headerlink" href="#id20" title="Permalink to this heading">¶</a></h2>
 <p>Added constant:</p>
 <ul class="simple">
 <li><p>SQLITE_DBCONFIG_DEFENSIVE</p></li>
 </ul>
 </section>
-<section id="id20">
-<h2>3.25.2-r1<a class="headerlink" href="#id20" title="Permalink to this heading">¶</a></h2>
+<section id="id21">
+<h2>3.25.2-r1<a class="headerlink" href="#id21" title="Permalink to this heading">¶</a></h2>
 <p>Added constants:</p>
 <ul class="simple">
 <li><p>SQLITE_INDEX_CONSTRAINT_FUNCTION, SQLITE_CANTOPEN_DIRTYWAL, SQLITE_ERROR_SNAPSHOT, SQLITE_FCNTL_DATA_VERSION</p></li>
@@ -360,8 +399,8 @@ SQLITE_FCNTL_CKPT_DONE, SQLITE_OPEN_NOFOLLOW, SQLITE_VTAB_DIRECTONLY</p></li>
 <p>Shell output mode now has lines and columns for compatibility (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/214">APSW issue 214</a>)</p>
 <p>Example now runs under both Python 2 and 3.</p>
 </section>
-<section id="id21">
-<h2>3.24.0-r1<a class="headerlink" href="#id21" title="Permalink to this heading">¶</a></h2>
+<section id="id22">
+<h2>3.24.0-r1<a class="headerlink" href="#id22" title="Permalink to this heading">¶</a></h2>
 <p>Added constants:</p>
 <ul class="simple">
 <li><p>SQLITE_DBCONFIG_RESET_DATABASE, and support for it in <a class="reference internal" href="connection.html#apsw.Connection.config" title="apsw.Connection.config"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.config()</span></code></a></p></li>
@@ -370,23 +409,23 @@ SQLITE_FCNTL_CKPT_DONE, SQLITE_OPEN_NOFOLLOW, SQLITE_VTAB_DIRECTONLY</p></li>
 <p>Added <a class="reference internal" href="apsw.html#apsw.keywords" title="apsw.keywords"><code class="xref py py-attr docutils literal notranslate"><span class="pre">keywords</span></code></a> and updated the shell to use it.</p>
 <p>Python 3.7 Windows binaries are provided.</p>
 </section>
-<section id="id22">
-<h2>3.23.1-r1<a class="headerlink" href="#id22" title="Permalink to this heading">¶</a></h2>
+<section id="id23">
+<h2>3.23.1-r1<a class="headerlink" href="#id23" title="Permalink to this heading">¶</a></h2>
 <p>Added constants:</p>
 <ul class="simple">
 <li><p>SQLITE_DBSTATUS_CACHE_SPILL, SQLITE_FCNTL_LOCK_TIMEOUT</p></li>
 </ul>
 </section>
-<section id="id23">
-<h2>3.22.0-r1<a class="headerlink" href="#id23" title="Permalink to this heading">¶</a></h2>
+<section id="id24">
+<h2>3.22.0-r1<a class="headerlink" href="#id24" title="Permalink to this heading">¶</a></h2>
 <p>Added constants:</p>
 <ul class="simple">
 <li><p>SQLITE_DBCONFIG_TRIGGER_EQP, SQLITE_DBCONFIG_MAX</p></li>
 <li><p>SQLITE_READONLY_CANTINIT, SQLITE_ERROR_RETRY, SQLITE_ERROR_MISSING_COLLSEQ, SQLITE_READONLY_DIRECTORY</p></li>
 </ul>
 </section>
-<section id="id24">
-<h2>3.21.0-r1<a class="headerlink" href="#id24" title="Permalink to this heading">¶</a></h2>
+<section id="id25">
+<h2>3.21.0-r1<a class="headerlink" href="#id25" title="Permalink to this heading">¶</a></h2>
 <p>Added constants:</p>
 <ul class="simple">
 <li><p>SQLITE_INDEX_CONSTRAINT_ISNULL, SQLITE_INDEX_CONSTRAINT_ISNOT,
@@ -401,54 +440,54 @@ SQLITE_FCNTL_BEGIN_ATOMIC_WRITE</p></li>
 </ul>
 <p>Many spelling fixes (thanks to Edward Betts for the review)</p>
 </section>
-<section id="id25">
-<h2>3.20.1-r1<a class="headerlink" href="#id25" title="Permalink to this heading">¶</a></h2>
+<section id="id26">
+<h2>3.20.1-r1<a class="headerlink" href="#id26" title="Permalink to this heading">¶</a></h2>
 <p>Added <a class="reference external" href="https://www.sqlite.org/c3ref/c_dbconfig_enable_fkey.html">SQLITE_DBCONFIG_ENABLE_QPSG</a> constant.</p>
 <p>Added shell .open command (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/240">APSW issue 240</a>)</p>
 </section>
-<section id="id26">
-<h2>3.19.3-r1<a class="headerlink" href="#id26" title="Permalink to this heading">¶</a></h2>
-<p>No APSW changes.</p>
-</section>
 <section id="id27">
-<h2>3.18.0-r1<a class="headerlink" href="#id27" title="Permalink to this heading">¶</a></h2>
-<p>Updated completions in shell (eg added pragmas).</p>
-<p><a class="reference external" href="https://www.sqlite.org/rbu.html">Resumable Bulk Update (RBU)</a>
-extension is now built by default for <a class="reference internal" href="build.html"><span class="doc">–enable-all-extensions</span></a>.</p>
-<p>Added <a class="reference internal" href="connection.html#apsw.Connection.set_last_insert_rowid" title="apsw.Connection.set_last_insert_rowid"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.set_last_insert_rowid()</span></code></a>.</p>
+<h2>3.19.3-r1<a class="headerlink" href="#id27" title="Permalink to this heading">¶</a></h2>
+<p>No APSW changes.</p>
 </section>
 <section id="id28">
-<h2>3.17.0-r1<a class="headerlink" href="#id28" title="Permalink to this heading">¶</a></h2>
-<p>No APSW changes.</p>
+<h2>3.18.0-r1<a class="headerlink" href="#id28" title="Permalink to this heading">¶</a></h2>
+<p>Updated completions in shell (eg added pragmas).</p>
+<p><a class="reference external" href="https://www.sqlite.org/rbu.html">Resumable Bulk Update (RBU)</a>
+extension is now built by default for <a class="reference internal" href="build.html"><span class="doc">--enable-all-extensions</span></a>.</p>
+<p>Added <a class="reference internal" href="connection.html#apsw.Connection.set_last_insert_rowid" title="apsw.Connection.set_last_insert_rowid"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.set_last_insert_rowid()</span></code></a>.</p>
 </section>
 <section id="id29">
-<h2>3.16.2-r1<a class="headerlink" href="#id29" title="Permalink to this heading">¶</a></h2>
+<h2>3.17.0-r1<a class="headerlink" href="#id29" title="Permalink to this heading">¶</a></h2>
+<p>No APSW changes.</p>
+</section>
+<section id="id30">
+<h2>3.16.2-r1<a class="headerlink" href="#id30" title="Permalink to this heading">¶</a></h2>
 <p>Python 3.6 builds added.</p>
 <p>Added SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE and SQLITE_FCNTL_PDB constants.</p>
 </section>
-<section id="id30">
-<h2>3.15.2-r1<a class="headerlink" href="#id30" title="Permalink to this heading">¶</a></h2>
+<section id="id31">
+<h2>3.15.2-r1<a class="headerlink" href="#id31" title="Permalink to this heading">¶</a></h2>
 <p>No APSW changes.</p>
 </section>
-<section id="id31">
-<h2>3.15.1-r1<a class="headerlink" href="#id31" title="Permalink to this heading">¶</a></h2>
+<section id="id32">
+<h2>3.15.1-r1<a class="headerlink" href="#id32" title="Permalink to this heading">¶</a></h2>
 <p>Added SQLITE_FCNTL_WIN32_GET_HANDLE constant.</p>
 </section>
-<section id="id32">
-<h2>3.15.0-r1<a class="headerlink" href="#id32" title="Permalink to this heading">¶</a></h2>
+<section id="id33">
+<h2>3.15.0-r1<a class="headerlink" href="#id33" title="Permalink to this heading">¶</a></h2>
 <p>Added SQLITE_DBCONFIG_MAINDBNAME constant.</p>
 </section>
-<section id="id33">
-<h2>3.14.1-r1<a class="headerlink" href="#id33" title="Permalink to this heading">¶</a></h2>
+<section id="id34">
+<h2>3.14.1-r1<a class="headerlink" href="#id34" title="Permalink to this heading">¶</a></h2>
 <p>Added SQLITE_DBSTATUS_CACHE_USED_SHARED and SQLITE_OK_LOAD_PERMANENTLY constants.</p>
 </section>
-<section id="id34">
-<h2>3.13.0-r1<a class="headerlink" href="#id34" title="Permalink to this heading">¶</a></h2>
+<section id="id35">
+<h2>3.13.0-r1<a class="headerlink" href="#id35" title="Permalink to this heading">¶</a></h2>
 <p>Added SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION constant.</p>
 <p>Added a pip command line in the <a class="reference internal" href="download.html"><span class="doc">Download</span></a> page.</p>
 </section>
-<section id="id35">
-<h2>3.12.2-r1<a class="headerlink" href="#id35" title="Permalink to this heading">¶</a></h2>
+<section id="id36">
+<h2>3.12.2-r1<a class="headerlink" href="#id36" title="Permalink to this heading">¶</a></h2>
 <p>Call <a class="reference external" href="https://www.python.org/dev/peps/pep-0393/#new-api">PyUnicode_READY</a> for
 Python 3.3 onwards.  Fixes <a class="reference external" href="https://github.com/rogerbinns/apsw/issues/208">APSW issue 208</a>, <a class="reference external" href="https://github.com/rogerbinns/apsw/issues/132">APSW issue 132</a>, <a class="reference external" href="https://github.com/rogerbinns/apsw/issues/168">APSW issue 168</a>.</p>
 <p>SQLite 3.12 completely changed the semantics of <a class="reference internal" href="vfs.html#apsw.VFS.xGetLastError" title="apsw.VFS.xGetLastError"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VFS.xGetLastError()</span></code></a> in an
@@ -461,16 +500,16 @@ or address space (an underlying integer changed meaning).</p>
 constants.</p>
 <p>Added support for SQLITE_CONFIG_STMTJRNL_SPILL in <a class="reference internal" href="apsw.html#apsw.config" title="apsw.config"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.config()</span></code></a>.</p>
 </section>
-<section id="id36">
-<h2>3.11.1-r1<a class="headerlink" href="#id36" title="Permalink to this heading">¶</a></h2>
+<section id="id37">
+<h2>3.11.1-r1<a class="headerlink" href="#id37" title="Permalink to this heading">¶</a></h2>
 <p>setup.py attempts to use setuptools if present, before falling back to
 distutils. This allows setuptools only commands such as bdist_wheel to work. You
 can force use of distutils by setting the environment variable
 APSW_FORCE_DISTUTILS to any value. Note that setuptools may also affect the
 output file names. (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/207">APSW issue 207</a>)</p>
 </section>
-<section id="id37">
-<h2>3.11.0-r1<a class="headerlink" href="#id37" title="Permalink to this heading">¶</a></h2>
+<section id="id38">
+<h2>3.11.0-r1<a class="headerlink" href="#id38" title="Permalink to this heading">¶</a></h2>
 <p>The shell dump command now outputs the page size and user version.  They were
 both output before as comments.</p>
 <p>Updated SQLite download logic for 2016 folder.</p>
@@ -480,36 +519,36 @@ SQLITE_INDEX_CONSTRAINT_GLOB, SQLITE_IOERR_AUTH, SQLITE_FCNTL_JOURNAL_POINTER,
 and SQLITE_FCNTL_VFS_POINTER constants.</p>
 <p>Allow <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> subclasses for backup api (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/199">APSW issue 199</a>).</p>
 <p><a class="reference external" href="https://www.sqlite.org/fts5.html">FTS5</a> and <a class="reference external" href="https://www.sqlite.org/json1.html">JSON1</a> extensions are now built by default for
-<a class="reference internal" href="build.html"><span class="doc">–enable-all-extensions</span></a>.  It is recommended you wait a few more
+<a class="reference internal" href="build.html"><span class="doc">--enable-all-extensions</span></a>.  It is recommended you wait a few more
 releases for these extensions to mature.</p>
 <p>Added a mapping for <a class="reference external" href="https://sqlite.org/c3ref/c_index_scan_unique.html">virtual table scan flags</a></p>
 <p>Use <a class="reference external" href="https://www.sqlite.org/compile.html#enable_api_armor">SQLITE_ENABLE_API_ARMOR</a> for extra error
 checking.</p>
 </section>
-<section id="id38">
-<h2>3.9.2-r1<a class="headerlink" href="#id38" title="Permalink to this heading">¶</a></h2>
+<section id="id39">
+<h2>3.9.2-r1<a class="headerlink" href="#id39" title="Permalink to this heading">¶</a></h2>
 <p>Added SQLITE_IOERR_VNODE constant.</p>
 <p>Windows builds for Python 3.5 are now provided.</p>
 </section>
-<section id="id39">
-<h2>3.8.11.1-r1<a class="headerlink" href="#id39" title="Permalink to this heading">¶</a></h2>
+<section id="id40">
+<h2>3.8.11.1-r1<a class="headerlink" href="#id40" title="Permalink to this heading">¶</a></h2>
 <p>Added SQLITE_FCNTL_RBU and SQLITE_FCNTL_ZIPVFS constants.</p>
-<p>setup’s fetch command can now get arbitrary fossil versions.  For
+<p>setup's fetch command can now get arbitrary fossil versions.  For
 example specify <code class="docutils literal notranslate"><span class="pre">fossil-e596a6b6</span></code>.</p>
 <p>Update tests due to a change in Python 3.5 (exception returned with
 invalid strings for system calls changed from TypeError to
 ValueError).</p>
 <p>Adjusted some internal detection related to the <a class="reference internal" href="apsw.html#apsw.fork_checker" title="apsw.fork_checker"><code class="xref py py-func docutils literal notranslate"><span class="pre">fork</span> <span class="pre">checker</span></code></a></p>
 </section>
-<section id="id40">
-<h2>3.8.10.1-r1<a class="headerlink" href="#id40" title="Permalink to this heading">¶</a></h2>
+<section id="id41">
+<h2>3.8.10.1-r1<a class="headerlink" href="#id41" title="Permalink to this heading">¶</a></h2>
 <p>Added deterministic parameter to
 <a class="reference internal" href="connection.html#apsw.Connection.createscalarfunction" title="apsw.Connection.createscalarfunction"><code class="xref py py-func docutils literal notranslate"><span class="pre">Connection.createscalarfunction()</span></code></a> (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/187">APSW issue 187</a>)</p>
 <p>Switched to new SQLite API returning 64 bit values for <a class="reference internal" href="apsw.html#apsw.status" title="apsw.status"><code class="xref py py-func docutils literal notranslate"><span class="pre">status()</span></code></a>
 (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/191">APSW issue 191</a>)</p>
 </section>
-<section id="id41">
-<h2>3.8.9-r1<a class="headerlink" href="#id41" title="Permalink to this heading">¶</a></h2>
+<section id="id42">
+<h2>3.8.9-r1<a class="headerlink" href="#id42" title="Permalink to this heading">¶</a></h2>
 <p>Fixed column description caching which could be preserved between
 multiple statements in the same execution (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/186">APSW issue 186</a>)</p>
 <p>Updated documentation building tool to use new database of information
@@ -525,12 +564,12 @@ SQLITE_FCNTL_GET_LOCKPROXYFILE).</p>
 <p>Added <a class="reference internal" href="apsw.html#sqliteconstants"><span class="std std-ref">mappings</span></a> for conflict resolution modes,
 virtual table configuration options and xShmLock VFS flags.</p>
 </section>
-<section id="id42">
-<h2>3.8.8.2-r1<a class="headerlink" href="#id42" title="Permalink to this heading">¶</a></h2>
+<section id="id43">
+<h2>3.8.8.2-r1<a class="headerlink" href="#id43" title="Permalink to this heading">¶</a></h2>
 <p>No APSW changes.</p>
 </section>
-<section id="id43">
-<h2>3.8.8.1-r1<a class="headerlink" href="#id43" title="Permalink to this heading">¶</a></h2>
+<section id="id44">
+<h2>3.8.8.1-r1<a class="headerlink" href="#id44" title="Permalink to this heading">¶</a></h2>
 <p>The column description is now cached on first request during a query
 so getting it is quick if called for every row.</p>
 <p>Added SQLITE_CONFIG_PCACHE_HDRSZ and SQLITE_CONFIG_PMASZ constants, and
@@ -538,137 +577,137 @@ support for them in <a class="reference internal" href="apsw.html#apsw.config" t
 <p>Added SQLITE_CHECKPOINT_TRUNCATE constant.</p>
 <p>Update year in various places to 2015.</p>
 </section>
-<section id="id44">
-<h2>3.8.7.3-r1<a class="headerlink" href="#id44" title="Permalink to this heading">¶</a></h2>
+<section id="id45">
+<h2>3.8.7.3-r1<a class="headerlink" href="#id45" title="Permalink to this heading">¶</a></h2>
 <p>No APSW changes.</p>
 </section>
-<section id="id45">
-<h2>3.8.7.2-r1<a class="headerlink" href="#id45" title="Permalink to this heading">¶</a></h2>
+<section id="id46">
+<h2>3.8.7.2-r1<a class="headerlink" href="#id46" title="Permalink to this heading">¶</a></h2>
 <p>Fixed parsing of icu-config flags</p>
 </section>
-<section id="id46">
-<h2>3.8.7.1-r1<a class="headerlink" href="#id46" title="Permalink to this heading">¶</a></h2>
+<section id="id47">
+<h2>3.8.7.1-r1<a class="headerlink" href="#id47" title="Permalink to this heading">¶</a></h2>
 <p>Added SQLITE_LIMIT_WORKER_THREADS constant</p>
 </section>
-<section id="id47">
-<h2>3.8.6-r1<a class="headerlink" href="#id47" title="Permalink to this heading">¶</a></h2>
+<section id="id48">
+<h2>3.8.6-r1<a class="headerlink" href="#id48" title="Permalink to this heading">¶</a></h2>
 <p>Updated test suite for Python 3.4 unittest garbage collection changes
 (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/164">APSW issue 164</a> <a class="reference external" href="https://github.com/rogerbinns/apsw/issues/169">APSW issue 169</a>)</p>
 <p>Using the <a class="reference internal" href="build.html#recommended-build"><span class="std std-ref">recommended</span></a> build option of
-<strong>–enable-all-extensions</strong> turns on <a class="reference external" href="https://sqlite.org/compile.html#enable_stat4">STAT4</a>.  Windows binaries
+<strong>--enable-all-extensions</strong> turns on <a class="reference external" href="https://sqlite.org/compile.html#enable_stat4">STAT4</a>.  Windows binaries
 include this too.</p>
 </section>
-<section id="id48">
-<h2>3.8.5-r1<a class="headerlink" href="#id48" title="Permalink to this heading">¶</a></h2>
+<section id="id49">
+<h2>3.8.5-r1<a class="headerlink" href="#id49" title="Permalink to this heading">¶</a></h2>
 <p>Added SQLITE_IOCAP_IMMUTABLE and SQLITE_FCNTL_WIN32_SET_HANDLE
 constants.</p>
 </section>
-<section id="id49">
-<h2>3.8.4.3-r1<a class="headerlink" href="#id49" title="Permalink to this heading">¶</a></h2>
+<section id="id50">
+<h2>3.8.4.3-r1<a class="headerlink" href="#id50" title="Permalink to this heading">¶</a></h2>
 <p>Added <a class="reference internal" href="cursor.html#apsw.Cursor.fetchone" title="apsw.Cursor.fetchone"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.fetchone()</span></code></a></p>
 </section>
-<section id="id50">
-<h2>3.8.4.2-r1<a class="headerlink" href="#id50" title="Permalink to this heading">¶</a></h2>
+<section id="id51">
+<h2>3.8.4.2-r1<a class="headerlink" href="#id51" title="Permalink to this heading">¶</a></h2>
 <p>No APSW code changes.  Rebuild due to updated SQLite version.</p>
 </section>
-<section id="id51">
-<h2>3.8.4.1-r1<a class="headerlink" href="#id51" title="Permalink to this heading">¶</a></h2>
+<section id="id52">
+<h2>3.8.4.1-r1<a class="headerlink" href="#id52" title="Permalink to this heading">¶</a></h2>
 <p>Windows 64 bit binary builds for Python 3.3+ are back - thanks to
 Mike C. Fletcher for <a class="reference external" href="http://blog.vrplumber.com/b/2014/02/12/step-2-get-amd64-compatible-vs-2010/">pointing the way</a></p>
 <p>Correct detection of current SQLite version from download page for
 <a class="reference internal" href="build.html"><span class="doc">setup.py</span></a> fetch command</p>
 <p>Tested against Python 3.4 and binaries for Windows.</p>
 </section>
-<section id="id52">
-<h2>3.8.3.1-r1<a class="headerlink" href="#id52" title="Permalink to this heading">¶</a></h2>
+<section id="id53">
+<h2>3.8.3.1-r1<a class="headerlink" href="#id53" title="Permalink to this heading">¶</a></h2>
 <p>Updated <a class="reference internal" href="shell.html"><span class="doc">Shell</span></a> completions for keywords, functions and pragmas.</p>
 </section>
-<section id="id53">
-<h2>3.8.3-r1<a class="headerlink" href="#id53" title="Permalink to this heading">¶</a></h2>
+<section id="id54">
+<h2>3.8.3-r1<a class="headerlink" href="#id54" title="Permalink to this heading">¶</a></h2>
 <p>APSW is now hosted at Github - <a class="reference external" href="https://github.com/rogerbinns/apsw">https://github.com/rogerbinns/apsw</a></p>
 <p>Added SQLITE_RECURSIVE, SQLITE_READONLY_DBMOVED,
 SQLITE_FCNTL_COMMIT_PHASETWO, SQLITE_FCNTL_HAS_MOVED and
 SQLITE_FCNTL_SYNC constants.</p>
 </section>
-<section id="id54">
-<h2>3.8.2-r1<a class="headerlink" href="#id54" title="Permalink to this heading">¶</a></h2>
+<section id="id55">
+<h2>3.8.2-r1<a class="headerlink" href="#id55" title="Permalink to this heading">¶</a></h2>
 <p>Added SQLITE_CONFIG_WIN32_HEAPSIZE, SQLITE_CONSTRAINT_ROWID and
 SQLITE_FCNTL_TRACE constants.</p>
 </section>
-<section id="id55">
-<h2>3.8.1-r1<a class="headerlink" href="#id55" title="Permalink to this heading">¶</a></h2>
+<section id="id56">
+<h2>3.8.1-r1<a class="headerlink" href="#id56" title="Permalink to this heading">¶</a></h2>
 <p>Added SQLITE_CANTOPEN_CONVPATH and SQLITE_IOERR_CONVPATH extended
 error codes.</p>
 <p>Updated pysqlite urls to point to github.</p>
 <p>Various minor build/download documentation updates.</p>
 </section>
-<section id="id56">
-<h2>3.8.0.2-r1<a class="headerlink" href="#id56" title="Permalink to this heading">¶</a></h2>
+<section id="id57">
+<h2>3.8.0.2-r1<a class="headerlink" href="#id57" title="Permalink to this heading">¶</a></h2>
 <p>No APSW code changes.  Rebuild due to updated SQLite version.</p>
 <p>Updated documentation tips to show how to <a class="reference internal" href="tips.html#diagnostics-tips"><span class="std std-ref">get detailed
 diagnostics</span></a>.</p>
 </section>
-<section id="id57">
-<h2>3.8.0.1-r1<a class="headerlink" href="#id57" title="Permalink to this heading">¶</a></h2>
+<section id="id58">
+<h2>3.8.0.1-r1<a class="headerlink" href="#id58" title="Permalink to this heading">¶</a></h2>
 <p>No APSW changes.  Rebuild due to updated SQLite version.</p>
 <p>Windows binaries for Python 3.3 64 bit are no longer available as a
 Visual Studio update obliterated the ability to compile them, and I
-have no patience left to fight Microsoft’s tools.</p>
+have no patience left to fight Microsoft's tools.</p>
 </section>
 <section id="r2">
 <h2>3.8.0-r2<a class="headerlink" href="#r2" title="Permalink to this heading">¶</a></h2>
 <p>No APSW changes - updated checksums because SQLite changed the
 released archive to address an autoconf issue on some platforms</p>
 </section>
-<section id="id58">
-<h2>3.8.0-r1<a class="headerlink" href="#id58" title="Permalink to this heading">¶</a></h2>
+<section id="id59">
+<h2>3.8.0-r1<a class="headerlink" href="#id59" title="Permalink to this heading">¶</a></h2>
 <p>Windows binaries for Python 3.3 64 bit are now available after
 managing to get several pieces of Microsoft software to cooperate.</p>
 <p>Fixed shell dump issue when system routines (eg timestamp, username,
-hostname) couldn’t automatically be promoted to unicode.  They are
+hostname) couldn't automatically be promoted to unicode.  They are
 used in comments in the output.  (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/142">APSW issue 142</a>)</p>
 <p>Added SQLITE_DBSTATUS_DEFERRED_FKS, SQLITE_IOERR_GETTEMPPATH,
 SQLITE_WARNING_AUTOINDEX and SQLITE_BUSY_SNAPSHOT constants.</p>
 </section>
-<section id="id59">
-<h2>3.7.17-r1<a class="headerlink" href="#id59" title="Permalink to this heading">¶</a></h2>
+<section id="id60">
+<h2>3.7.17-r1<a class="headerlink" href="#id60" title="Permalink to this heading">¶</a></h2>
 <p>Removed tests that checked directly calling VFS read/write with
 negative offsets or amounts returns errors.  This version of SQLite no
 longer returns errors in those circumstances and typically crashes
 instead.</p>
 <p>Various new constants.</p>
 </section>
-<section id="id60">
-<h2>3.7.16.2-r1<a class="headerlink" href="#id60" title="Permalink to this heading">¶</a></h2>
+<section id="id61">
+<h2>3.7.16.2-r1<a class="headerlink" href="#id61" title="Permalink to this heading">¶</a></h2>
 <p>No APSW changes - just a binary rebuild.  Windows users are
 recommended to upgrade their SQLite version.</p>
 </section>
-<section id="id61">
-<h2>3.7.16.1-r1<a class="headerlink" href="#id61" title="Permalink to this heading">¶</a></h2>
+<section id="id62">
+<h2>3.7.16.1-r1<a class="headerlink" href="#id62" title="Permalink to this heading">¶</a></h2>
 <p>Updated tables of functions and pragmas in the <a class="reference internal" href="shell.html"><span class="doc">Shell</span></a> to match
 current SQLite version.</p>
 </section>
-<section id="id62">
-<h2>3.7.16-r1<a class="headerlink" href="#id62" title="Permalink to this heading">¶</a></h2>
+<section id="id63">
+<h2>3.7.16-r1<a class="headerlink" href="#id63" title="Permalink to this heading">¶</a></h2>
 <p>Adjust to different SQLite download URLs</p>
 <p>Added SQLITE_CONSTRAINT_* and SQLITE_READONLY_ROLLBACK <a class="reference external" href="https://www.sqlite.org/c3ref/c_abort_rollback.html">extended error
 codes</a></p>
 <p>Removed CouchDB virtual table</p>
 </section>
-<section id="id63">
-<h2>3.7.15.2-r1<a class="headerlink" href="#id63" title="Permalink to this heading">¶</a></h2>
+<section id="id64">
+<h2>3.7.15.2-r1<a class="headerlink" href="#id64" title="Permalink to this heading">¶</a></h2>
 <p>No APSW changes - binary rebuild to pickup new SQLite version</p>
 </section>
-<section id="id64">
-<h2>3.7.15.1-r1<a class="headerlink" href="#id64" title="Permalink to this heading">¶</a></h2>
+<section id="id65">
+<h2>3.7.15.1-r1<a class="headerlink" href="#id65" title="Permalink to this heading">¶</a></h2>
 <p>Use https (SSL) for SQLite web site references (downloads and
 documentation links).  On some platforms/versions/SSL libraries,
-Python’s SSL module <a class="reference external" href="https://www.google.com/webhp?q=python%20ssl%20EOF%20occurred%20in%20violation%20of%20protocol">doesn’t work</a>
+Python's SSL module <a class="reference external" href="https://www.google.com/webhp?q=python%20ssl%20EOF%20occurred%20in%20violation%20of%20protocol">doesn't work</a>
 with the SQLite website so a fallback to http is used - the downloads
 still have their checksum verified.</p>
 </section>
-<section id="id65">
-<h2>3.7.15-r1<a class="headerlink" href="#id65" title="Permalink to this heading">¶</a></h2>
+<section id="id66">
+<h2>3.7.15-r1<a class="headerlink" href="#id66" title="Permalink to this heading">¶</a></h2>
 <p>Work around changed semantics for error handling when the VFS xDelete
 method is asked to delete a file that does not exist.</p>
 <p>Completely removed all <a class="reference external" href="https://sqlite.org/asyncvfs.html">AsyncVFS</a> related code.  This extension
@@ -681,11 +720,11 @@ SQLITE_CONFIG_SQLLOG, SQLITE_FCNTL_BUSYHANDLER,
 SQLITE_FCNTL_TEMPFILENAME, SQLITE_CANTOPEN_FULLPATH,
 SQLITE_IOERR_DELETE_NOENT</p>
 </section>
-<section id="id66">
-<h2>3.7.14.1-r1<a class="headerlink" href="#id66" title="Permalink to this heading">¶</a></h2>
+<section id="id67">
+<h2>3.7.14.1-r1<a class="headerlink" href="#id67" title="Permalink to this heading">¶</a></h2>
 <p>Updated setup and test suite so that all files are explicitly closed
 instead of relying on garbage collection.</p>
-<p>Added Windows binaries for Python 3.3.  (Only 32 bit as Python doesn’t
+<p>Added Windows binaries for Python 3.3.  (Only 32 bit as Python doesn't
 provide a free way of making 64 bit Windows binaries.)</p>
 <p>Updated setup.py to work with changed SQLite download page formatting
 when detecting latest version.</p>
@@ -693,8 +732,8 @@ when detecting latest version.</p>
 shell can result in bad data or Python crashing.  The bug has been
 fixed for Python 3.3.1 which is due in November 2012.</p>
 </section>
-<section id="id67">
-<h2>3.7.14-r2<a class="headerlink" href="#id67" title="Permalink to this heading">¶</a></h2>
+<section id="id68">
+<h2>3.7.14-r2<a class="headerlink" href="#id68" title="Permalink to this heading">¶</a></h2>
 <p>Fixed an issue with the GIL in the destructor for functions.  The bug
 would be encountered if you create a function with the same name as an
 existing function and are using an upcoming version of Python (eg
@@ -702,42 +741,42 @@ existing function and are using an upcoming version of Python (eg
 (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/134">APSW issue 134</a>).</p>
 <p>Added shell .print command to match upcoming SQLite shell changes.</p>
 </section>
-<section id="id68">
-<h2>3.7.14-r1<a class="headerlink" href="#id68" title="Permalink to this heading">¶</a></h2>
+<section id="id69">
+<h2>3.7.14-r1<a class="headerlink" href="#id69" title="Permalink to this heading">¶</a></h2>
 <p>Added support for <a class="reference internal" href="connection.html#apsw.Connection.status" title="apsw.Connection.status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.status()</span></code></a> (calls <a class="reference external" href="https://sqlite.org/c3ref/db_status.html">sqlite3_db_status</a>).</p>
 <p>The legacy Windows <a class="reference external" href="http://en.wikipedia.org/wiki/Microsoft_Compiled_HTML_Help">Compiled Help Format</a>
 documentation is no longer produced - the help compiler setup program
-can’t cope with modern machines.</p>
+can't cope with modern machines.</p>
 </section>
-<section id="id69">
-<h2>3.7.13-r1<a class="headerlink" href="#id69" title="Permalink to this heading">¶</a></h2>
+<section id="id70">
+<h2>3.7.13-r1<a class="headerlink" href="#id70" title="Permalink to this heading">¶</a></h2>
 <p>Do not free a structure on failure to register a virtual table module
 as SQLite does that anyway.</p>
 <p>Added SQLITE_OPEN_MEMORY constant.</p>
 </section>
-<section id="id70">
-<h2>3.7.12.1-r1<a class="headerlink" href="#id70" title="Permalink to this heading">¶</a></h2>
+<section id="id71">
+<h2>3.7.12.1-r1<a class="headerlink" href="#id71" title="Permalink to this heading">¶</a></h2>
 <p>No changes to APSW.  Binary rebuilds due to SQLite bugfixes.</p>
 </section>
-<section id="id71">
-<h2>3.7.12-r1<a class="headerlink" href="#id71" title="Permalink to this heading">¶</a></h2>
+<section id="id72">
+<h2>3.7.12-r1<a class="headerlink" href="#id72" title="Permalink to this heading">¶</a></h2>
 <p>Re-enabled the asyncvfs.</p>
 <p>Added <a class="reference internal" href="cursor.html#apsw.Cursor.description" title="apsw.Cursor.description"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Cursor.description</span></code></a> to make DB API interoperability a
 little easier (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/131">APSW issue 131</a>).</p>
 <p>Added SQLITE_DBSTATUS_CACHE_WRITE and SQLITE_CANTOPEN_ISDIR constants.</p>
 </section>
-<section id="id72">
-<h2>3.7.11-r1<a class="headerlink" href="#id72" title="Permalink to this heading">¶</a></h2>
+<section id="id73">
+<h2>3.7.11-r1<a class="headerlink" href="#id73" title="Permalink to this heading">¶</a></h2>
 <p>Added SQLITE_ABORT_ROLLBACK and SQLITE_FCNTL_PRAGMA constants.</p>
 <p>Added <a class="reference internal" href="connection.html#apsw.Connection.readonly" title="apsw.Connection.readonly"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.readonly()</span></code></a>.</p>
 <p>Changed <a class="reference internal" href="connection.html#apsw.Connection.filename" title="apsw.Connection.filename"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Connection.filename</span></code></a> which used to return the string
 used to open the database and now returns the absolute pathname.</p>
 <p>Added <a class="reference internal" href="connection.html#apsw.Connection.db_filename" title="apsw.Connection.db_filename"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.db_filename()</span></code></a>.</p>
 </section>
-<section id="id73">
-<h2>3.7.10-r1<a class="headerlink" href="#id73" title="Permalink to this heading">¶</a></h2>
+<section id="id74">
+<h2>3.7.10-r1<a class="headerlink" href="#id74" title="Permalink to this heading">¶</a></h2>
 <p>The default sector size returned in VFS routines is 4,096 to match
-SQLite’s new default.</p>
+SQLite's new default.</p>
 <p>Several links to SQLite tickets and documentation were updated
 (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/122">APSW issue 122</a>).</p>
 <p>The async vfs is disabled due to a bug in its code that leads to
@@ -745,7 +784,7 @@ random memory reads when dealing with filenames.</p>
 <p>Added SQLITE_CONFIG_GETPCACHE2, SQLITE_CONFIG_GETPCACHE2,
 SQLITE_FCNTL_POWERSAFE_OVERWRITE, SQLITE_FCNTL_VFSNAME and
 SQLITE_IOCAP_POWERSAFE_OVERWRITE constants.</p>
-<p>Fix shell dumping when SQLite doesn’t strip trailing comments from
+<p>Fix shell dumping when SQLite doesn't strip trailing comments from
 view declarations (<a class="reference external" href="https://sqlite.org/src/info/c04a8b8a4f">discussed here</a>)</p>
 <p>Added a <a class="reference internal" href="vfs.html#apsw.URIFilename" title="apsw.URIFilename"><code class="xref py py-class docutils literal notranslate"><span class="pre">URIFilename</span></code></a> class to encapsulate how SQLite provides
 URI parameters to VFS routines (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/124">APSW issue 124</a>).</p>
@@ -753,7 +792,7 @@ URI parameters to VFS routines (<a class="reference external" href="https://gith
 a <a class="reference internal" href="vfs.html#apsw.URIFilename" title="apsw.URIFilename"><code class="xref py py-class docutils literal notranslate"><span class="pre">URIFilename</span></code></a> or a string for the filename.  You can still
 pass either to the <a class="reference internal" href="vfs.html#apsw.VFSFile" title="apsw.VFSFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">VFSFile</span></code></a>.</p>
 <p>Compatibility break: The <a class="reference internal" href="vfs.html"><span class="doc">Virtual File System (VFS)</span></a> code used to always run strings
-you provided through <a class="reference internal" href="vfs.html#apsw.VFS.xFullPathname" title="apsw.VFS.xFullPathname"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VFS.xFullPathname()</span></code></a>.  This isn’t possible
+you provided through <a class="reference internal" href="vfs.html#apsw.VFS.xFullPathname" title="apsw.VFS.xFullPathname"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VFS.xFullPathname()</span></code></a>.  This isn't possible
 with URI pathnames so that code has been removed.  If you construct
 filenames for <a class="reference internal" href="vfs.html#apsw.VFS.xOpen" title="apsw.VFS.xOpen"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VFS.xOpen()</span></code></a> directly (ie bypassing the SQLite
 database open call) then you must call <a class="reference internal" href="vfs.html#apsw.VFS.xFullPathname" title="apsw.VFS.xFullPathname"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VFS.xFullPathname()</span></code></a>
@@ -762,21 +801,21 @@ pathnames.  The SQLite API guarantees that filenames passed to
 <a class="reference internal" href="vfs.html#apsw.VFS.xOpen" title="apsw.VFS.xOpen"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VFS.xOpen()</span></code></a> are exactly what was returned from
 <a class="reference internal" href="vfs.html#apsw.VFS.xFullPathname" title="apsw.VFS.xFullPathname"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VFS.xFullPathname()</span></code></a>.</p>
 </section>
-<section id="id74">
-<h2>3.7.9-r1<a class="headerlink" href="#id74" title="Permalink to this heading">¶</a></h2>
+<section id="id75">
+<h2>3.7.9-r1<a class="headerlink" href="#id75" title="Permalink to this heading">¶</a></h2>
 <p>Added SQLITE_DBSTATUS_CACHE_HIT, SQLITE_DBSTATUS_CACHE_MISS and
 SQLITE_FCNTL_OVERWRITE constants.</p>
 </section>
-<section id="id75">
-<h2>3.7.8-r1<a class="headerlink" href="#id75" title="Permalink to this heading">¶</a></h2>
+<section id="id76">
+<h2>3.7.8-r1<a class="headerlink" href="#id76" title="Permalink to this heading">¶</a></h2>
 <p>Updated documentation and tests due to an undocumented change in VFS
 xDelete semantics.</p>
 <p>Added SQLITE3_FCNTL_PERSIST_WAL and SQLITE3_FCNTL_WIN32_AV_RETRY <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_chunk_size.html">file
 controls</a>.</p>
 <p>Wrapped sqlite3_sourceid (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/120">APSW issue 120</a>)</p>
 </section>
-<section id="id76">
-<h2>3.7.7.1-r1<a class="headerlink" href="#id76" title="Permalink to this heading">¶</a></h2>
+<section id="id77">
+<h2>3.7.7.1-r1<a class="headerlink" href="#id77" title="Permalink to this heading">¶</a></h2>
 <p>Added <a class="reference external" href="https://sqlite.org/c3ref/c_config_getmalloc.html#sqliteconfiguri">SQLITE_CONFIG_URI</a>
 and support for it in <a class="reference internal" href="apsw.html#apsw.config" title="apsw.config"><code class="xref py py-meth docutils literal notranslate"><span class="pre">config()</span></code></a>, and the open flag
 <a class="reference external" href="https://sqlite.org/c3ref/c_open_autoproxy.html">SQLITE_OPEN_URI</a>.  This makes it
@@ -790,8 +829,8 @@ SQLITE_READONLY_CANTLOCK and SQLITE_READONLY_RECOVERY.</p>
 and Python 2: The Python int type is returned for 64 bit integers
 instead of Python long type.</p>
 </section>
-<section id="id77">
-<h2>3.7.6.3-r1<a class="headerlink" href="#id77" title="Permalink to this heading">¶</a></h2>
+<section id="id78">
+<h2>3.7.6.3-r1<a class="headerlink" href="#id78" title="Permalink to this heading">¶</a></h2>
 <p>When invoking the shell by calling <a class="reference internal" href="shell.html#apsw.shell.main" title="apsw.shell.main"><code class="xref py py-func docutils literal notranslate"><span class="pre">apsw.shell.main()</span></code></a> it will not
 become interactive if you supply SQL commands as command line
 arguments.  This is to have the same behaviour as the SQLite shell
@@ -802,8 +841,8 @@ across all columns of some or all tables.</p>
 file automatically deducing separators, column names and data types.</p>
 <p>Detect attempted use of a cursor as input data for itself.</p>
 </section>
-<section id="id78">
-<h2>3.7.6.2-r1<a class="headerlink" href="#id78" title="Permalink to this heading">¶</a></h2>
+<section id="id79">
+<h2>3.7.6.2-r1<a class="headerlink" href="#id79" title="Permalink to this heading">¶</a></h2>
 <p>Fixed <a class="reference external" href="https://github.com/rogerbinns/apsw/issues/117">APSW issue 117</a> where the
 shell could report an I/O error on changing output target for some
 operating systems.  Thanks to Edzard Pasma for finding and diagnosing
@@ -817,8 +856,8 @@ testing or sandboxing).</p>
 more fine grained control over checkpointing and returns useful
 information.</p>
 </section>
-<section id="id79">
-<h2>3.7.5-r1<a class="headerlink" href="#id79" title="Permalink to this heading">¶</a></h2>
+<section id="id80">
+<h2>3.7.5-r1<a class="headerlink" href="#id80" title="Permalink to this heading">¶</a></h2>
 <p>Backwards incompatible change in SQLite 3.7.5 for handling of
 <a class="reference internal" href="vfs.html#apsw.VFSFile.xFileControl" title="apsw.VFSFile.xFileControl"><code class="xref py py-meth docutils literal notranslate"><span class="pre">xFileControl()</span></code></a>.  If you implement this method in a VFS
 then you must return True or False to indicate if the operation was
@@ -828,8 +867,8 @@ understood and an error resulting, or the op not being understood at
 all.)</p>
 <p>Windows Python 3.2 binaries now available.</p>
 </section>
-<section id="id80">
-<h2>3.7.4-r1<a class="headerlink" href="#id80" title="Permalink to this heading">¶</a></h2>
+<section id="id81">
+<h2>3.7.4-r1<a class="headerlink" href="#id81" title="Permalink to this heading">¶</a></h2>
 <p>Binary downloads for Windows 64 bit Python versions 2.6 and above
 including Python 3 are now available.</p>
 <p><a class="reference internal" href="apsw.html#apsw.softheaplimit" title="apsw.softheaplimit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.softheaplimit()</span></code></a> now uses <a class="reference external" href="https://sqlite.org/c3ref/soft_heap_limit64.html">sqlite3_soft_heap_limit64</a> so you can
@@ -841,8 +880,8 @@ previous value instead of None.</p>
 augmentation of FTS3 rather than totally separate code and described
 in the <a class="reference external" href="https://sqlite.org/fts3.html#fts4">SQLite documentation</a>.</p>
 </section>
-<section id="id81">
-<h2>3.7.3-r1<a class="headerlink" href="#id81" title="Permalink to this heading">¶</a></h2>
+<section id="id82">
+<h2>3.7.3-r1<a class="headerlink" href="#id82" title="Permalink to this heading">¶</a></h2>
 <p>You can read blobs into pre-existing buffers using
 <a class="reference internal" href="blob.html#apsw.Blob.readinto" title="apsw.Blob.readinto"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Blob.readinto()</span></code></a>.  (This is more efficient than allocating new
 buffers as <a class="reference internal" href="blob.html#apsw.Blob.read" title="apsw.Blob.read"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Blob.read()</span></code></a> does and then copying.)  (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/109">APSW issue 109</a>).</p>
@@ -851,29 +890,29 @@ buffers as <a class="reference internal" href="blob.html#apsw.Blob.read" title="
 housekeeping APSW did can be pushed back onto SQLite and the
 consequent deletion of some code</p>
 </section>
-<section id="id82">
-<h2>3.7.2-r1<a class="headerlink" href="#id82" title="Permalink to this heading">¶</a></h2>
+<section id="id83">
+<h2>3.7.2-r1<a class="headerlink" href="#id83" title="Permalink to this heading">¶</a></h2>
 <p>No changes to APSW.  Upgrading to this version of SQLite is
 <a class="reference external" href="https://sqlite.org/releaselog/3_7_2.html">recommended</a>.</p>
 </section>
-<section id="id83">
-<h2>3.7.1-r1<a class="headerlink" href="#id83" title="Permalink to this heading">¶</a></h2>
+<section id="id84">
+<h2>3.7.1-r1<a class="headerlink" href="#id84" title="Permalink to this heading">¶</a></h2>
 <p>Updated various constants including <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_chunk_size.html">SQLITE_FCNTL_CHUNK_SIZE</a> used with
 <a class="reference internal" href="connection.html#apsw.Connection.filecontrol" title="apsw.Connection.filecontrol"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.filecontrol()</span></code></a>.</p>
 <p>Fixed Unicode output with some file objects from the shell (<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/108">APSW issue 108</a>).</p>
 <p>With the shell, you can specify handling of characters not present in
-the output encoding (eg replace to use ‘?’ or similar, ignore,
+the output encoding (eg replace to use '?' or similar, ignore,
 xmlcharrefreplace etc).  For example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">.</span><span class="n">encoding</span> <span class="n">cp437</span><span class="p">:</span><span class="n">replace</span>
 </pre></div>
 </div>
 </section>
-<section id="id84">
-<h2>3.7.0.1-r1<a class="headerlink" href="#id84" title="Permalink to this heading">¶</a></h2>
+<section id="id85">
+<h2>3.7.0.1-r1<a class="headerlink" href="#id85" title="Permalink to this heading">¶</a></h2>
 <p>Fixed issue when using a tracer and a context manager fails to commit.</p>
 </section>
-<section id="id85">
-<h2>3.7.0-r1<a class="headerlink" href="#id85" title="Permalink to this heading">¶</a></h2>
+<section id="id86">
+<h2>3.7.0-r1<a class="headerlink" href="#id86" title="Permalink to this heading">¶</a></h2>
 <p>Added several new constants.</p>
 <p><a class="reference external" href="https://sqlite.org/wal.html">Write Ahead Logging</a> is
 <a class="reference internal" href="tips.html#wal"><span class="std std-ref">supported</span></a>.  You can make all databases automatically use
@@ -886,9 +925,9 @@ now three to four times faster.  Thanks to Nikolaus Rath for pointing
 out the problem and providing test data.</p>
 <p>The shell now does colour highlighting making it easy to visually
 distinguish prompts, errors, headers and value types when outputting
-to a terminal.  See the <cite>–no-colour</cite> argument and <strong>.colour</strong>
+to a terminal.  See the <cite>--no-colour</cite> argument and <strong>.colour</strong>
 command.  Those of you in the two countries that have not adopted the
-metric system may also omit the ‘u’.  For Windows users you won’t get
+metric system may also omit the 'u'.  For Windows users you won't get
 colour output unless you install <a class="reference external" href="http://pypi.python.org/pypi/colorama">colorama</a></p>
 <p>When using the context manager (with statement) of a
 <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> and the exit commit had an error, then the
@@ -913,16 +952,16 @@ SQLite were doing it.</p>
 the <a class="reference internal" href="execution.html#statementcache"><span class="std std-ref">statement cache</span></a> was initialised which would
 result in a crash if any hooks executed SQL code.</p>
 </section>
-<section id="id86">
-<h2>3.6.23.1-r1<a class="headerlink" href="#id86" title="Permalink to this heading">¶</a></h2>
+<section id="id87">
+<h2>3.6.23.1-r1<a class="headerlink" href="#id87" title="Permalink to this heading">¶</a></h2>
 <p>Shell CSV output under Python 3.1 is corrected (work around Python 3.1
 StringIO bug/incompatibility with other Python versions).</p>
-<p>Simplified access to the shell’s <a class="reference internal" href="shell.html#apsw.shell.Shell.db" title="apsw.shell.Shell.db"><code class="xref py py-attr docutils literal notranslate"><span class="pre">database</span></code></a> from the
+<p>Simplified access to the shell's <a class="reference internal" href="shell.html#apsw.shell.Shell.db" title="apsw.shell.Shell.db"><code class="xref py py-attr docutils literal notranslate"><span class="pre">database</span></code></a> from the
 API.</p>
 <p>Added a shell <a class="reference internal" href="example.html#example-shell"><span class="std std-ref">example</span></a>.</p>
 </section>
-<section id="id87">
-<h2>3.6.23-r1<a class="headerlink" href="#id87" title="Permalink to this heading">¶</a></h2>
+<section id="id88">
+<h2>3.6.23-r1<a class="headerlink" href="#id88" title="Permalink to this heading">¶</a></h2>
 <p>If setup is downloading files and an error occurs then it retries up
 to 5 times.</p>
 <p>Added SQLITE_CONFIG_LOG and SQLITE_OPEN_AUTOPROXY constants.</p>
@@ -931,10 +970,10 @@ SQLite was compiled with.</p>
 <p>Added <a class="reference internal" href="apsw.html#apsw.log" title="apsw.log"><code class="xref py py-meth docutils literal notranslate"><span class="pre">log()</span></code></a> to call the SQLite logging interface, and updated
 <a class="reference internal" href="apsw.html#apsw.config" title="apsw.config"><code class="xref py py-meth docutils literal notranslate"><span class="pre">config()</span></code></a> so you can set log destination function.</p>
 </section>
-<section id="id88">
-<h2>3.6.22-r1<a class="headerlink" href="#id88" title="Permalink to this heading">¶</a></h2>
-<p>Made it possible to run distutils ‘sdist’ from an already produced
-source that was made from ‘sdist’.  This was necessary for some Python
+<section id="id89">
+<h2>3.6.22-r1<a class="headerlink" href="#id89" title="Permalink to this heading">¶</a></h2>
+<p>Made it possible to run distutils 'sdist' from an already produced
+source that was made from 'sdist'.  This was necessary for some Python
 virtual package environments.  Note that the recursive result does not
 include the HTML help as distutils has no way of including content in
 a reparented location.  <a class="reference external" href="https://github.com/rogerbinns/apsw/issues/89">APSW issue 89</a></p>
@@ -942,8 +981,8 @@ a reparented location.  <a class="reference external" href="https://github.com/r
 such as page size, encoding, auto_vacuum etc.  The pragmas are
 commented out.  <a class="reference external" href="https://github.com/rogerbinns/apsw/issues/90">APSW issue 90</a></p>
 </section>
-<section id="id89">
-<h2>3.6.21-r1<a class="headerlink" href="#id89" title="Permalink to this heading">¶</a></h2>
+<section id="id90">
+<h2>3.6.21-r1<a class="headerlink" href="#id90" title="Permalink to this heading">¶</a></h2>
 <p>Source and binary files are now digitally signed which means you can
 verify they have not been tampered with.  See <a class="reference internal" href="download.html#verifydownload"><span class="std std-ref">Verifying your download</span></a>
 for instructions.</p>
@@ -952,8 +991,8 @@ transaction as they have no effect inside the transaction.</p>
 <p>Removed some unintentional logging code left in CouchDB virtual
 table code.</p>
 </section>
-<section id="id90">
-<h2>3.6.20-r1<a class="headerlink" href="#id90" title="Permalink to this heading">¶</a></h2>
+<section id="id91">
+<h2>3.6.20-r1<a class="headerlink" href="#id91" title="Permalink to this heading">¶</a></h2>
 <p>Support for Python 3.0 has been dropped as it has been <a class="reference external" href="http://www.python.org/download/releases/3.0.1/">end of lifed</a>.  Use Python 3.1
 onwards.</p>
 <p>Changes to how some statements are <a class="reference external" href="https://sqlite.org/c3ref/prepare.html">prepared</a> to allow the new RANGE and
@@ -972,22 +1011,22 @@ other. <a class="reference external" href="https://github.com/rogerbinns/apsw/is
 used by some programs (such as Firefox) to keep track of the schema
 version.</p></li>
 <li><p>Can now output in <a class="reference external" href="http://json.org">JSON</a>.</p></li>
-<li><p>Fixed <a class="reference external" href="https://github.com/rogerbinns/apsw/issues/83">APSW issue 83</a> - exception if history file didn’t exist</p></li>
+<li><p>Fixed <a class="reference external" href="https://github.com/rogerbinns/apsw/issues/83">APSW issue 83</a> - exception if history file didn't exist</p></li>
 <li><p>You can right justify output in column mode by specifying negative
 widths. <a class="reference external" href="https://github.com/rogerbinns/apsw/issues/84">APSW issue 84</a></p></li>
 <li><p>You no longer get a traceback doing completions if there is a
 virtual table in the database but the module is not loaded.
 <a class="reference external" href="https://github.com/rogerbinns/apsw/issues/86">APSW issue 86</a></p></li>
 <li><p>You can now get detailed tracebacks including local variables using
-the “.exception ON” command.  This is useful when developing
+the &quot;.exception ON&quot; command.  This is useful when developing
 virtual tables and similar functionality.</p></li>
-<li><p>You can now terminate a SQL statement with “go” or “/” on a line
+<li><p>You can now terminate a SQL statement with &quot;go&quot; or &quot;/&quot; on a line
 by itself.</p></li>
 </ul>
 </section>
-<section id="id91">
-<h2>3.6.19-r1<a class="headerlink" href="#id91" title="Permalink to this heading">¶</a></h2>
-<p><strong>Backwards incompatible change</strong> Fixed <a class="reference external" href="https://github.com/rogerbinns/apsw/issues/72">APSW issue 72</a> where APSW wasn’t
+<section id="id92">
+<h2>3.6.19-r1<a class="headerlink" href="#id92" title="Permalink to this heading">¶</a></h2>
+<p><strong>Backwards incompatible change</strong> Fixed <a class="reference external" href="https://github.com/rogerbinns/apsw/issues/72">APSW issue 72</a> where APSW wasn't
 zero basing virtual table <a class="reference internal" href="vtable.html#apsw.VTTable.BestIndex" title="apsw.VTTable.BestIndex"><code class="xref py py-meth docutils literal notranslate"><span class="pre">BestIndex()</span></code></a> constraints
 returned as documented.  If you have working BestIndex code then you
 need to update it for this release.  Thanks to Lefteris for finding
@@ -1010,7 +1049,7 @@ commands and output modes, or just run it like this:</p>
 <p>The <code class="file docutils literal notranslate"><span class="pre">setup.py</span></code> file now has the various options available made
 applicable to appropriate commands only.  Read the <a class="reference internal" href="build.html#setup-py-flags"><span class="std std-ref">updated
 documentation</span></a>.</p>
-<p>You can now specify <cite>build –enable=stat2</cite> to <code class="file docutils literal notranslate"><span class="pre">setup.py</span></code>
+<p>You can now specify <cite>build --enable=stat2</cite> to <code class="file docutils literal notranslate"><span class="pre">setup.py</span></code>
 to enable <a class="reference external" href="https://sqlite.org/compile.html#enable_stat2">advanced statistics gathering</a> for query
 planning.</p>
 <p><code class="file docutils literal notranslate"><span class="pre">setup.py</span></code> can automatically fetch the asyncvfs
@@ -1023,20 +1062,20 @@ is possible on Unix like operating systems, especially if you use the
 <p>Extension loading is now compiled in by default when using the
 amalgamation and compiled out when using existing libraries.  This is
 more likely to match your machine.  You can use
-<cite>–omit=load_extension</cite> or <cite>–enable=load_extension</cite>
+<cite>--omit=load_extension</cite> or <cite>--enable=load_extension</cite>
 to the build/build_ext commands to explicitly disable/enable extension
 loading.  <a class="reference external" href="https://github.com/rogerbinns/apsw/issues/67">APSW issue 67</a></p>
 <p><a class="reference internal" href="build.html#building"><span class="std std-ref">setup.py</span></a> will now abort on a download that has no
 checksum.  See <a class="reference internal" href="build.html#fetch-checksums"><span class="std std-ref">more information</span></a> on checksums.</p>
 <p><a class="reference internal" href="build.html#setup-py-flags"><span class="std std-ref">setup.py</span></a> can also fetch the version of SQLite
 currently under development before a release.  Use
-<cite>–version=fossil</cite>.</p>
+<cite>--version=fossil</cite>.</p>
 <p>Updated which code uses <a class="reference external" href="https://sqlite.org/c3ref/experimental.html">experimental SQLite APIs</a> based on changes in
 SQLite.  The test suite will also work correctly with experimental on
 or off.  (It is on by default.)</p>
 </section>
-<section id="id92">
-<h2>3.6.18-r1<a class="headerlink" href="#id92" title="Permalink to this heading">¶</a></h2>
+<section id="id93">
+<h2>3.6.18-r1<a class="headerlink" href="#id93" title="Permalink to this heading">¶</a></h2>
 <p>The APSW license has been updated to allow you (at your option) to use
 any <a class="reference external" href="http://opensource.org/licenses/alphabetical">OSI approved license</a>.</p>
 <p>The <a class="reference internal" href="benchmarking.html#speedtest"><span class="std std-ref">speedtest</span></a> has been updated to (optionally) use unicode
@@ -1045,13 +1084,13 @@ characters and to (optionally) increase the sizes of data items.</p>
 situations where it was not necessary.  This results in the code
 executing a little faster.</p>
 </section>
-<section id="id93">
-<h2>3.6.17-r1<a class="headerlink" href="#id93" title="Permalink to this heading">¶</a></h2>
+<section id="id94">
+<h2>3.6.17-r1<a class="headerlink" href="#id94" title="Permalink to this heading">¶</a></h2>
 <p>APSW has migrated from Subversion to <a class="reference external" href="http://mercurial.selenic.com/wiki/">Mercurial</a> for source code control.
 Hosting remains at <a class="reference external" href="https://code.google.com/p/apsw/">Google Code</a></p>
 <p>Updated a test due to VFS xUnlock errors now being ignored sometimes
 by SQLite (cvstrac 3946).</p>
-<p>The downloads page in the help didn’t mention the Windows Python 3.1
+<p>The downloads page in the help didn't mention the Windows Python 3.1
 installer.</p>
 <p>Running the test suite is now integrated into <code class="file docutils literal notranslate"><span class="pre">setup.py</span></code> so you
 can do the building and testing all in one go.  Sample command line:</p>
@@ -1065,39 +1104,39 @@ includes FTS3 and RTree by default.)</p>
 Windows binary distribution.</p>
 <p>Various documentation updates.</p>
 </section>
-<section id="id94">
-<h2>3.6.16-r1<a class="headerlink" href="#id94" title="Permalink to this heading">¶</a></h2>
+<section id="id95">
+<h2>3.6.16-r1<a class="headerlink" href="#id95" title="Permalink to this heading">¶</a></h2>
 <p>Windows binary distribution includes Python 3.1.</p>
 <p>Trivial tweaks to keep MSVC happy.</p>
 </section>
-<section id="id95">
-<h2>3.6.15-r1<a class="headerlink" href="#id95" title="Permalink to this heading">¶</a></h2>
+<section id="id96">
+<h2>3.6.15-r1<a class="headerlink" href="#id96" title="Permalink to this heading">¶</a></h2>
 <p>Fixed <a class="reference external" href="https://github.com/rogerbinns/apsw/issues/50">APSW issue 50</a> where <a class="reference internal" href="blob.html#apsw.Blob.read" title="apsw.Blob.read"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Blob.read()</span></code></a> was returning <em>None</em>
 on end of file instead of the documented (and correct) empty
 string/bytes.</p>
 <p>Corrected spelling of option in <a class="reference internal" href="execution.html#apswtrace"><span class="std std-ref">apswtrace</span></a> and only
 output CURSORFROM if SQL tracing is on.</p>
 </section>
-<section id="id96">
-<h2>3.6.14.2-r1<a class="headerlink" href="#id96" title="Permalink to this heading">¶</a></h2>
+<section id="id97">
+<h2>3.6.14.2-r1<a class="headerlink" href="#id97" title="Permalink to this heading">¶</a></h2>
 <p>Updated test code because SQLite 3.6.15 returns a different error code
 on trying to register a function with too many arguments (see
 cvstrac 3875).</p>
 </section>
-<section id="id97">
-<h2>3.6.14.1-r1<a class="headerlink" href="#id97" title="Permalink to this heading">¶</a></h2>
-<p>Changed some internal symbol names so they won’t clash with similar
+<section id="id98">
+<h2>3.6.14.1-r1<a class="headerlink" href="#id98" title="Permalink to this heading">¶</a></h2>
+<p>Changed some internal symbol names so they won't clash with similar
 new ones used by SQLite in the amalgamation.</p>
 <p>Added <a class="reference internal" href="apsw.html#apsw.using_amalgamation" title="apsw.using_amalgamation"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.using_amalgamation</span></code></a> so you can tell if APSW was
 compiled using the <a class="reference external" href="https://sqlite.org/cvstrac/wiki?p=TheAmalgamation">SQLite amalgamation</a>.  Using the
 amalgamation means that SQLite shared libraries are not used and will
 not affect your code.</p>
 <p>Added a checksums file so that when <code class="file docutils literal notranslate"><span class="pre">setup.py</span></code> downloads SQLite,
-we know it hasn’t been tampered with.  (The <a class="reference internal" href="build.html#setup-py-flags"><span class="std std-ref">–fetch-sqlite</span></a> argument can be used to automatically download
+we know it hasn't been tampered with.  (The <a class="reference internal" href="build.html#setup-py-flags"><span class="std std-ref">--fetch-sqlite</span></a> argument can be used to automatically download
 SQLite.)</p>
 </section>
-<section id="id98">
-<h2>3.6.13-r1<a class="headerlink" href="#id98" title="Permalink to this heading">¶</a></h2>
+<section id="id99">
+<h2>3.6.13-r1<a class="headerlink" href="#id99" title="Permalink to this heading">¶</a></h2>
 <p>Added SQLITE_LOCKED_SHAREDCACHE <a class="reference external" href="https://sqlite.org/c3ref/c_ioerr_access.html">extended error code</a>.</p>
 <p>Updated tests as the VFS delete error handling code in SQLite now
 returns the same high level error code between Windows and
@@ -1105,8 +1144,8 @@ non-Windows.</p>
 <p>The CHM format help file produced by the Windows HTML Help Compiler is
 viewable again under Windows HTML Help Viewer.</p>
 </section>
-<section id="id99">
-<h2>3.6.11-r1<a class="headerlink" href="#id99" title="Permalink to this heading">¶</a></h2>
+<section id="id100">
+<h2>3.6.11-r1<a class="headerlink" href="#id100" title="Permalink to this heading">¶</a></h2>
 <p>You can now use the <a class="reference external" href="https://sqlite.org/backup.html">hot backup functionality</a> introduced in SQLite 3.6.11.</p>
 <p>Updated a VFS test to reflect changes in SQLite underlying error
 handling.  (Previously SQLite almost always returned <a class="reference internal" href="exceptions.html#apsw.FullError" title="apsw.FullError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">FullError</span></code></a>
@@ -1116,8 +1155,8 @@ on any write that had an error but now returns <a class="reference internal" hre
 (reincarnated).  That is no longer the case and you will get
 <a class="reference internal" href="exceptions.html#apsw.CursorClosedError" title="apsw.CursorClosedError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">CursorClosedError</span></code></a>.</p>
 </section>
-<section id="id100">
-<h2>3.6.10-r1<a class="headerlink" href="#id100" title="Permalink to this heading">¶</a></h2>
+<section id="id101">
+<h2>3.6.10-r1<a class="headerlink" href="#id101" title="Permalink to this heading">¶</a></h2>
 <p>You can use the database as a <a class="reference external" href="http://docs.python.org/reference/datamodel.html#with-statement-context-managers">context manager</a>
 as defined in <span class="target" id="index-0"></span><a class="pep reference external" href="https://peps.python.org/pep-0343/"><strong>PEP 0343</strong></a>.  When you use <em>with</em> a transaction is
 started.  If the block finishes with an exception then the transaction
@@ -1140,7 +1179,7 @@ ensures it is always closed when finished using it.  See
 <li><p>New mapping: SQLITE_FCNTL_LOCKSTATE, SQLITE_GET_LOCKPROXYFILE, SQLITE_SET_LOCKPROXYFILE, SQLITE_LAST_ERRNO.  SQLite does not document the purpose of these except the first one.</p></li>
 </ul>
 </div></blockquote>
-<p>Updated <a class="reference internal" href="vfs.html#vfs"><span class="std std-ref">Virtual File System (VFS)</span></a> test code.  SQLite’s routines that call
+<p>Updated <a class="reference internal" href="vfs.html#vfs"><span class="std std-ref">Virtual File System (VFS)</span></a> test code.  SQLite's routines that call
 <a class="reference internal" href="vfs.html#apsw.VFSFile.xTruncate" title="apsw.VFSFile.xTruncate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VFSFile.xTruncate()</span></code></a> used to ignore errors but now return an
 error to the caller.  <a class="reference internal" href="vfs.html#apsw.VFSFile.xFileControl" title="apsw.VFSFile.xFileControl"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VFSFile.xFileControl()</span></code></a> is now called so a
 user implemented one must call any base it inherits from for SQLite to
@@ -1153,10 +1192,10 @@ formatted times.  Leading comments are also stripped for queries
 printed in the final reports.  You can also request subsets of the
 reports.</p>
 <p>The <a class="reference internal" href="benchmarking.html#speedtest"><span class="std std-ref">speedtest</span></a> script will now fallback to the Python builtin
-sqlite3 module if it can’t find an externally installed pysqlite.</p>
+sqlite3 module if it can't find an externally installed pysqlite.</p>
 </section>
-<section id="id101">
-<h2>3.6.6.2-r1<a class="headerlink" href="#id101" title="Permalink to this heading">¶</a></h2>
+<section id="id102">
+<h2>3.6.6.2-r1<a class="headerlink" href="#id102" title="Permalink to this heading">¶</a></h2>
 <p>Windows binary download for Python 3.0 is <a class="reference internal" href="download.html#source-and-binaries"><span class="std std-ref">available</span></a>.</p>
 <p>Various changes in data structures and containers to reduce code size.</p>
 <p>Changed the code to handle SQLite errors to only use Python
@@ -1186,19 +1225,19 @@ usage).  The user visible effect was that you could get different
 exceptions and error text depending on whether a query was already in
 the <a class="reference internal" href="execution.html#statementcache"><span class="std std-ref">statement cache</span></a> or if you were
 multi-threading.  As an example, if you have a query that used an
-unknown collation then SQLite’s <a class="reference external" href="https://sqlite.org/c3ref/prepare.html">prepare</a> returns
+unknown collation then SQLite's <a class="reference external" href="https://sqlite.org/c3ref/prepare.html">prepare</a> returns
 <em>SQLITE_ERROR</em> with error text about the bad collation.  If a
 query had already been prepared, the collation removed and then <a class="reference external" href="https://sqlite.org/c3ref/step.html">run</a> the new SQLite routines are
 returning <em>SQLITE_SCHEMA</em> and generic <code class="docutils literal notranslate"><span class="pre">schema</span> <span class="pre">changed</span></code> error
 text.  Changing user defined functions could also cause a previously
 correct query to become invalid.</p>
 </section>
-<section id="id102">
-<h2>3.6.5-r1<a class="headerlink" href="#id102" title="Permalink to this heading">¶</a></h2>
+<section id="id103">
+<h2>3.6.5-r1<a class="headerlink" href="#id103" title="Permalink to this heading">¶</a></h2>
 <p>The distribution now includes a <a class="reference internal" href="benchmarking.html#speedtest"><span class="std std-ref">speedtest</span></a> script.  You can use
 this to see how APSW performs relative to pysqlite, or to track
 performance differences between SQLite versions.  The underlying
-queries are derived from <a class="reference external" href="https://sqlite.org/src/finfo?name=tool/mkspeedsql.tcl">SQLite’s speed test</a></p>
+queries are derived from <a class="reference external" href="https://sqlite.org/src/finfo?name=tool/mkspeedsql.tcl">SQLite's speed test</a></p>
 <p>The statement cache was completely rewritten.  It uses less memory and
 scales significantly better.</p>
 <p>It was possible to get a deadlock between the Python GIL and the
@@ -1206,7 +1245,7 @@ SQLite database mutex when using the same <a class="reference internal" href="co
 multiple threads.  Fixed by releasing the GIL in more places and added
 test that inspects the source to verify GIL/mutex handling.  Thanks to
 amicitas reporting this as <a class="reference external" href="https://github.com/rogerbinns/apsw/issues/31">APSW issue 31</a></p>
-<p>SQLite’s API has been extended in 3.6.5 so that errors can be
+<p>SQLite's API has been extended in 3.6.5 so that errors can be
 retrieved in a thread safe manner.  APSW now uses this API.</p>
 <p>As a consequence of the prior two changes it is now possible and safe
 to use the same <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> across as many threads as you want
@@ -1220,14 +1259,14 @@ See also <a class="reference internal" href="build.html#setup-py-flags"><span cl
 where things are implemented and to make automatic extraction of
 documentation easier.</p>
 </section>
-<section id="id103">
-<h2>3.6.3-r1<a class="headerlink" href="#id103" title="Permalink to this heading">¶</a></h2>
+<section id="id104">
+<h2>3.6.3-r1<a class="headerlink" href="#id104" title="Permalink to this heading">¶</a></h2>
 <p>You can now write your own <a class="reference internal" href="vfs.html#vfs"><span class="std std-ref">Virtual File System (VFS)</span></a> in Python. You can also inherit
 from an existing VFS making it easy to augment or override small bits
 of behaviour without having to code everything else. See the
 <a class="reference internal" href="example.html#example-vfs"><span class="std std-ref">example</span></a> where database files are obfuscated by
 XORing their contents.</p>
-<p><code class="file docutils literal notranslate"><span class="pre">setup.py</span></code> now takes an optional <cite>–fetch-sqlite[=ver]</cite>
+<p><code class="file docutils literal notranslate"><span class="pre">setup.py</span></code> now takes an optional <cite>--fetch-sqlite[=ver]</cite>
 argument to automatically download and use the latest SQLite
 amalgamation (or a specified version). On non-Windows platforms it
 will also work out what compile flags SQLite needs (for example
@@ -1265,16 +1304,16 @@ as <a class="reference external" href="https://github.com/rogerbinns/apsw/issues
 <p>Added <a class="reference internal" href="connection.html#apsw.Connection.sqlite3pointer" title="apsw.Connection.sqlite3pointer"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.sqlite3pointer()</span></code></a> method to help with
 <a class="reference external" href="https://github.com/rogerbinns/apsw/issues/26">APSW issue 26</a></p>
 </section>
-<section id="id104">
-<h2>3.5.9-r2<a class="headerlink" href="#id104" title="Permalink to this heading">¶</a></h2>
+<section id="id105">
+<h2>3.5.9-r2<a class="headerlink" href="#id105" title="Permalink to this heading">¶</a></h2>
 <p>APSW now works with Python 3 (you need 3.0b1 or later).</p>
 <p>(<a class="reference external" href="https://github.com/rogerbinns/apsw/issues/17">APSW issue 17</a>)
 Removed the <em>SQLITE_MAX_</em> constants since they could be
-unreliable (eg APSW can’t tell what a shared library was compiled
+unreliable (eg APSW can't tell what a shared library was compiled
 with). A workaround is documented in <a class="reference internal" href="connection.html#apsw.Connection.limit" title="apsw.Connection.limit"><code class="xref py py-func docutils literal notranslate"><span class="pre">Connection.limit()</span></code></a>.</p>
 </section>
-<section id="id105">
-<h2>3.5.9-r1<a class="headerlink" href="#id105" title="Permalink to this heading">¶</a></h2>
+<section id="id106">
+<h2>3.5.9-r1<a class="headerlink" href="#id106" title="Permalink to this heading">¶</a></h2>
 <p>APSW is now hosted at <a class="reference external" href="https://code.google.com/p/apsw">https://code.google.com/p/apsw</a></p>
 <p>You can use this with SQLite 3.5.9 onwards.</p>
 <p>SQLite now provides the source all <a class="reference external" href="https://sqlite.org/cvstrac/wiki?p=TheAmalgamation">amalgamated</a> into one file
@@ -1287,9 +1326,9 @@ apsw for backwards compatibility</p>
 <p><a class="reference internal" href="connection.html#apsw.Connection.interrupt" title="apsw.Connection.interrupt"><code class="xref py py-func docutils literal notranslate"><span class="pre">Connection.interrupt()</span></code></a> can be called from any thread</p>
 <p>SQLite has implementation limits on string and blob lengths (roughly
 constrained to fitting within a signed 32 bit integer - less than 2GB)
-which weren’t checked. Using a 64 bit Python 2.5+ (as I do) it would
+which weren't checked. Using a 64 bit Python 2.5+ (as I do) it would
 have been possible to destroy memory and crash the
-program. Consequently APSW has length checks to ensure it doesn’t
+program. Consequently APSW has length checks to ensure it doesn't
 happen.  SQLite now has further <a class="reference external" href="https://sqlite.org/limits.html">limits checking</a> which cover other things as well
 such as maximum number of virtual machine opcodes, maximum number of
 variables etc. These are very useful if you are taking in SQL
@@ -1323,8 +1362,8 @@ also had to keep track duplicating effort.</p>
 pysqlite (100). You can however specify more or less as needed.</p>
 <p><a class="reference internal" href="connection.html#apsw.Connection.collationneeded" title="apsw.Connection.collationneeded"><code class="xref py py-func docutils literal notranslate"><span class="pre">Connection.collationneeded()</span></code></a> was implemented.</p>
 </section>
-<section id="id106">
-<h2>3.3.13-r1<a class="headerlink" href="#id106" title="Permalink to this heading">¶</a></h2>
+<section id="id107">
+<h2>3.3.13-r1<a class="headerlink" href="#id107" title="Permalink to this heading">¶</a></h2>
 <p>As of this release, APSW is now co-hosted with pysqlite meaning there
 is one site to go to for your Python SQLite bindings. (Both projects
 subsequently moved to Google Code.)</p>
@@ -1336,7 +1375,7 @@ the 3.3.13 release is recommended over the earlier version.</p>
 <li><p><a class="reference internal" href="connection.html#apsw.Connection.interrupt" title="apsw.Connection.interrupt"><code class="xref py py-func docutils literal notranslate"><span class="pre">Connection.interrupt()</span></code></a> can be safely called from any thread.</p></li>
 <li><p>Empty statements or those consisting entirely of whitespace do not
 cause misuse errors (internally SQLite started returned NULL pointers
-for those statements, and <a class="reference external" href="https://sqlite.org/c3ref/step.html">sqlite3_step</a> didn’t like being passed the
+for those statements, and <a class="reference external" href="https://sqlite.org/c3ref/step.html">sqlite3_step</a> didn't like being passed the
 NULL pointer).</p></li>
 <li><p>Changed special handling of <em>SQLITE_BUSY</em> error to be the same
 as other errors. The special handling previously let you restart on
@@ -1344,34 +1383,34 @@ receiving busy, but also hung onto statements which could result in
 other statements getting busy errors.</p></li>
 </ul>
 </section>
-<section id="id107">
-<h2>3.3.10-r1<a class="headerlink" href="#id107" title="Permalink to this heading">¶</a></h2>
+<section id="id108">
+<h2>3.3.10-r1<a class="headerlink" href="#id108" title="Permalink to this heading">¶</a></h2>
 <p>You can use this with SQLite 3.3.10 onwards.</p>
 <p>Added a statement cache that works in conjunction with the
 <a class="reference external" href="https://sqlite.org/c3ref/prepare.html">sqlite3_prepare_v2</a> API. A
 few issues were exposed in SQLite and hence you must use SQLite 3.3.10
 or later.</p>
 </section>
-<section id="id108">
-<h2>3.3.9-r1<a class="headerlink" href="#id108" title="Permalink to this heading">¶</a></h2>
+<section id="id109">
+<h2>3.3.9-r1<a class="headerlink" href="#id109" title="Permalink to this heading">¶</a></h2>
 <p>You can use this with SQLite 3.3.9 onwards.</p>
 <p>SQLite added <a class="reference external" href="https://sqlite.org/c3ref/prepare.html">sqlite3_prepare_v2</a> API. The net effect of this
 API update is that you will not get SQLITE_SCHEMA any more. SQLite
 will handle it internally.</p>
 </section>
-<section id="id110">
-<h2>3.3.8-r1<a class="headerlink" href="#id110" title="Permalink to this heading">¶</a></h2>
+<section id="id111">
+<h2>3.3.8-r1<a class="headerlink" href="#id111" title="Permalink to this heading">¶</a></h2>
 <p>You can use this with SQLite 3.3.8 onwards. There was an incompatible
 API change for virtual tables in SQLite 3.3.8.</p>
 <p>Virtual tables updated for new api.</p>
 <p>You must call <a class="reference internal" href="connection.html#apsw.Connection.close" title="apsw.Connection.close"><code class="xref py py-func docutils literal notranslate"><span class="pre">close()</span></code></a> on connections. You can
-also call <a class="reference internal" href="cursor.html#apsw.Cursor.close" title="apsw.Cursor.close"><code class="xref py py-func docutils literal notranslate"><span class="pre">close()</span></code></a> on cursors, but it usually isn’t
+also call <a class="reference internal" href="cursor.html#apsw.Cursor.close" title="apsw.Cursor.close"><code class="xref py py-func docutils literal notranslate"><span class="pre">close()</span></code></a> on cursors, but it usually isn't
 necessary.</p>
 <p>All strings are returned as unicode.</p>
 <p><a class="reference external" href="https://docs.python.org/3/c-api/exceptions.html?highlight=pyerr_writeunraisable#c.PyErr_WriteUnraisable">PyErr_WriteUnraisable</a>
 was used for errors in destructors. Unfortunately it is almost
 completely useless, merely printing <em>str</em> of the object and exception.
-This doesn’t help in finding where in your code the issue arose so you
+This doesn't help in finding where in your code the issue arose so you
 could fix it. An internal APSW implementation generates a traceback
 and calls <a class="reference external" href="https://docs.python.org/3/library/sys.html#sys.excepthook" title="(in Python v3.11)"><code class="xref py py-func docutils literal notranslate"><span class="pre">sys.excepthook()</span></code></a>, the default implementation of which
 prints the exception and the traceback to sys.stderr.</p>
@@ -1379,7 +1418,7 @@ prints the exception and the traceback to sys.stderr.</p>
 <div><div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The line number reported in the traceback is often off by
-1. This is because the destructors run “between” lines of
+1. This is because the destructors run &quot;between&quot; lines of
 code and so the following line is reported as the current
 location.</p>
 </div>
@@ -1393,8 +1432,8 @@ virtual tables or similar items with each Connection as it is created.</p>
 <p>Added <a class="reference internal" href="apsw.html#sqliteconstants"><span class="std std-ref">mapping dicts</span></a> which makes it easy to
 map the various constants between strings and ints.</p>
 </section>
-<section id="id111">
-<h2>3.3.7-r1<a class="headerlink" href="#id111" title="Permalink to this heading">¶</a></h2>
+<section id="id112">
+<h2>3.3.7-r1<a class="headerlink" href="#id112" title="Permalink to this heading">¶</a></h2>
 <p>Never released as 3.3.8 came along.</p>
 <p>You can use this release against SQLite 3.3.7. There were no changes
 in the SQLite 3.3.6 API from 3.3.5. In SQLite 3.3.7 an API was added
@@ -1403,7 +1442,7 @@ that allowed removing a chunk of duplicate code. Also added were
 and loading of external modules (shared libraries).</p>
 <p>APSW had the following changes:</p>
 <ul class="simple">
-<li><p>Even more test cases added (you can’t have too many tests :-)</p></li>
+<li><p>Even more test cases added (you can't have too many tests :-)</p></li>
 <li><p>When exceptions occur, dummy frames are added to the traceback in the
 C code. This makes it a lot easier to tell why code was called if you
 encounter an exception. See <a class="reference internal" href="exceptions.html#augmentedstacktraces"><span class="std std-ref">augmented stack traces</span></a> for details.</p></li>
@@ -1412,8 +1451,8 @@ embedded NULL characters (ie not truncated at the NULL).</p></li>
 <li><p>You can load SQLite shared library extensions.</p></li>
 </ul>
 </section>
-<section id="id112">
-<h2>3.3.5-r1<a class="headerlink" href="#id112" title="Permalink to this heading">¶</a></h2>
+<section id="id113">
+<h2>3.3.5-r1<a class="headerlink" href="#id113" title="Permalink to this heading">¶</a></h2>
 <p>You can use this release against any release of SQLite 3 from 3.3.5
 onwards. A bug was also fixed when reporting an error during the
 cleanup of an aggregate function if there had also been an error in
@@ -1422,8 +1461,8 @@ crashed on some versions of Python but not others.)</p>
 <p>SQLite added several functions for returning metadata about result
 column sets. You have to compile SQLite with
 <em>SQLITE_ENABLE_COLUMN_METADATA</em> to get them. This is not the
-default for SQLite. I don’t believe these are generally useful except
-in some corner cases and so they aren’t wrapped. However please shout
+default for SQLite. I don't believe these are generally useful except
+in some corner cases and so they aren't wrapped. However please shout
 if you do need them.  Note that <a class="reference internal" href="cursor.html#apsw.Cursor.getdescription" title="apsw.Cursor.getdescription"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.getdescription()</span></code></a> will
 already give you generally useful information. (Also see the <a class="reference external" href="https://sqlite.org/pragma.html">pragmas</a>)</p>
 <p>The test code has been converted into using the unittest module. Run
@@ -1445,8 +1484,8 @@ callback is run at the end of each statement execution telling you how
 long it took.</p></li>
 </ul>
 </section>
-<section id="id113">
-<h2>3.2.7-r1<a class="headerlink" href="#id113" title="Permalink to this heading">¶</a></h2>
+<section id="id114">
+<h2>3.2.7-r1<a class="headerlink" href="#id114" title="Permalink to this heading">¶</a></h2>
 <p>You can use this release against any release of SQLite 3.</p>
 <p>SQLite 3.2.7 has several bug fixes. The undocumented experimental
 function <em>sqlite3_profile</em> was added, but it not present in apsw
@@ -1460,21 +1499,21 @@ APSW for backwards compatibility.</p>
 <p>Changed the build instructions so configure is run on non-Windows
 platforms.</p>
 <p>Fixed a bug caused by an overly helpful error message trying to tell
-you how many bindings you supplied that crashed if you didn’t supply
+you how many bindings you supplied that crashed if you didn't supply
 any.</p>
 <p>Changed when an error in the step function for an aggregate is
 reported due to limitations in SQLite.</p>
 </section>
-<section id="id114">
-<h2>3.2.2-r1<a class="headerlink" href="#id114" title="Permalink to this heading">¶</a></h2>
+<section id="id115">
+<h2>3.2.2-r1<a class="headerlink" href="#id115" title="Permalink to this heading">¶</a></h2>
 <p>You can use this release against any release of SQLite 3.</p>
 <p>SQLite 3.2.2 API removed <em>sqlite3_global_recover</em>. That function
 was not wrapped in APSW. Note that SQLite 3.2.2 contains a bug fix
 that applies when you use 64 bit integer primary keys (32 bit ints are
 fine).</p>
 </section>
-<section id="id115">
-<h2>3.2.1-r1<a class="headerlink" href="#id115" title="Permalink to this heading">¶</a></h2>
+<section id="id116">
+<h2>3.2.1-r1<a class="headerlink" href="#id116" title="Permalink to this heading">¶</a></h2>
 <p>You can use this release against any release of SQLite 3.</p>
 <p>There are no changes in APSW except to correct an error in the example
 code (collations are registered against the connection not the cursor)</p>
@@ -1482,11 +1521,11 @@ code (collations are registered against the connection not the cursor)</p>
 function named <em>sqlite3_global_recover</em>. That function is not
 applicable for wrapping in APSW.</p>
 </section>
-<section id="id116">
-<h2>3.1.3-r1<a class="headerlink" href="#id116" title="Permalink to this heading">¶</a></h2>
+<section id="id117">
+<h2>3.1.3-r1<a class="headerlink" href="#id117" title="Permalink to this heading">¶</a></h2>
 <p>You can use this release against any release of SQLite 3.</p>
 <p>The text string returned by apsw.Error used to say
-“apsw.APSWException” and has been changed to “apsw.Error”.  This is
+&quot;apsw.APSWException&quot; and has been changed to &quot;apsw.Error&quot;.  This is
 purely cosmetic and helps make clear what the class is. (The old
 string was what the original class name was in an earlier version of
 the code.)</p>
@@ -1523,14 +1562,14 @@ test code which used different names) and to make the source zip file
 extract its contents into a sub-directory which is the more typical
 way of packaging that sort of thing.</p>
 </section>
-<section id="id117">
-<h2>3.0.8-r2<a class="headerlink" href="#id117" title="Permalink to this heading">¶</a></h2>
+<section id="id118">
+<h2>3.0.8-r2<a class="headerlink" href="#id118" title="Permalink to this heading">¶</a></h2>
 <p>All remaining functionality in the C API for SQLite 3.0.8 is now
 available.</p>
 <p>Finished this documentation.</p>
 </section>
-<section id="id118">
-<h2>3.0.8-r1<a class="headerlink" href="#id118" title="Permalink to this heading">¶</a></h2>
+<section id="id119">
+<h2>3.0.8-r1<a class="headerlink" href="#id119" title="Permalink to this heading">¶</a></h2>
 <p>Initial release</p>
 </section>
 </section>
@@ -1542,147 +1581,9 @@ available.</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <div>
-    <h3><a href="index.html">Table of Contents</a></h3>
-    <ul>
-<li><a class="reference internal" href="#">Change History</a><ul>
-<li><a class="reference internal" href="#id1">3.40.1.0</a></li>
-<li><a class="reference internal" href="#id2">3.40.0.0</a></li>
-<li><a class="reference internal" href="#id3">3.39.4.0</a></li>
-<li><a class="reference internal" href="#id4">3.39.3.0</a></li>
-<li><a class="reference internal" href="#id5">3.39.2.1</a></li>
-<li><a class="reference internal" href="#id6">3.39.2.0</a></li>
-<li><a class="reference internal" href="#r1">3.38.5-r1</a></li>
-<li><a class="reference internal" href="#id7">3.38.1-r1</a></li>
-<li><a class="reference internal" href="#id8">3.37.0-r1</a></li>
-<li><a class="reference internal" href="#id9">3.36.0-r1</a></li>
-<li><a class="reference internal" href="#id10">3.35.4-r1</a></li>
-<li><a class="reference internal" href="#id11">3.34.0-r1</a></li>
-<li><a class="reference internal" href="#id12">3.33.0-r1</a></li>
-<li><a class="reference internal" href="#id13">3.32.2-r1</a></li>
-<li><a class="reference internal" href="#id14">3.31.1-r1</a></li>
-<li><a class="reference internal" href="#id15">3.30.1-r1</a></li>
-<li><a class="reference internal" href="#id16">3.29.0-r1</a></li>
-<li><a class="reference internal" href="#id17">3.28.0-r1</a></li>
-<li><a class="reference internal" href="#id18">3.27.2-r1</a></li>
-<li><a class="reference internal" href="#id19">3.26.0-r1</a></li>
-<li><a class="reference internal" href="#id20">3.25.2-r1</a></li>
-<li><a class="reference internal" href="#id21">3.24.0-r1</a></li>
-<li><a class="reference internal" href="#id22">3.23.1-r1</a></li>
-<li><a class="reference internal" href="#id23">3.22.0-r1</a></li>
-<li><a class="reference internal" href="#id24">3.21.0-r1</a></li>
-<li><a class="reference internal" href="#id25">3.20.1-r1</a></li>
-<li><a class="reference internal" href="#id26">3.19.3-r1</a></li>
-<li><a class="reference internal" href="#id27">3.18.0-r1</a></li>
-<li><a class="reference internal" href="#id28">3.17.0-r1</a></li>
-<li><a class="reference internal" href="#id29">3.16.2-r1</a></li>
-<li><a class="reference internal" href="#id30">3.15.2-r1</a></li>
-<li><a class="reference internal" href="#id31">3.15.1-r1</a></li>
-<li><a class="reference internal" href="#id32">3.15.0-r1</a></li>
-<li><a class="reference internal" href="#id33">3.14.1-r1</a></li>
-<li><a class="reference internal" href="#id34">3.13.0-r1</a></li>
-<li><a class="reference internal" href="#id35">3.12.2-r1</a></li>
-<li><a class="reference internal" href="#id36">3.11.1-r1</a></li>
-<li><a class="reference internal" href="#id37">3.11.0-r1</a></li>
-<li><a class="reference internal" href="#id38">3.9.2-r1</a></li>
-<li><a class="reference internal" href="#id39">3.8.11.1-r1</a></li>
-<li><a class="reference internal" href="#id40">3.8.10.1-r1</a></li>
-<li><a class="reference internal" href="#id41">3.8.9-r1</a></li>
-<li><a class="reference internal" href="#id42">3.8.8.2-r1</a></li>
-<li><a class="reference internal" href="#id43">3.8.8.1-r1</a></li>
-<li><a class="reference internal" href="#id44">3.8.7.3-r1</a></li>
-<li><a class="reference internal" href="#id45">3.8.7.2-r1</a></li>
-<li><a class="reference internal" href="#id46">3.8.7.1-r1</a></li>
-<li><a class="reference internal" href="#id47">3.8.6-r1</a></li>
-<li><a class="reference internal" href="#id48">3.8.5-r1</a></li>
-<li><a class="reference internal" href="#id49">3.8.4.3-r1</a></li>
-<li><a class="reference internal" href="#id50">3.8.4.2-r1</a></li>
-<li><a class="reference internal" href="#id51">3.8.4.1-r1</a></li>
-<li><a class="reference internal" href="#id52">3.8.3.1-r1</a></li>
-<li><a class="reference internal" href="#id53">3.8.3-r1</a></li>
-<li><a class="reference internal" href="#id54">3.8.2-r1</a></li>
-<li><a class="reference internal" href="#id55">3.8.1-r1</a></li>
-<li><a class="reference internal" href="#id56">3.8.0.2-r1</a></li>
-<li><a class="reference internal" href="#id57">3.8.0.1-r1</a></li>
-<li><a class="reference internal" href="#r2">3.8.0-r2</a></li>
-<li><a class="reference internal" href="#id58">3.8.0-r1</a></li>
-<li><a class="reference internal" href="#id59">3.7.17-r1</a></li>
-<li><a class="reference internal" href="#id60">3.7.16.2-r1</a></li>
-<li><a class="reference internal" href="#id61">3.7.16.1-r1</a></li>
-<li><a class="reference internal" href="#id62">3.7.16-r1</a></li>
-<li><a class="reference internal" href="#id63">3.7.15.2-r1</a></li>
-<li><a class="reference internal" href="#id64">3.7.15.1-r1</a></li>
-<li><a class="reference internal" href="#id65">3.7.15-r1</a></li>
-<li><a class="reference internal" href="#id66">3.7.14.1-r1</a></li>
-<li><a class="reference internal" href="#id67">3.7.14-r2</a></li>
-<li><a class="reference internal" href="#id68">3.7.14-r1</a></li>
-<li><a class="reference internal" href="#id69">3.7.13-r1</a></li>
-<li><a class="reference internal" href="#id70">3.7.12.1-r1</a></li>
-<li><a class="reference internal" href="#id71">3.7.12-r1</a></li>
-<li><a class="reference internal" href="#id72">3.7.11-r1</a></li>
-<li><a class="reference internal" href="#id73">3.7.10-r1</a></li>
-<li><a class="reference internal" href="#id74">3.7.9-r1</a></li>
-<li><a class="reference internal" href="#id75">3.7.8-r1</a></li>
-<li><a class="reference internal" href="#id76">3.7.7.1-r1</a></li>
-<li><a class="reference internal" href="#id77">3.7.6.3-r1</a></li>
-<li><a class="reference internal" href="#id78">3.7.6.2-r1</a></li>
-<li><a class="reference internal" href="#id79">3.7.5-r1</a></li>
-<li><a class="reference internal" href="#id80">3.7.4-r1</a></li>
-<li><a class="reference internal" href="#id81">3.7.3-r1</a></li>
-<li><a class="reference internal" href="#id82">3.7.2-r1</a></li>
-<li><a class="reference internal" href="#id83">3.7.1-r1</a></li>
-<li><a class="reference internal" href="#id84">3.7.0.1-r1</a></li>
-<li><a class="reference internal" href="#id85">3.7.0-r1</a></li>
-<li><a class="reference internal" href="#id86">3.6.23.1-r1</a></li>
-<li><a class="reference internal" href="#id87">3.6.23-r1</a></li>
-<li><a class="reference internal" href="#id88">3.6.22-r1</a></li>
-<li><a class="reference internal" href="#id89">3.6.21-r1</a></li>
-<li><a class="reference internal" href="#id90">3.6.20-r1</a></li>
-<li><a class="reference internal" href="#id91">3.6.19-r1</a></li>
-<li><a class="reference internal" href="#id92">3.6.18-r1</a></li>
-<li><a class="reference internal" href="#id93">3.6.17-r1</a></li>
-<li><a class="reference internal" href="#id94">3.6.16-r1</a></li>
-<li><a class="reference internal" href="#id95">3.6.15-r1</a></li>
-<li><a class="reference internal" href="#id96">3.6.14.2-r1</a></li>
-<li><a class="reference internal" href="#id97">3.6.14.1-r1</a></li>
-<li><a class="reference internal" href="#id98">3.6.13-r1</a></li>
-<li><a class="reference internal" href="#id99">3.6.11-r1</a></li>
-<li><a class="reference internal" href="#id100">3.6.10-r1</a></li>
-<li><a class="reference internal" href="#id101">3.6.6.2-r1</a></li>
-<li><a class="reference internal" href="#id102">3.6.5-r1</a></li>
-<li><a class="reference internal" href="#id103">3.6.3-r1</a></li>
-<li><a class="reference internal" href="#id104">3.5.9-r2</a></li>
-<li><a class="reference internal" href="#id105">3.5.9-r1</a></li>
-<li><a class="reference internal" href="#id106">3.3.13-r1</a></li>
-<li><a class="reference internal" href="#id107">3.3.10-r1</a></li>
-<li><a class="reference internal" href="#id108">3.3.9-r1</a></li>
-<li><a class="reference internal" href="#id110">3.3.8-r1</a></li>
-<li><a class="reference internal" href="#id111">3.3.7-r1</a></li>
-<li><a class="reference internal" href="#id112">3.3.5-r1</a></li>
-<li><a class="reference internal" href="#id113">3.2.7-r1</a></li>
-<li><a class="reference internal" href="#id114">3.2.2-r1</a></li>
-<li><a class="reference internal" href="#id115">3.2.1-r1</a></li>
-<li><a class="reference internal" href="#id116">3.1.3-r1</a></li>
-<li><a class="reference internal" href="#r3">3.0.8-r3</a></li>
-<li><a class="reference internal" href="#id117">3.0.8-r2</a></li>
-<li><a class="reference internal" href="#id118">3.0.8-r1</a></li>
-</ul>
-</li>
-</ul>
-
-  </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="copyright.html"
-                          title="previous chapter">Copyright and License</a></p>
-  </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/changes.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/apswlogo.png" alt="Logo"/>
+            </a></p>
 <div id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
@@ -1693,6 +1594,174 @@ available.</p>
     </div>
 </div>
 <script>document.getElementById('searchbox').style.display = "block"</script>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="copyright.html"
+                          title="previous chapter">Copyright and License</a></p>
+  </div>
+  <div>
+    <h3><a href="index.html">On this page</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Change History</a><ul>
+<li><a class="reference internal" href="#id1">3.41.0.0</a></li>
+<li><a class="reference internal" href="#id2">3.40.1.0</a></li>
+<li><a class="reference internal" href="#id3">3.40.0.0</a></li>
+<li><a class="reference internal" href="#id4">3.39.4.0</a></li>
+<li><a class="reference internal" href="#id5">3.39.3.0</a></li>
+<li><a class="reference internal" href="#id6">3.39.2.1</a></li>
+<li><a class="reference internal" href="#id7">3.39.2.0</a></li>
+<li><a class="reference internal" href="#r1">3.38.5-r1</a></li>
+<li><a class="reference internal" href="#id8">3.38.1-r1</a></li>
+<li><a class="reference internal" href="#id9">3.37.0-r1</a></li>
+<li><a class="reference internal" href="#id10">3.36.0-r1</a></li>
+<li><a class="reference internal" href="#id11">3.35.4-r1</a></li>
+<li><a class="reference internal" href="#id12">3.34.0-r1</a></li>
+<li><a class="reference internal" href="#id13">3.33.0-r1</a></li>
+<li><a class="reference internal" href="#id14">3.32.2-r1</a></li>
+<li><a class="reference internal" href="#id15">3.31.1-r1</a></li>
+<li><a class="reference internal" href="#id16">3.30.1-r1</a></li>
+<li><a class="reference internal" href="#id17">3.29.0-r1</a></li>
+<li><a class="reference internal" href="#id18">3.28.0-r1</a></li>
+<li><a class="reference internal" href="#id19">3.27.2-r1</a></li>
+<li><a class="reference internal" href="#id20">3.26.0-r1</a></li>
+<li><a class="reference internal" href="#id21">3.25.2-r1</a></li>
+<li><a class="reference internal" href="#id22">3.24.0-r1</a></li>
+<li><a class="reference internal" href="#id23">3.23.1-r1</a></li>
+<li><a class="reference internal" href="#id24">3.22.0-r1</a></li>
+<li><a class="reference internal" href="#id25">3.21.0-r1</a></li>
+<li><a class="reference internal" href="#id26">3.20.1-r1</a></li>
+<li><a class="reference internal" href="#id27">3.19.3-r1</a></li>
+<li><a class="reference internal" href="#id28">3.18.0-r1</a></li>
+<li><a class="reference internal" href="#id29">3.17.0-r1</a></li>
+<li><a class="reference internal" href="#id30">3.16.2-r1</a></li>
+<li><a class="reference internal" href="#id31">3.15.2-r1</a></li>
+<li><a class="reference internal" href="#id32">3.15.1-r1</a></li>
+<li><a class="reference internal" href="#id33">3.15.0-r1</a></li>
+<li><a class="reference internal" href="#id34">3.14.1-r1</a></li>
+<li><a class="reference internal" href="#id35">3.13.0-r1</a></li>
+<li><a class="reference internal" href="#id36">3.12.2-r1</a></li>
+<li><a class="reference internal" href="#id37">3.11.1-r1</a></li>
+<li><a class="reference internal" href="#id38">3.11.0-r1</a></li>
+<li><a class="reference internal" href="#id39">3.9.2-r1</a></li>
+<li><a class="reference internal" href="#id40">3.8.11.1-r1</a></li>
+<li><a class="reference internal" href="#id41">3.8.10.1-r1</a></li>
+<li><a class="reference internal" href="#id42">3.8.9-r1</a></li>
+<li><a class="reference internal" href="#id43">3.8.8.2-r1</a></li>
+<li><a class="reference internal" href="#id44">3.8.8.1-r1</a></li>
+<li><a class="reference internal" href="#id45">3.8.7.3-r1</a></li>
+<li><a class="reference internal" href="#id46">3.8.7.2-r1</a></li>
+<li><a class="reference internal" href="#id47">3.8.7.1-r1</a></li>
+<li><a class="reference internal" href="#id48">3.8.6-r1</a></li>
+<li><a class="reference internal" href="#id49">3.8.5-r1</a></li>
+<li><a class="reference internal" href="#id50">3.8.4.3-r1</a></li>
+<li><a class="reference internal" href="#id51">3.8.4.2-r1</a></li>
+<li><a class="reference internal" href="#id52">3.8.4.1-r1</a></li>
+<li><a class="reference internal" href="#id53">3.8.3.1-r1</a></li>
+<li><a class="reference internal" href="#id54">3.8.3-r1</a></li>
+<li><a class="reference internal" href="#id55">3.8.2-r1</a></li>
+<li><a class="reference internal" href="#id56">3.8.1-r1</a></li>
+<li><a class="reference internal" href="#id57">3.8.0.2-r1</a></li>
+<li><a class="reference internal" href="#id58">3.8.0.1-r1</a></li>
+<li><a class="reference internal" href="#r2">3.8.0-r2</a></li>
+<li><a class="reference internal" href="#id59">3.8.0-r1</a></li>
+<li><a class="reference internal" href="#id60">3.7.17-r1</a></li>
+<li><a class="reference internal" href="#id61">3.7.16.2-r1</a></li>
+<li><a class="reference internal" href="#id62">3.7.16.1-r1</a></li>
+<li><a class="reference internal" href="#id63">3.7.16-r1</a></li>
+<li><a class="reference internal" href="#id64">3.7.15.2-r1</a></li>
+<li><a class="reference internal" href="#id65">3.7.15.1-r1</a></li>
+<li><a class="reference internal" href="#id66">3.7.15-r1</a></li>
+<li><a class="reference internal" href="#id67">3.7.14.1-r1</a></li>
+<li><a class="reference internal" href="#id68">3.7.14-r2</a></li>
+<li><a class="reference internal" href="#id69">3.7.14-r1</a></li>
+<li><a class="reference internal" href="#id70">3.7.13-r1</a></li>
+<li><a class="reference internal" href="#id71">3.7.12.1-r1</a></li>
+<li><a class="reference internal" href="#id72">3.7.12-r1</a></li>
+<li><a class="reference internal" href="#id73">3.7.11-r1</a></li>
+<li><a class="reference internal" href="#id74">3.7.10-r1</a></li>
+<li><a class="reference internal" href="#id75">3.7.9-r1</a></li>
+<li><a class="reference internal" href="#id76">3.7.8-r1</a></li>
+<li><a class="reference internal" href="#id77">3.7.7.1-r1</a></li>
+<li><a class="reference internal" href="#id78">3.7.6.3-r1</a></li>
+<li><a class="reference internal" href="#id79">3.7.6.2-r1</a></li>
+<li><a class="reference internal" href="#id80">3.7.5-r1</a></li>
+<li><a class="reference internal" href="#id81">3.7.4-r1</a></li>
+<li><a class="reference internal" href="#id82">3.7.3-r1</a></li>
+<li><a class="reference internal" href="#id83">3.7.2-r1</a></li>
+<li><a class="reference internal" href="#id84">3.7.1-r1</a></li>
+<li><a class="reference internal" href="#id85">3.7.0.1-r1</a></li>
+<li><a class="reference internal" href="#id86">3.7.0-r1</a></li>
+<li><a class="reference internal" href="#id87">3.6.23.1-r1</a></li>
+<li><a class="reference internal" href="#id88">3.6.23-r1</a></li>
+<li><a class="reference internal" href="#id89">3.6.22-r1</a></li>
+<li><a class="reference internal" href="#id90">3.6.21-r1</a></li>
+<li><a class="reference internal" href="#id91">3.6.20-r1</a></li>
+<li><a class="reference internal" href="#id92">3.6.19-r1</a></li>
+<li><a class="reference internal" href="#id93">3.6.18-r1</a></li>
+<li><a class="reference internal" href="#id94">3.6.17-r1</a></li>
+<li><a class="reference internal" href="#id95">3.6.16-r1</a></li>
+<li><a class="reference internal" href="#id96">3.6.15-r1</a></li>
+<li><a class="reference internal" href="#id97">3.6.14.2-r1</a></li>
+<li><a class="reference internal" href="#id98">3.6.14.1-r1</a></li>
+<li><a class="reference internal" href="#id99">3.6.13-r1</a></li>
+<li><a class="reference internal" href="#id100">3.6.11-r1</a></li>
+<li><a class="reference internal" href="#id101">3.6.10-r1</a></li>
+<li><a class="reference internal" href="#id102">3.6.6.2-r1</a></li>
+<li><a class="reference internal" href="#id103">3.6.5-r1</a></li>
+<li><a class="reference internal" href="#id104">3.6.3-r1</a></li>
+<li><a class="reference internal" href="#id105">3.5.9-r2</a></li>
+<li><a class="reference internal" href="#id106">3.5.9-r1</a></li>
+<li><a class="reference internal" href="#id107">3.3.13-r1</a></li>
+<li><a class="reference internal" href="#id108">3.3.10-r1</a></li>
+<li><a class="reference internal" href="#id109">3.3.9-r1</a></li>
+<li><a class="reference internal" href="#id111">3.3.8-r1</a></li>
+<li><a class="reference internal" href="#id112">3.3.7-r1</a></li>
+<li><a class="reference internal" href="#id113">3.3.5-r1</a></li>
+<li><a class="reference internal" href="#id114">3.2.7-r1</a></li>
+<li><a class="reference internal" href="#id115">3.2.2-r1</a></li>
+<li><a class="reference internal" href="#id116">3.2.1-r1</a></li>
+<li><a class="reference internal" href="#id117">3.1.3-r1</a></li>
+<li><a class="reference internal" href="#r3">3.0.8-r3</a></li>
+<li><a class="reference internal" href="#id118">3.0.8-r2</a></li>
+<li><a class="reference internal" href="#id119">3.0.8-r1</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+<h3><a href="index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="download.html">Download</a></li>
+<li class="toctree-l1"><a class="reference internal" href="build.html">Building</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apsw.html">APSW Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="connection.html">Connections to a database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cursor.html">Cursors (executing SQL)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="blob.html">Blob Input/Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="types.html">Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmarking.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="copyright.html">Copyright and License</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Change History</a></li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/changes.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
         </div>
       </div>
       <div class="clearer"></div>
@@ -1709,19 +1778,14 @@ available.</p>
         <li class="right" >
           <a href="copyright.html" title="Copyright and License"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.41.0.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Change History</a></li> 
       </ul>
     </div>
-
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Jan 15, 2023.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.0.
+      Last updated on Mar 01, 2023.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
     </div>
-<div class="footer">This page uses <a href="http://analytics.google.com/">
-Google Analytics</a> to collect statistics.
-</div>
-
   </body>
 </html>

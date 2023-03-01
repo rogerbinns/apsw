@@ -437,10 +437,19 @@ If `entries` is present, then each list entry is a dict with the following infor
 
 .. index:: sqlite3_create_module_v2
 
-.. method:: Connection.createmodule(name: str, datasource: Optional[VTModule]) -> None
+.. method:: Connection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 1, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None
 
     Registers a virtual table, or drops it if *datasource* is *None*.
     See :ref:`virtualtables` for details.
+
+    :param name: Module name (what comes after USING in CREATE VIRTUAL TABLE tablename USING ...)
+    :param datasource: Provides :class:`VTModule` methods
+    :param use_bestindex_object: If True then BestIndexObject is used, else BestIndex
+    :param use_no_change: Turn on understanding :meth:`VTCursor.ColumnNoChange` and using :attr:`apsw.no_change` to reduce :meth:`VTTable.UpdateChangeRow` work
+    :param iVersion: iVersion field in `sqlite3_module <https://www.sqlite.org/c3ref/module.html>`__
+    :param eponymous: Configures module to be `eponymous <https://www.sqlite.org/vtab.html#eponymous_virtual_tables>`__
+    :param eponymous_only: Configures module to be `eponymous only <https://www.sqlite.org/vtab.html#eponymous_only_virtual_tables>`__
+    :param read_only: Leaves `sqlite3_module <https://www.sqlite.org/c3ref/module.html>`__ methods that involve writing and transactions as NULL
 
     .. seealso::
 
@@ -713,6 +722,15 @@ See :meth:`Cursor.executemany` for more details.
   will be raised in the query that got interrupted.
 
   Calls: `sqlite3_interrupt <https://sqlite.org/c3ref/interrupt.html>`__
+
+.. index:: sqlite3_is_interrupted
+
+.. attribute:: Connection.is_interrupted
+   :type: bool
+
+   Indicates if this connection has been interrupted.
+
+   Calls: `sqlite3_is_interrupted <https://sqlite.org/c3ref/interrupt.html>`__
 
 .. index:: sqlite3_last_insert_rowid
 
@@ -1098,6 +1116,10 @@ libraries.
         The counters are reset each time a statement
         starts execution.
 
+  .. seealso::
+
+    * :ref:`Example <example_trace_v2>`
+
   Calls:
     * `sqlite3_trace_v2 <https://sqlite.org/c3ref/trace_v2.html>`__
     * `sqlite3_stmt_status <https://sqlite.org/c3ref/stmt_status.html>`__
@@ -1111,6 +1133,22 @@ libraries.
   :attr:`apsw.mapping_txn_state` contains the names and values returned.
 
   Calls: `sqlite3_txn_state <https://sqlite.org/c3ref/txn_state.html>`__
+
+.. index:: sqlite3_vtab_config
+
+.. method:: Connection.vtab_config(op: int, val: int = 0) -> None
+
+ Called during virtual table connect/create.
+
+ Calls: `sqlite3_vtab_config <https://sqlite.org/c3ref/vtab_config.html>`__
+
+.. index:: sqlite3_vtab_on_conflict
+
+.. method:: Connection.vtab_on_conflict() -> int
+
+ Called during virtual table xUpdate
+
+ Calls: `sqlite3_vtab_on_conflict <https://sqlite.org/c3ref/vtab_on_conflict.html>`__
 
 .. index:: sqlite3_wal_autocheckpoint
 

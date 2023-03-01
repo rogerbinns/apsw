@@ -4,35 +4,32 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Shell &#8212; APSW 3.40.1.0 documentation</title>
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+        <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-2NR9GDCQLT');
+        </script>
+    
+    <title>Shell &#8212; APSW 3.41.0.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/sphinx_highlight.js"></script>
     
+    <link rel="icon" href="_static/favicon.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
     <link rel="next" title="Various interesting and useful bits of functionality" href="ext.html" />
-    <link rel="prev" title="Virtual File System (VFS)" href="vfs.html" />
- 
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-2NR9GDCQLT');
-</script>
-
+    <link rel="prev" title="Virtual File System (VFS)" href="vfs.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -49,7 +46,7 @@
         <li class="right" >
           <a href="vfs.html" title="Virtual File System (VFS)"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.41.0.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Shell</a></li> 
       </ul>
     </div>  
@@ -74,7 +71,7 @@ useful.</p>
 <h2>Notes<a class="headerlink" href="#notes" title="Permalink to this heading">¶</a></h2>
 <p>To interrupt the shell press Control-C. (On Windows if you press
 Control-Break then the program will be instantly aborted.)</p>
-<p>For Windows users you won’t have command line editing and completion
+<p>For Windows users you won't have command line editing and completion
 unless you install a <a class="reference external" href="http://docs.python.org/library/readline.html">readline module</a>. You can pip install
 <a class="reference external" href="https://pypi.org/project/pyreadline3/">pyreadline3</a> to get full
 functionality.</p>
@@ -201,9 +198,9 @@ a choice for encoding the best value to pick is UTF8 as it allows full
 representation of Unicode.</p>
 <p>In addition to specifying the encoding, you can also specify the error
 handling when a character needs to be output but is not present in the
-encoding.  The default is ‘strict’ which results in an error.
-‘replace’ will replace the character with ‘?’ or something similar
-while ‘xmlcharrefreplace’ uses xml entities.  To specify the error
+encoding.  The default is 'strict' which results in an error.
+'replace' will replace the character with '?' or something similar
+while 'xmlcharrefreplace' uses xml entities.  To specify the error
 handling add a colon and error after the encoding - eg:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">.</span><span class="n">encoding</span> <span class="n">iso</span><span class="o">-</span><span class="mi">8859</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">replace</span>
 </pre></div>
@@ -229,23 +226,23 @@ can then <a class="reference external" href="http://en.wikipedia.org/wiki/Monkey
 the shell as needed.</p>
 <span class="target" id="module-apsw.shell"></span><dl class="py class">
 <dt class="sig sig-object py" id="apsw.shell.Shell">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Shell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stdin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TextIO" title="(in Python v3.11)"><span class="pre">TextIO</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stdout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stderr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'utf8'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Shell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stdin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TextIO" title="(in Python v3.11)"><span class="pre">TextIO</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stdout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stderr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'utf8'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements a SQLite shell</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>stdin</strong> – Where to read input from (default sys.stdin)</p></li>
-<li><p><strong>stdout</strong> – Where to send output (default sys.stdout)</p></li>
-<li><p><strong>stderr</strong> – Where to send errors (default sys.stderr)</p></li>
-<li><p><strong>encoding</strong> – Default encoding for files opened/created by the
+<li><p><strong>stdin</strong> -- Where to read input from (default sys.stdin)</p></li>
+<li><p><strong>stdout</strong> -- Where to send output (default sys.stdout)</p></li>
+<li><p><strong>stderr</strong> -- Where to send errors (default sys.stderr)</p></li>
+<li><p><strong>encoding</strong> -- Default encoding for files opened/created by the
 Shell.  If you want stdin/out/err to use a particular encoding
 then you need to provide them <a class="reference external" href="http://docs.python.org/library/codecs.html#codecs.open">already configured</a> that way.</p></li>
-<li><p><strong>args</strong> – This should be program arguments only (ie if
+<li><p><strong>args</strong> -- This should be program arguments only (ie if
 passing in sys.argv do not include sys.argv[0] which is the
 program name.  You can also pass in None and then call
 <a class="reference internal" href="#apsw.shell.Shell.process_args" title="apsw.shell.Shell.process_args"><code class="xref py py-meth docutils literal notranslate"><span class="pre">process_args()</span></code></a> if you want to catch any errors
 in handling the arguments yourself.</p></li>
-<li><p><strong>db</strong> – A existing <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> you wish to use</p></li>
+<li><p><strong>db</strong> -- A existing <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> you wish to use</p></li>
 </ul>
 </dd>
 </dl>
@@ -272,15 +269,15 @@ functions.</p>
 threads.  It is one huge set of state information which would
 become inconsistent if used simultaneously, and then give baffling
 errors.  It is safe to call methods one at a time from different
-threads.  ie it doesn’t care what thread calls methods as long as
-you don’t call more than one concurrently.</p>
+threads.  ie it doesn't care what thread calls methods as long as
+you don't call more than one concurrently.</p>
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.shell.Shell.Error">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Error</span></span><a class="reference internal" href="_modules/apsw/shell.html#Shell.Error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.Error" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class raised on errors.  The expectation is that the error
 will be displayed by the shell as text so there are no
 specific subclasses as the distinctions between different
-types of errors doesn’t matter.</p>
+types of errors doesn't matter.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -288,11 +285,424 @@ types of errors doesn’t matter.</p>
 <span class="sig-name descname"><span class="pre">cmdloop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intro</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.cmdloop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.cmdloop" title="Permalink to this definition">¶</a></dt>
 <dd><p>Runs the main interactive command loop.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>intro</strong> – Initial text banner to display instead of the
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>intro</strong> -- Initial text banner to display instead of the
 default.  Make sure you newline terminate it.</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_autoimport">
+<span class="sig-name descname"><span class="pre">command_autoimport</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_autoimport"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_autoimport" title="Permalink to this definition">¶</a></dt>
+<dd><p>autoimport FILENAME ?TABLE?: Imports filename creating a table and automatically working out separators and data types (alternative to .import command)</p>
+<p>The import command requires that you precisely pre-setup the
+table and schema, and set the data separators (eg commas or
+tabs).  In many cases this information can be automatically
+deduced from the file contents which is what this command
+does.  There must be at least two columns and two rows.</p>
+<p>If the table is not specified then the basename of the file
+will be used.</p>
+<p>Additionally the type of the contents of each column is also
+deduced - for example if it is a number or date.  Empty values
+are turned into nulls.  Dates are normalized into YYYY-MM-DD
+format and DateTime are normalized into ISO8601 format to
+allow easy sorting and searching.  4 digit years must be used
+to detect dates.  US (swapped day and month) versus rest of
+the world is also detected providing there is at least one
+value that resolves the ambiguity.</p>
+<p>Care is taken to ensure that columns looking like numbers are
+only treated as numbers if they do not have unnecessary
+leading zeroes or plus signs.  This is to avoid treating phone
+numbers and similar number like strings as integers.</p>
+<p>This command can take quite some time on large files as they
+are effectively imported twice.  The first time is to
+determine the format and the types for each column while the
+second pass actually imports the data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_backup">
+<span class="sig-name descname"><span class="pre">command_backup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_backup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_backup" title="Permalink to this definition">¶</a></dt>
+<dd><p>backup ?DB? FILE: Backup DB (default &quot;main&quot;) to FILE</p>
+<p>Copies the contents of the current database to FILE
+overwriting whatever was in FILE.  If you have attached databases
+then you can specify their name instead of the default of &quot;main&quot;.</p>
+<p>The backup is done at the page level - SQLite copies the pages
+as is.  There is no round trip through SQL code.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_bail">
+<span class="sig-name descname"><span class="pre">command_bail</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_bail"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_bail" title="Permalink to this definition">¶</a></dt>
+<dd><p>bail ON|OFF: Stop after hitting an error (default OFF)</p>
+<p>If an error is encountered while processing commands or SQL
+then exit.  (Note this is different than SQLite shell which
+only exits for errors in SQL.)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_color">
+<span class="sig-name descname"><span class="pre">command_color</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.shell.Shell.command_color" title="Permalink to this definition">¶</a></dt>
+<dd><p>colour SCHEME: Selects a colour scheme</p>
+<p>Residents of both countries that have not adopted the metric
+system may also spell this command without a 'u'.  If using a
+colour terminal in interactive mode then output is
+automatically coloured to make it more readable.  Use 'off' to
+turn off colour, and no name or 'default' for the default.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_colour">
+<span class="sig-name descname"><span class="pre">command_colour</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_colour"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_colour" title="Permalink to this definition">¶</a></dt>
+<dd><p>colour SCHEME: Selects a colour scheme</p>
+<p>Residents of both countries that have not adopted the metric
+system may also spell this command without a 'u'.  If using a
+colour terminal in interactive mode then output is
+automatically coloured to make it more readable.  Use 'off' to
+turn off colour, and no name or 'default' for the default.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_databases">
+<span class="sig-name descname"><span class="pre">command_databases</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_databases"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_databases" title="Permalink to this definition">¶</a></dt>
+<dd><p>databases: Lists names and files of attached databases</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_dump">
+<span class="sig-name descname"><span class="pre">command_dump</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_dump"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_dump" title="Permalink to this definition">¶</a></dt>
+<dd><p>dump ?TABLE? [TABLE...]: Dumps all or specified tables in SQL text format</p>
+<p>The table name is treated as like pattern so you can use % as
+a wildcard.  You can use dump to make a text based backup of
+the database.  It is also useful for comparing differences or
+making the data available to other databases.  Indices and
+triggers for the table(s) are also dumped.  Finally views
+matching the table pattern name are dumped (it isn't possible
+to work out which views access which table and views can
+access multiple tables anyway).</p>
+<p>Note that if you are dumping virtual tables such as used by
+the FTS3 module then they may use other tables to store
+information.  For example if you create a FTS3 table named
+<em>recipes</em> then it also creates <em>recipes_content</em>,
+<em>recipes_segdir</em> etc.  Consequently to dump this example
+correctly use:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">.</span><span class="n">dump</span> <span class="n">recipes</span> <span class="n">recipes_</span><span class="o">%</span>
+</pre></div>
+</div>
+<p>If the database is empty or no tables/views match then there
+is no output.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_echo">
+<span class="sig-name descname"><span class="pre">command_echo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_echo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_echo" title="Permalink to this definition">¶</a></dt>
+<dd><p>echo ON|OFF: If ON then each SQL statement or command is printed before execution (default OFF)</p>
+<p>The SQL statement or command is sent to error output so that
+it is not intermingled with regular output.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_encoding">
+<span class="sig-name descname"><span class="pre">command_encoding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_encoding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_encoding" title="Permalink to this definition">¶</a></dt>
+<dd><p>encoding ENCODING: Set the encoding used for new files opened via .output and imports</p>
+<p>SQLite and APSW work internally using Unicode and characters.
+Files however are a sequence of bytes.  An encoding describes
+how to convert between bytes and characters.  The default
+encoding is utf8 and that is generally the best value to use
+when other programs give you a choice.</p>
+<p>You can also specify an error handler.  For example
+'cp437:replace' will use code page 437 and any Unicode
+codepoints not present in cp437 will be replaced (typically
+with something like a question mark).  Other error handlers
+include 'ignore', 'strict' (default) and 'xmlcharrefreplace'.</p>
+<p>For the default input/output/error streams on startup the
+shell defers to Python's detection of encoding.  For example
+on Windows it asks what code page is in use and on Unix it
+looks at the LC_CTYPE environment variable.  You can set the
+PYTHONIOENCODING environment variable to override this
+detection.</p>
+<p>This command affects files opened after setting the encoding
+as well as imports.</p>
+<p>See the online APSW documentation for more details.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_exceptions">
+<span class="sig-name descname"><span class="pre">command_exceptions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_exceptions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_exceptions" title="Permalink to this definition">¶</a></dt>
+<dd><p>exceptions ON|OFF: If ON then detailed tracebacks are shown on exceptions (default OFF)</p>
+<p>Normally when an exception occurs the error string only is
+displayed.  However it is sometimes useful to get a full
+traceback.  An example would be when you are developing
+virtual tables and using the shell to exercise them.  In
+addition to displaying each stack frame, the local variables
+within each frame are also displayed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_exit">
+<span class="sig-name descname"><span class="pre">command_exit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_exit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_exit" title="Permalink to this definition">¶</a></dt>
+<dd><p>exit:Exit this program</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_explain">
+<span class="sig-name descname"><span class="pre">command_explain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_explain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_explain" title="Permalink to this definition">¶</a></dt>
+<dd><p>explain ON|OFF: Set output mode suitable for explain (default OFF)</p>
+<p>Explain shows the underlying SQLite virtual machine code for a
+statement.  You need to prefix the SQL with explain.  For example:</p>
+<blockquote>
+<div><p>explain select * from table;</p>
+</div></blockquote>
+<p>This output mode formats the explain output nicely.  If you do
+'.explain OFF' then the output mode and settings in place when
+you did '.explain ON' are restored.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_find">
+<span class="sig-name descname"><span class="pre">command_find</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_find"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_find" title="Permalink to this definition">¶</a></dt>
+<dd><p>find what ?TABLE?: Searches all columns of all tables for a value</p>
+<p>The find command helps you locate data across your database
+for example to find a string or any references to an id.</p>
+<p>You can specify a like pattern to limit the search to a subset
+of tables (eg specifying 'CUSTOMER%' for all tables beginning
+with CUSTOMER).</p>
+<p>The what value will be treated as a string and/or integer if
+possible.  If what contains % or _ then it is also treated as
+a like pattern.</p>
+<p>This command will take a long time to execute needing to read
+all of the relevant tables.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_header">
+<span class="sig-name descname"><span class="pre">command_header</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_header"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_header" title="Permalink to this definition">¶</a></dt>
+<dd><p>header(s) ON|OFF: Display the column names in output (default OFF)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_headers">
+<span class="sig-name descname"><span class="pre">command_headers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.shell.Shell.command_headers" title="Permalink to this definition">¶</a></dt>
+<dd><p>header(s) ON|OFF: Display the column names in output (default OFF)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_help">
+<span class="sig-name descname"><span class="pre">command_help</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_help"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>help ?COMMAND?: Shows list of commands and their usage.  If COMMAND is specified then shows detail about that COMMAND.  ('.help all' will show detailed help about all commands.)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_import">
+<span class="sig-name descname"><span class="pre">command_import</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_import"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_import" title="Permalink to this definition">¶</a></dt>
+<dd><p>import FILE TABLE: Imports separated data from FILE into TABLE</p>
+<p>Reads data from the file into the named table using the
+current separator and encoding.  For example if the separator
+is currently a comma then the file should be CSV (comma
+separated values).</p>
+<p>All values read in are supplied to SQLite as strings.  If you
+want SQLite to treat them as other types then declare your
+columns appropriately.  For example declaring a column 'REAL'
+will result in the values being stored as floating point if
+they can be safely converted.  See this page for more details:</p>
+<blockquote>
+<div><p><a class="reference external" href="https://sqlite.org/datatype3.html">https://sqlite.org/datatype3.html</a></p>
+</div></blockquote>
+<p>Another alternative is to create a temporary table, insert the
+values into that and then use casting.</p>
+<blockquote>
+<div><p>CREATE TEMPORARY TABLE import(a,b,c);</p>
+<p>.import filename import</p>
+<p>CREATE TABLE final AS SELECT cast(a as BLOB), cast(b as INTEGER), cast(c as CHAR) from import;</p>
+<p>DROP TABLE import;</p>
+</div></blockquote>
+<p>You can also get more sophisticated using the SQL CASE
+operator.  For example this will turn zero length strings into
+null:</p>
+<blockquote>
+<div><p>SELECT CASE col WHEN '' THEN null ELSE col END FROM ...</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_indices">
+<span class="sig-name descname"><span class="pre">command_indices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_indices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>indices TABLE: Lists all indices on table TABLE</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_load">
+<span class="sig-name descname"><span class="pre">command_load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_load" title="Permalink to this definition">¶</a></dt>
+<dd><p>load FILE ?ENTRY?: Loads a SQLite extension library</p>
+<p>Note: Extension loading may not be enabled in the SQLite
+library version you are using.</p>
+<p>Extensions are an easy way to add new functions and
+functionality.  For a useful extension look at the bottom of
+<a class="reference external" href="https://sqlite.org/contrib">https://sqlite.org/contrib</a></p>
+<p>By default sqlite3_extension_init is called in the library but
+you can specify an alternate entry point.</p>
+<p>If you get an error about the extension not being found you
+may need to explicitly specify the directory.  For example if
+it is in the current directory then use:</p>
+<blockquote>
+<div><p>.load ./extension.so</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_mode">
+<span class="sig-name descname"><span class="pre">command_mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_mode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_mode" title="Permalink to this definition">¶</a></dt>
+<dd><p>mode MODE ?TABLE?: Sets output mode to one of</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_nullvalue">
+<span class="sig-name descname"><span class="pre">command_nullvalue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_nullvalue"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_nullvalue" title="Permalink to this definition">¶</a></dt>
+<dd><p>nullvalue STRING: Print STRING in place of null values</p>
+<p>This affects textual output modes like column and list and
+sets how SQL null values are shown.  The default is a zero
+length string.  Insert mode and dumps are not affected by this
+setting.  You can use double quotes to supply a zero length
+string.  For example:</p>
+<blockquote>
+<div><p>.nullvalue &quot;&quot;         # the default
+.nullvalue &lt;NULL&gt;     # rather obvious
+.nullvalue &quot; t &quot;     # A tab surrounded by spaces</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_open">
+<span class="sig-name descname"><span class="pre">command_open</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_open"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_open" title="Permalink to this definition">¶</a></dt>
+<dd><p>open ?OPTIONS? ?FILE?: Closes existing database and opens a different one</p>
+<p>Options are: --new which deletes the file if it already exists</p>
+<p>If FILE is omitted then a memory database is opened</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_output">
+<span class="sig-name descname"><span class="pre">command_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_output" title="Permalink to this definition">¶</a></dt>
+<dd><p>output FILENAME: Send output to FILENAME (or stdout)</p>
+<p>If the FILENAME is stdout then output is sent to standard
+output from when the shell was started.  The file is opened
+using the current encoding (change with .encoding command).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_print">
+<span class="sig-name descname"><span class="pre">command_print</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_print"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_print" title="Permalink to this definition">¶</a></dt>
+<dd><p>print STRING: print the literal STRING</p>
+<p>If more than one argument is supplied then they are printed
+space separated.  You can use backslash escapes such as n
+and t.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_prompt">
+<span class="sig-name descname"><span class="pre">command_prompt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_prompt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_prompt" title="Permalink to this definition">¶</a></dt>
+<dd><p>prompt MAIN ?CONTINUE?: Changes the prompts for first line and continuation lines</p>
+<p>The default is to print 'sqlite&gt; ' for the main prompt where
+you can enter a dot command or a SQL statement.  If the SQL
+statement is complete (eg not ; terminated) then you are
+prompted for more using the continuation prompt which defaults
+to ' ..&gt; '.  Example:</p>
+<blockquote>
+<div><p>.prompt &quot;command&gt; &quot; &quot;more command&gt; &quot;</p>
+</div></blockquote>
+<p>You can use backslash escapes such as n and t.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_quit">
+<span class="sig-name descname"><span class="pre">command_quit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_quit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_quit" title="Permalink to this definition">¶</a></dt>
+<dd><p>quit:Exit this program</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_read">
+<span class="sig-name descname"><span class="pre">command_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>read FILENAME: Processes SQL and commands in FILENAME (or Python if FILENAME ends with .py)</p>
+<p>Treats the specified file as input (a mixture or SQL and/or
+dot commands).  If the filename ends in .py then it is treated
+as Python code instead.</p>
+<p>For Python code the symbol 'shell' refers to the instance of
+the shell and 'apsw' is the apsw module.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_restore">
+<span class="sig-name descname"><span class="pre">command_restore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_restore"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_restore" title="Permalink to this definition">¶</a></dt>
+<dd><p>restore ?DB? FILE: Restore database from FILE into DB (default &quot;main&quot;)</p>
+<p>Copies the contents of FILE to the current database (default &quot;main&quot;).
+The backup is done at the page level - SQLite copies the pages as
+is.  There is no round trip through SQL code.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_schema">
+<span class="sig-name descname"><span class="pre">command_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_schema"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_schema" title="Permalink to this definition">¶</a></dt>
+<dd><p>schema ?TABLE? [TABLE...]: Shows SQL for table</p>
+<p>If you give one or more tables then their schema is listed
+(including indices).  If you don't specify any then all
+schemas are listed. TABLE is a like pattern so you can % for
+wildcards.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_separator">
+<span class="sig-name descname"><span class="pre">command_separator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_separator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_separator" title="Permalink to this definition">¶</a></dt>
+<dd><p>separator STRING: Change separator for output mode and .import</p>
+<p>You can use quotes and backslashes.  For example to set the
+separator to space tab space you can use:</p>
+<blockquote>
+<div><p>.separator &quot; t &quot;</p>
+</div></blockquote>
+<p>The setting is automatically changed when you switch to csv or
+tabs output mode.  You should also set it before doing an
+import (ie , for CSV and t for TSV).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_show">
+<span class="sig-name descname"><span class="pre">command_show</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_show"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_show" title="Permalink to this definition">¶</a></dt>
+<dd><p>show: Show the current values for various settings.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_tables">
+<span class="sig-name descname"><span class="pre">command_tables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_tables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_tables" title="Permalink to this definition">¶</a></dt>
+<dd><p>tables ?PATTERN?: Lists names of tables matching LIKE pattern</p>
+<p>This also returns views.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_timeout">
+<span class="sig-name descname"><span class="pre">command_timeout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_timeout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_timeout" title="Permalink to this definition">¶</a></dt>
+<dd><p>timeout MS: Try opening locked tables for MS milliseconds</p>
+<p>If a database is locked by another process SQLite will keep
+retrying.  This sets how many thousandths of a second it will
+keep trying for.  If you supply zero or a negative number then
+all busy handlers are disabled.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_timer">
+<span class="sig-name descname"><span class="pre">command_timer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_timer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_timer" title="Permalink to this definition">¶</a></dt>
+<dd><p>timer ON|OFF: Control printing of time and resource usage after each query</p>
+<p>The values displayed are in seconds when shown as floating
+point or an absolute count.  Only items that have changed
+since starting the query are shown.  On non-Windows platforms
+considerably more information can be shown.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.command_width">
+<span class="sig-name descname"><span class="pre">command_width</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.command_width"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.command_width" title="Permalink to this definition">¶</a></dt>
+<dd><p>width NUM NUM ...: Set the column widths for &quot;column&quot; mode</p>
+<p>In &quot;column&quot; output mode, each column is a fixed width with values truncated to
+fit.  Specify new widths using this command.  Use a negative number
+to right justify and zero for default column width.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -314,15 +724,15 @@ subsequent calls.</p>
 <span class="sig-name descname"><span class="pre">complete_command</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">token</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.complete_command"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.complete_command" title="Permalink to this definition">¶</a></dt>
 <dd><p>Provide some completions for dot commands</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>line</strong> – The current complete input line</p></li>
-<li><p><strong>token</strong> – The word readline is looking for matches</p></li>
-<li><p><strong>beg</strong> – Integer offset of token in line</p></li>
-<li><p><strong>end</strong> – Integer end of token in line</p></li>
+<li><p><strong>line</strong> -- The current complete input line</p></li>
+<li><p><strong>token</strong> -- The word readline is looking for matches</p></li>
+<li><p><strong>beg</strong> -- Integer offset of token in line</p></li>
+<li><p><strong>end</strong> -- Integer end of token in line</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>A list of completions, or an empty list if none</p>
 </dd>
 </dl>
@@ -333,15 +743,15 @@ subsequent calls.</p>
 <span class="sig-name descname"><span class="pre">complete_sql</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">token</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.complete_sql"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.complete_sql" title="Permalink to this definition">¶</a></dt>
 <dd><p>Provide some completions for SQL</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>line</strong> – The current complete input line</p></li>
-<li><p><strong>token</strong> – The word readline is looking for matches</p></li>
-<li><p><strong>beg</strong> – Integer offset of token in line</p></li>
-<li><p><strong>end</strong> – Integer end of token in line</p></li>
+<li><p><strong>line</strong> -- The current complete input line</p></li>
+<li><p><strong>token</strong> -- The word readline is looking for matches</p></li>
+<li><p><strong>beg</strong> -- Integer offset of token in line</p></li>
+<li><p><strong>end</strong> -- Integer end of token in line</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>A list of completions, or an empty list if none</p>
 </dd>
 </dl>
@@ -406,7 +816,92 @@ It will reraise the exception if necessary (eg if bail is true)</p>
 <dt class="sig sig-object py" id="apsw.shell.Shell.handle_interrupt">
 <span class="sig-name descname"><span class="pre">handle_interrupt</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.handle_interrupt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.handle_interrupt" title="Permalink to this definition">¶</a></dt>
 <dd><p>Deal with keyboard interrupt (typically Control-C).  It
-will <a class="reference internal" href="connection.html#apsw.Connection.interrupt" title="apsw.Connection.interrupt"><code class="xref py py-meth docutils literal notranslate"><span class="pre">interrupt()</span></code></a> the database and print”^C” if interactive.</p>
+will <a class="reference internal" href="connection.html#apsw.Connection.interrupt" title="apsw.Connection.interrupt"><code class="xref py py-meth docutils literal notranslate"><span class="pre">interrupt()</span></code></a> the database and print&quot;^C&quot; if interactive.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.output_column">
+<span class="sig-name descname"><span class="pre">output_column</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">header</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.output_column"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.output_column" title="Permalink to this definition">¶</a></dt>
+<dd><p>Items left aligned in space padded columns.  They are
+truncated if they do not fit. If the width hasn't been
+specified for a column then 10 is used unless the column name
+(header) is longer in which case that width is used.  Use the
+.width command to change column sizes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.output_columns">
+<span class="sig-name descname"><span class="pre">output_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">header</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.shell.Shell.output_columns" title="Permalink to this definition">¶</a></dt>
+<dd><p>Items left aligned in space padded columns.  They are
+truncated if they do not fit. If the width hasn't been
+specified for a column then 10 is used unless the column name
+(header) is longer in which case that width is used.  Use the
+.width command to change column sizes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.output_csv">
+<span class="sig-name descname"><span class="pre">output_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">header</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.output_csv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.output_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Items in csv format (comma separated).  Use tabs mode for tab
+separated.  You can use the .separator command to use a
+different one after switching mode.  A separator of comma uses
+double quotes for quoting while other separators do not do any
+quoting.  The Python csv library used for this only supports
+single character separators.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.output_html">
+<span class="sig-name descname"><span class="pre">output_html</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">header</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.output_html"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.output_html" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML table style</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.output_insert">
+<span class="sig-name descname"><span class="pre">output_insert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">header</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.output_insert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.output_insert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lines as SQL insert statements.  The table name is &quot;table&quot;
+unless you specified a different one as the second parameter
+to the .mode command.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.output_json">
+<span class="sig-name descname"><span class="pre">output_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">header</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.output_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.output_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Each line as a JSON object with a trailing comma.  Blobs are
+output as base64 encoded strings.  You should be using UTF8
+output encoding.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.output_line">
+<span class="sig-name descname"><span class="pre">output_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">header</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.output_line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.output_line" title="Permalink to this definition">¶</a></dt>
+<dd><p>One value per line in the form 'column = value' with a blank
+line between rows.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.output_lines">
+<span class="sig-name descname"><span class="pre">output_lines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">header</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.shell.Shell.output_lines" title="Permalink to this definition">¶</a></dt>
+<dd><p>One value per line in the form 'column = value' with a blank
+line between rows.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.output_list">
+<span class="sig-name descname"><span class="pre">output_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">header</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.output_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.output_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>All items on one line with separator</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.output_python">
+<span class="sig-name descname"><span class="pre">output_python</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">header</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.output_python"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.output_python" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tuples in Python source form for each row</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.output_tcl">
+<span class="sig-name descname"><span class="pre">output_tcl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">header</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.output_tcl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.output_tcl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Outputs TCL/C style strings using current separator</p>
 </dd></dl>
 
 <dl class="py method">
@@ -440,11 +935,11 @@ before.</p>
 call this multiple times.  We try to be compatible with SQLite shell
 argument parsing.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>args</strong> – A list of string options.  Do not include the
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>args</strong> -- A list of string options.  Do not include the
 program as args[0]</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>A tuple of (databasefilename, initfiles,
 sqlncommands).  This is provided for informational purposes
 only - they have already been acted upon.  An example use
@@ -454,7 +949,7 @@ loop if any sql/commands were provided.</p>
 </dl>
 <p>The first non-option is the database file name.  Each
 remaining non-option is treated as a complete input (ie it
-isn’t joined with others looking for a trailing semi-colon).</p>
+isn't joined with others looking for a trailing semi-colon).</p>
 <p>The SQLite shell uses single dash in front of options.  We
 allow both single and double dashes.  When an unrecognized
 argument is encountered then
@@ -482,14 +977,14 @@ it (eg <a class="reference internal" href="#apsw.shell.Shell.process_sql" title=
 <span class="sig-name descname"><span class="pre">process_sql</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sql</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bindings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">summary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.process_sql"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.process_sql" title="Permalink to this definition">¶</a></dt>
 <dd><p>Processes SQL text consisting of one or more statements</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>sql</strong> – SQL to execute</p></li>
-<li><p><strong>bindings</strong> – bindings for the <em>sql</em></p></li>
-<li><p><strong>internal</strong> – If True then this is an internal execution
+<li><p><strong>sql</strong> -- SQL to execute</p></li>
+<li><p><strong>bindings</strong> -- bindings for the <em>sql</em></p></li>
+<li><p><strong>internal</strong> -- If True then this is an internal execution
 (eg the .tables or .database command).  When executing
 internal sql timings are not shown nor is the SQL echoed.</p></li>
-<li><p><strong>summary</strong> – If not None then should be a tuple of two
+<li><p><strong>summary</strong> -- If not None then should be a tuple of two
 items.  If the <code class="docutils literal notranslate"><span class="pre">sql</span></code> returns any data then the first item
 is printed before the first row, and the second item is
 printed after the last row.  An example usage is the .find
@@ -503,16 +998,16 @@ command which shows table names.</p></li>
 <dt class="sig sig-object py" id="apsw.shell.Shell.process_unknown_args">
 <span class="sig-name descname"><span class="pre">process_unknown_args</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.process_unknown_args"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.process_unknown_args" title="Permalink to this definition">¶</a></dt>
 <dd><p>This is called when <a class="reference internal" href="#apsw.shell.Shell.process_args" title="apsw.shell.Shell.process_args"><code class="xref py py-meth docutils literal notranslate"><span class="pre">process_args()</span></code></a> encounters an
-argument it doesn’t understand.  Override this method if you
+argument it doesn't understand.  Override this method if you
 want to be able to understand additional command line arguments.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>args</strong> – A list of the remaining arguments.  The initial one will
-have had the leading dashes removed (eg if it was –foo on the command
-line then args[0] will be “foo”</p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>args</strong> -- A list of the remaining arguments.  The initial one will
+have had the leading dashes removed (eg if it was --foo on the command
+line then args[0] will be &quot;foo&quot;</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>None if you don’t recognize the argument either.  Otherwise
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None if you don't recognize the argument either.  Otherwise
 return the list of remaining arguments after you have processed
 yours.</p>
 </dd>
@@ -538,7 +1033,7 @@ this.</p>
 <span class="sig-name descname"><span class="pre">set_encoding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.set_encoding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.set_encoding" title="Permalink to this definition">¶</a></dt>
 <dd><p>Saves <em>enc</em> as the default encoding, after verifying that
 it is valid.  You can also include :error to specify error
-handling - eg ‘cp437:replace’</p>
+handling - eg 'cp437:replace'</p>
 <p>Raises an exception on invalid encoding or error</p>
 </dd></dl>
 
@@ -573,8 +1068,31 @@ automatically passes in sys.argv[1:] and exits Python when done.</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/apswlogo.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
   <div>
-    <h3><a href="index.html">Table of Contents</a></h3>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="vfs.html"
+                          title="previous chapter">Virtual File System (VFS)</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="ext.html"
+                          title="next chapter">Various interesting and useful bits of functionality</a></p>
+  </div>
+  <div>
+    <h3><a href="index.html">On this page</a></h3>
     <ul>
 <li><a class="reference internal" href="#">Shell</a><ul>
 <li><a class="reference internal" href="#notes">Notes</a></li>
@@ -586,6 +1104,41 @@ automatically passes in sys.argv[1:] and exits Python when done.</p>
 <li><a class="reference internal" href="#apsw.shell.Shell"><code class="docutils literal notranslate"><span class="pre">Shell</span></code></a><ul>
 <li><a class="reference internal" href="#apsw.shell.Shell.Error"><code class="docutils literal notranslate"><span class="pre">Shell.Error</span></code></a></li>
 <li><a class="reference internal" href="#apsw.shell.Shell.cmdloop"><code class="docutils literal notranslate"><span class="pre">Shell.cmdloop()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_autoimport"><code class="docutils literal notranslate"><span class="pre">Shell.command_autoimport()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_backup"><code class="docutils literal notranslate"><span class="pre">Shell.command_backup()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_bail"><code class="docutils literal notranslate"><span class="pre">Shell.command_bail()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_color"><code class="docutils literal notranslate"><span class="pre">Shell.command_color()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_colour"><code class="docutils literal notranslate"><span class="pre">Shell.command_colour()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_databases"><code class="docutils literal notranslate"><span class="pre">Shell.command_databases()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_dump"><code class="docutils literal notranslate"><span class="pre">Shell.command_dump()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_echo"><code class="docutils literal notranslate"><span class="pre">Shell.command_echo()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_encoding"><code class="docutils literal notranslate"><span class="pre">Shell.command_encoding()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_exceptions"><code class="docutils literal notranslate"><span class="pre">Shell.command_exceptions()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_exit"><code class="docutils literal notranslate"><span class="pre">Shell.command_exit()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_explain"><code class="docutils literal notranslate"><span class="pre">Shell.command_explain()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_find"><code class="docutils literal notranslate"><span class="pre">Shell.command_find()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_header"><code class="docutils literal notranslate"><span class="pre">Shell.command_header()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_headers"><code class="docutils literal notranslate"><span class="pre">Shell.command_headers()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_help"><code class="docutils literal notranslate"><span class="pre">Shell.command_help()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_import"><code class="docutils literal notranslate"><span class="pre">Shell.command_import()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_indices"><code class="docutils literal notranslate"><span class="pre">Shell.command_indices()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_load"><code class="docutils literal notranslate"><span class="pre">Shell.command_load()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_mode"><code class="docutils literal notranslate"><span class="pre">Shell.command_mode()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_nullvalue"><code class="docutils literal notranslate"><span class="pre">Shell.command_nullvalue()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_open"><code class="docutils literal notranslate"><span class="pre">Shell.command_open()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_output"><code class="docutils literal notranslate"><span class="pre">Shell.command_output()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_print"><code class="docutils literal notranslate"><span class="pre">Shell.command_print()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_prompt"><code class="docutils literal notranslate"><span class="pre">Shell.command_prompt()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_quit"><code class="docutils literal notranslate"><span class="pre">Shell.command_quit()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_read"><code class="docutils literal notranslate"><span class="pre">Shell.command_read()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_restore"><code class="docutils literal notranslate"><span class="pre">Shell.command_restore()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_schema"><code class="docutils literal notranslate"><span class="pre">Shell.command_schema()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_separator"><code class="docutils literal notranslate"><span class="pre">Shell.command_separator()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_show"><code class="docutils literal notranslate"><span class="pre">Shell.command_show()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_tables"><code class="docutils literal notranslate"><span class="pre">Shell.command_tables()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_timeout"><code class="docutils literal notranslate"><span class="pre">Shell.command_timeout()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_timer"><code class="docutils literal notranslate"><span class="pre">Shell.command_timer()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.command_width"><code class="docutils literal notranslate"><span class="pre">Shell.command_width()</span></code></a></li>
 <li><a class="reference internal" href="#apsw.shell.Shell.complete"><code class="docutils literal notranslate"><span class="pre">Shell.complete()</span></code></a></li>
 <li><a class="reference internal" href="#apsw.shell.Shell.complete_command"><code class="docutils literal notranslate"><span class="pre">Shell.complete_command()</span></code></a></li>
 <li><a class="reference internal" href="#apsw.shell.Shell.complete_sql"><code class="docutils literal notranslate"><span class="pre">Shell.complete_sql()</span></code></a></li>
@@ -597,6 +1150,17 @@ automatically passes in sys.argv[1:] and exits Python when done.</p>
 <li><a class="reference internal" href="#apsw.shell.Shell.getline"><code class="docutils literal notranslate"><span class="pre">Shell.getline()</span></code></a></li>
 <li><a class="reference internal" href="#apsw.shell.Shell.handle_exception"><code class="docutils literal notranslate"><span class="pre">Shell.handle_exception()</span></code></a></li>
 <li><a class="reference internal" href="#apsw.shell.Shell.handle_interrupt"><code class="docutils literal notranslate"><span class="pre">Shell.handle_interrupt()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.output_column"><code class="docutils literal notranslate"><span class="pre">Shell.output_column()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.output_columns"><code class="docutils literal notranslate"><span class="pre">Shell.output_columns()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.output_csv"><code class="docutils literal notranslate"><span class="pre">Shell.output_csv()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.output_html"><code class="docutils literal notranslate"><span class="pre">Shell.output_html()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.output_insert"><code class="docutils literal notranslate"><span class="pre">Shell.output_insert()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.output_json"><code class="docutils literal notranslate"><span class="pre">Shell.output_json()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.output_line"><code class="docutils literal notranslate"><span class="pre">Shell.output_line()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.output_lines"><code class="docutils literal notranslate"><span class="pre">Shell.output_lines()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.output_list"><code class="docutils literal notranslate"><span class="pre">Shell.output_list()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.output_python"><code class="docutils literal notranslate"><span class="pre">Shell.output_python()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.shell.Shell.output_tcl"><code class="docutils literal notranslate"><span class="pre">Shell.output_tcl()</span></code></a></li>
 <li><a class="reference internal" href="#apsw.shell.Shell.pop_input"><code class="docutils literal notranslate"><span class="pre">Shell.pop_input()</span></code></a></li>
 <li><a class="reference internal" href="#apsw.shell.Shell.pop_output"><code class="docutils literal notranslate"><span class="pre">Shell.pop_output()</span></code></a></li>
 <li><a class="reference internal" href="#apsw.shell.Shell.process_args"><code class="docutils literal notranslate"><span class="pre">Shell.process_args()</span></code></a></li>
@@ -619,16 +1183,32 @@ automatically passes in sys.argv[1:] and exits Python when done.</p>
 </ul>
 
   </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="vfs.html"
-                          title="previous chapter">Virtual File System (VFS)</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="ext.html"
-                          title="next chapter">Various interesting and useful bits of functionality</a></p>
-  </div>
+<h3><a href="index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="download.html">Download</a></li>
+<li class="toctree-l1"><a class="reference internal" href="build.html">Building</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apsw.html">APSW Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="connection.html">Connections to a database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cursor.html">Cursors (executing SQL)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="blob.html">Blob Input/Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Shell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="types.html">Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmarking.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="copyright.html">Copyright and License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changes.html">Change History</a></li>
+</ul>
+
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -636,16 +1216,6 @@ automatically passes in sys.argv[1:] and exits Python when done.</p>
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -665,19 +1235,14 @@ automatically passes in sys.argv[1:] and exits Python when done.</p>
         <li class="right" >
           <a href="vfs.html" title="Virtual File System (VFS)"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.41.0.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Shell</a></li> 
       </ul>
     </div>
-
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Jan 15, 2023.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.0.
+      Last updated on Mar 01, 2023.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
     </div>
-<div class="footer">This page uses <a href="http://analytics.google.com/">
-Google Analytics</a> to collect statistics.
-</div>
-
   </body>
 </html>

@@ -4,35 +4,32 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Tips &#8212; APSW 3.40.1.0 documentation</title>
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+        <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-2NR9GDCQLT');
+        </script>
+    
+    <title>Tips &#8212; APSW 3.41.0.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/sphinx_highlight.js"></script>
     
+    <link rel="icon" href="_static/favicon.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
     <link rel="next" title="Example/Tour" href="example.html" />
-    <link rel="prev" title="APSW documentation" href="index.html" />
- 
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-2NR9GDCQLT');
-</script>
-
+    <link rel="prev" title="APSW 3.41.0.0 documentation" href="index.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -47,9 +44,9 @@
           <a href="example.html" title="Example/Tour"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="APSW documentation"
+          <a href="index.html" title="APSW 3.41.0.0 documentation"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.41.0.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Tips</a></li> 
       </ul>
     </div>  
@@ -73,12 +70,12 @@ OS).  Despite these changes, SQLite retains backwards and forwards
 compatibility with the <a class="reference external" href="https://www.sqlite.org/onefile.html">file format</a> and APIs.</p>
 <p>APSW wraps the <a class="reference external" href="https://www.sqlite.org/c3ref/intro.html">SQLite C API</a>.  That means when SQLite
 adds new constant or API, then so does APSW.  You can think of APSW as
-the Python expression of SQLite’s C API.  You can <a class="reference external" href="genindex.html#S">lookup</a> SQLite APIs to find which APSW functions and
+the Python expression of SQLite's C API.  You can <a class="reference external" href="genindex.html#S">lookup</a> SQLite APIs to find which APSW functions and
 attributes call them.</p>
 <p>Consequently the APSW version mirrors the SQLite version.  You can use
 APSW with the corresponding version of SQLite, or any newer version of
-SQLite.  You could use the original 2004 release of APSW with today’s
-SQLite just fine, although it wouldn’t know about the new APIs and
+SQLite.  You could use the original 2004 release of APSW with today's
+SQLite just fine, although it wouldn't know about the new APIs and
 constants.</p>
 <p>APSW has compatibility with a broad range of Python versions.  This is
 so that you can update the SQLite version you use, access new
@@ -131,7 +128,7 @@ transactions</a>.</p>
 </div>
 <p>However that is extra effort, and also requires error handling.  For example
 if the second INSERT failed then you likely want to ROLLBACK the incomplete
-transaction, so that additional work on the same connection doesn’t see the
+transaction, so that additional work on the same connection doesn't see the
 partial data.</p>
 <p>If you use <a class="reference internal" href="connection.html#apsw.Connection.__enter__" title="apsw.Connection.__enter__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with</span> <span class="pre">Connection</span></code></a> then the transaction
 will be automatically started, and committed on success or rolled back if
@@ -158,7 +155,7 @@ to all other Cursors on the same connection.  This still applies if
 you start transactions.  Connections are isolated from each other.</p>
 <p>Cursor objects are obtained by <a class="reference internal" href="connection.html#apsw.Connection.cursor" title="apsw.Connection.cursor"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.cursor()</span></code></a> and are very
 cheap.  It is best practise to not re-use them, and instead get a new one
-each time.  If you don’t, code refactoring and nested loops can unintentionally
+each time.  If you don't, code refactoring and nested loops can unintentionally
 use the same cursor object which will not crash but will cause hard to
 diagnose behaviour in your program.</p>
 <p>Read more about <a class="reference internal" href="cursor.html#cursors"><span class="std std-ref">Cursors</span></a>.</p>
@@ -188,7 +185,7 @@ SQLite messages to the <a class="reference external" href="https://docs.python.o
 <p>To do it yourself:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">handler</span><span class="p">(</span><span class="n">errcode</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
     <span class="n">errstr</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">mapping_result_codes</span><span class="p">[</span><span class="n">errcode</span> <span class="o">&amp;</span> <span class="mi">255</span><span class="p">]</span>
-    <span class="nb">print</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SQLITE_LOG: </span><span class="si">{</span> <span class="n">message</span> <span class="si">}</span><span class="s2"> (</span><span class="si">{</span> <span class="n">errcode</span> <span class="si">}</span><span class="s2">) </span><span class="si">{</span> <span class="n">errstr</span> <span class="si">}</span><span class="s2"> &quot;</span>
+    <span class="nb">print</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SQLITE_LOG: </span><span class="si">{</span><span class="w"> </span><span class="n">message</span><span class="w"> </span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="w"> </span><span class="n">errcode</span><span class="w"> </span><span class="si">}</span><span class="s2">) </span><span class="si">{</span><span class="w"> </span><span class="n">errstr</span><span class="w"> </span><span class="si">}</span><span class="s2"> &quot;</span>
            <span class="o">+</span> <span class="n">apsw</span><span class="o">.</span><span class="n">mapping_extended_result_codes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">errcode</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
 
 <span class="n">apsw</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_CONFIG_LOG</span><span class="p">,</span> <span class="n">handler</span><span class="p">)</span>
@@ -212,7 +209,7 @@ a table.</p>
 </section>
 <section id="managing-and-updating-your-schema">
 <h2>Managing and updating your schema<a class="headerlink" href="#managing-and-updating-your-schema" title="Permalink to this heading">¶</a></h2>
-<p>If your program uses SQLite for <a class="reference external" href="https://sqlite.org/appfileformat.html">data</a> then you’ll need to manage
+<p>If your program uses SQLite for <a class="reference external" href="https://sqlite.org/appfileformat.html">data</a> then you'll need to manage
 and update your schema.  The hard way of doing this is to test for the
 existence of tables and their columns, and doing that maintenance
 programmatically.  The easy way is to use <a class="reference external" href="https://sqlite.org/pragma.html#pragma_user_version">pragma user_version</a> as in this example:</p>
@@ -260,7 +257,7 @@ also use the <a class="reference internal" href="shell.html#shell"><span class="
 database to a text file.  For example you could dump it before and
 after a run to see what changed.</p>
 <p>One fairly common gotcha is using double quotes instead of single
-quotes.  (This wouldn’t be a problem if you use bindings!)  SQL
+quotes.  (This wouldn't be a problem if you use bindings!)  SQL
 strings use single quotes.  If you use double quotes then it will
 mostly appear to work, but they are intended to be used for
 identifiers such as column names.  For example if you have a column
@@ -295,7 +292,7 @@ returned rows:</p>
 <h2>Customizing Cursors<a class="headerlink" href="#customizing-cursors" title="Permalink to this heading">¶</a></h2>
 <p>You can customize the behaviour of cursors.  An example would be
 wanting a <a class="reference internal" href="dbapi.html#rowcount"><span class="std std-ref">rowcount</span></a> or batching returned rows.
-(These don’t make any sense with SQLite but the desire may be to make
+(These don't make any sense with SQLite but the desire may be to make
 the code source compatible with other database drivers).</p>
 <p>Set <a class="reference internal" href="connection.html#apsw.Connection.cursor_factory" title="apsw.Connection.cursor_factory"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Connection.cursor_factory</span></code></a> to any callable, which will be
 called with the connection as the only parameter, and return the
@@ -331,7 +328,7 @@ which will keep retrying or a <a class="reference internal" href="connection.htm
 <p>When starting a new database, it can be quite difficult to decide what
 tables and fields to have and how to link them.  The technique used to
 design SQL schemas is called <a class="reference external" href="http://en.wikipedia.org/wiki/Database_normalization">normalization</a>.  The page
-also shows common pitfalls if you don’t normalize your schema.</p>
+also shows common pitfalls if you don't normalize your schema.</p>
 </section>
 <section id="shared-cache-mode">
 <span id="sharedcache"></span><h2>Shared Cache Mode<a class="headerlink" href="#shared-cache-mode" title="Permalink to this heading">¶</a></h2>
@@ -344,9 +341,9 @@ the same way.  The timeouts and handlers are ignored and instead
 Consequently you will have to do your own busy handling.  (<a class="reference external" href="https://sqlite.org/src/tktview/ebde3f66fc64e21e61ef2854ed1a36dfff884a2f">SQLite
 ticket</a>,
 <a class="reference external" href="https://github.com/rogerbinns/apsw/issues/59">APSW issue 59</a>)</p>
-<p>The amount of memory and I/O saved is trivial compared to Python’s
+<p>The amount of memory and I/O saved is trivial compared to Python's
 overall memory and I/O consumption.  You may also need to tune the
-shared cache’s memory back up to what it would have been with separate
+shared cache's memory back up to what it would have been with separate
 connections to get the same performance.</p>
 <p>The shared cache mode is targeted at embedded systems where every
 byte of memory and I/O matters.  For example an MP3 player may only
@@ -367,7 +364,7 @@ can also turn it on for all opened databases by using
 <span class="n">apsw</span><span class="o">.</span><span class="n">connection_hooks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">setwal</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Note that if wal mode can’t be set (eg the database is in memory or
+<p>Note that if wal mode can't be set (eg the database is in memory or
 temporary) then the attempt to set wal mode will be ignored.  The
 pragma will return the mode in effect.  It is also harmless to call
 functions like <a class="reference internal" href="connection.html#apsw.Connection.wal_autocheckpoint" title="apsw.Connection.wal_autocheckpoint"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.wal_autocheckpoint()</span></code></a> on connections
@@ -386,8 +383,31 @@ indirect call via Python.)</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/apswlogo.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
   <div>
-    <h3><a href="index.html">Table of Contents</a></h3>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="index.html"
+                          title="previous chapter">APSW 3.41.0.0 documentation</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="example.html"
+                          title="next chapter">Example/Tour</a></p>
+  </div>
+  <div>
+    <h3><a href="index.html">On this page</a></h3>
     <ul>
 <li><a class="reference internal" href="#">Tips</a><ul>
 <li><a class="reference internal" href="#about-python-apsw-and-sqlite-versions">About Python, APSW, and SQLite versions</a></li>
@@ -410,16 +430,32 @@ indirect call via Python.)</p>
 </ul>
 
   </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="index.html"
-                          title="previous chapter">APSW documentation</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="example.html"
-                          title="next chapter">Example/Tour</a></p>
-  </div>
+<h3><a href="index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="download.html">Download</a></li>
+<li class="toctree-l1"><a class="reference internal" href="build.html">Building</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apsw.html">APSW Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="connection.html">Connections to a database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cursor.html">Cursors (executing SQL)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="blob.html">Blob Input/Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="types.html">Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmarking.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="copyright.html">Copyright and License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changes.html">Change History</a></li>
+</ul>
+
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -427,16 +463,6 @@ indirect call via Python.)</p>
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -454,21 +480,16 @@ indirect call via Python.)</p>
           <a href="example.html" title="Example/Tour"
              >next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="APSW documentation"
+          <a href="index.html" title="APSW 3.41.0.0 documentation"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.41.0.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Tips</a></li> 
       </ul>
     </div>
-
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Jan 15, 2023.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.0.
+      Last updated on Mar 01, 2023.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
     </div>
-<div class="footer">This page uses <a href="http://analytics.google.com/">
-Google Analytics</a> to collect statistics.
-</div>
-
   </body>
 </html>

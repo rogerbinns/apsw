@@ -4,35 +4,32 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Building &#8212; APSW 3.40.1.0 documentation</title>
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+        <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-2NR9GDCQLT');
+        </script>
+    
+    <title>Building &#8212; APSW 3.41.0.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/sphinx_highlight.js"></script>
     
+    <link rel="icon" href="_static/favicon.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
     <link rel="next" title="Extensions" href="extensions.html" />
-    <link rel="prev" title="Download" href="download.html" />
- 
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-2NR9GDCQLT');
-</script>
-
+    <link rel="prev" title="Download" href="download.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -49,7 +46,7 @@
         <li class="right" >
           <a href="download.html" title="Download"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.41.0.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Building</a></li> 
       </ul>
     </div>  
@@ -69,10 +66,6 @@ relationship between Python, APSW, and SQLite versions.</p>
 the <a class="reference internal" href="#recommended-build"><span class="std std-ref">recommended way</span></a> which will also fetch
 needed components for you.</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 46%" />
-<col style="width: 54%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Command</p></th>
 <th class="head"><p>Result</p></th>
@@ -87,7 +80,7 @@ needed components for you.</p>
 site library directory and then runs the test suite.</p></td>
 </tr>
 <tr class="row-odd"><td><div class="line-block">
-<div class="line">python setup.py install <strong>–user</strong></div>
+<div class="line">python setup.py install <strong>--user</strong></div>
 </div>
 </td>
 <td><p>Compiles APSW with default Python
@@ -95,15 +88,15 @@ compiler and installs it into a subdirectory of your home directory.
 See <span class="target" id="index-0"></span><a class="pep reference external" href="https://peps.python.org/pep-0370/"><strong>PEP 370</strong></a> for more details.</p></td>
 </tr>
 <tr class="row-even"><td><div class="line-block">
-<div class="line">python setup.py build_ext <strong>–force</strong>
-<strong>–inplace</strong> test</div>
+<div class="line">python setup.py build_ext <strong>--force</strong>
+<strong>--inplace</strong> test</div>
 </div>
 </td>
-<td><p>Compiles the extension but doesn’t install it.  The test suite is then
+<td><p>Compiles the extension but doesn't install it.  The test suite is then
 run.</p></td>
 </tr>
 <tr class="row-odd"><td><div class="line-block">
-<div class="line">python setup.py build <strong>–debug</strong> install</div>
+<div class="line">python setup.py build <strong>--debug</strong> install</div>
 </div>
 </td>
 <td><p>Compiles APSW with debug information.  This also turns on <a class="reference external" href="http://en.wikipedia.org/wiki/Assert.h">assertions</a>
@@ -131,10 +124,6 @@ re-fetching.</p>
 </div>
 </div></blockquote>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 32%" />
-<col style="width: 68%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>fetch flag</p></th>
 <th class="head"><p>Result</p></th>
@@ -142,7 +131,7 @@ re-fetching.</p>
 </thead>
 <tbody>
 <tr class="row-even"><td><div class="line-block">
-<div class="line"><strong>–version=VERSION</strong></div>
+<div class="line"><strong>--version=VERSION</strong></div>
 </div>
 </td>
 <td><p>By default the SQLite version corresponding to the APSW release is retrieved,  You
@@ -150,19 +139,19 @@ can also ask for specific versions, or for <cite>latest</cite> which uses the SQ
 page to work out the most recent version.</p></td>
 </tr>
 <tr class="row-odd"><td><div class="line-block">
-<div class="line"><strong>–missing-checksum-ok</strong></div>
+<div class="line"><strong>--missing-checksum-ok</strong></div>
 </div>
 </td>
 <td><p>Allows setup to continue if the <a class="reference internal" href="#fetch-checksums"><span class="std std-ref">checksum</span></a> is missing.</p></td>
 </tr>
 <tr class="row-even"><td><div class="line-block">
-<div class="line"><strong>–all</strong></div>
+<div class="line"><strong>--all</strong></div>
 </div>
 </td>
 <td><p>Gets all components listed below.</p></td>
 </tr>
 <tr class="row-odd"><td><div class="line-block">
-<div class="line"><strong>–sqlite</strong></div>
+<div class="line"><strong>--sqlite</strong></div>
 </div>
 </td>
 <td><p>Automatically downloads the <a class="reference external" href="https://sqlite.org/amalgamation.html">SQLite amalgamation</a>. The amalgamation is the
@@ -189,7 +178,7 @@ could modify it to point at a malicious download version instead.
 (setup only uses the page to determine the current version number -
 the SQLite download site URL is hard coded.)</p>
 <p>If the URL is not listed in the checksums file then setup aborts.
-You can use <strong>–missing-checksum-ok</strong> to continue.  You are
+You can use <strong>--missing-checksum-ok</strong> to continue.  You are
 recommended instead to update the checksums file with the
 correct information.</p>
 </div>
@@ -210,7 +199,7 @@ that the traditional APIs for getting time information are not
 re-entrant and cannot be used concurrently from multiple threads.
 Consequently SQLite has mutexes to ensure that concurrent calls do
 not happen.  However you can tell it you have more recent re-entrant
-versions of the calls and it won’t need to bother with the mutexes.</p>
+versions of the calls and it won't need to bother with the mutexes.</p>
 <p>After fetching the amalgamation, setup automatically determines what
 new APIs you have by running the <code class="file docutils literal notranslate"><span class="pre">configure</span></code> script that comes
 with SQLite and noting the output.  The information is placed in
@@ -232,16 +221,12 @@ need to give the flag once and giving a comma separated list.  For example:</p>
 </div>
 <p>SQLite includes <a class="reference external" href="https://www.sqlite.org/compile.html">many options defined to the C compiler</a>.  If you want to change
 compiled in default values, or provide defines like
-SQLITE_CUSTOM_INCLUDE then you can use <strong>–definevalues</strong> using
+SQLITE_CUSTOM_INCLUDE then you can use <strong>--definevalues</strong> using
 <cite>=</cite> and comma separating.  For example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">build_ext</span> <span class="o">--</span><span class="n">definevalues</span> <span class="n">SQLITE_DEFAULT_FILE_FORMAT</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">SQLITE_CUSTOM_INCLUDE</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">h</span>
 </pre></div>
 </div>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 32%" />
-<col style="width: 68%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>build/build_ext flag</p></th>
 <th class="head"><p>Result</p></th>
@@ -249,26 +234,26 @@ SQLITE_CUSTOM_INCLUDE then you can use <strong>–definevalues</strong> using
 </thead>
 <tbody>
 <tr class="row-even"><td><div class="line-block">
-<div class="line"><strong>–enable-all-extensions</strong></div>
+<div class="line"><strong>--enable-all-extensions</strong></div>
 </div>
 </td>
 <td><p>Enables the STAT4, FTS3/4/5, RTree, JSON1, RBU, and ICU extensions if <em>icu-config</em>
 is on your path</p></td>
 </tr>
 <tr class="row-odd"><td><div class="line-block">
-<div class="line"><strong>–enable=fts3</strong></div>
-<div class="line"><strong>–enable=fts4</strong></div>
-<div class="line"><strong>–enable=fts5</strong></div>
+<div class="line"><strong>--enable=fts3</strong></div>
+<div class="line"><strong>--enable=fts4</strong></div>
+<div class="line"><strong>--enable=fts5</strong></div>
 </div>
 </td>
 <td><p>Enables the <a class="reference internal" href="extensions.html#ext-fts3"><span class="std std-ref">full text search extension</span></a>.
 This flag only helps when using the amalgamation. If not using the
 amalgamation then you need to separately ensure fts3/4/5 is enabled in the SQLite
 install. You are likely to want the <a class="reference external" href="https://sqlite.org/compile.html#enable_fts3_parenthesis">parenthesis option</a> on unless you have
-legacy code (<cite>–enable-all-extensions</cite> turns it on).</p></td>
+legacy code (<cite>--enable-all-extensions</cite> turns it on).</p></td>
 </tr>
 <tr class="row-even"><td><div class="line-block">
-<div class="line"><strong>–enable=rtree</strong></div>
+<div class="line"><strong>--enable=rtree</strong></div>
 </div>
 </td>
 <td><p>Enables the <a class="reference internal" href="extensions.html#ext-rtree"><span class="std std-ref">spatial table extension</span></a>.
@@ -277,16 +262,16 @@ amalgamation then you need to separately ensure rtree is enabled in the SQLite
 install.</p></td>
 </tr>
 <tr class="row-odd"><td><div class="line-block">
-<div class="line"><strong>–enable=rbu</strong></div>
+<div class="line"><strong>--enable=rbu</strong></div>
 </div>
 </td>
-<td><p>Enables the <a class="reference internal" href="extensions.html#ext-rbu"><span class="std std-ref">reumable bulk update extension</span></a>.
+<td><p>Enables the <a class="reference internal" href="extensions.html#ext-rbu"><span class="std std-ref">resumable bulk update extension</span></a>.
 This flag only helps when using the amalgamation. If not using the
 amalgamation then you need to separately ensure rbu is enabled in the SQLite
 install.</p></td>
 </tr>
 <tr class="row-even"><td><div class="line-block">
-<div class="line"><strong>–enable=icu</strong></div>
+<div class="line"><strong>--enable=icu</strong></div>
 </div>
 </td>
 <td><p>Enables the <a class="reference internal" href="extensions.html#ext-icu"><span class="std std-ref">International Components for Unicode extension</span></a>.
@@ -297,14 +282,14 @@ amalgamation then you need to separately ensure ICU is enabled in the SQLite
 install.</p></td>
 </tr>
 <tr class="row-odd"><td><div class="line-block">
-<div class="line"><strong>–omit=ITEM</strong></div>
+<div class="line"><strong>--omit=ITEM</strong></div>
 </div>
 </td>
 <td><p>Causes various functionality to be omitted. For example
-<cite>–omit=load_extension</cite> will omit code to do with loading extensions. If
+<cite>--omit=load_extension</cite> will omit code to do with loading extensions. If
 using the amalgamation then this will omit the functionality from APSW and
 SQLite, otherwise the functionality will only be omitted from APSW (ie the code
-will still be in SQLite, APSW just won’t call it). In almost all cases you will need
+will still be in SQLite, APSW just won't call it). In almost all cases you will need
 to regenerate the SQLite source because the omits also alter the generated SQL
 parser. See <a class="reference external" href="https://sqlite.org/compile.html#omitfeatures">the relevant SQLite documentation</a>.</p></td>
 </tr>
@@ -316,16 +301,16 @@ parser. See <a class="reference external" href="https://sqlite.org/compile.html#
 <span id="matching-sqlite-options"></span><h2>Matching APSW and SQLite options<a class="headerlink" href="#matching-apsw-and-sqlite-options" title="Permalink to this heading">¶</a></h2>
 <p>APSW needs to see the same options as SQLite to correctly match it.
 For example if SQLite is compiled without loadable extensions, then
-APSW also needs to know that at compile time because the APIs won’t be
+APSW also needs to know that at compile time because the APIs won't be
 present.  Another example is <a class="reference internal" href="cursor.html#apsw.Cursor.description_full" title="apsw.Cursor.description_full"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Cursor.description_full</span></code></a> needs to
 know if <cite>SQLITE_ENABLE_COLUMN_METADATA</cite> was defined when building
 SQLite for the same reason.</p>
 <p>If you use the amalgamation (recommended configuration) then APSW and
 SQLite will see the same options and will be correctly in sync.</p>
 <p>If you are using the system provided SQLite then specify
-<cite>–use-system-sqlite-config</cite> to <cite>build_ext</cite>, and the configuration
+<cite>--use-system-sqlite-config</cite> to <cite>build_ext</cite>, and the configuration
 will be automatically obtained (using <a class="reference external" href="https://docs.python.org/3/library/ctypes.html?highlight=find_library#ctypes.util.find_library">ctypes find_library</a>)</p>
-<p>You can use the amalgamation and <cite>–use-system-sqlite-config</cite>
+<p>You can use the amalgamation and <cite>--use-system-sqlite-config</cite>
 simultaneously in which case the amalgamation will have an identical
 configuration to the system one.  This is useful if you are using a
 newer SQLite version in the amalgamation, but still want to match the
@@ -334,12 +319,12 @@ system.</p>
 <section id="finding-sqlite-3">
 <h2>Finding SQLite 3<a class="headerlink" href="#finding-sqlite-3" title="Permalink to this heading">¶</a></h2>
 <p>SQLite 3 is needed during the build process. If you specify
-<strong>fetch –sqlite</strong> to the <code class="file docutils literal notranslate"><span class="pre">setup.py</span></code> command line
+<strong>fetch --sqlite</strong> to the <code class="file docutils literal notranslate"><span class="pre">setup.py</span></code> command line
 then it will automatically fetch the current version of the SQLite
 amalgamation. (The current version is determined by parsing the
 <a class="reference external" href="https://sqlite.org/download.html">SQLite download page</a>). You
 can manually specify the version, for example
-<strong>fetch –sqlite –version=3.39.4</strong>.</p>
+<strong>fetch --sqlite --version=3.39.4</strong>.</p>
 <p>These methods are tried in order:</p>
 <blockquote>
 <div><p><a class="reference external" href="https://sqlite.org/amalgamation.html">Amalgamation</a></p>
@@ -357,7 +342,7 @@ the downloaded amalgamation.</p>
 </div></blockquote>
 <p>User directories</p>
 <blockquote>
-<div><p>If specifying <strong>–user</strong> then your user directory is
+<div><p>If specifying <strong>--user</strong> then your user directory is
 searched first. See <span class="target" id="index-1"></span><a class="pep reference external" href="https://peps.python.org/pep-0370/"><strong>PEP 370</strong></a> for more details.</p>
 </div></blockquote>
 <p>System directories</p>
@@ -370,7 +355,7 @@ searched first. See <span class="target" id="index-1"></span><a class="pep refer
 <p>If you compiled SQLite with any OMIT flags (eg
 <em>SQLITE_OMIT_LOAD_EXTENSION</em>) then you must include them in
 the <code class="file docutils literal notranslate"><span class="pre">setup.py</span></code> command or file. For this example you could use
-<strong>setup.py build –omit=load_extension</strong> to add the same flags.</p>
+<strong>setup.py build --omit=load_extension</strong> to add the same flags.</p>
 </div>
 </section>
 <section id="recommended">
@@ -397,11 +382,11 @@ APSW source to.</p>
 <p>There may be some warnings during the compilation step about
 sqlite3.c, <a class="reference external" href="https://sqlite.org/faq.html#q17">but they are harmless</a></p>
 </div>
-<p>The extension just turns into a single directory <cite>apsw</cite>. You don’t
+<p>The extension just turns into a single directory <cite>apsw</cite>. You don't
 need to install it and can drop it into any directory that is more
 convenient for you and that your code can reach. To just do the build
 and not install, leave out <em>install</em> from the lines above. (Use
-<em>build_ext –inplace</em> to have the extension put in the main
+<em>build_ext --inplace</em> to have the extension put in the main
 directory.)</p>
 <p>The test suite will be run. It will print the APSW file used, APSW and
 SQLite versions and then run lots of tests all of which should pass.</p>
@@ -426,8 +411,8 @@ components:</p>
 dedicated to testing than makes up the actual database functionality.</p>
 <p>APSW includes tests which use the standard Python testing modules to
 verify correct operation. New code is developed alongside the tests.
-Reported issues also have test cases to ensure the issue doesn’t
-happen or doesn’t happen again.:</p>
+Reported issues also have test cases to ensure the issue doesn't
+happen or doesn't happen again.:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python3 -m apsw.tests
                 Python  /usr/bin/python3 sys.version_info(major=3, minor=10, micro=4, releaselevel=&#39;final&#39;, serial=0)
 Testing with APSW file  /space/apsw/apsw/__init__.cpython-310-x86_64-linux-gnu.so
@@ -453,7 +438,7 @@ coverage up to 99.6% of the code.</p>
 running the test suite. The test suite is run multiple times to make
 any memory leaks or similar issues stand out. A checking version of
 Python is also used.  See <a class="reference external" href="https://github.com/rogerbinns/apsw/blob/master/tools/valgrind.sh">tools/valgrind.sh</a> in the source.
-The same testing is also done with the <a class="reference external" href="https://en.wikipedia.org/wiki/AddressSanitizer">compiler’s sanitizer option</a>.</p>
+The same testing is also done with the <a class="reference external" href="https://en.wikipedia.org/wiki/AddressSanitizer">compiler's sanitizer option</a>.</p>
 <p>To ensure compatibility with the various Python versions, a script
 downloads and compiles all supported Python versions in both debug and
 release configurations (and 32 and 64 bit) against the APSW and SQLite
@@ -470,8 +455,31 @@ in the source.</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/apswlogo.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
   <div>
-    <h3><a href="index.html">Table of Contents</a></h3>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="download.html"
+                          title="previous chapter">Download</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="extensions.html"
+                          title="next chapter">Extensions</a></p>
+  </div>
+  <div>
+    <h3><a href="index.html">On this page</a></h3>
     <ul>
 <li><a class="reference internal" href="#">Building</a><ul>
 <li><a class="reference internal" href="#setup-py">setup.py</a></li>
@@ -490,16 +498,32 @@ in the source.</p>
 </ul>
 
   </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="download.html"
-                          title="previous chapter">Download</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="extensions.html"
-                          title="next chapter">Extensions</a></p>
-  </div>
+<h3><a href="index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="download.html">Download</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Building</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apsw.html">APSW Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="connection.html">Connections to a database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cursor.html">Cursors (executing SQL)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="blob.html">Blob Input/Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="types.html">Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmarking.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="copyright.html">Copyright and License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changes.html">Change History</a></li>
+</ul>
+
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -507,16 +531,6 @@ in the source.</p>
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -536,19 +550,14 @@ in the source.</p>
         <li class="right" >
           <a href="download.html" title="Download"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.41.0.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Building</a></li> 
       </ul>
     </div>
-
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Jan 15, 2023.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.0.
+      Last updated on Mar 01, 2023.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
     </div>
-<div class="footer">This page uses <a href="http://analytics.google.com/">
-Google Analytics</a> to collect statistics.
-</div>
-
   </body>
 </html>
