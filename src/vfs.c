@@ -1887,15 +1887,24 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
       return -1;
   }
 
-  if (filename->ob_type == &APSWURIFilenameType)
+  if (Py_TYPE(filename) == &APSWURIFilenameType)
   {
     self->filename = ((APSWURIFilename *)filename)->filename;
     self->free_filename = 0;
   }
+  else if (PyUnicode_Check(filename))
+  {
+    const char *text = PyUnicode_AsUTF8(filename);
+    if(!text)
+      return -1;
+    self->filename = apsw_strdup(text);
+    if(!self->filename)
+      return -1;
+  }
   else
   {
-    assert(PyUnicode_Check(filename));
-    self->filename = apsw_strdup(PyUnicode_AsUTF8(filename));
+    PyErr_Format(PyExc_TypeError, "filename should be a string");
+    return -1;
   }
 
   if (0 == strlen(vfs))
@@ -1911,7 +1920,8 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
   flagsin = PyLong_AsLong(pyflagsin);
   if (flagsin != (int)flagsin)
   {
-    PyErr_Format(PyExc_OverflowError, "flags[0] is too big!");
+    if(!PyErr_Occurred())
+      PyErr_Format(PyExc_OverflowError, "flags[0] is too big!");
     AddTraceBackHere(__FILE__, __LINE__, "VFSFile.__init__", "{s: O}", "flags", OBJ(flags));
   }
   if (PyErr_Occurred())
