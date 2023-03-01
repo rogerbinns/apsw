@@ -218,13 +218,17 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
   assert(0 == utf8[utf8size]);
   /* note that prepare can return ok while a python level occurred that couldn't be reported */
   PYSQLITE_SC_CALL(res = sqlite3_prepare_v3(sc->db, utf8, utf8size + 1, options->prepare_flags, &vdbestatement, &tail));
-  if (!*tail && tail - utf8 < utf8size)
-    PyErr_Format(PyExc_ValueError, "null character in query");
   if (res != SQLITE_OK || PyErr_Occurred())
   {
     SET_EXC(res, sc->db);
     PYSQLITE_SC_CALL(sqlite3_finalize(vdbestatement));
     return res ? res : SQLITE_ERROR;
+  }
+  if (!*tail && tail - utf8 < utf8size)
+  {
+    PyErr_Format(PyExc_ValueError, "null character in query");
+    PYSQLITE_SC_CALL(sqlite3_finalize(vdbestatement));
+    return SQLITE_ERROR;
   }
 
   orig_tail = tail;
