@@ -227,7 +227,7 @@ def exercise(example_code, expect_exception):
     if expect_exception:
         return
 
-    for f in glob.glob("/tmp/dbfile-delme*"):
+    for f in glob.glob("/tmp/dbfile-delme*") + glob.glob("/tmp/myobfudb*"):
         os.remove(f)
     exec(example_code, {"print": lambda *args: None}, None)
 
