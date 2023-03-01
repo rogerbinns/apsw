@@ -792,16 +792,18 @@ apsw.ext.make_virtual_module(connection, "files_info", get_files_info)
 # all the sys.path directories except our current one
 bindings = (os.pathsep.join(p for p in sys.path if os.path.isdir(p) and not os.path.samefile(p, ".")), )
 
-# Find the 3 biggest files
+# Find the 3 biggest files that aren't libraries
 query = """SELECT st_size, directory, name
             FROM files_info(?)
+            WHERE extension NOT IN ('.a', '.so')
             ORDER BY st_size DESC
             LIMIT 3"""
 print(apsw.ext.format_query_table(connection, query, bindings))
 
-# Find the 3 oldest
+# Find the 3 oldest Python files
 query = """SELECT DATE(st_ctime, 'auto') AS date, directory, name
             FROM files_info(?)
+            WHERE extension='.py'
             ORDER BY st_size DESC
             LIMIT 3"""
 print(apsw.ext.format_query_table(connection, query, bindings))
