@@ -45,6 +45,7 @@ nowrap = {
     "sqlite3_result_text",
     "sqlite3_result_zeroblob",
     "sqlite3_result_blob",
+    "sqlite3_status",
 
     # not useful
     "sqlite3_next_stmt",
@@ -88,11 +89,13 @@ nowrap = {
     "sqlite3_libversion_number",  # more useful in C
     "sqlite3_version",  # we provide sqlite3_libversion which is the same
 
-    # deprecated but not marked as such (v2 exists)
+    # deprecated but not marked as such (v2+ exists)
     "sqlite3_trace",
     "sqlite3_wal_checkpoint",
     "sqlite3_create_collation",
     "sqlite3_create_module",
+    "sqlite3_prepare",
+    "sqlite3_prepare_v2",
 
     # windows only, no one has asked for it
     "sqlite3_win32_set_directory",
@@ -125,7 +128,7 @@ nowrap = {
 
 for f in sorted(functions):
     # we have to exclude this file ...
-    res = subprocess.run(["git", "grep", "-wFq", f, "--", ":^tools/find_unwrapped_apis.py"])
+    res = subprocess.run(["git", "grep", "-wFq", f, "--", ":^tools/find_unwrapped_apis.py", "*.c"])
     assert res.returncode >= 0
     if res.returncode == 0:  # found
         if f in nowrap:
