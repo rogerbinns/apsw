@@ -208,7 +208,7 @@ APSWBlob_close_internal(APSWBlob *self, int force)
     PyErr_Fetch(&err_type, &err_value, &err_traceback);
 
   /* note that sqlite3_blob_close always works even if an error is
-     returned - see sqlite ticket #2815 */
+     returned */
 
   if (self->pBlob)
   {
