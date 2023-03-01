@@ -2492,10 +2492,13 @@ finally:
   if (PyErr_Occurred())
   {
     char *errmsg = NULL;
-    char *funname = sqlite3_mprintf("user-defined-scalar-%s", cbinfo->name);
+    char *funname = NULL;
+    CHAIN_EXC(
+        funname = sqlite3_mprintf("user-defined-scalar-%s", cbinfo->name);
+        if (!funname) PyErr_NoMemory(););
     sqlite3_result_error_code(context, MakeSqliteMsgFromPyException(&errmsg));
     sqlite3_result_error(context, errmsg, -1);
-    AddTraceBackHere(__FILE__, __LINE__, funname, "{s: i, s: s}", "NumberOfArguments", argc, "message", errmsg);
+    AddTraceBackHere(__FILE__, __LINE__, funname ? funname : "sqlite3_mprintf ran out of memory", "{s: i, s: s}", "NumberOfArguments", argc, "message", errmsg);
     sqlite3_free(funname);
     sqlite3_free(errmsg);
   }
@@ -2621,8 +2624,10 @@ finally:
     char *funname = 0;
     FunctionCBInfo *cbinfo = (FunctionCBInfo *)sqlite3_user_data(context);
     assert(cbinfo);
-    funname = sqlite3_mprintf("user-defined-aggregate-step-%s", cbinfo->name);
-    AddTraceBackHere(__FILE__, __LINE__, funname, "{s: i}", "NumberOfArguments", argc);
+    CHAIN_EXC(
+        funname = sqlite3_mprintf("user-defined-aggregate-step-%s", cbinfo->name);
+        if (!funname) PyErr_NoMemory(););
+    AddTraceBackHere(__FILE__, __LINE__, funname ? funname : "sqlite3_mprintf ran out of memory", "{s: i}", "NumberOfArguments", argc);
     sqlite3_free(funname);
   }
 finalfinally:
@@ -2686,8 +2691,10 @@ finally:
     char *funname = 0;
     FunctionCBInfo *cbinfo = (FunctionCBInfo *)sqlite3_user_data(context);
     assert(cbinfo);
-    funname = sqlite3_mprintf("user-defined-aggregate-final-%s", cbinfo->name);
-    AddTraceBackHere(__FILE__, __LINE__, funname, NULL);
+    CHAIN_EXC(
+        funname = sqlite3_mprintf("user-defined-aggregate-final-%s", cbinfo->name);
+        if (!funname) PyErr_NoMemory(););
+    AddTraceBackHere(__FILE__, __LINE__, funname ? funname : "sqlite3_mprintf ran out of memory", NULL);
     sqlite3_free(funname);
   }
 
