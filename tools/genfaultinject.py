@@ -186,15 +186,37 @@ returns = {
             """.split(),
     # numeric return, no gil
     "no_gil": """
-            sqlite3_threadsafe sqlite3_close sqlite3_db_config sqlite3_enable_shared_cache
-            sqlite3_set_authorizer sqlite3_collation_needed
-            sqlite3_enable_load_extension sqlite3_busy_handler
-            sqlite3_status64 sqlite3_initialize sqlite3_shutdown
-            sqlite3_config sqlite3_blob_read sqlite3_blob_write sqlite3_backup_init
-            sqlite3_autovacuum_pages sqlite3_malloc64 sqlite3_wal_autocheckpoint
-            sqlite3_wal_checkpoint_v2 sqlite3_create_module_v2 sqlite3_overload_function
-            sqlite3_exec sqlite3_clear_bindings sqlite3_vfs_register sqlite3_mprintf
-            sqlite3_column_name
+            sqlite3_aggregate_context sqlite3_autovacuum_pages
+            sqlite3_backup_finish sqlite3_backup_init
+            sqlite3_backup_step sqlite3_bind_blob sqlite3_bind_blob64
+            sqlite3_bind_double sqlite3_bind_int sqlite3_bind_int64
+            sqlite3_bind_null sqlite3_bind_pointer sqlite3_bind_text
+            sqlite3_bind_text64 sqlite3_bind_value
+            sqlite3_bind_zeroblob sqlite3_bind_zeroblob64
+            sqlite3_blob_open sqlite3_blob_read sqlite3_blob_reopen
+            sqlite3_blob_write sqlite3_busy_handler
+            sqlite3_clear_bindings sqlite3_close sqlite3_close_v2
+            sqlite3_collation_needed sqlite3_column_name
+            sqlite3_complete sqlite3_config sqlite3_create_collation
+            sqlite3_create_collation_v2 sqlite3_create_function
+            sqlite3_create_function_v2 sqlite3_create_module
+            sqlite3_create_module_v2 sqlite3_create_window_function
+            sqlite3_db_cacheflush sqlite3_db_config sqlite3_db_status
+            sqlite3_declare_vtab sqlite3_deserialize
+            sqlite3_drop_modules sqlite3_enable_load_extension
+            sqlite3_enable_shared_cache sqlite3_exec
+            sqlite3_expanded_sql sqlite3_hard_heap_limit64
+            sqlite3_initialize  sqlite3_load_extension sqlite3_malloc
+            sqlite3_malloc64 sqlite3_mprintf sqlite3_normalized_sql
+            sqlite3_open sqlite3_open_v2 sqlite3_overload_function
+            sqlite3_prepare sqlite3_prepare_v2 sqlite3_prepare_v3
+            sqlite3_realloc sqlite3_realloc64
+            sqlite3_result_zeroblob64 sqlite3_set_authorizer
+            sqlite3_shutdown sqlite3_status64
+            sqlite3_table_column_metadata sqlite3_threadsafe
+            sqlite3_trace_v2 sqlite3_vfs_register
+            sqlite3_vfs_unregister sqlite3_wal_autocheckpoint
+            sqlite3_wal_checkpoint_v2
             """.split(),
     # py functions that return a number to indicate failure
     "with_gil": """
