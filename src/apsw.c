@@ -699,7 +699,7 @@ static PyObject *
 getapswexceptionfor(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
 {
   int code = 0, i;
-  PyObject *result = NULL;
+  PyObject *result = NULL, *tmp = NULL;
 
   {
     static char *kwlist[] = {"code", NULL};
@@ -719,9 +719,23 @@ getapswexceptionfor(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
   if (!result)
     return PyErr_Format(PyExc_ValueError, "%d is not a known error code", code);
 
-  PyObject_SetAttrString(result, "extendedresult", PyLong_FromLong(code));
-  PyObject_SetAttrString(result, "result", PyLong_FromLong(code & 0xff));
+  tmp = PyLong_FromLong(code);
+  if (!tmp)
+    goto error;
+  if (0 != PyObject_SetAttrString(result, "extendedresult", tmp))
+    goto error;
+  Py_DECREF(tmp);
+  tmp = PyLong_FromLong(code & 0xff);
+  if (!tmp)
+    goto error;
+  if (0 != PyObject_SetAttrString(result, "result", tmp))
+    goto error;
+  Py_DECREF(tmp);
   return result;
+error:
+  Py_XDECREF(tmp);
+  Py_CLEAR(result);
+  return NULL;
 }
 
 /** .. method:: complete(statement: str) -> bool

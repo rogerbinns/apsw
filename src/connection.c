@@ -618,7 +618,10 @@ Connection_backup(Connection *self, PyObject *args, PyObject *kwds)
     args = PyTuple_New(2);
     if (!args)
       goto thisfinally;
-    PyTuple_SET_ITEM(args, 0, PyUnicode_FromString("The destination database has outstanding objects open on it.  They must all be closed for the backup to proceed (otherwise corruption would be possible.)"));
+    PyObject *s = PyUnicode_FromString("The destination database has outstanding objects open on it.  They must all be closed for the backup to proceed (otherwise corruption would be possible.)");
+    if(!s)
+      goto thisfinally;
+    PyTuple_SET_ITEM(args, 0, s);
     PyTuple_SET_ITEM(args, 1, self->dependents);
     Py_INCREF(self->dependents);
 
