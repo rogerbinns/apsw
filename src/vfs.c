@@ -1520,8 +1520,6 @@ apswvfspy_xNextSystemCall(APSWVFS *self, PyObject *args, PyObject *kwds)
 static PyObject *
 apswvfspy_unregister(APSWVFS *self)
 {
-  int res;
-
   CHECKVFSPY;
 
   if (self->registered)
@@ -1530,14 +1528,10 @@ apswvfspy_unregister(APSWVFS *self)
          unregister failure always results in an unregister and so
          continue freeing the data structures.  we memset everything
          to zero so there will be a coredump should this behaviour
-         change.  as of 3.6.3 the sqlite code doesn't return
+         change.  the sqlite code doesn't return
          anything except ok anyway. */
-    res = sqlite3_vfs_unregister(self->containingvfs);
+    sqlite3_vfs_unregister(self->containingvfs);
     self->registered = 0;
-
-    SET_EXC(res, NULL);
-    if (res != SQLITE_OK)
-      return NULL;
   }
   Py_RETURN_NONE;
 }
