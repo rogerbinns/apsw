@@ -26,6 +26,7 @@ def exercise(example_code, expect_exception):
         apsw.config(apsw.SQLITE_CONFIG_URI, 1)
         apsw.config(apsw.SQLITE_CONFIG_MULTITHREAD)
         apsw.config(apsw.SQLITE_CONFIG_PCACHE_HDRSZ)
+        apsw.config(apsw.SQLITE_CONFIG_LOG, None)
         apsw.ext.log_sqlite(level=0)
     except apsw.MisuseError:
         pass
@@ -39,12 +40,22 @@ def exercise(example_code, expect_exception):
     for n in """
             SQLITE_VERSION_NUMBER apswversion compile_options keywords memoryused
             sqlite3_sourceid sqlitelibversion using_amalgamation vfsnames
+            memoryhighwater
         """.split():
         obj = getattr(apsw, n)
         if callable(obj):
             obj()
 
+    apsw.softheaplimit(100_000_000)
+    apsw.hard_heap_limit(100_000_000)
+    apsw.randomness(32)
     apsw.enablesharedcache(False)
+    apsw.releasememory(1024)
+    apsw.exceptionfor(3)
+    try:
+        apsw.exceptionfor(0xfe)
+    except ValueError:
+        pass
 
     for v in ("a'bc", "ab\0c", b"aabbcc", None, math.nan, math.inf, -0.0, -math.inf, 3.1):
         apsw.format_sql_value(v)
@@ -55,6 +66,8 @@ def exercise(example_code, expect_exception):
         "pragma page_size=512; pragma auto_vacuum=FULL; pragma journal_mode=wal; create table foo(x)").fetchall()
     with con:
         con.executemany("insert into foo values(zeroblob(1023))", [tuple() for _ in range(500)])
+
+    apsw.zeroblob(77).length()
 
     con.autovacuum_pages(lambda *args: 1)
     for i in range(20):
@@ -210,6 +223,15 @@ def exercise(example_code, expect_exception):
     blob.write(b"hello world")
     blob.seek(80)
     blob.read(10)
+    m = bytearray(b"12345678")
+    blob.readinto(m)
+    blob.tell()
+    blob.read(0)
+    blob.seek(blob.length())
+    blob.read(10)
+    blob.seek(0)
+    blob.reopen(con.last_insert_rowid())
+
     blob.close()
 
     if expect_exception:
@@ -217,9 +239,21 @@ def exercise(example_code, expect_exception):
 
     con.cache_stats(True)
 
+    apsw.connection_hooks = [lambda x: None] * 3
+    x = apsw.Connection("")
+    c = x.cursor()
+    try:
+        x.backup("main", con, "main")
+    except apsw.ThreadingViolationError:
+        pass
+    del c
+
     con2 = apsw.Connection("")
     with con2.backup("main", con, "main") as backup:
         backup.step(1)
+        backup.remaining
+        backup.pagecount
+    backup.finish()
     del con2
 
     con.close()
