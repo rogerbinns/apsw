@@ -1699,7 +1699,8 @@ APSWCursor_expanded_sql(APSWCursor *self)
   CHECK_CURSOR_CLOSED(NULL);
 
   PYSQLITE_VOID_CALL(es = sqlite3_expanded_sql(self->statement->vdbestatement));
-
+  if (!es)
+    return PyErr_NoMemory();
   res = convertutf8string(es);
   sqlite3_free((void *)es);
   return res;

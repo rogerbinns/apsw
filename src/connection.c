@@ -2322,9 +2322,11 @@ static PyTypeObject FunctionCBInfoType =
         0,                                                                      /* tp_del */
         PyType_TRAILER};
 
+#undef allocfunccbinfo
 static FunctionCBInfo *
 allocfunccbinfo(const char *name)
 {
+#include "faultinject.h"
   FunctionCBInfo *res = (FunctionCBInfo *)_PyObject_New(&FunctionCBInfoType);
   if (res)
   {
@@ -2513,6 +2515,9 @@ static aggregatefunctioncontext *
 getaggregatefunctioncontext(sqlite3_context *context)
 {
   aggregatefunctioncontext *aggfc = sqlite3_aggregate_context(context, sizeof(aggregatefunctioncontext));
+  if (!aggfc)
+    return (void *)PyErr_NoMemory();
+
   FunctionCBInfo *cbinfo;
   PyObject *retval;
   /* have we seen it before? */
@@ -2721,6 +2726,9 @@ static windowfunctioncontext *
 get_window_function_context_wrapped(sqlite3_context *context)
 {
   windowfunctioncontext *winfc = sqlite3_aggregate_context(context, sizeof(windowfunctioncontext));
+  if (!winfc)
+    return (void *)PyErr_NoMemory();
+
   FunctionCBInfo *cbinfo;
   PyObject *retval = NULL;
   PyObject *sequence = NULL;
@@ -3096,7 +3104,7 @@ Connection_create_window_function(Connection *self, PyObject *args, PyObject *kw
                                            cbinfo ? cbw_value : NULL,
                                            cbinfo ? cbw_inverse : NULL,
                                            apsw_free_func));
-
+  SET_EXC(res, self->db);
 finally:
   if (PyErr_Occurred())
     return NULL;
@@ -4499,7 +4507,7 @@ Connection_cacheflush(Connection *self)
   PYSQLITE_VOID_CALL(res = sqlite3_db_cacheflush(self->db));
   if (res)
   {
-    SET_EXC(res, NULL);
+    SET_EXC(res, self->db);
     return NULL;
   }
 
@@ -4522,7 +4530,10 @@ Connection_release_memory(Connection *self)
 
   PYSQLITE_CON_CALL(res = sqlite3_db_cacheflush(self->db));
   if (res != SQLITE_OK)
+  {
+    SET_EXC(res, self->db);
     return NULL;
+  }
 
   Py_RETURN_NONE;
 }

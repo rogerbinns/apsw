@@ -25,10 +25,12 @@ OBJ(PyObject *v)
     }                                           \
   } while (0)
 
+#undef Call_PythonMethod
 /* Calls the named method of object with the provided args */
 static PyObject *
 Call_PythonMethod(PyObject *obj, const char *methodname, int mandatory, PyObject *args)
 {
+#include "faultinject.h"
   PyObject *method = NULL;
   PyObject *res = NULL;
 
