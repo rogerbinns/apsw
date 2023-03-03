@@ -356,8 +356,8 @@ APSWBlob_read(APSWBlob *self, PyObject *args, PyObject *kwds)
   then copying into buffer.
 
   :param buffer: A writable buffer like object.
-                 There is a bytearray type that is very useful.
-                 `arrays <https://docs.python.org/3/library/array.html>`__ also work.
+                 There is a :class:`bytearray` type that is very useful.
+                 :mod:`Arrays <array>` also work.
 
   :param offset: The position to start writing into the buffer
                  defaulting to the beginning.
