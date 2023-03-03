@@ -302,7 +302,10 @@ class Tester:
                 return 0xFE  # also does unknown error code to make_exception
 
             # pointers with 0 being failure
-            if fname in {"sqlite3_backup_init", "sqlite3_malloc64", "sqlite3_mprintf", "sqlite3_column_name"}:
+            if fname in {
+                    "sqlite3_backup_init", "sqlite3_malloc64", "sqlite3_mprintf", "sqlite3_column_name",
+                    "sqlite3_aggregate_context", "sqlite3_expanded_sql"
+            }:
                 self.expect_exception.add(apsw_attr("SQLError"))
                 self.expect_exception.add(MemoryError)
                 return 0
@@ -335,7 +338,10 @@ class Tester:
         if self.runplan is not None:
             if not self.runplan:
                 return self.Proceed
-            if key == self.runplan[0]:
+            elif isinstance(self.runplan, str):
+                if key[0] != self.runplan:
+                    return self.Proceed
+            elif key == self.runplan[0]:
                 self.runplan.pop(0)
             else:
                 return self.Proceed
@@ -402,13 +408,23 @@ class Tester:
         return curline_pretty, 100 * pos / total_lines
 
     def verify_exception(self, tested):
+        if len(tested) == 0 and len(self.exc_happened) == 0:
+            return
         ok = any(e[0] in self.expect_exception for e in self.exc_happened) or any(self.FAULTS in str(e[1])
                                                                                   for e in self.exc_happened)
-
-        if tested and list(tested)[0][2] in {"apsw_set_errmsg", "apsw_get_errmsg"}:
+        # these faults happen in fault handling so can't fault report themselves.
+        if tested and list(tested)[0][2] in {"apsw_set_errmsg", "apsw_get_errmsg", "apsw_write_unraisable"}:
             return
         if len(self.exc_happened) < len(tested):
-            ok = False
+            if any(key[2] == "MakeSqliteMsgFromPyException" for key in tested):
+                # we don't report errors in the error handling reporting
+                pass
+            elif (tested[0][0], tested[1][0]) == ("_PyObject_New", "sqlite3_backup_finish"):
+                # backup finish error is ignored because we are handling the
+                # object_new error
+                pass
+            else:
+                ok = False
         if not ok:
             print("\nExceptions failed to verify")
             print(f"Got { self.exc_happened }")
@@ -441,7 +457,7 @@ class Tester:
         complete = False
 
         sys.excepthook = sys.unraisablehook = self.exchook
-        while True:
+        while not complete:
             # exceptions that happened this loop
             self.exc_happened = []
             # exceptions we expected to happen this loop
@@ -452,28 +468,34 @@ class Tester:
             if use_runplan:
                 if len(self.to_fault) == 0:
                     complete = True
-                    break
-                for k, v in self.to_fault.items():
-                    self.runplan = v + [k]
-                    break
+                    self.runplan = "sqlite3_shutdown"
+                else:
+                    for k, v in self.to_fault.items():
+                        self.runplan = v + [k]
+                        break
             else:
                 self.runplan = None
 
-            self.last_exc = None
+            self.last_exc = None  # it is ok to see this line when faulting apsw_write_unraisable (comes from PyErr_Print)
             with self:
                 try:
-                    exercise(self.example_code, self.expect_exception)
-                    if not use_runplan and not self.faulted_this_round:
-                        use_runplan = True
-                        print("Exercising locations that require multiple failures")
-                        continue
+                    if complete:
+                        # we do this at the very end
+                        import apsw
+                        apsw.shutdown()
+                    else:
+                        exercise(self.example_code, self.expect_exception)
+                        if not use_runplan and not self.faulted_this_round:
+                            use_runplan = True
+                            print("\nExercising locations that require multiple failures\n")
+                            continue
                 finally:
                     gc.collect()
 
             self.verify_exception(self.faulted_this_round)
 
             now = set(self.to_fault), set(self.has_faulted_ever)
-            if now == last:
+            if now == last and not complete:
                 print("\nUnable to make progress")
                 exercise(None)
                 break

@@ -173,16 +173,19 @@ def genfile(symbols):
 returns = {
     # these have the gil and return NULL on failure
     "pyobject": """
-            PySet_New convert_value_to_pyobject getfunctionargs PyModule_Create2 PyErr_NewExceptionWithDoc
+            convert_value_to_pyobject getfunctionargs allocfunccbinfo
+            Call_PythonMethodV apsw_strdup convertutf8string
+            Call_PythonMethod
+
+            PyModule_Create2 PyErr_NewExceptionWithDoc PySet_New
             PyUnicode_New  PyUnicode_AsUTF8 PyObject_GetAttrString _PyObject_New PyUnicode_FromString
             PyObject_Str PyUnicode_AsUTF8AndSize PyTuple_New PyDict_New Py_BuildValue PyList_New
-            PyWeakref_NewRef PyMem_Calloc convertutf8string PyLong_FromLong PyObject_GetIter
-            PyObject_CallObject apsw_strdup PyLong_AsInt PyUnicode_FromStringAndSize
+            PyWeakref_NewRef PyMem_Calloc PyLong_FromLong PyObject_GetIter
+            PyObject_CallObject PyLong_AsInt PyUnicode_FromStringAndSize
             PySequence_GetItem PyLong_FromLongLong PySequence_GetSlice PyBytes_FromStringAndSize
             PyFloat_FromDouble MakeExistingException PyBool_FromLong PyCode_NewEmpty PyFloat_AsDouble
             PyIter_Next PyList_SetItem PyLong_FromVoidPtr PyMapping_GetItemString PyNumber_Float
             PyNumber_Long PySequence_List PySequence_SetItem PyObject_CallFunction PyObject_CallMethod
-            Call_PythonMethodV
             """.split(),
     # numeric return, no gil
     "no_gil": """
@@ -215,8 +218,7 @@ returns = {
             sqlite3_shutdown sqlite3_status64
             sqlite3_table_column_metadata sqlite3_threadsafe
             sqlite3_trace_v2 sqlite3_vfs_register
-            sqlite3_vfs_unregister sqlite3_wal_autocheckpoint
-            sqlite3_wal_checkpoint_v2
+            sqlite3_wal_autocheckpoint sqlite3_wal_checkpoint_v2
             """.split(),
     # py functions that return a number to indicate failure
     "with_gil": """
