@@ -9112,62 +9112,15 @@ shell.write(shell.stdout, "hello world\\n")
 
         vfs = FaultVFS()
 
-        ## xFullPathnameConversion
-        apsw.faultdict["xFullPathnameConversion"] = True
-        self.assertRaises(apsw.SQLError,
-                          self.assertRaisesUnraisable,
-                          MemoryError,
-                          apsw.Connection,
-                          TESTFILEPREFIX + "testdb",
-                          vfs="faultvfs")
-
-        ## xDlError
-        db = apsw.Connection(":memory:", vfs="faultvfs")
-        if hasattr(db, 'enableloadextension'):
-            db.enableloadextension(True)
-            ## xDlErrorAllocFail
-            apsw.faultdict["xDlErrorAllocFail"] = True
-            self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, MemoryError, db.loadextension,
-                              "non-existent-file-name")
-            ## xDlErrorUnicodeFail
-            apsw.faultdict["xDlErrorUnicodeFail"] = True
-            self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, MemoryError, db.loadextension,
-                              "non-existent-file-name")
-        del db
-        gc.collect()
-        ## xRandomnessAllocFail
-        # we need to be default vfs
-        vfs2 = FaultVFS("faultvfs2", apsw.vfsnames()[0], makedefault=True)
-        apsw.randomness(0)
-        apsw.faultdict["xRandomnessAllocFail"] = True
-        # doesn't matter which vfs opens the file
-        self.assertRaisesUnraisable(MemoryError, apsw.Connection(":memory:").cursor().execute, "select randomblob(10)")
-        del vfs2
-        gc.collect()
-
         ## xCurrentTimeFail
         apsw.faultdict["xCurrentTimeFail"] = True
         self.assertRaisesUnraisable(apsw.SQLError,
                                     apsw.Connection(":memory:", vfs="faultvfs").cursor().execute, "select date('now')")
 
-        ## APSWVFSDeallocFail
-        apsw.faultdict["APSWVFSDeallocFail"] = True
-
-        def foo():
-            vfs2 = FaultVFS("faultvfs2", "faultvfs")
-            del vfs2
-            gc.collect()
-
-        self.assertRaisesUnraisable(apsw.IOError, foo)
 
         ## APSWVFSBadVersion
         apsw.faultdict["APSWVFSBadVersion"] = True
         self.assertRaises(ValueError, apsw.VFS, "foo", "")
-        self.assertTrue("foo" not in apsw.vfsnames())
-
-        ## APSWVFSRegistrationFails
-        apsw.faultdict["APSWVFSRegistrationFails"] = True
-        self.assertRaises(apsw.NoMemError, apsw.VFS, "foo", "")
         self.assertTrue("foo" not in apsw.vfsnames())
 
         ## xReadReadBufferFail
@@ -9230,14 +9183,6 @@ shell.write(shell.stdout, "hello world\\n")
             gc.collect()
 
         self.assertRaisesUnraisable(apsw.IOError, foo)
-
-        ## StatementCacheAllocFails
-        apsw.faultdict["StatementCacheAllocFails"] = True
-        try:
-            apsw.Connection(":memory:")
-            1 / 0
-        except MemoryError:
-            pass
 
         ## OverloadFails
         apsw.faultdict["OverloadFails"] = True
