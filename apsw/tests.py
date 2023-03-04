@@ -953,7 +953,7 @@ class APSW(unittest.TestCase):
             ran = True
             self.assertEqual(f"select '{ biggy }','{ biggy }'", c.expanded_sql)
             existing = self.db.limit(apsw.SQLITE_LIMIT_LENGTH, 25 * 1024)
-            self.assertIsNone(c.expanded_sql)
+            self.assertRaises(MemoryError, getattr, c, "expanded_sql")
             self.db.limit(apsw.SQLITE_LIMIT_LENGTH, existing)
         self.assertTrue(ran)
         # keyword args
@@ -3984,7 +3984,7 @@ class APSW(unittest.TestCase):
         for _ in cur2.execute("select * from foo"):
             pass
         VTable.Disconnect = VTable.Disconnect1
-        self.assertRaises(TypeError, db.close)  # nb close succeeds!
+        self.assertRaisesUnraisable(TypeError, db.close)  # nb close succeeds!
         self.assertRaises(apsw.CursorClosedError, cur2.execute, "select * from foo")
         del db
         db = apsw.Connection(TESTFILEPREFIX + "testdb")
@@ -3993,7 +3993,7 @@ class APSW(unittest.TestCase):
         for _ in cur2.execute("select * from foo"):
             pass
         VTable.Disconnect = VTable.Disconnect2
-        self.assertRaises(ZeroDivisionError, db.close)  # nb close succeeds!
+        self.assertRaisesUnraisable(ZeroDivisionError, db.close)  # nb close succeeds!
         self.assertRaises(apsw.CursorClosedError, cur2.execute, "select * from foo")
         del db
         db = apsw.Connection(TESTFILEPREFIX + "testdb")
@@ -4007,9 +4007,9 @@ class APSW(unittest.TestCase):
 
         # destroy
         VTable.Destroy = VTable.Destroy1
-        self.assertRaises(TypeError, cur.execute, "drop table foo")
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, cur.execute, "drop table foo")
         VTable.Destroy = VTable.Destroy2
-        self.assertRaises(ZeroDivisionError, cur.execute, "drop table foo")
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, cur.execute, "drop table foo")
         VTable.Destroy = VTable.Destroy3
         cur.execute("drop table foo")
         self.db.close()
@@ -6543,11 +6543,11 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, vfs.xFullPathname, "bogus", "arguments")
         self.assertRaises(TypeError, vfs.xFullPathname, 3)
         TestVFS.xFullPathname = TestVFS.xFullPathname1
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
+        self.assertRaises(apsw.CantOpenError, self.assertRaisesUnraisable, TypeError, testdb)
         TestVFS.xFullPathname = TestVFS.xFullPathname2
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
+        self.assertRaises(apsw.CantOpenError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
         TestVFS.xFullPathname = TestVFS.xFullPathname3
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
+        self.assertRaises(apsw.CantOpenError, self.assertRaisesUnraisable, TypeError, testdb)
         TestVFS.xFullPathname = TestVFS.xFullPathname4
         if not iswindows:
             # SQLite doesn't give an error even though the vfs is silently truncating
@@ -6557,7 +6557,7 @@ class APSW(unittest.TestCase):
         TestVFS.xFullPathname = TestVFS.xFullPathname5
         self.assertRaises(apsw.TooBigError, self.assertRaisesUnraisable, apsw.TooBigError, testdb)
         TestVFS.xFullPathname = TestVFS.xFullPathname6
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
+        self.assertRaises(apsw.CantOpenError, self.assertRaisesUnraisable, TypeError, testdb)
         TestVFS.xFullPathname = TestVFS.xFullPathname99
         testdb()
 
