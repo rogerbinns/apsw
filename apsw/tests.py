@@ -5200,11 +5200,6 @@ class APSW(unittest.TestCase):
 
         testcode = read_whole_file(__file__, "rt", "utf8")
 
-        # special case
-        if re.search(r"\bBackupDependent\b", testcode):
-            for n in range(1, 6):
-                testcode += f"\nBackupDependent{ n }\n"
-
         for name in sorted(faults):
             self.assertTrue(re.search(f"\\b{ name }\\b", testcode), f"Couldn't find test for fault '{ name }'")
 
@@ -9007,7 +9002,7 @@ shell.write(shell.stdout, "hello world\\n")
                                            code):
             if faultname == "faultName":
                 continue
-            if faultname not in test_code and not faultname.startswith("BackupDependent"):
+            if faultname not in test_code:
                 raise Exception(f"Fault injected { faultname } not found in tests.py")
             if faultname in seen:
                 raise Exception(f"Fault { faultname } seen multiple times")
@@ -9183,112 +9178,6 @@ shell.write(shell.stdout, "hello world\\n")
             gc.collect()
 
         self.assertRaisesUnraisable(apsw.IOError, foo)
-
-        ## OverloadFails
-        apsw.faultdict["OverloadFails"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.overloadfunction("foo", 1)
-            1 / 0
-        except apsw.NoMemError:
-            pass
-
-        ## ConnectionEnterExecFailed
-        apsw.faultdict["ConnectionEnterExecFailed"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.__enter__()
-            1 / 0
-        except apsw.NoMemError:
-            pass
-
-        ## BackupInitFails
-        apsw.faultdict["BackupInitFails"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.backup("main", apsw.Connection(":memory:"), "main")
-            1 / 0
-        except apsw.NoMemError:
-            pass
-
-        ## BackupTupleFails
-        apsw.faultdict["BackupTupleFails"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            # add dependent
-            cur = db.cursor()
-            cur.execute("select 3; select 4")
-            db.backup("main", apsw.Connection(":memory:"), "main")
-            1 / 0
-        except MemoryError:
-            pass
-
-        ## BackupDependent
-        for i in range(1, 5):
-            apsw.faultdict["BackupDependent" + str(i)] = True
-            try:
-                db = apsw.Connection(":memory:")
-                self.assertMayRaiseUnraisable(ValueError, db.backup, "main", apsw.Connection(":memory:"), "main")
-                1 / 0
-            except MemoryError:
-                pass
-
-        ### statement cache
-        db = apsw.Connection("", statementcachesize=1000000)
-        apsw.faultdict["SCAllocFails"] = True
-        # we have to overflow the recycle bin
-        inuse = []
-        for n in range(4096):
-            try:
-                inuse.append(db.cursor().execute("select ?", (3, )))
-            except apsw.NoMemError:
-                break
-        else:
-            self.fail("Expected memoryerror")
-        del inuse
-        apsw.faultdict["SCClearBindingsFails"] = True
-        self.assertRaises(apsw.NoMemError, db.cursor().execute, "select ?", (4, ))
-
-        ### blobs
-        self.db.cursor().execute("create table blobs(x); insert into blobs values (zeroblob(33))")
-        rowid = self.db.last_insert_rowid()
-        apsw.faultdict["BlobReadIntoPyError"] = True
-        blob = self.db.blobopen("main", "blobs", "x", rowid, writeable=True)
-        self.assertRaises(MemoryError, blob.readinto, bytearray(33))
-        apsw.faultdict["BlobWritePyError"] = True
-        self.assertRaises(MemoryError, blob.write, b"123")
-
-        ## WalAutocheckpointFails
-        apsw.faultdict["WalAutocheckpointFails"] = True
-        try:
-            apsw.Connection(":memory:").wal_autocheckpoint(77)
-            1 / 0
-        except apsw.IOError:
-            pass
-
-        ## WalCheckpointFails
-        apsw.faultdict["WalCheckpointFails"] = True
-        try:
-            apsw.Connection(":memory:").wal_checkpoint()
-            1 / 0
-        except apsw.IOError:
-            pass
-
-        ## SCPHConfigFails
-        apsw.faultdict["SCPHConfigFails"] = True
-        try:
-            apsw.config(apsw.SQLITE_CONFIG_PCACHE_HDRSZ)
-            1 / 0
-        except apsw.FullError:
-            pass
-
-        # Connection.db_names
-        apsw.faultdict["dbnamesnolist"] = True
-        self.assertRaises(MemoryError, self.db.db_names)
-        apsw.faultdict["dbnamestrfail"] = True
-        self.assertRaises(MemoryError, self.db.db_names)
-        apsw.faultdict["dbnamesappendfail"] = True
-        self.assertRaises(MemoryError, self.db.db_names)
 
         for k,v in apsw.faultdict.items():
             assert v is False, f"faultdict { k } never fired"
