@@ -1688,6 +1688,10 @@ APSWCursor_is_readonly(APSWCursor *self)
   Note that while SQLite supports nulls in strings, their implementation
   of sqlite3_expanded_sql stops at the first null.
 
+  You will get :exc:`MemoryError` if SQLite ran out of memory, or if
+  the expanded string would exceed `SQLITE_LIMIT_LENGTH
+  <https://www.sqlite.org/c3ref/c_limit_attached.html>`__.
+
   -* sqlite3_expanded_sql
 */
 static PyObject *
