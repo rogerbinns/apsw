@@ -126,7 +126,8 @@ def ehook(etype, evalue, etraceback):
     traceback.print_tb(etraceback)
 
 
-sys.excepthook = ehook
+if sys.excepthook == sys.__excepthook__:
+    sys.excepthook = ehook
 
 
 # helper functions
