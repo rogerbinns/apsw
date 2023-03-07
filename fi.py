@@ -14,8 +14,16 @@ sys.path.insert(0, str(pathlib.Path(__file__).parent.absolute() / "tools"))
 import genfaultinject
 
 
+def file_cleanup():
+    gc.collect()
+    for f in glob.glob("/tmp/dbfile-delme*") + glob.glob("/tmp/myobfudb*"):
+        os.remove(f)
+
+
 def exercise(example_code, expect_exception):
     "This function exercises the code paths where we have fault injection"
+
+    file_cleanup()
 
     # The module is not imported outside because the init function has
     # several fault injection locations
@@ -33,9 +41,10 @@ def exercise(example_code, expect_exception):
 
     apsw.initialize()
     apsw.log(3, "A message")
+    apsw.status(apsw.SQLITE_STATUS_MEMORY_USED)
+
     if expect_exception:
         return
-    apsw.status(apsw.SQLITE_STATUS_MEMORY_USED)
 
     for n in """
             SQLITE_VERSION_NUMBER apswversion compile_options keywords memoryused
@@ -62,6 +71,12 @@ def exercise(example_code, expect_exception):
 
     con = apsw.Connection("")
     con.wal_autocheckpoint(1)
+
+    extfname = "./testextension.sqlext"
+    if os.path.exists(extfname):
+        con.loadextension(extfname)
+        con.execute("select half(7)")
+
     con.execute(
         "pragma page_size=512; pragma auto_vacuum=FULL; pragma journal_mode=wal; create table foo(x)").fetchall()
     with con:
@@ -261,8 +276,35 @@ def exercise(example_code, expect_exception):
     if expect_exception:
         return
 
-    for f in glob.glob("/tmp/dbfile-delme*") + glob.glob("/tmp/myobfudb*"):
-        os.remove(f)
+    class myvfs(apsw.VFS):
+
+        def __init__(self):
+            super().__init__("apswfivfs", "")
+
+        def xOpen(self, name, flags):
+            return myvfsfile(name, flags)
+
+    class myvfsfile(apsw.VFSFile):
+
+        def __init__(self, filename, flags):
+            super().__init__("", filename, flags)
+
+    vfsinstance = myvfs()
+
+    file_cleanup()
+
+    import apsw.tests
+    apsw.tests.testtimeout = False
+    apsw.tests.vfstestdb("/tmp/dbfile-delme", "apswfivfs", mode="wal")
+
+    file_cleanup()
+    apsw.tests.testtimeout = True
+    apsw.tests.vfstestdb("/tmp/dbfile-delme", "apswfivfs")
+
+    if expect_exception:
+        return
+
+    file_cleanup()
     exec(example_code, {"print": lambda *args: None}, None)
 
     if expect_exception:
@@ -319,42 +361,46 @@ class Tester:
         fname = self.call_remap.get(key[0], key[0])
         try:
             if fname in self.returns["pyobject"]:
-                self.expect_exception.add(MemoryError)
+                self.expect_exception.append(MemoryError)
                 raise MemoryError(self.FAULTS)
 
             if fname == "sqlite3_threadsafe":
-                self.expect_exception.add(EnvironmentError)
+                self.expect_exception.append(EnvironmentError)
                 return 0
 
             if fname == "sqlite3_close":
-                self.expect_exception.add(apsw_attr("ConnectionNotClosedError"))
-                self.expect_exception.add(apsw_attr("IOError"))
+                self.expect_exception.append(apsw_attr("ConnectionNotClosedError"))
+                self.expect_exception.append(apsw_attr("IOError"))
                 return self.apsw_attr("SQLITE_IOERR")
 
             if fname == "sqlite3_enable_shared_cache":
-                self.expect_exception.add(apsw_attr("Error"))
+                self.expect_exception.append(apsw_attr("Error"))
                 return 0xFE  # also does unknown error code to make_exception
+
+            if fname == "sqlite3_load_extension":
+                self.expect_exception.append(apsw_attr("ExtensionLoadingError"))
+                return self.apsw_attr("SQLITE_TOOBIG")
 
             # pointers with 0 being failure
             if fname in {
                     "sqlite3_backup_init", "sqlite3_malloc64", "sqlite3_mprintf", "sqlite3_column_name",
                     "sqlite3_aggregate_context", "sqlite3_expanded_sql"
             }:
-                self.expect_exception.add(apsw_attr("SQLError"))
-                self.expect_exception.add(MemoryError)
+                self.expect_exception.append(apsw_attr("SQLError"))
+                self.expect_exception.append(MemoryError)
                 return 0
 
             if fname.startswith("sqlite3_"):
-                self.expect_exception.add(apsw_attr("TooBigError"))
+                self.expect_exception.append(apsw_attr("TooBigError"))
                 return self.apsw_attr("SQLITE_TOOBIG")
 
             if fname.startswith("PyLong_As"):
-                self.expect_exception.add(OverflowError)
+                self.expect_exception.append(OverflowError)
                 return (-1, OverflowError, self.FAULTS)
 
             if fname.startswith("Py") or fname in {"_PyBytes_Resize"}:
                 # for ones returning -1 on error
-                self.expect_exception.add(self.FAULTT)
+                self.expect_exception.append(self.FAULTT)
                 return (-1, *self.FAULT)
 
         finally:
@@ -362,7 +408,7 @@ class Tester:
             self.has_faulted_ever.add(key)
             self.faulted_this_round.append(key)
             if key[2] == "apswvtabFindFunction" or (self.last_key and self.last_key[2] == "apswvtabFindFunction"):
-                self.expect_exception.update({TypeError, ValueError})
+                self.expect_exception.extend([TypeError, ValueError])
             self.last_key = key
 
         print("Unhandled", key)
@@ -447,15 +493,17 @@ class Tester:
         ok = any(e[0] in self.expect_exception for e in self.exc_happened) or any(self.FAULTS in str(e[1])
                                                                                   for e in self.exc_happened)
         # these faults happen in fault handling so can't fault report themselves.
-        if tested and list(tested)[0][2] in {"apsw_set_errmsg", "apsw_get_errmsg", "apsw_write_unraisable"}:
+        if tested and list(tested)[0][2] in {
+                "apsw_set_errmsg", "apsw_get_errmsg", "apsw_write_unraisable", "MakeSqliteMsgFromPyException"
+        }:
             return
         if len(self.exc_happened) < len(tested):
-            if any(key[2] == "MakeSqliteMsgFromPyException" for key in tested):
-                # we don't report errors in the error handling reporting
-                pass
-            elif (tested[0][0], tested[1][0]) == ("_PyObject_New", "sqlite3_backup_finish"):
+            if len(tested) >= 2 and (tested[0][0], tested[1][0]) == ("_PyObject_New", "sqlite3_backup_finish"):
                 # backup finish error is ignored because we are handling the
                 # object_new error
+                pass
+            elif tested[-1][2] in {"MakeSqliteMsgFromPyException", "apsw_write_unraisable"}:
+                # already handling an exception
                 pass
             else:
                 ok = False
@@ -495,7 +543,7 @@ class Tester:
             # exceptions that happened this loop
             self.exc_happened = []
             # exceptions we expected to happen this loop
-            self.expect_exception = set()
+            self.expect_exception = []
             # keys we faulted this round
             self.faulted_this_round = []
 
