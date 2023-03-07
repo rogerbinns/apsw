@@ -2266,8 +2266,7 @@ Connection_loadextension(Connection *self, PyObject *args, PyObject *kwds)
   /* load_extension doesn't set the error message on the db so we have to make exception manually */
   if (res != SQLITE_OK)
   {
-    assert(errmsg);
-    PyErr_Format(ExcExtensionLoading, "ExtensionLoadingError: %s", errmsg ? errmsg : "unspecified");
+    PyErr_Format(ExcExtensionLoading, "ExtensionLoadingError: %s", errmsg ? errmsg : "<unspecified error>");
     sqlite3_free(errmsg);
     return NULL;
   }

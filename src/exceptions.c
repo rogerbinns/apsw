@@ -298,6 +298,7 @@ MakeSqliteMsgFromPyException(char **errmsg)
         if (extended && PyLong_Check(extended))
           res = PyLong_AsLong(extended);
         Py_XDECREF(extended);
+        PyErr_Clear();
       }
       break;
     }

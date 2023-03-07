@@ -179,33 +179,31 @@ across.
     return PyErr_Format(ExcVFSFileClosed, "VFSFileClosed: Attempting operation on closed file"); \
   }
 
-#define VFSPREAMBLE                 \
-  PyObject *etype, *eval, *etb;     \
-  PyGILState_STATE gilstate;        \
-  gilstate = PyGILState_Ensure();   \
-  MakeExistingException();          \
-  PyErr_Fetch(&etype, &eval, &etb); \
+#define VFSPREAMBLE                                     \
+  PyGILState_STATE gilstate;                            \
+  gilstate = PyGILState_Ensure();                       \
+  MakeExistingException();                              \
+  if (PyErr_Occurred())                                 \
+    apsw_write_unraisable((PyObject *)(vfs->pAppData)); \
   CHECKVFS;
 
 #define VFSPOSTAMBLE                                    \
   if (PyErr_Occurred())                                 \
     apsw_write_unraisable((PyObject *)(vfs->pAppData)); \
-  PyErr_Restore(etype, eval, etb);                      \
   PyGILState_Release(gilstate);
 
 #define FILEPREAMBLE                                           \
   APSWSQLite3File *apswfile = (APSWSQLite3File *)(void *)file; \
-  PyObject *etype, *eval, *etb;                                \
   PyGILState_STATE gilstate;                                   \
   gilstate = PyGILState_Ensure();                              \
   MakeExistingException();                                     \
-  PyErr_Fetch(&etype, &eval, &etb);                            \
+  if (PyErr_Occurred())                                        \
+    apsw_write_unraisable(apswfile->file);                     \
   CHECKVFSFILE;
 
 #define FILEPOSTAMBLE                      \
   if (PyErr_Occurred())                    \
     apsw_write_unraisable(apswfile->file); \
-  PyErr_Restore(etype, eval, etb);         \
   PyGILState_Release(gilstate);
 
 typedef struct
@@ -1889,10 +1887,10 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
   else if (PyUnicode_Check(filename))
   {
     const char *text = PyUnicode_AsUTF8(filename);
-    if(!text)
+    if (!text)
       return -1;
     self->filename = apsw_strdup(text);
-    if(!self->filename)
+    if (!self->filename)
       return -1;
   }
   else
@@ -1914,7 +1912,7 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
   flagsin = PyLong_AsLong(pyflagsin);
   if (flagsin != (int)flagsin)
   {
-    if(!PyErr_Occurred())
+    if (!PyErr_Occurred())
       PyErr_Format(PyExc_OverflowError, "flags[0] is too big!");
     AddTraceBackHere(__FILE__, __LINE__, "VFSFile.__init__", "{s: O}", "flags", OBJ(flags));
   }
