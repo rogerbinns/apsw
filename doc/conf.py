@@ -90,8 +90,6 @@ pdf_documents = [
 
 pdf_stylesheets = ["sphinx", "a4"]
 pdf_fit_mode = "shrink"
-# https://github.com/rst2pdf/rst2pdf/issues/1122
-pdf_page_template = "no_template_exists"
 
 ### Extra gunk
 
