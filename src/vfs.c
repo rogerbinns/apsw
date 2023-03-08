@@ -261,26 +261,43 @@ typedef struct
 /** .. method:: excepthook(etype: type[BaseException], evalue: BaseException, etraceback: Optional[types.TracebackType]) -> Any
 
     Called when there has been an exception in a :class:`VFS` routine.
-    The default implementation passes args to ``sys.excepthook`` and if that
-    fails then ``PyErr_Display``.  The three arguments correspond to
-    what ``sys.exc_info()`` would return.
+    The default implementation passes the exception information
+    to sqlite3_log, and the first non-error of
+    :meth:`sys.unraisablehook and :meth:`sys.excepthook`, falling back to
+    `PyErr_Display`.
 */
-
-/* This function only needs to call sys.excepthook.  If things mess up
-   then whoever called us will fallback on PyErr_Display etc */
 static PyObject *
 apswvfs_excepthook(PyObject *Py_UNUSED(donotuseself), PyObject *args)
 {
   /* NOTE: do not use the self argument as this function is used for
      both apswvfs and apswvfsfile.  If you need to use self then make
      two versions of the function. */
-  PyObject *excepthook;
+  assert(!PyErr_Occurred());
+  PyObject *one = NULL, *two = NULL, *three = NULL;
 
-  excepthook = PySys_GetObject("excepthook"); /* NB borrowed reference */
-  if (!excepthook)
-    return NULL;
+  if (!PySequence_Check(args) || 3 != PySequence_Length(args))
+    goto error;
 
-  return PyObject_CallObject(excepthook, args);
+  one = PySequence_GetItem(args, 0);
+  if (!one)
+    goto error;
+  two = PySequence_GetItem(args, 1);
+  if (!two)
+    goto error;
+  three = PySequence_GetItem(args, 2);
+  if (!three)
+    goto error;
+
+  PyErr_Restore(one, two, three);
+
+  apsw_write_unraisable(NULL);
+  Py_RETURN_NONE;
+error:
+  PyErr_Clear();
+  Py_XDECREF(one);
+  Py_XDECREF(two);
+  Py_XDECREF(three);
+  return PyErr_Format(PyExc_ValueError, "Failed to process exception in excepthook");
 }
 
 static int
