@@ -502,7 +502,7 @@ class Tester:
                 # backup finish error is ignored because we are handling the
                 # object_new error
                 pass
-            elif tested[-1][2] in {"MakeSqliteMsgFromPyException", "apsw_write_unraisable"}:
+            elif tested[-1][2] in {"MakeSqliteMsgFromPyException", "apsw_write_unraisable", "apswvfs_excepthook"}:
                 # already handling an exception
                 pass
             else:
