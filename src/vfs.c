@@ -948,7 +948,7 @@ apswvfspy_xDlError(APSWVFS *self)
     return unicode;
   }
 
-  AddTraceBackHere(__FILE__, __LINE__, "vfspy.xDlError", "{s: O, s: N}", "self", self, "res", OBJ(PyBytes_FromStringAndSize(PyBytes_AS_STRING(res), strlen(PyBytes_AS_STRING(res)))));
+  AddTraceBackHere(__FILE__, __LINE__, "vfspy.xDlError", "{s: O, s: O}", "self", self, "res", OBJ(res));
   Py_DECREF(res);
   return NULL;
 }
