@@ -35,6 +35,8 @@ source_suffix = '.rst'
 # The master toctree document.
 master_doc = 'index'
 
+pygments_style = 'sphinx'
+
 # General substitutions.
 project = 'APSW'
 author = "Roger Binns <rogerb@rogerbinns.com>"
@@ -71,6 +73,9 @@ html_last_updated_fmt = '%b %d, %Y'
 
 html_sidebars = {'**': ['searchbox.html', 'relations.html', 'localtoc.html', 'globaltoc.html', 'sourcelink.html']}
 
+# One page html
+singlehtml_sidebars = {"index": ["globaltoc.html"]}
+
 # epub
 
 epub_basename = f"{ project } { version }"
@@ -90,6 +95,10 @@ pdf_documents = [
 
 pdf_stylesheets = ["sphinx", "a4"]
 pdf_fit_mode = "shrink"
+
+# latexpdf
+latex_engine = "xelatex"
+latex_logo = html_logo
 
 ### Extra gunk
 
