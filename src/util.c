@@ -108,6 +108,8 @@ apsw_write_unraisable(PyObject *hookobject)
 {
   static int recursion_level;
 
+  assert(PyErr_Occurred());
+
   PyObject *err_type = NULL, *err_value = NULL, *err_traceback = NULL;
   PyObject *excepthook = NULL;
   PyObject *result = NULL;
