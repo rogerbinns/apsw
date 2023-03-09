@@ -2422,10 +2422,7 @@ APSW_Should_Fault(const char *name)
   }
   res = PyObject_CallFunction(callable, "s(OOO)", name, OBJ(errsave1), OBJ(errsave2), OBJ(errsave3));
   if (!res)
-  {
-    assert(!PyErr_Occurred());
-    assert(0); /* unreachable */
-  }
+    abort();
 
   assert(PyBool_Check(res));
   assert(Py_IsTrue(res) || Py_IsFalse(res));

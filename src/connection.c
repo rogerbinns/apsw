@@ -417,8 +417,8 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
   /* clamp cache size */
   if (statementcachesize < 0)
     statementcachesize = 0;
-  if (statementcachesize > 16384)
-    statementcachesize = 16384;
+  if (statementcachesize > 512)
+    statementcachesize = 512;
 
   /* Technically there is a race condition as a vfs of the same name
      could be registered between our find and the open starting.
@@ -619,7 +619,7 @@ Connection_backup(Connection *self, PyObject *args, PyObject *kwds)
     if (!args)
       goto thisfinally;
     PyObject *s = PyUnicode_FromString("The destination database has outstanding objects open on it.  They must all be closed for the backup to proceed (otherwise corruption would be possible.)");
-    if(!s)
+    if (!s)
       goto thisfinally;
     PyTuple_SET_ITEM(args, 0, s);
     PyTuple_SET_ITEM(args, 1, self->dependents);
@@ -1102,11 +1102,10 @@ rollbackhookcb(void *context)
   MakeExistingException();
 
   if (PyErr_Occurred())
-    goto finally; /* abort hook due to outstanding exception */
+    apsw_write_unraisable(NULL);
+  else
+    retval = PyObject_CallObject(self->rollbackhook, NULL);
 
-  retval = PyObject_CallObject(self->rollbackhook, NULL);
-
-finally:
   Py_XDECREF(retval);
   PyGILState_Release(gilstate);
 }
@@ -1304,8 +1303,7 @@ tracehook_cb(unsigned code, void *vconnection, void *one, void *two)
 #undef V
 
   default:
-    fprintf(stderr, "unexpected trace code %u vconnection %p one %p two %p\n", code, vconnection, one, two);
-    assert(0);
+    abort(); /* something undocumented has happened */
   }
 
   if (param)
@@ -1887,20 +1885,17 @@ collationneeded_cb(void *pAux, sqlite3 *Py_UNUSED(db), int eTextRep, const char 
   PyGILState_STATE gilstate = PyGILState_Ensure();
 
   assert(self->collationneeded);
-  if (!self->collationneeded)
-    goto finally;
 
   MakeExistingException();
 
   if (PyErr_Occurred())
-    goto finally;
+    apsw_write_unraisable(NULL);
   res = PyObject_CallFunction(self->collationneeded, "(Os)", self, name);
   if (!res)
     AddTraceBackHere(__FILE__, __LINE__, "collationneeded callback", "{s: O, s: i, s: s}",
                      "Connection", self, "eTextRep", eTextRep, "name", name);
   Py_XDECREF(res);
 
-finally:
   PyGILState_Release(gilstate);
 }
 
@@ -2336,7 +2331,7 @@ allocfunccbinfo(const char *name)
     res->scalarfunc = 0;
     res->aggregatefactory = 0;
     res->windowfactory = 0;
-    if (!name)
+    if (!res->name)
     {
       FunctionCBInfo_dealloc(res);
       res = 0;
@@ -2685,10 +2680,7 @@ finally:
   Py_XDECREF(aggfc->finalfunc);
 
   if (PyErr_Occurred() && (err_type || err_value || err_traceback))
-  {
-    PyErr_Format(PyExc_Exception, "An exception happened during cleanup of an aggregate function, but there was already error in the step function so only that can be returned");
     apsw_write_unraisable(NULL);
-  }
 
   if (err_type || err_value || err_traceback)
     PyErr_Restore(err_type, err_value, err_traceback);

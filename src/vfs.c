@@ -1545,8 +1545,13 @@ apswvfspy_unregister(APSWVFS *self)
          to zero so there will be a coredump should this behaviour
          change.  the sqlite code doesn't return
          anything except ok anyway. */
-    sqlite3_vfs_unregister(self->containingvfs);
+    int res = sqlite3_vfs_unregister(self->containingvfs);
     self->registered = 0;
+    if (res)
+    {
+      SET_EXC(res, NULL);
+      return NULL;
+    }
   }
   Py_RETURN_NONE;
 }
