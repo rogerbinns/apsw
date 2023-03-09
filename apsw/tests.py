@@ -696,6 +696,7 @@ class APSW(unittest.TestCase):
             c.execute("delete from foo")
 
         # currently missing dict keys come out as null
+        self.assertRaises(TypeError, apsw.allow_missing_dict_bindings, object)
         apsw.allow_missing_dict_bindings(True)
         c.execute("insert into foo values(:a,:b,$c)", {'a': 1, 'c': 3})  # 'b' deliberately missing
         apsw.allow_missing_dict_bindings(False)
@@ -923,6 +924,16 @@ class APSW(unittest.TestCase):
         self.assertEqual(c.execute("select 3; select 4").fetchall(), [(3, ), (4, )])
         # readonly, explain & expanded_sql attributes
         res = None
+
+
+        # tracing errors
+        self.assertRaises(TypeError, setattr, c, "exectrace", 3)
+        self.assertRaises(TypeError, setattr, c, "rowtrace", 3)
+        self.assertIsNone(c.rowtrace)
+        xx=lambda *args: 1/0
+        c.rowtrace = xx
+        self.assertIs(c.rowtrace, xx)
+        c.rowtrace=None
 
         def tracer(cur, query, bindings):
             nonlocal res
@@ -2352,7 +2363,7 @@ class APSW(unittest.TestCase):
 
             def value(self):
                 return self.v
-
+        self.db.create_window_function("sumint", None)
         self.db.create_window_function("sumint", windowfunc)
         self.db.execute("""CREATE TABLE t3(x, y);
                 INSERT INTO t3 VALUES('a', 4),('b', 5),('c', 3),('d', 8),('e', 1);""")
@@ -4215,9 +4226,6 @@ class APSW(unittest.TestCase):
         self.db.createscalarfunction("toobig", func)
         self.assertRaises(apsw.TooBigError, c.execute, "select toobig()")
         f.close()
-        # Other testing by fault injection
-        if not hasattr(apsw, "faultdict"):
-            return
 
     def testErrorCodes(self):
         "Verify setting of result codes on error/exception"
@@ -4821,7 +4829,7 @@ class APSW(unittest.TestCase):
                     self.fail("Query is empty")
         # check with stats
         s = self.db.cache_stats()
-        self.assertEqual(s["size"], scsize)
+        self.assertEqual(s["size"], min(scsize, 512)) # 512 is current max
         s2 = self.db.cache_stats(True)
         s2.pop("entries")
         self.assertEqual(s, s2)
@@ -4892,6 +4900,11 @@ class APSW(unittest.TestCase):
         "Rerun statement cache tests with a zero sized/disabled cache"
         self.db = apsw.Connection(TESTFILEPREFIX + "testdb", statementcachesize=-1)
         self.testStatementCache(0)
+
+    def testStatementCacheLargeSize(self):
+        "Rerun statement cache tests with a large cache"
+        self.db = apsw.Connection(TESTFILEPREFIX + "testdb", statementcachesize=17000)
+        self.testStatementCache(17000)
 
     # the text also includes characters that can't be represented in 16 bits (BMP)
     wikipedia_text = u"""Wikipedia\nThe Free Encyclopedia\nEnglish\n6 383 000+ articles\n日本語\n1 292 000+ 記事\nРусский\n1 756 000+ статей\nDeutsch\n2 617 000+ Artikel\nEspañol\n1 717 000+ artículos\nFrançais\n2 362 000+ articles\nItaliano\n1 718 000+ voci\n中文\n1 231 000+ 條目\nPolski\n1 490 000+ haseł\nPortuguês\n1 074 000+ artigos\nSearch Wikipedia\nEN\nEnglish\n\n Read Wikipedia in your language\n1 000 000+ articles\nPolski\nالعربية\nDeutsch\nEnglish\nEspañol\nFrançais\nItaliano\nمصرى\nNederlands\n日本語\nPortuguês\nРусский\nSinugboanong Binisaya\nSvenska\nУкраїнська\nTiếng Việt\nWinaray\n中文\n100 000+ articles\nAfrikaans\nSlovenčina\nAsturianu\nAzərbaycanca\nБългарски\nBân-lâm-gú / Hō-ló-oē\nবাংলা\nБеларуская\nCatalà\nČeština\nCymraeg\nDansk\nEesti\nΕλληνικά\nEsperanto\nEuskara\nفارسی\nGalego\n한국어\nՀայերեն\nहिन्दी\nHrvatski\nBahasa Indonesia\nעברית\nქართული\nLatina\nLatviešu\nLietuvių\nMagyar\nМакедонски\nBahasa Melayu\nBahaso Minangkabau\nNorskbokmålnynorsk\nНохчийн\nOʻzbekcha / Ўзбекча\nҚазақша / Qazaqşa / قازاقشا\nRomână\nSimple English\nSlovenščina\nСрпски / Srpski\nSrpskohrvatski / Српскохрватски\nSuomi\nதமிழ்\nТатарча / Tatarça\nภาษาไทย\nТоҷикӣ\nتۆرکجه\nTürkçe\nاردو\nVolapük\n粵語\nမြန်မာဘာသာ\n10 000+ articles\nBahsa Acèh\nAlemannisch\nአማርኛ\nAragonés\nBasa Banyumasan\nБашҡортса\nБеларуская (Тарашкевіца)\nBikol Central\nবিষ্ণুপ্রিয়া মণিপুরী\nBoarisch\nBosanski\nBrezhoneg\nЧӑвашла\nDiné Bizaad\nEmigliàn–Rumagnòl\nFøroyskt\nFrysk\nGaeilge\nGàidhlig\nગુજરાતી\nHausa\nHornjoserbsce\nIdo\nIlokano\nInterlingua\nИрон æвзаг\nÍslenska\nJawa\nಕನ್ನಡ\nKreyòl Ayisyen\nKurdî / كوردی\nکوردیی ناوەندی\nКыргызча\nКырык Мары\nLëtzebuergesch\nLimburgs\nLombard\nLìgure\nमैथिली\nMalagasy\nമലയാളം\n文言\nमराठी\nმარგალური\nمازِرونی\nMìng-dĕ̤ng-ngṳ̄ / 閩東語\nМонгол\nनेपाल भाषा\nनेपाली\nNnapulitano\nNordfriisk\nOccitan\nМарий\nଓଡି଼ଆ\nਪੰਜਾਬੀ (ਗੁਰਮੁਖੀ)\nپنجابی (شاہ مکھی)\nپښتو\nPiemontèis\nPlattdüütsch\nQırımtatarca\nRuna Simi\nसंस्कृतम्\nСаха Тыла\nScots\nShqip\nSicilianu\nසිංහල\nسنڌي\nŚlůnski\nBasa Sunda\nKiswahili\nTagalog\nతెలుగు\nᨅᨔ ᨕᨙᨁᨗ / Basa Ugi\nVèneto\nWalon\n吳語\nייִדיש\nYorùbá\nZazaki\nŽemaitėška\nisiZulu\n1 000+ articles\nАдыгэбзэ\nÆnglisc\nAkan\nаԥсшәа\nԱրեւմտահայերէն\nArmãneashce\nArpitan\nܐܬܘܪܝܐ\nAvañe’ẽ\nАвар\nAymar\nBasa Bali\nBahasa Banjar\nभोजपुरी\nBislama\nབོད་ཡིག\nБуряад\nChavacano de Zamboanga\nCorsu\nVahcuengh / 話僮\nDavvisámegiella\nDeitsch\nދިވެހިބަސް\nDolnoserbski\nЭрзянь\nEstremeñu\nFiji Hindi\nFurlan\nGaelg\nGagauz\nGĩkũyũ\nگیلکی\n贛語\nHak-kâ-ngî / 客家語\nХальмг\nʻŌlelo Hawaiʻi\nIgbo\nInterlingue\nKabɩyɛ\nKapampangan\nKaszëbsczi\nKernewek\nភាសាខ្មែរ\nKinyarwanda\nКоми\nKongo\nकोंकणी / Konknni\nKriyòl Gwiyannen\nພາສາລາວ\nDzhudezmo / לאדינו\nЛакку\nLatgaļu\nЛезги\nLingála\nlojban\nLuganda\nMalti\nReo Mā’ohi\nMāori\nMirandés\nМокшень\nߒߞߏ\nNa Vosa Vaka-Viti\nNāhuatlahtōlli\nDorerin Naoero\nNedersaksisch\nNouormand / Normaund\nNovial\nAfaan Oromoo\nঅসমীযা়\nपालि\nPangasinán\nPapiamentu\nПерем Коми\nPfälzisch\nPicard\nКъарачай–Малкъар\nQaraqalpaqsha\nRipoarisch\nRumantsch\nРусиньскый Язык\nGagana Sāmoa\nSardu\nSeeltersk\nSesotho sa Leboa\nChiShona\nSoomaaliga\nSranantongo\nTaqbaylit\nTarandíne\nTetun\nTok Pisin\nfaka Tonga\nTürkmençe\nТыва дыл\nУдмурт\nئۇيغۇرچه\nVepsän\nVõro\nWest-Vlams\nWolof\nisiXhosa\nZeêuws\n100+ articles\nBamanankan\nChamoru\nChichewa\nEʋegbe\nFulfulde\n𐌲𐌿𐍄𐌹𐍃𐌺\nᐃᓄᒃᑎᑐᑦ / Inuktitut\nIñupiak\nKalaallisut\nكٲشُر\nLi Niha\nNēhiyawēwin / ᓀᐦᐃᔭᐍᐏᐣ\nNorfuk / Pitkern\nΠοντιακά\nརྫོང་ཁ\nRomani\nKirundi\nSängö\nSesotho\nSetswana\nСловѣ́ньскъ / ⰔⰎⰑⰂⰡⰐⰠⰔⰍⰟ\nSiSwati\nThuɔŋjäŋ\nᏣᎳᎩ\nTsėhesenėstsestotse\nTshivenḓa\nXitsonga\nchiTumbuka\nTwi\nትግርኛ\nဘာသာ မန်\n"""
@@ -4972,7 +4985,9 @@ class APSW(unittest.TestCase):
         # existing exception in callbacks
         if any("PyGILState_Ensure" in line for line in lines):
             if not any("MakeExistingException" in line for line in lines):
-                self.fail(f"file { filename } function { name } calls PyGILState_Ensure but does not have MakeExistingException")
+                self.fail(
+                    f"file { filename } function { name } calls PyGILState_Ensure but does not have MakeExistingException"
+                )
         # not further checked
         if name.split("_")[0] in ("ZeroBlobBind", "APSWVFS", "APSWVFSFile", "APSWBuffer", "FunctionCBInfo",
                                   "apswurifilename"):
@@ -5679,6 +5694,8 @@ class APSW(unittest.TestCase):
 
         self.assertRaises(ValueError, self.db.trace_v2, 1, None)
         self.assertRaises(ValueError, self.db.trace_v2, 0, lambda x: x)
+
+        self.assertRaises(ValueError, self.db.trace_v2, 0xffffff, lambda x: x)
 
         results = []
 
@@ -8985,6 +9002,7 @@ shell.write(shell.stdout, "hello world\\n")
             r = apsw.faultdict.get(name, False)
             apsw.faultdict[name] = False
             return r
+
         sys.apsw_should_fault = ShouldFault
 
         # Verify we test all fault locations
@@ -8999,8 +9017,7 @@ shell.write(shell.stdout, "hello world\\n")
 
         seen = set()
 
-        for macro, faultname in re.findall(r"(APSW_FAULT_INJECT)\s*[(]\s*(?P<fault_name>.*?)\s*,",
-                                           code):
+        for macro, faultname in re.findall(r"(APSW_FAULT_INJECT)\s*[(]\s*(?P<fault_name>.*?)\s*,", code):
             if faultname == "faultName":
                 continue
             if faultname not in test_code:
@@ -9113,7 +9130,6 @@ shell.write(shell.stdout, "hello world\\n")
         self.assertRaisesUnraisable(apsw.SQLError,
                                     apsw.Connection(":memory:", vfs="faultvfs").cursor().execute, "select date('now')")
 
-
         ## APSWVFSBadVersion
         apsw.faultdict["APSWVFSBadVersion"] = True
         self.assertRaises(ValueError, apsw.VFS, "foo", "")
@@ -9180,7 +9196,13 @@ shell.write(shell.stdout, "hello world\\n")
 
         self.assertRaisesUnraisable(apsw.IOError, foo)
 
-        for k,v in apsw.faultdict.items():
+        ## BlobWriteTooBig
+        apsw.faultdict["BlobWriteTooBig"] = True
+        self.db.execute("CREATE TABLE blobby(x); insert into blobby values (zeroblob(1000))")
+        blob = self.db.blobopen("main", "blobby", "x", self.db.last_insert_rowid(), True)
+        self.assertRaises(ValueError, blob.write, b"1234")
+
+        for k, v in apsw.faultdict.items():
             assert v is False, f"faultdict { k } never fired"
 
     def testFunctionFlags(self) -> None:

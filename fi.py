@@ -98,6 +98,7 @@ def exercise(example_code, expect_exception):
     con.enableloadextension(True)
     con.setbusyhandler(None)
     con.setbusyhandler(lambda *args: True)
+    con.setbusytimeout(99)
     con.createscalarfunction("failme", lambda x: x + 1)
     cur = con.cursor()
     for _ in cur.execute("select failme(3)"):
@@ -190,6 +191,16 @@ def exercise(example_code, expect_exception):
     if expect_exception:
         return
 
+    def do_nothing():
+        pass
+
+    con.setrollbackhook(do_nothing)
+    con.execute("begin; create table goingaway(x,y,z); rollback")
+    con.setrollbackhook(None)
+
+    con.collationneeded(lambda *args: con.createcollation("foo", lambda *args: 0))
+    con.execute("create table col(x); insert into col values ('aa'), ('bb'), ('cc'); select * from col order by x collate foo")
+
     class SumInt:
 
         def __init__(self):
@@ -207,7 +218,12 @@ def exercise(example_code, expect_exception):
         def value(self):
             return self.v
 
+    def wf():
+        x=SumInt()
+        return (x, SumInt.step, SumInt.final, SumInt.value, SumInt.inverse)
+
     con.create_window_function("sumint", SumInt)
+    con.create_window_function("sumint2", wf)
 
     for row in con.execute("""
             CREATE TABLE t3(x, y);
@@ -218,6 +234,10 @@ def exercise(example_code, expect_exception):
                                 ('e', 1);
             -- Use the window function
             SELECT x, sumint(y) OVER (
+            ORDER BY x ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING
+            ) AS sum_y
+            FROM t3 ORDER BY x;
+            SELECT x, sumint2(y) OVER (
             ORDER BY x ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING
             ) AS sum_y
             FROM t3 ORDER BY x;
@@ -253,6 +273,7 @@ def exercise(example_code, expect_exception):
         return
 
     con.cache_stats(True)
+    con.deserialize("main", con.serialize("main"))
 
     apsw.connection_hooks = [lambda x: None] * 3
     x = apsw.Connection("")
@@ -310,6 +331,11 @@ def exercise(example_code, expect_exception):
     if expect_exception:
         return
 
+    apsw.set_default_vfs(apsw.vfsnames()[0])
+    apsw.unregister_vfs("apswfivfs")
+
+    del vfsinstance
+
     del sys.modules["apsw.ext"]
     gc.collect()
     del apsw
@@ -332,7 +358,6 @@ class Tester:
         self.call_remap = {v: k for k, v in genfaultinject.call_map.items()}
 
         sys.apsw_fault_inject_control = self.fault_inject_control
-        sys.apsw_should_fault = lambda *args: False
 
         lines, start = inspect.getsourcelines(exercise)
         end = start + len(lines)
@@ -370,10 +395,12 @@ class Tester:
                 self.expect_exception.append(EnvironmentError)
                 return 0
 
-            if fname == "sqlite3_close":
+            # we need these to succeed at the SQLite level but still return
+            # an error.  Otherwise there will be memory leaks.
+            if fname in {"sqlite3_close", "sqlite3_vfs_unregister"}:
                 self.expect_exception.append(apsw_attr("ConnectionNotClosedError"))
-                self.expect_exception.append(apsw_attr("IOError"))
-                return self.apsw_attr("SQLITE_IOERR")
+                self.expect_exception.append(apsw_attr("TooBigError")) # code 18
+                return self.ProceedReturn18
 
             if fname == "sqlite3_enable_shared_cache":
                 self.expect_exception.append(apsw_attr("Error"))
@@ -589,8 +616,10 @@ class Tester:
         if complete:
             print("\nAll faults exercised")
 
-        for n in sorted(self.has_faulted_ever):
-            print(n)
+        ### ::TODO:: cli options to show this
+        if False:
+            for n in sorted(self.has_faulted_ever):
+                print(n)
 
         print(f"Total faults: { len(self.has_faulted_ever) }")
 
