@@ -55,6 +55,13 @@ return_no_gil = r"""
         _res = sqlite3_threadsafe(__VA_ARGS__);
         gilstate = PyGILState_Ensure();
         break;
+    case 0x2FACADE:
+        assert(_res2 == 0);
+        PyGILState_Release(gilstate);
+        _res = sqlite3_threadsafe(__VA_ARGS__);
+        gilstate = PyGILState_Ensure();
+        _res = (typeof (_res))18;
+        break;
     default:
         if(!_res2) {
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_threadsafe", __FILE__, __func__, __LINE__, #__VA_ARGS__);
@@ -185,7 +192,8 @@ returns = {
             PySequence_GetItem PyLong_FromLongLong PySequence_GetSlice PyBytes_FromStringAndSize
             PyFloat_FromDouble MakeExistingException PyBool_FromLong PyCode_NewEmpty PyFloat_AsDouble
             PyIter_Next PyList_SetItem PyLong_FromVoidPtr PyMapping_GetItemString PyNumber_Float
-            PyNumber_Long PySequence_List PySequence_SetItem PyObject_CallFunction PyObject_CallMethod
+            PyNumber_Long PySequence_Fast PySequence_List PySequence_SetItem PyObject_CallFunction
+            PyObject_CallMethod
             """.split(),
     # numeric return, no gil
     "no_gil": """
@@ -198,6 +206,7 @@ returns = {
             sqlite3_bind_zeroblob sqlite3_bind_zeroblob64
             sqlite3_blob_open sqlite3_blob_read sqlite3_blob_reopen
             sqlite3_blob_write sqlite3_busy_handler
+            sqlite3_busy_timeout
             sqlite3_clear_bindings sqlite3_close sqlite3_close_v2
             sqlite3_collation_needed sqlite3_column_name
             sqlite3_complete sqlite3_config sqlite3_create_collation
@@ -217,6 +226,7 @@ returns = {
             sqlite3_set_authorizer sqlite3_shutdown sqlite3_status64
             sqlite3_table_column_metadata sqlite3_threadsafe
             sqlite3_trace_v2 sqlite3_vfs_register
+            sqlite3_vfs_unregister
             sqlite3_wal_autocheckpoint sqlite3_wal_checkpoint_v2
             """.split(),
     # py functions that return a number to indicate failure
@@ -256,7 +266,7 @@ no_error=set("""PyBuffer_Release PyDict_GetItem PyMem_Free PyDict_GetItemString 
     PyErr_Occurred PyErr_Print PyErr_Restore PyErr_SetObject PyEval_RestoreThread
     PyEval_SaveThread PyGILState_Ensure PyGILState_Release PyMem_Realloc PyOS_snprintf
     PyObject_CheckBuffer PyObject_ClearWeakRefs PyObject_GC_UnTrack PyObject_HasAttrString
-    PySequence_Fast PyThreadState_Get PyThread_get_thread_ident PyTraceBack_Here
+    PyThreadState_Get PyThread_get_thread_ident PyTraceBack_Here
     PyType_IsSubtype PyUnicode_CopyCharacters PyWeakref_GetObject _Py_Dealloc
     _Py_HashBytes _Py_NegativeRefcount _Py_RefTotal PyThreadState_GetFrame
     _PyArg_ParseTupleAndKeywords_SizeT
