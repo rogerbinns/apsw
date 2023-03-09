@@ -373,12 +373,12 @@ static PyObject *
 config(PyObject *Py_UNUSED(self), PyObject *args)
 {
   int res, optdup;
-  long opt;
+  int opt;
 
   if (PyTuple_GET_SIZE(args) < 1 || !PyLong_Check(PyTuple_GET_ITEM(args, 0)))
     return PyErr_Format(PyExc_TypeError, "There should be at least one argument with the first being a number");
 
-  opt = PyLong_AsLong(PyTuple_GET_ITEM(args, 0));
+  opt = PyLong_AsInt(PyTuple_GET_ITEM(args, 0));
   if (PyErr_Occurred())
     return NULL;
 

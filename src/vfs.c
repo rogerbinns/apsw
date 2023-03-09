@@ -373,7 +373,7 @@ apswvfs_xAccess(sqlite3_vfs *vfs, const char *zName, int flags, int *pResOut)
     goto finally;
 
   if (PyLong_Check(pyresult))
-    *pResOut = !!PyLong_AsLong(pyresult);
+    *pResOut = !!PyLong_AsInt(pyresult);
   else
     PyErr_Format(PyExc_TypeError, "xAccess should return a number");
 
@@ -565,7 +565,7 @@ apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int infla
   }
 
   if (pOutFlags)
-    *pOutFlags = (int)PyLong_AsLong(PyList_GET_ITEM(flags, 1));
+    *pOutFlags = PyLong_AsInt(PyList_GET_ITEM(flags, 1));
   if (PyErr_Occurred())
     goto finally;
 
@@ -660,11 +660,11 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *args, PyObject *kwds)
     filename = apsw_strdup(PyUnicode_AsUTF8(name));
   }
 
-  flagsout = PyLong_AsLong(PyList_GET_ITEM(flags, 1));
-  flagsin = PyLong_AsLong(PyList_GET_ITEM(flags, 0));
+  flagsout = PyLong_AsInt(PyList_GET_ITEM(flags, 1));
+  flagsin = PyLong_AsInt(PyList_GET_ITEM(flags, 0));
 
   /* check for overflow */
-  if (flagsout != PyLong_AsLong(PyList_GET_ITEM(flags, 1)) || flagsin != PyLong_AsLong(PyList_GET_ITEM(flags, 0)))
+  if (flagsout != PyLong_AsInt(PyList_GET_ITEM(flags, 1)) || flagsin != PyLong_AsInt(PyList_GET_ITEM(flags, 0)))
     PyErr_Format(PyExc_OverflowError, "Flags arguments need to fit in 32 bits");
   if (PyErr_Occurred())
     goto finally;
@@ -1066,12 +1066,7 @@ apswvfs_xSleep(sqlite3_vfs *vfs, int microseconds)
   if (pyresult)
   {
     if (PyLong_Check(pyresult))
-    {
-      long actual = PyLong_AsLong(pyresult);
-      if (actual != (int)actual)
-        PyErr_Format(PyExc_OverflowError, "Result is too big for integer");
-      result = actual;
-    }
+      result = PyLong_AsInt(pyresult);
     else
       PyErr_Format(PyExc_TypeError, "You should return a number from sleep");
   }
@@ -1170,8 +1165,7 @@ static int
 apswvfs_xGetLastError(sqlite3_vfs *vfs, int nByte, char *zErrMsg)
 {
   PyObject *pyresult = NULL, *item0 = NULL, *item1 = NULL;
-  int intres = -1;
-  long longres;
+  int res = -1;
 
   VFSPREAMBLE;
 
@@ -1204,15 +1198,9 @@ apswvfs_xGetLastError(sqlite3_vfs *vfs, int nByte, char *zErrMsg)
     goto end;
   }
 
-  longres = PyLong_AsLong(item0);
+  res = PyLong_AsInt(item0);
   if (PyErr_Occurred())
     goto end;
-  intres = (int)longres;
-  if (intres != longres)
-  {
-    PyErr_Format(PyExc_ValueError, "xGetLastError return first item must fit in int");
-    goto end;
-  }
 
   if (item1 == Py_None)
     goto end;
@@ -1248,7 +1236,7 @@ end:
   Py_XDECREF(item0);
   Py_XDECREF(item1);
   VFSPOSTAMBLE;
-  return intres;
+  return res;
 }
 
 /** .. method:: xGetLastError() -> Tuple[int, str]
@@ -1887,7 +1875,7 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
   PyObject *flags = NULL, *pyflagsin = NULL, *pyflagsout = NULL, *filename = NULL;
   int xopenresult;
   int res = -1; /* error */
-  long flagsin;
+  int flagsin;
   int flagsout = 0;
 
   sqlite3_vfs *vfstouse = NULL;
@@ -1931,13 +1919,7 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
   if (!pyflagsin)
     goto finally;
 
-  flagsin = PyLong_AsLong(pyflagsin);
-  if (flagsin != (int)flagsin)
-  {
-    if (!PyErr_Occurred())
-      PyErr_Format(PyExc_OverflowError, "flags[0] is too big!");
-    AddTraceBackHere(__FILE__, __LINE__, "VFSFile.__init__", "{s: O}", "flags", OBJ(flags));
-  }
+  flagsin = PyLong_AsInt(pyflagsin);
   if (PyErr_Occurred())
     goto finally;
 
@@ -2395,7 +2377,7 @@ apswvfsfile_xSectorSize(sqlite3_file *file)
   else if (pyresult != Py_None)
   {
     if (PyLong_Check(pyresult))
-      result = PyLong_AsLong(pyresult); /* returns -1 on error/overflow */
+      result = PyLong_AsInt(pyresult); /* returns -1 on error/overflow */
     else
       PyErr_Format(PyExc_TypeError, "xSectorSize should return a number");
   }
@@ -2445,7 +2427,7 @@ apswvfsfile_xDeviceCharacteristics(sqlite3_file *file)
   else if (pyresult != Py_None)
   {
     if (PyLong_Check(pyresult))
-      result = PyLong_AsLong(pyresult); /* sets to -1 on error */
+      result = PyLong_AsInt(pyresult); /* sets to -1 on error */
     else
       PyErr_Format(PyExc_TypeError, "xDeviceCharacteristics should return a number");
   }
@@ -2494,8 +2476,6 @@ apswvfsfile_xFileSize(sqlite3_file *file, sqlite3_int64 *pSize)
     result = MakeSqliteMsgFromPyException(NULL);
   else if (PyLong_Check(pyresult))
     *pSize = PyLong_AsLongLong(pyresult);
-  else if (PyLong_Check(pyresult))
-    *pSize = PyLong_AsLong(pyresult);
   else
     PyErr_Format(PyExc_TypeError, "xFileSize should return a number");
 
@@ -2546,7 +2526,7 @@ apswvfsfile_xCheckReservedLock(sqlite3_file *file, int *pResOut)
   if (!pyresult)
     result = MakeSqliteMsgFromPyException(NULL);
   else if (PyLong_Check(pyresult))
-    *pResOut = !!PyLong_AsLong(pyresult);
+    *pResOut = !!PyLong_AsInt(pyresult);
   else
     PyErr_Format(PyExc_TypeError, "xCheckReservedLock should return a boolean/number");
 

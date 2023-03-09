@@ -1530,7 +1530,7 @@ walhookcb(void *context, sqlite3 *db, const char *dbname, int npages)
                      "retval", OBJ(retval));
     goto finally;
   }
-  code = (int)PyLong_AsLong(retval);
+  code = PyLong_AsInt(retval);
 
 finally:
   Py_XDECREF(retval);
@@ -1704,7 +1704,7 @@ authorizercb(void *context, int operation, const char *paramone, const char *par
 
   if (PyLong_Check(retval))
   {
-    result = PyLong_AsLong(retval);
+    result = PyLong_AsInt(retval);
     goto haveval;
   }
 
@@ -1794,7 +1794,7 @@ autovacuum_pages_cb(void *callable, const char *schema, unsigned int nPages, uns
 {
   PyGILState_STATE gilstate;
   PyObject *retval = NULL;
-  long res = 0;
+  int res = 0;
   gilstate = PyGILState_Ensure();
 
   MakeExistingException();
@@ -1805,7 +1805,7 @@ autovacuum_pages_cb(void *callable, const char *schema, unsigned int nPages, uns
   if (retval && PyLong_Check(retval))
   {
     CHAIN_EXC(
-        res = PyLong_AsLong(retval));
+        res = PyLong_AsInt(retval));
     if (!PyErr_Occurred())
       goto finally;
   }
@@ -1820,7 +1820,7 @@ autovacuum_pages_cb(void *callable, const char *schema, unsigned int nPages, uns
 finally:
   Py_XDECREF(retval);
   PyGILState_Release(gilstate);
-  return (int)res;
+  return res;
 }
 
 #undef AVPCB_CAL
@@ -3335,7 +3335,7 @@ collation_cb(void *context,
 
   if (PyLong_Check(retval))
   {
-    result = PyLong_AsLong(retval);
+    result = PyLong_AsInt(retval);
     goto haveval;
   }
 
@@ -4077,7 +4077,7 @@ Connection_exit(Connection *self, PyObject *args, PyObject *kwds)
 static PyObject *
 Connection_config(Connection *self, PyObject *args)
 {
-  long opt;
+  int opt;
   int res;
 
   CHECK_USE(NULL);
@@ -4086,7 +4086,7 @@ Connection_config(Connection *self, PyObject *args)
   if (PyTuple_GET_SIZE(args) < 1 || !PyLong_Check(PyTuple_GET_ITEM(args, 0)))
     return PyErr_Format(PyExc_TypeError, "There should be at least one argument with the first being a number");
 
-  opt = PyLong_AsLong(PyTuple_GET_ITEM(args, 0));
+  opt = PyLong_AsInt(PyTuple_GET_ITEM(args, 0));
   if (PyErr_Occurred())
     return NULL;
 
