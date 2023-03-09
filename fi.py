@@ -319,6 +319,8 @@ class Tester:
 
     Proceed = 0x1FACADE
     "magic value keep going (ie do not inject a return value)"
+    ProceedReturn18 = 0x2FACADE
+    "Call function, but then pretend it returned 18"
 
     FAULTT = ZeroDivisionError
     FAULTS = "Fault injection synthesized failure"

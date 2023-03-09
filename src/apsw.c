@@ -2376,11 +2376,11 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
     {
       int overflow;
       long value = PyLong_AsLongAndOverflow(res, &overflow);
-      if (!overflow && value == 0x1FACADE)
+      if (!overflow && (value == 0x1FACADE || value == 0x2FACADE))
       {
         PyErr_Restore(etype, evalue, etraceback);
         Py_DECREF(res);
-        return 0x1FACADE;
+        return value;
       }
     }
     PyErr_Restore(etype, evalue, etraceback);
