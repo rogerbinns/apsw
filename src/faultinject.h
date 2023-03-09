@@ -30,6 +30,7 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
 #undef PyErr_NewExceptionWithDoc
 #undef PyFloat_AsDouble
 #undef PyFloat_FromDouble
+#undef PyFrame_New
 #undef PyIter_Next
 #undef PyList_Append
 #undef PyList_New
@@ -395,6 +396,24 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
     }                                                                                                                     \
     PyGILState_Release(gilstate);                                                                                         \
     _res;                                                                                                                 \
+})
+#define PyFrame_New(...) \
+({                                                                                                                 \
+    __auto_type _res = 0 ? PyFrame_New(__VA_ARGS__) : 0;                                                           \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                               \
+    switch (APSW_FaultInjectControl("PyFrame_New", __FILE__, __func__, __LINE__, #__VA_ARGS__, (PyObject**)&_res)) \
+    {                                                                                                              \
+    case 0x1FACADE:                                                                                                \
+        assert(_res == 0);                                                                                         \
+        _res = PyFrame_New(__VA_ARGS__);                                                                           \
+        break;                                                                                                     \
+    default:                                                                                                       \
+        assert(_res || PyErr_Occurred());                                                                          \
+        assert(!(_res && PyErr_Occurred()));                                                                       \
+        break;                                                                                                     \
+    }                                                                                                              \
+    PyGILState_Release(gilstate);                                                                                  \
+    _res;                                                                                                          \
 })
 #define PyIter_Next(...) \
 ({                                                                                                                 \

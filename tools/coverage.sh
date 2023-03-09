@@ -31,12 +31,15 @@ fi
 
 PROFILE="-Og --coverage"
 
+export APSW_TEST_LARGE=t
+
 set -ex
 $CC $CFLAGS $MOREFLAGS $PROFILE -DAPSW_NO_NDEBUG -DSQLITE_ENABLE_API_ARMOR -DAPSW_USE_SQLITE_AMALGAMATION  -DAPSW_TESTFIXTURES -I$INCLUDEDIR -Isrc -Isqlite3 -I. -c src/apsw.c
 $LINKER $PROFILE apsw.o -o apsw/__init__$SOSUFFIX
 set +ex
 $PYTHON $args
 res=$?
+[ $res -eq 0 ] && $PYTHON fi.py
 gcov $GCOVOPTS apsw.gcno > /dev/null
 mv sqlite3.c.gcov sqlite3/
 rm -f src/*.gcov

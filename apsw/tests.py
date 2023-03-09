@@ -1199,7 +1199,8 @@ class APSW(unittest.TestCase):
 
             class Table:
 
-                def BestIndexObject(self, o):
+                def BestIndexObject(Self, o):
+                    self.assertRaises(OverflowError, setattr, o, "idxNum", 0x7fff_ffff * 0x1_000)
                     Source.indexinfo_saved = o
                     return Source.bio_callback(o)
 
@@ -2363,6 +2364,7 @@ class APSW(unittest.TestCase):
 
             def value(self):
                 return self.v
+        self.assertRaises(TypeError, self.db.create_window_function, 3, 3)
         self.db.create_window_function("sumint", None)
         self.db.create_window_function("sumint", windowfunc)
         self.db.execute("""CREATE TABLE t3(x, y);

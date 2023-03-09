@@ -193,7 +193,7 @@ returns = {
             PyFloat_FromDouble MakeExistingException PyBool_FromLong PyCode_NewEmpty PyFloat_AsDouble
             PyIter_Next PyList_SetItem PyLong_FromVoidPtr PyMapping_GetItemString PyNumber_Float
             PyNumber_Long PySequence_Fast PySequence_List PySequence_SetItem PyObject_CallFunction
-            PyObject_CallMethod
+            PyObject_CallMethod PyFrame_New
             """.split(),
     # numeric return, no gil
     "no_gil": """
@@ -275,7 +275,7 @@ no_error=set("""PyBuffer_Release PyDict_GetItem PyMem_Free PyDict_GetItemString 
 # these could error but are only used in a small number of places where
 # errors are already dealt with
 no_error.update("""PyArg_ParseTuple PyBytes_AsString PyErr_GivenExceptionMatches PyFrame_GetBack
-    PyFrame_New PyImport_ImportModule PyLong_AsLongAndOverflow PyLong_AsVoidPtr PyObject_Call
+    PyImport_ImportModule PyLong_AsLongAndOverflow PyLong_AsVoidPtr PyObject_Call
     PyObject_CallFunctionObjArgs PyObject_IsInstance PySys_GetObject
 """.split())
 

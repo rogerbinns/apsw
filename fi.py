@@ -14,14 +14,12 @@ sys.path.insert(0, str(pathlib.Path(__file__).parent.absolute() / "tools"))
 import genfaultinject
 
 
-def file_cleanup():
-    gc.collect()
-    for f in glob.glob("/tmp/dbfile-delme*") + glob.glob("/tmp/myobfudb*"):
-        os.remove(f)
-
-
 def exercise(example_code, expect_exception):
     "This function exercises the code paths where we have fault injection"
+
+    def file_cleanup():
+        for f in glob.glob("/tmp/dbfile-delme*") + glob.glob("/tmp/myobfudb*"):
+            os.remove(f)
 
     file_cleanup()
 
@@ -199,7 +197,8 @@ def exercise(example_code, expect_exception):
     con.setrollbackhook(None)
 
     con.collationneeded(lambda *args: con.createcollation("foo", lambda *args: 0))
-    con.execute("create table col(x); insert into col values ('aa'), ('bb'), ('cc'); select * from col order by x collate foo")
+    con.execute(
+        "create table col(x); insert into col values ('aa'), ('bb'), ('cc'); select * from col order by x collate foo")
 
     class SumInt:
 
@@ -219,7 +218,7 @@ def exercise(example_code, expect_exception):
             return self.v
 
     def wf():
-        x=SumInt()
+        x = SumInt()
         return (x, SumInt.step, SumInt.final, SumInt.value, SumInt.inverse)
 
     con.create_window_function("sumint", SumInt)
@@ -266,7 +265,6 @@ def exercise(example_code, expect_exception):
     blob.read(10)
     blob.seek(0)
     blob.reopen(con.last_insert_rowid())
-
     blob.close()
 
     if expect_exception:
@@ -399,7 +397,7 @@ class Tester:
             # an error.  Otherwise there will be memory leaks.
             if fname in {"sqlite3_close", "sqlite3_vfs_unregister"}:
                 self.expect_exception.append(apsw_attr("ConnectionNotClosedError"))
-                self.expect_exception.append(apsw_attr("TooBigError")) # code 18
+                self.expect_exception.append(apsw_attr("TooBigError"))  # code 18
                 return self.ProceedReturn18
 
             if fname == "sqlite3_enable_shared_cache":
