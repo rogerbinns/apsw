@@ -57,6 +57,7 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
 #undef PyObject_IsTrue
 #undef PyObject_SetAttrString
 #undef PyObject_Str
+#undef PySequence_Fast
 #undef PySequence_GetItem
 #undef PySequence_GetSlice
 #undef PySequence_List
@@ -102,6 +103,7 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
 #undef sqlite3_blob_reopen
 #undef sqlite3_blob_write
 #undef sqlite3_busy_handler
+#undef sqlite3_busy_timeout
 #undef sqlite3_clear_bindings
 #undef sqlite3_close
 #undef sqlite3_close_v2
@@ -148,6 +150,7 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
 #undef sqlite3_threadsafe
 #undef sqlite3_trace_v2
 #undef sqlite3_vfs_register
+#undef sqlite3_vfs_unregister
 #undef sqlite3_wal_autocheckpoint
 #undef sqlite3_wal_checkpoint_v2
 
@@ -989,6 +992,24 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
     PyGILState_Release(gilstate);                                                                                   \
     _res;                                                                                                           \
 })
+#define PySequence_Fast(...) \
+({                                                                                                                     \
+    __auto_type _res = 0 ? PySequence_Fast(__VA_ARGS__) : 0;                                                           \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                   \
+    switch (APSW_FaultInjectControl("PySequence_Fast", __FILE__, __func__, __LINE__, #__VA_ARGS__, (PyObject**)&_res)) \
+    {                                                                                                                  \
+    case 0x1FACADE:                                                                                                    \
+        assert(_res == 0);                                                                                             \
+        _res = PySequence_Fast(__VA_ARGS__);                                                                           \
+        break;                                                                                                         \
+    default:                                                                                                           \
+        assert(_res || PyErr_Occurred());                                                                              \
+        assert(!(_res && PyErr_Occurred()));                                                                           \
+        break;                                                                                                         \
+    }                                                                                                                  \
+    PyGILState_Release(gilstate);                                                                                      \
+    _res;                                                                                                              \
+})
 #define PySequence_GetItem(...) \
 ({                                                                                                                        \
     __auto_type _res = 0 ? PySequence_GetItem(__VA_ARGS__) : 0;                                                           \
@@ -1465,6 +1486,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_aggregate_context(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                             \
         break;                                                                                                                                                                      \
+    case 0x2FACADE:                                                                                                                                                                 \
+        assert(_res2 == 0);                                                                                                                                                         \
+        PyGILState_Release(gilstate);                                                                                                                                               \
+        _res = sqlite3_aggregate_context(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                             \
+        _res = (typeof (_res))18;                                                                                                                                                   \
+        break;                                                                                                                                                                      \
     default:                                                                                                                                                                        \
         if(!_res2) {                                                                                                                                                                \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_aggregate_context", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -1511,6 +1539,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                              \
         _res = sqlite3_autovacuum_pages(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                            \
+        break;                                                                                                                                                                     \
+    case 0x2FACADE:                                                                                                                                                                \
+        assert(_res2 == 0);                                                                                                                                                        \
+        PyGILState_Release(gilstate);                                                                                                                                              \
+        _res = sqlite3_autovacuum_pages(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                            \
+        _res = (typeof (_res))18;                                                                                                                                                  \
         break;                                                                                                                                                                     \
     default:                                                                                                                                                                       \
         if(!_res2) {                                                                                                                                                               \
@@ -1559,6 +1594,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_backup_finish(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                         \
         break;                                                                                                                                                                  \
+    case 0x2FACADE:                                                                                                                                                             \
+        assert(_res2 == 0);                                                                                                                                                     \
+        PyGILState_Release(gilstate);                                                                                                                                           \
+        _res = sqlite3_backup_finish(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                         \
+        _res = (typeof (_res))18;                                                                                                                                               \
+        break;                                                                                                                                                                  \
     default:                                                                                                                                                                    \
         if(!_res2) {                                                                                                                                                            \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_backup_finish", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -1605,6 +1647,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                         \
         _res = sqlite3_backup_init(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                       \
+        break;                                                                                                                                                                \
+    case 0x2FACADE:                                                                                                                                                           \
+        assert(_res2 == 0);                                                                                                                                                   \
+        PyGILState_Release(gilstate);                                                                                                                                         \
+        _res = sqlite3_backup_init(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                       \
+        _res = (typeof (_res))18;                                                                                                                                             \
         break;                                                                                                                                                                \
     default:                                                                                                                                                                  \
         if(!_res2) {                                                                                                                                                          \
@@ -1653,6 +1702,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_backup_step(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                       \
         break;                                                                                                                                                                \
+    case 0x2FACADE:                                                                                                                                                           \
+        assert(_res2 == 0);                                                                                                                                                   \
+        PyGILState_Release(gilstate);                                                                                                                                         \
+        _res = sqlite3_backup_step(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                       \
+        _res = (typeof (_res))18;                                                                                                                                             \
+        break;                                                                                                                                                                \
     default:                                                                                                                                                                  \
         if(!_res2) {                                                                                                                                                          \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_backup_step", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -1699,6 +1755,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                       \
         _res = sqlite3_bind_blob(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                     \
+        break;                                                                                                                                                              \
+    case 0x2FACADE:                                                                                                                                                         \
+        assert(_res2 == 0);                                                                                                                                                 \
+        PyGILState_Release(gilstate);                                                                                                                                       \
+        _res = sqlite3_bind_blob(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                     \
+        _res = (typeof (_res))18;                                                                                                                                           \
         break;                                                                                                                                                              \
     default:                                                                                                                                                                \
         if(!_res2) {                                                                                                                                                        \
@@ -1747,6 +1810,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_bind_blob64(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                       \
         break;                                                                                                                                                                \
+    case 0x2FACADE:                                                                                                                                                           \
+        assert(_res2 == 0);                                                                                                                                                   \
+        PyGILState_Release(gilstate);                                                                                                                                         \
+        _res = sqlite3_bind_blob64(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                       \
+        _res = (typeof (_res))18;                                                                                                                                             \
+        break;                                                                                                                                                                \
     default:                                                                                                                                                                  \
         if(!_res2) {                                                                                                                                                          \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_bind_blob64", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -1793,6 +1863,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                         \
         _res = sqlite3_bind_double(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                       \
+        break;                                                                                                                                                                \
+    case 0x2FACADE:                                                                                                                                                           \
+        assert(_res2 == 0);                                                                                                                                                   \
+        PyGILState_Release(gilstate);                                                                                                                                         \
+        _res = sqlite3_bind_double(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                       \
+        _res = (typeof (_res))18;                                                                                                                                             \
         break;                                                                                                                                                                \
     default:                                                                                                                                                                  \
         if(!_res2) {                                                                                                                                                          \
@@ -1841,6 +1918,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_bind_int(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                    \
         break;                                                                                                                                                             \
+    case 0x2FACADE:                                                                                                                                                        \
+        assert(_res2 == 0);                                                                                                                                                \
+        PyGILState_Release(gilstate);                                                                                                                                      \
+        _res = sqlite3_bind_int(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                    \
+        _res = (typeof (_res))18;                                                                                                                                          \
+        break;                                                                                                                                                             \
     default:                                                                                                                                                               \
         if(!_res2) {                                                                                                                                                       \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_bind_int", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -1887,6 +1971,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                        \
         _res = sqlite3_bind_int64(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                      \
+        break;                                                                                                                                                               \
+    case 0x2FACADE:                                                                                                                                                          \
+        assert(_res2 == 0);                                                                                                                                                  \
+        PyGILState_Release(gilstate);                                                                                                                                        \
+        _res = sqlite3_bind_int64(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                      \
+        _res = (typeof (_res))18;                                                                                                                                            \
         break;                                                                                                                                                               \
     default:                                                                                                                                                                 \
         if(!_res2) {                                                                                                                                                         \
@@ -1935,6 +2026,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_bind_null(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                     \
         break;                                                                                                                                                              \
+    case 0x2FACADE:                                                                                                                                                         \
+        assert(_res2 == 0);                                                                                                                                                 \
+        PyGILState_Release(gilstate);                                                                                                                                       \
+        _res = sqlite3_bind_null(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                     \
+        _res = (typeof (_res))18;                                                                                                                                           \
+        break;                                                                                                                                                              \
     default:                                                                                                                                                                \
         if(!_res2) {                                                                                                                                                        \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_bind_null", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -1981,6 +2079,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                          \
         _res = sqlite3_bind_pointer(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                        \
+        break;                                                                                                                                                                 \
+    case 0x2FACADE:                                                                                                                                                            \
+        assert(_res2 == 0);                                                                                                                                                    \
+        PyGILState_Release(gilstate);                                                                                                                                          \
+        _res = sqlite3_bind_pointer(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                        \
+        _res = (typeof (_res))18;                                                                                                                                              \
         break;                                                                                                                                                                 \
     default:                                                                                                                                                                   \
         if(!_res2) {                                                                                                                                                           \
@@ -2029,6 +2134,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_bind_text(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                     \
         break;                                                                                                                                                              \
+    case 0x2FACADE:                                                                                                                                                         \
+        assert(_res2 == 0);                                                                                                                                                 \
+        PyGILState_Release(gilstate);                                                                                                                                       \
+        _res = sqlite3_bind_text(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                     \
+        _res = (typeof (_res))18;                                                                                                                                           \
+        break;                                                                                                                                                              \
     default:                                                                                                                                                                \
         if(!_res2) {                                                                                                                                                        \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_bind_text", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -2075,6 +2187,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                         \
         _res = sqlite3_bind_text64(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                       \
+        break;                                                                                                                                                                \
+    case 0x2FACADE:                                                                                                                                                           \
+        assert(_res2 == 0);                                                                                                                                                   \
+        PyGILState_Release(gilstate);                                                                                                                                         \
+        _res = sqlite3_bind_text64(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                       \
+        _res = (typeof (_res))18;                                                                                                                                             \
         break;                                                                                                                                                                \
     default:                                                                                                                                                                  \
         if(!_res2) {                                                                                                                                                          \
@@ -2123,6 +2242,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_bind_value(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                      \
         break;                                                                                                                                                               \
+    case 0x2FACADE:                                                                                                                                                          \
+        assert(_res2 == 0);                                                                                                                                                  \
+        PyGILState_Release(gilstate);                                                                                                                                        \
+        _res = sqlite3_bind_value(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                      \
+        _res = (typeof (_res))18;                                                                                                                                            \
+        break;                                                                                                                                                               \
     default:                                                                                                                                                                 \
         if(!_res2) {                                                                                                                                                         \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_bind_value", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -2169,6 +2295,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                           \
         _res = sqlite3_bind_zeroblob(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                         \
+        break;                                                                                                                                                                  \
+    case 0x2FACADE:                                                                                                                                                             \
+        assert(_res2 == 0);                                                                                                                                                     \
+        PyGILState_Release(gilstate);                                                                                                                                           \
+        _res = sqlite3_bind_zeroblob(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                         \
+        _res = (typeof (_res))18;                                                                                                                                               \
         break;                                                                                                                                                                  \
     default:                                                                                                                                                                    \
         if(!_res2) {                                                                                                                                                            \
@@ -2217,6 +2350,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_bind_zeroblob64(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                           \
         break;                                                                                                                                                                    \
+    case 0x2FACADE:                                                                                                                                                               \
+        assert(_res2 == 0);                                                                                                                                                       \
+        PyGILState_Release(gilstate);                                                                                                                                             \
+        _res = sqlite3_bind_zeroblob64(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                           \
+        _res = (typeof (_res))18;                                                                                                                                                 \
+        break;                                                                                                                                                                    \
     default:                                                                                                                                                                      \
         if(!_res2) {                                                                                                                                                              \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_bind_zeroblob64", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -2263,6 +2403,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                       \
         _res = sqlite3_blob_open(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                     \
+        break;                                                                                                                                                              \
+    case 0x2FACADE:                                                                                                                                                         \
+        assert(_res2 == 0);                                                                                                                                                 \
+        PyGILState_Release(gilstate);                                                                                                                                       \
+        _res = sqlite3_blob_open(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                     \
+        _res = (typeof (_res))18;                                                                                                                                           \
         break;                                                                                                                                                              \
     default:                                                                                                                                                                \
         if(!_res2) {                                                                                                                                                        \
@@ -2311,6 +2458,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_blob_read(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                     \
         break;                                                                                                                                                              \
+    case 0x2FACADE:                                                                                                                                                         \
+        assert(_res2 == 0);                                                                                                                                                 \
+        PyGILState_Release(gilstate);                                                                                                                                       \
+        _res = sqlite3_blob_read(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                     \
+        _res = (typeof (_res))18;                                                                                                                                           \
+        break;                                                                                                                                                              \
     default:                                                                                                                                                                \
         if(!_res2) {                                                                                                                                                        \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_blob_read", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -2357,6 +2511,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                         \
         _res = sqlite3_blob_reopen(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                       \
+        break;                                                                                                                                                                \
+    case 0x2FACADE:                                                                                                                                                           \
+        assert(_res2 == 0);                                                                                                                                                   \
+        PyGILState_Release(gilstate);                                                                                                                                         \
+        _res = sqlite3_blob_reopen(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                       \
+        _res = (typeof (_res))18;                                                                                                                                             \
         break;                                                                                                                                                                \
     default:                                                                                                                                                                  \
         if(!_res2) {                                                                                                                                                          \
@@ -2405,6 +2566,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_blob_write(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                      \
         break;                                                                                                                                                               \
+    case 0x2FACADE:                                                                                                                                                          \
+        assert(_res2 == 0);                                                                                                                                                  \
+        PyGILState_Release(gilstate);                                                                                                                                        \
+        _res = sqlite3_blob_write(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                      \
+        _res = (typeof (_res))18;                                                                                                                                            \
+        break;                                                                                                                                                               \
     default:                                                                                                                                                                 \
         if(!_res2) {                                                                                                                                                         \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_blob_write", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -2452,9 +2620,70 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_busy_handler(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                        \
         break;                                                                                                                                                                 \
+    case 0x2FACADE:                                                                                                                                                            \
+        assert(_res2 == 0);                                                                                                                                                    \
+        PyGILState_Release(gilstate);                                                                                                                                          \
+        _res = sqlite3_busy_handler(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                        \
+        _res = (typeof (_res))18;                                                                                                                                              \
+        break;                                                                                                                                                                 \
     default:                                                                                                                                                                   \
         if(!_res2) {                                                                                                                                                           \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_busy_handler", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+            PyObject *_p1, *_p2, *_p3;                                                                                                                                         \
+            PyErr_Fetch(&_p1, &_p2, &_p3);                                                                                                                                     \
+            fprintf(stderr, "Exception type: ");                                                                                                                               \
+            PyObject_Print(_p1, stderr, 0);                                                                                                                                    \
+            fprintf(stderr, "\nException value: ");                                                                                                                            \
+            PyObject_Print(_p2, stderr, 0);                                                                                                                                    \
+            fprintf(stderr, "\nException tb: ");                                                                                                                               \
+            PyObject_Print(_p3, stderr, 0);                                                                                                                                    \
+            fprintf(stderr, "\nPyErr_Display:\n");                                                                                                                             \
+            PyErr_Display(_p1, _p2, _p3);                                                                                                                                      \
+            fprintf(stderr, "\nEnd of exception information\n");                                                                                                               \
+        };                                                                                                                                                                     \
+        assert(_res2);                                                                                                                                                         \
+        if(PyTuple_Check(_res2))                                                                                                                                               \
+        {                                                                                                                                                                      \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                                                                              \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                                                                                \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                                                                               \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));                                                                   \
+        }                                                                                                                                                                      \
+        else                                                                                                                                                                   \
+        {                                                                                                                                                                      \
+            assert(PyLong_Check(_res2));                                                                                                                                       \
+            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                                                                                     \
+        }                                                                                                                                                                      \
+        break;                                                                                                                                                                 \
+    }                                                                                                                                                                          \
+    Py_XDECREF(_res2);                                                                                                                                                         \
+    PyGILState_Release(gilstate);                                                                                                                                              \
+    _res;                                                                                                                                                                      \
+})
+#define sqlite3_busy_timeout(...) \
+({                                                                                                                                                                             \
+    PyObject *_res2 = 0;                                                                                                                                                       \
+    __auto_type _res = 0 ? sqlite3_busy_timeout(__VA_ARGS__) : 0;                                                                                                              \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                                                                           \
+    switch (APSW_FaultInjectControl("sqlite3_busy_timeout", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))                                                               \
+    {                                                                                                                                                                          \
+    case 0x1FACADE:                                                                                                                                                            \
+        assert(_res2 == 0);                                                                                                                                                    \
+        PyGILState_Release(gilstate);                                                                                                                                          \
+        _res = sqlite3_busy_timeout(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                        \
+        break;                                                                                                                                                                 \
+    case 0x2FACADE:                                                                                                                                                            \
+        assert(_res2 == 0);                                                                                                                                                    \
+        PyGILState_Release(gilstate);                                                                                                                                          \
+        _res = sqlite3_busy_timeout(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                        \
+        _res = (typeof (_res))18;                                                                                                                                              \
+        break;                                                                                                                                                                 \
+    default:                                                                                                                                                                   \
+        if(!_res2) {                                                                                                                                                           \
+            fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_busy_timeout", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
             PyObject *_p1, *_p2, *_p3;                                                                                                                                         \
             PyErr_Fetch(&_p1, &_p2, &_p3);                                                                                                                                     \
             fprintf(stderr, "Exception type: ");                                                                                                                               \
@@ -2498,6 +2727,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                            \
         _res = sqlite3_clear_bindings(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                          \
+        break;                                                                                                                                                                   \
+    case 0x2FACADE:                                                                                                                                                              \
+        assert(_res2 == 0);                                                                                                                                                      \
+        PyGILState_Release(gilstate);                                                                                                                                            \
+        _res = sqlite3_clear_bindings(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                          \
+        _res = (typeof (_res))18;                                                                                                                                                \
         break;                                                                                                                                                                   \
     default:                                                                                                                                                                     \
         if(!_res2) {                                                                                                                                                             \
@@ -2546,6 +2782,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_close(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                 \
         break;                                                                                                                                                          \
+    case 0x2FACADE:                                                                                                                                                     \
+        assert(_res2 == 0);                                                                                                                                             \
+        PyGILState_Release(gilstate);                                                                                                                                   \
+        _res = sqlite3_close(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                 \
+        _res = (typeof (_res))18;                                                                                                                                       \
+        break;                                                                                                                                                          \
     default:                                                                                                                                                            \
         if(!_res2) {                                                                                                                                                    \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_close", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -2592,6 +2835,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                      \
         _res = sqlite3_close_v2(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                    \
+        break;                                                                                                                                                             \
+    case 0x2FACADE:                                                                                                                                                        \
+        assert(_res2 == 0);                                                                                                                                                \
+        PyGILState_Release(gilstate);                                                                                                                                      \
+        _res = sqlite3_close_v2(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                    \
+        _res = (typeof (_res))18;                                                                                                                                          \
         break;                                                                                                                                                             \
     default:                                                                                                                                                               \
         if(!_res2) {                                                                                                                                                       \
@@ -2640,6 +2890,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_collation_needed(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                            \
         break;                                                                                                                                                                     \
+    case 0x2FACADE:                                                                                                                                                                \
+        assert(_res2 == 0);                                                                                                                                                        \
+        PyGILState_Release(gilstate);                                                                                                                                              \
+        _res = sqlite3_collation_needed(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                            \
+        _res = (typeof (_res))18;                                                                                                                                                  \
+        break;                                                                                                                                                                     \
     default:                                                                                                                                                                       \
         if(!_res2) {                                                                                                                                                               \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_collation_needed", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -2686,6 +2943,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                         \
         _res = sqlite3_column_name(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                       \
+        break;                                                                                                                                                                \
+    case 0x2FACADE:                                                                                                                                                           \
+        assert(_res2 == 0);                                                                                                                                                   \
+        PyGILState_Release(gilstate);                                                                                                                                         \
+        _res = sqlite3_column_name(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                       \
+        _res = (typeof (_res))18;                                                                                                                                             \
         break;                                                                                                                                                                \
     default:                                                                                                                                                                  \
         if(!_res2) {                                                                                                                                                          \
@@ -2734,6 +2998,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_complete(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                    \
         break;                                                                                                                                                             \
+    case 0x2FACADE:                                                                                                                                                        \
+        assert(_res2 == 0);                                                                                                                                                \
+        PyGILState_Release(gilstate);                                                                                                                                      \
+        _res = sqlite3_complete(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                    \
+        _res = (typeof (_res))18;                                                                                                                                          \
+        break;                                                                                                                                                             \
     default:                                                                                                                                                               \
         if(!_res2) {                                                                                                                                                       \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_complete", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -2780,6 +3051,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                    \
         _res = sqlite3_config(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                  \
+        break;                                                                                                                                                           \
+    case 0x2FACADE:                                                                                                                                                      \
+        assert(_res2 == 0);                                                                                                                                              \
+        PyGILState_Release(gilstate);                                                                                                                                    \
+        _res = sqlite3_config(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                  \
+        _res = (typeof (_res))18;                                                                                                                                        \
         break;                                                                                                                                                           \
     default:                                                                                                                                                             \
         if(!_res2) {                                                                                                                                                     \
@@ -2828,6 +3106,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_create_collation(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                            \
         break;                                                                                                                                                                     \
+    case 0x2FACADE:                                                                                                                                                                \
+        assert(_res2 == 0);                                                                                                                                                        \
+        PyGILState_Release(gilstate);                                                                                                                                              \
+        _res = sqlite3_create_collation(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                            \
+        _res = (typeof (_res))18;                                                                                                                                                  \
+        break;                                                                                                                                                                     \
     default:                                                                                                                                                                       \
         if(!_res2) {                                                                                                                                                               \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_create_collation", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -2874,6 +3159,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                                 \
         _res = sqlite3_create_collation_v2(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                               \
+        break;                                                                                                                                                                        \
+    case 0x2FACADE:                                                                                                                                                                   \
+        assert(_res2 == 0);                                                                                                                                                           \
+        PyGILState_Release(gilstate);                                                                                                                                                 \
+        _res = sqlite3_create_collation_v2(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                               \
+        _res = (typeof (_res))18;                                                                                                                                                     \
         break;                                                                                                                                                                        \
     default:                                                                                                                                                                          \
         if(!_res2) {                                                                                                                                                                  \
@@ -2922,6 +3214,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_create_function(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                           \
         break;                                                                                                                                                                    \
+    case 0x2FACADE:                                                                                                                                                               \
+        assert(_res2 == 0);                                                                                                                                                       \
+        PyGILState_Release(gilstate);                                                                                                                                             \
+        _res = sqlite3_create_function(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                           \
+        _res = (typeof (_res))18;                                                                                                                                                 \
+        break;                                                                                                                                                                    \
     default:                                                                                                                                                                      \
         if(!_res2) {                                                                                                                                                              \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_create_function", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -2968,6 +3267,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                                \
         _res = sqlite3_create_function_v2(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                              \
+        break;                                                                                                                                                                       \
+    case 0x2FACADE:                                                                                                                                                                  \
+        assert(_res2 == 0);                                                                                                                                                          \
+        PyGILState_Release(gilstate);                                                                                                                                                \
+        _res = sqlite3_create_function_v2(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                              \
+        _res = (typeof (_res))18;                                                                                                                                                    \
         break;                                                                                                                                                                       \
     default:                                                                                                                                                                         \
         if(!_res2) {                                                                                                                                                                 \
@@ -3016,6 +3322,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_create_module(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                         \
         break;                                                                                                                                                                  \
+    case 0x2FACADE:                                                                                                                                                             \
+        assert(_res2 == 0);                                                                                                                                                     \
+        PyGILState_Release(gilstate);                                                                                                                                           \
+        _res = sqlite3_create_module(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                         \
+        _res = (typeof (_res))18;                                                                                                                                               \
+        break;                                                                                                                                                                  \
     default:                                                                                                                                                                    \
         if(!_res2) {                                                                                                                                                            \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_create_module", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -3062,6 +3375,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                              \
         _res = sqlite3_create_module_v2(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                            \
+        break;                                                                                                                                                                     \
+    case 0x2FACADE:                                                                                                                                                                \
+        assert(_res2 == 0);                                                                                                                                                        \
+        PyGILState_Release(gilstate);                                                                                                                                              \
+        _res = sqlite3_create_module_v2(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                            \
+        _res = (typeof (_res))18;                                                                                                                                                  \
         break;                                                                                                                                                                     \
     default:                                                                                                                                                                       \
         if(!_res2) {                                                                                                                                                               \
@@ -3110,6 +3430,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_create_window_function(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                                  \
         break;                                                                                                                                                                           \
+    case 0x2FACADE:                                                                                                                                                                      \
+        assert(_res2 == 0);                                                                                                                                                              \
+        PyGILState_Release(gilstate);                                                                                                                                                    \
+        _res = sqlite3_create_window_function(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                                  \
+        _res = (typeof (_res))18;                                                                                                                                                        \
+        break;                                                                                                                                                                           \
     default:                                                                                                                                                                             \
         if(!_res2) {                                                                                                                                                                     \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_create_window_function", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -3156,6 +3483,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                           \
         _res = sqlite3_db_cacheflush(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                         \
+        break;                                                                                                                                                                  \
+    case 0x2FACADE:                                                                                                                                                             \
+        assert(_res2 == 0);                                                                                                                                                     \
+        PyGILState_Release(gilstate);                                                                                                                                           \
+        _res = sqlite3_db_cacheflush(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                         \
+        _res = (typeof (_res))18;                                                                                                                                               \
         break;                                                                                                                                                                  \
     default:                                                                                                                                                                    \
         if(!_res2) {                                                                                                                                                            \
@@ -3204,6 +3538,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_db_config(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                     \
         break;                                                                                                                                                              \
+    case 0x2FACADE:                                                                                                                                                         \
+        assert(_res2 == 0);                                                                                                                                                 \
+        PyGILState_Release(gilstate);                                                                                                                                       \
+        _res = sqlite3_db_config(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                     \
+        _res = (typeof (_res))18;                                                                                                                                           \
+        break;                                                                                                                                                              \
     default:                                                                                                                                                                \
         if(!_res2) {                                                                                                                                                        \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_db_config", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -3250,6 +3591,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                       \
         _res = sqlite3_db_status(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                     \
+        break;                                                                                                                                                              \
+    case 0x2FACADE:                                                                                                                                                         \
+        assert(_res2 == 0);                                                                                                                                                 \
+        PyGILState_Release(gilstate);                                                                                                                                       \
+        _res = sqlite3_db_status(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                     \
+        _res = (typeof (_res))18;                                                                                                                                           \
         break;                                                                                                                                                              \
     default:                                                                                                                                                                \
         if(!_res2) {                                                                                                                                                        \
@@ -3298,6 +3646,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_declare_vtab(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                        \
         break;                                                                                                                                                                 \
+    case 0x2FACADE:                                                                                                                                                            \
+        assert(_res2 == 0);                                                                                                                                                    \
+        PyGILState_Release(gilstate);                                                                                                                                          \
+        _res = sqlite3_declare_vtab(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                        \
+        _res = (typeof (_res))18;                                                                                                                                              \
+        break;                                                                                                                                                                 \
     default:                                                                                                                                                                   \
         if(!_res2) {                                                                                                                                                           \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_declare_vtab", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -3344,6 +3699,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                         \
         _res = sqlite3_deserialize(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                       \
+        break;                                                                                                                                                                \
+    case 0x2FACADE:                                                                                                                                                           \
+        assert(_res2 == 0);                                                                                                                                                   \
+        PyGILState_Release(gilstate);                                                                                                                                         \
+        _res = sqlite3_deserialize(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                       \
+        _res = (typeof (_res))18;                                                                                                                                             \
         break;                                                                                                                                                                \
     default:                                                                                                                                                                  \
         if(!_res2) {                                                                                                                                                          \
@@ -3392,6 +3754,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_drop_modules(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                        \
         break;                                                                                                                                                                 \
+    case 0x2FACADE:                                                                                                                                                            \
+        assert(_res2 == 0);                                                                                                                                                    \
+        PyGILState_Release(gilstate);                                                                                                                                          \
+        _res = sqlite3_drop_modules(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                        \
+        _res = (typeof (_res))18;                                                                                                                                              \
+        break;                                                                                                                                                                 \
     default:                                                                                                                                                                   \
         if(!_res2) {                                                                                                                                                           \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_drop_modules", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -3438,6 +3807,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                                   \
         _res = sqlite3_enable_load_extension(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                                 \
+        break;                                                                                                                                                                          \
+    case 0x2FACADE:                                                                                                                                                                     \
+        assert(_res2 == 0);                                                                                                                                                             \
+        PyGILState_Release(gilstate);                                                                                                                                                   \
+        _res = sqlite3_enable_load_extension(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                                 \
+        _res = (typeof (_res))18;                                                                                                                                                       \
         break;                                                                                                                                                                          \
     default:                                                                                                                                                                            \
         if(!_res2) {                                                                                                                                                                    \
@@ -3486,6 +3862,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_enable_shared_cache(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                               \
         break;                                                                                                                                                                        \
+    case 0x2FACADE:                                                                                                                                                                   \
+        assert(_res2 == 0);                                                                                                                                                           \
+        PyGILState_Release(gilstate);                                                                                                                                                 \
+        _res = sqlite3_enable_shared_cache(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                               \
+        _res = (typeof (_res))18;                                                                                                                                                     \
+        break;                                                                                                                                                                        \
     default:                                                                                                                                                                          \
         if(!_res2) {                                                                                                                                                                  \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_enable_shared_cache", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -3532,6 +3915,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                  \
         _res = sqlite3_exec(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                \
+        break;                                                                                                                                                         \
+    case 0x2FACADE:                                                                                                                                                    \
+        assert(_res2 == 0);                                                                                                                                            \
+        PyGILState_Release(gilstate);                                                                                                                                  \
+        _res = sqlite3_exec(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                \
+        _res = (typeof (_res))18;                                                                                                                                      \
         break;                                                                                                                                                         \
     default:                                                                                                                                                           \
         if(!_res2) {                                                                                                                                                   \
@@ -3580,6 +3970,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_expanded_sql(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                        \
         break;                                                                                                                                                                 \
+    case 0x2FACADE:                                                                                                                                                            \
+        assert(_res2 == 0);                                                                                                                                                    \
+        PyGILState_Release(gilstate);                                                                                                                                          \
+        _res = sqlite3_expanded_sql(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                        \
+        _res = (typeof (_res))18;                                                                                                                                              \
+        break;                                                                                                                                                                 \
     default:                                                                                                                                                                   \
         if(!_res2) {                                                                                                                                                           \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_expanded_sql", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -3626,6 +4023,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                        \
         _res = sqlite3_initialize(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                      \
+        break;                                                                                                                                                               \
+    case 0x2FACADE:                                                                                                                                                          \
+        assert(_res2 == 0);                                                                                                                                                  \
+        PyGILState_Release(gilstate);                                                                                                                                        \
+        _res = sqlite3_initialize(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                      \
+        _res = (typeof (_res))18;                                                                                                                                            \
         break;                                                                                                                                                               \
     default:                                                                                                                                                                 \
         if(!_res2) {                                                                                                                                                         \
@@ -3674,6 +4078,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_load_extension(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                          \
         break;                                                                                                                                                                   \
+    case 0x2FACADE:                                                                                                                                                              \
+        assert(_res2 == 0);                                                                                                                                                      \
+        PyGILState_Release(gilstate);                                                                                                                                            \
+        _res = sqlite3_load_extension(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                          \
+        _res = (typeof (_res))18;                                                                                                                                                \
+        break;                                                                                                                                                                   \
     default:                                                                                                                                                                     \
         if(!_res2) {                                                                                                                                                             \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_load_extension", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -3720,6 +4131,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                    \
         _res = sqlite3_malloc(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                  \
+        break;                                                                                                                                                           \
+    case 0x2FACADE:                                                                                                                                                      \
+        assert(_res2 == 0);                                                                                                                                              \
+        PyGILState_Release(gilstate);                                                                                                                                    \
+        _res = sqlite3_malloc(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                  \
+        _res = (typeof (_res))18;                                                                                                                                        \
         break;                                                                                                                                                           \
     default:                                                                                                                                                             \
         if(!_res2) {                                                                                                                                                     \
@@ -3768,6 +4186,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_malloc64(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                    \
         break;                                                                                                                                                             \
+    case 0x2FACADE:                                                                                                                                                        \
+        assert(_res2 == 0);                                                                                                                                                \
+        PyGILState_Release(gilstate);                                                                                                                                      \
+        _res = sqlite3_malloc64(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                    \
+        _res = (typeof (_res))18;                                                                                                                                          \
+        break;                                                                                                                                                             \
     default:                                                                                                                                                               \
         if(!_res2) {                                                                                                                                                       \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_malloc64", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -3814,6 +4239,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                     \
         _res = sqlite3_mprintf(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                   \
+        break;                                                                                                                                                            \
+    case 0x2FACADE:                                                                                                                                                       \
+        assert(_res2 == 0);                                                                                                                                               \
+        PyGILState_Release(gilstate);                                                                                                                                     \
+        _res = sqlite3_mprintf(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                   \
+        _res = (typeof (_res))18;                                                                                                                                         \
         break;                                                                                                                                                            \
     default:                                                                                                                                                              \
         if(!_res2) {                                                                                                                                                      \
@@ -3862,6 +4294,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_normalized_sql(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                          \
         break;                                                                                                                                                                   \
+    case 0x2FACADE:                                                                                                                                                              \
+        assert(_res2 == 0);                                                                                                                                                      \
+        PyGILState_Release(gilstate);                                                                                                                                            \
+        _res = sqlite3_normalized_sql(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                          \
+        _res = (typeof (_res))18;                                                                                                                                                \
+        break;                                                                                                                                                                   \
     default:                                                                                                                                                                     \
         if(!_res2) {                                                                                                                                                             \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_normalized_sql", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -3908,6 +4347,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                  \
         _res = sqlite3_open(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                \
+        break;                                                                                                                                                         \
+    case 0x2FACADE:                                                                                                                                                    \
+        assert(_res2 == 0);                                                                                                                                            \
+        PyGILState_Release(gilstate);                                                                                                                                  \
+        _res = sqlite3_open(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                \
+        _res = (typeof (_res))18;                                                                                                                                      \
         break;                                                                                                                                                         \
     default:                                                                                                                                                           \
         if(!_res2) {                                                                                                                                                   \
@@ -3956,6 +4402,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_open_v2(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                   \
         break;                                                                                                                                                            \
+    case 0x2FACADE:                                                                                                                                                       \
+        assert(_res2 == 0);                                                                                                                                               \
+        PyGILState_Release(gilstate);                                                                                                                                     \
+        _res = sqlite3_open_v2(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                   \
+        _res = (typeof (_res))18;                                                                                                                                         \
+        break;                                                                                                                                                            \
     default:                                                                                                                                                              \
         if(!_res2) {                                                                                                                                                      \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_open_v2", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -4002,6 +4455,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                               \
         _res = sqlite3_overload_function(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                             \
+        break;                                                                                                                                                                      \
+    case 0x2FACADE:                                                                                                                                                                 \
+        assert(_res2 == 0);                                                                                                                                                         \
+        PyGILState_Release(gilstate);                                                                                                                                               \
+        _res = sqlite3_overload_function(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                             \
+        _res = (typeof (_res))18;                                                                                                                                                   \
         break;                                                                                                                                                                      \
     default:                                                                                                                                                                        \
         if(!_res2) {                                                                                                                                                                \
@@ -4050,6 +4510,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_prepare(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                   \
         break;                                                                                                                                                            \
+    case 0x2FACADE:                                                                                                                                                       \
+        assert(_res2 == 0);                                                                                                                                               \
+        PyGILState_Release(gilstate);                                                                                                                                     \
+        _res = sqlite3_prepare(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                   \
+        _res = (typeof (_res))18;                                                                                                                                         \
+        break;                                                                                                                                                            \
     default:                                                                                                                                                              \
         if(!_res2) {                                                                                                                                                      \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_prepare", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -4096,6 +4563,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                        \
         _res = sqlite3_prepare_v2(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                      \
+        break;                                                                                                                                                               \
+    case 0x2FACADE:                                                                                                                                                          \
+        assert(_res2 == 0);                                                                                                                                                  \
+        PyGILState_Release(gilstate);                                                                                                                                        \
+        _res = sqlite3_prepare_v2(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                      \
+        _res = (typeof (_res))18;                                                                                                                                            \
         break;                                                                                                                                                               \
     default:                                                                                                                                                                 \
         if(!_res2) {                                                                                                                                                         \
@@ -4144,6 +4618,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_prepare_v3(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                      \
         break;                                                                                                                                                               \
+    case 0x2FACADE:                                                                                                                                                          \
+        assert(_res2 == 0);                                                                                                                                                  \
+        PyGILState_Release(gilstate);                                                                                                                                        \
+        _res = sqlite3_prepare_v3(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                      \
+        _res = (typeof (_res))18;                                                                                                                                            \
+        break;                                                                                                                                                               \
     default:                                                                                                                                                                 \
         if(!_res2) {                                                                                                                                                         \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_prepare_v3", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -4190,6 +4671,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                     \
         _res = sqlite3_realloc(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                   \
+        break;                                                                                                                                                            \
+    case 0x2FACADE:                                                                                                                                                       \
+        assert(_res2 == 0);                                                                                                                                               \
+        PyGILState_Release(gilstate);                                                                                                                                     \
+        _res = sqlite3_realloc(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                   \
+        _res = (typeof (_res))18;                                                                                                                                         \
         break;                                                                                                                                                            \
     default:                                                                                                                                                              \
         if(!_res2) {                                                                                                                                                      \
@@ -4238,6 +4726,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_realloc64(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                     \
         break;                                                                                                                                                              \
+    case 0x2FACADE:                                                                                                                                                         \
+        assert(_res2 == 0);                                                                                                                                                 \
+        PyGILState_Release(gilstate);                                                                                                                                       \
+        _res = sqlite3_realloc64(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                     \
+        _res = (typeof (_res))18;                                                                                                                                           \
+        break;                                                                                                                                                              \
     default:                                                                                                                                                                \
         if(!_res2) {                                                                                                                                                        \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_realloc64", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -4284,6 +4779,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                               \
         _res = sqlite3_result_zeroblob64(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                             \
+        break;                                                                                                                                                                      \
+    case 0x2FACADE:                                                                                                                                                                 \
+        assert(_res2 == 0);                                                                                                                                                         \
+        PyGILState_Release(gilstate);                                                                                                                                               \
+        _res = sqlite3_result_zeroblob64(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                             \
+        _res = (typeof (_res))18;                                                                                                                                                   \
         break;                                                                                                                                                                      \
     default:                                                                                                                                                                        \
         if(!_res2) {                                                                                                                                                                \
@@ -4332,6 +4834,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_set_authorizer(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                          \
         break;                                                                                                                                                                   \
+    case 0x2FACADE:                                                                                                                                                              \
+        assert(_res2 == 0);                                                                                                                                                      \
+        PyGILState_Release(gilstate);                                                                                                                                            \
+        _res = sqlite3_set_authorizer(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                          \
+        _res = (typeof (_res))18;                                                                                                                                                \
+        break;                                                                                                                                                                   \
     default:                                                                                                                                                                     \
         if(!_res2) {                                                                                                                                                             \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_set_authorizer", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -4378,6 +4887,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                      \
         _res = sqlite3_shutdown(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                    \
+        break;                                                                                                                                                             \
+    case 0x2FACADE:                                                                                                                                                        \
+        assert(_res2 == 0);                                                                                                                                                \
+        PyGILState_Release(gilstate);                                                                                                                                      \
+        _res = sqlite3_shutdown(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                    \
+        _res = (typeof (_res))18;                                                                                                                                          \
         break;                                                                                                                                                             \
     default:                                                                                                                                                               \
         if(!_res2) {                                                                                                                                                       \
@@ -4426,6 +4942,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_status64(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                    \
         break;                                                                                                                                                             \
+    case 0x2FACADE:                                                                                                                                                        \
+        assert(_res2 == 0);                                                                                                                                                \
+        PyGILState_Release(gilstate);                                                                                                                                      \
+        _res = sqlite3_status64(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                    \
+        _res = (typeof (_res))18;                                                                                                                                          \
+        break;                                                                                                                                                             \
     default:                                                                                                                                                               \
         if(!_res2) {                                                                                                                                                       \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_status64", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -4472,6 +4995,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                                   \
         _res = sqlite3_table_column_metadata(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                                 \
+        break;                                                                                                                                                                          \
+    case 0x2FACADE:                                                                                                                                                                     \
+        assert(_res2 == 0);                                                                                                                                                             \
+        PyGILState_Release(gilstate);                                                                                                                                                   \
+        _res = sqlite3_table_column_metadata(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                                 \
+        _res = (typeof (_res))18;                                                                                                                                                       \
         break;                                                                                                                                                                          \
     default:                                                                                                                                                                            \
         if(!_res2) {                                                                                                                                                                    \
@@ -4520,6 +5050,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_threadsafe(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                      \
         break;                                                                                                                                                               \
+    case 0x2FACADE:                                                                                                                                                          \
+        assert(_res2 == 0);                                                                                                                                                  \
+        PyGILState_Release(gilstate);                                                                                                                                        \
+        _res = sqlite3_threadsafe(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                      \
+        _res = (typeof (_res))18;                                                                                                                                            \
+        break;                                                                                                                                                               \
     default:                                                                                                                                                                 \
         if(!_res2) {                                                                                                                                                         \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_threadsafe", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -4566,6 +5103,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                      \
         _res = sqlite3_trace_v2(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                    \
+        break;                                                                                                                                                             \
+    case 0x2FACADE:                                                                                                                                                        \
+        assert(_res2 == 0);                                                                                                                                                \
+        PyGILState_Release(gilstate);                                                                                                                                      \
+        _res = sqlite3_trace_v2(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                    \
+        _res = (typeof (_res))18;                                                                                                                                          \
         break;                                                                                                                                                             \
     default:                                                                                                                                                               \
         if(!_res2) {                                                                                                                                                       \
@@ -4614,6 +5158,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         _res = sqlite3_vfs_register(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                        \
         break;                                                                                                                                                                 \
+    case 0x2FACADE:                                                                                                                                                            \
+        assert(_res2 == 0);                                                                                                                                                    \
+        PyGILState_Release(gilstate);                                                                                                                                          \
+        _res = sqlite3_vfs_register(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                        \
+        _res = (typeof (_res))18;                                                                                                                                              \
+        break;                                                                                                                                                                 \
     default:                                                                                                                                                                   \
         if(!_res2) {                                                                                                                                                           \
             fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_vfs_register", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
@@ -4648,6 +5199,60 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
     PyGILState_Release(gilstate);                                                                                                                                              \
     _res;                                                                                                                                                                      \
 })
+#define sqlite3_vfs_unregister(...) \
+({                                                                                                                                                                               \
+    PyObject *_res2 = 0;                                                                                                                                                         \
+    __auto_type _res = 0 ? sqlite3_vfs_unregister(__VA_ARGS__) : 0;                                                                                                              \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                                                                             \
+    switch (APSW_FaultInjectControl("sqlite3_vfs_unregister", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))                                                               \
+    {                                                                                                                                                                            \
+    case 0x1FACADE:                                                                                                                                                              \
+        assert(_res2 == 0);                                                                                                                                                      \
+        PyGILState_Release(gilstate);                                                                                                                                            \
+        _res = sqlite3_vfs_unregister(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                          \
+        break;                                                                                                                                                                   \
+    case 0x2FACADE:                                                                                                                                                              \
+        assert(_res2 == 0);                                                                                                                                                      \
+        PyGILState_Release(gilstate);                                                                                                                                            \
+        _res = sqlite3_vfs_unregister(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                          \
+        _res = (typeof (_res))18;                                                                                                                                                \
+        break;                                                                                                                                                                   \
+    default:                                                                                                                                                                     \
+        if(!_res2) {                                                                                                                                                             \
+            fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_vfs_unregister", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+            PyObject *_p1, *_p2, *_p3;                                                                                                                                           \
+            PyErr_Fetch(&_p1, &_p2, &_p3);                                                                                                                                       \
+            fprintf(stderr, "Exception type: ");                                                                                                                                 \
+            PyObject_Print(_p1, stderr, 0);                                                                                                                                      \
+            fprintf(stderr, "\nException value: ");                                                                                                                              \
+            PyObject_Print(_p2, stderr, 0);                                                                                                                                      \
+            fprintf(stderr, "\nException tb: ");                                                                                                                                 \
+            PyObject_Print(_p3, stderr, 0);                                                                                                                                      \
+            fprintf(stderr, "\nPyErr_Display:\n");                                                                                                                               \
+            PyErr_Display(_p1, _p2, _p3);                                                                                                                                        \
+            fprintf(stderr, "\nEnd of exception information\n");                                                                                                                 \
+        };                                                                                                                                                                       \
+        assert(_res2);                                                                                                                                                           \
+        if(PyTuple_Check(_res2))                                                                                                                                                 \
+        {                                                                                                                                                                        \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                                                                                \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                                                                                  \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                                                                                 \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));                                                                     \
+        }                                                                                                                                                                        \
+        else                                                                                                                                                                     \
+        {                                                                                                                                                                        \
+            assert(PyLong_Check(_res2));                                                                                                                                         \
+            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                                                                                       \
+        }                                                                                                                                                                        \
+        break;                                                                                                                                                                   \
+    }                                                                                                                                                                            \
+    Py_XDECREF(_res2);                                                                                                                                                           \
+    PyGILState_Release(gilstate);                                                                                                                                                \
+    _res;                                                                                                                                                                        \
+})
 #define sqlite3_wal_autocheckpoint(...) \
 ({                                                                                                                                                                                   \
     PyObject *_res2 = 0;                                                                                                                                                             \
@@ -4660,6 +5265,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                                \
         _res = sqlite3_wal_autocheckpoint(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                              \
+        break;                                                                                                                                                                       \
+    case 0x2FACADE:                                                                                                                                                                  \
+        assert(_res2 == 0);                                                                                                                                                          \
+        PyGILState_Release(gilstate);                                                                                                                                                \
+        _res = sqlite3_wal_autocheckpoint(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                              \
+        _res = (typeof (_res))18;                                                                                                                                                    \
         break;                                                                                                                                                                       \
     default:                                                                                                                                                                         \
         if(!_res2) {                                                                                                                                                                 \
@@ -4707,6 +5319,13 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         PyGILState_Release(gilstate);                                                                                                                                               \
         _res = sqlite3_wal_checkpoint_v2(__VA_ARGS__);                                                                                                                              \
         gilstate = PyGILState_Ensure();                                                                                                                                             \
+        break;                                                                                                                                                                      \
+    case 0x2FACADE:                                                                                                                                                                 \
+        assert(_res2 == 0);                                                                                                                                                         \
+        PyGILState_Release(gilstate);                                                                                                                                               \
+        _res = sqlite3_wal_checkpoint_v2(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                             \
+        _res = (typeof (_res))18;                                                                                                                                                   \
         break;                                                                                                                                                                      \
     default:                                                                                                                                                                        \
         if(!_res2) {                                                                                                                                                                \
