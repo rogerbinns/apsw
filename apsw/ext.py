@@ -1021,9 +1021,9 @@ def make_virtual_module(db: apsw.Connection,
                 # proactively advance so we can tell if eof
                 self.Next()
 
-                self.param_values: List[SQLiteValue] = self.module.defaults[:]
+                self.hidden_values: List[SQLiteValue] = self.module.defaults[:]
                 for k, v in params.items():
-                    self.param_values[self.module.parameters.index(k)] = v
+                    self.hidden_values[self.module.parameters.index(k)] = v
 
             def Eof(self) -> bool:
                 return self.iterating is None
@@ -1036,7 +1036,7 @@ def make_virtual_module(db: apsw.Connection,
 
             def Column(self, which: int) -> apsw.SQLiteValue:
                 if which >= self.num_columns:
-                    return self.param_values[which - self.num_columns]
+                    return self.hidden_values[which - self.num_columns]
                 if self.access == VTColumnAccess.By_Index:
                     v = self.current_row[which]
                 elif self.access == VTColumnAccess.By_Name:
