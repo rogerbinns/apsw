@@ -1486,6 +1486,9 @@ class APSW(unittest.TestCase):
             self.assertRaises(TypeError, self.db.vtab_config, apsw.SQLITE_VTAB_CONSTRAINT_SUPPORT,
                               apsw.SQLITE_VTAB_CONSTRAINT_SUPPORT, apsw.SQLITE_VTAB_CONSTRAINT_SUPPORT)
             self.assertRaises(ValueError, self.db.vtab_config, 97657)
+            self.db.vtab_config(apsw.SQLITE_VTAB_CONSTRAINT_SUPPORT, 0)
+            self.db.vtab_config(apsw.SQLITE_VTAB_INNOCUOUS)
+            self.db.vtab_config(apsw.SQLITE_VTAB_DIRECTONLY, 0)
 
         Source.create_callback = check
         self.db.execute("create virtual table vtab_config using foo()")
