@@ -9870,6 +9870,13 @@ shell.write(shell.stdout, "hello world\\n")
         self.assertRaises(ValueError, self.db.execute, "select * from g2 where stop=10 and step=1")
         self.assertRaises(TypeError, self.db.execute, "select * from g2(0.1, 1, 1)")
 
+        # https://github.com/rogerbinns/apsw/issues/412
+        apsw.ext.make_virtual_module(self.db, "genseries", apsw.ext.generate_series)
+        apsw.ext.make_virtual_module(self.db, "genseries2", apsw.ext.generate_series)
+        self.db.execute("""select *,genseries.start,genseries2.stop,genseries.step from genseries(1,10)
+            inner join genseries2(10,1) on genseries.value=genseries2.value
+            group by genseries2.value""")
+
         def stuff_dict():
             for i in range(10):
                 yield {
