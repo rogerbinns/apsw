@@ -182,7 +182,7 @@ returns = {
     "pyobject": """
             convert_value_to_pyobject getfunctionargs allocfunccbinfo
             Call_PythonMethodV apsw_strdup convertutf8string
-            Call_PythonMethod
+            Call_PythonMethod MakeExistingException
 
             PyModule_Create2 PyErr_NewExceptionWithDoc PySet_New
             PyUnicode_New  PyUnicode_AsUTF8 PyObject_GetAttrString _PyObject_New PyUnicode_FromString
@@ -190,7 +190,7 @@ returns = {
             PyWeakref_NewRef PyMem_Calloc PyLong_FromLong PyObject_GetIter
             PyObject_CallObject PyLong_AsInt PyUnicode_FromStringAndSize
             PySequence_GetItem PyLong_FromLongLong PySequence_GetSlice PyBytes_FromStringAndSize
-            PyFloat_FromDouble MakeExistingException PyBool_FromLong PyCode_NewEmpty PyFloat_AsDouble
+            PyFloat_FromDouble  PyBool_FromLong PyCode_NewEmpty PyFloat_AsDouble
             PyIter_Next PyList_SetItem PyLong_FromVoidPtr PyMapping_GetItemString PyNumber_Float
             PyNumber_Long PySequence_Fast PySequence_List PySequence_SetItem PyObject_CallFunction
             PyObject_CallMethod PyFrame_New
@@ -226,7 +226,7 @@ returns = {
             sqlite3_set_authorizer sqlite3_shutdown sqlite3_status64
             sqlite3_table_column_metadata sqlite3_threadsafe
             sqlite3_trace_v2 sqlite3_vfs_register
-            sqlite3_vfs_unregister
+            sqlite3_vfs_unregister sqlite3_vtab_config
             sqlite3_wal_autocheckpoint sqlite3_wal_checkpoint_v2
             """.split(),
     # py functions that return a number to indicate failure

@@ -21,6 +21,7 @@ def exercise(example_code, expect_exception):
         for f in glob.glob("/tmp/dbfile-delme*") + glob.glob("/tmp/myobfudb*"):
             os.remove(f)
 
+
     file_cleanup()
 
     # The module is not imported outside because the init function has
@@ -53,8 +54,8 @@ def exercise(example_code, expect_exception):
         if callable(obj):
             obj()
 
-    apsw.softheaplimit(100_000_000)
-    apsw.hard_heap_limit(100_000_000)
+    apsw.softheaplimit(1_000_000_000)
+    apsw.hard_heap_limit(1_000_000_000)
     apsw.randomness(32)
     apsw.enablesharedcache(False)
     apsw.releasememory(1024)
@@ -77,8 +78,14 @@ def exercise(example_code, expect_exception):
 
     con.execute(
         "pragma page_size=512; pragma auto_vacuum=FULL; pragma journal_mode=wal; create table foo(x)").fetchall()
+
+    def trace(*args):
+        return True
+
+    con.exectrace = trace
     with con:
         con.executemany("insert into foo values(zeroblob(1023))", [tuple() for _ in range(500)])
+    con.exectrace = None
 
     apsw.zeroblob(77).length()
 
@@ -118,6 +125,7 @@ def exercise(example_code, expect_exception):
     class Source:
 
         def Connect(self, *args):
+            con.vtab_config(apsw.SQLITE_VTAB_CONSTRAINT_SUPPORT, 1)
             return "create table ignored(c0, c1, c2, c3)", Source.Table()
 
         class Table:
@@ -314,11 +322,11 @@ def exercise(example_code, expect_exception):
 
     import apsw.tests
     apsw.tests.testtimeout = False
-    apsw.tests.vfstestdb("/tmp/dbfile-delme", "apswfivfs", mode="wal")
+    apsw.tests.vfstestdb("/tmp/dbfile-delme-vfswal", "apswfivfs", mode="wal")
 
     file_cleanup()
     apsw.tests.testtimeout = True
-    apsw.tests.vfstestdb("/tmp/dbfile-delme", "apswfivfs")
+    apsw.tests.vfstestdb("/tmp/dbfile-delme-vfsstd", "apswfivfs")
 
     if expect_exception:
         return
@@ -367,8 +375,8 @@ class Tester:
             # we do various transformations but must keep the line numbers the same
             code = code.replace("import os", "import os,contextlib")
             # make it use tmpfs
-            code = code.replace('"dbfile"', '"/tmp/dbfile-delme"')
-            code = code.replace("myobfudb", "/tmp/myobfudb")
+            code = code.replace('"dbfile"', '"/tmp/dbfile-delme-example"')
+            code = code.replace("myobfudb", "/tmp/myobfudb-example")
             # logging will fail
             code = code.replace("apsw.ext.log_sqlite()",
                                 "with contextlib.suppress(apsw.MisuseError): apsw.ext.log_sqlite(level=0)")
@@ -395,7 +403,7 @@ class Tester:
 
             # we need these to succeed at the SQLite level but still return
             # an error.  Otherwise there will be memory leaks.
-            if fname in {"sqlite3_close", "sqlite3_vfs_unregister"}:
+            if fname in {"sqlite3_close", "sqlite3_vfs_unregister", "sqlite3_backup_finish", }:
                 self.expect_exception.append(apsw_attr("ConnectionNotClosedError"))
                 self.expect_exception.append(apsw_attr("TooBigError"))  # code 18
                 return self.ProceedReturn18

@@ -152,6 +152,7 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
 #undef sqlite3_trace_v2
 #undef sqlite3_vfs_register
 #undef sqlite3_vfs_unregister
+#undef sqlite3_vtab_config
 #undef sqlite3_wal_autocheckpoint
 #undef sqlite3_wal_checkpoint_v2
 
@@ -5271,6 +5272,60 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
     Py_XDECREF(_res2);                                                                                                                                                           \
     PyGILState_Release(gilstate);                                                                                                                                                \
     _res;                                                                                                                                                                        \
+})
+#define sqlite3_vtab_config(...) \
+({                                                                                                                                                                            \
+    PyObject *_res2 = 0;                                                                                                                                                      \
+    __auto_type _res = 0 ? sqlite3_vtab_config(__VA_ARGS__) : 0;                                                                                                              \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                                                                          \
+    switch (APSW_FaultInjectControl("sqlite3_vtab_config", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))                                                               \
+    {                                                                                                                                                                         \
+    case 0x1FACADE:                                                                                                                                                           \
+        assert(_res2 == 0);                                                                                                                                                   \
+        PyGILState_Release(gilstate);                                                                                                                                         \
+        _res = sqlite3_vtab_config(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                       \
+        break;                                                                                                                                                                \
+    case 0x2FACADE:                                                                                                                                                           \
+        assert(_res2 == 0);                                                                                                                                                   \
+        PyGILState_Release(gilstate);                                                                                                                                         \
+        _res = sqlite3_vtab_config(__VA_ARGS__);                                                                                                                              \
+        gilstate = PyGILState_Ensure();                                                                                                                                       \
+        _res = (typeof (_res))18;                                                                                                                                             \
+        break;                                                                                                                                                                \
+    default:                                                                                                                                                                  \
+        if(!_res2) {                                                                                                                                                          \
+            fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_vtab_config", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+            PyObject *_p1, *_p2, *_p3;                                                                                                                                        \
+            PyErr_Fetch(&_p1, &_p2, &_p3);                                                                                                                                    \
+            fprintf(stderr, "Exception type: ");                                                                                                                              \
+            PyObject_Print(_p1, stderr, 0);                                                                                                                                   \
+            fprintf(stderr, "\nException value: ");                                                                                                                           \
+            PyObject_Print(_p2, stderr, 0);                                                                                                                                   \
+            fprintf(stderr, "\nException tb: ");                                                                                                                              \
+            PyObject_Print(_p3, stderr, 0);                                                                                                                                   \
+            fprintf(stderr, "\nPyErr_Display:\n");                                                                                                                            \
+            PyErr_Display(_p1, _p2, _p3);                                                                                                                                     \
+            fprintf(stderr, "\nEnd of exception information\n");                                                                                                              \
+        };                                                                                                                                                                    \
+        assert(_res2);                                                                                                                                                        \
+        if(PyTuple_Check(_res2))                                                                                                                                              \
+        {                                                                                                                                                                     \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                                                                             \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                                                                               \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                                                                              \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));                                                                  \
+        }                                                                                                                                                                     \
+        else                                                                                                                                                                  \
+        {                                                                                                                                                                     \
+            assert(PyLong_Check(_res2));                                                                                                                                      \
+            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);                                                                                                                    \
+        }                                                                                                                                                                     \
+        break;                                                                                                                                                                \
+    }                                                                                                                                                                         \
+    Py_XDECREF(_res2);                                                                                                                                                        \
+    PyGILState_Release(gilstate);                                                                                                                                             \
+    _res;                                                                                                                                                                     \
 })
 #define sqlite3_wal_autocheckpoint(...) \
 ({                                                                                                                                                                                   \
