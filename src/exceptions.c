@@ -54,10 +54,10 @@ apsw_set_errmsg(const char *msg)
   assert(tls_errmsg);
 
   key = PyLong_FromLong(PyThread_get_thread_ident());
-  if(key)
+  if (key)
     value = PyBytes_FromStringAndSize(msg, strlen(msg));
 
-  if(key && value && 0==PyDict_SetItem(tls_errmsg, key, value))
+  if (key && value && 0 == PyDict_SetItem(tls_errmsg, key, value))
     ;
   else
     apsw_write_unraisable(NULL);
@@ -300,6 +300,9 @@ MakeSqliteMsgFromPyException(char **errmsg)
         Py_XDECREF(extended);
         PyErr_Clear();
       }
+      /* this can happen with inopportune failures in the above */
+      if (res < 1)
+        res = SQLITE_ERROR;
       break;
     }
 
@@ -329,5 +332,7 @@ MakeSqliteMsgFromPyException(char **errmsg)
 
   PyErr_Restore(etype, evalue, etraceback);
   assert(PyErr_Occurred());
+  assert(res != -1);
+  assert(res > 0);
   return res;
 }
