@@ -68,6 +68,10 @@ $(GENDOCS): doc/%.rst: src/%.c tools/code2rst.py
 apsw/__init__.pyi src/apsw.docstrings: $(GENDOCS) tools/gendocstrings.py src/apswtypes.py
 	env PYTHONPATH=. $(PYTHON) tools/gendocstrings.py doc/docdb.json src/apsw.docstrings
 
+src/constants.c: Makefile tools/genconstants.py src/apswversion.h
+	-rm -f src/constants.c
+	env PYTHONPATH=. $(PYTHON) tools/genconstants.py > src/constants.c
+
 build_ext: src/apswversion.h  ## Fetches SQLite and builds the extension
 	env $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext -DSQLITE_ENABLE_COLUMN_METADATA --inplace --force --enable-all-extensions
 

@@ -72,7 +72,7 @@ def do_mappings():
                 if val in const["vars"]:
                     foundin.add(desc)
 
-        assert len(foundin) == 1
+        assert len(foundin) == 1, f"Expected 1 item { foundin } for { m } of { map }"
         desc = list(foundin)[0]
         seenmappings.add(desc)
 
@@ -238,22 +238,27 @@ incomment = False
 curclass = None
 
 if infilename == "src/apsw.c":
-    mappingre = re.compile(r'\s*(ADDINT\s*\(\s*([^)]+)\).*|DICT\s*\(\s*"([^"]+)"\s*\)>*)')
+    # this stuff used to be in apsw.c but moved to constants.c
+    # which is generated from toc.db so they can't really get
+    # out of sync, but remain paranoid
     mappings = {}
+    mappingre = re.compile(r""".*, "(mapping_\w+)",.*""")
+    constre = re.compile(r"""\s+"(\w+)",\s*\1,.*""")
+    constitems = []
+    for line in open("src/constants.c", "rt"):
+        m = constre.match(line)
+        if m:
+            constitems.append(m.group(1))
+        m = mappingre.match(line)
+        if m:
+            mappings[m.group(1)] = constitems
+            constitems = []
+    assert not constitems
 else:
     mappings = None
 
 for line in open(infilename, "rt"):
     line = line.rstrip()
-    if mappings is not None:
-        m = mappingre.match(line)
-        if m:
-            g = m.groups()
-            if g[2]:
-                curmapping = g[2]
-                mappings[curmapping] = []
-            else:
-                mappings[curmapping].append(g[1])
 
     if not incomment and line.lstrip().startswith("/**"):
         # a comment intended for us
