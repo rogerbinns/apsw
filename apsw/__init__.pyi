@@ -3605,6 +3605,8 @@ SQLITE_NOTFOUND: int = 12
 """For `Result Codes <https://sqlite.org/rescode.html>'__"""
 SQLITE_NOTICE: int = 27
 """For `Result Codes <https://sqlite.org/rescode.html>'__"""
+SQLITE_NOTICE_RBU: int = 795
+"""For `Extended Result Codes <https://sqlite.org/rescode.html>'__"""
 SQLITE_NOTICE_RECOVER_ROLLBACK: int = 539
 """For `Extended Result Codes <https://sqlite.org/rescode.html>'__"""
 SQLITE_NOTICE_RECOVER_WAL: int = 283
