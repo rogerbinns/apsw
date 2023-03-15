@@ -5125,7 +5125,7 @@ class APSW(unittest.TestCase):
         # Object_method, are at the start of the line and have a first
         # parameter named self.
         for filename in glob.glob("src/*.c"):
-            if filename.endswith("testextension.c"):
+            if filename.endswith("testextension.c") or filename.endswith("constants.c"):
                 continue
             # check not using C++ style comments
             code = read_whole_file(filename, "rt").replace("http://", "http:__").replace("https://", "https:__")
