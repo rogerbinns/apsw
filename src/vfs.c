@@ -75,12 +75,11 @@ exceptions from normal code to open Connections or execute SQL
 queries, VFS exceptions are not raised in the normal way. (If they
 were, only one could be raised and it would obscure whatever
 exceptions the :class:`Connection` open or SQL query execute wanted to
-raise.)  Instead the :meth:`VFS.excepthook` or
-:meth:`VFSFile.excepthook` method is called with a tuple of exception
+raise.)  Instead the :func:`VFS.excepthook` or
+:func:`VFSFile.excepthook` method is called with a tuple of exception
 type, exception value and exception traceback. The default
-implementation of ``excepthook`` calls ``sys.excepthook()`` under
-Python 3 merely prints the exception value. (If ``sys.excepthook`` fails then
-``PyErr_Display()`` is called.)
+implementation of ``excepthook`` calls :func:`sys.unraisablehook`,
+or if that fails :func:`sys.excepthook`.
 
 In normal VFS usage there will be no exceptions raised, or specific
 expected ones which APSW clears after noting them and returning the
@@ -263,7 +262,7 @@ typedef struct
     Called when there has been an exception in a :class:`VFS` routine.
     The default implementation passes the exception information
     to sqlite3_log, and the first non-error of
-    :meth:`sys.unraisablehook and :meth:`sys.excepthook`, falling back to
+    :func:`sys.unraisablehook` and :func:`sys.excepthook`, falling back to
     `PyErr_Display`.
 */
 static PyObject *
