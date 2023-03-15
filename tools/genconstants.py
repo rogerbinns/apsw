@@ -51,7 +51,7 @@ title_to_mapping = {
     "Win32 Directory Types": None,
 }
 
-extras = {"Authorizer Return Codes": ["SQLITE_OK"]}
+extras = {"Authorizer Return Codes": ["SQLITE_OK"], "Conflict resolution modes": ["SQLITE_IGNORE", "SQLITE_ABORT"]}
 remove = {"SQL Trace Event Codes": ["SQLITE_TRACE"]}
 
 base_sqlite_url = "https://sqlite.org/"

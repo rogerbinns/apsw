@@ -161,7 +161,9 @@ add_apsw_constants(PyObject *module)
 
     /* Conflict resolution modes */
     the_dict = Py_BuildValue(
-        "{siissiissiis}",
+        "{siissiissiissiissiis}",
+        "SQLITE_IGNORE", SQLITE_IGNORE, SQLITE_IGNORE, "SQLITE_IGNORE",
+        "SQLITE_ABORT", SQLITE_ABORT, SQLITE_ABORT, "SQLITE_ABORT",
         "SQLITE_FAIL", SQLITE_FAIL, SQLITE_FAIL, "SQLITE_FAIL",
         "SQLITE_REPLACE", SQLITE_REPLACE, SQLITE_REPLACE, "SQLITE_REPLACE",
         "SQLITE_ROLLBACK", SQLITE_ROLLBACK, SQLITE_ROLLBACK, "SQLITE_ROLLBACK");
