@@ -1660,30 +1660,26 @@ PyInit_apsw(void)
   if (init_exceptions(m))
     goto fail;
 
-  Py_INCREF(&ConnectionType);
-  PyModule_AddObject(m, "Connection", (PyObject *)&ConnectionType);
+/* we can't avoid leaks with failures until multi-phase initialisation is done */
+#define ADD(name, item)                                  \
+  do                                                     \
+  {                                                      \
+    if (PyModule_AddObject(m, #name, (PyObject *)&item)) \
+      goto fail;                                         \
+    Py_INCREF(&item);                                    \
+  } while (0)
 
-  Py_INCREF(&APSWCursorType);
-  PyModule_AddObject(m, "Cursor", (PyObject *)&APSWCursorType);
+  ADD(Connection, ConnectionType);
+  ADD(Cursor, APSWCursorType);
+  ADD(Blob, APSWBlobType);
+  ADD(Backup, APSWBackupType);
+  ADD(zeroblob, ZeroBlobBindType);
+  ADD(VFS, APSWVFSType);
+  ADD(VFSFile, APSWVFSFileType);
+  ADD(URIFilename, APSWURIFilenameType);
+  ADD(IndexInfo, SqliteIndexInfoType);
 
-  Py_INCREF(&APSWBlobType);
-  PyModule_AddObject(m, "Blob", (PyObject *)&APSWBlobType);
-
-  Py_INCREF(&APSWBackupType);
-  PyModule_AddObject(m, "Backup", (PyObject *)&APSWBackupType);
-
-  Py_INCREF(&ZeroBlobBindType);
-  PyModule_AddObject(m, "zeroblob", (PyObject *)&ZeroBlobBindType);
-
-  Py_INCREF(&APSWVFSType);
-  PyModule_AddObject(m, "VFS", (PyObject *)&APSWVFSType);
-  Py_INCREF(&APSWVFSFileType);
-  PyModule_AddObject(m, "VFSFile", (PyObject *)&APSWVFSFileType);
-  Py_INCREF(&APSWURIFilenameType);
-  PyModule_AddObject(m, "URIFilename", (PyObject *)&APSWURIFilenameType);
-
-  Py_INCREF(&SqliteIndexInfoType);
-  PyModule_AddObject(m, "IndexInfo", (PyObject *)&SqliteIndexInfoType);
+#undef ADD
 
   /** .. attribute:: connection_hooks
        :type: List[Callable[[Connection], None]]
@@ -1777,7 +1773,7 @@ modules etc. For example::
 
     */
 
-  if(add_apsw_constants(m))
+  if (add_apsw_constants(m))
     goto fail;
 
   PyModule_AddObject(m, "compile_options", get_compile_options());
