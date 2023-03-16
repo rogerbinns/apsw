@@ -1701,7 +1701,8 @@ PyInit_apsw(void)
   hooks = PyList_New(0);
   if (!hooks)
     goto fail;
-  PyModule_AddObject(m, "connection_hooks", hooks);
+  if (PyModule_AddObject(m, "connection_hooks", hooks))
+    goto fail;
 
   /** .. attribute:: SQLITE_VERSION_NUMBER
     :type: int
@@ -1713,7 +1714,8 @@ PyInit_apsw(void)
     :meth:`sqlitelibversion` to get the actual library version.
 
     */
-  PyModule_AddIntConstant(m, "SQLITE_VERSION_NUMBER", SQLITE_VERSION_NUMBER);
+  if (PyModule_AddIntConstant(m, "SQLITE_VERSION_NUMBER", SQLITE_VERSION_NUMBER))
+    goto fail;
 
   /** .. attribute:: using_amalgamation
     :type: bool
@@ -1728,10 +1730,12 @@ PyInit_apsw(void)
 
 #ifdef APSW_USE_SQLITE_AMALGAMATION
   Py_INCREF(Py_True);
-  PyModule_AddObject(m, "using_amalgamation", Py_True);
+  if (PyModule_AddObject(m, "using_amalgamation", Py_True))
+    goto fail;
 #else
   Py_INCREF(Py_False);
-  PyModule_AddObject(m, "using_amalgamation", Py_False);
+  if (PyModule_AddObject(m, "using_amalgamation", Py_False))
+    goto fail;
 #endif
 
   /** .. attribute:: no_change
@@ -1741,10 +1745,12 @@ PyInit_apsw(void)
     :meth:`VTTable.UpdateChangeRow`
   */
 
-  PyModule_AddObject(m, "no_change", Py_NewRef(&apsw_no_change_object));
+  if (PyModule_AddObject(m, "no_change", Py_NewRef(&apsw_no_change_object)))
+    goto fail;
 
 #ifdef APSW_TESTFIXTURES
-  PyModule_AddObject(m, "test_fixtures_present", Py_NewRef(Py_True));
+  if (PyModule_AddObject(m, "test_fixtures_present", Py_NewRef(Py_True)))
+    goto fail;
 #endif
 
   /**
