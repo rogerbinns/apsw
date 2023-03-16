@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 
 import sys
 import pathlib
@@ -9,16 +10,20 @@ import os
 import glob
 import inspect
 
+import tempfile
+
 sys.path.insert(0, str(pathlib.Path(__file__).parent.absolute() / "tools"))
 
 import genfaultinject
 
+tmpdir = tempfile.TemporaryDirectory(prefix="fitest-")
+print("tmpdir", tmpdir.name)
 
 def exercise(example_code, expect_exception):
     "This function exercises the code paths where we have fault injection"
 
     def file_cleanup():
-        for f in glob.glob("/tmp/dbfile-delme*") + glob.glob("/tmp/myobfudb*"):
+        for f in glob.glob(f"{ tmpdir.name }/dbfile-delme*") + glob.glob(f"{ tmpdir.name }/myobfudb*"):
             os.remove(f)
 
 
@@ -375,8 +380,8 @@ class Tester:
             # we do various transformations but must keep the line numbers the same
             code = code.replace("import os", "import os,contextlib")
             # make it use tmpfs
-            code = code.replace('"dbfile"', '"/tmp/dbfile-delme-example"')
-            code = code.replace("myobfudb", "/tmp/myobfudb-example")
+            code = code.replace('"dbfile"', f'"{ tmpdir.name }/dbfile-delme-example"')
+            code = code.replace("myobfudb", f"{ tmpdir.name }/myobfudb-example")
             # logging will fail
             code = code.replace("apsw.ext.log_sqlite()",
                                 "with contextlib.suppress(apsw.MisuseError): apsw.ext.log_sqlite(level=0)")
