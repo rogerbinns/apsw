@@ -9,6 +9,7 @@ import traceback
 import os
 import glob
 import inspect
+import atexit
 
 import tempfile
 
@@ -17,6 +18,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).parent.absolute() / "tools"))
 import genfaultinject
 
 tmpdir = tempfile.TemporaryDirectory(prefix="fitest-")
+atexit.register(tmpdir.cleanup)
 print("tmpdir", tmpdir.name)
 
 def exercise(example_code, expect_exception):
