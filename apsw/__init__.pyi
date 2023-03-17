@@ -213,6 +213,10 @@ database then you could define a hook that looked in the
 relevant tables, got the Python text and turned it into the
 functions."""
 
+def connections() -> list[Connection]:
+    """Returns a list of the connections"""
+    ...
+
 def enablesharedcache(enable: bool) -> None:
     """If you use the same :class:`Connection` across threads or use
     multiple :class:`connections <Connection>` accessing the same file,
@@ -347,7 +351,7 @@ def memoryused() -> int:
     Calls: `sqlite3_memory_used <https://sqlite.org/c3ref/memory_highwater.html>`__"""
     ...
 
-no_change:
+no_change: 
 """A sentinel value used to indicate no change in a value when
 used with :meth:`VTCursor.ColumnNoChange` and
 :meth:`VTTable.UpdateChangeRow`"""
@@ -626,8 +630,8 @@ class Blob:
         then copying into buffer.
 
         :param buffer: A writable buffer like object.
-                       There is a bytearray type that is very useful.
-                       `arrays <https://docs.python.org/3/library/array.html>`__ also work.
+                       There is a :class:`bytearray` type that is very useful.
+                       :mod:`Arrays <array>` also work.
 
         :param offset: The position to start writing into the buffer
                        defaulting to the beginning.
@@ -1862,6 +1866,10 @@ class Cursor:
     Note that while SQLite supports nulls in strings, their implementation
     of sqlite3_expanded_sql stops at the first null.
 
+    You will get :exc:`MemoryError` if SQLite ran out of memory, or if
+    the expanded string would exceed `SQLITE_LIMIT_LENGTH
+    <https://www.sqlite.org/c3ref/c_limit_attached.html>`__.
+
     Calls: `sqlite3_expanded_sql <https://sqlite.org/c3ref/expanded_sql.html>`__"""
 
     def fetchall(self) -> list[Tuple[SQLiteValue, ...]]:
@@ -2299,9 +2307,10 @@ class VFS:
 
     def excepthook(self, etype: type[BaseException], evalue: BaseException, etraceback: Optional[types.TracebackType]) -> Any:
         """Called when there has been an exception in a :class:`VFS` routine.
-        The default implementation passes args to ``sys.excepthook`` and if that
-        fails then ``PyErr_Display``.  The three arguments correspond to
-        what ``sys.exc_info()`` would return."""
+        The default implementation passes the exception information
+        to sqlite3_log, and the first non-error of
+        :func:`sys.unraisablehook` and :func:`sys.excepthook`, falling back to
+        `PyErr_Display`."""
         ...
 
     def __init__(self, name: str, base: Optional[str] = None, makedefault: bool = False, maxpathname: int = 1024):
@@ -3814,7 +3823,7 @@ SQLITE_DROP_VIEW SQLITE_DROP_VTABLE SQLITE_FUNCTION SQLITE_INSERT
 SQLITE_PRAGMA SQLITE_READ SQLITE_RECURSIVE SQLITE_REINDEX
 SQLITE_SAVEPOINT SQLITE_SELECT SQLITE_TRANSACTION SQLITE_UPDATE"""
 
-mapping_authorizer_return: Dict[Union[str,int],Union[int,str]]
+mapping_authorizer_return_codes: Dict[Union[str,int],Union[int,str]]
 """Authorizer Return Codes mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_deny.html
 
