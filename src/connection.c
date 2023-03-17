@@ -2165,7 +2165,10 @@ Connection_deserialize(Connection *self, PyObject *args, PyObject *kwds)
   newcontents = sqlite3_malloc64(contents.len);
   if (newcontents)
     memcpy(newcontents, contents.buf, contents.len);
-  else
+
+  PyBuffer_Release(&contents);
+
+  if(!newcontents)
   {
     res = SQLITE_NOMEM;
     PyErr_NoMemory();
