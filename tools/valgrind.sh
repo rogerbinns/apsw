@@ -10,12 +10,7 @@ else
   args="$@"
 fi
 
-if [ -z "$SHOWINUSE" ]
-then
-   showleaks=""
-else
-   showleaks="--leak-check=full --leak-resolution=high --show-leak-kinds=all --track-origins=yes --expensive-definedness-checks=yes"
-fi
+showleaks="--leak-check=full --leak-resolution=high --show-leak-kinds=all --track-origins=yes --expensive-definedness-checks=yes"
 
 if [ -z "$CALLGRIND" ]
 then
