@@ -131,6 +131,10 @@ static PyTypeObject APSWCursorType;
 struct ZeroBlobBind;
 static PyTypeObject ZeroBlobBindType;
 
+static void apsw_connection_remove(Connection *con);
+
+static int apsw_connection_add(Connection *con);
+
 static void
 FunctionCBInfo_dealloc(FunctionCBInfo *self)
 {
@@ -232,6 +236,8 @@ Connection_close_internal(Connection *self, int force)
   if (self->stmtcache)
     statementcache_free(self->stmtcache);
   self->stmtcache = 0;
+
+  apsw_connection_remove(self);
 
   PYSQLITE_VOID_CALL(res = sqlite3_close(self->db));
 
@@ -502,7 +508,13 @@ finally:
   Py_XDECREF(iterator);
   Py_XDECREF(hooks);
   Py_XDECREF(hook);
-  assert(PyErr_Occurred() || res == 0);
+  if (res == 0)
+  {
+    res = apsw_connection_add(self);
+    if (res)
+      Connection_close_internal(self, 2);
+  }
+  assert((PyErr_Occurred() && res != 0) || (res == 0 && !PyErr_Occurred()));
   return res;
 }
 

@@ -266,6 +266,61 @@ enablesharedcache(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
   Py_RETURN_NONE;
 }
 
+/** .. method:: connections() -> list[Connection]
+
+  Returns a list of the connections
+
+*/
+static PyObject *the_connections;
+static PyObject *
+apsw_connections(PyObject *Py_UNUSED(self))
+{
+  Py_ssize_t i;
+  PyObject *res = PyList_New(0);
+  for (i = 0; i < PyList_GET_SIZE(the_connections); i++)
+  {
+    PyObject *item = PyWeakref_GetObject(PyList_GET_ITEM(the_connections, i));
+    if (!Py_IsNone(item))
+      if (PyList_Append(res, item))
+        goto fail;
+  }
+  return res;
+fail:
+  Py_XDECREF(res);
+  return NULL;
+}
+
+static void
+apsw_connection_remove(Connection *con)
+{
+  Py_ssize_t i;
+  for (i = 0; i < PyList_GET_SIZE(the_connections);)
+  {
+    PyObject *wr = PyList_GET_ITEM(the_connections, i);
+    PyObject *wo = PyWeakref_GetObject(wr);
+    if (wo == (PyObject *)con || Py_IsNone(wo))
+    {
+      if (PyList_SetSlice(the_connections, i, i + 1, NULL))
+        apsw_write_unraisable(NULL);
+      if (Py_IsNone(wo))
+        continue;
+      return;
+    }
+    i++;
+  }
+}
+
+static int
+apsw_connection_add(Connection *con)
+{
+  PyObject *weakref = PyWeakref_NewRef((PyObject *)con, NULL);
+  if (!weakref)
+    return -1;
+  int res = PyList_Append(the_connections, weakref);
+  Py_DECREF(weakref);
+  return res;
+}
+
 /** .. method:: initialize() -> None
 
   It is unlikely you will want to call this method as SQLite automatically initializes.
@@ -1615,6 +1670,7 @@ static PyMethodDef module_methods[] = {
      Apsw_fork_checker_DOC},
 #endif
     {"__getattr__", (PyCFunction)apsw_getattr, METH_O, "module getattr"},
+    {"connections", (PyCFunction)apsw_connections, METH_NOARGS, Apsw_connections_DOC},
     {0, 0, 0, 0} /* Sentinel */
 };
 
@@ -1655,6 +1711,10 @@ PyInit_apsw(void)
 
   tls_errmsg = PyDict_New();
   if (!tls_errmsg)
+    goto fail;
+
+  the_connections = PyList_New(0);
+  if (!the_connections)
     goto fail;
 
   if (init_exceptions(m))
