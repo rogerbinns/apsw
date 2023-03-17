@@ -307,6 +307,8 @@ class APSW(unittest.TestCase):
     def setUp(self):
         # clean out database and journals from last runs
         self.saved_connection_hooks.append(apsw.connection_hooks)
+        for c in apsw.connections():
+            c.close()
         gc.collect()
         self.deltempfiles()
         self.db = apsw.Connection(TESTFILEPREFIX + "testdb", flags=openflags)
@@ -326,6 +328,8 @@ class APSW(unittest.TestCase):
             self.db.close(True)
         del self.db
         apsw.connection_hooks = self.saved_connection_hooks.pop()  # back to original value
+        for c in apsw.connections():
+            c.close()
         gc.collect()
         self.deltempfiles()
         warnings.filters = self.warnings_filters

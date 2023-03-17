@@ -23,6 +23,9 @@ def exercise(example_code, expect_exception):
     "This function exercises the code paths where we have fault injection"
 
     def file_cleanup():
+        if "apsw" in sys.modules:
+            for c in sys.modules["apsw"].connections():
+                c.close()
         for f in glob.glob(f"{ tmpdir.name }/dbfile-delme*") + glob.glob(f"{ tmpdir.name }/myobfudb*"):
             os.remove(f)
 
@@ -612,6 +615,9 @@ class Tester:
                             print("\nExercising locations that require multiple failures\n")
                             continue
                 finally:
+                    if "apsw" in sys.modules:
+                        for c in sys.modules["apsw"].connections():
+                            c.close()
                     gc.collect()
 
             self.verify_exception(self.faulted_this_round)
