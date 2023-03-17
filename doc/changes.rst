@@ -8,6 +8,8 @@ next
 
 Fixed :issue:`412` in :meth:`apsw.ext.make_virtual_module`.
 
+Added :meth:`apsw.connections` to get all connections. (:issue:`416`)
+
 3.41.0.0
 ========
 
