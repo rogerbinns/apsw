@@ -13,8 +13,6 @@ import atexit
 
 import tempfile
 
-sys.path.insert(0, str(pathlib.Path(__file__).parent.absolute() / "tools"))
-
 import genfaultinject
 
 tmpdir = tempfile.TemporaryDirectory(prefix="fitest-")
@@ -85,6 +83,7 @@ def exercise(example_code, expect_exception):
 
     extfname = "./testextension.sqlext"
     if os.path.exists(extfname):
+        con.enableloadextension(True)
         con.loadextension(extfname)
         con.execute("select half(7)")
 
@@ -120,7 +119,8 @@ def exercise(example_code, expect_exception):
     cur = con.cursor()
     for _ in cur.execute("select failme(3)"):
         cur.description
-        cur.description_full
+        if hasattr(cur, "description_full"):
+            cur.description_full
         cur.getdescription()
 
     if expect_exception:

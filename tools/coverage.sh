@@ -39,7 +39,7 @@ $LINKER $PROFILE apsw.o -o apsw/__init__$SOSUFFIX
 set +ex
 $PYTHON $args
 res=$?
-[ $res -eq 0 ] && $PYTHON fi.py
+[ $res -eq 0 ] && env PYTHONPATH=. $PYTHON tools/fi.py
 gcov $GCOVOPTS apsw.gcno > /dev/null
 mv sqlite3.c.gcov sqlite3/
 rm -f src/*.gcov
