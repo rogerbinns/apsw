@@ -21,6 +21,7 @@ tmpdir = tempfile.TemporaryDirectory(prefix="fitest-")
 atexit.register(tmpdir.cleanup)
 print("tmpdir", tmpdir.name)
 
+
 def exercise(example_code, expect_exception):
     "This function exercises the code paths where we have fault injection"
 
@@ -30,7 +31,6 @@ def exercise(example_code, expect_exception):
                 c.close()
         for f in glob.glob(f"{ tmpdir.name }/dbfile-delme*") + glob.glob(f"{ tmpdir.name }/myobfudb*"):
             os.remove(f)
-
 
     file_cleanup()
 
@@ -52,6 +52,7 @@ def exercise(example_code, expect_exception):
     apsw.log(3, "A message")
     apsw.status(apsw.SQLITE_STATUS_MEMORY_USED)
 
+    apsw.connections()
     if expect_exception:
         return
 
@@ -79,6 +80,7 @@ def exercise(example_code, expect_exception):
         apsw.format_sql_value(v)
 
     con = apsw.Connection("")
+    apsw.connections()
     con.wal_autocheckpoint(1)
 
     extfname = "./testextension.sqlext"
@@ -342,7 +344,7 @@ def exercise(example_code, expect_exception):
         return
 
     file_cleanup()
-    exec(example_code, {"print": lambda *args: None}, None)
+    exec(example_code, {"print": lambda *args: None, "expect_exception": expect_exception}, None)
 
     if expect_exception:
         return
@@ -390,6 +392,24 @@ class Tester:
             # logging will fail
             code = code.replace("apsw.ext.log_sqlite()",
                                 "with contextlib.suppress(apsw.MisuseError): apsw.ext.log_sqlite(level=0)")
+            # make it a function so we can return and put returns in
+            code = code.split("\n")
+            seen_future = False
+            for i in range(len(code)):
+                if "__future__" in code[i]:
+                    seen_future = True
+                    continue
+                if not seen_future:
+                    continue
+                if not code[i].strip():
+                    code[i] = "def example():"
+                    start = i + 1
+                    break
+            for i in range(start, len(code)):
+                if code[i].startswith("###"):
+                    code[i] = "if expect_exception: return " + code[i]
+                code[i] = " " + code[i]
+            code = "\n".join(code)
         self.example_code_lines = len(code.split("\n"))
         self.example_code = compile(code, "example-code.py", 'exec')
 
@@ -413,7 +433,11 @@ class Tester:
 
             # we need these to succeed at the SQLite level but still return
             # an error.  Otherwise there will be memory leaks.
-            if fname in {"sqlite3_close", "sqlite3_vfs_unregister", "sqlite3_backup_finish", }:
+            if fname in {
+                    "sqlite3_close",
+                    "sqlite3_vfs_unregister",
+                    "sqlite3_backup_finish",
+            }:
                 self.expect_exception.append(apsw_attr("ConnectionNotClosedError"))
                 self.expect_exception.append(apsw_attr("TooBigError"))  # code 18
                 return self.ProceedReturn18
