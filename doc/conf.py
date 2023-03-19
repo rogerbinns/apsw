@@ -68,7 +68,7 @@ today_fmt = '%B %d, %Y'
 exclude_trees = ['build']
 
 add_module_names = False
-
+extlinks_detect_hardcoded_links = True
 smartquotes = False
 
 # Options for HTML output
