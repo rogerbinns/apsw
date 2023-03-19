@@ -8,6 +8,16 @@ if sphinx.version_info < (5, 2):
     import warnings
     warnings.warn("You should use sphinx 5.2+")
 
+# monkey patch https://github.com/sphinx-doc/sphinx/issues/11253
+def split(self, input):
+    res = []
+    for word in sphinx.search.SearchLanguage.split(self, input):
+        res.extend(word.split("_"))
+    return res
+import sphinx.search
+sphinx.search.SearchEnglish.split = split
+del split
+
 extensions = [
     'sphinx.ext.autodoc', 'sphinx.ext.extlinks', 'sphinx.ext.intersphinx', "sphinx.ext.viewcode",
     "sphinx.ext.autosummary"
