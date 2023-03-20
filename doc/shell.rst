@@ -210,5 +210,6 @@ can then `monkey patch <http://en.wikipedia.org/wiki/Monkey_patch>`__
 the shell as needed.
 
 .. automodule:: apsw.shell
+     :synopsis: Convenient way for you to interact with SQLite
      :members:
      :undoc-members:

@@ -59,3 +59,6 @@ APSW is hosted at https://github.com/rogerbinns/apsw and can be
    benchmarking
    copyright
    changes
+
+   modindex
+   genindex
