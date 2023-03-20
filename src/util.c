@@ -169,7 +169,7 @@ apsw_write_unraisable(PyObject *hookobject)
 
   /* tell sqlite3_log */
   if (err_value)
-    sqlite3_log(SQLITE_ERROR, "apsw_write_unraisable type %s", Py_TYPE(err_value)->tp_name);
+    sqlite3_log(SQLITE_ERROR, "apsw_write_unraisable type %s", Py_TypeName(err_value));
 
   if (hookobject)
   {

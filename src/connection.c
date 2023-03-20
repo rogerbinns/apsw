@@ -4577,7 +4577,7 @@ Connection_drop_modules(Connection *self, PyObject *args, PyObject *kwds)
         goto finally;
       if (!PyUnicode_Check(s))
       {
-        PyErr_Format(PyExc_TypeError, "Expected sequence item #%zd to be str, not %s", i, Py_TYPE(s)->tp_name);
+        PyErr_Format(PyExc_TypeError, "Expected sequence item #%zd to be str, not %s", i, Py_TypeName(s));
         goto finally;
       }
       sc = PyUnicode_AsUTF8(s);

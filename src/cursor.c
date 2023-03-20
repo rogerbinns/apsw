@@ -627,7 +627,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
   }
   else
   {
-    PyErr_Format(PyExc_TypeError, "Bad binding argument type supplied - argument #%d: type %s", (int)(arg + self->bindingsoffset), Py_TYPE(obj)->tp_name);
+    PyErr_Format(PyExc_TypeError, "Bad binding argument type supplied - argument #%d: type %s", (int)(arg + self->bindingsoffset), Py_TypeName(obj));
     return -1;
   }
   if (res != SQLITE_OK)
