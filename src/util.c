@@ -103,6 +103,25 @@
    If any return an error then then the next one is tried.  When we
    return, any error will be cleared.
 */
+
+/* used for calling sys.unraisablehook */
+static PyStructSequence_Field apsw_unraisable_info_fields[] =
+    {
+        {"exc_type", "Exception type"},
+        {"exc_value", "Execption value, can be None"},
+        {"exc_traceback", "Exception traceback, can be None"},
+        {"err_msg", "Error message, can be None"},
+        {"object", "Object causing the exception, can be None"},
+        {0}};
+
+static PyStructSequence_Desc apsw_unraisable_info = {
+    .name = "apsw.unraisable_info",
+    .doc = "Glue for sys.unraisablehook",
+    .n_in_sequence = 5,
+    .fields = apsw_unraisable_info_fields};
+
+static PyTypeObject *apsw_unraisable_info_type;
+
 static void
 apsw_write_unraisable(PyObject *hookobject)
 {
@@ -170,9 +189,16 @@ apsw_write_unraisable(PyObject *hookobject)
   {
     Py_INCREF(excepthook); /* borrowed reference from PySys_GetObject so we increment */
     PyErr_Clear();
-    result = PyObject_CallFunction(excepthook, "(OOO)", OBJ(err_type), OBJ(err_value), OBJ(err_traceback));
-    if (result)
-      goto finally;
+    PyObject *arg = PyStructSequence_New(apsw_unraisable_info_type);
+    if (arg)
+    {
+      PyStructSequence_SetItem(arg, 0, Py_NewRef(OBJ(err_type)));
+      PyStructSequence_SetItem(arg, 1, Py_NewRef(OBJ(err_value)));
+      PyStructSequence_SetItem(arg, 2, Py_NewRef(OBJ(err_traceback)));
+      result = PyObject_CallFunction(excepthook, "(N)", arg);
+      if (result)
+        goto finally;
+    }
     Py_CLEAR(excepthook);
   }
 

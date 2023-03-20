@@ -115,12 +115,7 @@ def curnext(cursor, *args):
     return res
 
 
-# py3 has a useless sys.excepthook mainly to avoid allocating any
-# memory as the exception could have been running out of memory.  So
-# we use our own which is also valuable on py2 as it says it is an
-# unraisable exception (with testcode you sometimes can't tell if it
-# is unittest showing you an exception or the unraisable).  It is
-# mainly VFS code that needs to raise these.
+# got here via apsw_write_unraisable in C code
 def ehook(etype, evalue, etraceback):
     sys.stderr.write("Unraisable exception " + str(etype) + ":" + str(evalue) + "\n")
     traceback.print_tb(etraceback)
