@@ -2370,6 +2370,7 @@ class APSW(unittest.TestCase):
 
             def value(self):
                 return self.v
+
         self.assertRaises(TypeError, self.db.create_window_function, 3, 3)
         self.db.create_window_function("sumint", None)
         self.db.create_window_function("sumint", windowfunc)
@@ -4779,6 +4780,8 @@ class APSW(unittest.TestCase):
         "Verify statement cache integrity"
         self.db.close()
         self.db = apsw.Connection(TESTFILEPREFIX + "testdb", statementcachesize=scsize)
+        actual = self.db.cache_stats()["size"]
+        self.assertTrue(actual == scsize or (scsize > 0 and actual > 0))
         cur = self.db.cursor()
         cur.execute("create table foo(x,y)")
         cur.execute("create index foo_x on foo(x)")
@@ -4792,23 +4795,24 @@ class APSW(unittest.TestCase):
             pass
         cur.executemany("insert into foo values(?)", [[1], [2]])
         # overflow the statement cache
-        l = [self.db.cursor().execute("select x from foo" + " " * i) for i in range(scsize + 200)]
+        l = [self.db.cursor().execute("select x from foo" + " " * i) for i in range(actual + 200)]
         del l
         gc.collect()
         # coverage
         l = []
-        for i in range(scsize + 10):
+        for i in range(actual * 2 + 10):
             l.append(self.db.cursor().execute("select x from foo" + " " * i))
             for row in self.db.cursor().execute("select * from foo"):
                 pass
         # other wrangling
-        l = [self.db.cursor().execute("select x from foo") for i in range(scsize + 200)]
-        for i in range(scsize + 200):
+        l = [self.db.cursor().execute("select x from foo") for i in range(actual + 200)]
+        for i in range(actual * 2 + 200):
             for row in self.db.cursor().execute("select * from foo" + " " * i):
                 pass
         del l
         gc.collect()
         db2 = apsw.Connection(TESTFILEPREFIX + "testdb", statementcachesize=scsize)
+        self.assertEqual(db2.cache_stats()["size"], actual)
         cur2 = db2.cursor()
         cur2.execute("create table bar(x,y)")
         for _ in cur.execute("select * from foo"):
@@ -4837,7 +4841,7 @@ class APSW(unittest.TestCase):
                     self.fail("Query is empty")
         # check with stats
         s = self.db.cache_stats()
-        self.assertEqual(s["size"], min(scsize, 512)) # 512 is current max
+        self.assertEqual(s["size"], min(scsize, 512))  # 512 is current max
         s2 = self.db.cache_stats(True)
         s2.pop("entries")
         self.assertEqual(s, s2)
@@ -4912,7 +4916,7 @@ class APSW(unittest.TestCase):
     def testStatementCacheLargeSize(self):
         "Rerun statement cache tests with a large cache"
         self.db = apsw.Connection(TESTFILEPREFIX + "testdb", statementcachesize=17000)
-        self.testStatementCache(17000)
+        self.testStatementCache(170000)
 
     # the text also includes characters that can't be represented in 16 bits (BMP)
     wikipedia_text = u"""Wikipedia\nThe Free Encyclopedia\nEnglish\n6 383 000+ articles\n日本語\n1 292 000+ 記事\nРусский\n1 756 000+ статей\nDeutsch\n2 617 000+ Artikel\nEspañol\n1 717 000+ artículos\nFrançais\n2 362 000+ articles\nItaliano\n1 718 000+ voci\n中文\n1 231 000+ 條目\nPolski\n1 490 000+ haseł\nPortuguês\n1 074 000+ artigos\nSearch Wikipedia\nEN\nEnglish\n\n Read Wikipedia in your language\n1 000 000+ articles\nPolski\nالعربية\nDeutsch\nEnglish\nEspañol\nFrançais\nItaliano\nمصرى\nNederlands\n日本語\nPortuguês\nРусский\nSinugboanong Binisaya\nSvenska\nУкраїнська\nTiếng Việt\nWinaray\n中文\n100 000+ articles\nAfrikaans\nSlovenčina\nAsturianu\nAzərbaycanca\nБългарски\nBân-lâm-gú / Hō-ló-oē\nবাংলা\nБеларуская\nCatalà\nČeština\nCymraeg\nDansk\nEesti\nΕλληνικά\nEsperanto\nEuskara\nفارسی\nGalego\n한국어\nՀայերեն\nहिन्दी\nHrvatski\nBahasa Indonesia\nעברית\nქართული\nLatina\nLatviešu\nLietuvių\nMagyar\nМакедонски\nBahasa Melayu\nBahaso Minangkabau\nNorskbokmålnynorsk\nНохчийн\nOʻzbekcha / Ўзбекча\nҚазақша / Qazaqşa / قازاقشا\nRomână\nSimple English\nSlovenščina\nСрпски / Srpski\nSrpskohrvatski / Српскохрватски\nSuomi\nதமிழ்\nТатарча / Tatarça\nภาษาไทย\nТоҷикӣ\nتۆرکجه\nTürkçe\nاردو\nVolapük\n粵語\nမြန်မာဘာသာ\n10 000+ articles\nBahsa Acèh\nAlemannisch\nአማርኛ\nAragonés\nBasa Banyumasan\nБашҡортса\nБеларуская (Тарашкевіца)\nBikol Central\nবিষ্ণুপ্রিয়া মণিপুরী\nBoarisch\nBosanski\nBrezhoneg\nЧӑвашла\nDiné Bizaad\nEmigliàn–Rumagnòl\nFøroyskt\nFrysk\nGaeilge\nGàidhlig\nગુજરાતી\nHausa\nHornjoserbsce\nIdo\nIlokano\nInterlingua\nИрон æвзаг\nÍslenska\nJawa\nಕನ್ನಡ\nKreyòl Ayisyen\nKurdî / كوردی\nکوردیی ناوەندی\nКыргызча\nКырык Мары\nLëtzebuergesch\nLimburgs\nLombard\nLìgure\nमैथिली\nMalagasy\nമലയാളം\n文言\nमराठी\nმარგალური\nمازِرونی\nMìng-dĕ̤ng-ngṳ̄ / 閩東語\nМонгол\nनेपाल भाषा\nनेपाली\nNnapulitano\nNordfriisk\nOccitan\nМарий\nଓଡି଼ଆ\nਪੰਜਾਬੀ (ਗੁਰਮੁਖੀ)\nپنجابی (شاہ مکھی)\nپښتو\nPiemontèis\nPlattdüütsch\nQırımtatarca\nRuna Simi\nसंस्कृतम्\nСаха Тыла\nScots\nShqip\nSicilianu\nසිංහල\nسنڌي\nŚlůnski\nBasa Sunda\nKiswahili\nTagalog\nతెలుగు\nᨅᨔ ᨕᨙᨁᨗ / Basa Ugi\nVèneto\nWalon\n吳語\nייִדיש\nYorùbá\nZazaki\nŽemaitėška\nisiZulu\n1 000+ articles\nАдыгэбзэ\nÆnglisc\nAkan\nаԥсшәа\nԱրեւմտահայերէն\nArmãneashce\nArpitan\nܐܬܘܪܝܐ\nAvañe’ẽ\nАвар\nAymar\nBasa Bali\nBahasa Banjar\nभोजपुरी\nBislama\nབོད་ཡིག\nБуряад\nChavacano de Zamboanga\nCorsu\nVahcuengh / 話僮\nDavvisámegiella\nDeitsch\nދިވެހިބަސް\nDolnoserbski\nЭрзянь\nEstremeñu\nFiji Hindi\nFurlan\nGaelg\nGagauz\nGĩkũyũ\nگیلکی\n贛語\nHak-kâ-ngî / 客家語\nХальмг\nʻŌlelo Hawaiʻi\nIgbo\nInterlingue\nKabɩyɛ\nKapampangan\nKaszëbsczi\nKernewek\nភាសាខ្មែរ\nKinyarwanda\nКоми\nKongo\nकोंकणी / Konknni\nKriyòl Gwiyannen\nພາສາລາວ\nDzhudezmo / לאדינו\nЛакку\nLatgaļu\nЛезги\nLingála\nlojban\nLuganda\nMalti\nReo Mā’ohi\nMāori\nMirandés\nМокшень\nߒߞߏ\nNa Vosa Vaka-Viti\nNāhuatlahtōlli\nDorerin Naoero\nNedersaksisch\nNouormand / Normaund\nNovial\nAfaan Oromoo\nঅসমীযা়\nपालि\nPangasinán\nPapiamentu\nПерем Коми\nPfälzisch\nPicard\nКъарачай–Малкъар\nQaraqalpaqsha\nRipoarisch\nRumantsch\nРусиньскый Язык\nGagana Sāmoa\nSardu\nSeeltersk\nSesotho sa Leboa\nChiShona\nSoomaaliga\nSranantongo\nTaqbaylit\nTarandíne\nTetun\nTok Pisin\nfaka Tonga\nTürkmençe\nТыва дыл\nУдмурт\nئۇيغۇرچه\nVepsän\nVõro\nWest-Vlams\nWolof\nisiXhosa\nZeêuws\n100+ articles\nBamanankan\nChamoru\nChichewa\nEʋegbe\nFulfulde\n𐌲𐌿𐍄𐌹𐍃𐌺\nᐃᓄᒃᑎᑐᑦ / Inuktitut\nIñupiak\nKalaallisut\nكٲشُر\nLi Niha\nNēhiyawēwin / ᓀᐦᐃᔭᐍᐏᐣ\nNorfuk / Pitkern\nΠοντιακά\nརྫོང་ཁ\nRomani\nKirundi\nSängö\nSesotho\nSetswana\nСловѣ́ньскъ / ⰔⰎⰑⰂⰡⰐⰠⰔⰍⰟ\nSiSwati\nThuɔŋjäŋ\nᏣᎳᎩ\nTsėhesenėstsestotse\nTshivenḓa\nXitsonga\nchiTumbuka\nTwi\nትግርኛ\nဘာသာ မန်\n"""
