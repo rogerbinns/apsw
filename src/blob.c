@@ -150,8 +150,7 @@ static PyTypeObject ZeroBlobBindType = {
     0,                                                                      /* tp_subclasses */
     0,                                                                      /* tp_weaklist */
     0,                                                                      /* tp_del */
-    PyType_TRAILER
-};
+    PyType_TRAILER};
 
 /* BLOB TYPE */
 struct APSWBlob
@@ -190,8 +189,7 @@ static PyTypeObject APSWBlobType;
 static void
 APSWBlob_init(APSWBlob *self, Connection *connection, sqlite3_blob *blob)
 {
-  Py_INCREF(connection);
-  self->connection = connection;
+  self->connection = (Connection *)Py_NewRef((PyObject *)connection);
   self->pBlob = blob;
   self->curoffset = 0;
   self->inuse = 0;
@@ -633,8 +631,7 @@ APSWBlob_enter(APSWBlob *self)
   CHECK_USE(NULL);
   CHECK_BLOB_CLOSED;
 
-  Py_INCREF(self);
-  return (PyObject *)self;
+  return Py_NewRef((PyObject *)self);
 }
 
 /** .. method:: __exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[types.TracebackType]) -> Optional[bool]
@@ -766,5 +763,4 @@ static PyTypeObject APSWBlobType = {
     0,                                                /* tp_subclasses */
     0,                                                /* tp_weaklist */
     0,                                                /* tp_del */
-    PyType_TRAILER
-};
+    PyType_TRAILER};

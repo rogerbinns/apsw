@@ -173,8 +173,7 @@ static int init_exceptions(PyObject *m)
   APSWException = PyErr_NewExceptionWithDoc("apsw.Error", Error_exc_DOC, NULL, NULL);
   if (!APSWException)
     return -1;
-  Py_INCREF(APSWException);
-  if (PyModule_AddObject(m, "Error", (PyObject *)APSWException))
+  if (PyModule_AddObject(m, "Error", Py_NewRef((PyObject *)APSWException)))
     return -1;
 
   for (i = 0; i < sizeof(apswexceptions) / sizeof(apswexceptions[0]); i++)

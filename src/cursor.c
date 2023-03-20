@@ -353,8 +353,7 @@ APSWCursor_init(APSWCursor *self, PyObject *args, PyObject *kwargs)
     return -1;
   }
 
-  Py_INCREF(connection);
-  self->connection = (Connection *)connection;
+  self->connection = (Connection *)Py_NewRef(connection);
 
   return 0;
 }
@@ -394,10 +393,7 @@ APSWCursor_internal_getdescription(APSWCursor *self, int fmtnum)
   }
 
   if (self->description_cache[fmtnum])
-  {
-    Py_INCREF(self->description_cache[fmtnum]);
-    return self->description_cache[fmtnum];
-  }
+    return Py_NewRef(self->description_cache[fmtnum]);
 
   ncols = sqlite3_column_count(self->statement->vdbestatement);
   result = PyTuple_New(ncols);
@@ -445,8 +441,7 @@ APSWCursor_internal_getdescription(APSWCursor *self, int fmtnum)
     column = 0;
   }
 
-  Py_INCREF(result);
-  self->description_cache[fmtnum] = result;
+  self->description_cache[fmtnum] = Py_NewRef(result);
   return result;
 
 error:
@@ -775,8 +770,7 @@ APSWCursor_doexectrace(APSWCursor *self, Py_ssize_t savedbindingsoffset)
   {
     if (APSWCursor_is_dict_binding(self->bindings))
     {
-      bindings = self->bindings;
-      Py_INCREF(self->bindings);
+      bindings = Py_NewRef(self->bindings);
     }
     else
     {
@@ -791,8 +785,7 @@ APSWCursor_doexectrace(APSWCursor *self, Py_ssize_t savedbindingsoffset)
   }
   else
   {
-    bindings = Py_None;
-    Py_INCREF(bindings);
+    bindings = Py_NewRef(Py_None);
   }
 
   retval = PyObject_CallFunction(exectrace, "ONN", self, sqlcmd, bindings);
@@ -1118,8 +1111,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *args, PyObject *kwds)
     assert(PyErr_Occurred());
     return NULL;
   }
-  Py_INCREF(retval);
-  return retval;
+  return Py_NewRef(retval);
 }
 
 /** .. method:: executemany(statements: str, sequenceofbindings: Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor
@@ -1190,8 +1182,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args, PyObject *kwds)
   if (!next)
   {
     /* empty list */
-    Py_INCREF(self);
-    return (PyObject *)self;
+    return Py_NewRef((PyObject *)self);
   }
 
   if (APSWCursor_is_dict_binding(next))
@@ -1220,8 +1211,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args, PyObject *kwds)
   }
   assert(!PyErr_Occurred());
 
-  self->emoriginalquery = statements;
-  Py_INCREF(self->emoriginalquery);
+  self->emoriginalquery = Py_NewRef(statements);
 
   self->bindingsoffset = 0;
   savedbindingsoffset = 0;
@@ -1249,8 +1239,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args, PyObject *kwds)
     assert(PyErr_Occurred());
     return NULL;
   }
-  Py_INCREF(retval);
-  return retval;
+  return Py_NewRef(retval);
 }
 
 /** .. method:: close(force: bool = False) -> None
@@ -1371,8 +1360,7 @@ APSWCursor_iter(APSWCursor *self)
   CHECK_USE(NULL);
   CHECK_CURSOR_CLOSED(NULL);
 
-  Py_INCREF(self);
-  return (PyObject *)self;
+  return Py_NewRef((PyObject *)self);
 }
 
 /** .. method:: setexectrace(callable: Optional[ExecTracer]) -> None
@@ -1446,8 +1434,7 @@ APSWCursor_getexectrace(APSWCursor *self)
   CHECK_CURSOR_CLOSED(NULL);
 
   ret = (self->exectrace) ? (self->exectrace) : Py_None;
-  Py_INCREF(ret);
-  return ret;
+  return Py_NewRef(ret);
 }
 
 /** .. method:: getrowtrace() -> Optional[RowTracer]
@@ -1466,8 +1453,7 @@ APSWCursor_getrowtrace(APSWCursor *self)
   CHECK_USE(NULL);
   CHECK_CURSOR_CLOSED(NULL);
   ret = (self->rowtrace) ? (self->rowtrace) : Py_None;
-  Py_INCREF(ret);
-  return ret;
+  return Py_NewRef(ret);
 }
 
 /** .. method:: getconnection() -> Connection
@@ -1481,8 +1467,7 @@ APSWCursor_getconnection(APSWCursor *self)
   CHECK_USE(NULL);
   CHECK_CURSOR_CLOSED(NULL);
 
-  Py_INCREF(self->connection);
-  return (PyObject *)self->connection;
+  return Py_NewRef((PyObject *)self->connection);
 }
 
 /** .. method:: fetchall() -> list[Tuple[SQLiteValue, ...]]
@@ -1544,10 +1529,7 @@ APSWCursor_get_exectrace_attr(APSWCursor *self)
   CHECK_CURSOR_CLOSED(NULL);
 
   if (self->exectrace)
-  {
-    Py_INCREF(self->exectrace);
-    return self->exectrace;
-  }
+    return Py_NewRef(self->exectrace);
   Py_RETURN_NONE;
 }
 
@@ -1564,10 +1546,7 @@ APSWCursor_set_exectrace_attr(APSWCursor *self, PyObject *value)
   }
   Py_CLEAR(self->exectrace);
   if (value != Py_None)
-  {
-    Py_INCREF(value);
-    self->exectrace = value;
-  }
+    self->exectrace = Py_NewRef(value);
   return 0;
 }
 
@@ -1595,10 +1574,7 @@ APSWCursor_get_rowtrace_attr(APSWCursor *self)
   CHECK_CURSOR_CLOSED(NULL);
 
   if (self->rowtrace)
-  {
-    Py_INCREF(self->rowtrace);
-    return self->rowtrace;
-  }
+    return Py_NewRef(self->rowtrace);
   Py_RETURN_NONE;
 }
 
@@ -1615,10 +1591,7 @@ APSWCursor_set_rowtrace_attr(APSWCursor *self, PyObject *value)
   }
   Py_CLEAR(self->rowtrace);
   if (value != Py_None)
-  {
-    Py_INCREF(value);
-    self->rowtrace = value;
-  }
+    self->rowtrace = Py_NewRef(value);
   return 0;
 }
 
@@ -1633,8 +1606,7 @@ APSWCursor_getconnection_attr(APSWCursor *self)
   CHECK_USE(NULL);
   CHECK_CURSOR_CLOSED(NULL);
 
-  Py_INCREF(self->connection);
-  return (PyObject *)self->connection;
+  return Py_NewRef((PyObject *)self->connection);
 }
 
 /** .. attribute:: is_explain

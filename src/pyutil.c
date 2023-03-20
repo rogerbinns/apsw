@@ -54,8 +54,7 @@ Call_PythonMethod(PyObject *obj, const char *methodname, int mandatory, PyObject
     {
       /* pretend method existed and returned None */
       PyErr_Clear();
-      res = Py_None;
-      Py_INCREF(res);
+      res = Py_NewRef(Py_None);
     }
     goto finally;
   }

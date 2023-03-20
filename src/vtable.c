@@ -865,8 +865,7 @@ apswvtabCreateOrConnect(sqlite3 *db,
   if (!args)
     goto pyexception;
 
-  Py_INCREF((PyObject *)(vti->connection));
-  PyTuple_SET_ITEM(args, 0, (PyObject *)(vti->connection));
+  PyTuple_SET_ITEM(args, 0, Py_NewRef((PyObject *)(vti->connection)));
   for (i = 0; i < argc; i++)
   {
     PyObject *str;
@@ -925,8 +924,7 @@ apswvtabCreateOrConnect(sqlite3 *db,
 
   assert(res == SQLITE_OK);
   *pVTab = (sqlite3_vtab *)avi;
-  avi->vtable = vtable;
-  Py_INCREF(avi->vtable);
+  avi->vtable = Py_NewRef(vtable);
   avi = NULL;
   goto finally;
 
@@ -1888,8 +1886,7 @@ apswvtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite3_int6
       goto pyexception;
     if (sqlite3_value_type(argv[1]) == SQLITE_NULL)
     {
-      newrowid = Py_None;
-      Py_INCREF(newrowid);
+      newrowid = Py_NewRef(Py_None);
     }
     else
     {

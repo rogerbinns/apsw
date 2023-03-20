@@ -1276,8 +1276,7 @@ apswvfspy_xGetLastError(APSWVFS *self)
   else
   {
     Py_CLEAR(text);
-    text = Py_None;
-    Py_INCREF(text);
+    text = Py_NewRef(Py_None);
   }
 
   res = PyTuple_New(2);
@@ -1497,10 +1496,7 @@ apswvfspy_xNextSystemCall(APSWVFS *self, PyObject *args, PyObject *kwds)
   if (zName)
     res = convertutf8string(zName);
   else
-  {
-    Py_INCREF(Py_None);
-    res = Py_None;
-  }
+    res = Py_NewRef(Py_None);
 
   if (PyErr_Occurred())
     AddTraceBackHere(__FILE__, __LINE__, "vfspy.xNextSystemCall", "{s:s}", "name", name);

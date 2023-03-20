@@ -345,8 +345,7 @@ Connection_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSE
   if (self != NULL)
   {
     self->db = 0;
-    self->cursor_factory = (PyObject *)&APSWCursorType;
-    Py_INCREF(self->cursor_factory);
+    self->cursor_factory = Py_NewRef((PyObject *)&APSWCursorType);
     self->inuse = 0;
     self->dependents = PyList_New(0);
     self->stmtcache = 0;
@@ -440,11 +439,7 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
     goto pyexception;
 
   if (vfsused && vfsused->xAccess == apswvfs_xAccess)
-  {
-    PyObject *pyvfsused = (PyObject *)(vfsused->pAppData);
-    Py_INCREF(pyvfsused);
-    self->vfs = pyvfsused;
-  }
+    self->vfs = Py_NewRef((PyObject *)(vfsused->pAppData));
 
   /* record information */
   self->open_flags = PyLong_FromLong(flags);
@@ -634,8 +629,7 @@ Connection_backup(Connection *self, PyObject *args, PyObject *kwds)
     if (!s)
       goto thisfinally;
     PyTuple_SET_ITEM(args, 0, s);
-    PyTuple_SET_ITEM(args, 1, self->dependents);
-    Py_INCREF(self->dependents);
+    PyTuple_SET_ITEM(args, 1, Py_NewRef(self->dependents));
 
     PyErr_SetObject(ExcThreadingViolation, args);
 
@@ -690,9 +684,7 @@ Connection_backup(Connection *self, PyObject *args, PyObject *kwds)
   if (!apswbackup)
     goto finally;
 
-  APSWBackup_init(apswbackup, self, sourceconnection, backup);
-  Py_INCREF(self);
-  Py_INCREF(sourceconnection);
+  APSWBackup_init(apswbackup, (Connection *)Py_NewRef(self), (Connection *)Py_NewRef(sourceconnection), backup);
   backup = NULL;
 
   /* add to dependent lists */
@@ -1754,10 +1746,7 @@ Connection_internal_set_authorizer(Connection *self, PyObject *callable)
 
   Py_CLEAR(self->authorizer);
   if (callable)
-  {
-    Py_INCREF(callable);
-    self->authorizer = callable;
-  }
+    self->authorizer = Py_NewRef(callable);
 
   return 0;
 }
@@ -2180,7 +2169,7 @@ Connection_deserialize(Connection *self, PyObject *args, PyObject *kwds)
 
   PyBuffer_Release(&contents);
 
-  if(!newcontents)
+  if (!newcontents)
   {
     res = SQLITE_NOMEM;
     PyErr_NoMemory();
@@ -2537,8 +2526,7 @@ getaggregatefunctioncontext(sqlite3_context *context)
     return aggfc;
 
   /* fill in with Py_None so we know it is valid */
-  aggfc->aggvalue = Py_None;
-  Py_INCREF(Py_None);
+  aggfc->aggvalue = Py_NewRef(Py_None);
 
   cbinfo = (FunctionCBInfo *)sqlite3_user_data(context);
   assert(cbinfo);
@@ -3185,8 +3173,7 @@ Connection_createscalarfunction(Connection *self, PyObject *args, PyObject *kwds
     cbinfo = allocfunccbinfo(name);
     if (!cbinfo)
       goto finally;
-    cbinfo->scalarfunc = callable;
-    Py_INCREF(callable);
+    cbinfo->scalarfunc = Py_NewRef(callable);
   }
 
   flags |= (deterministic ? SQLITE_DETERMINISTIC : 0);
@@ -3284,8 +3271,7 @@ Connection_createaggregatefunction(Connection *self, PyObject *args, PyObject *k
     if (!cbinfo)
       goto finally;
 
-    cbinfo->aggregatefactory = factory;
-    Py_INCREF(factory);
+    cbinfo->aggregatefactory = Py_NewRef(factory);
   }
 
   PYSQLITE_CON_CALL(
@@ -3871,8 +3857,7 @@ Connection_getexectrace(Connection *self)
   CHECK_CLOSED(self, NULL);
 
   ret = (self->exectrace) ? (self->exectrace) : Py_None;
-  Py_INCREF(ret);
-  return ret;
+  return Py_NewRef(ret);
 }
 
 /** .. method:: getrowtrace() -> Optional[RowTracer]
@@ -3890,8 +3875,7 @@ Connection_getrowtrace(Connection *self)
   CHECK_CLOSED(self, NULL);
 
   ret = (self->rowtrace) ? (self->rowtrace) : Py_None;
-  Py_INCREF(ret);
-  return ret;
+  return Py_NewRef(ret);
 }
 
 /** .. method:: __enter__() -> Connection
@@ -3959,8 +3943,7 @@ Connection_enter(Connection *self)
     return NULL;
 
   self->savepointlevel++;
-  Py_INCREF(self);
-  return (PyObject *)self;
+  return Py_NewRef((PyObject *)self);
 
 error:
   assert(PyErr_Occurred());
@@ -4698,8 +4681,7 @@ Connection_get_cursor_factory(Connection *self)
      that case we return None */
   if (!self->cursor_factory)
     Py_RETURN_NONE;
-  Py_INCREF(self->cursor_factory);
-  return self->cursor_factory;
+  return Py_NewRef(self->cursor_factory);
 }
 
 static int
@@ -4711,8 +4693,7 @@ Connection_set_cursor_factory(Connection *self, PyObject *value)
     return -1;
   }
   Py_CLEAR(self->cursor_factory);
-  Py_INCREF(value);
-  self->cursor_factory = value;
+  self->cursor_factory = Py_NewRef(value);
   return 0;
 }
 
@@ -4759,10 +4740,7 @@ Connection_get_exectrace_attr(Connection *self)
   CHECK_CLOSED(self, NULL);
 
   if (self->exectrace)
-  {
-    Py_INCREF(self->exectrace);
-    return self->exectrace;
-  }
+    return Py_NewRef(self->exectrace);
   Py_RETURN_NONE;
 }
 
@@ -4779,10 +4757,7 @@ Connection_set_exectrace_attr(Connection *self, PyObject *value)
   }
   Py_CLEAR(self->exectrace);
   if (value != Py_None)
-  {
-    Py_INCREF(value);
-    self->exectrace = value;
-  }
+    self->exectrace = Py_NewRef(value);
   return 0;
 }
 
@@ -4811,10 +4786,7 @@ Connection_get_rowtrace_attr(Connection *self)
   CHECK_CLOSED(self, NULL);
 
   if (self->rowtrace)
-  {
-    Py_INCREF(self->rowtrace);
-    return self->rowtrace;
-  }
+    return Py_NewRef(self->rowtrace);
   Py_RETURN_NONE;
 }
 
@@ -4831,10 +4803,7 @@ Connection_set_rowtrace_attr(Connection *self, PyObject *value)
   }
   Py_CLEAR(self->rowtrace);
   if (value != Py_None)
-  {
-    Py_INCREF(value);
-    self->rowtrace = value;
-  }
+    self->rowtrace = Py_NewRef(value);
   return 0;
 }
 
@@ -4876,10 +4845,7 @@ Connection_get_authorizer_attr(Connection *self)
   CHECK_CLOSED(self, NULL);
 
   if (self->authorizer)
-  {
-    Py_INCREF(self->authorizer);
-    return self->authorizer;
-  }
+    return Py_NewRef(self->authorizer);
   Py_RETURN_NONE;
 }
 

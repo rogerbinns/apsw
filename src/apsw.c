@@ -502,8 +502,7 @@ config(PyObject *Py_UNUSED(self), PyObject *args)
       if (res == SQLITE_OK)
       {
         Py_CLEAR(logger_cb);
-        logger_cb = logger;
-        Py_INCREF(logger);
+        logger_cb = Py_NewRef(logger);
       }
     }
     break;
@@ -1793,12 +1792,10 @@ PyInit_apsw(void)
     */
 
 #ifdef APSW_USE_SQLITE_AMALGAMATION
-  Py_INCREF(Py_True);
-  if (PyModule_AddObject(m, "using_amalgamation", Py_True))
+  if (PyModule_AddObject(m, "using_amalgamation", Py_NewRef(Py_True)))
     goto fail;
 #else
-  Py_INCREF(Py_False);
-  if (PyModule_AddObject(m, "using_amalgamation", Py_False))
+  if (PyModule_AddObject(m, "using_amalgamation", Py_NewRef(Py_False)))
     goto fail;
 #endif
 

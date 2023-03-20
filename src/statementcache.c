@@ -282,8 +282,7 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
   {
     assert(query);
     statement->utf8 = utf8;
-    statement->query = query;
-    Py_INCREF(query);
+    statement->query = Py_NewRef(query);
   }
   *statement_out = statement;
   if (!vdbestatement)

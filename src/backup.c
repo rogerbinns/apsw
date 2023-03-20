@@ -90,8 +90,7 @@ APSWBackup_init(APSWBackup *self, Connection *dest, Connection *source, sqlite3_
   self->dest = dest;
   self->source = source;
   self->backup = backup;
-  self->done = Py_False;
-  Py_INCREF(self->done);
+  self->done = Py_NewRef(Py_False);
   self->inuse = 0;
   self->weakreflist = NULL;
 }
@@ -201,8 +200,7 @@ APSWBackup_step(APSWBackup *self, PyObject *args, PyObject *kwds)
     if (self->done != Py_True)
     {
       Py_CLEAR(self->done);
-      self->done = Py_True;
-      Py_INCREF(self->done);
+      self->done = Py_NewRef(Py_True);
     }
     res = SQLITE_OK;
   }
@@ -213,8 +211,7 @@ APSWBackup_step(APSWBackup *self, PyObject *args, PyObject *kwds)
     return NULL;
   }
 
-  Py_INCREF(self->done);
-  return self->done;
+  return Py_NewRef(self->done);
 }
 
 /** .. method:: finish() -> None
@@ -325,8 +322,7 @@ APSWBackup_enter(APSWBackup *self)
   CHECK_USE(NULL);
   CHECK_BACKUP_CLOSED(NULL);
 
-  Py_INCREF(self);
-  return (PyObject *)self;
+  return Py_NewRef((PyObject *)self);
 }
 
 /** .. method:: __exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[types.TracebackType]) -> Optional[bool]
