@@ -8,19 +8,28 @@ if sphinx.version_info < (5, 2):
     import warnings
     warnings.warn("You should use sphinx 5.2+")
 
+
 # monkey patch https://github.com/sphinx-doc/sphinx/issues/11253
 def split(self, input):
     res = []
     for word in sphinx.search.SearchLanguage.split(self, input):
         res.extend(word.split("_"))
     return res
+
+
 import sphinx.search
+
 sphinx.search.SearchEnglish.split = split
 del split
 
 extensions = [
-    'sphinx.ext.autodoc', 'sphinx.ext.extlinks', 'sphinx.ext.intersphinx', "sphinx.ext.viewcode",
-    "sphinx.ext.autosummary"
+    'sphinx.ext.autodoc',
+    'sphinx.ext.extlinks',
+    'sphinx.ext.intersphinx',
+    "sphinx.ext.viewcode",
+    "sphinx.ext.autosummary",
+    # this is needed by read the docs theme
+    "sphinxcontrib.jquery",
 ]
 
 try:
@@ -74,8 +83,12 @@ smartquotes = False
 # Options for HTML output
 
 html_title = f"{ project } { version } documentation"
-html_theme = 'default'
-html_theme_options = {'stickysidebar': True, 'externalrefs': True, 'globaltoc_maxdepth': 1}
+html_theme = 'sphinx_rtd_theme'
+html_theme_options = {
+    "analytics_id": "G-2NR9GDCQLT",
+    "style_external_links": True,
+}
+
 html_favicon = "favicon.ico"
 
 html_static_path = ['.static']
@@ -124,25 +137,3 @@ def setup(app):
 
 
 nitpicky = True
-
-
-### Google analytics
-def add_ga_javascript(app, pagename, templatename, context, doctree):
-    if "epub" in str(app.builder):
-        return
-    context["metatags"] = context.get("metatags", "") + \
-    """
-        <!-- Google tag (gtag.js) -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
-        <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-
-        gtag('config', 'G-2NR9GDCQLT');
-        </script>
-    """
-
-
-def setup(app):
-    app.connect('html-page-context', add_ga_javascript)
