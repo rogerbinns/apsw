@@ -66,6 +66,8 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
 #undef PySequence_Size
 #undef PySet_Add
 #undef PySet_New
+#undef PyStructSequence_New
+#undef PyStructSequence_NewType
 #undef PyTuple_New
 #undef PyType_Ready
 #undef PyUnicode_AsUTF8
@@ -1179,6 +1181,42 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
     }                                                                                                            \
     PyGILState_Release(gilstate);                                                                                \
     _res;                                                                                                        \
+})
+#define PyStructSequence_New(...) \
+({                                                                                                                          \
+    __auto_type _res = 0 ? PyStructSequence_New(__VA_ARGS__) : 0;                                                           \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                        \
+    switch (APSW_FaultInjectControl("PyStructSequence_New", __FILE__, __func__, __LINE__, #__VA_ARGS__, (PyObject**)&_res)) \
+    {                                                                                                                       \
+    case 0x1FACADE:                                                                                                         \
+        assert(_res == 0);                                                                                                  \
+        _res = PyStructSequence_New(__VA_ARGS__);                                                                           \
+        break;                                                                                                              \
+    default:                                                                                                                \
+        assert(_res || PyErr_Occurred());                                                                                   \
+        assert(!(_res && PyErr_Occurred()));                                                                                \
+        break;                                                                                                              \
+    }                                                                                                                       \
+    PyGILState_Release(gilstate);                                                                                           \
+    _res;                                                                                                                   \
+})
+#define PyStructSequence_NewType(...) \
+({                                                                                                                              \
+    __auto_type _res = 0 ? PyStructSequence_NewType(__VA_ARGS__) : 0;                                                           \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                            \
+    switch (APSW_FaultInjectControl("PyStructSequence_NewType", __FILE__, __func__, __LINE__, #__VA_ARGS__, (PyObject**)&_res)) \
+    {                                                                                                                           \
+    case 0x1FACADE:                                                                                                             \
+        assert(_res == 0);                                                                                                      \
+        _res = PyStructSequence_NewType(__VA_ARGS__);                                                                           \
+        break;                                                                                                                  \
+    default:                                                                                                                    \
+        assert(_res || PyErr_Occurred());                                                                                       \
+        assert(!(_res && PyErr_Occurred()));                                                                                    \
+        break;                                                                                                                  \
+    }                                                                                                                           \
+    PyGILState_Release(gilstate);                                                                                               \
+    _res;                                                                                                                       \
 })
 #define PyTuple_New(...) \
 ({                                                                                                                 \

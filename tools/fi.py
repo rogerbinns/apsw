@@ -514,8 +514,11 @@ class Tester:
             assert self.expect_exception
             assert key in self.has_faulted_ever
 
-    def exchook(self, e1, e2, e3):
-        self.add_exc(e2)
+    def exchook(self, *args):
+        if len(args) > 1:
+            self.add_exc(args[1])
+        else:
+            self.add_exc(args[0].exc_value)
 
     def add_exc(self, e):
         if e:

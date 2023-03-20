@@ -193,7 +193,7 @@ returns = {
             PyFloat_FromDouble  PyBool_FromLong PyCode_NewEmpty PyFloat_AsDouble
             PyIter_Next PyList_SetItem PyLong_FromVoidPtr PyMapping_GetItemString PyNumber_Float
             PyNumber_Long PySequence_Fast PySequence_List PySequence_SetItem PyObject_CallFunction
-            PyObject_CallMethod PyFrame_New
+            PyObject_CallMethod PyFrame_New PyStructSequence_NewType PyStructSequence_New
             """.split(),
     # numeric return, no gil
     "no_gil": """
