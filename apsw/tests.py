@@ -929,15 +929,14 @@ class APSW(unittest.TestCase):
         # readonly, explain & expanded_sql attributes
         res = None
 
-
         # tracing errors
         self.assertRaises(TypeError, setattr, c, "exectrace", 3)
         self.assertRaises(TypeError, setattr, c, "rowtrace", 3)
         self.assertIsNone(c.rowtrace)
-        xx=lambda *args: 1/0
+        xx = lambda *args: 1 / 0
         c.rowtrace = xx
         self.assertIs(c.rowtrace, xx)
-        c.rowtrace=None
+        c.rowtrace = None
 
         def tracer(cur, query, bindings):
             nonlocal res
