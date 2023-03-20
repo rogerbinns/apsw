@@ -96,7 +96,7 @@ class run_tests(Command):
     # out that is builtin and defaults to 1 (--quiet is also builtin
     # and forces verbose to 0)
     user_options = [
-        ("show-tests", "s", "Show each test being run"),
+        ("show-tests", "v", "Show each test being run"),
     ]
 
     # see if you can find boolean_options documented anywhere
