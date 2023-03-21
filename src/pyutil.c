@@ -163,12 +163,17 @@ Py_IsNone(const PyObject *val)
 
 #endif
 
-#define Py_TypeName(o) ((o) ? (Py_TYPE(o)->tp_name) : "NULL")
 /* some we made up in the same spirit*/
 static void
 Py_TpFree(PyObject *o)
 {
   Py_TYPE(o)->tp_free(o);
+}
+
+static const char *
+Py_TypeName(PyObject *o)
+{
+  return o ? (Py_TYPE(o)->tp_name) : "NULL";
 }
 
 /*
