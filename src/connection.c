@@ -143,7 +143,7 @@ FunctionCBInfo_dealloc(FunctionCBInfo *self)
   Py_CLEAR(self->scalarfunc);
   Py_CLEAR(self->aggregatefactory);
   Py_CLEAR(self->windowfactory);
-  Py_TYPE(self)->tp_free((PyObject *)self);
+  Py_TpFree((PyObject *)self);
 }
 
 /** .. class:: Connection
@@ -333,7 +333,7 @@ Connection_dealloc(Connection *self)
   assert(!self->dependents || PyList_GET_SIZE(self->dependents) == 0);
   Py_CLEAR(self->dependents);
 
-  Py_TYPE(self)->tp_free((PyObject *)self);
+  Py_TpFree((PyObject *)self);
 }
 
 static PyObject *

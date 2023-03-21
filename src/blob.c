@@ -214,7 +214,7 @@ APSWBlob_dealloc(APSWBlob *self)
 
   APSWBlob_close_internal(self, 2);
 
-  Py_TYPE(self)->tp_free((PyObject *)self);
+  Py_TpFree((PyObject *)self);
 }
 
 /* If the blob is closed, we return the same error as normal python files */

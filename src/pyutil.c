@@ -128,6 +128,7 @@ PyLong_AsInt(PyObject *val)
   return ival;
 }
 
+/* Various routines added in python 3.10 */
 #if PY_VERSION_HEX < 0x030a0000
 static PyObject *
 Py_NewRef(PyObject *o)
@@ -163,6 +164,12 @@ Py_IsNone(const PyObject *val)
 #endif
 
 #define Py_TypeName(o) ((o) ? (Py_TYPE(o)->tp_name) : "NULL")
+/* some we made up in the same spirit*/
+static void
+Py_TpFree(PyObject *o)
+{
+  Py_TYPE(o)->tp_free(o);
+}
 
 /*
 
