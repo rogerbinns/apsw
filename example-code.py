@@ -154,7 +154,7 @@ connection.execute("insert into point values(3, 3, 3)")
 connection.execute("insert into point values(4, 4, 4)")
 connection.execute("END")
 
-# Or use `with`` that does it automatically
+# Or use `with` that does it automatically
 with connection:
     connection.execute("insert into point values(2, 2, 2)")
     connection.execute("insert into point values(3, 3, 3)")
