@@ -128,13 +128,6 @@ PyLong_AsInt(PyObject *val)
   return ival;
 }
 
-/* These correspond to the slots tp_version_tag, tp_finalize, tp_vectorcall */
-#if PY_VERSION_HEX < 0x03080000
-#define PyType_TRAILER 0
-#else
-#define PyType_TRAILER 0, 0, 0
-#endif
-
 #if PY_VERSION_HEX < 0x030a0000
 static PyObject *
 Py_NewRef(PyObject *o)

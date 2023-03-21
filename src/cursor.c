@@ -1722,49 +1722,18 @@ static PyGetSetDef APSWCursor_getset[] = {
     {NULL, NULL, NULL, NULL, NULL}};
 
 static PyTypeObject APSWCursorType = {
-    PyVarObject_HEAD_INIT(NULL, 0) "apsw.Cursor",                                                /*tp_name*/
-    sizeof(APSWCursor),                                                                          /*tp_basicsize*/
-    0,                                                                                           /*tp_itemsize*/
-    (destructor)APSWCursor_dealloc,                                                              /*tp_dealloc*/
-    0,                                                                                           /*tp_print*/
-    0,                                                                                           /*tp_getattr*/
-    0,                                                                                           /*tp_setattr*/
-    0,                                                                                           /*tp_compare*/
-    0,                                                                                           /*tp_repr*/
-    0,                                                                                           /*tp_as_number*/
-    0,                                                                                           /*tp_as_sequence*/
-    0,                                                                                           /*tp_as_mapping*/
-    0,                                                                                           /*tp_hash */
-    0,                                                                                           /*tp_call*/
-    0,                                                                                           /*tp_str*/
-    0,                                                                                           /*tp_getattro*/
-    0,                                                                                           /*tp_setattro*/
-    0,                                                                                           /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG | Py_TPFLAGS_HAVE_GC, /*tp_flags*/
-    Cursor_class_DOC,                                                                            /* tp_doc */
-    (traverseproc)APSWCursor_tp_traverse,                                                        /* tp_traverse */
-    0,                                                                                           /* tp_clear */
-    0,                                                                                           /* tp_richcompare */
-    offsetof(APSWCursor, weakreflist),                                                           /* tp_weaklistoffset */
-    (getiterfunc)APSWCursor_iter,                                                                /* tp_iter */
-    (iternextfunc)APSWCursor_next,                                                               /* tp_iternext */
-    APSWCursor_methods,                                                                          /* tp_methods */
-    0,                                                                                           /* tp_members */
-    APSWCursor_getset,                                                                           /* tp_getset */
-    0,                                                                                           /* tp_base */
-    0,                                                                                           /* tp_dict */
-    0,                                                                                           /* tp_descr_get */
-    0,                                                                                           /* tp_descr_set */
-    0,                                                                                           /* tp_dictoffset */
-    (initproc)APSWCursor_init,                                                                   /* tp_init */
-    0,                                                                                           /* tp_alloc */
-    APSWCursor_new,                                                                              /* tp_new */
-    0,                                                                                           /* tp_free */
-    0,                                                                                           /* tp_is_gc */
-    0,                                                                                           /* tp_bases */
-    0,                                                                                           /* tp_mro */
-    0,                                                                                           /* tp_cache */
-    0,                                                                                           /* tp_subclasses */
-    0,                                                                                           /* tp_weaklist */
-    0,                                                                                           /* tp_del */
-    PyType_TRAILER};
+    PyVarObject_HEAD_INIT(NULL, 0)
+        .tp_name = "apsw.Cursor",
+    .tp_basicsize = sizeof(APSWCursor),
+    .tp_dealloc = (destructor)APSWCursor_dealloc,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,
+    .tp_doc = Cursor_class_DOC,
+    .tp_traverse = (traverseproc)APSWCursor_tp_traverse,
+    .tp_weaklistoffset = offsetof(APSWCursor, weakreflist),
+    .tp_iter = (getiterfunc)APSWCursor_iter,
+    .tp_iternext = (iternextfunc)APSWCursor_next,
+    .tp_methods = APSWCursor_methods,
+    .tp_getset = APSWCursor_getset,
+    .tp_init = (initproc)APSWCursor_init,
+    .tp_new = APSWCursor_new,
+};
