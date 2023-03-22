@@ -450,6 +450,10 @@ class Tester:
                 self.expect_exception.append(apsw_attr("ExtensionLoadingError"))
                 return self.apsw_attr("SQLITE_TOOBIG")
 
+            if fname == "sqlite3_vtab_in_next":
+                self.expect_exception.append(ValueError)
+                return self.apsw_attr("SQLITE_TOOBIG")
+
             # pointers with 0 being failure
             if fname in {
                     "sqlite3_backup_init", "sqlite3_malloc64", "sqlite3_mprintf", "sqlite3_column_name",
