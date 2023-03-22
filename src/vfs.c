@@ -2544,13 +2544,13 @@ apswvfsfile_xFileControl(sqlite3_file *file, int op, void *pArg)
     result = MakeSqliteMsgFromPyException(NULL);
   else
   {
-    if (pyresult != Py_True && pyresult != Py_False)
+    if (!Py_IsTrue(pyresult) && !Py_IsFalse(pyresult))
     {
       PyErr_Format(PyExc_TypeError, "xFileControl must return True or False");
       result = SQLITE_ERROR;
     }
     else
-      result = (pyresult == Py_True) ? SQLITE_OK : SQLITE_NOTFOUND;
+      result = Py_IsTrue(pyresult) ? SQLITE_OK : SQLITE_NOTFOUND;
   }
 
   Py_XDECREF(pyresult);

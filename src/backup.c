@@ -197,7 +197,7 @@ APSWBackup_step(APSWBackup *self, PyObject *args, PyObject *kwds)
 
   if (res == SQLITE_DONE)
   {
-    if (self->done != Py_True)
+    if (!Py_IsTrue(self->done))
     {
       Py_CLEAR(self->done);
       self->done = Py_NewRef(Py_True);
