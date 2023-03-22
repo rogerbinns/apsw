@@ -12,6 +12,11 @@ Added :meth:`apsw.connections` to get all connections. (:issue:`416`)
 
 :func:`sys.unraisablehook` is called correctly (:issue:`410`)
 
+Be stricter where :class:`bool` values are expected (eg
+:meth:`VTTable.BestIndex`), only accepting :class:`int` and
+:class:`bool`.  Previously you could for example supply strings and
+lists, which were almost certainly unintended errors.
+
 3.41.0.0
 ========
 

@@ -38,23 +38,17 @@ argcheck_bool(PyObject *object, void *vparam)
 {
     argcheck_bool_param *param = (argcheck_bool_param *)vparam;
 
-    int val;
-
-    if (!PyBool_Check(object) && !PyLong_Check(object))
-    {
-        PyErr_Format(PyExc_TypeError, "Function argument expected a bool: %s", param->message);
-        return 0;
-    }
-
-    val = PyObject_IsTrue(object);
+    int val = PyObject_IsTrueStrict(object);
     switch (val)
     {
-    case 0:
-    case 1:
+    case -1:
+        if (!PyErr_Occurred())
+            PyErr_Format(PyExc_TypeError, "Function argument expected a bool: %s", param->message);
+        return 0;
+    default:
+        assert(val == 0 || val == 1);
         *param->result = val;
         return 1;
-    default:
-        return 0;
     }
 }
 

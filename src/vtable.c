@@ -562,7 +562,12 @@ SqliteIndexInfo_set_OrderByConsumed(SqliteIndexInfo *self, PyObject *value)
     return -1;
   }
 
-  self->index_info->orderByConsumed = PyObject_IsTrue(value);
+  self->index_info->orderByConsumed = PyObject_IsTrueStrict(value);
+  if(self->index_info->orderByConsumed == -1)
+  {
+    assert(PyErr_Occurred());
+    return -1;
+  }
 
   return 0;
 }
@@ -1541,7 +1546,7 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
                          "self", vtable, "result", OBJ(res), "indices", OBJ(indices), "constraint", OBJ(constraint), "argvindex", OBJ(argvindex));
         goto constraintfail;
       }
-      omitv = PyObject_IsTrue(omit);
+      omitv = PyObject_IsTrueStrict(omit);
       if (omitv == -1)
         goto constraintfail;
       indexinfo->aConstraintUsage[i].argvIndex = PyLong_AsInt(argvindex) + 1;
@@ -1626,7 +1631,7 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
       goto pyexception;
     if (!Py_IsNone(orderbyconsumed))
     {
-      iorderbyconsumed = PyObject_IsTrue(orderbyconsumed);
+      iorderbyconsumed = PyObject_IsTrueStrict(orderbyconsumed);
       if (iorderbyconsumed == -1)
       {
         Py_DECREF(orderbyconsumed);
@@ -2336,7 +2341,7 @@ apswvtabEof(sqlite3_vtab_cursor *pCursor)
   if (!res)
     goto pyexception;
 
-  sqliteres = PyObject_IsTrue(res);
+  sqliteres = PyObject_IsTrueStrict(res);
   if (sqliteres == 0 || sqliteres == 1)
     goto finally;
 

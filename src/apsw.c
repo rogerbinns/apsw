@@ -154,9 +154,6 @@ typedef struct
 
 static void apsw_write_unraisable(PyObject *hookobject);
 
-/* Argument parsing helpers */
-#include "argparse.c"
-
 /* Augment tracebacks */
 #include "traceback.c"
 
@@ -165,6 +162,9 @@ static void apsw_write_unraisable(PyObject *hookobject);
 
 /* various utility functions and macros */
 #include "util.c"
+
+/* Argument parsing helpers */
+#include "argparse.c"
 
 /* Exceptions we can raise */
 #include "exceptions.c"

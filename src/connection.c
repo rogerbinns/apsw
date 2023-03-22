@@ -1435,11 +1435,12 @@ commithookcb(void *context)
   if (!retval)
     goto finally; /* abort hook due to exception */
 
-  ok = PyObject_IsTrue(retval);
+  ok = PyObject_IsTrueStrict(retval);
   assert(ok == -1 || ok == 0 || ok == 1);
   if (ok == -1)
   {
     ok = 1;
+    assert(PyErr_Occurred());
     goto finally; /* abort due to exception in return value */
   }
 
@@ -1615,12 +1616,13 @@ progresshandlercb(void *context)
   if (!retval)
     goto finally; /* abort due to exception */
 
-  ok = PyObject_IsTrue(retval);
+  ok = PyObject_IsTrueStrict(retval);
 
   assert(ok == -1 || ok == 0 || ok == 1);
   if (ok == -1)
   {
     ok = 1;
+    assert(PyErr_Occurred());
     goto finally; /* abort due to exception in result */
   }
 
@@ -1991,7 +1993,7 @@ busyhandlercb(void *context, int ncall)
   if (!retval)
     goto finally; /* abort due to exception */
 
-  result = PyObject_IsTrue(retval);
+  result = PyObject_IsTrueStrict(retval);
   assert(result == -1 || result == 0 || result == 1);
   Py_DECREF(retval);
 
@@ -3882,7 +3884,7 @@ Connection_enter(Connection *self)
     PyObject *retval = PyObject_CallFunction(self->exectrace, "OsO", self, sql, Py_None);
     if (!retval)
       goto error;
-    result = PyObject_IsTrue(retval);
+    result = PyObject_IsTrueStrict(retval);
     Py_DECREF(retval);
     if (result == -1)
     {

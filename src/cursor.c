@@ -795,7 +795,7 @@ APSWCursor_doexectrace(APSWCursor *self, Py_ssize_t savedbindingsoffset)
     assert(PyErr_Occurred());
     return -1;
   }
-  result = PyObject_IsTrue(retval);
+  result = PyObject_IsTrueStrict(retval);
   Py_DECREF(retval);
   assert(result == -1 || result == 0 || result == 1);
   if (result == -1)

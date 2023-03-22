@@ -176,6 +176,19 @@ Py_TypeName(PyObject *o)
   return o ? (Py_TYPE(o)->tp_name) : "NULL";
 }
 
+#undef PyObject_IsTrueStrict
+static int
+PyObject_IsTrueStrict(PyObject *o)
+{
+#include "faultinject.h"
+  if (!PyBool_Check(o) && !PyLong_Check(o))
+  {
+    PyErr_Format(PyExc_TypeError, "Expected a bool, not %s", Py_TypeName(o));
+    return -1;
+  }
+  return PyObject_IsTrue(o);
+}
+
 /*
 
 This is necessary for calling into CPython for methods that cannot
