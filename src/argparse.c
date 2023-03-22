@@ -42,8 +42,9 @@ argcheck_bool(PyObject *object, void *vparam)
     switch (val)
     {
     case -1:
-        if (!PyErr_Occurred())
-            PyErr_Format(PyExc_TypeError, "Function argument expected a bool: %s", param->message);
+        assert(PyErr_Occurred());
+        CHAIN_EXC(
+            PyErr_Format(PyExc_TypeError, "Function argument expected a bool: %s", param->message););
         return 0;
     default:
         assert(val == 0 || val == 1);
