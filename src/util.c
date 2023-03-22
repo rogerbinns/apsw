@@ -255,6 +255,7 @@ convert_value_to_pyobject(sqlite3_value *value, int in_constraint_possible, int 
     assert(sqlite3_value_text(value));
     return PyUnicode_FromStringAndSize((const char *)sqlite3_value_text(value), sqlite3_value_bytes(value));
 
+  default:
   case SQLITE_NULL:
     if (in_constraint_possible && sqlite3_vtab_in_first(value, &in_value) == SQLITE_OK)
     {
@@ -288,9 +289,6 @@ convert_value_to_pyobject(sqlite3_value *value, int in_constraint_possible, int 
   case SQLITE_BLOB:
     return PyBytes_FromStringAndSize(sqlite3_value_blob(value), sqlite3_value_bytes(value));
   }
-  /* can't get here */
-  assert(0);
-  return NULL;
 }
 
 static PyObject *
@@ -332,6 +330,7 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
     return PyUnicode_FromStringAndSize(data, len);
   }
 
+  default:
   case SQLITE_NULL:
     Py_RETURN_NONE;
 
@@ -343,9 +342,6 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
     return PyBytes_FromStringAndSize(data, len);
   }
   }
-  /* can't get here */
-  assert(0);
-  return NULL;
 }
 
 /* Some macros used for frequent operations */
