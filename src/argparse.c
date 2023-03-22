@@ -8,7 +8,7 @@ static int
 argcheck_Optional_Callable(PyObject *object, void *vparam)
 {
     argcheck_Optional_Callable_param *param = (argcheck_Optional_Callable_param *)vparam;
-    if (object == Py_None)
+    if (Py_IsNone(object))
         *param->result = NULL;
     else if (PyCallable_Check(object))
         *param->result = object;
@@ -115,7 +115,7 @@ argcheck_Optional_str_URIFilename(PyObject *object, void *vparam)
 {
     argcheck_Optional_str_URIFilename_param *param = (argcheck_Optional_str_URIFilename_param *)vparam;
 
-    if (object == Py_None || PyUnicode_Check(object) || PyObject_IsInstance(object, (PyObject *)&APSWURIFilenameType))
+    if (Py_IsNone(object) || PyUnicode_Check(object) || PyObject_IsInstance(object, (PyObject *)&APSWURIFilenameType))
     {
         *param->result = object;
         return 1;
@@ -153,7 +153,7 @@ static int
 argcheck_Optional_Bindings(PyObject *object, void *vparam)
 {
     argcheck_Optional_Bindings_param *param = (argcheck_Optional_Bindings_param *)vparam;
-    if (object == Py_None)
+    if (Py_IsNone(object))
     {
         *param->result = NULL;
         return 1;

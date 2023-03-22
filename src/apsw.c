@@ -486,7 +486,7 @@ config(PyObject *Py_UNUSED(self), PyObject *args)
     PyObject *logger;
     if (!PyArg_ParseTuple(args, "iO", &optdup, &logger))
       return NULL;
-    if (logger == Py_None)
+    if (Py_IsNone(logger))
     {
       res = sqlite3_config((int)opt, NULL);
       if (res == SQLITE_OK)
@@ -1228,7 +1228,7 @@ static PyObject *
 formatsqlvalue(PyObject *Py_UNUSED(self), PyObject *value)
 {
   /* NULL/None */
-  if (value == Py_None)
+  if (Py_IsNone(value))
     return PyUnicode_FromString("NULL");
 
   /* Integer */

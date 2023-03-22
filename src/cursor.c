@@ -581,7 +581,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
 
   assert(!PyErr_Occurred());
 
-  if (obj == Py_None)
+  if (Py_IsNone(obj))
     PYSQLITE_CUR_CALL(res = sqlite3_bind_null(self->statement->vdbestatement, arg));
   else if (PyLong_Check(obj))
   {
@@ -1336,7 +1336,7 @@ again:
     Py_DECREF(retval);
     if (!r2)
       return NULL;
-    if (r2 == Py_None)
+    if (Py_IsNone(r2))
     {
       Py_DECREF(r2);
       goto again;
@@ -1539,13 +1539,13 @@ APSWCursor_set_exectrace_attr(APSWCursor *self, PyObject *value)
   CHECK_USE(-1);
   CHECK_CURSOR_CLOSED(-1);
 
-  if (value != Py_None && !PyCallable_Check(value))
+  if (!Py_IsNone(value) && !PyCallable_Check(value))
   {
     PyErr_Format(PyExc_TypeError, "exectrace expected a Callable");
     return -1;
   }
   Py_CLEAR(self->exectrace);
-  if (value != Py_None)
+  if (!Py_IsNone(value))
     self->exectrace = Py_NewRef(value);
   return 0;
 }
@@ -1584,13 +1584,13 @@ APSWCursor_set_rowtrace_attr(APSWCursor *self, PyObject *value)
   CHECK_USE(-1);
   CHECK_CURSOR_CLOSED(-1);
 
-  if (value != Py_None && !PyCallable_Check(value))
+  if (!Py_IsNone(value) && !PyCallable_Check(value))
   {
     PyErr_Format(PyExc_TypeError, "rowtrace expected a Callable");
     return -1;
   }
   Py_CLEAR(self->rowtrace);
-  if (value != Py_None)
+  if (!Py_IsNone(value))
     self->rowtrace = Py_NewRef(value);
   return 0;
 }

@@ -645,7 +645,7 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *args, PyObject *kwds)
       return NULL;
   }
 
-  if (name == Py_None)
+  if (Py_IsNone(name))
   {
     filename = NULL;
   }
@@ -888,7 +888,7 @@ apswvfs_xDlError(sqlite3_vfs *vfs, int nByte, char *zErrMsg)
 
   pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xDlError", 0, "()");
 
-  if (pyresult && pyresult != Py_None)
+  if (pyresult && !Py_IsNone(pyresult))
   {
     if (PyUnicode_Check(pyresult))
     {
@@ -978,7 +978,7 @@ apswvfs_xRandomness(sqlite3_vfs *vfs, int nByte, char *zOut)
 
   pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xRandomness", 1, "(i)", nByte);
 
-  if (pyresult && pyresult != Py_None)
+  if (pyresult && !Py_IsNone(pyresult))
   {
     int asrb;
     Py_buffer py3buffer;
@@ -1201,7 +1201,7 @@ apswvfs_xGetLastError(sqlite3_vfs *vfs, int nByte, char *zErrMsg)
   if (PyErr_Occurred())
     goto end;
 
-  if (item1 == Py_None)
+  if (Py_IsNone(item1))
     goto end;
 
   if (!PyUnicode_Check(item1))
@@ -1441,7 +1441,7 @@ apswvfs_xNextSystemCall(sqlite3_vfs *vfs, const char *zName)
   pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xNextSystemCall", 1, "(s)",
                                 zName);
 
-  if (pyresult && pyresult != Py_None)
+  if (pyresult && !Py_IsNone(pyresult))
   {
     if (PyUnicode_Check(pyresult))
     {
@@ -2333,7 +2333,7 @@ apswvfsfile_xSectorSize(sqlite3_file *file)
   pyresult = Call_PythonMethodV(apswfile->file, "xSectorSize", 0, "()");
   if (!pyresult)
     result = MakeSqliteMsgFromPyException(NULL);
-  else if (pyresult != Py_None)
+  else if (!Py_IsNone(pyresult))
   {
     if (PyLong_Check(pyresult))
       result = PyLong_AsInt(pyresult); /* returns -1 on error/overflow */
@@ -2383,7 +2383,7 @@ apswvfsfile_xDeviceCharacteristics(sqlite3_file *file)
   pyresult = Call_PythonMethodV(apswfile->file, "xDeviceCharacteristics", 0, "()");
   if (!pyresult)
     result = MakeSqliteMsgFromPyException(NULL);
-  else if (pyresult != Py_None)
+  else if (!Py_IsNone(pyresult))
   {
     if (PyLong_Check(pyresult))
       result = PyLong_AsInt(pyresult); /* sets to -1 on error */

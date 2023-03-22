@@ -187,10 +187,10 @@ Connection_remove_dependent(Connection *self, PyObject *o)
   {
     PyObject *wr = PyList_GET_ITEM(self->dependents, i);
     PyObject *wo = PyWeakref_GetObject(wr);
-    if (wo == o || wo == Py_None)
+    if (Py_Is(wo, o) || Py_IsNone(wo))
     {
       PyList_SetSlice(self->dependents, i, i + 1, NULL);
-      if (wo == Py_None)
+      if (Py_IsNone(wo))
         continue;
       else
         return;
@@ -215,7 +215,7 @@ Connection_close_internal(Connection *self, int force)
   {
     PyObject *closeres, *item, *wr = PyList_GET_ITEM(self->dependents, 0);
     item = PyWeakref_GetObject(wr);
-    if (item == Py_None)
+    if (Py_IsNone(item))
     {
       Connection_remove_dependent(self, item);
       continue;
@@ -1014,7 +1014,7 @@ updatecb(void *context, int updatetype, char const *databasename, char const *ta
 
   assert(self);
   assert(self->updatehook);
-  assert(self->updatehook != Py_None);
+  assert(!Py_IsNone(self->updatehook));
 
   gilstate = PyGILState_Ensure();
 
@@ -1099,7 +1099,7 @@ rollbackhookcb(void *context)
 
   assert(self);
   assert(self->rollbackhook);
-  assert(self->rollbackhook != Py_None);
+  assert(!Py_IsNone(self->rollbackhook));
 
   gilstate = PyGILState_Ensure();
 
@@ -1167,7 +1167,7 @@ profilecb(void *context, const char *statement, sqlite_uint64 runtime)
 
   assert(self);
   assert(self->profile);
-  assert(self->profile != Py_None);
+  assert(!Py_IsNone(self->profile));
 
   gilstate = PyGILState_Ensure();
 
@@ -1421,7 +1421,7 @@ commithookcb(void *context)
 
   assert(self);
   assert(self->commithook);
-  assert(self->commithook != Py_None);
+  assert(!Py_IsNone(self->commithook));
 
   gilstate = PyGILState_Ensure();
 
@@ -1507,7 +1507,7 @@ walhookcb(void *context, sqlite3 *db, const char *dbname, int npages)
 
   assert(self);
   assert(self->walhook);
-  assert(self->walhook != Py_None);
+  assert(!Py_IsNone(self->walhook));
   assert(self->db == db);
 
   gilstate = PyGILState_Ensure();
@@ -1690,7 +1690,7 @@ authorizercb(void *context, int operation, const char *paramone, const char *par
 
   assert(self);
   assert(self->authorizer);
-  assert(self->authorizer != Py_None);
+  assert(!Py_IsNone(self->authorizer));
 
   gilstate = PyGILState_Ensure();
 
@@ -1734,7 +1734,7 @@ Connection_internal_set_authorizer(Connection *self, PyObject *callable)
   /* CHECK_USE and CHECK_CLOSED not needed because caller does them */
   int res = SQLITE_OK;
 
-  assert(callable != Py_None);
+  assert(!Py_IsNone(callable));
 
   PYSQLITE_CON_CALL(res = sqlite3_set_authorizer(self->db, callable ? authorizercb : NULL, callable ? self : NULL));
 
@@ -2318,7 +2318,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
      APSWCursor_dobinding.  If you fix anything here then do it there as
      well. */
 
-  if (obj == Py_None)
+  if (Py_IsNone(obj))
   {
     sqlite3_result_null(context);
     return 1;
@@ -3621,7 +3621,7 @@ Connection_createmodule(Connection *self, PyObject *args, PyObject *kwds)
       return NULL;
   }
 
-  if (datasource != Py_None)
+  if (!Py_IsNone(datasource))
   {
     Py_INCREF(datasource);
     vti = PyMem_Calloc(1, sizeof(vtableinfo));
@@ -3876,7 +3876,7 @@ Connection_enter(Connection *self)
     return PyErr_NoMemory();
 
   /* exec tracing - we allow it to prevent */
-  if (self->exectrace && self->exectrace != Py_None)
+  if (self->exectrace && !Py_IsNone(self->exectrace))
   {
     int result;
     PyObject *retval = PyObject_CallFunction(self->exectrace, "OsO", self, sql, Py_None);
@@ -3935,7 +3935,7 @@ static int connection_trace_and_exec(Connection *self, int release, int sp, int 
     return -1;
   }
 
-  if (self->exectrace && self->exectrace != Py_None)
+  if (self->exectrace && !Py_IsNone(self->exectrace))
   {
     PyObject *result;
     PyObject *etype = NULL, *eval = NULL, *etb = NULL;
@@ -3994,7 +3994,7 @@ Connection_exit(Connection *self, PyObject *args, PyObject *kwds)
 
   /* try the commit first because it may fail in which case we'll need
      to roll it back - see issue 98 */
-  if (etype == Py_None && evalue == Py_None && etraceback == Py_None)
+  if (Py_IsNone(etype) && Py_IsNone(evalue) && Py_IsNone(etraceback))
   {
     res = connection_trace_and_exec(self, 1, sp, 0);
     if (res == -1)
@@ -4711,7 +4711,7 @@ Connection_set_exectrace_attr(Connection *self, PyObject *value)
   CHECK_USE(-1);
   CHECK_CLOSED(self, -1);
 
-  if (value != Py_None && !PyCallable_Check(value))
+  if (!Py_IsNone(value) && !PyCallable_Check(value))
   {
     PyErr_Format(PyExc_TypeError, "exectrace expected a Callable");
     return -1;
@@ -4757,13 +4757,13 @@ Connection_set_rowtrace_attr(Connection *self, PyObject *value)
   CHECK_USE(-1);
   CHECK_CLOSED(self, -1);
 
-  if (value != Py_None && !PyCallable_Check(value))
+  if (!Py_IsNone(value) && !PyCallable_Check(value))
   {
     PyErr_Format(PyExc_TypeError, "rowtrace expected a Callable");
     return -1;
   }
   Py_CLEAR(self->rowtrace);
-  if (value != Py_None)
+  if (!Py_IsNone(value))
     self->rowtrace = Py_NewRef(value);
   return 0;
 }
@@ -4816,12 +4816,12 @@ Connection_set_authorizer_attr(Connection *self, PyObject *value)
   CHECK_USE(-1);
   CHECK_CLOSED(self, -1);
 
-  if (value != Py_None && !PyCallable_Check(value))
+  if (!Py_IsNone(value) && !PyCallable_Check(value))
   {
     PyErr_Format(PyExc_TypeError, "authorizer expected a Callable or None");
     return -1;
   }
-  return Connection_internal_set_authorizer(self, (value != Py_None) ? value : NULL);
+  return Connection_internal_set_authorizer(self, (!Py_IsNone(value)) ? value : NULL);
 }
 
 /** .. attribute:: system_errno

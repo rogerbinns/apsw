@@ -1468,7 +1468,7 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
     goto pyexception;
 
   /* do we have useful index information? */
-  if (res == Py_None)
+  if (Py_IsNone(res))
     goto finally;
 
   /* check we have a sequence */
@@ -1487,7 +1487,7 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
   if (!indices)
     goto pyexception;
 
-  if (indices != Py_None)
+  if (!Py_IsNone(indices))
   {
     if (!PySequence_Check(indices) || PySequence_Size(indices) != nconstraints)
     {
@@ -1508,7 +1508,7 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
         goto pyexception;
       j++;
       /* it can be None */
-      if (constraint == Py_None)
+      if (Py_IsNone(constraint))
       {
         Py_DECREF(constraint);
         continue;
@@ -1566,7 +1566,7 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
     PyObject *idxnum = PySequence_GetItem(res, 1);
     if (!idxnum)
       goto pyexception;
-    if (idxnum != Py_None)
+    if (!Py_IsNone(idxnum))
     {
       if (!PyLong_Check(idxnum))
       {
@@ -1588,7 +1588,7 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
     idxstr = PySequence_GetItem(res, 2);
     if (!idxstr)
       goto pyexception;
-    if (idxstr != Py_None)
+    if (!Py_IsNone(idxstr))
     {
       if (!PyUnicode_Check(idxstr))
       {
@@ -1624,7 +1624,7 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
     orderbyconsumed = PySequence_GetItem(res, 3);
     if (!orderbyconsumed)
       goto pyexception;
-    if (orderbyconsumed != Py_None)
+    if (!Py_IsNone(orderbyconsumed))
     {
       iorderbyconsumed = PyObject_IsTrue(orderbyconsumed);
       if (iorderbyconsumed == -1)
@@ -1646,7 +1646,7 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
     estimatedcost = PySequence_GetItem(res, 4);
     if (!estimatedcost)
       goto pyexception;
-    if (estimatedcost != Py_None)
+    if (!Py_IsNone(estimatedcost))
     {
       festimatedcost = PyNumber_Float(estimatedcost);
       if (!festimatedcost)
@@ -2028,7 +2028,7 @@ apswvtabFindFunction(sqlite3_vtab *pVtab, int nArg, const char *zName,
     goto error;
   }
 
-  if (res != Py_None)
+  if (!Py_IsNone(res))
   {
     if (!av->functions)
       av->functions = PyList_New(0);
