@@ -3504,8 +3504,10 @@ class APSW(unittest.TestCase):
                 return retval
 
             def BestIndex4(self, constraints, orderbys):
-                # this gives ValueError ("bad" is not a float)
                 return (None, 12, u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}", "anything", "bad")
+
+            def BestIndex4_1(self, constraints, orderbys):
+                return (None, 12, u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}", True, "bad")
 
             def BestIndex5(self, constraints, orderbys):
                 # unicode error
@@ -3780,6 +3782,8 @@ class APSW(unittest.TestCase):
         for i in range(VTable.numbadbextindex):
             self.assertRaises(TypeError, cur.execute, allconstraints)
         VTable.BestIndex = VTable.BestIndex4
+        self.assertRaises(TypeError, cur.execute, allconstraints)
+        VTable.BestIndex = VTable.BestIndex4_1
         self.assertRaises(ValueError, cur.execute, allconstraints)
         VTable.BestIndex = VTable.BestIndex6
         self.assertRaises(ZeroDivisionError, cur.execute, allconstraints)
