@@ -3294,7 +3294,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.ExtensionLoadingError, self.db.loadextension, LOADEXTENSIONFILENAME)
         self.assertEqual(self.db.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, -1), 0)
         self.db.enableloadextension(False)
-        self.assertRaises(ZeroDivisionError, self.db.enableloadextension, BadIsTrue())
+        self.assertRaises(TypeError, self.db.enableloadextension, BadIsTrue())
         # should still be disabled
         self.assertEqual(self.db.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, 0), 0)
         self.assertRaises(apsw.ExtensionLoadingError, self.db.loadextension, LOADEXTENSIONFILENAME)
