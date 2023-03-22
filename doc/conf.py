@@ -119,7 +119,7 @@ pdf_stylesheets = ["sphinx", "a4"]
 pdf_fit_mode = "shrink"
 
 # latexpdf
-latex_engine = "xelatex"
+latex_engine = "lualatex"
 latex_logo = html_logo
 
 ### Extra gunk
