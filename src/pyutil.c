@@ -4,6 +4,42 @@
   See the accompanying LICENSE file.
 */
 
+/* Various routines added in python 3.10 */
+#if PY_VERSION_HEX < 0x030a0000
+static PyObject *
+Py_NewRef(PyObject *o)
+{
+  Py_INCREF(o);
+  return o;
+}
+
+static int
+Py_Is(const PyObject *left, const PyObject *right)
+{
+  return left == right;
+}
+
+static int
+Py_IsTrue(const PyObject *val)
+{
+  return Py_Is(val, Py_True);
+}
+
+static int
+Py_IsFalse(const PyObject *val)
+{
+  return Py_Is(val, Py_False);
+}
+
+static int
+Py_IsNone(const PyObject *val)
+{
+  return Py_Is(val, Py_None);
+}
+
+#endif
+
+
 /* used in calls to AddTraceBackHere where O format takes non-null but
    we often have null so convert to None.  This can't be done as a portable
    macro because v would end up double evaluated */
@@ -127,41 +163,6 @@ PyLong_AsInt(PyObject *val)
   }
   return ival;
 }
-
-/* Various routines added in python 3.10 */
-#if PY_VERSION_HEX < 0x030a0000
-static PyObject *
-Py_NewRef(PyObject *o)
-{
-  Py_INCREF(o);
-  return o;
-}
-
-static int
-Py_Is(const PyObject *left, const PyObject *right)
-{
-  return left == right;
-}
-
-static int
-Py_IsTrue(const PyObject *val)
-{
-  return Py_Is(val, Py_True);
-}
-
-static int
-Py_IsFalse(const PyObject *val)
-{
-  return Py_Is(val, Py_False);
-}
-
-static int
-Py_IsNone(const PyObject *val)
-{
-  return Py_Is(val, Py_None);
-}
-
-#endif
 
 /* some we made up in the same spirit*/
 static void
