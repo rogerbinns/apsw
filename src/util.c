@@ -120,7 +120,7 @@ static PyStructSequence_Desc apsw_unraisable_info = {
     .n_in_sequence = 5,
     .fields = apsw_unraisable_info_fields};
 
-static PyTypeObject *apsw_unraisable_info_type;
+static PyTypeObject apsw_unraisable_info_type;
 
 static void
 apsw_write_unraisable(PyObject *hookobject)
@@ -189,7 +189,7 @@ apsw_write_unraisable(PyObject *hookobject)
   {
     Py_INCREF(excepthook); /* borrowed reference from PySys_GetObject so we increment */
     PyErr_Clear();
-    PyObject *arg = PyStructSequence_New(apsw_unraisable_info_type);
+    PyObject *arg = PyStructSequence_New(&apsw_unraisable_info_type);
     if (arg)
     {
       PyStructSequence_SetItem(arg, 0, Py_NewRef(OBJ(err_type)));
