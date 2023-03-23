@@ -1711,7 +1711,7 @@ PyInit_apsw(void)
   */
   if (Py_REFCNT(&apsw_unraisable_info_type) == 0)
     if (PyStructSequence_InitType2(&apsw_unraisable_info_type, &apsw_unraisable_info))
-    goto fail;
+      goto fail;
 
   m = apswmodule = PyModule_Create2(&apswmoduledef, PYTHON_API_VERSION);
 
