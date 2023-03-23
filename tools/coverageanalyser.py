@@ -2,7 +2,7 @@
 #
 # See the accompanying LICENSE file.
 #
-# Work out how much coverage we actually have
+# Work out how much coverage we actually have across the various source files
 
 import glob
 import os
@@ -28,13 +28,24 @@ for f in names:
         continue
     file_exec = 0
     file_total = 0
+
+    in_test_fixture = False
     with open(f, "rt") as fd:
         for line in fd:
             if ":" not in line: continue
-            line = line.split(":", 1)[0].strip()
-            if line == "-":
+            count, linenum, line = line.split(":", 2)
+            line = line.strip()
+            if in_test_fixture:
+                if line.startswith("#else") or line.startswith("#endif"):
+                    in_test_fixture = False
                 continue
-            if line != "#####":
+            if line == "#ifdef APSW_TESTFIXTURES":
+                in_test_fixture = True
+                continue
+            count = count.strip()
+            if count == "-":
+                continue
+            if count != "#####":
                 lines_executed += 1
                 file_exec += 1
             lines_total += 1
