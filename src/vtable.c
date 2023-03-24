@@ -561,7 +561,7 @@ SqliteIndexInfo_set_OrderByConsumed(SqliteIndexInfo *self, PyObject *value)
   }
 
   self->index_info->orderByConsumed = PyObject_IsTrueStrict(value);
-  if(self->index_info->orderByConsumed == -1)
+  if (self->index_info->orderByConsumed == -1)
   {
     assert(PyErr_Occurred());
     return -1;
