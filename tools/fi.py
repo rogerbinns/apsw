@@ -392,24 +392,6 @@ class Tester:
             # logging will fail
             code = code.replace("apsw.ext.log_sqlite()",
                                 "with contextlib.suppress(apsw.MisuseError): apsw.ext.log_sqlite(level=0)")
-            # make it a function so we can return and put returns in
-            code = code.split("\n")
-            seen_future = False
-            for i in range(len(code)):
-                if "__future__" in code[i]:
-                    seen_future = True
-                    continue
-                if not seen_future:
-                    continue
-                if not code[i].strip():
-                    code[i] = "def example():"
-                    start = i + 1
-                    break
-            for i in range(start, len(code)):
-                if code[i].startswith("###"):
-                    code[i] = "if expect_exception: return " + code[i]
-                code[i] = " " + code[i]
-            code = "\n".join(code)
         self.example_code_lines = len(code.split("\n"))
         self.example_code = compile(code, "example-code.py", 'exec')
 
