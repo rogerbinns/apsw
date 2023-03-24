@@ -1017,10 +1017,9 @@ query = """WITH RECURSIVE
 def trace_hook(trace: Dict) -> None:
     # check the sql and connection are as expected and remove from trace
     # so we don't print them
-    assert trace.pop("sql") == query
+    assert trace.pop("sql") == query and trace.pop("connection") is connection
     print("code is ", apsw.mapping_trace_codes[trace["code"]])
     print(pprint.pformat(trace), "\n")
-
 
 connection.trace_v2(apsw.SQLITE_TRACE_STMT | apsw.SQLITE_TRACE_PROFILE | apsw.SQLITE_TRACE_ROW, trace_hook)
 
