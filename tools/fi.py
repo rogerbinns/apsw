@@ -334,17 +334,17 @@ def exercise(example_code, expect_exception):
 
     import apsw.tests
     apsw.tests.testtimeout = False
-    apsw.tests.vfstestdb("/tmp/dbfile-delme-vfswal", "apswfivfs", mode="wal")
+    apsw.tests.vfstestdb(f"{ tmpdir.name }/dbfile-delme-vfswal", "apswfivfs", mode="wal")
 
     file_cleanup()
     apsw.tests.testtimeout = True
-    apsw.tests.vfstestdb("/tmp/dbfile-delme-vfsstd", "apswfivfs")
+    apsw.tests.vfstestdb(f"{ tmpdir.name }/dbfile-delme-vfsstd", "apswfivfs")
 
     if expect_exception:
         return
 
     file_cleanup()
-    exec(example_code, {"print": lambda *args: None, "expect_exception": expect_exception}, None)
+    exec(example_code, {"print": lambda *args: None}, None)
 
     if expect_exception:
         return
