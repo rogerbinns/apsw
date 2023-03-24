@@ -29,7 +29,7 @@ then
     CFLAGS="$CFLAGS -DAPSW_USE_SQLITE_CONFIG"
 fi
 
-PROFILE="-Og --coverage"
+PROFILE="-O0 --coverage"
 
 export APSW_TEST_LARGE=t
 
