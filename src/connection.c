@@ -1306,8 +1306,6 @@ tracehook_cb(unsigned code, void *vconnection, void *one, void *two)
 #undef K
 #undef V
 
-  default:
-    abort(); /* something undocumented has happened */
   }
 
   if (param)
