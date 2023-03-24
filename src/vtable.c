@@ -296,9 +296,7 @@ SqliteIndexInfo_get_aOrderBy_desc(SqliteIndexInfo *self, PyObject *args, PyObjec
   }
   CHECK_RANGE(nOrderBy);
 
-  if (self->index_info->aOrderBy[which].desc)
-    Py_RETURN_TRUE;
-  Py_RETURN_FALSE;
+  return Py_NewRef(self->index_info->aOrderBy[which].desc ? Py_True : Py_False);
 }
 
 /** .. method:: get_aConstraintUsage_argvIndex(which: int) -> int
