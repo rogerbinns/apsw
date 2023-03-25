@@ -46,6 +46,11 @@ def exercise(example_code, expect_exception):
     except apsw.MisuseError:
         pass
 
+    try:
+        apsw.this_can_error
+    except AttributeError:
+        pass
+
     apsw.initialize()
     apsw.log(3, "A message")
     apsw.status(apsw.SQLITE_STATUS_MEMORY_USED)
