@@ -3,8 +3,8 @@ Change History
 
 .. currentmodule:: apsw
 
-next
-====
+3.41.2.0
+========
 
 Fixed :issue:`412` in :meth:`apsw.ext.make_virtual_module`.
 
