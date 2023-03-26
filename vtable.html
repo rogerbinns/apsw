@@ -1,63 +1,185 @@
-
 <!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
-
-        <!-- Google tag (gtag.js) -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
-        <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-
-        gtag('config', 'G-2NR9GDCQLT');
-        </script>
-    
-    <title>Virtual Tables &#8212; APSW 3.41.0.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
-    
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
-    
-    <link rel="icon" href="_static/favicon.ico"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Virtual Tables &mdash; APSW 3.41.2.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
     <link rel="next" title="Virtual File System (VFS)" href="vfs.html" />
     <link rel="prev" title="Backup" href="backup.html" /> 
-  </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="vfs.html" title="Virtual File System (VFS)"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="backup.html" title="Backup"
-             accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.41.0.0 documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Virtual Tables</a></li> 
-      </ul>
-    </div>  
+</head>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            APSW
+              <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                3.41.2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="download.html">Download</a></li>
+<li class="toctree-l1"><a class="reference internal" href="build.html">Building</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apsw.html">APSW Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="connection.html">Connections to a database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cursor.html">Cursors (executing SQL)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="blob.html">Blob Input/Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Virtual Tables</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#indexinfo-class">IndexInfo class</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.IndexInfo"><code class="docutils literal notranslate"><span class="pre">IndexInfo</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.colUsed"><code class="docutils literal notranslate"><span class="pre">IndexInfo.colUsed</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.distinct"><code class="docutils literal notranslate"><span class="pre">IndexInfo.distinct</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.estimatedCost"><code class="docutils literal notranslate"><span class="pre">IndexInfo.estimatedCost</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.estimatedRows"><code class="docutils literal notranslate"><span class="pre">IndexInfo.estimatedRows</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.get_aConstraintUsage_argvIndex"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aConstraintUsage_argvIndex()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.get_aConstraintUsage_in"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aConstraintUsage_in()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.get_aConstraintUsage_omit"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aConstraintUsage_omit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.get_aConstraint_collation"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aConstraint_collation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.get_aConstraint_iColumn"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aConstraint_iColumn()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.get_aConstraint_op"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aConstraint_op()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.get_aConstraint_rhs"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aConstraint_rhs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.get_aConstraint_usable"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aConstraint_usable()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.get_aOrderBy_desc"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aOrderBy_desc()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.get_aOrderBy_iColumn"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aOrderBy_iColumn()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.idxFlags"><code class="docutils literal notranslate"><span class="pre">IndexInfo.idxFlags</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.idxNum"><code class="docutils literal notranslate"><span class="pre">IndexInfo.idxNum</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.idxStr"><code class="docutils literal notranslate"><span class="pre">IndexInfo.idxStr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.nConstraint"><code class="docutils literal notranslate"><span class="pre">IndexInfo.nConstraint</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.nOrderBy"><code class="docutils literal notranslate"><span class="pre">IndexInfo.nOrderBy</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.orderByConsumed"><code class="docutils literal notranslate"><span class="pre">IndexInfo.orderByConsumed</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.set_aConstraintUsage_argvIndex"><code class="docutils literal notranslate"><span class="pre">IndexInfo.set_aConstraintUsage_argvIndex()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.set_aConstraintUsage_in"><code class="docutils literal notranslate"><span class="pre">IndexInfo.set_aConstraintUsage_in()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.set_aConstraintUsage_omit"><code class="docutils literal notranslate"><span class="pre">IndexInfo.set_aConstraintUsage_omit()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#vtmodule-class">VTModule class</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTModule"><code class="docutils literal notranslate"><span class="pre">VTModule</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.VTModule.Connect"><code class="docutils literal notranslate"><span class="pre">VTModule.Connect()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.VTModule.Create"><code class="docutils literal notranslate"><span class="pre">VTModule.Create()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.VTModule.ShadowName"><code class="docutils literal notranslate"><span class="pre">VTModule.ShadowName()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#vttable-class">VTTable class</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTTable"><code class="docutils literal notranslate"><span class="pre">VTTable</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.Begin"><code class="docutils literal notranslate"><span class="pre">VTTable.Begin()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.BestIndex"><code class="docutils literal notranslate"><span class="pre">VTTable.BestIndex()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.BestIndexObject"><code class="docutils literal notranslate"><span class="pre">VTTable.BestIndexObject()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.Commit"><code class="docutils literal notranslate"><span class="pre">VTTable.Commit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.Destroy"><code class="docutils literal notranslate"><span class="pre">VTTable.Destroy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.Disconnect"><code class="docutils literal notranslate"><span class="pre">VTTable.Disconnect()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.FindFunction"><code class="docutils literal notranslate"><span class="pre">VTTable.FindFunction()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.Open"><code class="docutils literal notranslate"><span class="pre">VTTable.Open()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.Release"><code class="docutils literal notranslate"><span class="pre">VTTable.Release()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.Rename"><code class="docutils literal notranslate"><span class="pre">VTTable.Rename()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.Rollback"><code class="docutils literal notranslate"><span class="pre">VTTable.Rollback()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.Savepoint"><code class="docutils literal notranslate"><span class="pre">VTTable.Savepoint()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.Sync"><code class="docutils literal notranslate"><span class="pre">VTTable.Sync()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.UpdateChangeRow"><code class="docutils literal notranslate"><span class="pre">VTTable.UpdateChangeRow()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.UpdateDeleteRow"><code class="docutils literal notranslate"><span class="pre">VTTable.UpdateDeleteRow()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.UpdateInsertRow"><code class="docutils literal notranslate"><span class="pre">VTTable.UpdateInsertRow()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#vtcursor-class">VTCursor class</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTCursor"><code class="docutils literal notranslate"><span class="pre">VTCursor</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.VTCursor.Close"><code class="docutils literal notranslate"><span class="pre">VTCursor.Close()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.VTCursor.Column"><code class="docutils literal notranslate"><span class="pre">VTCursor.Column()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.VTCursor.ColumnNoChange"><code class="docutils literal notranslate"><span class="pre">VTCursor.ColumnNoChange()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.VTCursor.Eof"><code class="docutils literal notranslate"><span class="pre">VTCursor.Eof()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.VTCursor.Filter"><code class="docutils literal notranslate"><span class="pre">VTCursor.Filter()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.VTCursor.Next"><code class="docutils literal notranslate"><span class="pre">VTCursor.Next()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.VTCursor.Rowid"><code class="docutils literal notranslate"><span class="pre">VTCursor.Rowid()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#troubleshooting-virtual-tables">Troubleshooting virtual tables</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="types.html">Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmarking.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="copyright.html">Copyright and License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changes.html">Change History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="py-modindex.html">Module Index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">APSW</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Virtual Tables</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/vtable.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul><div class="rst-breadcrumbs-buttons" role="navigation" aria-label="Sequential page navigation">
+        <a href="backup.html" class="btn btn-neutral float-left" title="Backup" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="vfs.html" class="btn btn-neutral float-right" title="Virtual File System (VFS)" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+  </div>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
   <section id="virtual-tables">
-<span id="virtualtables"></span><h1>Virtual Tables<a class="headerlink" href="#virtual-tables" title="Permalink to this heading">¶</a></h1>
+<span id="virtualtables"></span><h1>Virtual Tables<a class="headerlink" href="#virtual-tables" title="Permalink to this heading"></a></h1>
 <p><a class="reference external" href="https://sqlite.org/vtab.html">Virtual Tables</a> are a feature
 introduced in SQLite 3.3.7. They let a developer provide an underlying
 table implementations, while still presenting a normal SQL interface
@@ -91,10 +213,10 @@ omitted in Python. You can return SQLite error codes (eg
 <a class="reference internal" href="exceptions.html#apsw.ReadOnlyError" title="apsw.ReadOnlyError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ReadOnlyError</span></code></a>).  <a class="reference internal" href="apsw.html#apsw.exceptionfor" title="apsw.exceptionfor"><code class="xref py py-meth docutils literal notranslate"><span class="pre">exceptionfor()</span></code></a> is a useful helper
 function to do the mapping.</p>
 <section id="indexinfo-class">
-<h2>IndexInfo class<a class="headerlink" href="#indexinfo-class" title="Permalink to this heading">¶</a></h2>
+<h2>IndexInfo class<a class="headerlink" href="#indexinfo-class" title="Permalink to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="apsw.IndexInfo">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">IndexInfo</span></span><a class="headerlink" href="#apsw.IndexInfo" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">IndexInfo</span></span><a class="headerlink" href="#apsw.IndexInfo" title="Permalink to this definition"></a></dt>
 <dd><p>IndexInfo represents the <a class="reference external" href="https://www.sqlite.org/c3ref/index_info.html">sqlite3_index_info</a> and associated
 methods used in the <a class="reference internal" href="#apsw.VTTable.BestIndexObject" title="apsw.VTTable.BestIndexObject"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTTable.BestIndexObject()</span></code></a> method.  The
 structure values are not altered or made friendlier in any way.</p>
@@ -109,154 +231,154 @@ representation of this object as a <a class="reference external" href="https://d
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.IndexInfo.colUsed">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">colUsed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.11)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#apsw.IndexInfo.colUsed" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">colUsed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.11)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#apsw.IndexInfo.colUsed" title="Permalink to this definition"></a></dt>
 <dd><p>(Read-only) Columns used by the statement.  Note that a set is returned, not
 the underlying integer.</p>
 </dd></dl>
 
 <span class="target" id="index-0"></span><dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.IndexInfo.distinct">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">distinct</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.IndexInfo.distinct" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">distinct</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.IndexInfo.distinct" title="Permalink to this definition"></a></dt>
 <dd><p>(Read-only) How the query planner would like output ordered</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/vtab_distinct.html">sqlite3_vtab_distinct</a></p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.IndexInfo.estimatedCost">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">estimatedCost</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></em><a class="headerlink" href="#apsw.IndexInfo.estimatedCost" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">estimatedCost</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></em><a class="headerlink" href="#apsw.IndexInfo.estimatedCost" title="Permalink to this definition"></a></dt>
 <dd><p>Estimated cost of using this index</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.IndexInfo.estimatedRows">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">estimatedRows</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.IndexInfo.estimatedRows" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">estimatedRows</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.IndexInfo.estimatedRows" title="Permalink to this definition"></a></dt>
 <dd><p>Estimated number of rows returned</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.IndexInfo.get_aConstraintUsage_argvIndex">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">get_aConstraintUsage_argvIndex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.IndexInfo.get_aConstraintUsage_argvIndex" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">get_aConstraintUsage_argvIndex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.IndexInfo.get_aConstraintUsage_argvIndex" title="Permalink to this definition"></a></dt>
 <dd><p>Returns <em>argvIndex</em> for <em>aConstraintUsage[which]</em></p>
 </dd></dl>
 
 <span class="target" id="index-1"></span><dl class="py method">
 <dt class="sig sig-object py" id="apsw.IndexInfo.get_aConstraintUsage_in">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">get_aConstraintUsage_in</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#apsw.IndexInfo.get_aConstraintUsage_in" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">get_aConstraintUsage_in</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#apsw.IndexInfo.get_aConstraintUsage_in" title="Permalink to this definition"></a></dt>
 <dd><p>Returns True if the constraint is <em>in</em> - eg column in (3, 7, 9)</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/vtab_in.html">sqlite3_vtab_in</a></p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.IndexInfo.get_aConstraintUsage_omit">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">get_aConstraintUsage_omit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#apsw.IndexInfo.get_aConstraintUsage_omit" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">get_aConstraintUsage_omit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#apsw.IndexInfo.get_aConstraintUsage_omit" title="Permalink to this definition"></a></dt>
 <dd><p>Returns <em>omit</em> for <em>aConstraintUsage[which]</em></p>
 </dd></dl>
 
 <span class="target" id="index-2"></span><dl class="py method">
 <dt class="sig sig-object py" id="apsw.IndexInfo.get_aConstraint_collation">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">get_aConstraint_collation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></span><a class="headerlink" href="#apsw.IndexInfo.get_aConstraint_collation" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">get_aConstraint_collation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></span><a class="headerlink" href="#apsw.IndexInfo.get_aConstraint_collation" title="Permalink to this definition"></a></dt>
 <dd><p>Returns collation name for <em>aConstraint[which]</em></p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/vtab_collation.html">sqlite3_vtab_collation</a></p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.IndexInfo.get_aConstraint_iColumn">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">get_aConstraint_iColumn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.IndexInfo.get_aConstraint_iColumn" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">get_aConstraint_iColumn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.IndexInfo.get_aConstraint_iColumn" title="Permalink to this definition"></a></dt>
 <dd><p>Returns <em>iColumn</em> for <em>aConstraint[which]</em></p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.IndexInfo.get_aConstraint_op">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">get_aConstraint_op</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.IndexInfo.get_aConstraint_op" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">get_aConstraint_op</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.IndexInfo.get_aConstraint_op" title="Permalink to this definition"></a></dt>
 <dd><p>Returns <em>op</em> for <em>aConstraint[which]</em></p>
 </dd></dl>
 
 <span class="target" id="index-3"></span><dl class="py method">
 <dt class="sig sig-object py" id="apsw.IndexInfo.get_aConstraint_rhs">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">get_aConstraint_rhs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="apsw.html#apsw.SQLiteValue" title="apsw.SQLiteValue"><span class="pre">SQLiteValue</span></a></span></span><a class="headerlink" href="#apsw.IndexInfo.get_aConstraint_rhs" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">get_aConstraint_rhs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="apsw.html#apsw.SQLiteValue" title="apsw.SQLiteValue"><span class="pre">SQLiteValue</span></a></span></span><a class="headerlink" href="#apsw.IndexInfo.get_aConstraint_rhs" title="Permalink to this definition"></a></dt>
 <dd><p>Returns right hand side value if known, else None.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/vtab_rhs_value.html">sqlite3_vtab_rhs_value</a></p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.IndexInfo.get_aConstraint_usable">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">get_aConstraint_usable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#apsw.IndexInfo.get_aConstraint_usable" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">get_aConstraint_usable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#apsw.IndexInfo.get_aConstraint_usable" title="Permalink to this definition"></a></dt>
 <dd><p>Returns <em>usable</em> for <em>aConstraint[which]</em></p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.IndexInfo.get_aOrderBy_desc">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">get_aOrderBy_desc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#apsw.IndexInfo.get_aOrderBy_desc" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">get_aOrderBy_desc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#apsw.IndexInfo.get_aOrderBy_desc" title="Permalink to this definition"></a></dt>
 <dd><p>Returns <em>desc</em> for <em>aOrderBy[which]</em></p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.IndexInfo.get_aOrderBy_iColumn">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">get_aOrderBy_iColumn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.IndexInfo.get_aOrderBy_iColumn" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">get_aOrderBy_iColumn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.IndexInfo.get_aOrderBy_iColumn" title="Permalink to this definition"></a></dt>
 <dd><p>Returns <em>iColumn</em> for <em>aOrderBy[which]</em></p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.IndexInfo.idxFlags">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">idxFlags</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.IndexInfo.idxFlags" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">idxFlags</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.IndexInfo.idxFlags" title="Permalink to this definition"></a></dt>
 <dd><p>Mask of <a class="reference internal" href="apsw.html#apsw.mapping_virtual_table_scan_flags" title="apsw.mapping_virtual_table_scan_flags"><code class="xref py py-attr docutils literal notranslate"><span class="pre">SQLITE_INDEX_SCAN</span> <span class="pre">flags</span></code></a></p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.IndexInfo.idxNum">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">idxNum</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.IndexInfo.idxNum" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">idxNum</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.IndexInfo.idxNum" title="Permalink to this definition"></a></dt>
 <dd><p>Number used to identify the index</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.IndexInfo.idxStr">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">idxStr</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></em><a class="headerlink" href="#apsw.IndexInfo.idxStr" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">idxStr</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></em><a class="headerlink" href="#apsw.IndexInfo.idxStr" title="Permalink to this definition"></a></dt>
 <dd><p>Name used to identify the index</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.IndexInfo.nConstraint">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">nConstraint</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.IndexInfo.nConstraint" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">nConstraint</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.IndexInfo.nConstraint" title="Permalink to this definition"></a></dt>
 <dd><p>(Read-only) Number of constraint entries</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.IndexInfo.nOrderBy">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">nOrderBy</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.IndexInfo.nOrderBy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">nOrderBy</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.IndexInfo.nOrderBy" title="Permalink to this definition"></a></dt>
 <dd><p>(Read-only) Number of order by  entries</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.IndexInfo.orderByConsumed">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">orderByConsumed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></em><a class="headerlink" href="#apsw.IndexInfo.orderByConsumed" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">orderByConsumed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></em><a class="headerlink" href="#apsw.IndexInfo.orderByConsumed" title="Permalink to this definition"></a></dt>
 <dd><p>True if index output is already ordered</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.IndexInfo.set_aConstraintUsage_argvIndex">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">set_aConstraintUsage_argvIndex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">argvIndex</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.IndexInfo.set_aConstraintUsage_argvIndex" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">set_aConstraintUsage_argvIndex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">argvIndex</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.IndexInfo.set_aConstraintUsage_argvIndex" title="Permalink to this definition"></a></dt>
 <dd><p>Sets <em>argvIndex</em> for <em>aConstraintUsage[which]</em></p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.IndexInfo.set_aConstraintUsage_in">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">set_aConstraintUsage_in</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_all</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.IndexInfo.set_aConstraintUsage_in" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">set_aConstraintUsage_in</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_all</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.IndexInfo.set_aConstraintUsage_in" title="Permalink to this definition"></a></dt>
 <dd><p>If <em>which</em> is an <em>in</em> constraint, and <em>filter_all</em> is True then your <a class="reference internal" href="#apsw.VTCursor.Filter" title="apsw.VTCursor.Filter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTCursor.Filter()</span></code></a>
 method will have all of the values at once.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.IndexInfo.set_aConstraintUsage_omit">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">set_aConstraintUsage_omit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">omit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.IndexInfo.set_aConstraintUsage_omit" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">set_aConstraintUsage_omit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">omit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.IndexInfo.set_aConstraintUsage_omit" title="Permalink to this definition"></a></dt>
 <dd><p>Sets <em>omit</em> for <em>aConstraintUsage[which]</em></p>
 </dd></dl>
 
 </section>
 <section id="vtmodule-class">
-<h2>VTModule class<a class="headerlink" href="#vtmodule-class" title="Permalink to this heading">¶</a></h2>
+<h2>VTModule class<a class="headerlink" href="#vtmodule-class" title="Permalink to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="apsw.VTModule">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VTModule</span></span><a class="headerlink" href="#apsw.VTModule" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VTModule</span></span><a class="headerlink" href="#apsw.VTModule" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <div class="admonition note">
@@ -283,7 +405,7 @@ Any number of tables referring to the same module can be made this
 way.  Note the (optional) arguments which are passed to the module.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VTModule.Connect">
-<span class="sig-prename descclassname"><span class="pre">VTModule.</span></span><span class="sig-name descname"><span class="pre">Connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">modulename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">databasename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tablename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="apsw.html#apsw.SQLiteValue" title="apsw.SQLiteValue"><span class="pre">SQLiteValue</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#apsw.VTTable" title="apsw.VTTable"><span class="pre">VTTable</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#apsw.VTModule.Connect" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">VTModule.</span></span><span class="sig-name descname"><span class="pre">Connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">modulename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">databasename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tablename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="apsw.html#apsw.SQLiteValue" title="apsw.SQLiteValue"><span class="pre">SQLiteValue</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#apsw.VTTable" title="apsw.VTTable"><span class="pre">VTTable</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#apsw.VTModule.Connect" title="Permalink to this definition"></a></dt>
 <dd><p>The parameters and return are identical to
 <a class="reference internal" href="#apsw.VTModule.Create" title="apsw.VTModule.Create"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Create()</span></code></a>.  This method is called
 when there are additional references to the table.  <a class="reference internal" href="#apsw.VTModule.Create" title="apsw.VTModule.Create"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Create()</span></code></a> will be called the first time and
@@ -306,7 +428,7 @@ set <a class="reference internal" href="#apsw.VTModule.Connect" title="apsw.VTMo
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VTModule.Create">
-<span class="sig-prename descclassname"><span class="pre">VTModule.</span></span><span class="sig-name descname"><span class="pre">Create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">modulename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">databasename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tablename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="apsw.html#apsw.SQLiteValue" title="apsw.SQLiteValue"><span class="pre">SQLiteValue</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#apsw.VTTable" title="apsw.VTTable"><span class="pre">VTTable</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#apsw.VTModule.Create" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">VTModule.</span></span><span class="sig-name descname"><span class="pre">Create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">modulename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">databasename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tablename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="apsw.html#apsw.SQLiteValue" title="apsw.SQLiteValue"><span class="pre">SQLiteValue</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#apsw.VTTable" title="apsw.VTTable"><span class="pre">VTTable</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#apsw.VTModule.Create" title="Permalink to this definition"></a></dt>
 <dd><p>Called when a table is first created on a <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">connection</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -330,7 +452,7 @@ is an object that implements the <a class="reference internal" href="#apsw.VTTab
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VTModule.ShadowName">
-<span class="sig-prename descclassname"><span class="pre">VTModule.</span></span><span class="sig-name descname"><span class="pre">ShadowName</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_suffix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#apsw.VTModule.ShadowName" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">VTModule.</span></span><span class="sig-name descname"><span class="pre">ShadowName</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_suffix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#apsw.VTModule.ShadowName" title="Permalink to this definition"></a></dt>
 <dd><p>This method is called to check if
 <em>table_suffix</em> is a <a class="reference external" href="https://www.sqlite.org/vtab.html#the_xshadowname_method">shadow name</a></p>
 <p>The default implementation always returns <em>False</em>.</p>
@@ -342,10 +464,10 @@ a <em>table_suffix</em> of <code class="code docutils literal notranslate"><span
 
 </section>
 <section id="vttable-class">
-<h2>VTTable class<a class="headerlink" href="#vttable-class" title="Permalink to this heading">¶</a></h2>
+<h2>VTTable class<a class="headerlink" href="#vttable-class" title="Permalink to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="apsw.VTTable">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VTTable</span></span><a class="headerlink" href="#apsw.VTTable" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VTTable</span></span><a class="headerlink" href="#apsw.VTTable" title="Permalink to this definition"></a></dt>
 <dd><div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>There is no actual <em>VTTable</em> class - it is shown this way for
@@ -367,14 +489,14 @@ site</a></p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VTTable.Begin">
-<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Begin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTTable.Begin" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Begin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTTable.Begin" title="Permalink to this definition"></a></dt>
 <dd><p>This function is used as part of transactions.  You do not have to
 provide the method.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VTTable.BestIndex">
-<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">BestIndex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">constraints</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orderbys</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#apsw.VTTable.BestIndex" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">BestIndex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">constraints</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orderbys</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#apsw.VTTable.BestIndex" title="Permalink to this definition"></a></dt>
 <dd><p>This is a complex method. To get going initially, just return
 <em>None</em> and you will be fine. You should also consider using
 <a class="reference internal" href="#apsw.VTTable.BestIndexObject" title="apsw.VTTable.BestIndexObject"><code class="xref py py-meth docutils literal notranslate"><span class="pre">BestIndexObject()</span></code></a> instead.</p>
@@ -546,7 +668,7 @@ index on customer equality and price.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VTTable.BestIndexObject">
-<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">BestIndexObject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#apsw.IndexInfo" title="apsw.IndexInfo"><span class="pre">IndexInfo</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#apsw.VTTable.BestIndexObject" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">BestIndexObject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#apsw.IndexInfo" title="apsw.IndexInfo"><span class="pre">IndexInfo</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#apsw.VTTable.BestIndexObject" title="Permalink to this definition"></a></dt>
 <dd><p>This method is called instead of <a class="reference internal" href="#apsw.VTTable.BestIndex" title="apsw.VTTable.BestIndex"><code class="xref py py-meth docutils literal notranslate"><span class="pre">BestIndex()</span></code></a> if
 <em>use_bestindex_object</em> was <em>True</em> in the call to
 <a class="reference internal" href="connection.html#apsw.Connection.createmodule" title="apsw.Connection.createmodule"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.createmodule()</span></code></a>.</p>
@@ -559,14 +681,14 @@ SQLite.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VTTable.Commit">
-<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Commit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTTable.Commit" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Commit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTTable.Commit" title="Permalink to this definition"></a></dt>
 <dd><p>This function is used as part of transactions.  You do not have to
 provide the method.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VTTable.Destroy">
-<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Destroy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTTable.Destroy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Destroy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTTable.Destroy" title="Permalink to this definition"></a></dt>
 <dd><p>The opposite of <a class="reference internal" href="#apsw.VTModule.Create" title="apsw.VTModule.Create"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTModule.Create()</span></code></a>.  This method is called when
 the table is no longer used.  Note that you must always release
 resources even if you intend to return an error, as it will not be
@@ -576,7 +698,7 @@ if you return an error.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VTTable.Disconnect">
-<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Disconnect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTTable.Disconnect" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Disconnect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTTable.Disconnect" title="Permalink to this definition"></a></dt>
 <dd><p>The opposite of <a class="reference internal" href="#apsw.VTModule.Connect" title="apsw.VTModule.Connect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTModule.Connect()</span></code></a>.  This method is called when
 a reference to a virtual table is no longer used, but <a class="reference internal" href="#apsw.VTTable.Destroy" title="apsw.VTTable.Destroy"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTTable.Destroy()</span></code></a> will
 be called when the table is no longer used.</p>
@@ -584,7 +706,7 @@ be called when the table is no longer used.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VTTable.FindFunction">
-<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">FindFunction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">nargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#apsw.VTTable.FindFunction" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">FindFunction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">nargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#apsw.VTTable.FindFunction" title="Permalink to this definition"></a></dt>
 <dd><p>Called to find if the virtual table has its own implementation of a
 particular scalar function. You do not have to provide this method.</p>
 <dl class="field-list simple">
@@ -612,13 +734,13 @@ This is useful for <em>SQLITE_INDEX_CONSTRAINT_FUNCTION</em> returns.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VTTable.Open">
-<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Open</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#apsw.VTCursor" title="apsw.VTCursor"><span class="pre">VTCursor</span></a></span></span><a class="headerlink" href="#apsw.VTTable.Open" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Open</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#apsw.VTCursor" title="apsw.VTCursor"><span class="pre">VTCursor</span></a></span></span><a class="headerlink" href="#apsw.VTTable.Open" title="Permalink to this definition"></a></dt>
 <dd><p>Returns a <a class="reference internal" href="#apsw.VTCursor" title="apsw.VTCursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">cursor</span></code></a> object.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VTTable.Release">
-<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Release</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTTable.Release" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Release</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTTable.Release" title="Permalink to this definition"></a></dt>
 <dd><p>Release nested transactions back to <em>level</em>.</p>
 <p>If you do not provide this method then the call succeeds (matching
 SQLite behaviour when no callback is provided).</p>
@@ -626,7 +748,7 @@ SQLite behaviour when no callback is provided).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VTTable.Rename">
-<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Rename</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">newname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTTable.Rename" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Rename</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">newname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTTable.Rename" title="Permalink to this definition"></a></dt>
 <dd><p>Notification that the table will be given a new name. If you return
 without raising an exception, then SQLite renames the table (you
 don't have to do anything). If you raise an exception then the
@@ -635,14 +757,14 @@ renaming is prevented.  You do not have to provide this method.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VTTable.Rollback">
-<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Rollback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTTable.Rollback" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Rollback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTTable.Rollback" title="Permalink to this definition"></a></dt>
 <dd><p>This function is used as part of transactions.  You do not have to
 provide the method.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VTTable.Savepoint">
-<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Savepoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTTable.Savepoint" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Savepoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTTable.Savepoint" title="Permalink to this definition"></a></dt>
 <dd><p>Set nested transaction to <em>level</em>.</p>
 <p>If you do not provide this method then the call succeeds (matching
 SQLite behaviour when no callback is provided).</p>
@@ -650,14 +772,14 @@ SQLite behaviour when no callback is provided).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VTTable.Sync">
-<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Sync</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTTable.Sync" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Sync</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTTable.Sync" title="Permalink to this definition"></a></dt>
 <dd><p>This function is used as part of transactions.  You do not have to
 provide the method.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VTTable.UpdateChangeRow">
-<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">UpdateChangeRow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">row</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">newrowid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">fields</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="apsw.html#apsw.SQLiteValue" title="apsw.SQLiteValue"><span class="pre">SQLiteValue</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTTable.UpdateChangeRow" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">UpdateChangeRow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">row</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">newrowid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">fields</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="apsw.html#apsw.SQLiteValue" title="apsw.SQLiteValue"><span class="pre">SQLiteValue</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTTable.UpdateChangeRow" title="Permalink to this definition"></a></dt>
 <dd><p>Change an existing row.  You may also need to change the rowid - for example if the query was
 <code class="docutils literal notranslate"><span class="pre">UPDATE</span> <span class="pre">table</span> <span class="pre">SET</span> <span class="pre">rowid=rowid+100</span> <span class="pre">WHERE</span> <span class="pre">...</span></code></p>
 <dl class="field-list simple">
@@ -673,7 +795,7 @@ provide the method.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VTTable.UpdateDeleteRow">
-<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">UpdateDeleteRow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rowid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTTable.UpdateDeleteRow" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">UpdateDeleteRow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rowid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTTable.UpdateDeleteRow" title="Permalink to this definition"></a></dt>
 <dd><p>Delete the row with the specified <em>rowid</em>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -684,7 +806,7 @@ provide the method.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VTTable.UpdateInsertRow">
-<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">UpdateInsertRow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rowid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">fields</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="apsw.html#apsw.SQLiteValue" title="apsw.SQLiteValue"><span class="pre">SQLiteValue</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTTable.UpdateInsertRow" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">UpdateInsertRow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rowid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">fields</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="apsw.html#apsw.SQLiteValue" title="apsw.SQLiteValue"><span class="pre">SQLiteValue</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTTable.UpdateInsertRow" title="Permalink to this definition"></a></dt>
 <dd><p>Insert a row with the specified <em>rowid</em>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -703,10 +825,10 @@ is ignored.</p>
 
 </section>
 <section id="vtcursor-class">
-<h2>VTCursor class<a class="headerlink" href="#vtcursor-class" title="Permalink to this heading">¶</a></h2>
+<h2>VTCursor class<a class="headerlink" href="#vtcursor-class" title="Permalink to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="apsw.VTCursor">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VTCursor</span></span><a class="headerlink" href="#apsw.VTCursor" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VTCursor</span></span><a class="headerlink" href="#apsw.VTCursor" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <div class="admonition note">
@@ -726,7 +848,7 @@ it is.</p>
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VTCursor.Close">
-<span class="sig-prename descclassname"><span class="pre">VTCursor.</span></span><span class="sig-name descname"><span class="pre">Close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTCursor.Close" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">VTCursor.</span></span><span class="sig-name descname"><span class="pre">Close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTCursor.Close" title="Permalink to this definition"></a></dt>
 <dd><p>This is the destructor for the cursor. Note that you must
 cleanup. The method will not be called again if you raise an
 exception.</p>
@@ -734,7 +856,7 @@ exception.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VTCursor.Column">
-<span class="sig-prename descclassname"><span class="pre">VTCursor.</span></span><span class="sig-name descname"><span class="pre">Column</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="apsw.html#apsw.SQLiteValue" title="apsw.SQLiteValue"><span class="pre">SQLiteValue</span></a></span></span><a class="headerlink" href="#apsw.VTCursor.Column" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">VTCursor.</span></span><span class="sig-name descname"><span class="pre">Column</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="apsw.html#apsw.SQLiteValue" title="apsw.SQLiteValue"><span class="pre">SQLiteValue</span></a></span></span><a class="headerlink" href="#apsw.VTCursor.Column" title="Permalink to this definition"></a></dt>
 <dd><p>Requests the value of the specified column <em>number</em> of the current
 row.  If <em>number</em> is -1 then return the rowid.</p>
 <dl class="field-list simple">
@@ -747,7 +869,7 @@ supported types</span></a></p>
 
 <span class="target" id="index-4"></span><dl class="py method">
 <dt class="sig sig-object py" id="apsw.VTCursor.ColumnNoChange">
-<span class="sig-prename descclassname"><span class="pre">VTCursor.</span></span><span class="sig-name descname"><span class="pre">ColumnNoChange</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="apsw.html#apsw.SQLiteValue" title="apsw.SQLiteValue"><span class="pre">SQLiteValue</span></a></span></span><a class="headerlink" href="#apsw.VTCursor.ColumnNoChange" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">VTCursor.</span></span><span class="sig-name descname"><span class="pre">ColumnNoChange</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="apsw.html#apsw.SQLiteValue" title="apsw.SQLiteValue"><span class="pre">SQLiteValue</span></a></span></span><a class="headerlink" href="#apsw.VTCursor.ColumnNoChange" title="Permalink to this definition"></a></dt>
 <dd><p><a class="reference internal" href="#apsw.VTTable.UpdateChangeRow" title="apsw.VTTable.UpdateChangeRow"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTTable.UpdateChangeRow()</span></code></a> is going to be called which includes
 values for all columns.  However this column is not going to be changed
 in that update.</p>
@@ -762,7 +884,7 @@ call to <a class="reference internal" href="connection.html#apsw.Connection.crea
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VTCursor.Eof">
-<span class="sig-prename descclassname"><span class="pre">VTCursor.</span></span><span class="sig-name descname"><span class="pre">Eof</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#apsw.VTCursor.Eof" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">VTCursor.</span></span><span class="sig-name descname"><span class="pre">Eof</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#apsw.VTCursor.Eof" title="Permalink to this definition"></a></dt>
 <dd><p>Called to ask if we are at the end of the table. It is called after each call to Filter and Next.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -779,7 +901,7 @@ True (no more data) will be returned to SQLite.</p>
 
 <span class="target" id="index-5"></span><dl class="py method">
 <dt class="sig sig-object py" id="apsw.VTCursor.Filter">
-<span class="sig-prename descclassname"><span class="pre">VTCursor.</span></span><span class="sig-name descname"><span class="pre">Filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indexnum</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">indexname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraintargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTCursor.Filter" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">VTCursor.</span></span><span class="sig-name descname"><span class="pre">Filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indexnum</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">indexname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraintargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTCursor.Filter" title="Permalink to this definition"></a></dt>
 <dd><p>This method is always called first to initialize an iteration to the
 first row of the table. The arguments come from the
 <a class="reference internal" href="#apsw.VTTable.BestIndex" title="apsw.VTTable.BestIndex"><code class="xref py py-meth docutils literal notranslate"><span class="pre">BestIndex()</span></code></a> or <a class="reference internal" href="#apsw.VTTable.BestIndexObject" title="apsw.VTTable.BestIndexObject"><code class="xref py py-meth docutils literal notranslate"><span class="pre">BestIndexObject()</span></code></a>
@@ -799,7 +921,7 @@ then that value will be a <a class="reference external" href="https://docs.pytho
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VTCursor.Next">
-<span class="sig-prename descclassname"><span class="pre">VTCursor.</span></span><span class="sig-name descname"><span class="pre">Next</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTCursor.Next" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">VTCursor.</span></span><span class="sig-name descname"><span class="pre">Next</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTCursor.Next" title="Permalink to this definition"></a></dt>
 <dd><p>Move the cursor to the next row.  Do not have an exception if there
 is no next row.  Instead return False when <a class="reference internal" href="#apsw.VTCursor.Eof" title="apsw.VTCursor.Eof"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Eof()</span></code></a> is
 subsequently called.</p>
@@ -811,13 +933,13 @@ appropriate indexed and constrained row.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VTCursor.Rowid">
-<span class="sig-prename descclassname"><span class="pre">VTCursor.</span></span><span class="sig-name descname"><span class="pre">Rowid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.VTCursor.Rowid" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">VTCursor.</span></span><span class="sig-name descname"><span class="pre">Rowid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.VTCursor.Rowid" title="Permalink to this definition"></a></dt>
 <dd><p>Return the current rowid.</p>
 </dd></dl>
 
 </section>
 <section id="troubleshooting-virtual-tables">
-<h2>Troubleshooting virtual tables<a class="headerlink" href="#troubleshooting-virtual-tables" title="Permalink to this heading">¶</a></h2>
+<h2>Troubleshooting virtual tables<a class="headerlink" href="#troubleshooting-virtual-tables" title="Permalink to this heading"></a></h2>
 <p>A big help is using the local variables recipe as described in
 <a class="reference internal" href="exceptions.html#augmentedstacktraces"><span class="std std-ref">augmented stack traces</span></a> which will give
 you more details in errors, and shows an example with the complex
@@ -837,178 +959,47 @@ receive any constraintargs at all.</p>
 </section>
 
 
-            <div class="clearer"></div>
+           </div>
           </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="backup.html" class="btn btn-neutral float-left" title="Backup" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="vfs.html" class="btn btn-neutral float-right" title="Virtual File System (VFS)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      <span class="lastupdated">Last updated on Mar 26, 2023.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-            <p class="logo"><a href="index.html">
-              <img class="logo" src="_static/apswlogo.png" alt="Logo"/>
-            </a></p>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>document.getElementById('searchbox').style.display = "block"</script>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="backup.html"
-                          title="previous chapter">Backup</a></p>
+    </section>
   </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="vfs.html"
-                          title="next chapter">Virtual File System (VFS)</a></p>
-  </div>
-  <div>
-    <h3><a href="index.html">On this page</a></h3>
-    <ul>
-<li><a class="reference internal" href="#">Virtual Tables</a><ul>
-<li><a class="reference internal" href="#indexinfo-class">IndexInfo class</a><ul>
-<li><a class="reference internal" href="#apsw.IndexInfo"><code class="docutils literal notranslate"><span class="pre">IndexInfo</span></code></a><ul>
-<li><a class="reference internal" href="#apsw.IndexInfo.colUsed"><code class="docutils literal notranslate"><span class="pre">IndexInfo.colUsed</span></code></a></li>
-<li><a class="reference internal" href="#apsw.IndexInfo.distinct"><code class="docutils literal notranslate"><span class="pre">IndexInfo.distinct</span></code></a></li>
-<li><a class="reference internal" href="#apsw.IndexInfo.estimatedCost"><code class="docutils literal notranslate"><span class="pre">IndexInfo.estimatedCost</span></code></a></li>
-<li><a class="reference internal" href="#apsw.IndexInfo.estimatedRows"><code class="docutils literal notranslate"><span class="pre">IndexInfo.estimatedRows</span></code></a></li>
-<li><a class="reference internal" href="#apsw.IndexInfo.get_aConstraintUsage_argvIndex"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aConstraintUsage_argvIndex()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.IndexInfo.get_aConstraintUsage_in"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aConstraintUsage_in()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.IndexInfo.get_aConstraintUsage_omit"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aConstraintUsage_omit()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.IndexInfo.get_aConstraint_collation"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aConstraint_collation()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.IndexInfo.get_aConstraint_iColumn"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aConstraint_iColumn()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.IndexInfo.get_aConstraint_op"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aConstraint_op()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.IndexInfo.get_aConstraint_rhs"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aConstraint_rhs()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.IndexInfo.get_aConstraint_usable"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aConstraint_usable()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.IndexInfo.get_aOrderBy_desc"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aOrderBy_desc()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.IndexInfo.get_aOrderBy_iColumn"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aOrderBy_iColumn()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.IndexInfo.idxFlags"><code class="docutils literal notranslate"><span class="pre">IndexInfo.idxFlags</span></code></a></li>
-<li><a class="reference internal" href="#apsw.IndexInfo.idxNum"><code class="docutils literal notranslate"><span class="pre">IndexInfo.idxNum</span></code></a></li>
-<li><a class="reference internal" href="#apsw.IndexInfo.idxStr"><code class="docutils literal notranslate"><span class="pre">IndexInfo.idxStr</span></code></a></li>
-<li><a class="reference internal" href="#apsw.IndexInfo.nConstraint"><code class="docutils literal notranslate"><span class="pre">IndexInfo.nConstraint</span></code></a></li>
-<li><a class="reference internal" href="#apsw.IndexInfo.nOrderBy"><code class="docutils literal notranslate"><span class="pre">IndexInfo.nOrderBy</span></code></a></li>
-<li><a class="reference internal" href="#apsw.IndexInfo.orderByConsumed"><code class="docutils literal notranslate"><span class="pre">IndexInfo.orderByConsumed</span></code></a></li>
-<li><a class="reference internal" href="#apsw.IndexInfo.set_aConstraintUsage_argvIndex"><code class="docutils literal notranslate"><span class="pre">IndexInfo.set_aConstraintUsage_argvIndex()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.IndexInfo.set_aConstraintUsage_in"><code class="docutils literal notranslate"><span class="pre">IndexInfo.set_aConstraintUsage_in()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.IndexInfo.set_aConstraintUsage_omit"><code class="docutils literal notranslate"><span class="pre">IndexInfo.set_aConstraintUsage_omit()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a class="reference internal" href="#vtmodule-class">VTModule class</a><ul>
-<li><a class="reference internal" href="#apsw.VTModule"><code class="docutils literal notranslate"><span class="pre">VTModule</span></code></a><ul>
-<li><a class="reference internal" href="#apsw.VTModule.Connect"><code class="docutils literal notranslate"><span class="pre">VTModule.Connect()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.VTModule.Create"><code class="docutils literal notranslate"><span class="pre">VTModule.Create()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.VTModule.ShadowName"><code class="docutils literal notranslate"><span class="pre">VTModule.ShadowName()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a class="reference internal" href="#vttable-class">VTTable class</a><ul>
-<li><a class="reference internal" href="#apsw.VTTable"><code class="docutils literal notranslate"><span class="pre">VTTable</span></code></a><ul>
-<li><a class="reference internal" href="#apsw.VTTable.Begin"><code class="docutils literal notranslate"><span class="pre">VTTable.Begin()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.VTTable.BestIndex"><code class="docutils literal notranslate"><span class="pre">VTTable.BestIndex()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.VTTable.BestIndexObject"><code class="docutils literal notranslate"><span class="pre">VTTable.BestIndexObject()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.VTTable.Commit"><code class="docutils literal notranslate"><span class="pre">VTTable.Commit()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.VTTable.Destroy"><code class="docutils literal notranslate"><span class="pre">VTTable.Destroy()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.VTTable.Disconnect"><code class="docutils literal notranslate"><span class="pre">VTTable.Disconnect()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.VTTable.FindFunction"><code class="docutils literal notranslate"><span class="pre">VTTable.FindFunction()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.VTTable.Open"><code class="docutils literal notranslate"><span class="pre">VTTable.Open()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.VTTable.Release"><code class="docutils literal notranslate"><span class="pre">VTTable.Release()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.VTTable.Rename"><code class="docutils literal notranslate"><span class="pre">VTTable.Rename()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.VTTable.Rollback"><code class="docutils literal notranslate"><span class="pre">VTTable.Rollback()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.VTTable.Savepoint"><code class="docutils literal notranslate"><span class="pre">VTTable.Savepoint()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.VTTable.Sync"><code class="docutils literal notranslate"><span class="pre">VTTable.Sync()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.VTTable.UpdateChangeRow"><code class="docutils literal notranslate"><span class="pre">VTTable.UpdateChangeRow()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.VTTable.UpdateDeleteRow"><code class="docutils literal notranslate"><span class="pre">VTTable.UpdateDeleteRow()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.VTTable.UpdateInsertRow"><code class="docutils literal notranslate"><span class="pre">VTTable.UpdateInsertRow()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a class="reference internal" href="#vtcursor-class">VTCursor class</a><ul>
-<li><a class="reference internal" href="#apsw.VTCursor"><code class="docutils literal notranslate"><span class="pre">VTCursor</span></code></a><ul>
-<li><a class="reference internal" href="#apsw.VTCursor.Close"><code class="docutils literal notranslate"><span class="pre">VTCursor.Close()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.VTCursor.Column"><code class="docutils literal notranslate"><span class="pre">VTCursor.Column()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.VTCursor.ColumnNoChange"><code class="docutils literal notranslate"><span class="pre">VTCursor.ColumnNoChange()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.VTCursor.Eof"><code class="docutils literal notranslate"><span class="pre">VTCursor.Eof()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.VTCursor.Filter"><code class="docutils literal notranslate"><span class="pre">VTCursor.Filter()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.VTCursor.Next"><code class="docutils literal notranslate"><span class="pre">VTCursor.Next()</span></code></a></li>
-<li><a class="reference internal" href="#apsw.VTCursor.Rowid"><code class="docutils literal notranslate"><span class="pre">VTCursor.Rowid()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a class="reference internal" href="#troubleshooting-virtual-tables">Troubleshooting virtual tables</a></li>
-</ul>
-</li>
-</ul>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
 
-  </div>
-<h3><a href="index.html">Table of Contents</a></h3>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips</a></li>
-<li class="toctree-l1"><a class="reference internal" href="example.html">Example/Tour</a></li>
-<li class="toctree-l1"><a class="reference internal" href="download.html">Download</a></li>
-<li class="toctree-l1"><a class="reference internal" href="build.html">Building</a></li>
-<li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="apsw.html">APSW Module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="connection.html">Connections to a database</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cursor.html">Cursors (executing SQL)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="blob.html">Blob Input/Output</a></li>
-<li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Virtual Tables</a></li>
-<li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
-<li class="toctree-l1"><a class="reference internal" href="types.html">Types</a></li>
-<li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
-<li class="toctree-l1"><a class="reference internal" href="benchmarking.html">Benchmarking</a></li>
-<li class="toctree-l1"><a class="reference internal" href="copyright.html">Copyright and License</a></li>
-<li class="toctree-l1"><a class="reference internal" href="changes.html">Change History</a></li>
-</ul>
+      gtag('config', 'G-2NR9GDCQLT', {
+          'anonymize_ip': false,
+      });
+    </script> 
 
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/vtable.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="vfs.html" title="Virtual File System (VFS)"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="backup.html" title="Backup"
-             >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.41.0.0 documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Virtual Tables</a></li> 
-      </ul>
-    </div>
-    <div class="footer" role="contentinfo">
-        &#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Mar 01, 2023.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
-    </div>
-  </body>
+</body>
 </html>

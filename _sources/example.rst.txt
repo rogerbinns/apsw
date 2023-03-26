@@ -21,6 +21,7 @@ see what gets printed when you run the code.
    import apsw
    import apsw.ext
    import random
+   from pathlib import Path
    
    # Note: this code uses Python's optional typing annotations.  You can
    # ignore them and do not need to use them
@@ -58,9 +59,9 @@ Checking APSW and SQLite versions
 .. code-block:: output
 
           Using APSW file /space/apsw/./apsw/__init__.cpython-310-x86_64-linux-gnu.so
-             APSW version 3.41.0.0
-    SQLite header version 3041000
-       SQLite lib version 3.41.0
+             APSW version 3.41.2.0
+    SQLite header version 3041002
+       SQLite lib version 3.41.2
        Using amalgamation True
 
 
@@ -284,7 +285,7 @@ a while.
    connection.execute("insert into point values(4, 4, 4)")
    connection.execute("END")
    
-   # Or use `with`` that does it automatically
+   # Or use `with` that does it automatically
    with connection:
        connection.execute("insert into point values(2, 2, 2)")
        connection.execute("insert into point values(3, 3, 3)")
@@ -745,17 +746,17 @@ conversion, both for types you define and for other types.
        def __repr__(self) -> str:
            return f"Point({ self.x }, { self.y })"
    
-       def __eq__(self, other: Point) -> bool:
-           return isinstance(other, Point) and self.x == other.x and self.y == other.y
+       def __eq__(self, other: object) -> bool:
+           return isinstance(other, type(self)) and self.x == other.x and self.y == other.y
    
        def to_sqlite_value(self) -> str:
            # called to convert Point into something SQLite supports
            return f"{ self.x };{ self.y }"
    
        # This converter will be registered
-       @staticmethod
-       def convert_from_sqlite(value: str) -> Point:
-           return Point(*(float(part) for part in value.split(";")))
+       @classmethod
+       def convert_from_sqlite(cls, value: str) -> Point:
+           return cls(*(float(part) for part in value.split(";")))
    
    
    # An existing type
@@ -1164,7 +1165,7 @@ feedback and allows cancelling.
     progress handler called
     progress handler called
     progress handler called
-    (9907402823,)
+    (9953270732,)
 
 
 .. index:: Commit hook (example code)
@@ -1204,8 +1205,7 @@ with  :meth:`Connection.setcommithook`.
 .. code-block:: output
 
     in commit hook
-    no commits out of hours
-    commit was not allowed
+    commits okay at this time
 
 
 .. index:: Update hook (example code)
@@ -1396,22 +1396,23 @@ useful instead.
                       ignore_symlinks: bool = True) -> Iterator[dict[str, Any]]:
        """Scan directories returning information about the files within"""
        for root in directories.split(sep):
-           for entry in os.scandir(root):
-               if entry.is_symlink() and ignore_symlinks:
-                   continue
-               if entry.is_dir():
-                   yield from get_files_info(os.path.join(root, entry.name), ignore_symlinks=ignore_symlinks)
-               elif entry.is_file():
-                   s = entry.stat()
-                   yield {
-                       **{
-                           "directory": root,
-                           "name": entry.name,
-                           "extension": os.path.splitext(entry.name)[1],
-                       },
-                       **{k: getattr(s, k)
-                          for k in get_files_info.stat_columns}
-                   }
+           with os.scandir(root) as sd:
+               for entry in sd:
+                   if entry.is_symlink() and ignore_symlinks:
+                       continue
+                   if entry.is_dir():
+                       yield from get_files_info(os.path.join(root, entry.name), ignore_symlinks=ignore_symlinks)
+                   elif entry.is_file():
+                       s = entry.stat()
+                       yield {
+                           **{
+                               "directory": root,
+                               "name": entry.name,
+                               "extension": os.path.splitext(entry.name)[1],
+                           },
+                           **{k: getattr(s, k)
+                           for k in get_files_info.stat_columns}
+                       }
    
    
    # which stat columns do we want?
@@ -1462,8 +1463,8 @@ useful instead.
 
     ┌────────────┬────────────────────────────────┬───────────────┐
     │    date    │           directory            │     name      │
-    │ 2022-12-09 │ /usr/lib/python3.10/pydoc_data │ topics.py     │
-    │ 2022-12-09 │ /usr/lib/python3.10            │ _pydecimal.py │
+    │ 2023-03-20 │ /usr/lib/python3.10/pydoc_data │ topics.py     │
+    │ 2023-03-20 │ /usr/lib/python3.10            │ _pydecimal.py │
     │ 2022-10-04 │ /usr/lib/python3.10/tkinter    │ __init__.py   │
     └────────────┴────────────────────────────────┴───────────────┘
     
@@ -1485,7 +1486,7 @@ useful instead.
     ┌────────────┬────────────┐
     │ extension  │ total_size │
     │            │ 267878     │
-    │ .a         │ 84439776   │
+    │ .a         │ 84430968   │
     │ .allowlist │ 86         │
     │ .c         │ 10714      │
     │ .cfg       │ 279        │
@@ -1494,12 +1495,12 @@ useful instead.
     │ .fish      │ 2077       │
     │ .in        │ 3246       │
     │ .local     │ 3040       │
-    │ .o         │ 20200      │
+    │ .o         │ 20184      │
     │ .ps1       │ 9033       │
-    │ .py        │ 11471734   │
-    │ .pyc       │ 8226799    │
+    │ .py        │ 11511926   │
+    │ .pyc       │ 8230189    │
     │ .rst       │ 9561       │
-    │ .sh        │ 3728       │
+    │ .sh        │ 3754       │
     │ .so        │ 19362544   │
     │ .supp      │ 70         │
     │ .txt       │ 23420      │
@@ -1594,10 +1595,10 @@ data as it flows through.  Read more about :ref:`VFS <vfs>`.
    obfudb.execute("create table foo(x,y); insert into foo values(1,2)")
    
    # Check it really is obfuscated on disk
-   print("What is on disk", repr(open("myobfudb", "rb").read()[:20]))
+   print("What is on disk", repr(Path("myobfudb").read_bytes()[:20]))
    
    # And unobfuscating it
-   print("Unobfuscated disk", repr(obfuscate(open("myobfudb", "rb").read()[:20])))
+   print("Unobfuscated disk", repr(obfuscate(Path("myobfudb").read_bytes()[:20])))
    
    # Tidy up
    obfudb.close()
@@ -1752,9 +1753,9 @@ Python.
     
     Dump output
     
-    -- SQLite dump (by APSW 3.41.0.0)
-    -- SQLite version 3.41.0
-    -- Date: Wed Mar  1 07:16:50 2023
+    -- SQLite dump (by APSW 3.41.2.0)
+    -- SQLite version 3.41.2
+    -- Date: Sun Mar 26 08:06:22 2023
     -- Tables like: csvtest%
     -- Database: /space/apsw/dbfile
     -- User: rogerb @ clamps
@@ -1797,7 +1798,7 @@ SQLite provides statistics by :meth:`status`
 
 .. code-block:: output
 
-    SQLite memory usage 318416 max 2236272
+    SQLite memory usage 322448 max 2241168
 
 
 .. index:: Tracing (example code)
@@ -1836,10 +1837,9 @@ This shows using :meth:`Connection.trace_v2`
    def trace_hook(trace: Dict) -> None:
        # check the sql and connection are as expected and remove from trace
        # so we don't print them
-       assert trace.pop("sql") == query
+       assert trace.pop("sql") == query and trace.pop("connection") is connection
        print("code is ", apsw.mapping_trace_codes[trace["code"]])
        print(pprint.pformat(trace), "\n")
-   
    
    connection.trace_v2(apsw.SQLITE_TRACE_STMT | apsw.SQLITE_TRACE_PROFILE | apsw.SQLITE_TRACE_ROW, trace_hook)
    
@@ -1855,15 +1855,14 @@ This shows using :meth:`Connection.trace_v2`
 .. code-block:: output
 
     code is  SQLITE_TRACE_STMT
-    {'code': 1, 'connection': <apsw.Connection object at 0x7fa93d6d8e50>} 
+    {'code': 1} 
     
     code is  SQLITE_TRACE_ROW
-    {'code': 4, 'connection': <apsw.Connection object at 0x7fa93d6d8e50>} 
+    {'code': 4} 
     
     code is  SQLITE_TRACE_PROFILE
     {'code': 2,
-     'connection': <apsw.Connection object at 0x7fa93d6d8e50>,
-     'nanoseconds': 35000000,
+     'nanoseconds': 30000000,
      'stmt_status': {'SQLITE_STMTSTATUS_AUTOINDEX': 0,
                      'SQLITE_STMTSTATUS_FILTER_HIT': 0,
                      'SQLITE_STMTSTATUS_FILTER_MISS': 0,

@@ -1,67 +1,130 @@
-
 <!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
-
-        <!-- Google tag (gtag.js) -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
-        <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-
-        gtag('config', 'G-2NR9GDCQLT');
-        </script>
-    
-    <title>Tips &#8212; APSW 3.41.0.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
-    
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
-    
-    <link rel="icon" href="_static/favicon.ico"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tips &mdash; APSW 3.41.2.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
     <link rel="next" title="Example/Tour" href="example.html" />
-    <link rel="prev" title="APSW 3.41.0.0 documentation" href="index.html" /> 
-  </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="example.html" title="Example/Tour"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="index.html" title="APSW 3.41.0.0 documentation"
-             accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.41.0.0 documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Tips</a></li> 
-      </ul>
-    </div>  
+    <link rel="prev" title="APSW 3.41.2.0 documentation" href="index.html" /> 
+</head>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            APSW
+              <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                3.41.2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Tips</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#about-python-apsw-and-sqlite-versions">About Python, APSW, and SQLite versions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sqlite-is-different">SQLite is different</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#transactions">Transactions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cursors">Cursors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#bindings">Bindings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#diagnostics">Diagnostics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#managing-and-updating-your-schema">Managing and updating your schema</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#parsing-sql">Parsing SQL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#unexpected-behaviour">Unexpected behaviour</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#customizing-connections">Customizing Connections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#customizing-cursors">Customizing Cursors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#busy-handling">Busy handling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#database-schema">Database schema</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#shared-cache-mode">Shared Cache Mode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#write-ahead-logging">Write Ahead Logging</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="download.html">Download</a></li>
+<li class="toctree-l1"><a class="reference internal" href="build.html">Building</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apsw.html">APSW Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="connection.html">Connections to a database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cursor.html">Cursors (executing SQL)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="blob.html">Blob Input/Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="types.html">Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmarking.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="copyright.html">Copyright and License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changes.html">Change History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="py-modindex.html">Module Index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">APSW</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Tips</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/tips.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul><div class="rst-breadcrumbs-buttons" role="navigation" aria-label="Sequential page navigation">
+        <a href="index.html" class="btn btn-neutral float-left" title="APSW 3.41.2.0 documentation" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="example.html" class="btn btn-neutral float-right" title="Example/Tour" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+  </div>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
   <section id="tips">
-<h1>Tips<a class="headerlink" href="#tips" title="Permalink to this heading">¶</a></h1>
+<h1>Tips<a class="headerlink" href="#tips" title="Permalink to this heading"></a></h1>
 <p>These tips are based on mailing list postings, issues, and emails.
 You are recommended to read all the documentation as well.</p>
 <section id="about-python-apsw-and-sqlite-versions">
-<span id="version-stuff"></span><h2>About Python, APSW, and SQLite versions<a class="headerlink" href="#about-python-apsw-and-sqlite-versions" title="Permalink to this heading">¶</a></h2>
+<span id="version-stuff"></span><h2>About Python, APSW, and SQLite versions<a class="headerlink" href="#about-python-apsw-and-sqlite-versions" title="Permalink to this heading"></a></h2>
 <p>SQLite has approximately quarterly releases.  These include tweaks,
 bug fixes, and new functionality based on the billions of SQLite
 databases in use, and the many many programs that use SQLite (eg
@@ -83,7 +146,7 @@ constants and APIs (if desired), all without having to change your
 Python version.</p>
 </section>
 <section id="sqlite-is-different">
-<h2>SQLite is different<a class="headerlink" href="#sqlite-is-different" title="Permalink to this heading">¶</a></h2>
+<h2>SQLite is different<a class="headerlink" href="#sqlite-is-different" title="Permalink to this heading"></a></h2>
 <p>While SQLite provides a SQL database like many others out there, it is
 also unique in many ways.  Read about the unique features at the
 <a class="reference external" href="https://sqlite.org/different.html">SQLite website</a>.</p>
@@ -98,7 +161,7 @@ consider using <a class="reference internal" href="apsw.html#apsw.connection_hoo
 </div>
 </section>
 <section id="transactions">
-<h2>Transactions<a class="headerlink" href="#transactions" title="Permalink to this heading">¶</a></h2>
+<h2>Transactions<a class="headerlink" href="#transactions" title="Permalink to this heading"></a></h2>
 <p>Transactions are the changes applied to a database file as a whole.
 They either happen completely, or not at all.  SQLite notes all the changes
 made during a transaction, and at the end when you do a commit will cause
@@ -144,7 +207,7 @@ exceptions occur:</p>
 at the <a class="reference external" href="https://www.sqlite.org/docs.html">SQLite site</a>.</p>
 </section>
 <section id="cursors">
-<h2>Cursors<a class="headerlink" href="#cursors" title="Permalink to this heading">¶</a></h2>
+<h2>Cursors<a class="headerlink" href="#cursors" title="Permalink to this heading"></a></h2>
 <p>SQLite only calculates each result row as you request it.  For example
 if your query returns 10 million rows SQLite will not calculate all 10
 million up front.  Instead the next row will be calculated as you ask
@@ -161,7 +224,7 @@ diagnose behaviour in your program.</p>
 <p>Read more about <a class="reference internal" href="cursor.html#cursors"><span class="std std-ref">Cursors</span></a>.</p>
 </section>
 <section id="bindings">
-<h2>Bindings<a class="headerlink" href="#bindings" title="Permalink to this heading">¶</a></h2>
+<h2>Bindings<a class="headerlink" href="#bindings" title="Permalink to this heading"></a></h2>
 <p>When using a cursor, always use bindings.  <a class="reference external" href="http://docs.python.org/library/stdtypes.html#string-formatting-operations">String interpolation</a>
 may seem more convenient but you will encounter difficulties.  You may
 feel that you have complete control over all data accessed but if your
@@ -174,7 +237,7 @@ ways you never even thought possible.</p>
 various forms of bindings.</p>
 </section>
 <section id="diagnostics">
-<span id="diagnostics-tips"></span><h2>Diagnostics<a class="headerlink" href="#diagnostics" title="Permalink to this heading">¶</a></h2>
+<span id="diagnostics-tips"></span><h2>Diagnostics<a class="headerlink" href="#diagnostics" title="Permalink to this heading"></a></h2>
 <p>Both SQLite and APSW provide detailed diagnostic information.  Errors
 will be signalled via an <a class="reference internal" href="exceptions.html"><span class="doc">exception</span></a>.</p>
 <p>APSW ensures you have <a class="reference internal" href="exceptions.html#augmentedstacktraces"><span class="std std-ref">detailed information</span></a> both in the stack trace as well as what data
@@ -208,7 +271,7 @@ a table.</p>
 </div>
 </section>
 <section id="managing-and-updating-your-schema">
-<h2>Managing and updating your schema<a class="headerlink" href="#managing-and-updating-your-schema" title="Permalink to this heading">¶</a></h2>
+<h2>Managing and updating your schema<a class="headerlink" href="#managing-and-updating-your-schema" title="Permalink to this heading"></a></h2>
 <p>If your program uses SQLite for <a class="reference external" href="https://sqlite.org/appfileformat.html">data</a> then you'll need to manage
 and update your schema.  The hard way of doing this is to test for the
 existence of tables and their columns, and doing that maintenance
@@ -243,13 +306,13 @@ You can also use <a class="reference external" href="https://sqlite.org/pragma.h
 database as made by your application.</p>
 </section>
 <section id="parsing-sql">
-<h2>Parsing SQL<a class="headerlink" href="#parsing-sql" title="Permalink to this heading">¶</a></h2>
+<h2>Parsing SQL<a class="headerlink" href="#parsing-sql" title="Permalink to this heading"></a></h2>
 <p>Sometimes you want to know what a particular SQL statement does.  Use
 <a class="reference internal" href="ext.html#apsw.ext.query_info" title="apsw.ext.query_info"><code class="xref py py-func docutils literal notranslate"><span class="pre">apsw.ext.query_info()</span></code></a> which will provide as much detail as you
 need.</p>
 </section>
 <section id="unexpected-behaviour">
-<h2>Unexpected behaviour<a class="headerlink" href="#unexpected-behaviour" title="Permalink to this heading">¶</a></h2>
+<h2>Unexpected behaviour<a class="headerlink" href="#unexpected-behaviour" title="Permalink to this heading"></a></h2>
 <p>Occasionally you may get different results than you expected.  Before
 littering your code with <em>print</em>, try <a class="reference internal" href="execution.html#apswtrace"><span class="std std-ref">apswtrace</span></a>
 with all options turned on to see exactly what is going on. You can
@@ -270,7 +333,7 @@ the same as a table, alias, column etc then unexpected results will
 occur.</p>
 </section>
 <section id="customizing-connections">
-<span id="customizing-connection-cursor"></span><h2>Customizing Connections<a class="headerlink" href="#customizing-connections" title="Permalink to this heading">¶</a></h2>
+<span id="customizing-connection-cursor"></span><h2>Customizing Connections<a class="headerlink" href="#customizing-connections" title="Permalink to this heading"></a></h2>
 <p><a class="reference internal" href="apsw.html#apsw.connection_hooks" title="apsw.connection_hooks"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.connection_hooks</span></code></a> is a list of callbacks for when
 each <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> is created.  They are called in turn, with
 the new connection as the only parameter.</p>
@@ -289,7 +352,7 @@ returned rows:</p>
 </div>
 </section>
 <section id="customizing-cursors">
-<h2>Customizing Cursors<a class="headerlink" href="#customizing-cursors" title="Permalink to this heading">¶</a></h2>
+<h2>Customizing Cursors<a class="headerlink" href="#customizing-cursors" title="Permalink to this heading"></a></h2>
 <p>You can customize the behaviour of cursors.  An example would be
 wanting a <a class="reference internal" href="dbapi.html#rowcount"><span class="std std-ref">rowcount</span></a> or batching returned rows.
 (These don't make any sense with SQLite but the desire may be to make
@@ -313,7 +376,7 @@ dictionaries using a <a class="reference internal" href="execution.html#rowtrace
 </div>
 </section>
 <section id="busy-handling">
-<span id="busyhandling"></span><h2>Busy handling<a class="headerlink" href="#busy-handling" title="Permalink to this heading">¶</a></h2>
+<span id="busyhandling"></span><h2>Busy handling<a class="headerlink" href="#busy-handling" title="Permalink to this heading"></a></h2>
 <p>SQLite uses locks to coordinate access to the database by multiple
 connections (within the same process or in a different process).  The
 general goal is to have the locks be as lax as possible (allowing
@@ -324,14 +387,14 @@ acquired.  You can set a <a class="reference internal" href="connection.html#aps
 which will keep retrying or a <a class="reference internal" href="connection.html#apsw.Connection.setbusyhandler" title="apsw.Connection.setbusyhandler"><code class="xref py py-meth docutils literal notranslate"><span class="pre">callback</span></code></a> where you decide what to do.</p>
 </section>
 <section id="database-schema">
-<h2>Database schema<a class="headerlink" href="#database-schema" title="Permalink to this heading">¶</a></h2>
+<h2>Database schema<a class="headerlink" href="#database-schema" title="Permalink to this heading"></a></h2>
 <p>When starting a new database, it can be quite difficult to decide what
 tables and fields to have and how to link them.  The technique used to
 design SQL schemas is called <a class="reference external" href="http://en.wikipedia.org/wiki/Database_normalization">normalization</a>.  The page
 also shows common pitfalls if you don't normalize your schema.</p>
 </section>
 <section id="shared-cache-mode">
-<span id="sharedcache"></span><h2>Shared Cache Mode<a class="headerlink" href="#shared-cache-mode" title="Permalink to this heading">¶</a></h2>
+<span id="sharedcache"></span><h2>Shared Cache Mode<a class="headerlink" href="#shared-cache-mode" title="Permalink to this heading"></a></h2>
 <p>SQLite supports a <a class="reference external" href="https://sqlite.org/sharedcache.html">shared cache mode</a> where multiple connections
 to the same database can share a cache instead of having their own.
 It is not recommended that you use this mode.</p>
@@ -350,7 +413,7 @@ byte of memory and I/O matters.  For example an MP3 player may only
 have kilobytes of memory available for SQLite.</p>
 </section>
 <section id="write-ahead-logging">
-<span id="wal"></span><h2>Write Ahead Logging<a class="headerlink" href="#write-ahead-logging" title="Permalink to this heading">¶</a></h2>
+<span id="wal"></span><h2>Write Ahead Logging<a class="headerlink" href="#write-ahead-logging" title="Permalink to this heading"></a></h2>
 <p>SQLite 3.7 introduced <a class="reference external" href="https://sqlite.org/wal.html">write ahead logging</a> which has several benefits, but
 also some drawbacks as the page documents.  WAL mode is off by
 default.  In addition to turning it on manually for each database, you
@@ -377,119 +440,47 @@ indirect call via Python.)</p>
 </section>
 
 
-            <div class="clearer"></div>
+           </div>
           </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="APSW 3.41.2.0 documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="example.html" class="btn btn-neutral float-right" title="Example/Tour" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      <span class="lastupdated">Last updated on Mar 26, 2023.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-            <p class="logo"><a href="index.html">
-              <img class="logo" src="_static/apswlogo.png" alt="Logo"/>
-            </a></p>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>document.getElementById('searchbox').style.display = "block"</script>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="index.html"
-                          title="previous chapter">APSW 3.41.0.0 documentation</a></p>
+    </section>
   </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="example.html"
-                          title="next chapter">Example/Tour</a></p>
-  </div>
-  <div>
-    <h3><a href="index.html">On this page</a></h3>
-    <ul>
-<li><a class="reference internal" href="#">Tips</a><ul>
-<li><a class="reference internal" href="#about-python-apsw-and-sqlite-versions">About Python, APSW, and SQLite versions</a></li>
-<li><a class="reference internal" href="#sqlite-is-different">SQLite is different</a></li>
-<li><a class="reference internal" href="#transactions">Transactions</a></li>
-<li><a class="reference internal" href="#cursors">Cursors</a></li>
-<li><a class="reference internal" href="#bindings">Bindings</a></li>
-<li><a class="reference internal" href="#diagnostics">Diagnostics</a></li>
-<li><a class="reference internal" href="#managing-and-updating-your-schema">Managing and updating your schema</a></li>
-<li><a class="reference internal" href="#parsing-sql">Parsing SQL</a></li>
-<li><a class="reference internal" href="#unexpected-behaviour">Unexpected behaviour</a></li>
-<li><a class="reference internal" href="#customizing-connections">Customizing Connections</a></li>
-<li><a class="reference internal" href="#customizing-cursors">Customizing Cursors</a></li>
-<li><a class="reference internal" href="#busy-handling">Busy handling</a></li>
-<li><a class="reference internal" href="#database-schema">Database schema</a></li>
-<li><a class="reference internal" href="#shared-cache-mode">Shared Cache Mode</a></li>
-<li><a class="reference internal" href="#write-ahead-logging">Write Ahead Logging</a></li>
-</ul>
-</li>
-</ul>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
 
-  </div>
-<h3><a href="index.html">Table of Contents</a></h3>
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Tips</a></li>
-<li class="toctree-l1"><a class="reference internal" href="example.html">Example/Tour</a></li>
-<li class="toctree-l1"><a class="reference internal" href="download.html">Download</a></li>
-<li class="toctree-l1"><a class="reference internal" href="build.html">Building</a></li>
-<li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="apsw.html">APSW Module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="connection.html">Connections to a database</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cursor.html">Cursors (executing SQL)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="blob.html">Blob Input/Output</a></li>
-<li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a></li>
-<li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a></li>
-<li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
-<li class="toctree-l1"><a class="reference internal" href="types.html">Types</a></li>
-<li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
-<li class="toctree-l1"><a class="reference internal" href="benchmarking.html">Benchmarking</a></li>
-<li class="toctree-l1"><a class="reference internal" href="copyright.html">Copyright and License</a></li>
-<li class="toctree-l1"><a class="reference internal" href="changes.html">Change History</a></li>
-</ul>
+      gtag('config', 'G-2NR9GDCQLT', {
+          'anonymize_ip': false,
+      });
+    </script> 
 
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/tips.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="example.html" title="Example/Tour"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="index.html" title="APSW 3.41.0.0 documentation"
-             >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.41.0.0 documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Tips</a></li> 
-      </ul>
-    </div>
-    <div class="footer" role="contentinfo">
-        &#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Mar 01, 2023.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
-    </div>
-  </body>
+</body>
 </html>

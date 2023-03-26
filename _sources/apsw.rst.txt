@@ -120,6 +120,10 @@ API Reference
        relevant tables, got the Python text and turned it into the
        functions.
 
+.. method:: connections() -> list[Connection]
+
+  Returns a list of the connections
+
 .. index:: sqlite3_enable_shared_cache
 
 .. method:: enablesharedcache(enable: bool) -> None
@@ -458,7 +462,7 @@ modules etc. For example::
 
     `SQLITE_ALTER_TABLE <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_ANALYZE <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_ATTACH <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_COPY <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_CREATE_INDEX <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_CREATE_TABLE <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_CREATE_TEMP_INDEX <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_CREATE_TEMP_TABLE <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_CREATE_TEMP_TRIGGER <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_CREATE_TEMP_VIEW <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_CREATE_TRIGGER <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_CREATE_VIEW <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_CREATE_VTABLE <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_DELETE <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_DETACH <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_DROP_INDEX <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_DROP_TABLE <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_DROP_TEMP_INDEX <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_DROP_TEMP_TABLE <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_DROP_TEMP_TRIGGER <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_DROP_TEMP_VIEW <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_DROP_TRIGGER <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_DROP_VIEW <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_DROP_VTABLE <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_FUNCTION <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_INSERT <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_PRAGMA <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_READ <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_RECURSIVE <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_REINDEX <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_SAVEPOINT <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_SELECT <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_TRANSACTION <https://sqlite.org/c3ref/c_alter_table.html>`__, `SQLITE_UPDATE <https://sqlite.org/c3ref/c_alter_table.html>`__
 
-.. data:: mapping_authorizer_return
+.. data:: mapping_authorizer_return_codes
     :type: typing.Dict[typing.Union[str, int], typing.Union[int, str]]
 
     `Authorizer Return Codes <https://sqlite.org/c3ref/c_deny.html>`__ constants

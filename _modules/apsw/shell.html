@@ -1,54 +1,102 @@
-
 <!DOCTYPE html>
-
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <!-- Google tag (gtag.js) -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
-        <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-
-        gtag('config', 'G-2NR9GDCQLT');
-        </script>
-    
-    <title>apsw.shell &#8212; APSW 3.41.0.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/classic.css" />
-    
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/sphinx_highlight.js"></script>
-    
-    <link rel="icon" href="../../_static/favicon.ico"/>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>apsw.shell &mdash; APSW 3.41.2.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="copyright" title="Copyright" href="../../copyright.html" /> 
-  </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">APSW 3.41.0.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../apsw.html" accesskey="U">apsw</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">apsw.shell</a></li> 
-      </ul>
-    </div>  
+</head>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            APSW
+              <img src="../../_static/apswlogo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                3.41.2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tips.html">Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example.html">Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../download.html">Download</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../build.html">Building</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../extensions.html">Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../apsw.html">APSW Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../connection.html">Connections to a database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cursor.html">Cursors (executing SQL)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../blob.html">Blob Input/Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../backup.html">Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../vtable.html">Virtual Tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../vfs.html">Virtual File System (VFS)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../shell.html">Shell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../ext.html">Various interesting and useful bits of functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../exceptions.html">Exceptions and Errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../types.html">Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../execution.html">Execution and tracing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dbapi.html">DBAPI notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pysqlite.html">sqlite3 module differences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../benchmarking.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright and License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changes.html">Change History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../py-modindex.html">Module Index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">APSW</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../apsw.html">apsw</a></li>
+      <li class="breadcrumb-item active">apsw.shell</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
   <h1>Source code for apsw.shell</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python3</span>
 
@@ -515,7 +563,7 @@
     <span class="c1">### used to generate help.</span>
     <span class="c1">###</span>
 
-<div class="viewcode-block" id="Shell.output_column"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.output_column">[docs]</a>    <span class="k">def</span> <span class="nf">output_column</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">output_column</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Items left aligned in space padded columns.  They are</span>
 <span class="sd">        truncated if they do not fit. If the width hasn&#39;t been</span>
@@ -558,11 +606,11 @@
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">))</span>
         <span class="p">]</span>
         <span class="c1"># sqlite shell uses two spaces between columns</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot;  &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot;  &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="n">output_columns</span> <span class="o">=</span> <span class="n">output_column</span>
 
-<div class="viewcode-block" id="Shell.output_csv"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.output_csv">[docs]</a>    <span class="k">def</span> <span class="nf">output_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">output_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Items in csv format (comma separated).  Use tabs mode for tab</span>
 <span class="sd">        separated.  You can use the .separator command to use a</span>
@@ -617,9 +665,9 @@
         <span class="k">assert</span> <span class="p">(</span><span class="ow">not</span> <span class="n">t</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\r</span><span class="s2">&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">t</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">t</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_csv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">truncate</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_csv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_csv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Shell.output_html"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.output_html">[docs]</a>    <span class="k">def</span> <span class="nf">output_html</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">output_html</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
         <span class="s2">&quot;HTML table style&quot;</span>
         <span class="k">if</span> <span class="n">header</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">:</span>
@@ -634,9 +682,9 @@
             <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">l</span><span class="p">)</span>
             <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;&lt;/TD&gt;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;/TH&gt;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)[</span><span class="n">header</span><span class="p">])</span>
         <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&lt;/TR&gt;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">))</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">))</span>
 
-<div class="viewcode-block" id="Shell.output_insert"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.output_insert">[docs]</a>    <span class="k">def</span> <span class="nf">output_insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">output_insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Lines as SQL insert statements.  The table name is &quot;table&quot;</span>
 <span class="sd">        unless you specified a different one as the second parameter</span>
@@ -646,9 +694,9 @@
             <span class="k">return</span>
         <span class="n">fmt</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">colour</span><span class="o">.</span><span class="n">colour_value</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">format_sql_value</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
         <span class="n">out</span> <span class="o">=</span> <span class="s2">&quot;INSERT INTO &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_output_table</span> <span class="o">+</span> <span class="s2">&quot; VALUES(&quot;</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">fmt</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">line</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;);</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Shell.output_json"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.output_json">[docs]</a>    <span class="k">def</span> <span class="nf">output_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">output_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Each line as a JSON object with a trailing comma.  Blobs are</span>
 <span class="sd">        output as base64 encoded strings.  You should be using UTF8</span>
@@ -659,9 +707,9 @@
             <span class="k">return</span>
         <span class="n">fmt</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">colour</span><span class="o">.</span><span class="n">colour_value</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fmt_json_value</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
         <span class="n">out</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fmt_json_value</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="n">fmt</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_json_cols</span><span class="p">)]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot;{ &quot;</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;},</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot;{ &quot;</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;},</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Shell.output_line"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.output_line">[docs]</a>    <span class="k">def</span> <span class="nf">output_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">output_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        One value per line in the form &#39;column = value&#39; with a blank</span>
 <span class="sd">        line between rows.</span>
@@ -677,11 +725,11 @@
         <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_line_info</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%*s</span><span class="s2"> = </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_line_info</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="n">fmt</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="n">i</span><span class="p">])))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="n">output_lines</span> <span class="o">=</span> <span class="n">output_line</span>
 
-<div class="viewcode-block" id="Shell.output_list"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.output_list">[docs]</a>    <span class="k">def</span> <span class="nf">output_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">output_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
         <span class="s2">&quot;All items on one line with separator&quot;</span>
         <span class="k">if</span> <span class="n">header</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">:</span>
@@ -690,9 +738,9 @@
             <span class="n">fmt</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">c</span><span class="o">.</span><span class="n">header</span> <span class="o">+</span> <span class="n">x</span> <span class="o">+</span> <span class="n">c</span><span class="o">.</span><span class="n">header_</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">fmt</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">colour</span><span class="o">.</span><span class="n">colour_value</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fmt_text_col</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">separator</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">fmt</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">line</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">separator</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">fmt</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">line</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Shell.output_python"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.output_python">[docs]</a>    <span class="k">def</span> <span class="nf">output_python</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">output_python</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
         <span class="s2">&quot;Tuples in Python source form for each row&quot;</span>
         <span class="k">if</span> <span class="n">header</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">:</span>
@@ -701,9 +749,9 @@
             <span class="n">fmt</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">c</span><span class="o">.</span><span class="n">header</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fmt_python</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">c</span><span class="o">.</span><span class="n">header_</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">fmt</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">colour</span><span class="o">.</span><span class="n">colour_value</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fmt_python</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s1">&#39;(&#39;</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">fmt</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">line</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;),</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s1">&#39;(&#39;</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">fmt</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">line</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;),</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Shell.output_tcl"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.output_tcl">[docs]</a>    <span class="k">def</span> <span class="nf">output_tcl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">output_tcl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
         <span class="s2">&quot;Outputs TCL/C style strings using current separator&quot;</span>
         <span class="c1"># In theory you could paste the output into your source ...</span>
         <span class="k">if</span> <span class="n">header</span><span class="p">:</span>
@@ -713,7 +761,7 @@
             <span class="n">fmt</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">c</span><span class="o">.</span><span class="n">header</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fmt_c_string</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">c</span><span class="o">.</span><span class="n">header_</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">fmt</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">colour</span><span class="o">.</span><span class="n">colour_value</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fmt_c_string</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">separator</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">fmt</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">line</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">separator</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">fmt</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">line</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_output_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">summary</span><span class="p">):</span>
         <span class="c1"># internal routine to output a summary line or two</span>
@@ -943,7 +991,7 @@
 
     <span class="c1"># Note that doc text is used for generating help output.</span>
 
-<div class="viewcode-block" id="Shell.command_backup"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_backup">[docs]</a>    <span class="k">def</span> <span class="nf">command_backup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">command_backup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;backup ?DB? FILE: Backup DB (default &quot;main&quot;) to FILE</span>
 
 <span class="sd">        Copies the contents of the current database to FILE</span>
@@ -968,18 +1016,18 @@
                 <span class="n">b</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="n">b</span><span class="o">.</span><span class="n">finish</span><span class="p">()</span>
-            <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+            <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Shell.command_bail"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_bail">[docs]</a>    <span class="k">def</span> <span class="nf">command_bail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">command_bail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;bail ON|OFF: Stop after hitting an error (default OFF)</span>
 
 <span class="sd">        If an error is encountered while processing commands or SQL</span>
 <span class="sd">        then exit.  (Note this is different than SQLite shell which</span>
 <span class="sd">        only exits for errors in SQL.)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">bail</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_boolean_command</span><span class="p">(</span><span class="s2">&quot;bail&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bail</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_boolean_command</span><span class="p">(</span><span class="s2">&quot;bail&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Shell.command_colour"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_colour">[docs]</a>    <span class="k">def</span> <span class="nf">command_colour</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="o">=</span><span class="p">[]):</span>
+    <span class="k">def</span> <span class="nf">command_colour</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="o">=</span><span class="p">[]):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;colour SCHEME: Selects a colour scheme</span>
 
 <span class="sd">        Residents of both countries that have not adopted the metric</span>
@@ -994,11 +1042,11 @@
         <span class="k">if</span> <span class="n">c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_colours</span><span class="p">:</span>
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;No such colour scheme: &quot;</span> <span class="o">+</span> <span class="n">c</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">colour_scheme</span> <span class="o">=</span> <span class="n">c</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_out_colour</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_out_colour</span><span class="p">()</span>
 
     <span class="n">command_color</span> <span class="o">=</span> <span class="n">command_colour</span>
 
-<div class="viewcode-block" id="Shell.command_databases"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_databases">[docs]</a>    <span class="k">def</span> <span class="nf">command_databases</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">command_databases</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;databases: Lists names and files of attached databases</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1012,9 +1060,9 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">process_sql</span><span class="p">(</span><span class="s2">&quot;pragma database_list&quot;</span><span class="p">,</span> <span class="n">internal</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">finally</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">pop_output</span><span class="p">()</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pop_output</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Shell.command_dump"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_dump">[docs]</a>    <span class="k">def</span> <span class="nf">command_dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">command_dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;dump ?TABLE? [TABLE...]: Dumps all or specified tables in SQL text format</span>
 
 <span class="sd">        The table name is treated as like pattern so you can use % as</span>
@@ -1293,15 +1341,15 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot;BEGIN;</span><span class="se">\n</span><span class="s2">CREATE TABLE no_such_table(x,y,z);</span><span class="se">\n</span><span class="s2">ROLLBACK;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">finally</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">process_sql</span><span class="p">(</span><span class="s2">&quot;END&quot;</span><span class="p">,</span> <span class="n">internal</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">process_sql</span><span class="p">(</span><span class="s2">&quot;END&quot;</span><span class="p">,</span> <span class="n">internal</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Shell.command_echo"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_echo">[docs]</a>    <span class="k">def</span> <span class="nf">command_echo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">command_echo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;echo ON|OFF: If ON then each SQL statement or command is printed before execution (default OFF)</span>
 
 <span class="sd">        The SQL statement or command is sent to error output so that</span>
 <span class="sd">        it is not intermingled with regular output.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">echo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_boolean_command</span><span class="p">(</span><span class="s2">&quot;echo&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">echo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_boolean_command</span><span class="p">(</span><span class="s2">&quot;echo&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Shell.set_encoding"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.set_encoding">[docs]</a>    <span class="k">def</span> <span class="nf">set_encoding</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enc</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Saves *enc* as the default encoding, after verifying that</span>
@@ -1327,7 +1375,7 @@
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;No known codec error handler &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">errors</span><span class="p">,</span> <span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">encoding</span> <span class="o">=</span> <span class="n">enc</span><span class="p">,</span> <span class="n">errors</span></div>
 
-<div class="viewcode-block" id="Shell.command_encoding"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_encoding">[docs]</a>    <span class="k">def</span> <span class="nf">command_encoding</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">command_encoding</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;encoding ENCODING: Set the encoding used for new files opened via .output and imports</span>
 
 <span class="sd">        SQLite and APSW work internally using Unicode and characters.</span>
@@ -1356,9 +1404,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;Encoding takes one argument&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_encoding</span><span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_encoding</span><span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
-<div class="viewcode-block" id="Shell.command_exceptions"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_exceptions">[docs]</a>    <span class="k">def</span> <span class="nf">command_exceptions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">command_exceptions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;exceptions ON|OFF: If ON then detailed tracebacks are shown on exceptions (default OFF)</span>
 
 <span class="sd">        Normally when an exception occurs the error string only is</span>
@@ -1368,21 +1416,21 @@
 <span class="sd">        addition to displaying each stack frame, the local variables</span>
 <span class="sd">        within each frame are also displayed.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">exceptions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_boolean_command</span><span class="p">(</span><span class="s2">&quot;exceptions&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exceptions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_boolean_command</span><span class="p">(</span><span class="s2">&quot;exceptions&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Shell.command_exit"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_exit">[docs]</a>    <span class="k">def</span> <span class="nf">command_exit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">command_exit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;exit:Exit this program&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cmd</span><span class="p">):</span>
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;Exit doesn&#39;t take any parameters&quot;</span><span class="p">)</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Shell.command_quit"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_quit">[docs]</a>    <span class="k">def</span> <span class="nf">command_quit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">command_quit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;quit:Exit this program&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cmd</span><span class="p">):</span>
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;Quit doesn&#39;t take any parameters&quot;</span><span class="p">)</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Shell.command_explain"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_explain">[docs]</a>    <span class="k">def</span> <span class="nf">command_explain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">command_explain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;explain ON|OFF: Set output mode suitable for explain (default OFF)</span>
 
 <span class="sd">        Explain shows the underlying SQLite virtual machine code for a</span>
@@ -1401,9 +1449,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">truncate</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_column</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">pop_output</span><span class="p">()</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pop_output</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Shell.command_find"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_find">[docs]</a>    <span class="k">def</span> <span class="nf">command_find</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">command_find</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;find what ?TABLE?: Searches all columns of all tables for a value</span>
 
 <span class="sd">        The find command helps you locate data across your database</span>
@@ -1452,19 +1500,19 @@
             <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">column</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;pragma table_info(</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="p">)):</span>
                 <span class="n">colq</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">querytemplate</span> <span class="o">%</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_fmt_sql_identifier</span><span class="p">(</span><span class="n">column</span><span class="p">),</span> <span class="p">)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">queryparams</span><span class="p">)))</span>
             <span class="n">query</span> <span class="o">=</span> <span class="n">query</span> <span class="o">+</span> <span class="s2">&quot; OR &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">colq</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">process_sql</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">queryparams</span><span class="p">,</span> <span class="n">internal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">summary</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Table &quot;</span> <span class="o">+</span> <span class="n">table</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">))</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">process_sql</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">queryparams</span><span class="p">,</span> <span class="n">internal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">summary</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Table &quot;</span> <span class="o">+</span> <span class="n">table</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">))</span>
 
-<div class="viewcode-block" id="Shell.command_header"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_header">[docs]</a>    <span class="k">def</span> <span class="nf">command_header</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">command_header</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;header(s) ON|OFF: Display the column names in output (default OFF)</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_boolean_command</span><span class="p">(</span><span class="s2">&quot;header&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_boolean_command</span><span class="p">(</span><span class="s2">&quot;header&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span>
 
     <span class="n">command_headers</span> <span class="o">=</span> <span class="n">command_header</span>
 
     <span class="n">_help_info</span> <span class="o">=</span> <span class="kc">None</span>
 
-<div class="viewcode-block" id="Shell.command_help"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_help">[docs]</a>    <span class="k">def</span> <span class="nf">command_help</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">command_help</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;help ?COMMAND?: Shows list of commands and their usage.  If COMMAND is specified then shows detail about that COMMAND.  (&#39;.help all&#39; will show detailed help about all commands.)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_help_info</span><span class="p">:</span>
@@ -1569,9 +1617,9 @@
                 <span class="k">if</span> <span class="n">command</span> <span class="o">!=</span> <span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="n">tw</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Shell.command_import"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_import">[docs]</a>    <span class="k">def</span> <span class="nf">command_import</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">command_import</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;import FILE TABLE: Imports separated data from FILE into TABLE</span>
 
 <span class="sd">        Reads data from the file into the named table using the</span>
@@ -1648,7 +1696,7 @@
         <span class="k">except</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">final</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">final</span><span class="p">)</span>
-            <span class="k">raise</span></div>
+            <span class="k">raise</span>
 
     <span class="k">def</span> <span class="nf">_csvin_wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">dialect</span><span class="p">):</span>
         <span class="c1"># Returns a csv reader that works around python bugs and uses</span>
@@ -1659,7 +1707,7 @@
         <span class="n">thefile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="k">return</span>
 
-<div class="viewcode-block" id="Shell.command_autoimport"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_autoimport">[docs]</a>    <span class="k">def</span> <span class="nf">command_autoimport</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">command_autoimport</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;autoimport FILENAME ?TABLE?: Imports filename creating a table and automatically working out separators and data types (alternative to .import command)</span>
 
 <span class="sd">        The import command requires that you precisely pre-setup the</span>
@@ -1854,7 +1902,7 @@
         <span class="k">except</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">final</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">final</span><span class="p">)</span>
-            <span class="k">raise</span></div>
+            <span class="k">raise</span>
 
     <span class="k">def</span> <span class="nf">_getdate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
         <span class="c1"># Returns a tuple of 3 items y,m,d from string v</span>
@@ -1884,7 +1932,7 @@
             <span class="k">raise</span> <span class="ne">ValueError</span>
         <span class="k">return</span> <span class="n">items</span>
 
-<div class="viewcode-block" id="Shell.command_indices"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_indices">[docs]</a>    <span class="k">def</span> <span class="nf">command_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">command_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;indices TABLE: Lists all indices on table TABLE</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1901,9 +1949,9 @@
                 <span class="n">cmd</span><span class="p">,</span>
                 <span class="n">internal</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">finally</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">pop_output</span><span class="p">()</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pop_output</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Shell.command_load"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_load">[docs]</a>    <span class="k">def</span> <span class="nf">command_load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">command_load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;load FILE ?ENTRY?: Loads a SQLite extension library</span>
 
 <span class="sd">        Note: Extension loading may not be enabled in the SQLite</span>
@@ -1929,11 +1977,11 @@
         <span class="k">except</span><span class="p">:</span>
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;Extension loading is not supported&quot;</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">loadextension</span><span class="p">(</span><span class="o">*</span><span class="n">cmd</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">loadextension</span><span class="p">(</span><span class="o">*</span><span class="n">cmd</span><span class="p">)</span>
 
     <span class="n">_output_modes</span> <span class="o">=</span> <span class="kc">None</span>
 
-<div class="viewcode-block" id="Shell.command_mode"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_mode">[docs]</a>    <span class="k">def</span> <span class="nf">command_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">command_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;mode MODE ?TABLE?: Sets output mode to one of&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
             <span class="n">w</span> <span class="o">=</span> <span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -1963,7 +2011,7 @@
                 <span class="k">return</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_output_modes</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_cache_output_modes</span><span class="p">()</span>
-        <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;Expected a valid output mode: &quot;</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_modes</span><span class="p">))</span></div>
+        <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;Expected a valid output mode: &quot;</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_modes</span><span class="p">))</span>
 
     <span class="c1"># needed so command completion and help can use it</span>
     <span class="k">def</span> <span class="nf">_cache_output_modes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1984,7 +2032,7 @@
             <span class="n">detail</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span> <span class="o">+</span> <span class="s2">&quot;: &quot;</span> <span class="o">+</span> <span class="n">d</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_output_modes_detail</span> <span class="o">=</span> <span class="n">detail</span>
 
-<div class="viewcode-block" id="Shell.command_nullvalue"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_nullvalue">[docs]</a>    <span class="k">def</span> <span class="nf">command_nullvalue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">command_nullvalue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;nullvalue STRING: Print STRING in place of null values</span>
 
 <span class="sd">        This affects textual output modes like column and list and</span>
@@ -1999,9 +2047,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;nullvalue takes exactly one parameter&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nullvalue</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixup_backslashes</span><span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nullvalue</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixup_backslashes</span><span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
-<div class="viewcode-block" id="Shell.command_open"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_open">[docs]</a>    <span class="k">def</span> <span class="nf">command_open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">command_open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;open ?OPTIONS? ?FILE?: Closes existing database and opens a different one</span>
 
 <span class="sd">        Options are: --new which deletes the file if it already exists</span>
@@ -2044,9 +2092,9 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">fn</span> <span class="o">+</span> <span class="s2">&quot;-DELETEME&quot;</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">dbname</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">dbname</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Shell.command_output"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_output">[docs]</a>    <span class="k">def</span> <span class="nf">command_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">command_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;output FILENAME: Send output to FILENAME (or stdout)</span>
 
 <span class="sd">        If the FILENAME is stdout then output is sent to standard</span>
@@ -2087,18 +2135,18 @@
             <span class="k">if</span> <span class="n">old</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">old</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="k">finally</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_out_colour</span><span class="p">()</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_out_colour</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Shell.command_print"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_print">[docs]</a>    <span class="k">def</span> <span class="nf">command_print</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">command_print</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;print STRING: print the literal STRING</span>
 
 <span class="sd">        If more than one argument is supplied then they are printed</span>
 <span class="sd">        space separated.  You can use backslash escapes such as \\n</span>
 <span class="sd">        and \\t.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">fixup_backslashes</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">cmd</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">fixup_backslashes</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">cmd</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Shell.command_prompt"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_prompt">[docs]</a>    <span class="k">def</span> <span class="nf">command_prompt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">command_prompt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;prompt MAIN ?CONTINUE?: Changes the prompts for first line and continuation lines</span>
 
 <span class="sd">        The default is to print &#39;sqlite&gt; &#39; for the main prompt where</span>
@@ -2115,9 +2163,9 @@
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;prompt takes one or two arguments&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">prompt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixup_backslashes</span><span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">moreprompt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixup_backslashes</span><span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">moreprompt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixup_backslashes</span><span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 
-<div class="viewcode-block" id="Shell.command_read"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_read">[docs]</a>    <span class="k">def</span> <span class="nf">command_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">command_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;read FILENAME: Processes SQL and commands in FILENAME (or Python if FILENAME ends with .py)</span>
 
 <span class="sd">        Treats the specified file as input (a mixture or SQL and/or</span>
@@ -2159,9 +2207,9 @@
 
             <span class="k">finally</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">pop_input</span><span class="p">()</span>
-                <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+                <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Shell.command_restore"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_restore">[docs]</a>    <span class="k">def</span> <span class="nf">command_restore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">command_restore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;restore ?DB? FILE: Restore database from FILE into DB (default &quot;main&quot;)</span>
 
 <span class="sd">        Copies the contents of FILE to the current database (default &quot;main&quot;).</span>
@@ -2183,9 +2231,9 @@
                 <span class="n">b</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="n">b</span><span class="o">.</span><span class="n">finish</span><span class="p">()</span>
-            <span class="nb">input</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+            <span class="nb">input</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Shell.command_schema"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_schema">[docs]</a>    <span class="k">def</span> <span class="nf">command_schema</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">command_schema</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;schema ?TABLE? [TABLE...]: Shows SQL for table</span>
 
 <span class="sd">        If you give one or more tables then their schema is listed</span>
@@ -2209,9 +2257,9 @@
                     <span class="s2">&quot;ORDER BY substr(type,2,1), name&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="p">),</span>
                     <span class="n">internal</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">finally</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">pop_output</span><span class="p">()</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pop_output</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Shell.command_separator"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_separator">[docs]</a>    <span class="k">def</span> <span class="nf">command_separator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">command_separator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;separator STRING: Change separator for output mode and .import</span>
 
 <span class="sd">        You can use quotes and backslashes.  For example to set the</span>
@@ -2225,12 +2273,12 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;separator takes exactly one parameter&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">separator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixup_backslashes</span><span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">separator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixup_backslashes</span><span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
     <span class="n">_shows</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;echo&quot;</span><span class="p">,</span> <span class="s2">&quot;explain&quot;</span><span class="p">,</span> <span class="s2">&quot;headers&quot;</span><span class="p">,</span> <span class="s2">&quot;mode&quot;</span><span class="p">,</span> <span class="s2">&quot;nullvalue&quot;</span><span class="p">,</span> <span class="s2">&quot;output&quot;</span><span class="p">,</span> <span class="s2">&quot;separator&quot;</span><span class="p">,</span> <span class="s2">&quot;width&quot;</span><span class="p">,</span> <span class="s2">&quot;exceptions&quot;</span><span class="p">,</span>
               <span class="s2">&quot;encoding&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Shell.command_show"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_show">[docs]</a>    <span class="k">def</span> <span class="nf">command_show</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">command_show</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;show: Show the current values for various settings.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;show takes at most one parameter&quot;</span><span class="p">)</span>
@@ -2289,9 +2337,9 @@
                 <span class="n">l</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">outs</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%*.*s</span><span class="s2">: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%*.*s</span><span class="s2">: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
 
-<div class="viewcode-block" id="Shell.command_tables"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_tables">[docs]</a>    <span class="k">def</span> <span class="nf">command_tables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">command_tables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;tables ?PATTERN?: Lists names of tables matching LIKE pattern</span>
 
 <span class="sd">        This also returns views.</span>
@@ -2318,9 +2366,9 @@
                     <span class="s2">&quot;ORDER BY 1&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="p">),</span>
                     <span class="n">internal</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">finally</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">pop_output</span><span class="p">()</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pop_output</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Shell.command_timeout"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_timeout">[docs]</a>    <span class="k">def</span> <span class="nf">command_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">command_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;timeout MS: Try opening locked tables for MS milliseconds</span>
 
 <span class="sd">        If a database is locked by another process SQLite will keep</span>
@@ -2334,9 +2382,9 @@
             <span class="n">t</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="k">except</span><span class="p">:</span>
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> is not a number&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">setbusytimeout</span><span class="p">(</span><span class="n">t</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">setbusytimeout</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Shell.command_timer"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_timer">[docs]</a>    <span class="k">def</span> <span class="nf">command_timer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">command_timer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;timer ON|OFF: Control printing of time and resource usage after each query</span>
 
 <span class="sd">        The values displayed are in seconds when shown as floating</span>
@@ -2351,9 +2399,9 @@
                 <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;Timing not supported by this Python version/platform&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">timer</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">timer</span> <span class="o">=</span> <span class="kc">False</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">timer</span> <span class="o">=</span> <span class="kc">False</span>
 
-<div class="viewcode-block" id="Shell.command_width"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.command_width">[docs]</a>    <span class="k">def</span> <span class="nf">command_width</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">command_width</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;width NUM NUM ...: Set the column widths for &quot;column&quot; mode</span>
 
 <span class="sd">        In &quot;column&quot; output mode, each column is a fixed width with values truncated to</span>
@@ -2368,7 +2416,7 @@
                 <span class="n">w</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
             <span class="k">except</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39; is not a valid number&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">widths</span> <span class="o">=</span> <span class="n">w</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widths</span> <span class="o">=</span> <span class="n">w</span>
 
     <span class="k">def</span> <span class="nf">_terminal_width</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Works out the terminal width which is used for word wrapping</span>
@@ -3057,74 +3105,44 @@
     <span class="n">main</span><span class="p">()</span>
 </pre></div>
 
-            <div class="clearer"></div>
+           </div>
           </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-            <p class="logo"><a href="../../index.html">
-              <img class="logo" src="../../_static/apswlogo.png" alt="Logo"/>
-            </a></p>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>document.getElementById('searchbox').style.display = "block"</script>
-<h3><a href="../../index.html">Table of Contents</a></h3>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../tips.html">Tips</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../example.html">Example/Tour</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../download.html">Download</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../build.html">Building</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../extensions.html">Extensions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../apsw.html">APSW Module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../connection.html">Connections to a database</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../cursor.html">Cursors (executing SQL)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../blob.html">Blob Input/Output</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../backup.html">Backup</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../vtable.html">Virtual Tables</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../vfs.html">Virtual File System (VFS)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../shell.html">Shell</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../ext.html">Various interesting and useful bits of functionality</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../exceptions.html">Exceptions and Errors</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../types.html">Types</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../execution.html">Execution and tracing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../dbapi.html">DBAPI notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../pysqlite.html">sqlite3 module differences</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../benchmarking.html">Benchmarking</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright and License</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../changes.html">Change History</a></li>
-</ul>
+          <footer>
 
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      <span class="lastupdated">Last updated on Mar 26, 2023.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
         </div>
       </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">APSW 3.41.0.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../apsw.html" >apsw</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">apsw.shell</a></li> 
-      </ul>
-    </div>
-    <div class="footer" role="contentinfo">
-        &#169; <a href="../../copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Mar 01, 2023.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
-    </div>
-  </body>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-2NR9GDCQLT', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
 </html>

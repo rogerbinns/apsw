@@ -90,6 +90,7 @@ API Reference
 -------------
 
 .. automodule:: apsw.ext
+    :synopsis: Various interesting and useful bits of functionality
     :members:
     :undoc-members:
     :member-order: bysource
