@@ -147,14 +147,20 @@ def exercise(example_code, expect_exception):
 
         class Table:
 
-            def BestIndexObject(self, iio):
+            def BestIndexObject(self, iio: apsw.IndexInfo):
                 apsw.ext.index_info_to_dict(iio)
                 for n in range(iio.nConstraint):
                     if iio.get_aConstraintUsage_in(n):
                         iio.set_aConstraintUsage_in(n, True)
                         iio.set_aConstraintUsage_argvIndex(n, 1)
                 iio.estimatedRows = 7
+                iio.orderByConsumed = False
+                iio.estimatedCost = 33
+
                 return True
+
+            def BestIndex(self, *args):
+                return (None, 23, "some string", True, 321321)
 
             def Open(self):
                 return Source.Cursor()
@@ -194,11 +200,13 @@ def exercise(example_code, expect_exception):
                 pass
 
     con.createmodule("vtable", Source(), use_bestindex_object=True, iVersion=3, eponymous=True)
+    con.createmodule("vtable2", Source(), use_bestindex_object=False, iVersion=3, eponymous=True)
     con.overloadfunction("vtf", 2)
     con.overloadfunction("vtf", 1)
     con.execute("select * from vtable where c2>2 and c1 in (1,2,3)")
     con.execute("create virtual table fred using vtable()")
-    con.execute("select vtf(c3) from fred where c3>5; select vtf(c2,c1) from fred where c3>5").fetchall()
+    con.execute("select vtf(c3) from fred where c3>5; select vtf(c2,c1) from fred where c3>5 order by c2").fetchall()
+    con.execute("select vtf(c3) from vtable2 where c3>5; select vtf(c2,c1) from fred where c3>5 order by c2 desc, c1").fetchall()
     con.execute("delete from fred where c3>5")
     n = 2
     con.execute("insert into fred values(?,?,?,?)", [None, ' ' * n, b"aa" * n, 3.14 * n])

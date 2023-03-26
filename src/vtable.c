@@ -544,21 +544,13 @@ SqliteIndexInfo_get_orderByConsumed(SqliteIndexInfo *self)
 {
   CHECK_INDEX(NULL);
 
-  if (self->index_info->orderByConsumed)
-    Py_RETURN_TRUE;
-  Py_RETURN_FALSE;
+  return Py_NewRef(self->index_info->orderByConsumed ? Py_True : Py_False);
 }
 
 static int
 SqliteIndexInfo_set_OrderByConsumed(SqliteIndexInfo *self, PyObject *value)
 {
   CHECK_INDEX(-1);
-
-  if (!PyBool_Check(value) && !PyLong_Check(value))
-  {
-    PyErr_Format(PyExc_TypeError, "expected a bool not %s", Py_TypeName(value));
-    return -1;
-  }
 
   self->index_info->orderByConsumed = PyObject_IsTrueStrict(value);
   if (self->index_info->orderByConsumed == -1)
@@ -1475,7 +1467,8 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
     goto finally;
 
   /* check we have a sequence */
-  if (!PySequence_Check(res) || PySequence_Size(res) > 5)
+  Py_ssize_t sequence_size; /* size is a dynamic call and could give different answers on each call */
+  if (!PySequence_Check(res) || (sequence_size = PySequence_Size(res)) > 5)
   {
     PyErr_Format(PyExc_TypeError, "Bad result from BestIndex.  It should be a sequence of up to 5 items");
     AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xBestIndex.result_check", "{s: O, s: O}", "self", vtable, "result", OBJ(res));
@@ -1483,7 +1476,7 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
   }
 
   /* dig the argv indices out */
-  if (PySequence_Size(res) == 0)
+  if (sequence_size == 0)
     goto finally;
 
   indices = PySequence_GetItem(res, 0);
@@ -1563,7 +1556,7 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
   }
 
   /* item #1 is idxnum */
-  if (PySequence_Size(res) < 2)
+  if (sequence_size < 2)
     goto finally;
   {
     PyObject *idxnum = PySequence_GetItem(res, 1);
@@ -1584,7 +1577,7 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
   }
 
   /* item #2 is idxStr */
-  if (PySequence_Size(res) < 3)
+  if (sequence_size < 3)
     goto finally;
   {
     PyObject *idxstr = NULL;
@@ -1619,7 +1612,7 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
   }
 
   /* item 3 is orderByConsumed */
-  if (PySequence_Size(res) < 4)
+  if (sequence_size < 4)
     goto finally;
   {
     PyObject *orderbyconsumed = NULL;
@@ -1641,9 +1634,9 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
   }
 
   /* item 4 (final) is estimated cost */
-  if (PySequence_Size(res) < 5)
+  if (sequence_size < 5)
     goto finally;
-  assert(PySequence_Size(res) == 5);
+  assert(sequence_size == 5);
   {
     PyObject *estimatedcost = NULL, *festimatedcost = NULL;
     estimatedcost = PySequence_GetItem(res, 4);
@@ -2612,7 +2605,7 @@ SN(32)
     xShadowName_##n, 0, 0 \
   }
 
-    static struct
+static struct
 {
   /* sqlite callback */
   int (*apsw_xShadowName)(const char *);

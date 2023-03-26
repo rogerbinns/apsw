@@ -1198,7 +1198,6 @@ class APSW(unittest.TestCase):
             class Table:
 
                 def BestIndexObject(Self, o):
-                    self.assertRaises(OverflowError, setattr, o, "idxNum", 0x7fff_ffff * 0x1_000)
                     Source.indexinfo_saved = o
                     return Source.bio_callback(o)
 
@@ -1278,6 +1277,20 @@ class APSW(unittest.TestCase):
 
         # check out of bounds/setting etc
         def exercise(o):
+            self.assertRaises(OverflowError, setattr, o, "idxNum", 0x7fff_ffff * 0x1_000)
+            self.assertRaises(TypeError, setattr, o, "orderByConsumed", "not an int")
+            self.assertRaises(OverflowError, setattr, o, "idxFlags", 0x7fff_ffff * 0x1_000)
+            self.assertRaises(TypeError, setattr, o, "estimatedRows", "not an int")
+
+            self.assertRaises(TypeError, o.get_aConstraint_iColumn, "not an int")
+            self.assertRaises(TypeError, o.get_aConstraint_op, "not an int")
+            self.assertRaises(TypeError, o.get_aConstraint_usable, "not an int")
+            self.assertRaises(TypeError, o.get_aConstraint_collation, "not an int")
+            self.assertRaises(TypeError, o.get_aConstraint_rhs, "not an int")
+            self.assertRaises(TypeError, o.get_aOrderBy_iColumn, "not an int")
+            self.assertRaises(TypeError, o.get_aOrderBy_desc, "not an int")
+            self.assertRaises(TypeError, o.get_aConstraintUsage_in, "not an int")
+
             self.assertRaises(IndexError, o.set_aConstraintUsage_argvIndex, -1, 0)
             self.assertRaises(IndexError, o.set_aConstraintUsage_argvIndex, o.nConstraint, 0)
             self.assertRaises(OverflowError, o.set_aConstraintUsage_argvIndex, 2**(1 + sizeof_c_int), 0)
