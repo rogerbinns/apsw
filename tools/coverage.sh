@@ -22,14 +22,22 @@ CFLAGS=`$PYTHON -c "import sysconfig; print(sysconfig.get_config_var('CFLAGS'))"
 MOREFLAGS=`$PYTHON -c "import sysconfig; print(sysconfig.get_config_var('CCSHARED'))"`
 LINKER=`$PYTHON -c "import sysconfig; print(sysconfig.get_config_var('LDSHARED'))"`
 SOSUFFIX=`$PYTHON -c "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX'))"`
+
+PROFILE="-O0 --coverage"
+
 set -ex
+
+if [ ! -z "$USE_CLANG" ]
+then
+  CC=clang
+  LINKER="clang -shared"
+  GCOVWRAPPER="llvm-cov"
+fi
 
 if [ -f sqlite3/sqlite3config.h ]
 then
     CFLAGS="$CFLAGS -DAPSW_USE_SQLITE_CONFIG"
 fi
-
-PROFILE="-O0 --coverage"
 
 export APSW_TEST_LARGE=t
 
@@ -40,7 +48,7 @@ set +ex
 $PYTHON $args
 res=$?
 [ $res -eq 0 ] && env PYTHONPATH=. $PYTHON tools/fi.py
-gcov $GCOVOPTS apsw.gcno > /dev/null
+$GCOVWRAPPER gcov $GCOVOPTS apsw.gcno > /dev/null
 mv sqlite3.c.gcov sqlite3/
 rm -f src/*.gcov
 mv *.gcov src/
