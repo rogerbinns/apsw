@@ -32,6 +32,7 @@ then
   CC=clang
   LINKER="clang -shared"
   GCOVWRAPPER="llvm-cov"
+  PROFILE="-O2 --coverage"
 fi
 
 if [ -f sqlite3/sqlite3config.h ]
