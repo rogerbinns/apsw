@@ -342,7 +342,7 @@
 
 
 #define  Apsw_strglob_DOC "strglob($self,glob,string)\n--\n\napsw.strglob(glob: str, string: str) -> int\n\n" \
-"Does string GLOB matching.  Note that zero is returned on on a match.\n" \
+"Does string GLOB matching.  Note that zero is returned on a match.\n" \
 "\n" \
 "Calls: `sqlite3_strglob <https://sqlite.org/c3ref/strglob.html>`__\n" 
 
@@ -356,7 +356,7 @@
 
 #define  Apsw_stricmp_DOC "stricmp($self,string1,string2)\n--\n\napsw.stricmp(string1: str, string2: str) -> int\n\n" \
 "Does string case-insensitive comparison.  Note that zero is returned\n" \
-"on on a match.\n" \
+"on a match.\n" \
 "\n" \
 "Calls: `sqlite3_stricmp <https://sqlite.org/c3ref/stricmp.html>`__\n" 
 
@@ -369,7 +369,7 @@
 
 
 #define  Apsw_strlike_DOC "strlike($self,glob,string,escape=0)\n--\n\napsw.strlike(glob: str, string: str, escape: int = 0) -> int\n\n" \
-"Does string LIKE matching.  Note that zero is returned on on a match.\n" \
+"Does string LIKE matching.  Note that zero is returned on a match.\n" \
 "\n" \
 "Calls: `sqlite3_strlike <https://sqlite.org/c3ref/strlike.html>`__\n" 
 
@@ -385,7 +385,7 @@
 
 #define  Apsw_strnicmp_DOC "strnicmp($self,string1,string2,count)\n--\n\napsw.strnicmp(string1: str, string2: str, count: int) -> int\n\n" \
 "Does string case-insensitive comparison.  Note that zero is returned\n" \
-"on on a match.\n" \
+"on a match.\n" \
 "\n" \
 "Calls: `sqlite3_strnicmp <https://sqlite.org/c3ref/stricmp.html>`__\n" 
 

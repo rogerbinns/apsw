@@ -431,27 +431,27 @@ def status(op: int, reset: bool = False) -> Tuple[int, int]:
     ...
 
 def strglob(glob: str, string: str) -> int:
-    """Does string GLOB matching.  Note that zero is returned on on a match.
+    """Does string GLOB matching.  Note that zero is returned on a match.
 
     Calls: `sqlite3_strglob <https://sqlite.org/c3ref/strglob.html>`__"""
     ...
 
 def stricmp(string1: str, string2: str) -> int:
     """Does string case-insensitive comparison.  Note that zero is returned
-    on on a match.
+    on a match.
 
     Calls: `sqlite3_stricmp <https://sqlite.org/c3ref/stricmp.html>`__"""
     ...
 
 def strlike(glob: str, string: str, escape: int = 0) -> int:
-    """Does string LIKE matching.  Note that zero is returned on on a match.
+    """Does string LIKE matching.  Note that zero is returned on a match.
 
     Calls: `sqlite3_strlike <https://sqlite.org/c3ref/strlike.html>`__"""
     ...
 
 def strnicmp(string1: str, string2: str, count: int) -> int:
     """Does string case-insensitive comparison.  Note that zero is returned
-    on on a match.
+    on a match.
 
     Calls: `sqlite3_strnicmp <https://sqlite.org/c3ref/stricmp.html>`__"""
     ...
