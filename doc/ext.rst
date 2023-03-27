@@ -6,6 +6,12 @@ Various interesting and useful bits of functionality
 You need to import `apsw.ext` to use this module. :mod:`dataclasses`
 are used, and only Python 3.7+ is supported.
 
+Pretty printing
+---------------
+
+:meth:`format_query_table` makes nicely formatted query output - see
+the :ref:`the example <example_format_query>`.
+
 Logging and tracebacks
 ----------------------
 

@@ -1034,7 +1034,8 @@ connection.trace_v2(0, None)
 # :meth:`apsw.ext.format_query_table` makes it easy
 # to format the results of a query in an automatic
 # adjusting table, colour, sanitizing strings,
-# truncation etc
+# truncation etc.  The documentation viewer may not
+# show the lines joining, but they do on terminals.
 
 # Create a table with some dummy data
 connection.execute(

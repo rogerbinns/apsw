@@ -1399,7 +1399,7 @@ apsw_log(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
 
 /** .. method:: strlike(glob: str, string: str, escape: int = 0) -> int
 
-  Does string LIKE matching.  Note that zero is returned on on a match.
+  Does string LIKE matching.  Note that zero is returned on a match.
 
   -* sqlite3_strlike
 */
@@ -1424,7 +1424,7 @@ apsw_strlike(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
 
 /** .. method:: strglob(glob: str, string: str) -> int
 
-  Does string GLOB matching.  Note that zero is returned on on a match.
+  Does string GLOB matching.  Note that zero is returned on a match.
 
   -* sqlite3_strglob
 */
@@ -1449,7 +1449,7 @@ apsw_strglob(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
 /** .. method:: stricmp(string1: str, string2: str) -> int
 
   Does string case-insensitive comparison.  Note that zero is returned
-  on on a match.
+  on a match.
 
   -* sqlite3_stricmp
 */
@@ -1474,7 +1474,7 @@ apsw_stricmp(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
 /** .. method:: strnicmp(string1: str, string2: str, count: int) -> int
 
   Does string case-insensitive comparison.  Note that zero is returned
-  on on a match.
+  on a match.
 
   -* sqlite3_strnicmp
 */
