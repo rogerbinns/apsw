@@ -486,6 +486,8 @@ class APSW(unittest.TestCase):
                 two  Bananas COLLATE BreadFruit,
                 three [   ] NOT NULL);
             """)
+        self.assertRaises(TypeError, self.db.table_exists, 3, 4)
+        self.assertRaises(TypeError, self.db.column_metadata, 1, 2, 3)
         self.assertTrue(self.db.table_exists(None, "table1"))
         self.assertTrue(self.db.table_exists("main", "table1"))
         self.assertTrue(self.db.table_exists(None, "table2"))
@@ -498,6 +500,7 @@ class APSW(unittest.TestCase):
             ("three", ('   ', 'BINARY', True, False, False)),
         ):
             self.assertEqual(self.db.column_metadata(None, "table3", colname), expected)
+        self.assertRaises(apsw.SQLError, self.db.column_metadata, "not a db", "not a table", "not a column")
 
     def testConnectionNames(self):
         "Test Connection.db_names"
@@ -926,7 +929,9 @@ class APSW(unittest.TestCase):
 
         # tracing errors
         self.assertRaises(TypeError, setattr, c, "exectrace", 3)
+        self.assertRaises(TypeError, setattr, self.db, "exectrace", 3)
         self.assertRaises(TypeError, setattr, c, "rowtrace", 3)
+        self.assertRaises(TypeError, setattr, self.db, "rowtrace", 3)
         self.assertIsNone(c.rowtrace)
         xx = lambda *args: 1 / 0
         c.rowtrace = xx
@@ -1015,10 +1020,13 @@ class APSW(unittest.TestCase):
         class dict_subclass(dict):
             pass
 
+        class list_subclass(list):
+            pass
+
         self.assertRaises(TypeError, self.db.execute, "select :name", not_a_dict())
         self.assertEqual([(99, )], self.db.execute("select :name", dict_lookalike()).fetchall())
         # make sure these aren't detected as dict
-        for thing in (1, ), {1}, [1]:
+        for thing in (1, ), {1}, [1], list_subclass([1]):
             self.assertRaises(TypeError, self.db.execute("select :name", thing))
 
         self.assertRaises(TypeError, self.db.execute, "select :name", errors_be_here())
@@ -2824,6 +2832,7 @@ class APSW(unittest.TestCase):
     def testInterruptHandling(self):
         "Verify interrupt function"
         # this is tested by having a user defined function make the interrupt
+        self.assertFalse(self.db.is_interrupted)
         c = self.db.cursor()
         c.execute("create table foo(x);begin")
         c.executemany("insert into foo values(?)", randomintegers(400))
@@ -2831,6 +2840,7 @@ class APSW(unittest.TestCase):
 
         def ih(*args):
             self.db.interrupt()
+            self.assertTrue(self.db.is_interrupted)
             return 7
 
         self.db.createscalarfunction("seven", ih)
@@ -2839,7 +2849,8 @@ class APSW(unittest.TestCase):
                 pass
         except apsw.InterruptError:
             pass
-        # ::TODO:: raise the interrupt from another thread
+        self.db.close(True)
+
 
     def testCommitHook(self):
         "Verify commit hooks"
@@ -4792,6 +4803,7 @@ class APSW(unittest.TestCase):
         "Verify statement cache integrity"
         self.db.close()
         self.db = apsw.Connection(TESTFILEPREFIX + "testdb", statementcachesize=scsize)
+        self.assertRaises(TypeError, self.db.cache_stats, include_entries="orange")
         actual = self.db.cache_stats()["size"]
         self.assertTrue(actual == scsize or (scsize > 0 and actual > 0))
         cur = self.db.cursor()
@@ -5426,6 +5438,8 @@ class APSW(unittest.TestCase):
                 check_module(n, n not in keep)
             check_module("madeup", True)
             names = keep
+        self.assertRaises(TypeError, self.db.drop_modules)
+        self.assertRaises(TypeError, self.db.drop_modules, ["one", 2, "three"])
 
     def testStatus(self):
         "Verify status function"
@@ -7418,6 +7432,7 @@ class APSW(unittest.TestCase):
         self.assertTrue(self.db.filename.endswith("testdb"))
         self.assertTrue(os.sep in self.db.filename)
         self.assertEqual(self.db.filename, self.db.db_filename("main"))
+        self.assertRaises(TypeError, self.db.db_filename, 3)
         self.db.cursor().execute("attach '%s' as foo" % (TESTFILEPREFIX + "testdb2", ))
         self.assertEqual(self.db.filename + "2", self.db.db_filename("foo"))
         self.assertTrue(self.db.filename_wal.startswith(self.db.filename))

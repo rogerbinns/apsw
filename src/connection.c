@@ -1305,7 +1305,6 @@ tracehook_cb(unsigned code, void *vconnection, void *one, void *two)
     break;
 #undef K
 #undef V
-
   }
 
   if (param)
@@ -2774,9 +2773,11 @@ finally:
   return NULL;
 }
 
+#undef get_window_function_context
 static windowfunctioncontext *
 get_window_function_context(sqlite3_context *context)
 {
+#include "faultinject.h"
   windowfunctioncontext *res;
 
   PY_EXC_HANDLE(res = get_window_function_context_wrapped(context), "get_window_function_context", NULL, NULL);
@@ -3922,8 +3923,10 @@ error:
 */
 
 /* A helper function.  Returns -1 on memory error, 0 on failure and 1 on success */
+#undef connection_trace_and_exec
 static int connection_trace_and_exec(Connection *self, int release, int sp, int continue_on_trace_error)
 {
+#include "faultinject.h"
   char *sql;
   int res;
 
@@ -4012,7 +4015,7 @@ Connection_exit(Connection *self, PyObject *args, PyObject *kwds)
   return_null = return_null || res == 0;
   /* we have rolled back, but still need to release the savepoint */
   res = connection_trace_and_exec(self, 1, sp, 1);
-  return_null = return_null || res == 0;
+  return_null = return_null || res == 0 || res == -1;
 
   if (return_null)
   {
@@ -4392,9 +4395,7 @@ Connection_table_exists(Connection *self, PyObject *args, PyObject *kwds)
 
   PYSQLITE_VOID_CALL(res = sqlite3_table_column_metadata(self->db, dbname, table_name, NULL, NULL, NULL, NULL, NULL, NULL));
 
-  if (res == SQLITE_OK)
-    Py_RETURN_TRUE;
-  Py_RETURN_FALSE;
+  return Py_NewRef((res == SQLITE_OK) ? Py_True : Py_False);
 }
 
 /** .. method:: column_metadata(dbname: Optional[str], table_name: str, column_name: str) -> Tuple[str, str, bool, bool, bool]
@@ -4438,7 +4439,10 @@ Connection_column_metadata(Connection *self, PyObject *args, PyObject *kwds)
   PYSQLITE_CON_CALL(res = sqlite3_table_column_metadata(self->db, dbname, table_name, column_name, &datatype, &collseq, &notnull, &primarykey, &autoinc));
 
   if (res != SQLITE_OK)
+  {
+    SET_EXC(res, self->db);
     return NULL;
+  }
 
   return Py_BuildValue("(ssOOO)", datatype, collseq, notnull ? Py_True : Py_False, primarykey ? Py_True : Py_False, autoinc ? Py_True : Py_False);
 }
@@ -4534,8 +4538,7 @@ Connection_drop_modules(Connection *self, PyObject *args, PyObject *kwds)
       const char *sc;
       size_t slen;
       PyObject *s = PySequence_Fast_GET_ITEM(sequence, i);
-      if (!s)
-        goto finally;
+      assert(s);
       if (!PyUnicode_Check(s))
       {
         PyErr_Format(PyExc_TypeError, "Expected sequence item #%zd to be str, not %s", i, Py_TypeName(s));
@@ -4562,6 +4565,7 @@ Connection_drop_modules(Connection *self, PyObject *args, PyObject *kwds)
   }
 
   PYSQLITE_CON_CALL(res = sqlite3_drop_modules(self->db, array));
+  SET_EXC(res, self->db);
 
 finally:
   Py_CLEAR(sequence);
@@ -4700,9 +4704,7 @@ Connection_get_exectrace_attr(Connection *self)
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  if (self->exectrace)
-    return Py_NewRef(self->exectrace);
-  Py_RETURN_NONE;
+  return Py_NewRef(self->exectrace ? self->exectrace : Py_None);
 }
 
 static int

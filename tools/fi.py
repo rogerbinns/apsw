@@ -26,7 +26,7 @@ def exercise(example_code, expect_exception):
     def file_cleanup():
         if "apsw" in sys.modules:
             for c in sys.modules["apsw"].connections():
-                c.close()
+                c.close(True)
         for f in glob.glob(f"{ tmpdir.name }/dbfile-delme*") + glob.glob(f"{ tmpdir.name }/myobfudb*"):
             os.remove(f)
 
@@ -213,6 +213,10 @@ def exercise(example_code, expect_exception):
     con.execute("insert into fred(ROWID, c1) values (99, NULL)")
     con.execute("update fred set c2=c3 where rowid=3; update fred set rowid=990 where c2=2")
 
+    con.drop_modules(["something", "vtable2", "something else"])
+
+    con.drop_modules(None)
+
     def func(*args):
         return 3.14
 
@@ -285,7 +289,7 @@ def exercise(example_code, expect_exception):
         if callable(obj):
             obj()
 
-    con.execute("create table blobby(x); insert into blobby values(?)", (apsw.zeroblob(99), ))
+    con.execute("create table blobby(x); insert into blobby values(?)", (apsw.zeroblob(990), ))
     blob = con.blobopen("main", "blobby", "x", con.last_insert_rowid(), True)
     blob.write(b"hello world")
     blob.seek(80)
@@ -317,9 +321,9 @@ def exercise(example_code, expect_exception):
 
     con2 = apsw.Connection("")
     with con2.backup("main", con, "main") as backup:
-        backup.step(1)
-        backup.remaining
-        backup.pagecount
+        while backup.remaining:
+            backup.step(1)
+            backup.pagecount
     backup.finish()
     del con2
 
@@ -448,6 +452,11 @@ class Tester:
             if fname == "sqlite3_vtab_in_next":
                 self.expect_exception.append(ValueError)
                 return self.apsw_attr("SQLITE_TOOBIG")
+
+            # internal routine
+            if fname == "connection_trace_and_exec":
+                self.expect_exception.append(MemoryError)
+                return (-1, MemoryError, self.FAULTS)
 
             # pointers with 0 being failure
             if fname in {

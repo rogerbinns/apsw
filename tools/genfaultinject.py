@@ -183,6 +183,7 @@ returns = {
             convert_value_to_pyobject getfunctionargs allocfunccbinfo
             Call_PythonMethodV apsw_strdup convertutf8string
             Call_PythonMethod MakeExistingException
+            get_window_function_context
 
             PyModule_Create2 PyErr_NewExceptionWithDoc PySet_New
             PyUnicode_New  PyUnicode_AsUTF8 PyObject_GetAttrString _PyObject_New PyUnicode_FromString
@@ -194,6 +195,7 @@ returns = {
             PyIter_Next PyList_SetItem PyLong_FromVoidPtr PyMapping_GetItemString PyNumber_Float
             PyNumber_Long PySequence_Fast PySequence_List PySequence_SetItem PyObject_CallFunction
             PyObject_CallMethod PyFrame_New PyStructSequence_NewType PyStructSequence_New
+            PyMem_Realloc
             """.split(),
     # numeric return, no gil
     "no_gil": """
@@ -237,6 +239,8 @@ returns = {
         PyObject_SetAttrString _PyBytes_Resize PyDict_SetItem PyList_SetSlice
         PyObject_IsTrue PySequence_Size PySet_Add PyObject_IsTrueStrict
         PyStructSequence_InitType2
+
+        connection_trace_and_exec
         """.split(),
 }
 
@@ -266,7 +270,7 @@ for k, v in returns.items():
 no_error=set("""PyBuffer_Release PyDict_GetItem PyMem_Free PyDict_GetItemString PyErr_Clear
     PyErr_Display PyErr_Fetch PyErr_Format PyErr_NoMemory PyErr_NormalizeException
     PyErr_Occurred PyErr_Print PyErr_Restore PyErr_SetObject PyEval_RestoreThread
-    PyEval_SaveThread PyGILState_Ensure PyGILState_Release PyMem_Realloc PyOS_snprintf
+    PyEval_SaveThread PyGILState_Ensure PyGILState_Release PyOS_snprintf
     PyObject_CheckBuffer PyObject_ClearWeakRefs PyObject_GC_UnTrack PyObject_HasAttrString
     PyThreadState_Get PyThread_get_thread_ident PyTraceBack_Here
     PyType_IsSubtype PyUnicode_CopyCharacters PyWeakref_GetObject _Py_Dealloc

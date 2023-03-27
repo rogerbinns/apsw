@@ -192,6 +192,10 @@ APSWBackup_step(APSWBackup *self, PyObject *args, PyObject *kwds)
       return NULL;
   }
   PYSQLITE_BACKUP_CALL(res = sqlite3_backup_step(self->backup, npages));
+
+  /* this would happen if there were errors deep in the vfs */
+  MakeExistingException();
+
   if (PyErr_Occurred())
     return NULL;
 

@@ -294,6 +294,9 @@ APSWBlob_read(APSWBlob *self, PyObject *args, PyObject *kwds)
 
   thebuffer = PyBytes_AS_STRING(buffy);
   PYSQLITE_BLOB_CALL(res = sqlite3_blob_read(self->pBlob, thebuffer, length, self->curoffset));
+
+  MakeExistingException(); /* this could happen if there were issues in the vfs */
+
   if (PyErr_Occurred())
     return NULL;
 
@@ -380,7 +383,10 @@ APSWBlob_readinto(APSWBlob *self, PyObject *args, PyObject *kwds)
 
   PYSQLITE_BLOB_CALL(res = sqlite3_blob_read(self->pBlob, (char *)(py3buffer.buf) + offset, length, self->curoffset));
 
-  assert(!PyErr_Occurred());
+  MakeExistingException(); /* vfs errors could cause this */
+
+  if(PyErr_Occurred())
+    ERREXIT(NULL);
 
   if (res != SQLITE_OK)
   {
@@ -645,6 +651,9 @@ APSWBlob_reopen(APSWBlob *self, PyObject *args, PyObject *kwds)
   self->curoffset = 0;
 
   PYSQLITE_BLOB_CALL(res = sqlite3_blob_reopen(self->pBlob, rowid));
+
+  MakeExistingException(); /* a vfs error could cause this */
+
   if (PyErr_Occurred())
     return NULL;
 
