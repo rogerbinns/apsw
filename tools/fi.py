@@ -206,7 +206,7 @@ def exercise(example_code, expect_exception):
     con.execute("select * from vtable where c2>2 and c1 in (1,2,3)")
     con.execute("create virtual table fred using vtable()")
     con.execute("select vtf(c3) from fred where c3>5; select vtf(c2,c1) from fred where c3>5 order by c2").fetchall()
-    con.execute("select vtf(c3) from vtable2 where c3>5; select vtf(c2,c1) from fred where c3>5 order by c2 desc, c1").fetchall()
+    con.execute("select vtf(c3) from vtable2 where c3>5; select vtf(c2,c1) from vtable2 where c3>5 order by c2 desc, c1").fetchall()
     con.execute("delete from fred where c3>5")
     n = 2
     con.execute("insert into fred values(?,?,?,?)", [None, ' ' * n, b"aa" * n, 3.14 * n])
@@ -334,8 +334,11 @@ def exercise(example_code, expect_exception):
 
     class myvfs(apsw.VFS):
 
-        def __init__(self):
-            super().__init__("apswfivfs", "")
+        def __init__(self, name="apswfivfs", parent=""):
+            super().__init__(name, parent)
+
+        def xDelete(self, name, syncdir):
+            return super().xDelete(name, syncdir)
 
         def xOpen(self, name, flags):
             return myvfsfile(name, flags)
@@ -343,15 +346,26 @@ def exercise(example_code, expect_exception):
     class myvfsfile(apsw.VFSFile):
 
         def __init__(self, filename, flags):
-            super().__init__("", filename, flags)
+            super().__init__("apswfivfs2", filename, flags)
 
     vfsinstance = myvfs()
+    vfsinstance2 = myvfs("apswfivfs2", "apswfivfs")
+
+    try:
+        vfsinstance2.xDelete("no/such/file", True)
+    except apsw.IOError:
+        pass
+
+    vfsinstance2.xFullPathname("abc.txt")
+    vfsinstance2.xOpen(f"{ tmpdir.name }/dbfile-delme-vfstesting", [apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_DELETEONCLOSE, 0])
+    vfsinstance.xOpen(f"{ tmpdir.name }/dbfile-delme-vfstesting", [apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_DELETEONCLOSE, 0])
+
 
     file_cleanup()
 
     import apsw.tests
     apsw.tests.testtimeout = False
-    apsw.tests.vfstestdb(f"{ tmpdir.name }/dbfile-delme-vfswal", "apswfivfs", mode="wal")
+    apsw.tests.vfstestdb(f"{ tmpdir.name }/dbfile-delme-vfswal", "apswfivfs2", mode="wal")
 
     file_cleanup()
     apsw.tests.testtimeout = True
