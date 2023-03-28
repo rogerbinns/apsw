@@ -433,9 +433,6 @@ apswvfs_xFullPathname(sqlite3_vfs *vfs, const char *zName, int nOut, char *zOut)
 
   VFSPREAMBLE;
 
-  if (PyErr_Occurred())
-    goto finally;
-
   pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xFullPathname", 1, "(s)", zName);
   if (!pyresult || !PyUnicode_Check(pyresult))
   {
@@ -656,15 +653,16 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *args, PyObject *kwds)
   }
   else
   {
-    filename = apsw_strdup(PyUnicode_AsUTF8(name));
+    const char *utf8 = PyUnicode_AsUTF8(name);
+    if (!utf8)
+      goto finally;
+    filename = apsw_strdup(utf8);
+    if (!filename)
+      goto finally;
   }
 
   flagsout = PyLong_AsInt(PyList_GET_ITEM(flags, 1));
   flagsin = PyLong_AsInt(PyList_GET_ITEM(flags, 0));
-
-  /* check for overflow */
-  if (flagsout != PyLong_AsInt(PyList_GET_ITEM(flags, 1)) || flagsin != PyLong_AsInt(PyList_GET_ITEM(flags, 0)))
-    PyErr_Format(PyExc_OverflowError, "Flags arguments need to fit in 32 bits");
   if (PyErr_Occurred())
     goto finally;
 
@@ -673,6 +671,9 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *args, PyObject *kwds)
     goto finally;
 
   res = self->basevfs->xOpen(self->basevfs, filename, file, flagsin, &flagsout);
+
+  MakeExistingException();
+
   if (PyErr_Occurred())
     goto finally;
   if (res != SQLITE_OK)
@@ -819,6 +820,8 @@ apswvfspy_xDlSym(APSWVFS *self, PyObject *args, PyObject *kwds)
   }
   res = self->basevfs->xDlSym(self->basevfs, handle, symbol);
 
+  MakeExistingException();
+
   if (PyErr_Occurred())
   {
     AddTraceBackHere(__FILE__, __LINE__, "vfspy.xDlSym", "{s: O}", "args", OBJ(args));
@@ -870,6 +873,8 @@ apswvfspy_xDlClose(APSWVFS *self, PyObject *args, PyObject *kwds)
       return NULL;
   }
   self->basevfs->xDlClose(self->basevfs, handle);
+
+  MakeExistingException();
 
   if (PyErr_Occurred())
   {
@@ -1039,6 +1044,7 @@ apswvfspy_xRandomness(APSWVFS *self, PyObject *args, PyObject *kwds)
     int amt = self->basevfs->xRandomness(self->basevfs, PyBytes_GET_SIZE(res), PyBytes_AS_STRING(res));
     if (amt < numbytes)
       _PyBytes_Resize(&res, amt);
+    MakeExistingException();
   }
 
   if (PyErr_Occurred())
@@ -1939,9 +1945,6 @@ apswvfsfile_xRead(sqlite3_file *file, void *bufout, int amount, sqlite3_int64 of
   Py_buffer py3buffer;
 
   FILEPREAMBLE;
-
-  if (PyErr_Occurred())
-    goto finally;
 
   pybuf = Call_PythonMethodV(apswfile->file, "xRead", 1, "(iL)", amount, offset);
   if (!pybuf)
