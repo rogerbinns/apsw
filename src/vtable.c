@@ -1440,7 +1440,7 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
     j++;
   }
 
-  /* group bys */
+  /* order bys */
   orderbys = PyTuple_New(indexinfo->nOrderBy);
   if (!orderbys)
     goto pyexception;
@@ -2695,7 +2695,6 @@ static void freeShadowName(sqlite3_module *mod, PyObject *datasource)
       return;
     }
   }
-  assert(0); /* something went horribly wrong */
 }
 
 static int
