@@ -1416,6 +1416,9 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
 
   vtable = ((apsw_vtable *)pVtab)->vtable;
 
+  if (PyErr_Occurred())
+    goto pyexception;
+
   /* count how many usable constraints there are */
   for (i = 0; i < indexinfo->nConstraint; i++)
     if (indexinfo->aConstraint[i].usable)
@@ -1468,9 +1471,11 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
 
   /* check we have a sequence */
   Py_ssize_t sequence_size; /* size is a dynamic call and could give different answers on each call */
-  if (!PySequence_Check(res) || (sequence_size = PySequence_Size(res)) > 5)
+  int ok = PySequence_Check(res) && (sequence_size = PySequence_Size(res)) <= 5;
+  if (!ok || PyErr_Occurred())
   {
-    PyErr_Format(PyExc_TypeError, "Bad result from BestIndex.  It should be a sequence of up to 5 items");
+    if (!PyErr_Occurred())
+      PyErr_Format(PyExc_TypeError, "Bad result from BestIndex.  It should be a sequence of up to 5 items");
     AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xBestIndex.result_check", "{s: O, s: O}", "self", vtable, "result", OBJ(res));
     goto pyexception;
   }
@@ -1572,6 +1577,8 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
         goto pyexception;
       }
       indexinfo->idxNum = PyLong_AsInt(idxnum);
+      if (PyErr_Occurred())
+        goto pyexception;
     }
     Py_DECREF(idxnum);
   }

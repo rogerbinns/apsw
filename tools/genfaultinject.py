@@ -238,7 +238,7 @@ returns = {
         PyLong_AsLongLong PyObject_GetBuffer PyList_Append PyDict_SetItemString
         PyObject_SetAttrString _PyBytes_Resize PyDict_SetItem PyList_SetSlice
         PyObject_IsTrue PySequence_Size PySet_Add PyObject_IsTrueStrict
-        PyStructSequence_InitType2
+        PyStructSequence_InitType2 PyList_Size
 
         connection_trace_and_exec
         """.split(),

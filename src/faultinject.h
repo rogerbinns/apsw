@@ -36,6 +36,7 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
 #undef PyList_New
 #undef PyList_SetItem
 #undef PyList_SetSlice
+#undef PyList_Size
 #undef PyLong_AsInt
 #undef PyLong_AsLong
 #undef PyLong_AsLongLong
@@ -519,6 +520,36 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
     case 0x1FACADE:                                                                                          \
         assert(_res == 0);                                                                                   \
         _res = PyList_SetSlice(__VA_ARGS__);                                                                 \
+        break;                                                                                               \
+    default:                                                                                                 \
+        if(PyTuple_Check(_res2))                                                                             \
+        {                                                                                                    \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                            \
+            _res =  (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                             \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                             \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2))); \
+        }                                                                                                    \
+        else                                                                                                 \
+        {                                                                                                    \
+            assert(PyLong_Check(_res2));                                                                     \
+            _res = PyLong_AsLong_fi(_res2);                                                                  \
+        }                                                                                                    \
+        break;                                                                                               \
+    }                                                                                                        \
+    Py_XDECREF(_res2);                                                                                       \
+    PyGILState_Release(gilstate);                                                                            \
+    _res;                                                                                                    \
+})
+#define PyList_Size(...) \
+({                                                                                                           \
+    PyObject *_res2=0;                                                                                       \
+    __auto_type _res = 0 ? PyList_Size(__VA_ARGS__) : 0;                                                     \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                         \
+    switch (APSW_FaultInjectControl("PyList_Size", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))      \
+    {                                                                                                        \
+    case 0x1FACADE:                                                                                          \
+        assert(_res == 0);                                                                                   \
+        _res = PyList_Size(__VA_ARGS__);                                                                     \
         break;                                                                                               \
     default:                                                                                                 \
         if(PyTuple_Check(_res2))                                                                             \
