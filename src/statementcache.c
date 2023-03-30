@@ -284,6 +284,9 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
     statement->utf8 = utf8;
     statement->query = Py_NewRef(query);
   }
+  if (!statement->utf8)
+    statement->query_size = statement->utf8_size = 0;
+
   *statement_out = statement;
   if (!vdbestatement)
     sc->no_vdbe++;
