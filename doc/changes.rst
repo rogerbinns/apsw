@@ -3,6 +3,11 @@ Change History
 
 .. currentmodule:: apsw
 
+next
+====
+
+Added :func:`apsw.sleep` (:issue:`419`)
+
 3.41.2.0
 ========
 

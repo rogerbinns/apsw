@@ -287,6 +287,19 @@
 "\n" \
 "Calls: `sqlite3_shutdown <https://sqlite.org/c3ref/initialize.html>`__\n" 
 
+#define  Apsw_sleep_DOC "sleep($self,milliseconds)\n--\n\napsw.sleep(milliseconds: int) -> int\n\n" \
+"Sleep for at least the number of `milliseconds`, returning how many\n" \
+" milliseconds were requested.\n" \
+"\n" \
+"Calls: `sqlite3_sleep <https://sqlite.org/c3ref/sleep.html>`__\n" 
+
+#define Apsw_sleep_USAGE "apsw.sleep(milliseconds: int) -> int"
+
+#define Apsw_sleep_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(milliseconds), int)); \
+} while(0)
+
+
 #define  Apsw_softheaplimit_DOC "softheaplimit($self,limit)\n--\n\napsw.softheaplimit(limit: int) -> int\n\n" \
 "Requests SQLite try to keep memory usage below *limit* bytes and\n" \
 "returns the previous limit.\n" \

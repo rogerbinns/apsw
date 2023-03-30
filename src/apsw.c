@@ -1557,6 +1557,28 @@ apsw_unregister_vfs(PyObject *Py_UNUSED(module), PyObject *args, PyObject *kwds)
   Py_RETURN_NONE;
 }
 
+/** .. method:: sleep(milliseconds: int) -> int
+
+  Sleep for at least the number of `milliseconds`, returning how many
+  milliseconds were requested.
+
+ -* sqlite3_sleep
+*/
+static PyObject *
+apsw_sleep(PyObject *Py_UNUSED(module), PyObject *args, PyObject *kwds)
+{
+  int milliseconds, res;
+  {
+    static char *kwlist[] = {"milliseconds", NULL};
+    Apsw_sleep_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" Apsw_sleep_USAGE, kwlist, &milliseconds))
+      return NULL;
+  }
+
+  _PYSQLITE_CALL_V(res = sqlite3_sleep(milliseconds));
+  return PyLong_FromLong(res);
+}
+
 /** .. method:: allow_missing_dict_bindings(value: bool) -> bool
 
   Changes how missing bindings are handled when using a :class:`dict`.
@@ -1670,6 +1692,7 @@ static PyMethodDef module_methods[] = {
 #endif
     {"__getattr__", (PyCFunction)apsw_getattr, METH_O, "module getattr"},
     {"connections", (PyCFunction)apsw_connections, METH_NOARGS, Apsw_connections_DOC},
+    {"sleep", (PyCFunction)apsw_sleep, METH_VARARGS | METH_KEYWORDS, Apsw_sleep_DOC},
     {0, 0, 0, 0} /* Sentinel */
 };
 

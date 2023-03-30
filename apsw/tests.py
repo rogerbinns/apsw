@@ -4751,6 +4751,12 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, apsw.unregister_vfs, "3", 3)
         self.assertRaises(ValueError, apsw.unregister_vfs, "4342345324")
 
+    def testSleep(self):
+        apsw.sleep(1)
+        apsw.sleep(-1)
+        self.assertRaises(OverflowError, apsw.sleep, 2_500_000_000)
+        self.assertRaises(TypeError, apsw.sleep, "2_500_000_000")
+
     def testPysqliteRecursiveIssue(self):
         "Check an issue that affected pysqlite"
         # https://code.google.com/p/pysqlite/source/detail?r=260ee266d6686e0f87b0547c36b68a911e6c6cdb

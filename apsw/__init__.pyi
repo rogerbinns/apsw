@@ -390,6 +390,13 @@ def shutdown() -> None:
     Calls: `sqlite3_shutdown <https://sqlite.org/c3ref/initialize.html>`__"""
     ...
 
+def sleep(milliseconds: int) -> int:
+    """Sleep for at least the number of `milliseconds`, returning how many
+     milliseconds were requested.
+
+    Calls: `sqlite3_sleep <https://sqlite.org/c3ref/sleep.html>`__"""
+    ...
+
 def softheaplimit(limit: int) -> int:
     """Requests SQLite try to keep memory usage below *limit* bytes and
     returns the previous limit.
