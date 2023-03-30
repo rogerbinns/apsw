@@ -72,7 +72,7 @@ argcheck_List_int_int(PyObject *object, void *vparam)
         return 0;
     }
 
-    if (PySequence_Length(object) != 2)
+    if (PyList_Size(object) != 2)
     {
         if (!PyErr_Occurred())
             PyErr_Format(PyExc_ValueError, "Function argument expected a two item list: %s", param->message);
@@ -81,13 +81,10 @@ argcheck_List_int_int(PyObject *object, void *vparam)
 
     for (i = 0; i < 2; i++)
     {
-        int check;
-        PyObject *list_item = PySequence_GetItem(object, i);
+        PyObject *list_item = PyList_GetItem(object, i);
         if (!list_item)
             return 0;
-        check = PyLong_Check(list_item);
-        Py_DECREF(list_item);
-        if (!check)
+        if (!PyLong_Check(list_item))
         {
             PyErr_Format(PyExc_TypeError, "Function argument list[int,int] expected int for item %d: %s", i, param->message);
             return 0;

@@ -1880,7 +1880,7 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
     vfs = NULL;
   }
 
-  pyflagsin = PySequence_GetItem(flags, 0);
+  pyflagsin = PyList_GetItem(flags, 0);
   if (!pyflagsin)
     goto finally;
 
@@ -1912,9 +1912,10 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
   if (!pyflagsout)
     goto finally;
 
-  if (-1 == PySequence_SetItem(flags, 1, pyflagsout))
+  if (-1 == PyList_SetItem(flags, 1, pyflagsout))
   {
     file->pMethods->xClose(file);
+    Py_DECREF(pyflagsout);
     goto finally;
   }
 
@@ -1929,8 +1930,6 @@ finally:
   if (PyErr_Occurred())
     AddTraceBackHere(__FILE__, __LINE__, "vfsfile.init", "{s: O, s: O}", "args", OBJ(args), "kwargs", OBJ(kwds));
 
-  Py_XDECREF(pyflagsin);
-  Py_XDECREF(pyflagsout);
   if (res != 0 && file)
     PyMem_Free(file);
   return res;
