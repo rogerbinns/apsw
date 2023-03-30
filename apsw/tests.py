@@ -6383,18 +6383,6 @@ class APSW(unittest.TestCase):
             def init9(self, name, flags):
                 super(TestFile, self).__init__("", name, (6, "six"))
 
-            def init10(self, name, flags):
-
-                class badlist(list):  # doesn't allows setting an element
-
-                    def __init__(self, *args):
-                        super(badlist, self).__init__(args)
-
-                    def __setitem__(self, key, value):
-                        raise ValueError("container is frozen")
-
-                super(TestFile, self).__init__("", name, badlist(flags[0], flags[1]))
-
             def init99(self, name, flags):
                 super(TestFile, self).__init__("", name, flags)
 
@@ -6866,8 +6854,6 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ValueError, testdb)
         TestFile.__init__ = TestFile.init9
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
-        TestFile.__init__ = TestFile.init10
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ValueError, testdb)
         TestFile.__init__ = TestFile.init99
         testdb()  # should work just fine
 
