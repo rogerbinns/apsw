@@ -125,24 +125,15 @@ static PyTypeObject apsw_unraisable_info_type;
 static void
 apsw_write_unraisable(PyObject *hookobject)
 {
-  static int recursion_level;
-
   assert(PyErr_Occurred());
 
   PyObject *err_type = NULL, *err_value = NULL, *err_traceback = NULL;
   PyObject *excepthook = NULL;
   PyObject *result = NULL;
 
-  /* this is necessary because we call sqlite3_log and that handler
-     could have an exception which calls this which calls sqlite3_log until
-     the stack overflows */
-  recursion_level++;
-  if (recursion_level > 2)
-    goto finally;
-
-    /* fill in the rest of the traceback */
+  /* fill in the rest of the traceback */
 #ifdef PYPY_VERSION
-    /* do nothing */
+  /* do nothing */
 #else
 #if PY_VERSION_HEX < 0x03090000
   PyFrameObject *frame = PyThreadState_GET()->frame;
@@ -166,6 +157,13 @@ apsw_write_unraisable(PyObject *hookobject)
   /* Get the exception details */
   PyErr_Fetch(&err_type, &err_value, &err_traceback);
   PyErr_NormalizeException(&err_type, &err_value, &err_traceback);
+
+  int can_recurse = !Py_EnterRecursiveCall(" in apsw_write_unraisable");
+  if (!can_recurse)
+  {
+    PyErr_Print();
+    goto finally;
+  }
 
   /* tell sqlite3_log */
   if (err_value)
@@ -230,7 +228,8 @@ finally:
   Py_XDECREF(err_value);
   Py_XDECREF(err_type);
   PyErr_Clear(); /* being paranoid - make sure no errors on return */
-  recursion_level--;
+  if (can_recurse)
+    Py_LeaveRecursiveCall();
 }
 
 #undef convert_value_to_pyobject
