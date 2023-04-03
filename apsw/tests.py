@@ -1066,6 +1066,39 @@ class APSW(unittest.TestCase):
             c.execute("select 4")
             self.assertEqual([(3, ), (4, )], c.execute(statement + "; select 4").fetchall())
 
+    def testIssue425(self):
+        "Infinite recursion"
+
+        class VFSA(apsw.VFS):
+
+            def __init__(self):
+                super().__init__("vfsa", "")
+
+            def xOpen(self, name, flags):
+                return VFSAFile(name, flags)
+
+        class VFSAFile(apsw.VFSFile):
+
+            def __init__(self, filename, flags):
+                super().__init__("vfsb", filename, flags)
+
+        class VFSB(apsw.VFS):
+
+            def __init__(self):
+                super().__init__("vfsb", "")
+
+            def xOpen(self, name, flags):
+                return VFSBFile(name, flags)
+
+        class VFSBFile(apsw.VFSFile):
+
+            def __init__(self, filename, flags):
+                super().__init__("vfsa", filename, flags)
+
+        a = VFSA()
+        b = VFSB()
+        apsw.Connection("testdb", vfs="vfsa")
+
     def testTypes(self):
         "Check type information is maintained"
 
@@ -1582,7 +1615,7 @@ class APSW(unittest.TestCase):
         self.assertRaisesUnraisable(ZeroDivisionError, self.db.execute, "create table sptest_bam(x)")
         Source.ShadowName = lambda *args: "foo"
         self.assertRaisesUnraisable(TypeError, self.db.execute, "create table sptest_bam2(x)")
-        Source.ShadowName = lambda *args: 3+4j
+        Source.ShadowName = lambda *args: 3 + 4j
         self.assertRaisesUnraisable(TypeError, self.db.execute, "create table sptest_bam3(x)")
         Source.ShadowName = lambda *args: True
         self.db.execute("create table sptest_bam4(x)")
@@ -2853,7 +2886,6 @@ class APSW(unittest.TestCase):
         except apsw.InterruptError:
             pass
         self.db.close(True)
-
 
     def testCommitHook(self):
         "Verify commit hooks"
