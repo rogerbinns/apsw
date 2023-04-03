@@ -169,7 +169,13 @@ apsw_write_unraisable(PyObject *hookobject)
 
   /* tell sqlite3_log */
   if (err_value)
-    sqlite3_log(SQLITE_ERROR, "apsw_write_unraisable type %s", Py_TypeName(err_value));
+  {
+    PyObject *message = PyObject_Str(err_value);
+    const char *utf8 = message ? PyUnicode_AsUTF8(message) : "failed to get string of error";
+    PyErr_Clear();
+    sqlite3_log(SQLITE_ERROR, "apsw_write_unraisable %s: %s", Py_TypeName(err_value), utf8);
+    Py_CLEAR(message);
+  }
 
   if (hookobject)
   {
