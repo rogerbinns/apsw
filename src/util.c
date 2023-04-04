@@ -158,13 +158,6 @@ apsw_write_unraisable(PyObject *hookobject)
   PyErr_Fetch(&err_type, &err_value, &err_traceback);
   PyErr_NormalizeException(&err_type, &err_value, &err_traceback);
 
-  int can_recurse = !Py_EnterRecursiveCall(" in apsw_write_unraisable");
-  if (!can_recurse)
-  {
-    PyErr_Print();
-    goto finally;
-  }
-
   /* tell sqlite3_log */
   if (err_value)
   {
@@ -228,8 +221,6 @@ finally:
   Py_XDECREF(err_value);
   Py_XDECREF(err_type);
   PyErr_Clear(); /* being paranoid - make sure no errors on return */
-  if (can_recurse)
-    Py_LeaveRecursiveCall();
 }
 
 #undef convert_value_to_pyobject
