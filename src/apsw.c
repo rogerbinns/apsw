@@ -412,12 +412,20 @@ apsw_logger(void *arg, int errcode, const char *message)
   res = PyObject_CallFunction(arg, "is", errcode, message);
   if (!res)
   {
-    AddTraceBackHere(__FILE__, __LINE__, "apsw_sqlite3_log_receiver",
-                     "{s: O, s: i, s: s}",
-                     "logger", OBJ(arg),
-                     "errcode", errcode,
-                     "message", message);
-    apsw_write_unraisable(NULL);
+    /* apsw_write_unraisable writes to sqlite3_log so if we are in too
+       much recursion, avoid going further */
+    if (PyErr_ExceptionMatches(PyExc_RecursionError))
+      PyErr_Clear();
+    else
+    {
+      AddTraceBackHere(__FILE__, __LINE__, "apsw_sqlite3_log_receiver",
+                       "{s: O, s: i, s: s}",
+                       "logger", OBJ(arg),
+                       "errcode", errcode,
+                       "message", message);
+
+      apsw_write_unraisable(NULL);
+    }
   }
   else
     Py_DECREF(res);
