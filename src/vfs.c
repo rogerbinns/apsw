@@ -1898,7 +1898,10 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
   if (!file)
     goto finally;
 
+  if (0 != Py_EnterRecursiveCall(" instantiating APSWVFSFile"))
+    goto finally;
   xopenresult = vfstouse->xOpen(vfstouse, self->filename, file, (int)flagsin, &flagsout);
+  Py_LeaveRecursiveCall();
   SET_EXC(xopenresult, NULL);
   if (PyErr_Occurred())
   {
