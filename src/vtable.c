@@ -427,6 +427,7 @@ SqliteIndexInfo_get_aConstraintUsage_in(SqliteIndexInfo *self, PyObject *args, P
  If *which* is an *in* constraint, and *filter_all* is True then your :meth:`VTCursor.Filter`
  method will have all of the values at once.
 
+ -* sqlite3_vtab_in
 */
 static PyObject *
 SqliteIndexInfo_set_aConstraintUsage_in(SqliteIndexInfo *self, PyObject *args, PyObject *kwds)
