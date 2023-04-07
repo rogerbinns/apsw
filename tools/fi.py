@@ -438,7 +438,7 @@ class Tester:
         try:
             if fname in self.returns["pyobject"]:
                 self.expect_exception.append(MemoryError)
-                raise MemoryError(self.FAULTS)
+                return 0, MemoryError, self.FAULTS
 
             if fname == "sqlite3_threadsafe":
                 self.expect_exception.append(EnvironmentError)

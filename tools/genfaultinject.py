@@ -4,143 +4,31 @@ import sys
 import subprocess
 
 proto = """
-static int
-APSW_FaultInjectControl(const char *faultfunction, const char *filename, const char *funcname, int linenum, const char *args, PyObject **obj);
+static long long
+APSW_FaultInjectControl(const char *faultfunction, const char *filename, const char *funcname, int linenum, const char *args);
 
-/* these are needed because we don't want to fault within our faulting */
-
-static long PyLong_AsLong_fi(PyObject *obj) { return PyLong_AsLong(obj);}
-static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(obj); }
 """
 
-# this also works for pointer returns that use NULL for error and set a Python exception
-# like PyUnicode_AsUTF8
-pyobject_return = """
+call_pattern = """
 ({
     __auto_type _res = 0 ? PySet_New(__VA_ARGS__) : 0;
-    PyGILState_STATE gilstate = PyGILState_Ensure();
-    switch (APSW_FaultInjectControl("PySet_New", __FILE__, __func__, __LINE__, #__VA_ARGS__, (PyObject**)&_res))
+
+    _res = (typeof (_res))APSW_FaultInjectControl("PySet_New", __FILE__, __func__, __LINE__, #__VA_ARGS__);
+
+    if ((typeof (_res))0x1FACADE == _res)
+       _res = PySet_New(__VA_ARGS__);
+    else if ((typeof(_res))0x2FACADE == _res)
     {
-    case 0x1FACADE:
-        assert(_res == 0);
-        _res = PySet_New(__VA_ARGS__);
-        break;
-    default:
-        assert(_res || PyErr_Occurred());
-        assert(!(_res && PyErr_Occurred()));
-        break;
-    }
-    PyGILState_Release(gilstate);
-    _res;
-})
-"""
-
-# for int returns, the fault injection can either return a number
-# (PyLong) or a tuple(PyLong, AType, str) in which case
-# PyErr_Format(AType, "%s", str) sets Python exception indicator and
-# the PyLong is returned
-
-
-# note this releases the gil around calls.
-return_no_gil = r"""
-({
-    PyObject *_res2 = 0;
-    __auto_type _res = 0 ? sqlite3_threadsafe(__VA_ARGS__) : 0;
-    PyGILState_STATE gilstate = PyGILState_Ensure();
-    switch (APSW_FaultInjectControl("sqlite3_threadsafe", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))
-    {
-    case 0x1FACADE:
-        assert(_res2 == 0);
-        PyGILState_Release(gilstate);
-        _res = sqlite3_threadsafe(__VA_ARGS__);
-        gilstate = PyGILState_Ensure();
-        break;
-    case 0x2FACADE:
-        assert(_res2 == 0);
-        PyGILState_Release(gilstate);
-        _res = sqlite3_threadsafe(__VA_ARGS__);
-        gilstate = PyGILState_Ensure();
+        PySet_New(__VA_ARGS__);
         _res = (typeof (_res))18;
-        break;
-    default:
-        if(!_res2) {
-            fprintf(stderr, "Exception in APSW_FaultInjectControl(\"%s\", \"%s\", \"%s\", %d, \"%s\")\n", "sqlite3_threadsafe", __FILE__, __func__, __LINE__, #__VA_ARGS__);
-            PyObject *_p1, *_p2, *_p3;
-            PyErr_Fetch(&_p1, &_p2, &_p3);
-            fprintf(stderr, "Exception type: ");
-            PyObject_Print(_p1, stderr, 0);
-            fprintf(stderr, "\nException value: ");
-            PyObject_Print(_p2, stderr, 0);
-            fprintf(stderr, "\nException tb: ");
-            PyObject_Print(_p3, stderr, 0);
-            fprintf(stderr, "\nPyErr_Display:\n");
-            PyErr_Display(_p1, _p2, _p3);
-            fprintf(stderr, "\nEnd of exception information\n");
-        };
-        assert(_res2);
-        if(PyTuple_Check(_res2))
-        {
-            assert(3 == PyTuple_GET_SIZE(_res2));
-            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));
-            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));
-            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));
-        }
-        else
-        {
-            assert(PyLong_Check(_res2));
-            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);
-        }
-        break;
     }
-    Py_XDECREF(_res2);
-    PyGILState_Release(gilstate);
     _res;
 })
 """
 
-return_with_gil = """
-({
-    PyObject *_res2=0;
-    __auto_type _res = 0 ? PyType_Ready(__VA_ARGS__) : 0;
-    PyGILState_STATE gilstate = PyGILState_Ensure();
-    switch (APSW_FaultInjectControl("PyType_Ready", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))
-    {
-    case 0x1FACADE:
-        assert(_res == 0);
-        _res = PyType_Ready(__VA_ARGS__);
-        break;
-    default:
-        if(PyTuple_Check(_res2))
-        {
-            assert(3 == PyTuple_GET_SIZE(_res2));
-            _res =  (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));
-            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));
-            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));
-        }
-        else
-        {
-            assert(PyLong_Check(_res2));
-            _res = PyLong_AsLong_fi(_res2);
-        }
-        break;
-    }
-    Py_XDECREF(_res2);
-    PyGILState_Release(gilstate);
-    _res;
-})
-"""
 
 def get_definition(name, use_name):
-    if name in returns["pyobject"]:
-        t = pyobject_return.replace("PySet_New", use_name)
-    elif name in returns["no_gil"]:
-        t = return_no_gil.replace("sqlite3_threadsafe", use_name)
-    elif name in returns["with_gil"]:
-        t = return_with_gil.replace("PyType_Ready", use_name)
-    else:
-        print("unknown template " + name)
-        breakpoint()
-        1 / 0
+    t = call_pattern.replace("PySet_New", use_name)
     if name != use_name:
         # put back pretty name in string passed to APSW_FaultInjectControl
         t = t.replace(f'"{ use_name }"', f'"{ name }"')
@@ -149,6 +37,7 @@ def get_definition(name, use_name):
     for i in range(len(t) - 1):
         t[i] += " " * (maxlen - len(t[i])) + " \\\n"
     return "".join(t)
+
 
 def genfile(symbols):
     res = []
@@ -179,7 +68,8 @@ def genfile(symbols):
 
 returns = {
     # these have the gil and return NULL on failure
-    "pyobject": """
+    "pyobject":
+    """
             convert_value_to_pyobject getfunctionargs allocfunccbinfo
             Call_PythonMethodV apsw_strdup convertutf8string
             Call_PythonMethod MakeExistingException
@@ -198,7 +88,8 @@ returns = {
             PyMem_Realloc
             """.split(),
     # numeric return, no gil
-    "no_gil": """
+    "no_gil":
+    """
             sqlite3_aggregate_context sqlite3_autovacuum_pages
             sqlite3_backup_finish sqlite3_backup_init
             sqlite3_backup_step sqlite3_bind_blob sqlite3_bind_blob64
@@ -233,7 +124,8 @@ returns = {
             sqlite3_wal_autocheckpoint sqlite3_wal_checkpoint_v2
             """.split(),
     # py functions that return a number to indicate failure
-    "with_gil": """
+    "with_gil":
+    """
         PyType_Ready PyModule_AddObject PyModule_AddIntConstant PyLong_AsLong
         PyLong_AsLongLong PyObject_GetBuffer PyList_Append PyDict_SetItemString
         PyObject_SetAttrString _PyBytes_Resize PyDict_SetItem PyList_SetSlice
@@ -252,7 +144,6 @@ call_map = {
     "PyObject_CallFunction": "_PyObject_CallFunction_SizeT",
     "PyObject_CallMethod": "_PyObject_CallMethod_SizeT",
     "Py_VaBuildValue": "_Py_VaBuildValue_SizeT",
-
 }
 
 # double check no dupes
@@ -267,7 +158,7 @@ for k, v in returns.items():
                 seen.add(val)
 
 # these don't provide meaning for fault injection
-no_error=set("""PyBuffer_Release PyDict_GetItem PyMem_Free PyDict_GetItemString PyErr_Clear
+no_error = set("""PyBuffer_Release PyDict_GetItem PyMem_Free PyDict_GetItemString PyErr_Clear
     PyErr_Display PyErr_Fetch PyErr_Format PyErr_NoMemory PyErr_NormalizeException
     PyErr_Occurred PyErr_Print PyErr_Restore PyErr_SetObject PyEval_RestoreThread
     PyEval_SaveThread PyGILState_Ensure PyGILState_Release PyOS_snprintf
@@ -285,6 +176,7 @@ no_error.update("""PyArg_ParseTuple PyBytes_AsString PyErr_GivenExceptionMatches
     PyObject_CallFunctionObjArgs PyObject_IsInstance PySys_GetObject
 """.split())
 
+
 def check_dll(fname, all):
     not_seen = set()
     for line in subprocess.run(["nm", "-u", fname], text=True, capture_output=True, check=True).stdout.split("\n"):
@@ -300,18 +192,11 @@ def check_dll(fname, all):
                     sym = k
                     break
             else:
-                1/0
+                1 / 0
 
-        if (sym in all
-            or sym in no_error
-            or sym.endswith("_Check")
-            or sym.endswith("_Type")
-            or sym.endswith("Struct")
-            or sym.startswith("PyExc_")
-        ):
+        if (sym in all or sym in no_error or sym.endswith("_Check") or sym.endswith("_Type") or sym.endswith("Struct")
+                or sym.startswith("PyExc_")):
             continue
-
-
 
         not_seen.add(sym)
 

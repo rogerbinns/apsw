@@ -1920,11 +1920,16 @@ PyInit___init__(void)
 #include "faultinject.h"
 #define PyObject_CallFunction _PyObject_CallFunction_SizeT
 
-static int
-APSW_FaultInjectControl(const char *faultfunction, const char *filename, const char *funcname, int linenum, const char *args, PyObject **obj)
+static long long
+APSW_FaultInjectControl(const char *faultfunction, const char *filename, const char *funcname, int linenum, const char *args)
 {
-  PyObject *callable, *res;
+  PyObject *callable, *res = NULL;
   PyObject *etype = NULL, *evalue = NULL, *etraceback = NULL;
+  const char *err_details = NULL;
+  long long ficres = 0;
+  int suppress = 0;
+
+  PyGILState_STATE gilstate = PyGILState_Ensure();
   PyErr_Fetch(&etype, &evalue, &etraceback);
 
   callable = PySys_GetObject("apsw_fault_inject_control");
@@ -1935,39 +1940,94 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
     if (!whined && !Py_IsNone(callable))
     {
       whined++;
-      fprintf(stderr, "Missing sys.apsw_fault_inject_control\n");
+      err_details = "Missing sys.apsw_fault_inject_control";
     }
-    PyErr_Restore(etype, evalue, etraceback);
-    return 0x1FACADE;
+    suppress = 1;
+    goto errorexit;
   }
 
   res = PyObject_CallFunction(callable, "((sssis))", faultfunction,
                               filename, funcname, linenum, args);
-  if (res)
+  if (!res)
   {
-    if (PyLong_Check(res))
-    {
-      int overflow;
-      long value = PyLong_AsLongAndOverflow(res, &overflow);
-      if (!overflow && (value == 0x1FACADE || value == 0x2FACADE))
-      {
-        PyErr_Restore(etype, evalue, etraceback);
-        Py_DECREF(res);
-        return value;
-      }
-    }
-    PyErr_Restore(etype, evalue, etraceback);
-    *obj = res;
-    return 0;
+    err_details = "Calling sys.apsw_fault_inject_control";
+    goto errorexit;
   }
 
-  assert(PyErr_Occurred());
-  /* we can't put any exception that was present at beginning of call back */
-  Py_XDECREF(etype);
-  Py_XDECREF(evalue);
-  Py_XDECREF(etraceback);
+  if (PyLong_Check(res))
+  {
+    ficres = PyLong_AsLongLong(res);
+    if (PyErr_Occurred())
+    {
+      err_details = "Converting PyLong return from sys.apsw_fault_inject_control";
+      goto errorexit;
+    }
+    goto success;
+  }
 
-  return 0;
+  if (!PyTuple_Check(res) || 3 != PyTuple_GET_SIZE(res) || !PyLong_Check(PyTuple_GET_ITEM(res, 0)) || !PyUnicode_Check(PyTuple_GET_ITEM(res, 2)))
+  {
+    err_details = "Expected int or 3 item tuple (int, class, str) from sys.apsw_fault_inject_control";
+    goto errorexit;
+  }
+
+  ficres = PyLong_AsLongLong(PyTuple_GET_ITEM(res, 0));
+  if (PyErr_Occurred())
+  {
+    err_details = "Converting tuple return int";
+    goto errorexit;
+  }
+
+  const char *utf8 = PyUnicode_AsUTF8(PyTuple_GET_ITEM(res, 2));
+  if (!utf8)
+  {
+    err_details = "Getting utf8 of tuple return";
+    goto errorexit;
+  }
+
+  assert(!PyErr_Occurred());
+  Py_CLEAR(etype);
+  Py_CLEAR(evalue);
+  Py_CLEAR(etraceback);
+  PyErr_SetString(PyTuple_GET_ITEM(res, 1), utf8);
+
+success:
+  if (etype || evalue || etraceback)
+    PyErr_Restore(etype, evalue, etraceback);
+  Py_CLEAR(res);
+  PyGILState_Release(gilstate);
+  return ficres;
+
+errorexit:
+  Py_CLEAR(res);
+  PyObject *_p1, *_p2, *_p3;
+  PyErr_Fetch(&_p1, &_p2, &_p3);
+  int is_recursion = PyErr_Occurred() && PyErr_GivenExceptionMatches(PyExc_RecursionError, _p1);
+  if (!suppress)
+    fprintf(stderr, "FaultInjectControl %s: {\"%s\", \"%s\", \"%s\", %d, \"%s\"}\n", is_recursion ? "Recusrion" : "ERROR", faultfunction, filename, funcname, linenum, args);
+  if (!is_recursion)
+  {
+    if (err_details)
+      fprintf(stderr, "%s\n", err_details);
+    if (PyErr_Occurred())
+    {
+      /* PyErr_Print turned out to be useless here */
+
+      fprintf(stderr, "Exception type: ");
+      PyObject_Print(_p1, stderr, 0);
+      fprintf(stderr, "\nException value: ");
+      PyObject_Print(_p2, stderr, 0);
+      fprintf(stderr, "\nException tb: ");
+      PyObject_Print(_p3, stderr, 0);
+      fprintf(stderr, "\n");
+      Py_CLEAR(_p1);
+      Py_CLEAR(_p2);
+      Py_CLEAR(_p3);
+    }
+  }
+  PyErr_Restore(etype, evalue, etraceback);
+  PyGILState_Release(gilstate);
+  return 0x1FACADE;
 }
 
 static int
