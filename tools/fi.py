@@ -335,18 +335,19 @@ def exercise(example_code, expect_exception):
     class myvfs(apsw.VFS):
 
         def __init__(self, name="apswfivfs", parent=""):
+            self.parent = parent
             super().__init__(name, parent)
 
         def xDelete(self, name, syncdir):
             return super().xDelete(name, syncdir)
 
         def xOpen(self, name, flags):
-            return myvfsfile(name, flags)
+            return myvfsfile(self.parent, name, flags)
 
     class myvfsfile(apsw.VFSFile):
 
-        def __init__(self, filename, flags):
-            super().__init__("apswfivfs2", filename, flags)
+        def __init__(self, parent, filename, flags):
+            super().__init__(parent, filename, flags)
 
     vfsinstance = myvfs()
     vfsinstance2 = myvfs("apswfivfs2", "apswfivfs")
@@ -357,9 +358,6 @@ def exercise(example_code, expect_exception):
         pass
 
     vfsinstance2.xFullPathname("abc.txt")
-    vfsinstance2.xOpen(f"{ tmpdir.name }/dbfile-delme-vfstesting", [apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_DELETEONCLOSE, 0])
-    vfsinstance.xOpen(f"{ tmpdir.name }/dbfile-delme-vfstesting", [apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_DELETEONCLOSE, 0])
-
 
     file_cleanup()
 
