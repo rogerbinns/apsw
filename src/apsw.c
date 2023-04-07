@@ -1817,16 +1817,16 @@ PyInit_apsw(void)
   if (PyModule_AddIntConstant(m, "SQLITE_VERSION_NUMBER", SQLITE_VERSION_NUMBER))
     goto fail;
 
-  /** .. attribute:: using_amalgamation
-    :type: bool
+    /** .. attribute:: using_amalgamation
+      :type: bool
 
-    If True then `SQLite amalgamation
-    <https://sqlite.org/cvstrac/wiki?p=TheAmalgamation>`__ is in
-    use (statically compiled into APSW).  Using the amalgamation means
-    that SQLite shared libraries are not used and will not affect your
-    code.
+      If True then `SQLite amalgamation
+      <https://sqlite.org/cvstrac/wiki?p=TheAmalgamation>`__ is in
+      use (statically compiled into APSW).  Using the amalgamation means
+      that SQLite shared libraries are not used and will not affect your
+      code.
 
-    */
+      */
 
 #ifdef APSW_USE_SQLITE_AMALGAMATION
   if (PyModule_AddObject(m, "using_amalgamation", Py_NewRef(Py_True)))
