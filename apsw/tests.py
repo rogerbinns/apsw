@@ -1097,7 +1097,7 @@ class APSW(unittest.TestCase):
 
         a = VFSA()
         b = VFSB()
-        apsw.Connection("testdb", vfs="vfsa")
+        self.assertRaises(apsw.Error, self.assertRaisesUnraisable, RecursionError, apsw.Connection, "testdb", vfs="vfsa")
 
     def testTypes(self):
         "Check type information is maintained"
