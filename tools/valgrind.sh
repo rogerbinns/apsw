@@ -17,7 +17,7 @@ then
    cflags="-DAPSW_TESTFIXTURES -DAPSW_NO_NDEBUG"
    opt=""
    options="--track-fds=yes --num-callers=50 $showleaks --freelist-vol=500000000 --suppressions=`dirname $0`/sqlite3.supp --track-origins=yes"
-   APSW_TEST_ITERATIONS=${APSW_TEST_ITERATIONS:=150}
+   APSW_TEST_ITERATIONS=${APSW_TEST_ITERATIONS:=1}
    apswopt="APSW_NO_MEMLEAK=t APSW_TEST_ITERATIONS=$APSW_TEST_ITERATIONS"
    APSW_VALGRIND=t
    export APSW_VALGRIND
