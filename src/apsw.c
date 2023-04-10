@@ -1928,8 +1928,11 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
   const char *err_details = NULL;
   long long ficres = 0;
   int suppress = 0;
+  int recursion_limit;
 
   PyGILState_STATE gilstate = PyGILState_Ensure();
+  recursion_limit = Py_GetRecursionLimit();
+  Py_SetRecursionLimit(recursion_limit + 50);
   PyErr_Fetch(&etype, &evalue, &etraceback);
 
   callable = PySys_GetObject("apsw_fault_inject_control");
@@ -1995,6 +1998,7 @@ success:
   if (etype || evalue || etraceback)
     PyErr_Restore(etype, evalue, etraceback);
   Py_CLEAR(res);
+  Py_SetRecursionLimit(recursion_limit);
   PyGILState_Release(gilstate);
   return ficres;
 
@@ -2002,30 +2006,25 @@ errorexit:
   Py_CLEAR(res);
   PyObject *_p1, *_p2, *_p3;
   PyErr_Fetch(&_p1, &_p2, &_p3);
-  int is_recursion = PyErr_Occurred() && PyErr_GivenExceptionMatches(PyExc_RecursionError, _p1);
   if (!suppress)
-    fprintf(stderr, "FaultInjectControl %s: {\"%s\", \"%s\", \"%s\", %d, \"%s\"}\n", is_recursion ? "Recusrion" : "ERROR", faultfunction, filename, funcname, linenum, args);
-  if (!is_recursion)
+    fprintf(stderr, "FaultInjectControl ERROR: {\"%s\", \"%s\", \"%s\", %d, \"%s\"}\n", faultfunction, filename, funcname, linenum, args);
+  if (err_details)
+    fprintf(stderr, "%s\n", err_details);
+  if (_p1 || _p2 || _p3)
   {
-    if (err_details)
-      fprintf(stderr, "%s\n", err_details);
-    if (PyErr_Occurred())
-    {
-      /* PyErr_Print turned out to be useless here */
-
-      fprintf(stderr, "Exception type: ");
-      PyObject_Print(_p1, stderr, 0);
-      fprintf(stderr, "\nException value: ");
-      PyObject_Print(_p2, stderr, 0);
-      fprintf(stderr, "\nException tb: ");
-      PyObject_Print(_p3, stderr, 0);
-      fprintf(stderr, "\n");
-      Py_CLEAR(_p1);
-      Py_CLEAR(_p2);
-      Py_CLEAR(_p3);
-    }
+    fprintf(stderr, "Exception type: ");
+    PyObject_Print(_p1, stderr, 0);
+    fprintf(stderr, "\nException value: ");
+    PyObject_Print(_p2, stderr, 0);
+    fprintf(stderr, "\nException tb: ");
+    PyObject_Print(_p3, stderr, 0);
+    fprintf(stderr, "\n");
+    Py_CLEAR(_p1);
+    Py_CLEAR(_p2);
+    Py_CLEAR(_p3);
   }
   PyErr_Restore(etype, evalue, etraceback);
+  Py_SetRecursionLimit(recursion_limit);
   PyGILState_Release(gilstate);
   return 0x1FACADE;
 }

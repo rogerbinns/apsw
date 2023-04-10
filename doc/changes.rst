@@ -8,6 +8,9 @@ next
 
 Added :func:`apsw.sleep` (:issue:`419`)
 
+Detect unbound recursion not handled by CPython, and handle better.
+(:issue:`425`)
+
 3.41.2.0
 ========
 

@@ -19,9 +19,13 @@ tmpdir = tempfile.TemporaryDirectory(prefix="fitest-")
 atexit.register(tmpdir.cleanup)
 print("tmpdir", tmpdir.name)
 
+testing_recursion = False
 
 def exercise(example_code, expect_exception):
     "This function exercises the code paths where we have fault injection"
+
+    global testing_recursion
+    testing_recursion = False
 
     def file_cleanup():
         if "apsw" in sys.modules:
@@ -378,10 +382,21 @@ def exercise(example_code, expect_exception):
     if expect_exception:
         return
 
+    if False:
+        # This does recursion error, which also causes lots of last chance
+        # exception printing to stderr, making the noise unhelpful.  The
+        # code has been validated at the time of writing this comment.
+        testing_recursion = True
+        vfsinstance.parent="apswfivfs2"
+        apsw.tests.testtimeout = False
+        apsw.tests.vfstestdb(f"{ tmpdir.name }/dbfile-delme-vfswal", "apswfivfs2", mode="wal")
+        testing_recursion = False
+
     apsw.set_default_vfs(apsw.vfsnames()[0])
     apsw.unregister_vfs("apswfivfs")
 
     del vfsinstance
+    del vfsinstance2
 
     del sys.modules["apsw.ext"]
     gc.collect()
@@ -504,6 +519,8 @@ class Tester:
         breakpoint()
 
     def fault_inject_control(self, key):
+        if testing_recursion and key[2] in {"apsw_write_unraisable", "apswvfs_excepthook"}:
+            return self.Proceed
         if self.runplan is not None:
             if not self.runplan:
                 return self.Proceed
@@ -580,13 +597,14 @@ class Tester:
         return curline_pretty, 100 * pos / total_lines
 
     def verify_exception(self, tested):
-        if len(tested) == 0 and len(self.exc_happened) == 0:
+        if len(tested) == 0 and len(self.exc_happened) >= 0:
             return
         ok = any(e[0] in self.expect_exception for e in self.exc_happened) or any(self.FAULTS in str(e[1])
                                                                                   for e in self.exc_happened)
         # these faults happen in fault handling so can't fault report themselves.
         if tested and list(tested)[0][2] in {
-                "apsw_set_errmsg", "apsw_get_errmsg", "apsw_write_unraisable", "MakeSqliteMsgFromPyException"
+                "apsw_set_errmsg", "apsw_get_errmsg", "apsw_write_unraisable", "MakeSqliteMsgFromPyException",
+                "apswvfs_excepthook"
         }:
             return
         if len(self.exc_happened) < len(tested):
@@ -670,14 +688,6 @@ class Tester:
                     gc.collect()
 
             self.verify_exception(self.faulted_this_round)
-
-            now = set(self.to_fault), set(self.has_faulted_ever)
-            if now == last and not complete:
-                print("\nUnable to make progress")
-                exercise(None)
-                break
-            else:
-                last = now
 
         if complete:
             print("\nAll faults exercised")

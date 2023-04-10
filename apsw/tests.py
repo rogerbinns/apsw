@@ -1097,7 +1097,10 @@ class APSW(unittest.TestCase):
 
         a = VFSA()
         b = VFSB()
+        sys.setrecursionlimit(40)
+        print("The message about RecursionError is expected, and what is being tested", file=sys.stderr)
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, apsw.SQLError, apsw.Connection, "testdb", vfs="vfsa")
+        sys.setrecursionlimit(1000)
 
     def testTypes(self):
         "Check type information is maintained"
