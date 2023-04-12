@@ -1249,8 +1249,6 @@ end:
    This method is to return an integer error code and (optional) text describing
    the last error that happened in this thread.
 
-   .. note:: SQLite 3.12 changed the semantics in an incompatible way from
-        earlier versions.  You will need to rewrite earlier implementations.
 */
 static PyObject *
 apswvfspy_xGetLastError(APSWVFS *self)
