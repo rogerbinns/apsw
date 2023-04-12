@@ -938,6 +938,7 @@ finally: /* cleanup */
     PyMem_Free(avi);
   CALL_LEAVE(xConnect);
   PyGILState_Release(gilstate);
+  assert((*pVTab != 0 && res == SQLITE_OK) || (*pVTab == 0 && res != SQLITE_OK));
   return res;
 }
 
