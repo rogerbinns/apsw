@@ -8,6 +8,10 @@ next
 
 Added :func:`apsw.sleep` (:issue:`419`)
 
+Strings for :meth:`apsw.VFS.xNextSystemCall` are `interned
+<https://docs.python.org/3/c-api/unicode.html#c.PyUnicode_InternInPlace>`__
+avoiding memory leaks. (:issue:`430`)
+
 Detect unbound recursion not handled by CPython, and handle better.
 (:issue:`425`)
 

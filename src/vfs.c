@@ -1449,8 +1449,8 @@ apswvfs_xNextSystemCall(sqlite3_vfs *vfs, const char *zName)
   {
     if (PyUnicode_Check(pyresult))
     {
-      /* note this deliberately leaks memory due to SQLite semantics */
-      res = sqlite3_mprintf("%s", PyUnicode_AsUTF8(pyresult));
+      PyUnicode_InternInPlace(&pyresult);
+      res = PyUnicode_AsUTF8(pyresult);
     }
     else
       PyErr_Format(PyExc_TypeError, "You must return a string or None");
@@ -1471,13 +1471,6 @@ apswvfs_xNextSystemCall(sqlite3_vfs *vfs, const char *zName)
     name of the first system call.  In subsequent calls return the
     name after the one passed in.  If name is the last system call
     then return None.
-
-    .. note::
-
-      Because of internal SQLite implementation semantics memory will
-      be leaked on each call to this function.  Consequently you
-      should build up the list of call names once rather than
-      repeatedly doing it.
 
 */
 static PyObject *
