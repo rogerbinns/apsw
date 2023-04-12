@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import sys
-import pathlib
 import gc
 import math
 import traceback
@@ -20,6 +19,7 @@ atexit.register(tmpdir.cleanup)
 print("tmpdir", tmpdir.name)
 
 testing_recursion = False
+
 
 def exercise(example_code, expect_exception):
     "This function exercises the code paths where we have fault injection"
@@ -210,7 +210,8 @@ def exercise(example_code, expect_exception):
     con.execute("select * from vtable where c2>2 and c1 in (1,2,3)")
     con.execute("create virtual table fred using vtable()")
     con.execute("select vtf(c3) from fred where c3>5; select vtf(c2,c1) from fred where c3>5 order by c2").fetchall()
-    con.execute("select vtf(c3) from vtable2 where c3>5; select vtf(c2,c1) from vtable2 where c3>5 order by c2 desc, c1").fetchall()
+    con.execute("select vtf(c3) from vtable2 where c3>5; select vtf(c2,c1) from vtable2 where c3>5 order by c2 desc, c1"
+                ).fetchall()
     con.execute("delete from fred where c3>5")
     n = 2
     con.execute("insert into fred values(?,?,?,?)", [None, ' ' * n, b"aa" * n, 3.14 * n])
@@ -336,6 +337,35 @@ def exercise(example_code, expect_exception):
     if expect_exception:
         return
 
+    class MYVFS(apsw.VFS):
+
+        def __init__(self):
+            super().__init__("testvfs", "", maxpathname=0)
+
+    vfs = MYVFS()
+
+    vfs.xRandomness(77)
+    vfs.xGetLastError()
+    v = None
+    while True:
+        v = vfs.xNextSystemCall(v)
+        if v is None:
+            break
+
+    if expect_exception:
+        return
+
+    flags = [0, 0]
+
+    f = apsw.VFSFile("testvfs", "testdb", flags)
+    if expect_exception:
+        return
+
+    vfs.xOpen("", [0, 0])
+
+    if expect_exception:
+        return
+
     class myvfs(apsw.VFS):
 
         def __init__(self, name="apswfivfs", parent=""):
@@ -387,7 +417,7 @@ def exercise(example_code, expect_exception):
         # exception printing to stderr, making the noise unhelpful.  The
         # code has been validated at the time of writing this comment.
         testing_recursion = True
-        vfsinstance.parent="apswfivfs2"
+        vfsinstance.parent = "apswfivfs2"
         apsw.tests.testtimeout = False
         apsw.tests.vfstestdb(f"{ tmpdir.name }/dbfile-delme-vfswal", "apswfivfs2", mode="wal")
         testing_recursion = False
@@ -449,7 +479,7 @@ class Tester:
         apsw_attr = self.apsw_attr
         fname = self.call_remap.get(key[0], key[0])
         try:
-            if fname in self.returns["pyobject"]:
+            if fname in self.returns["pointer"]:
                 self.expect_exception.append(MemoryError)
                 return 0, MemoryError, self.FAULTS
 
