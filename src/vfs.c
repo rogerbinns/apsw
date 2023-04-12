@@ -1612,8 +1612,9 @@ APSWVFS_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSED(k
 
     :param maxpathname: The maximum length of database name in bytes when
         represented in UTF-8.  If a pathname is passed in longer than
-        this value then SQLite will not `be able to open it
-        <https://sqlite.org/src/tktview/c060923a5422590b3734eb92eae0c94934895b68>`__.
+        this value then SQLite will not `be able to open it.  If you are
+        using a base, then a value of zero will use the value from base.
+
 
     :raises ValueError: If *base* is not *None* and the named vfs is not
       currently registered.
@@ -1838,7 +1839,7 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
 {
   const char *vfs = NULL;
   PyObject *flags = NULL, *pyflagsin = NULL, *pyflagsout = NULL, *filename = NULL;
-  int xopenresult;
+  int xopenresult = -1;
   int res = -1; /* error */
   int flagsin;
   int flagsout = 0;
@@ -1902,14 +1903,12 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
     goto finally;
   xopenresult = vfstouse->xOpen(vfstouse, self->filename, file, (int)flagsin, &flagsout);
   Py_LeaveRecursiveCall();
+
   SET_EXC(xopenresult, NULL);
+  MakeExistingException();
+
   if (PyErr_Occurred())
-  {
-    /* just in case the result was ok, but there was a python level exception ... */
-    if (xopenresult == SQLITE_OK)
-      file->pMethods->xClose(file);
     goto finally;
-  }
 
   pyflagsout = PyLong_FromLong(flagsout);
   if (!pyflagsout)
@@ -1917,7 +1916,6 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
 
   if (-1 == PyList_SetItem(flags, 1, pyflagsout))
   {
-    file->pMethods->xClose(file);
     Py_DECREF(pyflagsout);
     goto finally;
   }
@@ -1929,12 +1927,18 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
   res = 0;
 
 finally:
-  assert(res == 0 || PyErr_Occurred());
   if (PyErr_Occurred())
     AddTraceBackHere(__FILE__, __LINE__, "vfsfile.init", "{s: O, s: O}", "args", OBJ(args), "kwargs", OBJ(kwds));
 
   if (res != 0 && file)
+  {
+    if (xopenresult == SQLITE_OK)
+      PRESERVE_EXC(file->pMethods->xClose(file));
+
     PyMem_Free(file);
+  }
+
+  assert((res == 0 && !PyErr_Occurred()) || (res != 0 && PyErr_Occurred()));
   return res;
 }
 
