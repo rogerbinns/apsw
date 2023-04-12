@@ -29,6 +29,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef PyFrame_New
 #undef PyIter_Next
 #undef PyList_Append
+#undef PyList_GetItem
 #undef PyList_New
 #undef PyList_SetItem
 #undef PyList_SetSlice
@@ -388,6 +389,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res = (typeof (_res))18;                                                                               \
     }                                                                                                           \
     _res;                                                                                                       \
+})
+#define PyList_GetItem(...) \
+({                                                                                                               \
+    __auto_type _res = 0 ? PyList_GetItem(__VA_ARGS__) : 0;                                                      \
+                                                                                                                 \
+    _res = (typeof (_res))APSW_FaultInjectControl("PyList_GetItem", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                 \
+    if ((typeof (_res))0x1FACADE == _res)                                                                        \
+       _res = PyList_GetItem(__VA_ARGS__);                                                                       \
+    else if ((typeof(_res))0x2FACADE == _res)                                                                    \
+    {                                                                                                            \
+        PyList_GetItem(__VA_ARGS__);                                                                             \
+        _res = (typeof (_res))18;                                                                                \
+    }                                                                                                            \
+    _res;                                                                                                        \
 })
 #define PyList_New(...) \
 ({                                                                                                           \

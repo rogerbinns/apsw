@@ -67,8 +67,8 @@ def genfile(symbols):
 
 
 returns = {
-    # these have the gil and return NULL on failure
-    "pyobject":
+    # return a pointer, NULL on failure
+    "pointer":
     """
             convert_value_to_pyobject getfunctionargs allocfunccbinfo
             Call_PythonMethodV apsw_strdup convertutf8string
@@ -82,13 +82,13 @@ returns = {
             PyObject_CallObject PyLong_AsInt PyUnicode_FromStringAndSize
             PySequence_GetItem PyLong_FromLongLong PySequence_GetSlice PyBytes_FromStringAndSize
             PyFloat_FromDouble  PyBool_FromLong PyCode_NewEmpty PyFloat_AsDouble
-            PyIter_Next PyList_SetItem PyLong_FromVoidPtr PyMapping_GetItemString PyNumber_Float
+            PyIter_Next PyList_GetItem PyList_SetItem PyLong_FromVoidPtr PyMapping_GetItemString PyNumber_Float
             PyNumber_Long PySequence_Fast PySequence_List PySequence_SetItem PyObject_CallFunction
             PyObject_CallMethod PyFrame_New PyStructSequence_NewType PyStructSequence_New
             PyMem_Realloc
             """.split(),
-    # numeric return, no gil
-    "no_gil":
+    # numeric return
+    "sqlite":
     """
             sqlite3_aggregate_context sqlite3_autovacuum_pages
             sqlite3_backup_finish sqlite3_backup_init
@@ -120,11 +120,11 @@ returns = {
             sqlite3_table_column_metadata sqlite3_threadsafe
             sqlite3_trace_v2 sqlite3_vfs_register
             sqlite3_vfs_unregister sqlite3_vtab_config
-        sqlite3_vtab_in_next sqlite3_vtab_rhs_value
+            sqlite3_vtab_in_next sqlite3_vtab_rhs_value
             sqlite3_wal_autocheckpoint sqlite3_wal_checkpoint_v2
             """.split(),
     # py functions that return a number to indicate failure
-    "with_gil":
+    "number":
     """
         PyType_Ready PyModule_AddObject PyModule_AddIntConstant PyLong_AsLong
         PyLong_AsLongLong PyObject_GetBuffer PyList_Append PyDict_SetItemString
