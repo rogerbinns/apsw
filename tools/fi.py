@@ -31,7 +31,7 @@ def exercise(example_code, expect_exception):
         if "apsw" in sys.modules:
             for c in sys.modules["apsw"].connections():
                 c.close(True)
-        for f in glob.glob(f"{ tmpdir.name }/dbfile-delme*") + glob.glob(f"{ tmpdir.name }/myobfudb*"):
+        for f in glob.glob(f"{ tmpdir.name }/dbfile*") + glob.glob(f"{ tmpdir.name }/myobfudb*"):
             os.remove(f)
 
     file_cleanup()
@@ -355,13 +355,14 @@ def exercise(example_code, expect_exception):
     if expect_exception:
         return
 
-    flags = [0, 0]
+    testdbname = f"{ tmpdir.name }/dbfile-testdb"
+    flags = [apsw.SQLITE_OPEN_MAIN_DB | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_READWRITE, 0]
+    f = apsw.VFSFile("testvfs", testdbname, flags)
 
-    f = apsw.VFSFile("testvfs", "testdb", flags)
     if expect_exception:
         return
 
-    vfs.xOpen("", [0, 0])
+    vfs.xOpen(testdbname, flags)
 
     if expect_exception:
         return
