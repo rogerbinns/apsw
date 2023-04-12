@@ -25,10 +25,11 @@ static void make_exception(int res, sqlite3 *db);
  work.  We don't overwrite earlier exceptions hence the PyErr_Occurred
  check */
 #define SET_EXC(res, db)                       \
+  do                                           \
   {                                            \
     if (res != SQLITE_OK && !PyErr_Occurred()) \
       make_exception(res, db);                 \
-  }
+  } while (0)
 
 /* A dictionary we store the last error from each thread in.  Used
    thread local storage previously. The key is a PyLong of the thread
