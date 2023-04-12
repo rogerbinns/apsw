@@ -39,7 +39,6 @@ Py_IsNone(const PyObject *val)
 
 #endif
 
-
 /* used in calls to AddTraceBackHere where O format takes non-null but
    we often have null so convert to None.  This can't be done as a portable
    macro because v would end up double evaluated */
@@ -253,4 +252,17 @@ parameters for AddTraceBackHere to be provided.
       else                                     \
         PyErr_Restore(_e1, _e2, _e3);          \
     }                                          \
+  } while (0)
+
+/* Some functions can clear the error indicator
+   so this keeps it */
+#define PRESERVE_EXC(x)            \
+  do                               \
+  {                                \
+    PyObject *_e1, *_e2, *_e3;     \
+    PyErr_Fetch(&_e1, &_e2, &_e3); \
+                                   \
+    x;                             \
+                                   \
+    PyErr_Restore(_e1, _e2, _e3);  \
   } while (0)
