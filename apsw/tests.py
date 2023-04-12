@@ -1099,7 +1099,12 @@ class APSW(unittest.TestCase):
         b = VFSB()
         sys.setrecursionlimit(40)
         print("The message about RecursionError is expected, and what is being tested", file=sys.stderr)
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, apsw.SQLError, apsw.Connection, "testdb", vfs="vfsa")
+        self.assertRaises(apsw.SQLError,
+                          self.assertRaisesUnraisable,
+                          apsw.SQLError,
+                          apsw.Connection,
+                          "testdb",
+                          vfs="vfsa")
         sys.setrecursionlimit(1000)
 
     def testTypes(self):
@@ -5899,6 +5904,9 @@ class APSW(unittest.TestCase):
         global testtimeout
 
         testdb = vfstestdb
+
+        # some coverage related stuff
+        self.assertRaises(TypeError, apsw.VFSFile, "", 3, [0, 0])
 
         # Check basic functionality and inheritance - make an obfuscated provider
 
