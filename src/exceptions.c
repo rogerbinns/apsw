@@ -79,13 +79,13 @@ apsw_get_errmsg(void)
   assert(tls_errmsg);
 
   key = PyLong_FromLong(PyThread_get_thread_ident());
-  if (!key)
-    goto finally;
-  value = PyDict_GetItem(tls_errmsg, key);
-  if (value)
-    retval = PyBytes_AsString(value);
+  if (key)
+  {
+    value = PyDict_GetItem(tls_errmsg, key);
+    if (value)
+      retval = PyBytes_AsString(value);
+  }
 
-finally:
   Py_XDECREF(key);
   /* value is borrowed */
   return retval;

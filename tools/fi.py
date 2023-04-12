@@ -218,7 +218,16 @@ def exercise(example_code, expect_exception):
     con.execute("insert into fred(ROWID, c1) values (99, NULL)")
     con.execute("update fred set c2=c3 where rowid=3; update fred set rowid=990 where c2=2")
 
-    con.drop_modules(["something", "vtable2", "something else"])
+    con.drop_modules(["something", "vtable", "something else"])
+
+    # this is to work MakeSqliteMsgFromPyException
+    def meth(*args):
+        raise apsw.SchemaChangeError("a" * 16384)
+    Source.Table.BestIndexObject = meth
+    try:
+        con.execute("select * from vtable where c2>2")
+    except apsw.SchemaChangeError:
+        pass
 
     con.drop_modules(None)
 
@@ -357,7 +366,15 @@ def exercise(example_code, expect_exception):
 
     testdbname = f"{ tmpdir.name }/dbfile-testdb"
     flags = [apsw.SQLITE_OPEN_MAIN_DB | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_READWRITE, 0]
-    f = apsw.VFSFile("testvfs", testdbname, flags)
+    apsw.VFSFile("testvfs", testdbname, flags)
+
+    longdbname = testdbname + "/." * (4096 - len(testdbname)//2)
+    try:
+        apsw.VFSFile("testvfs", longdbname, flags)
+    except apsw.CantOpenError:
+        pass
+
+    vfs.xGetLastError()
 
     if expect_exception:
         return
