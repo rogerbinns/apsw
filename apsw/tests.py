@@ -4793,7 +4793,13 @@ class APSW(unittest.TestCase):
 
     def testIssue431(self):
         "All applicable constants for config/status calls"
-        pass
+        self.assertEqual(0, self.db.config(apsw.SQLITE_DBCONFIG_TRIGGER_EQP, -1))
+        self.db.execute("create table foo(x)")
+        self.assertTrue(self.db.table_exists("main", "foo"))
+        self.db.config(apsw.SQLITE_DBCONFIG_RESET_DATABASE, 1)
+        self.db.execute("VACUUM")
+        self.db.config(apsw.SQLITE_DBCONFIG_RESET_DATABASE, 0)
+        self.assertFalse(self.db.table_exists("main", "foo"))
 
     def testSleep(self):
         apsw.sleep(1)
