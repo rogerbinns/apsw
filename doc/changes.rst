@@ -6,6 +6,10 @@ Change History
 next
 ====
 
+Ensure that all applicable options are implemented for
+:func:`apsw.config`, :meth:`Connection.config` and similar.
+(:issue:`431`)
+
 Added :func:`apsw.sleep` (:issue:`419`)
 
 Strings for :meth:`apsw.VFS.xNextSystemCall` are `interned

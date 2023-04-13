@@ -4791,6 +4791,10 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, apsw.unregister_vfs, "3", 3)
         self.assertRaises(ValueError, apsw.unregister_vfs, "4342345324")
 
+    def testIssue431(self):
+        "All applicable constants for config/status calls"
+        pass
+
     def testSleep(self):
         apsw.sleep(1)
         apsw.sleep(-1)
@@ -5282,6 +5286,14 @@ class APSW(unittest.TestCase):
             self.assertTrue(apsw.config(apsw.SQLITE_CONFIG_PCACHE_HDRSZ) >= 0)
             self.assertRaises(TypeError, apsw.config, apsw.SQLITE_CONFIG_PCACHE_HDRSZ, "extra")
             apsw.config(apsw.SQLITE_CONFIG_PMASZ, -1)
+            self.assertRaises(TypeError, apsw.config, apsw.SQLITE_CONFIG_MMAP_SIZE, "3")
+            self.assertRaises(TypeError, apsw.config, apsw.SQLITE_CONFIG_MMAP_SIZE, 3, "3")
+            self.assertRaises(OverflowError, apsw.config, apsw.SQLITE_CONFIG_MMAP_SIZE, 2**65, 2**65)
+            apsw.config(apsw.SQLITE_CONFIG_MMAP_SIZE, 2**63 - 1, 2**63 - 1)
+            self.assertRaises(TypeError, apsw.config, apsw.SQLITE_CONFIG_MEMDB_MAXSIZE, "3")
+            self.assertRaises(TypeError, apsw.config, apsw.SQLITE_CONFIG_MEMDB_MAXSIZE, 3, "3")
+            self.assertRaises(OverflowError, apsw.config, apsw.SQLITE_CONFIG_MEMDB_MAXSIZE, 2**65)
+            apsw.config(apsw.SQLITE_CONFIG_MEMDB_MAXSIZE, 2**63 - 1)
         finally:
             # put back to normal
             apsw.config(apsw.SQLITE_CONFIG_SERIALIZED)

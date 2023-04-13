@@ -381,12 +381,8 @@ sqliteshutdown(void)
   :param op: A `configuration operation <https://sqlite.org/c3ref/c_config_chunkalloc.html>`_
   :param args: Zero or more arguments as appropriate for *op*
 
-  Many operations don't make sense from a Python program.  The
-  following configuration operations are supported: SQLITE_CONFIG_LOG,
-  SQLITE_CONFIG_SINGLETHREAD, SQLITE_CONFIG_MULTITHREAD,
-  SQLITE_CONFIG_SERIALIZED, SQLITE_CONFIG_URI, SQLITE_CONFIG_MEMSTATUS,
-  SQLITE_CONFIG_COVERING_INDEX_SCAN, SQLITE_CONFIG_PCACHE_HDRSZ,
-  SQLITE_CONFIG_PMASZ, and SQLITE_CONFIG_STMTJRNL_SPILL.
+  Some operations don't make sense from a Python program.  All the
+  remaining are supported.
 
   See :ref:`tips <diagnostics_tips>` for an example of how to receive
   log messages (SQLITE_CONFIG_LOG)
@@ -456,7 +452,7 @@ config(PyObject *Py_UNUSED(self), PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &optdup))
       return NULL;
     assert(opt == optdup);
-    res = sqlite3_config((int)opt);
+    res = sqlite3_config(opt);
     break;
 
   case SQLITE_CONFIG_PCACHE_HDRSZ:
@@ -465,7 +461,7 @@ config(PyObject *Py_UNUSED(self), PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &optdup))
       return NULL;
     assert(opt == optdup);
-    res = sqlite3_config((int)opt, &outval);
+    res = sqlite3_config(opt, &outval);
     if (res)
     {
       SET_EXC(res, NULL);
@@ -480,12 +476,14 @@ config(PyObject *Py_UNUSED(self), PyObject *args)
   case SQLITE_CONFIG_PMASZ:
   case SQLITE_CONFIG_STMTJRNL_SPILL:
   case SQLITE_CONFIG_SORTERREF_SIZE:
+  case SQLITE_CONFIG_LOOKASIDE:
+  case SQLITE_CONFIG_SMALL_MALLOC:
   {
     int intval;
     if (!PyArg_ParseTuple(args, "ii", &optdup, &intval))
       return NULL;
     assert(opt == optdup);
-    res = sqlite3_config((int)opt, intval);
+    res = sqlite3_config(opt, intval);
     break;
   }
 
@@ -496,7 +494,7 @@ config(PyObject *Py_UNUSED(self), PyObject *args)
       return NULL;
     if (Py_IsNone(logger))
     {
-      res = sqlite3_config((int)opt, NULL);
+      res = sqlite3_config(opt, NULL);
       if (res == SQLITE_OK)
         Py_CLEAR(logger_cb);
     }
@@ -513,6 +511,26 @@ config(PyObject *Py_UNUSED(self), PyObject *args)
         logger_cb = Py_NewRef(logger);
       }
     }
+    break;
+  }
+
+  case SQLITE_CONFIG_MMAP_SIZE:
+  {
+    sqlite3_int64 default_limit, max_limit;
+    if(!PyArg_ParseTuple(args, "iLL", &optdup, &default_limit, &max_limit))
+      return NULL;
+    assert(opt == optdup);
+    res = sqlite3_config(opt, default_limit, max_limit);
+    break;
+  }
+
+  case SQLITE_CONFIG_MEMDB_MAXSIZE:
+  {
+    sqlite3_int64 limit;
+    if(!PyArg_ParseTuple(args, "iL", &optdup, &limit))
+      return NULL;
+    assert(opt == optdup);
+    res = sqlite3_config(opt, limit);
     break;
   }
 
