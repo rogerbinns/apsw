@@ -12,7 +12,7 @@ Virtual File System (VFS)
 *************************
 
 SQLite 3.6 added `VFS functionality
-<https://sqlite.org/c3ref/vfs.html>`_ which defines the interface
+<https://sqlite.org/c3ref/vfs.html>`__ which defines the interface
 between the SQLite core and the underlying operating system. The
 majority of the functionality deals with files. APSW exposes this
 functionality letting you provide your own routines. You can also
