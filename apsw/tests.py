@@ -5266,6 +5266,7 @@ class APSW(unittest.TestCase):
         self.db = None
         gc.collect()
         self.assertRaises(apsw.MisuseError, apsw.config, apsw.SQLITE_CONFIG_MEMSTATUS, True)
+        self.assertEqual(0, len(apsw.connections()))
         apsw.shutdown()
         try:
             self.assertRaises(TypeError, apsw.config)
