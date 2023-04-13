@@ -6016,9 +6016,6 @@ class APSW(unittest.TestCase):
 
         ### Detailed vfs testing
 
-        # xRandomness is tested first. The method is called once after sqlite initializes
-        # and only the default vfs is called.  Consequently we have a helper test method
-        # but it is only available when using testfixtures and the amalgamation
         self.db = None
         gc.collect()
 
