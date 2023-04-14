@@ -143,6 +143,17 @@ def exercise(example_code, expect_exception):
     if expect_exception:
         return
 
+    for query in ("select 3,4", "select 3; select 4", "select 3,4; select 4,5",
+        "select 3,4; select 5", "select 3"):
+        con.execute(query).get
+    con.executemany("select ?", [(i,) for i in range(10)]).get
+
+    con.execute("/* comment */").get
+
+    cur=con.cursor()
+    cur.execute("select 3").fetchall()
+    cur.get
+
     class Source:
 
         def Connect(self, *args):
