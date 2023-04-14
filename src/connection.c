@@ -4290,6 +4290,73 @@ fail:
   return res;
 }
 
+static PyObject *formatsqlvalue(PyObject *Py_UNUSED(self), PyObject *value);
+/** .. method:: pragma(name: str, value: Optional[SQLiteValue] = None) -> Any
+
+  Issues the pragma (with the value if supplied) and returns the result with
+  :attr:`the least amount of structure <Cursor.get>`.  For example
+  :code:`pragma("user_version")` will return just the number.
+
+  Pragmas do not support bindings, so this method is a convenient
+  alternative to composing SQL text.
+
+  * :ref:`Example <example_pragma>`
+*/
+static PyObject *
+Connection_pragma(Connection *self, PyObject *args, PyObject *kwds)
+{
+  const char *name = NULL;
+  PyObject *value = NULL;
+
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  {
+    static char *kwlist[] = {"name", "value", NULL};
+    Connection_pragma_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|O:" Connection_pragma_USAGE, kwlist, &name, &value))
+      return NULL;
+  }
+
+  PyObject *query = NULL, *value_str = NULL, *exec_args = NULL, *cursor = NULL, *res = NULL;
+  if (value)
+  {
+    PyObject *value_str = formatsqlvalue(NULL, value);
+    if (!value_str)
+      goto error;
+    const char *utf8 = PyUnicode_AsUTF8(value_str);
+    if (!utf8)
+      goto error;
+
+    /* the form name(value) is used not name=value because some
+       pragmas like index_info work the former way while as do all that
+       support = */
+    query = PyUnicode_FromFormat("pragma %s(%s)", name, utf8);
+  }
+  else
+    query = PyUnicode_FromFormat("pragma %s", name);
+  if (!query)
+    goto error;
+
+  exec_args = Py_BuildValue("(O)", query);
+  if (!exec_args)
+    goto error;
+
+  cursor = Connection_execute(self, exec_args, NULL);
+  if (!cursor)
+    goto error;
+
+  res = PyObject_GetAttrString(cursor, "get");
+
+error:
+  Py_XDECREF(query);
+  Py_XDECREF(value_str);
+  Py_XDECREF(exec_args);
+  Py_XDECREF(cursor);
+
+  return res;
+}
+
 /** .. method:: cache_stats(include_entries: bool = False) -> Dict[str, int]
 
 Returns information about the statement cache as dict.
@@ -5030,6 +5097,7 @@ static PyMethodDef Connection_methods[] = {
      Connection_create_window_function_DOC},
     {"vtab_config", (PyCFunction)Connection_vtab_config, METH_VARARGS | METH_KEYWORDS, Connection_vtab_config_DOC},
     {"vtab_on_conflict", (PyCFunction)Connection_vtab_on_conflict, METH_NOARGS, Connection_vtab_on_conflict_DOC},
+    {"pragma", (PyCFunction)Connection_pragma, METH_VARARGS | METH_KEYWORDS, Connection_pragma_DOC},
     {0, 0, 0, 0} /* Sentinel */
 };
 

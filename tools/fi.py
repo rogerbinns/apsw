@@ -154,6 +154,9 @@ def exercise(example_code, expect_exception):
     cur.execute("select 3").fetchall()
     cur.get
 
+    con.pragma("user_version")
+    con.pragma("user_version", 7)
+
     class Source:
 
         def Connect(self, *args):

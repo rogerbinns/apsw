@@ -4826,6 +4826,19 @@ class APSW(unittest.TestCase):
         cur.execute("select 3").fetchall()
         self.assertEqual(cur.get, None)
 
+    def testConnectionPragma(self):
+        "Connection.pragma"
+        self.assertRaises(TypeError, self.db.pragma)
+        self.assertRaises(TypeError, self.db.pragma, 3)
+        self.assertRaises(TypeError, self.db.pragma, "three", "four", "five")
+        self.assertRaises(TypeError, self.db.pragma, "three", 4 + 3j)
+        self.assertEqual(self.db.pragma("journal_mode"), "delete")
+        self.assertEqual(self.db.pragma("journal_mode", "wal"), "wal")
+        self.assertEqual(self.db.pragma("user_version"), 0)
+        self.db.pragma("user_version", 7)
+        self.assertEqual(self.db.pragma("user_version"), 7)
+        self.assertRaises(apsw.SQLError, self.db.pragma, "user_version", "abc\0def")
+
     def testSleep(self):
         "apsw.sleep"
         apsw.sleep(1)
