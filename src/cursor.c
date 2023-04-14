@@ -1688,24 +1688,23 @@ APSWCursor_expanded_sql(APSWCursor *self)
  Like :meth:`fetchall` but returns the data with the least amount of structure
  possible.
 
-.. list-table:: Some examples
-  :header-rows: 1
+ .. list-table:: Some examples
+    :header-rows: 1
 
-  * - Query
-    - Result
-  * - select 3
-    - 3
-  * - select 3,4
-    - (3, 4)
-  * - select 3; select 4
-    - [3, 4]
-  * - select 3,4; select 4,5
-    - [(3, 4), (4, 5)]
-  * - select 3,4; select 5
-    - [(3, 4), 5]
+    * - Query
+      - Result
+    * - select 3
+      - 3
+    * - select 3,4
+      - (3, 4)
+    * - select 3; select 4
+      - [3, 4]
+    * - select 3,4; select 4,5
+      - [(3, 4), (4, 5)]
+    * - select 3,4; select 5
+      - [(3, 4), 5]
 
-  Row tracers are not called when using this method.
-
+ Row tracers are not called when using this method.
 */
 
 static PyObject *

@@ -195,25 +195,22 @@ existence of tables and their columns, and doing that maintenance
 programmatically.  The easy way is to use `pragma user_version
 <https://sqlite.org/pragma.html#pragma_user_version>`__ as in this example::
 
-  def user_version(db):
-    return db.execute("pragma user_version").fetchall()[0][0]
-
   def ensure_schema(db):
-    if user_version(db)==0:
+    if db.pragma("user_version")==0:
       with db:
         db.execute("""
           CREATE TABLE IF NOT EXISTS foo(x,y,z);
           CREATE TABLE IF NOT EXISTS bar(x,y,z);
           PRAGMA user_version=1;""")
 
-    if user_version(db)==1:
+    if db.pragma("user_version"))==1:
       with db:
         db.execute("""
         CREATE TABLE IF NOT EXISTS baz(x,y,z);
         CREATE INDEX ....
         PRAGMA user_version=2;""")
 
-    if user_version(con)==2:
+    if db.pragma("user_version")==2:
       with db:
         db.execute("""
         ALTER TABLE .....

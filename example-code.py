@@ -185,6 +185,26 @@ with connection:
     # the query is run for each item in data
     connection.executemany(query, data)
 
+### pragma: Pragmas
+# SQLite has a `wide variety of pragmas <https://www.sqlite.org/pragma.html>`__ to control
+# the database configuration and library behaviour.  See the :doc:`tips` for maintaining
+# your schema.
+
+# WAL mode is good for write performance
+connection.pragma("journal_mode", "wal")
+
+# Foreign keys are off by default, so turn them on
+connection.pragma("foreign_keys", True)
+
+# You can use this to see if any other connection (including other processes) has
+# changed the database
+connection.pragma("data_version")
+
+# Useful at startup to detect some database corruption
+check = connection.pragma("integrity_check")
+if check != "ok":
+    print("Integrity check errors", check)
+
 ### exectrace: Tracing execution
 # You can trace execution of SQL statements.  See :ref:`more about
 # tracing <tracing>`.
@@ -562,7 +582,7 @@ connection.execute("insert into blobby values(1, zeroblob(10000))")
 # Or as a binding
 connection.execute("insert into blobby values(2, ?)", (apsw.zeroblob(20000), ))
 # Open a blob for writing.  We need to know the rowid
-rowid = connection.execute("select ROWID from blobby where x=1").fetchall()[0][0]
+rowid = connection.execute("select ROWID from blobby where x=1").get
 blob = connection.blobopen("main", "blobby", "y", rowid, True)
 blob.write(b"hello world")
 blob.seek(2000)

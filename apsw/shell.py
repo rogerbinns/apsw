@@ -1080,12 +1080,12 @@ Enter SQL statements terminated with a ";"
 
             comment("The values of various per-database settings")
             self.write(self.stdout,
-                       "PRAGMA page_size=" + str(self.db.execute("pragma page_size").fetchall()[0][0]) + ";\n")
-            comment("PRAGMA encoding='" + self.db.execute("pragma encoding").fetchall()[0][0] + "';\n")
+                       "PRAGMA page_size=" + str(self.db.pragma("page_size")) + ";\n")
+            comment("PRAGMA encoding='" + self.db.pragma("encoding") + "';\n")
             vac = {0: "NONE", 1: "FULL", 2: "INCREMENTAL"}
-            vacvalue = self.db.execute("pragma auto_vacuum").fetchall()[0][0]
+            vacvalue = self.db.pragma("auto_vacuum")
             comment("PRAGMA auto_vacuum=" + vac.get(vacvalue, str(vacvalue)) + ";\n")
-            comment("PRAGMA max_page_count=" + str(self.db.execute("pragma max_page_count").fetchall()[0][0]) +
+            comment("PRAGMA max_page_count=" + str(self.db.pragma("max_page_count")) +
                     ";\n")
             blank()
 
@@ -1213,7 +1213,7 @@ Enter SQL statements terminated with a ";"
                 blank()
 
             # user version pragma
-            uv = self.db.execute("pragma user_version").fetchall()[0][0]
+            uv = self.db.pragma("user_version")
             if uv:
                 comment(
                     "Your database may need this.  It is sometimes used to keep track of the schema version (eg Firefox does this)."
