@@ -1623,7 +1623,7 @@ APSWCursor_is_explain(APSWCursor *self)
   CHECK_USE(NULL);
   CHECK_CURSOR_CLOSED(NULL);
 
-  return PyLong_FromLong(sqlite3_stmt_isexplain(self->statement->vdbestatement));
+  return PyLong_FromLong((self->statement) ? sqlite3_stmt_isexplain(self->statement->vdbestatement) : 0);
 }
 
 /** .. attribute:: is_readonly
@@ -1641,7 +1641,7 @@ APSWCursor_is_readonly(APSWCursor *self)
   CHECK_USE(NULL);
   CHECK_CURSOR_CLOSED(NULL);
 
-  if (sqlite3_stmt_readonly(self->statement->vdbestatement))
+  if (!self->statement || sqlite3_stmt_readonly(self->statement->vdbestatement))
     Py_RETURN_TRUE;
   Py_RETURN_FALSE;
 }
