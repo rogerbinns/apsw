@@ -1385,6 +1385,17 @@ class Connection:
         Calls: `sqlite3_overload_function <https://sqlite.org/c3ref/overload_function.html>`__"""
         ...
 
+    def pragma(self, name: str, value: Optional[SQLiteValue] = None) -> Any:
+        """Issues the pragma (with the value if supplied) and returns the result with
+        :attr:`the least amount of structure <Cursor.get>`.  For example
+        :code:`pragma("user_version")` will return just the number.
+
+        Pragmas do not support bindings, so this method is a convenient
+        alternative to composing SQL text.
+
+        * :ref:`Example <example_pragma>`"""
+        ...
+
     def readonly(self, name: str) -> bool:
         """True or False if the named (attached) database was opened readonly or file
         permissions don't allow writing.  The main database is named "main".
@@ -1886,7 +1897,7 @@ class Cursor:
     """ Like :meth:`fetchall` but returns the data with the least amount of structure
      possible.
 
-    .. list-table:: Some more examples
+    .. list-table:: Some examples
       :header-rows: 1
 
       * - Query
@@ -1900,7 +1911,9 @@ class Cursor:
       * - select 3,4; select 4,5
         - [(3, 4), (4, 5)]
       * - select 3,4; select 5
-        - [(3, 4), 5]"""
+        - [(3, 4), 5]
+
+      Row tracers are not called when using this method."""
 
     def getconnection(self) -> Connection:
         """Returns the :attr:`connection` this cursor is using"""

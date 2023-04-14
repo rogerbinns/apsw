@@ -1607,6 +1607,25 @@
 } while(0)
 
 
+#define  Connection_pragma_DOC "pragma($self,name,value=None)\n--\n\nConnection.pragma(name: str, value: Optional[SQLiteValue] = None) -> Any\n\n" \
+"Issues the pragma (with the value if supplied) and returns the result with\n" \
+":attr:`the least amount of structure <Cursor.get>`.  For example\n" \
+":code:`pragma(\"user_version\")` will return just the number.\n" \
+"\n" \
+"Pragmas do not support bindings, so this method is a convenient\n" \
+"alternative to composing SQL text.\n" \
+"\n" \
+"* :ref:`Example <example_pragma>`\n" 
+
+#define Connection_pragma_USAGE "Connection.pragma(name: str, value: Optional[SQLiteValue] = None) -> Any"
+
+#define Connection_pragma_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(name), const char *)); \
+  assert(__builtin_types_compatible_p(typeof(value), PyObject *)); \
+  assert(value == NULL); \
+} while(0)
+
+
 #define  Connection_readonly_DOC "readonly($self,name)\n--\n\nConnection.readonly(name: str) -> bool\n\n" \
 "True or False if the named (attached) database was opened readonly or file\n" \
 "permissions don't allow writing.  The main database is named \"main\".\n" \
@@ -2308,7 +2327,7 @@
 " Like :meth:`fetchall` but returns the data with the least amount of structure\n" \
 " possible.\n" \
 "\n" \
-".. list-table:: Some more examples\n" \
+".. list-table:: Some examples\n" \
 "  :header-rows: 1\n" \
 "\n" \
 "  * - Query\n" \
@@ -2322,7 +2341,9 @@
 "  * - select 3,4; select 4,5\n" \
 "    - [(3, 4), (4, 5)]\n" \
 "  * - select 3,4; select 5\n" \
-"    - [(3, 4), 5]\n" 
+"    - [(3, 4), 5]\n" \
+"\n" \
+"  Row tracers are not called when using this method.\n" 
 
 #define  Cursor_getconnection_DOC "getconnection($self)\n--\n\nCursor.getconnection() -> Connection\n\n" \
 "Returns the :attr:`connection` this cursor is using\n" 
