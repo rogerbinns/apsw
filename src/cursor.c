@@ -1688,7 +1688,7 @@ APSWCursor_expanded_sql(APSWCursor *self)
  Like :meth:`fetchall` but returns the data with the least amount of structure
  possible.
 
-.. list-table:: Some more examples
+.. list-table:: Some examples
   :header-rows: 1
 
   * - Query
@@ -1703,6 +1703,8 @@ APSWCursor_expanded_sql(APSWCursor *self)
     - [(3, 4), (4, 5)]
   * - select 3,4; select 5
     - [(3, 4), 5]
+
+  Row tracers are not called when using this method.
 
 */
 
