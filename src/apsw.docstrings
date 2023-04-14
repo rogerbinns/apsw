@@ -58,12 +58,8 @@
 ":param op: A `configuration operation <https://sqlite.org/c3ref/c_config_chunkalloc.html>`_\n" \
 ":param args: Zero or more arguments as appropriate for *op*\n" \
 "\n" \
-"Many operations don't make sense from a Python program.  The\n" \
-"following configuration operations are supported: SQLITE_CONFIG_LOG,\n" \
-"SQLITE_CONFIG_SINGLETHREAD, SQLITE_CONFIG_MULTITHREAD,\n" \
-"SQLITE_CONFIG_SERIALIZED, SQLITE_CONFIG_URI, SQLITE_CONFIG_MEMSTATUS,\n" \
-"SQLITE_CONFIG_COVERING_INDEX_SCAN, SQLITE_CONFIG_PCACHE_HDRSZ,\n" \
-"SQLITE_CONFIG_PMASZ, and SQLITE_CONFIG_STMTJRNL_SPILL.\n" \
+"Some operations don't make sense from a Python program.  All the\n" \
+"remaining are supported.\n" \
 "\n" \
 "See :ref:`tips <diagnostics_tips>` for an example of how to receive\n" \
 "log messages (SQLITE_CONFIG_LOG)\n" \
@@ -991,8 +987,6 @@
 ":param op: A `configuration operation\n" \
 "  <https://sqlite.org/c3ref/c_dbconfig_enable_fkey.html>`__\n" \
 ":param args: Zero or more arguments as appropriate for *op*\n" \
-"\n" \
-"Only optiona that take an int and return one are implemented.\n" \
 "\n" \
 "Calls: `sqlite3_db_config <https://sqlite.org/c3ref/db_config.html>`__\n" 
 
@@ -2309,6 +2303,27 @@
 #define  Cursor_fetchone_DOC "fetchone($self)\n--\n\nCursor.fetchone() -> Optional[Any]\n\n" \
 "Returns the next row of data or None if there are no more rows.\n" 
 
+#define  Cursor_get_DOC ":type: Any\n" \
+"\n" \
+" Like :meth:`fetchall` but returns the data with the least amount of structure\n" \
+" possible.\n" \
+"\n" \
+".. list-table:: Some more examples\n" \
+"  :header-rows: 1\n" \
+"\n" \
+"  * - Query\n" \
+"    - Result\n" \
+"  * - select 3\n" \
+"    - 3\n" \
+"  * - select 3,4\n" \
+"    - (3, 4)\n" \
+"  * - select 3; select 4\n" \
+"    - [3, 4]\n" \
+"  * - select 3,4; select 4,5\n" \
+"    - [(3, 4), (4, 5)]\n" \
+"  * - select 3,4; select 5\n" \
+"    - [(3, 4), 5]\n" 
+
 #define  Cursor_getconnection_DOC "getconnection($self)\n--\n\nCursor.getconnection() -> Connection\n\n" \
 "Returns the :attr:`connection` this cursor is using\n" 
 
@@ -2619,7 +2634,9 @@
 
 #define  IndexInfo_set_aConstraintUsage_in_DOC "set_aConstraintUsage_in($self,which,filter_all)\n--\n\nIndexInfo.set_aConstraintUsage_in(which: int, filter_all: bool) -> None\n\n" \
 "If *which* is an *in* constraint, and *filter_all* is True then your :meth:`VTCursor.Filter`\n" \
-"method will have all of the values at once.\n" 
+"method will have all of the values at once.\n" \
+"\n" \
+"Calls: `sqlite3_vtab_in <https://sqlite.org/c3ref/vtab_in.html>`__\n" 
 
 #define IndexInfo_set_aConstraintUsage_in_filter_all_MSG  "argument 'filter_all' of IndexInfo.set_aConstraintUsage_in(which: int, filter_all: bool) -> None" 
 
@@ -2927,8 +2944,9 @@
 "\n" \
 ":param maxpathname: The maximum length of database name in bytes when\n" \
 "    represented in UTF-8.  If a pathname is passed in longer than\n" \
-"    this value then SQLite will not `be able to open it\n" \
-"    <https://sqlite.org/src/tktview/c060923a5422590b3734eb92eae0c94934895b68>`__.\n" \
+"    this value then SQLite will not `be able to open it.  If you are\n" \
+"    using a base, then a value of zero will use the value from base.\n" \
+"\n" \
 "\n" \
 ":raises ValueError: If *base* is not *None* and the named vfs is not\n" \
 "  currently registered.\n" \
@@ -3086,10 +3104,7 @@
 
 #define  VFS_xGetLastError_DOC "xGetLastError($self)\n--\n\nVFS.xGetLastError() -> Tuple[int, str]\n\n" \
 "This method is to return an integer error code and (optional) text describing\n" \
-"the last error that happened in this thread.\n" \
-"\n" \
-".. note:: SQLite 3.12 changed the semantics in an incompatible way from\n" \
-"     earlier versions.  You will need to rewrite earlier implementations.\n" 
+"the last error that happened in this thread.\n" 
 
 #define  VFS_xGetSystemCall_DOC "xGetSystemCall($self,name)\n--\n\nVFS.xGetSystemCall(name: str) -> Optional[int]\n\n" \
 "Returns a pointer for the current method implementing the named\n" \
@@ -3107,14 +3122,7 @@
 "calls in the vfs.  When called with None you should return the\n" \
 "name of the first system call.  In subsequent calls return the\n" \
 "name after the one passed in.  If name is the last system call\n" \
-"then return None.\n" \
-"\n" \
-".. note::\n" \
-"\n" \
-"  Because of internal SQLite implementation semantics memory will\n" \
-"  be leaked on each call to this function.  Consequently you\n" \
-"  should build up the list of call names once rather than\n" \
-"  repeatedly doing it.\n" 
+"then return None.\n" 
 
 #define VFS_xNextSystemCall_USAGE "VFS.xNextSystemCall(name: Optional[str]) -> Optional[str]"
 

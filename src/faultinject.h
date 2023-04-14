@@ -83,6 +83,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef allocfunccbinfo
 #undef apsw_strdup
 #undef connection_trace_and_exec
+#undef convert_column_to_pyobject
 #undef convert_value_to_pyobject
 #undef convertutf8string
 #undef get_window_function_context
@@ -1202,6 +1203,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res = (typeof (_res))18;                                                                                           \
     }                                                                                                                       \
     _res;                                                                                                                   \
+})
+#define convert_column_to_pyobject(...) \
+({                                                                                                                           \
+    __auto_type _res = 0 ? convert_column_to_pyobject(__VA_ARGS__) : 0;                                                      \
+                                                                                                                             \
+    _res = (typeof (_res))APSW_FaultInjectControl("convert_column_to_pyobject", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                             \
+    if ((typeof (_res))0x1FACADE == _res)                                                                                    \
+       _res = convert_column_to_pyobject(__VA_ARGS__);                                                                       \
+    else if ((typeof(_res))0x2FACADE == _res)                                                                                \
+    {                                                                                                                        \
+        convert_column_to_pyobject(__VA_ARGS__);                                                                             \
+        _res = (typeof (_res))18;                                                                                            \
+    }                                                                                                                        \
+    _res;                                                                                                                    \
 })
 #define convert_value_to_pyobject(...) \
 ({                                                                                                                          \

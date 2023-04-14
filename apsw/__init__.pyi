@@ -185,12 +185,8 @@ def config(op: int, *args: Any) -> None:
     """:param op: A `configuration operation <https://sqlite.org/c3ref/c_config_chunkalloc.html>`_
     :param args: Zero or more arguments as appropriate for *op*
 
-    Many operations don't make sense from a Python program.  The
-    following configuration operations are supported: SQLITE_CONFIG_LOG,
-    SQLITE_CONFIG_SINGLETHREAD, SQLITE_CONFIG_MULTITHREAD,
-    SQLITE_CONFIG_SERIALIZED, SQLITE_CONFIG_URI, SQLITE_CONFIG_MEMSTATUS,
-    SQLITE_CONFIG_COVERING_INDEX_SCAN, SQLITE_CONFIG_PCACHE_HDRSZ,
-    SQLITE_CONFIG_PMASZ, and SQLITE_CONFIG_STMTJRNL_SPILL.
+    Some operations don't make sense from a Python program.  All the
+    remaining are supported.
 
     See :ref:`tips <diagnostics_tips>` for an example of how to receive
     log messages (SQLITE_CONFIG_LOG)
@@ -923,8 +919,6 @@ class Connection:
         """:param op: A `configuration operation
           <https://sqlite.org/c3ref/c_dbconfig_enable_fkey.html>`__
         :param args: Zero or more arguments as appropriate for *op*
-
-        Only optiona that take an int and return one are implemented.
 
         Calls: `sqlite3_db_config <https://sqlite.org/c3ref/db_config.html>`__"""
         ...
@@ -1888,6 +1882,26 @@ class Cursor:
         """Returns the next row of data or None if there are no more rows."""
         ...
 
+    get: Any
+    """ Like :meth:`fetchall` but returns the data with the least amount of structure
+     possible.
+
+    .. list-table:: Some more examples
+      :header-rows: 1
+
+      * - Query
+        - Result
+      * - select 3
+        - 3
+      * - select 3,4
+        - (3, 4)
+      * - select 3; select 4
+        - [3, 4]
+      * - select 3,4; select 4,5
+        - [(3, 4), (4, 5)]
+      * - select 3,4; select 5
+        - [(3, 4), 5]"""
+
     def getconnection(self) -> Connection:
         """Returns the :attr:`connection` this cursor is using"""
         ...
@@ -2110,7 +2124,9 @@ class IndexInfo:
 
     def set_aConstraintUsage_in(self, which: int, filter_all: bool) -> None:
         """If *which* is an *in* constraint, and *filter_all* is True then your :meth:`VTCursor.Filter`
-        method will have all of the values at once."""
+        method will have all of the values at once.
+
+        Calls: `sqlite3_vtab_in <https://sqlite.org/c3ref/vtab_in.html>`__"""
         ...
 
     def set_aConstraintUsage_omit(self, which: int, omit: bool) -> None:
@@ -2335,8 +2351,9 @@ class VFS:
 
         :param maxpathname: The maximum length of database name in bytes when
             represented in UTF-8.  If a pathname is passed in longer than
-            this value then SQLite will not `be able to open it
-            <https://sqlite.org/src/tktview/c060923a5422590b3734eb92eae0c94934895b68>`__.
+            this value then SQLite will not `be able to open it.  If you are
+            using a base, then a value of zero will use the value from base.
+
 
         :raises ValueError: If *base* is not *None* and the named vfs is not
           currently registered.
@@ -2438,10 +2455,7 @@ class VFS:
 
     def xGetLastError(self) -> Tuple[int, str]:
         """This method is to return an integer error code and (optional) text describing
-        the last error that happened in this thread.
-
-        .. note:: SQLite 3.12 changed the semantics in an incompatible way from
-             earlier versions.  You will need to rewrite earlier implementations."""
+        the last error that happened in this thread."""
         ...
 
     def xGetSystemCall(self, name: str) -> Optional[int]:
@@ -2454,14 +2468,7 @@ class VFS:
         calls in the vfs.  When called with None you should return the
         name of the first system call.  In subsequent calls return the
         name after the one passed in.  If name is the last system call
-        then return None.
-
-        .. note::
-
-          Because of internal SQLite implementation semantics memory will
-          be leaked on each call to this function.  Consequently you
-          should build up the list of call names once rather than
-          repeatedly doing it."""
+        then return None."""
         ...
 
     def xOpen(self, name: Optional[Union[str,URIFilename]], flags: List[int]) -> VFSFile:
