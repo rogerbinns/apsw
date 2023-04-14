@@ -31,13 +31,13 @@ for filename in glob.glob("doc/*.rst"):
 
 # ok, so we know what was documented.  Now lets see what exists
 
-con = apsw.Connection(":memory:")
+con = apsw.Connection("")
 cur = con.cursor()
 cur.execute("create table x(y); insert into x values(x'abcdef1012');select * from x")
 blob = con.blobopen("main", "x", "y", con.last_insert_rowid(), 0)
 vfs = apsw.VFS("aname", "")
-vfsfile = apsw.VFSFile("", ":memory:",
-                       [apsw.SQLITE_OPEN_MAIN_DB | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_READWRITE, 0])
+vfsfile = apsw.VFSFile("", "testdb",
+                       [apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_READWRITE, 0])
 
 
 
