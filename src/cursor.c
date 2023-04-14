@@ -1682,6 +1682,99 @@ APSWCursor_expanded_sql(APSWCursor *self)
   return res;
 }
 
+/** .. attribute:: get
+ :type: Any
+
+ Like :meth:`fetchall` but returns the data with the least amount of structure
+ possible.
+
+.. list-table:: Some more examples
+  :header-rows: 1
+
+  * - Query
+    - Result
+  * - select 3
+    - 3
+  * - select 3,4
+    - (3, 4)
+  * - select 3; select 4
+    - [3, 4]
+  * - select 3,4; select 4,5
+    - [(3, 4), (4, 5)]
+  * - select 3,4; select 5
+    - [(3, 4), 5]
+
+*/
+
+static PyObject *
+APSWCursor_get(APSWCursor *self)
+{
+  PyObject *the_list = NULL, *the_row = NULL;
+  PyObject *step, *item;
+  int numcols, i;
+
+  CHECK_USE(NULL);
+  CHECK_CURSOR_CLOSED(NULL);
+
+  if (self->status == C_DONE)
+    Py_RETURN_NONE;
+
+  do
+  {
+    assert(self->status == C_ROW);
+    if (the_row)
+    {
+      assert(!the_list);
+      the_list = PyList_New(0);
+      if (!the_list)
+        goto error;
+      if (0 != PyList_Append(the_list, the_row))
+        goto error;
+      Py_CLEAR(the_row);
+    }
+    numcols = sqlite3_data_count(self->statement->vdbestatement);
+    if (numcols == 1)
+    {
+      INUSE_CALL(the_row = convert_column_to_pyobject(self->statement->vdbestatement, 0));
+      if (!the_row)
+        goto error;
+    }
+    else
+    {
+      the_row = PyTuple_New(numcols);
+      if (!the_row)
+        goto error;
+      for (i = 0; i < numcols; i++)
+      {
+        INUSE_CALL(item = convert_column_to_pyobject(self->statement->vdbestatement, i));
+        if (!item)
+          goto error;
+        PyTuple_SET_ITEM(the_row, i, item);
+      }
+    }
+    if (the_list)
+    {
+      if (0 != PyList_Append(the_list, the_row))
+        goto error;
+      Py_CLEAR(the_row);
+    }
+    step = APSWCursor_step(self);
+    if (step == NULL)
+      goto error;
+  } while (self->status != C_DONE);
+
+  if (the_list)
+    return the_list;
+  assert(the_row);
+  return the_row;
+
+error:
+  assert(PyErr_Occurred());
+  Py_CLEAR(the_list);
+  Py_CLEAR(the_row);
+  return NULL;
+}
+
 static PyMethodDef APSWCursor_methods[] = {
     {"execute", (PyCFunction)APSWCursor_execute, METH_VARARGS | METH_KEYWORDS,
      Cursor_execute_DOC},
@@ -1719,6 +1812,7 @@ static PyGetSetDef APSWCursor_getset[] = {
     {"exectrace", (getter)APSWCursor_get_exectrace_attr, (setter)APSWCursor_set_exectrace_attr, Cursor_exectrace_DOC},
     {"rowtrace", (getter)APSWCursor_get_rowtrace_attr, (setter)APSWCursor_set_rowtrace_attr, Cursor_rowtrace_DOC},
     {"connection", (getter)APSWCursor_getconnection_attr, NULL, Cursor_connection_DOC},
+    {"get", (getter)APSWCursor_get, NULL, Cursor_get_DOC},
     {NULL, NULL, NULL, NULL, NULL}};
 
 static PyTypeObject APSWCursorType = {

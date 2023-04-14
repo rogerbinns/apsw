@@ -6,6 +6,9 @@ Change History
 next
 ====
 
+Added :attr:`Cursor.get` returning query results with the
+least amount of structure.  (:issue:`389`)
+
 Ensure that all applicable options are implemented for
 :func:`apsw.config`, :meth:`Connection.config` and similar.
 (:issue:`431`)

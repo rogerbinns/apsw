@@ -4801,6 +4801,31 @@ class APSW(unittest.TestCase):
         self.db.config(apsw.SQLITE_DBCONFIG_RESET_DATABASE, 0)
         self.assertFalse(self.db.table_exists("main", "foo"))
 
+    def testCursorGet(self):
+        "Cursor.get"
+        for query, expected in  (
+            ("select 3,4", (3, 4)),
+             ("select 3; select 4", [3, 4]),
+               ("select 3,4; select 4,5", [(3, 4), (4, 5)]),
+            ("select 3,4; select 5", [(3, 4), 5]),
+              ("select 3", 3)):
+            self.assertEqual(self.db.execute(query).get, expected)
+
+        q = "select ?"
+        b = [(i,) for i in range(10)]
+        self.assertEqual(self.db.executemany(q, b).get, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+
+        self.assertEqual(self.db.execute("/* comment */").get, None)
+
+        # second query is deliberate syntax error
+        cur=self.db.execute("select 3 ; select 3 +")
+        self.assertRaises(apsw.SQLError, getattr, cur, "get")
+
+        # a query where all results are exhausted
+        cur=self.db.cursor()
+        cur.execute("select 3").fetchall()
+        self.assertEqual(cur.get, None)
+
     def testSleep(self):
         apsw.sleep(1)
         apsw.sleep(-1)
