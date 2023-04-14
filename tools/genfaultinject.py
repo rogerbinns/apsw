@@ -70,7 +70,7 @@ returns = {
     # return a pointer, NULL on failure
     "pointer":
     """
-            convert_value_to_pyobject getfunctionargs allocfunccbinfo
+            convert_value_to_pyobject convert_column_to_pyobject getfunctionargs allocfunccbinfo
             Call_PythonMethodV apsw_strdup convertutf8string
             Call_PythonMethod MakeExistingException
             get_window_function_context
