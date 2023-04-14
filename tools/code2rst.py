@@ -12,6 +12,7 @@ import tempfile
 import collections
 import copy
 import json
+import pathlib
 
 if len(sys.argv) != 5:
     print("You must supply sqlite version, docdb filename, input and output filenames", file=sys.stderr)
@@ -331,4 +332,4 @@ for i in range(len(op)):
         op2.append(op[i].rstrip())
 op = op2
 
-open(outfilename, "wt").write("\n".join(op) + "\n")
+pathlib.Path(outfilename).write_text("\n".join(op) + "\n")

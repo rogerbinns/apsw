@@ -27,6 +27,7 @@ import apsw
 import urllib.request
 import collections
 import copy
+import pathlib
 
 from typing import Union, List
 
@@ -313,7 +314,7 @@ def analyze_signature(s: str) -> List[dict]:
 
 def check_and_update(symbol: str, code: str):
     for fn in glob.glob("src/*.c"):
-        orig = open(fn, "r").read()
+        orig = pathlib.Path(fn).read_text()
         if symbol not in orig:
             continue
         return check_and_update_file(fn, symbol, code)
@@ -322,7 +323,7 @@ def check_and_update(symbol: str, code: str):
 
 
 def check_and_update_file(filename: str, symbol: str, code: str):
-    lines = open(filename, "r").read().split("\n")
+    lines = pathlib.Path(filename).read_text().split("\n")
     insection = False
     for lineno, line in enumerate(lines):
         if line.strip() == "{":
@@ -344,9 +345,9 @@ def check_and_update_file(filename: str, symbol: str, code: str):
 
 
 def replace_if_different(filename: str, contents: str) -> None:
-    if not os.path.exists(filename) or open(filename).read() != contents:
+    if not os.path.exists(filename) or pathlib.Path(filename).read_text() != contents:
         print(f"{ 'Creating' if not os.path.exists(filename) else 'Updating' } { filename }")
-        open(filename, "w").write(contents)
+        pathlib.Path(filename).write_text(contents)
 
 
 # Python 'int' can be different C sizes (int32, int64 etc) so we override with more
@@ -540,13 +541,14 @@ def do_argparse(item):
                 pass
         elif param["type"] in {
                 "PyObject", "Any", "Optional[type[BaseException]]", "Optional[BaseException]",
-                "Optional[types.TracebackType]", "Optional[VTModule]"
+                "Optional[types.TracebackType]", "Optional[VTModule]", "Optional[SQLiteValue]"
         }:
             type = "PyObject *"
             kind = "O"
             if param["default"]:
-                breakpoint()
-                pass
+                if param["default"] != "None":
+                    breakpoint()
+                default_check = f"{ pname } == NULL"
         elif param["type"] == "bytes":
             type = "Py_buffer"
             kind = "y*"
@@ -843,7 +845,7 @@ if __name__ == '__main__':
     items = process_docdb(docdb)
     get_all_exc_doc()
 
-    allcode = "\n".join(open(fn).read() for fn in glob.glob("src/*.c"))
+    allcode = "\n".join(pathlib.Path(fn).read_text() for fn in glob.glob("src/*.c"))
 
     missing = []
 
