@@ -85,7 +85,7 @@ returns = {
             PyIter_Next PyList_GetItem PyList_SetItem PyLong_FromVoidPtr PyMapping_GetItemString PyNumber_Float
             PyNumber_Long PySequence_Fast PySequence_List PySequence_SetItem PyObject_CallFunction
             PyObject_CallMethod PyFrame_New PyStructSequence_NewType PyStructSequence_New
-            PyMem_Realloc
+            PyMem_Realloc PyUnicode_FromFormat
             """.split(),
     # numeric return
     "sqlite":

@@ -73,6 +73,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef PyType_Ready
 #undef PyUnicode_AsUTF8
 #undef PyUnicode_AsUTF8AndSize
+#undef PyUnicode_FromFormat
 #undef PyUnicode_FromString
 #undef PyUnicode_FromStringAndSize
 #undef PyUnicode_New
@@ -1052,6 +1053,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res = (typeof (_res))18;                                                                                         \
     }                                                                                                                     \
     _res;                                                                                                                 \
+})
+#define PyUnicode_FromFormat(...) \
+({                                                                                                                     \
+    __auto_type _res = 0 ? PyUnicode_FromFormat(__VA_ARGS__) : 0;                                                      \
+                                                                                                                       \
+    _res = (typeof (_res))APSW_FaultInjectControl("PyUnicode_FromFormat", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                       \
+    if ((typeof (_res))0x1FACADE == _res)                                                                              \
+       _res = PyUnicode_FromFormat(__VA_ARGS__);                                                                       \
+    else if ((typeof(_res))0x2FACADE == _res)                                                                          \
+    {                                                                                                                  \
+        PyUnicode_FromFormat(__VA_ARGS__);                                                                             \
+        _res = (typeof (_res))18;                                                                                      \
+    }                                                                                                                  \
+    _res;                                                                                                              \
 })
 #define PyUnicode_FromString(...) \
 ({                                                                                                                     \
