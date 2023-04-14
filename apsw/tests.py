@@ -4827,6 +4827,7 @@ class APSW(unittest.TestCase):
         self.assertEqual(cur.get, None)
 
     def testSleep(self):
+        "apsw.sleep"
         apsw.sleep(1)
         apsw.sleep(-1)
         self.assertRaises(OverflowError, apsw.sleep, 2_500_000_000)
