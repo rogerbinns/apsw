@@ -196,25 +196,26 @@ programmatically.  The easy way is to use `pragma user_version
 <https://sqlite.org/pragma.html#pragma_user_version>`__ as in this example::
 
   def ensure_schema(db):
-    if db.pragma("user_version")==0:
+    # a new database starts at user_version 0
+    if db.pragma("user_version") == 0:
       with db:
         db.execute("""
           CREATE TABLE IF NOT EXISTS foo(x,y,z);
           CREATE TABLE IF NOT EXISTS bar(x,y,z);
-          PRAGMA user_version=1;""")
+          PRAGMA user_version = 1;""")
 
-    if db.pragma("user_version"))==1:
+    if db.pragma("user_version") == 1:
       with db:
         db.execute("""
         CREATE TABLE IF NOT EXISTS baz(x,y,z);
         CREATE INDEX ....
-        PRAGMA user_version=2;""")
+        PRAGMA user_version = 2;""")
 
-    if db.pragma("user_version")==2:
+    if db.pragma("user_version") == 2:
       with db:
         db.execute("""
         ALTER TABLE .....
-        PRAGMA user_version=3;""")
+        PRAGMA user_version = 3;""")
 
 This approach will automatically upgrade the schema as you expect.
 You can also use `pragma application_id
