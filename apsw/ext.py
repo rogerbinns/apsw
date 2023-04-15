@@ -1195,6 +1195,7 @@ def query_info(db: apsw.Connection,
             "bindings": bindings,
             "is_explain": cursor.is_explain,
             "is_readonly": cursor.is_readonly,
+            "has_vdbe": cursor.has_vdbe,
             "description": cursor.getdescription(),
             "description_full": None,
         })
@@ -1325,6 +1326,8 @@ class QueryDetails:
     ":attr:`Cursor.is_explain <apsw.Cursor.is_explain>`"
     is_readonly: bool
     ":attr:`Cursor.is_readonly <apsw.Cursor.is_readonly>`"
+    has_vdbe: bool
+    ":attr:`Cursor.has_vdbe <apsw.Cursor.has_vdbe>`"
     description: Tuple[Tuple[str, str], ...]
     ":meth:`Cursor.getdescription <apsw.Cursor.getdescription>`"
     description_full: Optional[Tuple[Tuple[str, str, str, str, str], ...]]

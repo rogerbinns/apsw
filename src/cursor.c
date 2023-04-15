@@ -1646,6 +1646,24 @@ APSWCursor_is_readonly(APSWCursor *self)
   Py_RETURN_FALSE;
 }
 
+/** .. attribute:: has_vdbe
+  :type: bool
+
+  `True` if the SQL can be evaluated.  Comments have nothing to
+   evaluate, and so are `False`.
+*/
+static PyObject *
+APSWCursor_has_vdbe(APSWCursor *self)
+{
+  CHECK_USE(NULL);
+  CHECK_CURSOR_CLOSED(NULL);
+
+  return Py_NewRef(
+      (self->statement && self->statement->vdbestatement)
+          ? Py_True
+          : Py_False);
+}
+
 /** .. attribute:: expanded_sql
   :type: str
 
@@ -1809,6 +1827,7 @@ static PyGetSetDef APSWCursor_getset[] = {
 #endif
     {"is_explain", (getter)APSWCursor_is_explain, NULL, Cursor_is_explain_DOC, NULL},
     {"is_readonly", (getter)APSWCursor_is_readonly, NULL, Cursor_is_readonly_DOC, NULL},
+    {"has_vdbe", (getter)APSWCursor_has_vdbe, NULL, Cursor_has_vdbe_DOC, NULL},
     {"expanded_sql", (getter)APSWCursor_expanded_sql, NULL, Cursor_expanded_sql_DOC, NULL},
     {"exectrace", (getter)APSWCursor_get_exectrace_attr, (setter)APSWCursor_set_exectrace_attr, Cursor_exectrace_DOC},
     {"rowtrace", (getter)APSWCursor_get_rowtrace_attr, (setter)APSWCursor_set_rowtrace_attr, Cursor_rowtrace_DOC},

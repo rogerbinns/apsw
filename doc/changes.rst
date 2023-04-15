@@ -12,6 +12,9 @@ strings, and get results. (:issue:`432`)
 Added :attr:`Cursor.get` returning query results with the
 least amount of structure.  (:issue:`389`)
 
+Fixed execution tracers should return comment text for comment
+only queries, and add :attr:`Cursor.has_vdbe`. (:issue:`433`)
+
 Ensure that all applicable options are implemented for
 :func:`apsw.config`, :meth:`Connection.config` and similar.
 (:issue:`431`)

@@ -271,7 +271,7 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
   statement->uses = 1;
   memcpy(&statement->options, options, sizeof(APSWStatementOptions));
 
-  if (tail == orig_tail && !statementcache_hasmore(statement))
+  if (vdbestatement && tail == orig_tail && !statementcache_hasmore(statement))
   {
     /* no subsequent queries, so use sqlite's copy of the utf8
        providing we didn't grab additional whitespace */
