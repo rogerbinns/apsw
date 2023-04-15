@@ -6,8 +6,8 @@ Change History
 next
 ====
 
-Added :meth:`Connection.pragma` to execute pragmas, not format query
-strings, and get results. (:issue:`432`)
+Added :meth:`Connection.pragma` to execute pragmas
+and get results. (:issue:`432`)
 
 Added :attr:`Cursor.get` returning query results with the
 least amount of structure.  (:issue:`389`)
