@@ -2324,26 +2324,26 @@
 
 #define  Cursor_get_DOC ":type: Any\n" \
 "\n" \
-" Like :meth:`fetchall` but returns the data with the least amount of structure\n" \
-" possible.\n" \
+"Like :meth:`fetchall` but returns the data with the least amount of structure\n" \
+"possible.\n" \
 "\n" \
 ".. list-table:: Some examples\n" \
-"  :header-rows: 1\n" \
+"   :header-rows: 1\n" \
 "\n" \
-"  * - Query\n" \
-"    - Result\n" \
-"  * - select 3\n" \
-"    - 3\n" \
-"  * - select 3,4\n" \
-"    - (3, 4)\n" \
-"  * - select 3; select 4\n" \
-"    - [3, 4]\n" \
-"  * - select 3,4; select 4,5\n" \
-"    - [(3, 4), (4, 5)]\n" \
-"  * - select 3,4; select 5\n" \
-"    - [(3, 4), 5]\n" \
+"   * - Query\n" \
+"     - Result\n" \
+"   * - select 3\n" \
+"     - 3\n" \
+"   * - select 3,4\n" \
+"     - (3, 4)\n" \
+"   * - select 3; select 4\n" \
+"     - [3, 4]\n" \
+"   * - select 3,4; select 4,5\n" \
+"     - [(3, 4), (4, 5)]\n" \
+"   * - select 3,4; select 5\n" \
+"     - [(3, 4), 5]\n" \
 "\n" \
-"  Row tracers are not called when using this method.\n" 
+"Row tracers are not called when using this method.\n" 
 
 #define  Cursor_getconnection_DOC "getconnection($self)\n--\n\nCursor.getconnection() -> Connection\n\n" \
 "Returns the :attr:`connection` this cursor is using\n" 
@@ -2417,6 +2417,11 @@
 ".. seealso::\n" \
 "\n" \
 "  * :ref:`tracing`\n" 
+
+#define  Cursor_has_vdbe_DOC ":type: bool\n" \
+"\n" \
+"`True` if the SQL can be evaluated.  Comments have nothing to\n" \
+" evaluate, and so are `False`.\n" 
 
 #define  Cursor_is_explain_DOC ":type: int\n" \
 "\n" \
