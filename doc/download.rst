@@ -1,5 +1,5 @@
-Download
-********
+Download and Install
+********************
 
 PyPI/pip
 ========
@@ -46,7 +46,7 @@ See the :ref:`recommended <recommended_build>` way to build or all the
   <https://github.com/rogerbinns/apsw/releases/download/3.41.2.0/apsw-3.41.2.0.zip>`__
   (Source, includes this HTML Help)
 
-* `apsw-3.41.2.0-sigs.zip 
+* `apsw-3.41.2.0-sigs.zip
   <https://github.com/rogerbinns/apsw/releases/download/3.41.2.0/apsw-3.41.2.0-sigs.zip>`__
   GPG signatures for all files
 
