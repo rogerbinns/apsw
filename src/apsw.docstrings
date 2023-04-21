@@ -228,7 +228,9 @@
 "\n" \
 "Calls: `sqlite3_memory_used <https://sqlite.org/c3ref/memory_highwater.html>`__\n" 
 
-#define  Apsw_no_change_DOC "A sentinel value used to indicate no change in a value when\n" \
+#define  Apsw_no_change_DOC ":type: object\n" \
+"\n" \
+"A sentinel value used to indicate no change in a value when\n" \
 "used with :meth:`VTCursor.ColumnNoChange` and\n" \
 ":meth:`VTTable.UpdateChangeRow`\n" 
 
@@ -3295,19 +3297,7 @@
 "You are using named bindings, but not all bindings are named.  You should either use entirely the\n" \
 "named style or entirely numeric (unnamed) style::\n" \
 "\n" \
-"   cursor.execute(\"select * from foo where x=:name and y=?\")\n" \
-"\n" \
-".. note::\n" \
-"\n" \
-"   It is not considered an error to have missing keys in a dictionary. For example this is perfectly valid::\n" \
-"\n" \
-"        cursor.execute(\"insert into foo values($a,:b,$c)\", {'a': 1})\n" \
-"\n" \
-"   *b* and *c* are not in the dict.  For missing keys, None/NULL\n" \
-"   will be used. This is so you don't have to add lots of spurious\n" \
-"   values to the supplied dict. If your schema requires every column\n" \
-"   have a value, then SQLite will generate an error due to some\n" \
-"   values being None/NULL so that case will be caught.\n" 
+"   cursor.execute(\"select * from foo where x=:name and y=?\")\n" 
 
 #define  BusyError_exc_DOC "*SQLITE_BUSY*.  The database file is locked.  Use\n" \
 ":meth:`Connection.setbusytimeout` to change how long SQLite waits\n" \
@@ -3325,9 +3315,7 @@
 #define  ConstraintError_exc_DOC "*SQLITE_CONSTRAINT*. Abort due to `constraint\n" \
 "<https://sqlite.org/lang_createtable.html>`_ violation.  This\n" \
 "would happen if the schema required a column to be within a specific\n" \
-"range.  If you have multiple constraints, you `can't tell\n" \
-"<https://sqlite.org/src/tktview/23b212820161c6599cbf414aa99bf8a5bfa5e7a3>`__\n" \
-"which one was the cause.\n" 
+"range.\n" 
 
 #define  CorruptError_exc_DOC "*SQLITE_CORRUPT*.  The database disk image appears to be a\n" \
 "SQLite database but the values inside are inconsistent.\n" 
@@ -3350,11 +3338,18 @@
 "         <https://sqlite.org/rescode.html>`_ turned on.\n" \
 "         This attribute includes the detailed code.\n" \
 "\n" \
+"         As an example, if SQLite issued a read request and the system\n" \
+"         returned less data than expected then :attr:`~Error.result`\n" \
+"         would have the value *SQLITE_IOERR* while\n" \
+"         :attr:`~Error.extendedresult` would have the value\n" \
+"         *SQLITE_IOERR_SHORT_READ*.\n" \
+"\n" \
 ".. attribute:: Error.error_offset\n" \
 "\n" \
 "        The location of the error in the SQL when encoded in UTF-8.\n" \
 "        The value is from `sqlite3_error_offset\n" \
-"        <https://www.sqlite.org/c3ref/errcode.html>`__.\n" 
+"        <https://www.sqlite.org/c3ref/errcode.html>`__, and will be\n" \
+"        `-1` when a specific token in the input is not the cause.\n" 
 
 #define  ExecTraceAbort_exc_DOC "The :ref:`execution tracer <executiontracer>` returned False so\n" \
 "execution was aborted.\n" 
