@@ -1855,6 +1855,7 @@ PyInit_apsw(void)
 #endif
 
   /** .. attribute:: no_change
+    :type: object
 
     A sentinel value used to indicate no change in a value when
     used with :meth:`VTCursor.ColumnNoChange` and
