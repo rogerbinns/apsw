@@ -347,7 +347,7 @@ def memoryused() -> int:
     Calls: `sqlite3_memory_used <https://sqlite.org/c3ref/memory_highwater.html>`__"""
     ...
 
-no_change: type 
+no_change: type
 """A sentinel value used to indicate no change in a value when
 used with :meth:`VTCursor.ColumnNoChange` and
 :meth:`VTTable.UpdateChangeRow`"""
