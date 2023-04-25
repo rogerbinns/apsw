@@ -31,6 +31,14 @@ libraries = []
 ## End of customizations
 ##
 
+project_urls = {
+    "Changelog": "http://rogerbinns.github.io/apsw/changes.html",
+    "Documentation": "https://rogerbinns.github.io/apsw/",
+    "Issue Tracker": "https://github.com/rogerbinns/apsw/issues",
+    "Code": "https://github.com/rogerbinns/apsw",
+    "Example": "https://rogerbinns.github.io/apsw/example.html"
+}
+
 
 # python 2 and 3 print equivalent
 def write(*args):
@@ -815,6 +823,7 @@ if __name__ == '__main__':
         author="Roger Binns",
         author_email="rogerb@rogerbinns.com",
         url="https://github.com/rogerbinns/apsw/",
+        project_urls = project_urls,
         classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
