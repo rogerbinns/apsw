@@ -9106,36 +9106,6 @@ shell.write(shell.stdout, "hello world\\n")
         for f in fh:
             f.close()
 
-    # This one uses the coverage module
-    def _testShellWithCoverage(self):
-        "Check Shell functionality (with coverage)"
-        # We currently allow coverage module to not exist which helps
-        # with debugging
-        try:
-            import coverage
-        except ImportError:
-            coverage = None
-
-        import importlib.util
-        # I had problems with the compiled bytecode being around
-        for suff in "c", "o":
-            try:
-                os.remove("apsw/shell.py" + suff)
-            except:
-                pass
-
-        spec = importlib.util.spec_from_file_location("shell_coverage", "apsw/shell.py")
-        module = importlib.util.module_from_spec(spec)
-        sys.modules[module.__name__] = module
-        if coverage: coverage.start()
-        spec.loader.exec_module(module)
-        try:
-            self._originaltestShell(shellclass=module.Shell)
-        finally:
-            if coverage:
-                coverage.stop()
-                coverage.annotate(morfs=[module])
-                os.rename("apsw/shell.py,cover", "shell.py.gcov")
 
     # Note that faults fire only once, so there is no need to reset
     # them.  The testing for objects bigger than 2GB is done in
