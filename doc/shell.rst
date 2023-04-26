@@ -71,8 +71,8 @@ autoimport`) to get more detailed information.
   .import FILE TABLE            Imports separated data from FILE into TABLE
   .indices TABLE                Lists all indices on table TABLE
   .load FILE ?ENTRY?            Loads a SQLite extension library
-  .mode MODE ?TABLE?            Sets output mode to one of column columns csv html
-                                insert json line lines list python tabs tcl
+  .mode MODE ?OPTIONS?          Sets output mode to one of box column columns csv
+                                html insert json line lines list python tabs tcl
   .nullvalue STRING             Print STRING in place of null values
   .open ?OPTIONS? ?FILE?        Closes existing database and opens a different one
   .output FILENAME              Send output to FILENAME (or stdout)

@@ -10,8 +10,12 @@ import textwrap
 import time
 import codecs
 import base64
+import argparse
+import contextlib
+import io
 
 from typing import TextIO
+
 
 class Shell:
     """Implements a SQLite shell
@@ -106,6 +110,19 @@ class Shell:
         self.stdout = stdout
         self._original_stdout = stdout
         self.stderr = stderr
+
+        # default to qbox output
+        if self._using_a_terminal() and hasattr(self, "output_box"):
+            self.output = self.output_box
+            self.box_options = {
+                "quote": False,
+                "string_sanitize": 1,
+                "null": "NULL",
+                "truncate": 4096,
+                "text_width": 0,
+                "use_unicode": True
+            }
+
         # we don't become interactive until the command line args are
         # successfully parsed and acted upon
         self.interactive = None
@@ -128,8 +145,11 @@ class Shell:
                 raise
 
         if self.interactive is None:
-            self.interactive = getattr(self.stdin, "isatty", False) and self.stdin.isatty() and getattr(
-                self.stdout, "isatty", False) and self.stdout.isatty()
+            self.interactive = self._using_a_terminal()
+
+    def _using_a_terminal(self):
+        return getattr(self.stdin, "isatty", False) and self.stdin.isatty() and getattr(self.stdout, "isatty",
+                                                                                        False) and self.stdout.isatty()
 
     def _ensure_db(self):
         "The database isn't opened until first use.  This function ensures it is now open."
@@ -663,6 +683,45 @@ OPTIONS include:
             fmt = lambda x: self.colour.colour_value(x, self._fmt_c_string(x))
         self.write(self.stdout, self.separator.join([fmt(l) for l in line]) + "\n")
 
+    _fqt_kwargs = None
+
+    def output_box(self, column_names, rows):
+        "Outputs using line drawing and auto sizing columns"
+        if self._fqt_kwargs is None:
+            # figure out default args
+            import inspect
+            sig = inspect.signature(apsw.ext.format_query_table)
+            self._fqt_kwargs = {
+                k: v.default
+                for k, v in sig.parameters.items()
+                if v.default is not inspect.Signature.empty and k not in {"db", "query", "bindings"}
+            }
+        kwargs = self._fqt_kwargs.copy()
+        kwargs.update(self.box_options)
+        if kwargs["text_width"] < 1:
+            kwargs["text_width"] = 80
+            if self.interactive:
+                try:
+                    kwargs["text_width"] = os.get_terminal_size(self.stdout.fileno()).columns
+                except Exception:
+                    pass
+
+        kwargs.update({"colour": self.colour != self._colours["off"]})
+
+        self.stdout.write(apsw.ext.format_query_table._format_table(column_names, rows, **kwargs))
+
+    output_box.all_at_once = True
+
+    def output_table(self):
+        "Outputs using ascii line drawing and strongly sanitized text"
+        # this function isn't actually called - output_box is used
+        1 / 0
+
+    def output_qbox(self):
+        "Outputs using line drawing and auto sizing columns quoting values"
+        # this function isn't actually called - output_box is used
+        1 / 0
+
     def _output_summary(self, summary):
         # internal routine to output a summary line or two
         self.write(self.stdout, self.colour.summary + summary + self.colour.summary_)
@@ -739,57 +798,81 @@ Enter SQL statements terminated with a ";"
     def handle_exception(self):
         """Handles the current exception, printing a message to stderr as appropriate.
         It will reraise the exception if necessary (eg if bail is true)"""
-        eclass, eval, etb = sys.exc_info()  # py2&3 compatible way of doing this
+        eclass, eval, etb = sys.exc_info()
+
         if isinstance(eval, SystemExit):
             eval._handle_exception_saw_this = True
             raise
 
-        self._out_colour()
-        self.write(self.stderr, self.colour.error)
+        if not getattr(eval, "_handle_exception_saw_this", False):
+            self._out_colour()
+            self.write(self.stderr, self.colour.error)
 
-        if isinstance(eval, KeyboardInterrupt):
-            self.handle_interrupt()
-            text = "Interrupted"
-        else:
-            text = str(eval)
+            if isinstance(eval, KeyboardInterrupt):
+                self.handle_interrupt()
+                text = "Interrupted"
+            else:
+                text = str(eval)
 
-        if not text.endswith("\n"):
-            text = text + "\n"
+            if not text.endswith("\n"):
+                text = text + "\n"
 
-        if len(self._input_descriptions):
-            for i in range(len(self._input_descriptions)):
-                if i == 0:
-                    pref = "At "
-                else:
-                    pref = " " * i + "From "
-                self.write(self.stderr, pref + self._input_descriptions[i] + "\n")
+            if len(self._input_descriptions):
+                for i in range(len(self._input_descriptions)):
+                    if i == 0:
+                        pref = "At "
+                    else:
+                        pref = " " * i + "From "
+                    self.write(self.stderr, pref + self._input_descriptions[i] + "\n")
 
-        self.write(self.stderr, text)
-        if self.exceptions:
-            stack = []
-            while etb:
-                stack.append(etb.tb_frame)
-                etb = etb.tb_next
+            self.write(self.stderr, text)
+            if self.exceptions:
+                stack = []
+                while etb:
+                    stack.append(etb.tb_frame)
+                    etb = etb.tb_next
 
-            for frame in stack:
-                self.write(
-                    self.stderr,
-                    "\nFrame %s in %s at line %d\n" % (frame.f_code.co_name, frame.f_code.co_filename, frame.f_lineno))
-                vars = list(frame.f_locals.items())
-                vars.sort()
-                for k, v in vars:
-                    try:
-                        v = repr(v)[:80]
-                    except:
-                        v = "<Unable to convert to string>"
-                    self.write(self.stderr, "%10s = %s\n" % (k, v))
-            self.write(self.stderr, "\n%s: %s\n" % (eclass, repr(eval)))
+                for frame in stack:
+                    self.write(
+                        self.stderr, "\nFrame %s in %s at line %d\n" %
+                        (frame.f_code.co_name, frame.f_code.co_filename, frame.f_lineno))
+                    vars = list(frame.f_locals.items())
+                    vars.sort()
+                    for k, v in vars:
+                        try:
+                            v = repr(v)[:80]
+                        except:
+                            v = "<Unable to convert to string>"
+                        self.write(self.stderr, "%10s = %s\n" % (k, v))
+                self.write(self.stderr, "\n%s: %s\n" % (eclass, repr(eval)))
 
-        self.write(self.stderr, self.colour.error_)
+            self.write(self.stderr, self.colour.error_)
 
         eval._handle_exception_saw_this = True
         if self.bail:
             raise
+
+    def _query_details(self, sql, bindings):
+        "Internal routine to iterate over statements"
+        # The return from this would be way better as a dataclass
+        # but Py 3.6 doesn't have them
+        cur = self.db.cursor()
+        saved = sql
+
+        def et(cursor, statement, bindings):
+            nonlocal saved
+            saved = statement
+            return False
+
+        cur.exectrace = et
+
+        try:
+            cur.execute(sql, bindings)
+        except apsw.ExecTraceAbort:
+            pass
+        except apsw.Error as e:
+            return (sql[:len(saved)], sql[len(saved):], str(e), e.error_offset, e)
+        return (sql[:len(saved)], sql[len(saved):], None, None)
 
     def process_sql(self, sql, bindings=None, internal=False, summary=None):
         """Processes SQL text consisting of one or more statements
@@ -808,59 +891,67 @@ Enter SQL statements terminated with a ";"
           printed after the last row.  An example usage is the .find
           command which shows table names.
         """
-        cur = self.db.cursor()
-        # we need to know when each new statement is executed
-        state = {'newsql': True, 'timing': None}
 
-        def et(cur, sql, bindings):
-            state['newsql'] = True
-            # if time reporting, do so now
-            if not internal and self.timer:
-                if state['timing']:
-                    self.display_timing(state['timing'], self.get_resource_usage())
-            # print statement if echo is on
-            if not internal and self.echo:
-                # ? should we strip leading and trailing whitespace? backslash quote stuff?
-                if bindings:
-                    self.write(self.stderr, "%s [%s]\n" % (sql, bindings))
-                else:
-                    self.write(self.stderr, sql + "\n")
-            # save resource from beginning of command (ie don't include echo time above)
-            if not internal and self.timer:
-                state['timing'] = self.get_resource_usage()
-            return True
+        def fixws(s: str):
+            return re.sub(r"\s", " ", s, flags=re.UNICODE)
 
-        cur.exectrace = et
-        # processing loop
-        try:
-            for row in cur.execute(sql, bindings):
-                if state['newsql']:
-                    # summary line?
+        def fmt_sql(s):
+            s = s.strip()
+            if len(s) > 4096:
+                s = s[:4096] + "..."
+            return s
+
+        while sql.strip():
+            qd = self._query_details(sql, bindings)
+            sql = qd[1]
+            if not internal:
+                if self.echo:
+                    if bindings:
+                        self.write(self.stderr, "%s [%s]\n" % (fmt_sql(qd[0]), bindings))
+                    else:
+                        self.write(self.stderr, fmt_sql(qd[0]) + "\n")
+            if qd[2]:
+                self.write(self.stderr, f"{ self.colour.error }{ qd[2] }{ self.colour.error_}\n")
+                if qd[3] >= 0:
+                    offset = qd[3]
+                    query = qd[0].encode("utf8")
+                    before, after = fixws(query[:offset][-35:].decode("utf8")), \
+                        fixws(query[offset:][:35].decode("utf8"))
+                    print("  ", before + after, file=self.stderr)
+                    print("   " + (" " * len(before)) + "^--- error here", file=self.stderr)
+                    qd[4]._handle_exception_saw_this = True
+                    raise qd[4]
+            timing_start = self.get_resource_usage()
+
+            column_names = None
+            rows = [] if getattr(self.output, "all_at_once", False) else None
+
+            cur = self.db.cursor()
+            if self.db.exectrace:
+                cur.exectrace = lambda *args: True
+            if self.db.rowtrace:
+                cur.rowtrace = lambda x, y: y
+
+            for row in cur.execute(qd[0], bindings):
+                if column_names is None:
+                    column_names = [h for h, d in cur.getdescription()]
                     if summary:
                         self._output_summary(summary[0])
-                    # output a header always
-                    cols = [h for h, d in cur.getdescription()]
-                    self.output(True, cols)
-                    state['newsql'] = False
-                self.output(False, row)
-            if not state['newsql'] and summary:
-                self._output_summary(summary[1])
-        except:
-            # If echo is on and the sql to execute is a syntax error
-            # then the exec tracer won't have seen it so it won't be
-            # printed and the user will be wondering exactly what sql
-            # had the error.  We look in the traceback and deduce if
-            # the error was happening in a prepare or not.
-            if not internal and self.echo:
-                tb = sys.exc_info()[2]
-                last = None
-                while tb:
-                    last = tb.tb_frame
-                    tb = tb.tb_next
-            raise
+                    if rows is None:
+                        self.output(True, column_names)
+                if rows is None:
+                    self.output(False, row)
+                else:
+                    rows.append(list(row))
 
-        if not internal and self.timer:
-            self.display_timing(state['timing'], self.get_resource_usage())
+            if column_names and rows:
+                self.output(column_names, rows)
+
+            if column_names and summary:
+                self._output_summary(summary[1])
+
+            if self.timer:
+                self.display_timing(timing_start, self.get_resource_usage())
 
     def process_command(self, cmd):
         """Processes a dot command.  It is split into parts using the
@@ -1050,9 +1141,9 @@ Enter SQL statements terminated with a ";"
                     "select name from sqlite_schema where sql not null and type='table' and tbl_name like 'sqlite_stat%'"
             ):
                 for name in tables:
-                    if len(self.db.execute(
-                            "select * from " + self._fmt_sql_identifier(stat[0]) + " WHERE tbl=?",
-                        (name, )).fetchall()):
+                    if len(
+                            self.db.execute("select * from " + self._fmt_sql_identifier(stat[0]) + " WHERE tbl=?",
+                                            (name, )).fetchall()):
                         if name not in analyze_needed:
                             analyze_needed.append(name)
             analyze_needed.sort()
@@ -1079,14 +1170,12 @@ Enter SQL statements terminated with a ";"
             blank()
 
             comment("The values of various per-database settings")
-            self.write(self.stdout,
-                       "PRAGMA page_size=" + str(self.db.pragma("page_size")) + ";\n")
+            self.write(self.stdout, "PRAGMA page_size=" + str(self.db.pragma("page_size")) + ";\n")
             comment("PRAGMA encoding='" + self.db.pragma("encoding") + "';\n")
             vac = {0: "NONE", 1: "FULL", 2: "INCREMENTAL"}
             vacvalue = self.db.pragma("auto_vacuum")
             comment("PRAGMA auto_vacuum=" + vac.get(vacvalue, str(vacvalue)) + ";\n")
-            comment("PRAGMA max_page_count=" + str(self.db.pragma("max_page_count")) +
-                    ";\n")
+            comment("PRAGMA max_page_count=" + str(self.db.pragma("max_page_count")) + ";\n")
             blank()
 
             # different python versions have different requirements
@@ -1132,7 +1221,7 @@ Enter SQL statements terminated with a ";"
                 # Dump the table
                 for table in tables:
                     for sql in self.db.execute("SELECT sql FROM sqlite_schema WHERE name=?1 AND type='table'",
-                                                        (table, )):
+                                               (table, )):
                         comment("Table  " + table)
                         # Special treatment for virtual tables - they
                         # get called back on drops and creates and
@@ -1168,10 +1257,9 @@ Enter SQL statements terminated with a ";"
                 # as they could refer to each other
                 first = True
                 for name, sql in self.db.execute("SELECT name,sql FROM sqlite_schema "
-                                                          "WHERE sql NOT NULL AND type='view' "
-                                                          "AND name IN ( " +
-                                                          ",".join([apsw.format_sql_value(i)
-                                                                    for i in tables]) + ") ORDER BY _ROWID_"):
+                                                 "WHERE sql NOT NULL AND type='view' "
+                                                 "AND name IN ( " + ",".join([apsw.format_sql_value(i)
+                                                                              for i in tables]) + ") ORDER BY _ROWID_"):
                     if first:
                         comment("Views")
                         first = False
@@ -1185,8 +1273,7 @@ Enter SQL statements terminated with a ";"
                 if len(self.db.execute("select * from sqlite_schema where name='sqlite_sequence'").fetchall()):
                     first = True
                     for t in tables:
-                        v = self.db.execute("select seq from main.sqlite_sequence where name=?1",
-                                                     (t, )).fetchall()
+                        v = self.db.execute("select seq from main.sqlite_sequence where name=?1", (t, )).fetchall()
                         if len(v):
                             assert len(v) == 1
                             if first:
@@ -1393,7 +1480,7 @@ Enter SQL statements terminated with a ";"
             pass
         querytemplate = " OR ".join(querytemplate)
         for (table, ) in self.db.execute("SELECT name FROM sqlite_schema WHERE type='table' AND name LIKE ?1",
-                                                  (tablefilter, )):
+                                         (tablefilter, )):
             t = self._fmt_sql_identifier(table)
             query = "SELECT * from %s WHERE " % (t, )
             colq = []
@@ -1563,8 +1650,7 @@ Enter SQL statements terminated with a ";"
             final = "ROLLBACK"
 
             # how many columns?
-            ncols = len(self.db.execute("pragma table_info(" + self._fmt_sql_identifier(cmd[1]) +
-                                                 ")").fetchall())
+            ncols = len(self.db.execute("pragma table_info(" + self._fmt_sql_identifier(cmd[1]) + ")").fetchall())
             if ncols < 1:
                 raise self.Error("No such table '%s'" % (cmd[1], ))
 
@@ -1882,36 +1968,95 @@ Enter SQL statements terminated with a ";"
     _output_modes = None
 
     def command_mode(self, cmd):
-        """mode MODE ?TABLE?: Sets output mode to one of"""
-        if len(cmd) in (1, 2):
-            w = cmd[0]
-            if w == "tabs":
-                w = "list"
-            m = getattr(self, "output_" + w, None)
-            if w != "insert":
-                if len(cmd) == 2:
-                    raise self.Error("Output mode %s doesn't take parameters" % (cmd[0]))
-            if m:
-                self.output = m
-                # set some defaults
-                self.truncate = True
-                if cmd[0] == "csv":
-                    self.separator = ","
-                elif cmd[0] == "tabs":
-                    self.separator = "\t"
-                else:
-                    pass
-                    #self.separator=self._output_stack[0]["separator"]
-                if w == "insert":
-                    if len(cmd) == 2:
-                        self._output_table = cmd[1]
-                    else:
-                        self._output_table = "table"
-                    self._output_table = self._fmt_sql_identifier(self._output_table)
-                return
+        """mode MODE ?OPTIONS?: Sets output mode to one of"""
         if not self._output_modes:
             self._cache_output_modes()
-        raise self.Error("Expected a valid output mode: " + ", ".join(self._output_modes))
+
+        w = cmd[0]
+        if w == "tabs":
+            w = "list"
+        if not hasattr(self, "output_" + w):
+            raise self.Error("Expected a valid output mode: " + ", ".join(self._output_modes))
+
+        m = getattr(self, "output_" + w)
+
+        # argument parsing
+        if w == "insert":
+            if len(cmd) not in (1, 2):
+                raise self.Error("Output mode %s doesn't take parameters" % (cmd[0]))
+            table_name = cmd[1] if len(cmd) == 2 else "table"
+            self._output_table = self._fmt_sql_identifier(table_name)
+            self.output = m
+            return
+
+        if w not in {"box", "qbox", "table"}:
+            if len(cmd) != 1:
+                raise self.Error("Output mode %s doesn't take parameters" % (cmd[0]))
+            if cmd[0] == "csv":
+                self.separator = ","
+            elif cmd[0] == "tabs":
+                self.separator = "\t"
+            self.truncate = True
+            self.output = m
+            return
+
+        defaults = {
+            "quote": w in {"qbox"},
+            "string_sanitize": {
+                "box": 0,
+                "table": 2,
+                "qbox": 1
+            }[w],
+            "null": "NULL",
+            "truncate": {
+                "box": 1024,
+                "table": 2048,
+                "qbox": 4096
+            }[w],
+            "text_width": 0 if self.interactive else 80,
+            "use_unicode": {
+                "box": True,
+                "table": False,
+                "qbox": True
+            }[w]
+        }
+
+        # argparse unfortunately tries to do too much and really is about program arguments,
+        # but it isn't worthwhile re-implementing this
+        p = argparse.ArgumentParser(allow_abbrev=False, usage=f".mode { w }", prog="")
+        if hasattr(p, "exit_on_error"):
+            p.exit_on_error = False
+        p.set_defaults(**defaults)
+        p.add_argument("--quote", dest="quote", action="store_true", help="Show values in SQL syntax [%(default)s]")
+        p.add_argument("--no-quote", dest="quote", action="store_false", help="Show values as strings")
+        p.add_argument(
+            "--string-sanitize",
+            type=int,
+            choices=(0, 1, 2),
+            help="How much to clean up string characters (0 - none, 1 - medium, 2 - everything) [%(default)s]")
+        p.add_argument("--null", help="How to show NULL [%(default)s]")
+        p.add_argument("--truncate", type=int, help="How many characters to truncate long output at [%(default)s]")
+        p.add_argument("--width",
+                       type=int,
+                       dest="text_width",
+                       help="Maximum width of the table [Screen width if terminal, else 80 chars]")
+        p.add_argument("--unicode",
+                       action="store_true",
+                       dest="use_unicode",
+                       help="Use unicode line drawing [%(default)s]")
+        p.add_argument("--no-unicode",
+                       action="store_true",
+                       dest="use_unicode",
+                       help="Use ascii line drawing like +=-+ ")
+        text = io.StringIO()
+        try:
+            with contextlib.redirect_stderr(text):
+                with contextlib.redirect_stdout(text):
+                    self.box_options = vars(p.parse_args(cmd[1:]))
+        except:
+            # bare except because SystemExit can be raised
+            raise Shell.Error(text.getvalue())
+        self.output = self.output_box
 
     # needed so command completion and help can use it
     def _cache_output_modes(self):
@@ -2974,6 +3119,14 @@ Enter SQL statements terminated with a ";"
         del v
     except:
         pass
+
+
+try:
+    # uses dataclasses and annotations, only available in Python 3.7+
+    import apsw.ext
+except (ImportError, SyntaxError):
+    for n in "box", "table", "qbox":
+        delattr(Shell, f"output_{ n }")
 
 
 def main() -> None:

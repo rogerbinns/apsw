@@ -6,6 +6,16 @@ Change History
 next
 ====
 
+Shell: Errors when SQLite are preparing a statement now show the
+relevant extract of the query, and where the error was detected.
+
+Shell: Output modes table (ASCII line drawing, lots of sanitization),
+box (Unicode line drawing) and qbox (box with quoted values) available.
+Python 3.7+ (:issue:`420`)
+
+Shell: if started interactively then box is the default mode (list remains
+the default in non-interactive)
+
 Added :meth:`Connection.pragma` to execute pragmas
 and get results. (:issue:`432`)
 
