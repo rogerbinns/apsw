@@ -65,7 +65,6 @@ jobs:
         name: wheelhouse
         path: ./dist/*
 
-
   pypi_publish:
     needs: [build_source, build_binary]
     runs-on: ubuntu-latest
