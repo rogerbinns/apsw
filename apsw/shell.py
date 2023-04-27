@@ -2018,7 +2018,8 @@ Enter SQL statements terminated with a ";"
                 "box": True,
                 "table": False,
                 "qbox": True
-            }[w]
+            }[w],
+            "word_wrap": True,
         }
 
         # argparse unfortunately tries to do too much and really is about program arguments,
@@ -2048,6 +2049,8 @@ Enter SQL statements terminated with a ";"
                        action="store_true",
                        dest="use_unicode",
                        help="Use ascii line drawing like +=-+ ")
+        p.add_argument("--word-wrap", action="store_true", dest="word_wrap", help="Wrap text at word boundaries [%(default)s]")
+        p.add_argument("--no-word-wrap", action="store_false", dest="word_wrap", help="Wrap at column width ignoring words")
         text = io.StringIO()
         try:
             with contextlib.redirect_stderr(text):
