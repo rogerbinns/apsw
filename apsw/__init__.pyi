@@ -2368,9 +2368,8 @@ class VFS:
 
         :param maxpathname: The maximum length of database name in bytes when
             represented in UTF-8.  If a pathname is passed in longer than
-            this value then SQLite will not `be able to open it.  If you are
+            this value then SQLite will not`be able to open it.  If you are
             using a base, then a value of zero will use the value from base.
-
 
         :raises ValueError: If *base* is not *None* and the named vfs is not
           currently registered.

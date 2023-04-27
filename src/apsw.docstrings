@@ -2972,9 +2972,8 @@
 "\n" \
 ":param maxpathname: The maximum length of database name in bytes when\n" \
 "    represented in UTF-8.  If a pathname is passed in longer than\n" \
-"    this value then SQLite will not `be able to open it.  If you are\n" \
+"    this value then SQLite will not`be able to open it.  If you are\n" \
 "    using a base, then a value of zero will use the value from base.\n" \
-"\n" \
 "\n" \
 ":raises ValueError: If *base* is not *None* and the named vfs is not\n" \
 "  currently registered.\n" \
