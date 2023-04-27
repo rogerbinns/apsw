@@ -4,25 +4,26 @@ on: workflow_dispatch
 
 jobs:
 
-  builds:
+  build_binary:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, windows-2019, macos-11]
+#       os: [ubuntu-20.04, windows-2019, macos-11]
+        os: [ubuntu-20.04]
 
     steps:
       - uses: actions/checkout@v3
 
       - uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: "3.11"
 
-      - name: Set up QEMU
-        if: runner.os == 'Linux'
-        uses: docker/setup-qemu-action@v2
-        with:
-          platforms: all
+#      - name: Set up QEMU
+#        if: runner.os == 'Linux'
+#        uses: docker/setup-qemu-action@v2
+#        with:
+#          platforms: all
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.12.1
@@ -40,8 +41,8 @@ jobs:
           name: wheelhouse
           path: ./wheelhouse/*.whl
 
-  upload:
-    needs: builds
+
+  build_source:
     runs-on: ubuntu-latest
 
     steps:
@@ -50,7 +51,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: "3.10"
+        python-version: "3.11"
 
     - name: Install dependencies
       run: |
@@ -59,19 +60,30 @@ jobs:
     - name: Create source dist
       run: python setup.py sdist --for-pypi
 
+    - uses: actions/upload-artifact@v3
+      with:
+        name: wheelhouse
+        path: ./dist/*
+
+
+  pypi_publish:
+    needs: [build_source, build_binary]
+    runs-on: ubuntu-latest
+    permissions:
+        id-token: write
+
     - name: Stage wheels
       uses: actions/download-artifact@v3
       with:
         name: wheelhouse
         path: wheelhouse
+
     - run: |
         mv -v wheelhouse/* dist/
         ls -l dist/
 
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@release/v1
-      permissions:
-        id-token: write
       with:
        repository_url: https://test.pypi.org/legacy/
 
