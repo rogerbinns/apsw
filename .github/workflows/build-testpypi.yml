@@ -36,8 +36,8 @@ jobs:
           APSW_HEAVY_DURATION: 2
           APSW_TEST_FSYNC_OFF: set
           # for publisher testing
-          CIBW_BUILD: cp310-*
-          CIBW_ARCHS_LINUX: auto
+          CIBW_BUILD: cp311-manylinux*
+          CIBW_ARCHS_LINUX: x86_64
 
 
       - uses: actions/upload-artifact@v3
@@ -82,6 +82,7 @@ jobs:
         path: wheelhouse
 
     - run: |
+        mkdir -p dist
         mv -v wheelhouse/* dist/
         ls -l dist/
 
