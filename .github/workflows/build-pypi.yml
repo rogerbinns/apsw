@@ -4,18 +4,18 @@ on: workflow_dispatch
 
 jobs:
 
-  builds:
+  build_binary:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, windows-2019, macos-11]
+       os: [ubuntu-20.04, windows-2019, macos-11]
 
     steps:
       - uses: actions/checkout@v3
 
       - uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: "3.11"
 
       - name: Set up QEMU
         if: runner.os == 'Linux'
@@ -24,13 +24,13 @@ jobs:
           platforms: all
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.12.1
+        uses: pypa/cibuildwheel@v2.12.3
         env:
           CIBW_SKIP: pp*
           CIBW_ARCHS_LINUX: auto aarch64
           CIBW_ARCHS_MACOS: x86_64 arm64 universal2
           CIBW_BEFORE_BUILD: python setup.py fetch --all build --enable-all-extensions build_test_extension
-          CIBW_TEST_COMMAND: python {package}/apsw/tests.py
+          CIBW_TEST_COMMAND: python -m apsw.tests
           APSW_HEAVY_DURATION: 2
           APSW_TEST_FSYNC_OFF: set
 
@@ -39,8 +39,8 @@ jobs:
           name: wheelhouse
           path: ./wheelhouse/*.whl
 
-  upload:
-    needs: builds
+
+  build_source:
     runs-on: ubuntu-latest
 
     steps:
@@ -49,7 +49,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: "3.10"
+        python-version: "3.11"
 
     - name: Install dependencies
       run: |
@@ -58,18 +58,28 @@ jobs:
     - name: Create source dist
       run: python setup.py sdist --for-pypi
 
+    - uses: actions/upload-artifact@v3
+      with:
+        name: wheelhouse
+        path: ./dist/*
+
+  pypi_publish:
+    needs: [build_source, build_binary]
+    runs-on: ubuntu-latest
+    permissions:
+        id-token: write
+    steps:
     - name: Stage wheels
       uses: actions/download-artifact@v3
       with:
         name: wheelhouse
         path: wheelhouse
+
     - run: |
+        mkdir -p dist
         mv -v wheelhouse/* dist/
         ls -l dist/
 
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-       user: __token__
-       password: ${{ secrets.PYPI_API_TOKEN }}
 
