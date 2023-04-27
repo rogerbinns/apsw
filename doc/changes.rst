@@ -6,6 +6,11 @@ Change History
 next
 ====
 
+`SQLITE_ENABLE_COLUMN_METADATA
+<https://www.sqlite.org/compile.html#enable_column_metadata>`__ is
+enabled when using APSW from `PyPI <https://pypi.org/project/apsw/>`__
+(binary or source). (:issue:`435`)
+
 Shell: Errors when SQLite are preparing a statement now show the
 relevant extract of the query, and where the error was detected.
 
