@@ -11,10 +11,10 @@ About
 =====
 
 APSW is a Python wrapper for the `SQLite <https://sqlite.org/>`__
-embedded relational database engine.  It focuses translating between
+embedded relational database engine.  It focuses on translating between
 the complete `SQLite C API <https://sqlite.org/c3ref/intro.html>`__
 and `Python's C API <https://docs.python.org/3/c-api/index.html>`__,
-letting you get the most out of SQLite from Python.
+letting you get the most out of SQLite from Python, and vice versa.
 
 It is recommended to use the builtin `sqlite3 module
 <https://docs.python.org/3/library/sqlite3.html>`__ if you want SQLite
