@@ -9454,7 +9454,8 @@ shell.write(shell.stdout, "hello world\\n")
         self.assertEqual(vals, {i for i in range(1, 10 + 1)})
         vals = {row[0] for row in self.db.execute("select value from g2(1, 10, 2)")}
         self.assertEqual(vals, {i for i in range(1, 10 + 1, 2)})
-        self.assertEqual([], self.db.execute("select *,start,stop,step from g2(1,10) where step=0").fetchall())
+        self.assertEqual(self.db.execute("select *,start,stop from g2(1,10) where step=0").get,
+                         self.db.execute("select *,start,stop from g2(1,10) where step=1").get)
         self.assertRaises(ValueError, self.db.execute, "select * from g2 where stop=10 and step=1")
         self.assertRaises(TypeError, self.db.execute, "select * from g2(0.1, 1, 1)")
 
