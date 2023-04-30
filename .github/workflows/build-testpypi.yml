@@ -24,13 +24,23 @@ jobs:
         with:
           platforms: all
 
+      - name: Configure for PyPI (Windows)
+        if: runner.os == 'Windows'
+        run: |
+            copy tools/setup-pypi.cfg setup.cfg
+
+      - name: Configure for PyPI (non Windows)
+        if: runner.os != 'Windows'
+        run: |
+            cp tools/setup-pypi.cfg setup.cfg
+
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.12.3
         env:
           CIBW_SKIP: pp*
           CIBW_ARCHS_LINUX: auto aarch64
           CIBW_ARCHS_MACOS: x86_64 arm64 universal2
-          CIBW_BEFORE_BUILD: python setup.py fetch --all build --enable-all-extensions build_test_extension
+          CIBW_BEFORE_BUILD: python setup.py build
           CIBW_TEST_COMMAND: python -m apsw.tests
           APSW_HEAVY_DURATION: 2
           APSW_TEST_FSYNC_OFF: set
