@@ -21,7 +21,7 @@ GENDOCS = \
 
 .PHONY : help all tagpush clean doc docs build_ext build_ext_debug coverage pycoverage test test_debug fulltest linkcheck unwrapped \
 		 publish stubtest showsymbols compile-win setup-wheel source_nocheck source release pydebug pyvalgrind valgrind valgrind1 \
-		 fossil
+		 fossil doc-depends dev-depends
 
 help: ## Show this help
 	@egrep -h '\s##\s' $(MAKEFILE_LIST) | sort | \
@@ -60,6 +60,12 @@ doc/typing.rstgen: src/apswtypes.py tools/types2rst.py
 
 doc/.static:
 	mkdir -p doc/.static
+
+doc-depends: ## pip installs packages needed to build doc
+	$(PYTHON) -m pip install --user -U --break-system-packages --upgrade-strategy eager sphinx sphinx_rtd_theme
+
+dev-depends: ## pip installs packages useful for development (none are necessary)
+	$(PYTHON) -m pip install --user -U --break-system-packages --upgrade-strategy eager yapf mypy pdbpp coverage
 
 # This is probably gnu make specific but only developers use this makefile
 $(GENDOCS): doc/%.rst: src/%.c tools/code2rst.py
