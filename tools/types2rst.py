@@ -1,10 +1,10 @@
 #!/usr/bin/env/python3
 
 import ast, re
-from typing import List, Tuple, Any
+from typing import Any
 
 
-def process(module: ast.Module, source: str) -> List[Tuple[str, str, str]]:
+def process(module: ast.Module, source: str) -> list[tuple[str, str, str]]:
     res = []
     body = module.body
     i = 0
@@ -67,7 +67,7 @@ def nomunge(pattern: str, replacement: Any, value: str) -> str:
     return value
 
 
-def output(doc: List[Tuple[str, str, str]]) -> str:
+def output(doc: list[tuple[str, str, str]]) -> str:
     in_doc: set[str] = set()
     # build a mapping of known names
     for name, _, _ in doc:

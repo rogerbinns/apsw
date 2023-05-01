@@ -89,7 +89,7 @@ def do_mappings():
             sys.exit(1)
 
         op.append(f".. data:: { map }")
-        op.append("    :type: typing.Dict[typing.Union[str, int], typing.Union[int, str]]")
+        op.append("    :type: dict[str | int, int | str]")
         op.append("")
         op.append("    `" + desc + " <" + consts[desc]["page"] + ">`__ constants")
         op.append("")

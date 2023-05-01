@@ -450,7 +450,7 @@ error:
   return NULL;
 }
 
-/** .. method:: getdescription() -> Tuple[Tuple[str, str], ...]
+/** .. method:: getdescription() -> tuple[tuple[str, str], ...]
 
    If you are trying to get information about a table or view,
    then `pragma table_info <https://sqlite.org/pragma.html#pragma_table_info>`__
@@ -510,7 +510,7 @@ static PyObject *APSWCursor_getdescription(APSWCursor *self)
 }
 
 /** .. attribute:: description
-    :type: Tuple[Tuple[str, str, None, None, None, None, None], ...]
+    :type: tuple[tuple[str, str, None, None, None, None, None], ...]
 
     Based on the `DB-API cursor property
     <http://www.python.org/dev/peps/pep-0249/>`__, this returns the
@@ -524,7 +524,7 @@ static PyObject *APSWCursor_getdescription_dbapi(APSWCursor *self)
 }
 
 /** .. attribute:: description_full
-  :type: Tuple[Tuple[str, str, str, str, str], ...]
+  :type: tuple[tuple[str, str, str, str, str], ...]
 
 Only present if SQLITE_ENABLE_COLUMN_METADATA was defined at
 compile time.
@@ -1470,7 +1470,7 @@ APSWCursor_getconnection(APSWCursor *self)
   return Py_NewRef((PyObject *)self->connection);
 }
 
-/** .. method:: fetchall() -> list[Tuple[SQLiteValue, ...]]
+/** .. method:: fetchall() -> list[tuple[SQLiteValue, ...]]
 
   Returns all remaining result rows as a list.  This method is defined
   in DBAPI.  It is a longer way of doing ``list(cursor)``.

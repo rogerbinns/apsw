@@ -11,7 +11,7 @@ else:
 import dataclasses
 from dataclasses import dataclass, make_dataclass, is_dataclass
 
-from typing import Optional, Tuple, Union, List, Any, Dict, Callable, Sequence, TextIO
+from typing import Optional, Tuple, Union, List, Any, Dict, Callable, Sequence, TextIO, Literal, Iterator, Set
 import types
 
 import functools
@@ -189,7 +189,7 @@ class TypesConverterCursorFactory:
 
     def adapt_value(self, value: Any) -> apsw.SQLiteValue:
         "Returns SQLite representation of `value`"
-        if isinstance(value, (int, bytes, str, NoneType, float)):
+        if value is None or isinstance(value, (int, bytes, str, float)):
             return value
         if isinstance(value, self.abstract_base_class):
             return value.to_sqlite_value()
@@ -550,18 +550,11 @@ def format_query_table(db: apsw.Connection,
     return "\n".join(res)
 
 
-def _format_table(colnames: list[str],
-                 rows: list[apsw.SQLiteValues],
-                 colour: bool,
-                 quote: bool,
-                 string_sanitize: Union[Callable[[str], str], Union[Literal[0], Literal[1], Literal[2]]],
-                 binary: Callable[[bytes], str],
-                 null: str,
-                 truncate: int,
-                 truncate_val: str,
-                 text_width: int,
-                 use_unicode: bool,
-                 word_wrap: bool) -> str:
+def _format_table(colnames: list[str], rows: list[apsw.SQLiteValues], colour: bool, quote: bool,
+                  string_sanitize: Union[Callable[[str], str],
+                                         Union[Literal[0], Literal[1],
+                                               Literal[2]]], binary: Callable[[bytes], str], null: str, truncate: int,
+                  truncate_val: str, text_width: int, use_unicode: bool, word_wrap: bool) -> str:
     "Internal table formatter"
     if colour:
         c = lambda v: f"\x1b[{ v }m"
@@ -599,11 +592,11 @@ def _format_table(colnames: list[str],
     else:
         colours = {}
 
-        def colour_wrap(text, *args, **kwargs):
+        def colour_wrap(text: str, kind: type, header=False) -> str:
             return text
 
     colwidths = [max(len(v) for v in c.splitlines()) for c in colnames]
-    coltypes = [set() for _ in colnames]
+    coltypes: List[Set[type]] = [set() for _ in colnames]
 
     # type, measure and stringize each cell
     for row in rows:
@@ -787,8 +780,10 @@ def _format_table(colnames: list[str],
 
     return "\n".join(out_lines) + "\n"
 
+
 format_query_table._format_table = _format_table
 del _format_table
+
 
 class VTColumnAccess(enum.Enum):
     "How the column value is accessed from a row, for :meth:`make_virtual_module`"
@@ -1049,7 +1044,7 @@ def make_virtual_module(db: apsw.Connection,
                 # proactively advance so we can tell if eof
                 self.Next()
 
-                self.hidden_values: List[SQLiteValue] = self.module.defaults[:]
+                self.hidden_values: List[apsw.SQLiteValue] = self.module.defaults[:]
                 for k, v in params.items():
                     self.hidden_values[self.module.parameters.index(k)] = v
 

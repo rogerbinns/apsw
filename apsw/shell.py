@@ -14,7 +14,7 @@ import argparse
 import contextlib
 import io
 
-from typing import TextIO
+from typing import TextIO, Optional
 
 
 class Shell:
@@ -73,7 +73,7 @@ class Shell:
         types of errors doesn't matter."""
         pass
 
-    def __init__(self, stdin: TextIO = None, stdout=None, stderr=None, encoding: str = "utf8", args=None, db=None):
+    def __init__(self, stdin: Optional[TextIO] = None, stdout=None, stderr=None, encoding: str = "utf8", args=None, db=None):
         """Create instance, set defaults and do argument processing."""
         # The parameter doc has to be in main class doc as sphinx
         # ignores any described here

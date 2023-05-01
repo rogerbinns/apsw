@@ -312,7 +312,7 @@ APSWBlob_read(APSWBlob *self, PyObject *args, PyObject *kwds)
   return buffy;
 }
 
-/** .. method:: readinto(buffer: Union[bytearray, array.array[Any], memoryview], offset: int = 0, length: int = -1) -> None
+/** .. method:: readinto(buffer: bytearray |  array.array[Any] | memoryview, offset: int = 0, length: int = -1) -> None
 
   Reads from the blob into a buffer you have supplied.  This method is
   useful if you already have a buffer like object that data is being

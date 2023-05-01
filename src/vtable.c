@@ -942,7 +942,7 @@ finally: /* cleanup */
   return res;
 }
 
-/** .. method:: Connect(connection: Connection, modulename: str, databasename: str, tablename: str, *args: Tuple[SQLiteValue, ...])  -> Tuple[str, VTTable]
+/** .. method:: Connect(connection: Connection, modulename: str, databasename: str, tablename: str, *args: tuple[SQLiteValue, ...])  -> tuple[str, VTTable]
 
     The parameters and return are identical to
     :meth:`~VTModule.Create`.  This method is called
@@ -977,7 +977,7 @@ apswvtabCreate(sqlite3 *db,
   return apswvtabCreateOrConnect(db, pAux, argc, argv, pVTab, errmsg, 0);
 }
 
-/** .. method:: Create(connection: Connection, modulename: str, databasename: str, tablename: str, *args: Tuple[SQLiteValue, ...])  -> Tuple[str, VTTable]
+/** .. method:: Create(connection: Connection, modulename: str, databasename: str, tablename: str, *args: tuple[SQLiteValue, ...])  -> tuple[str, VTTable]
 
    Called when a table is first created on a :class:`connection
    <Connection>`.
@@ -1217,7 +1217,7 @@ finally:
   return sqlite_res;
 }
 
-/** .. method:: BestIndex(constraints: Sequence[Tuple[int, int], ...], orderbys: Sequence[Tuple[int, int], ...]) -> Any
+/** .. method:: BestIndex(constraints: Sequence[tuple[int, int]], orderbys: Sequence[tuple[int, int]]) -> Any
 
   This is a complex method. To get going initially, just return
   *None* and you will be fine. You should also consider using
@@ -1833,7 +1833,7 @@ finally:
 
   :param rowid: 64 bit integer
 */
-/** .. method:: UpdateInsertRow(rowid: Optional[int], fields: Tuple[SQLiteValue, ...])  -> Optional[int]
+/** .. method:: UpdateInsertRow(rowid: Optional[int], fields: tuple[SQLiteValue, ...])  -> Optional[int]
 
   Insert a row with the specified *rowid*.
 
@@ -1844,7 +1844,7 @@ finally:
     to the row.  If *rowid* was not *None* then the return value
     is ignored.
 */
-/** .. method:: UpdateChangeRow(row: int, newrowid: int, fields: Tuple[SQLiteValue, ...]) -> None
+/** .. method:: UpdateChangeRow(row: int, newrowid: int, fields: tuple[SQLiteValue, ...]) -> None
 
   Change an existing row.  You may also need to change the rowid - for example if the query was
   ``UPDATE table SET rowid=rowid+100 WHERE ...``
@@ -1980,7 +1980,7 @@ finally:
   return sqliteres;
 }
 
-/** .. method:: FindFunction(name: str, nargs: int) -> Union[None, Callable, Sequence[int, Callable]]
+/** .. method:: FindFunction(name: str, nargs: int) -> None |  Callable | tuple[int, Callable]
 
   Called to find if the virtual table has its own implementation of a
   particular scalar function. You do not have to provide this method.
@@ -2249,7 +2249,7 @@ it is.
 
 */
 
-/** .. method:: Filter(indexnum: int, indexname: str, constraintargs: Optional[Tuple]) -> None
+/** .. method:: Filter(indexnum: int, indexname: str, constraintargs: Optional[tuple]) -> None
 
   This method is always called first to initialize an iteration to the
   first row of the table. The arguments come from the
