@@ -1601,6 +1601,10 @@ apsw_sleep(PyObject *Py_UNUSED(module), PyObject *args, PyObject *kwds)
       return NULL;
   }
 
+  /* https://sqlite.org/forum/forumpost/5a95013827 */
+  if (milliseconds < 0)
+    milliseconds = 0;
+
   _PYSQLITE_CALL_V(res = sqlite3_sleep(milliseconds));
   return PyLong_FromLong(res);
 }
