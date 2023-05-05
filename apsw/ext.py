@@ -214,7 +214,8 @@ class TypesConverterCursorFactory:
         # turn into a list since PySequence_Fast does that anyway
         return [self.adapt_value(v) for v in bindings]
 
-    def wrap_sequence_bindings(self, sequenceofbindings: Sequence[apsw.Bindings]) -> Generator[apsw.Bindings, None, None]:
+    def wrap_sequence_bindings(self,
+                               sequenceofbindings: Sequence[apsw.Bindings]) -> Generator[apsw.Bindings, None, None]:
         for binding in sequenceofbindings:
             yield self.wrap_bindings(binding)
 
@@ -434,7 +435,7 @@ def index_info_to_dict(o: apsw.IndexInfo,
                 "op_str"] = f"SQLITE_INDEX_CONSTRAINT_FUNCTION+{ aConstraint['op'] - apsw.SQLITE_INDEX_CONSTRAINT_FUNCTION }"
 
     if column_names:
-        for aconstraint in res["aConstraint"]:
+        for aconstraint in res["aConstraint"]:  # type: ignore[attr-defined]
             if "iColumn" in aconstraint:
                 aconstraint["iColumn_name"] = rowid_name if aconstraint["iColumn"] == -1 else column_names[
                     aconstraint["iColumn"]]
@@ -444,7 +445,7 @@ def index_info_to_dict(o: apsw.IndexInfo,
         # eg when doing an update
         res["colUsed_names"] = set(column_names[i] for i in o.colUsed if i < len(column_names))
         if 63 in o.colUsed:  # could be one or more of the rest - we add all
-            res["colUsed_names"].update(column_names[63:])
+            res["colUsed_names"].update(column_names[63:])  # type: ignore[attr-defined]
 
     return res
 
@@ -557,7 +558,7 @@ def _format_table(colnames: list[str], rows: list[apsw.SQLiteValues], colour: bo
                   truncate_val: str, text_width: int, use_unicode: bool, word_wrap: bool) -> str:
     "Internal table formatter"
     if colour:
-        c : Callable[[int], str] = lambda v: f"\x1b[{ v }m"
+        c: Callable[[int], str] = lambda v: f"\x1b[{ v }m"
         colours = {
             # inverse
             "header_start": c(7) + c(1),
@@ -740,7 +741,7 @@ def _format_table(colnames: list[str], rows: list[apsw.SQLiteValues], colour: bo
                 line += chars[2]
         out_lines.append(line)
 
-    def do_row(row, sep: str, *, centre: bool =False, header: bool =False) -> None:
+    def do_row(row, sep: str, *, centre: bool = False, header: bool = False) -> None:
         # column names
         for n in range(max(len(cell[0]) for cell in row)):
             line = sep
@@ -795,7 +796,7 @@ class VTColumnAccess(enum.Enum):
     "By attribute like with :mod:`dataclasses` - eg :code:`row.quantity`"
 
 
-def get_column_names(row: Any) -> tuple[list[str], VTColumnAccess]:
+def get_column_names(row: Any) -> tuple[Sequence[str], VTColumnAccess]:
     r"""
     Works out column names and access given an example row
 
@@ -1017,10 +1018,10 @@ def make_virtual_module(db: apsw.Connection,
                 o.estimatedRows = 2147483647
                 return True
 
-            def Open(self):
+            def Open(self) -> Module.Cursor:
                 return self.module.Cursor(self.module, self.param_values)
 
-            def Disconnect(self):
+            def Disconnect(self) -> None:
                 pass
 
             Destroy = Disconnect
@@ -1030,7 +1031,7 @@ def make_virtual_module(db: apsw.Connection,
             def __init__(self, module: Module, param_values: dict[str, apsw.SQLiteValue]):
                 self.module = module
                 self.param_values = param_values
-                self.iterating: Iterator | None = None
+                self.iterating: Iterator[apsw.SQLiteValues] | None = None
                 self.current_row: Any = None
                 self.columns = module.columns
                 self.repr_invalid = module.repr_invalid
@@ -1060,6 +1061,7 @@ def make_virtual_module(db: apsw.Connection,
             def Column(self, which: int) -> apsw.SQLiteValue:
                 if which >= self.num_columns:
                     return self.hidden_values[which - self.num_columns]
+                v: Any = None
                 if self.access == VTColumnAccess.By_Index:
                     v = self.current_row[which]
                 elif self.access == VTColumnAccess.By_Name:
@@ -1071,14 +1073,14 @@ def make_virtual_module(db: apsw.Connection,
                         apsw.format_sql_value(v)
                     except TypeError:
                         v = repr(v)
-                return v
+                return v  # type: ignore[no-any-return]
 
             def Next(self) -> None:
                 try:
-                    self.current_row = next(self.iterating)
+                    self.current_row = next(self.iterating)  # type: ignore[arg-type]
                 except StopIteration:
                     if hasattr(self.iterating, "close"):
-                        self.iterating.close()
+                        self.iterating.close()  # type: ignore[union-attr]
                     self.iterating = None
 
             def Rowid(self):
@@ -1086,17 +1088,22 @@ def make_virtual_module(db: apsw.Connection,
                     return id(self.current_row)
                 return self.Column(self.module.primary_key)
 
-    mod = Module(callable, callable.columns, callable.column_access, getattr(callable, "primary_key", None),
-                 repr_invalid)
+    mod = Module(
+        callable,
+        callable.columns,  # type: ignore[attr-defined]
+        callable.column_access,  # type: ignore[attr-defined]
+        getattr(callable, "primary_key", None),
+        repr_invalid)
 
     # unregister any existing first
     db.createmodule(name, None)
-    db.createmodule(name,
-                    mod,
-                    use_bestindex_object=True,
-                    eponymous=eponymous,
-                    eponymous_only=eponymous_only,
-                    read_only=True)
+    db.createmodule(
+        name,
+        mod,  # type: ignore[arg-type]
+        use_bestindex_object=True,
+        eponymous=eponymous,
+        eponymous_only=eponymous_only,
+        read_only=True)
 
 
 def generate_series_sqlite(start=None, stop=0xffffffff, step=1):
@@ -1140,9 +1147,9 @@ def generate_series_sqlite(start=None, stop=0xffffffff, step=1):
             stop += step
 
 
-generate_series_sqlite.columns = ("value", )
-generate_series_sqlite.column_access = VTColumnAccess.By_Index
-generate_series_sqlite.primary_key = 0
+generate_series_sqlite.columns = ("value", )  # type: ignore[attr-defined]
+generate_series_sqlite.column_access = VTColumnAccess.By_Index  # type: ignore[attr-defined]
+generate_series_sqlite.primary_key = 0  # type: ignore[attr-defined]
 
 
 def generate_series(start, stop, step=None):
@@ -1188,9 +1195,9 @@ def generate_series(start, stop, step=None):
         raise ValueError("step of zero is not valid")
 
 
-generate_series.columns = ("value", )
-generate_series.column_access = VTColumnAccess.By_Index
-generate_series.primary_key = 0
+generate_series.columns = ("value", )  # type: ignore[attr-defined]
+generate_series.column_access = VTColumnAccess.By_Index  # type: ignore[attr-defined]
+generate_series.primary_key = 0  # type: ignore[attr-defined]
 
 
 def query_info(db: apsw.Connection,
@@ -1302,7 +1309,7 @@ def query_info(db: apsw.Connection,
         res["actions"] = actions_taken
 
     if explain and not res["is_explain"]:
-        vdbe = []
+        vdbe: list[VDBEInstruction] = []
         for row in cur.execute("EXPLAIN " + res["first_query"], bindings):
             vdbe.append(
                 VDBEInstruction(**dict((v[0][0], v[1]) for v in zip(cur.getdescription(), row) if v[1] is not None)))
@@ -1310,19 +1317,19 @@ def query_info(db: apsw.Connection,
 
     if explain_query_plan and not res["is_explain"]:
         subn = "sub"
-        byid = {0: {"detail": "QUERY PLAN"}}
+        byid: Any = {0: {"detail": "QUERY PLAN"}}
 
         for row in cur.execute("EXPLAIN QUERY PLAN " + res["first_query"], bindings):
             node = dict((v[0][0], v[1]) for v in zip(cur.getdescription(), row) if v[0][0] != "notused")
             assert len(node) == 3  # catch changes in returned format
-            parent : list[ str ] = byid[node["parent"]]
+            parent: list[str | dict[str, Any]] = byid[node["parent"]]
             if subn not in parent:
-                parent[subn] = [node]
+                parent[subn] = [node]  # type: ignore[call-overload]
             else:
-                parent[subn].append(node)
+                parent[subn].append(node)  # type: ignore[call-overload]
             byid[node["id"]] = node
 
-        def flatten(node):
+        def flatten(node: Any) -> dict[str, Any]:
             res = {"detail": node["detail"]}
             if subn in node:
                 res[subn] = [QueryPlan(**flatten(child)) for child in node[subn]]
