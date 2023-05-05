@@ -338,19 +338,23 @@ APSWCursor_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSE
   return (PyObject *)self;
 }
 
+/** .. method:: __init__(connection: Connection)
+
+ Use :meth:`Connection.cursor` to make a new cursor.
+
+*/
+
 static int
 APSWCursor_init(APSWCursor *self, PyObject *args, PyObject *kwargs)
 {
   static char *kwlist[] = {"connection", NULL};
   PyObject *connection = NULL;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O:Cursor(Connection)", kwlist, &connection))
-    return -1;
-
-  if (!PyObject_TypeCheck(connection, &ConnectionType))
   {
-    PyErr_Format(PyExc_TypeError, "Cursor parameter must be a Connection instance");
-    return -1;
+    static char *kwlist[] = {"connection", NULL};
+    Cursor_init_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:" Cursor_init_USAGE, kwlist, &ConnectionType, &connection))
+      return -1;
   }
 
   self->connection = (Connection *)Py_NewRef(connection);
