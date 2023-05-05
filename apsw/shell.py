@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 
+# This supports Python 3.6 onwards
+# Python 3.6 doesn't let us do from __future__ import annotations
+# so we can't do correct typing.
+
+# mypy: ignore-errors
+
 import sys
 import apsw
 import shlex
