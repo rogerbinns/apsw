@@ -21,7 +21,7 @@ GENDOCS = \
 
 .PHONY : help all tagpush clean doc docs build_ext build_ext_debug coverage pycoverage test test_debug fulltest linkcheck unwrapped \
 		 publish stubtest showsymbols compile-win setup-wheel source_nocheck source release pydebug pyvalgrind valgrind valgrind1 \
-		 fossil doc-depends dev-depends
+		 fossil doc-depends dev-depends docs-no-fetch
 
 help: ## Show this help
 	@egrep -h '\s##\s' $(MAKEFILE_LIST) | sort | \
@@ -43,7 +43,9 @@ clean: ## Cleans up everything
 
 doc: docs ## Builds all the doc
 
-docs: build_ext $(GENDOCS) doc/example.rst doc/.static doc/typing.rstgen
+docs: build_ext docs-no-fetch
+
+docs-no-fetch: $(GENDOCS) doc/example.rst doc/.static doc/typing.rstgen
 	env PYTHONPATH=. $(PYTHON) tools/docmissing.py
 	env PYTHONPATH=. $(PYTHON) tools/docupdate.py $(VERSION)
 	make PYTHONPATH="`pwd`" VERSION=$(VERSION) RELEASEDATE=$(RELEASEDATE) -C doc clean html epub
