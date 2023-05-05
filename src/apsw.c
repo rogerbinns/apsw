@@ -21,14 +21,30 @@ APSW Module
 The module is the main interface to SQLite.  Methods and data on the
 module have process wide effects.
 
+.. _type_stubs:
+
 Type Annotations
 ================
 
 Comprehensive `type annotations
-<https://docs.python.org/3/library/typing.html>`__ are included, and
-your code using apsw can be checked using tools like `mypy
-<http://mypy-lang.org/>`__.  You can refer to the types below for
-your annotations (eg as :class:`apsw.SQLiteValue`)
+<https://docs.python.org/3/library/typing.html>`__ `are included <https://github.com/rogerbinns/apsw/blob/master/apsw/__init__.pyi>`__,
+and your code can be checked using tools like `mypy
+<http://mypy-lang.org/>`__.  You can refer to the types below for your
+annotations (eg as :class:`apsw.SQLiteValue`)
+
+Your source files should include::
+
+    from __future__ import annotations
+
+.. note::
+
+  These types are not available at run time, and have no effect when
+  your code is running.  They are only referenced when running a type
+  checker, or using an `IDE
+  <https://en.wikipedia.org/wiki/Language_Server_Protocol>`__.
+
+You will require a recent version of Python to use the type
+annotations.
 
 .. include:: ../doc/typing.rstgen
 

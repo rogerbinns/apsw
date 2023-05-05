@@ -11,7 +11,7 @@ else:
 import dataclasses
 from dataclasses import dataclass, make_dataclass, is_dataclass
 
-from typing import Optional, Tuple, Union, List, Any, Dict, Callable, Sequence, TextIO, Literal, Iterator, Set
+from typing import Union, Any, Callable, Sequence, TextIO, Literal, Iterator, Generator
 import types
 
 import functools
@@ -76,12 +76,12 @@ class DataClassRowFactory:
 
     """
 
-    def __init__(self, *, rename: bool = True, dataclass_kwargs: Optional[Dict[str, Any]] = None):
+    def __init__(self, *, rename: bool = True, dataclass_kwargs: dict[str, Any] | None = None):
         self.dataclass_kwargs = dataclass_kwargs or {}
         self.rename = rename
 
     @functools.lru_cache(maxsize=16)
-    def get_dataclass(self, description: Tuple[Tuple[str, str], ...]) -> Tuple[Any, Tuple[str, ...]]:
+    def get_dataclass(self, description: tuple[tuple[str, str], ...]) -> tuple[Any, tuple[str, ...]]:
         """Returns dataclass and tuple of (potentially renamed) column names
 
         The dataclass is what is returned for each row with that
@@ -91,7 +91,7 @@ class DataClassRowFactory:
         """
         names = [d[0] for d in description]
         if self.rename:
-            new_names: List[str] = []
+            new_names: list[str] = []
             for i, n in enumerate(names):
                 if n.isidentifier() and not _iskeyword(n) and n not in new_names:
                     new_names.append(n)
@@ -110,7 +110,7 @@ class DataClassRowFactory:
 
         return make_dataclass(f"{ self.__class__.__name__ }{ suffix }", zip(names, types), **kwargs), tuple(names)
 
-    def get_type(self, t: Optional[str]) -> Any:
+    def get_type(self, t: str | None) -> Any:
         """Returns the `type hint <https://docs.python.org/3/library/typing.html>`__ to use in the dataclass based on the type in the :meth:`description <apsw.Cursor.getdescription>`
 
         `SQLite's affinity rules  <https://www.sqlite.org/datatype3.html#affname>`__ are followed.
@@ -171,9 +171,9 @@ class TypesConverterCursorFactory:
     def __init__(self, abstract_base_class: abc.ABCMeta = SQLiteTypeAdapter):
         self.abstract_base_class = abstract_base_class
         # to sqlite value
-        self.adapters: Dict[type, Callable[[Any], apsw.SQLiteValue]] = {}
+        self.adapters: dict[type, Callable[[Any], apsw.SQLiteValue]] = {}
         # from sqlite value
-        self.converters: Dict[str, Callable[[apsw.SQLiteValue], Any]] = {}
+        self.converters: dict[str, Callable[[apsw.SQLiteValue], Any]] = {}
 
     def register_adapter(self, klass: type, callable: Callable[[Any], apsw.SQLiteValue]) -> None:
         """Registers a callable that converts from `klass` to one of the supported SQLite types"""
@@ -205,7 +205,7 @@ class TypesConverterCursorFactory:
             return value
         return converter(value)
 
-    def wrap_bindings(self, bindings: Optional[apsw.Bindings]) -> Optional[apsw.Bindings]:
+    def wrap_bindings(self, bindings: apsw.Bindings | None) -> apsw.Bindings | None:
         "Wraps bindings that are supplied to underlying execute"
         if bindings is None:
             return None
@@ -214,7 +214,7 @@ class TypesConverterCursorFactory:
         # turn into a list since PySequence_Fast does that anyway
         return [self.adapt_value(v) for v in bindings]
 
-    def wrap_sequence_bindings(self, sequenceofbindings: Sequence[apsw.Bindings]):
+    def wrap_sequence_bindings(self, sequenceofbindings: Sequence[apsw.Bindings]) -> Generator[apsw.Bindings, None, None]:
         for binding in sequenceofbindings:
             yield self.wrap_bindings(binding)
 
@@ -244,12 +244,12 @@ class TypesConverterCursorFactory:
             self.factory = factory
             self.rowtrace = self._rowtracer
 
-        def _rowtracer(self, cursor: apsw.Cursor, values: apsw.SQLiteValues) -> Tuple[Any, ...]:
+        def _rowtracer(self, cursor: apsw.Cursor, values: apsw.SQLiteValues) -> tuple[Any, ...]:
             return tuple(self.factory.convert_value(d[1], v) for d, v in zip(cursor.getdescription(), values))
 
         def execute(self,
                     statements: str,
-                    bindings: Optional[apsw.Bindings] = None,
+                    bindings: apsw.Bindings | None = None,
                     *,
                     can_cache: bool = True,
                     prepare_flags: int = 0) -> apsw.Cursor:
@@ -303,7 +303,7 @@ def print_augmented_traceback(exc_type: type[BaseException],
                               exc_value: BaseException,
                               exc_traceback: types.TracebackType,
                               *,
-                              file: Optional[TextIO] = None) -> None:
+                              file: TextIO | None = None) -> None:
     """Prints a standard exception, but also includes the value of variables in each stack frame
 
     :param exc_type: The exception type
@@ -321,8 +321,8 @@ def print_augmented_traceback(exc_type: type[BaseException],
 
 def index_info_to_dict(o: apsw.IndexInfo,
                        *,
-                       column_names: Optional[List[str]] = None,
-                       rowid_name: str = "__ROWID__") -> Dict[str, Any]:
+                       column_names: list[str] | None = None,
+                       rowid_name: str = "__ROWID__") -> dict[str, Any]:
     """
     Returns a :class:`apsw.IndexInfo` as a dictionary.
 
@@ -451,7 +451,7 @@ def index_info_to_dict(o: apsw.IndexInfo,
 
 def format_query_table(db: apsw.Connection,
                        query: str,
-                       bindings: Optional[apsw.Bindings] = None,
+                       bindings: apsw.Bindings | None = None,
                        *,
                        colour: bool = False,
                        quote: bool = False,
@@ -557,7 +557,7 @@ def _format_table(colnames: list[str], rows: list[apsw.SQLiteValues], colour: bo
                   truncate_val: str, text_width: int, use_unicode: bool, word_wrap: bool) -> str:
     "Internal table formatter"
     if colour:
-        c = lambda v: f"\x1b[{ v }m"
+        c : Callable[[int], str] = lambda v: f"\x1b[{ v }m"
         colours = {
             # inverse
             "header_start": c(7) + c(1),
@@ -576,7 +576,7 @@ def _format_table(colnames: list[str], rows: list[apsw.SQLiteValues], colour: bo
             "number_end": c(39),
         }
 
-        def colour_wrap(text: str, kind: type, header=False) -> str:
+        def colour_wrap(text: str, kind: type, header: bool = False) -> str:
             if header:
                 return colours["header_start"] + text + colours["header_end"]
             if kind == str:
@@ -592,11 +592,11 @@ def _format_table(colnames: list[str], rows: list[apsw.SQLiteValues], colour: bo
     else:
         colours = {}
 
-        def colour_wrap(text: str, kind: type, header=False) -> str:
+        def colour_wrap(text: str, kind: type, header: bool = False) -> str:
             return text
 
     colwidths = [max(len(v) for v in c.splitlines()) for c in colnames]
-    coltypes: List[Set[type]] = [set() for _ in colnames]
+    coltypes: list[set[type]] = [set() for _ in colnames]
 
     # type, measure and stringize each cell
     for row in rows:
@@ -700,8 +700,8 @@ def _format_table(colnames: list[str], rows: list[apsw.SQLiteValues], colour: bo
     # break headers and cells into lines
     if word_wrap:
 
-        def wrap(text, width):
-            res = []
+        def wrap(text: str, width: int) -> list[str]:
+            res: list[str] = []
             for para in text.splitlines():
                 if para:
                     res.extend(textwrap.wrap(para, width=width, drop_whitespace=False))
@@ -710,8 +710,8 @@ def _format_table(colnames: list[str], rows: list[apsw.SQLiteValues], colour: bo
             return res
     else:
 
-        def wrap(text, width):
-            res = []
+        def wrap(text: str, width: int) -> list[str]:
+            res: list[str] = []
             for para in text.splitlines():
                 if len(para) < width:
                     res.append(para)
@@ -728,9 +728,9 @@ def _format_table(colnames: list[str], rows: list[apsw.SQLiteValues], colour: bo
     # are any cells more than one line?
     multiline = max(len(cell[0]) for cell in row for row in rows) > 1
 
-    out_lines = []
+    out_lines: list[str] = []
 
-    def do_bar(chars):
+    def do_bar(chars: str) -> None:
         line = chars[0]
         for i, w in enumerate(colwidths):
             line += chars[1] * (w + 2)
@@ -740,7 +740,7 @@ def _format_table(colnames: list[str], rows: list[apsw.SQLiteValues], colour: bo
                 line += chars[2]
         out_lines.append(line)
 
-    def do_row(row, sep, *, centre=False, header=False):
+    def do_row(row, sep: str, *, centre: bool =False, header: bool =False) -> None:
         # column names
         for n in range(max(len(cell[0]) for cell in row)):
             line = sep
@@ -795,7 +795,7 @@ class VTColumnAccess(enum.Enum):
     "By attribute like with :mod:`dataclasses` - eg :code:`row.quantity`"
 
 
-def get_column_names(row: Any) -> Tuple[List[str], VTColumnAccess]:
+def get_column_names(row: Any) -> tuple[list[str], VTColumnAccess]:
     r"""
     Works out column names and access given an example row
 
@@ -932,7 +932,7 @@ def make_virtual_module(db: apsw.Connection,
     class Module:
 
         def __init__(self, callable: Callable, columns: tuple[str], column_access: VTColumnAccess,
-                     primary_key: Optional[int], repr_invalid: bool):
+                     primary_key: int | None, repr_invalid: bool):
             self.columns = columns
             self.callable: Callable = callable
             if not isinstance(column_access, VTColumnAccess):
@@ -1030,7 +1030,7 @@ def make_virtual_module(db: apsw.Connection,
             def __init__(self, module: Module, param_values: dict[str, apsw.SQLiteValue]):
                 self.module = module
                 self.param_values = param_values
-                self.iterating: Optional[Iterator] = None
+                self.iterating: Iterator | None = None
                 self.current_row: Any = None
                 self.columns = module.columns
                 self.repr_invalid = module.repr_invalid
@@ -1044,7 +1044,7 @@ def make_virtual_module(db: apsw.Connection,
                 # proactively advance so we can tell if eof
                 self.Next()
 
-                self.hidden_values: List[apsw.SQLiteValue] = self.module.defaults[:]
+                self.hidden_values: list[apsw.SQLiteValue] = self.module.defaults[:]
                 for k, v in params.items():
                     self.hidden_values[self.module.parameters.index(k)] = v
 
@@ -1195,7 +1195,7 @@ generate_series.primary_key = 0
 
 def query_info(db: apsw.Connection,
                query: str,
-               bindings: Optional[apsw.Bindings] = None,
+               bindings: apsw.Bindings | None = None,
                *,
                prepare_flags: int = 0,
                actions: bool = False,
@@ -1209,7 +1209,7 @@ def query_info(db: apsw.Connection,
     """
     res: dict[str, Any] = {"actions": None, "query_plan": None, "explain": None}
 
-    def tracer(cursor: apsw.Cursor, first_query: str, bindings: Optional[apsw.Bindings]):
+    def tracer(cursor: apsw.Cursor, first_query: str, bindings: apsw.Bindings | None):
         nonlocal res
         res.update({
             "first_query": first_query,
@@ -1315,7 +1315,7 @@ def query_info(db: apsw.Connection,
         for row in cur.execute("EXPLAIN QUERY PLAN " + res["first_query"], bindings):
             node = dict((v[0][0], v[1]) for v in zip(cur.getdescription(), row) if v[0][0] != "notused")
             assert len(node) == 3  # catch changes in returned format
-            parent = byid[node["parent"]]
+            parent : list[ str ] = byid[node["parent"]]
             if subn not in parent:
                 parent[subn] = [node]
             else:
@@ -1338,11 +1338,11 @@ class QueryDetails:
     "A :mod:`dataclass <dataclasses>` that provides detailed information about a query, returned by :func:`query_info`"
     query: str
     "Original query provided"
-    bindings: Optional[apsw.Bindings]
+    bindings: apsw.Bindings | None
     "Bindings provided"
     first_query: str
     "The first statement present in query"
-    query_remaining: Optional[str]
+    query_remaining: str | None
     "Query text after the first one if multiple were in query, else None"
     is_explain: int
     ":attr:`Cursor.is_explain <apsw.Cursor.is_explain>`"
@@ -1350,19 +1350,19 @@ class QueryDetails:
     ":attr:`Cursor.is_readonly <apsw.Cursor.is_readonly>`"
     has_vdbe: bool
     ":attr:`Cursor.has_vdbe <apsw.Cursor.has_vdbe>`"
-    description: Tuple[Tuple[str, str], ...]
+    description: tuple[tuple[str, str], ...]
     ":meth:`Cursor.getdescription <apsw.Cursor.getdescription>`"
-    description_full: Optional[Tuple[Tuple[str, str, str, str, str], ...]]
+    description_full: tuple[tuple[str, str, str, str, str], ...] | None
     ":attr:`Cursor.description_full <apsw.Cursor.description_full>`"
-    expanded_sql: Optional[str]
+    expanded_sql: str | None
     ":attr:`Cursor.expanded_sql <apsw.Cursor.expanded_sql>`"
-    actions: Optional[List[QueryAction]]
+    actions: list[QueryAction] | None
     """A list of the actions taken by the query, as discovered via
     :attr:`Connection.authorizer <apsw.Connection.authorizer>`"""
-    explain: Optional[List[VDBEInstruction]]
+    explain: list[VDBEInstruction] | None
     """A list of instructions of the `internal code <https://sqlite.org/opcode.html>`__
     used by SQLite to execute the query"""
-    query_plan: Optional[QueryPlan]
+    query_plan: QueryPlan | None
     """The steps taken against tables and indices `described here <https://sqlite.org/eqp.html>`__"""
 
 
@@ -1378,21 +1378,21 @@ class QueryAction:
     """The string corresponding to the action.  For example `action` could be `21` in which
     case `action_name` will be `SQLITE_SELECT`"""
 
-    column_name: Optional[str] = None
-    database_name: Optional[str] = None
+    column_name: str | None = None
+    database_name: str | None = None
     "eg `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__"
-    file_name: Optional[str] = None
-    function_name: Optional[str] = None
-    module_name: Optional[str] = None
-    operation: Optional[str] = None
-    pragma_name: Optional[str] = None
-    pragma_value: Optional[str] = None
-    table_name: Optional[str] = None
-    trigger_name: Optional[str] = None
-    trigger_or_view: Optional[str] = None
+    file_name: str | None = None
+    function_name: str | None = None
+    module_name: str | None = None
+    operation: str | None = None
+    pragma_name: str | None = None
+    pragma_value: str | None = None
+    table_name: str | None = None
+    trigger_name: str | None = None
+    trigger_or_view: str | None = None
     """This action is happening due to a trigger or view, and not
     directly expressed in the query itself"""
-    view_name: Optional[str] = None
+    view_name: str | None = None
 
 
 @dataclass
@@ -1400,7 +1400,7 @@ class QueryPlan:
     "A :mod:`dataclass <dataclasses>` for one step of a query plan"
     detail: str
     "Description of this step"
-    sub: Optional[List[QueryPlan]] = None
+    sub: list[QueryPlan] | None = None
     "Steps that run within this one"
 
 
@@ -1411,15 +1411,15 @@ class VDBEInstruction:
     "Address of this opcode.  It will be the target of goto, loops etc"
     opcode: str
     "The instruction"
-    comment: Optional[str] = None
+    comment: str | None = None
     "Additional human readable information"
-    p1: Optional[int] = None
+    p1: int | None = None
     "First opcode parameter"
-    p2: Optional[int] = None
+    p2: int | None = None
     "Second opcode parameter"
-    p3: Optional[int] = None
+    p3: int | None = None
     "Third opcode parameter"
-    p4: Optional[int] = None
+    p4: int | None = None
     "Fourth opcode parameter"
-    p5: Optional[int] = None
+    p5: int | None = None
     "Fifth opcode parameter"
