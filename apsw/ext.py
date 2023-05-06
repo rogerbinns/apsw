@@ -210,14 +210,14 @@ class TypesConverterCursorFactory:
         if bindings is None:
             return None
         if isinstance(bindings, (dict, collections.abc.Mapping)):
-            return TypesConverterCursorFactory.DictAdapter(self, bindings)
+            return TypesConverterCursorFactory.DictAdapter(self, bindings)  # type: ignore[arg-type]
         # turn into a list since PySequence_Fast does that anyway
         return [self.adapt_value(v) for v in bindings]
 
     def wrap_sequence_bindings(self,
                                sequenceofbindings: Sequence[apsw.Bindings]) -> Generator[apsw.Bindings, None, None]:
         for binding in sequenceofbindings:
-            yield self.wrap_bindings(binding)
+            yield self.wrap_bindings(binding)  # type: ignore[misc]
 
     class DictAdapter(collections.abc.Mapping):
         "Used to wrap dictionaries supplied as bindings"
@@ -271,10 +271,11 @@ class TypesConverterCursorFactory:
             """Executes the statements against each item in sequenceofbindings, doing conversions on supplied and returned values
 
             See :meth:`apsw.Cursor.executemany` for parameter details"""
-            return super().executemany(statements,
-                                       self.factory.wrap_sequence_bindings(sequenceofbindings),
-                                       can_cache=can_cache,
-                                       prepare_flags=prepare_flags)
+            return super().executemany(
+                statements,
+                self.factory.wrap_sequence_bindings(sequenceofbindings),  # type: ignore[arg-type]
+                can_cache=can_cache,
+                prepare_flags=prepare_flags)
 
 
 def log_sqlite(*, level: int = logging.ERROR) -> None:
@@ -427,7 +428,7 @@ def index_info_to_dict(o: apsw.IndexInfo,
         o.distinct,
     }
 
-    for aConstraint in res["aConstraint"]:
+    for aConstraint in res["aConstraint"]:  # type: ignore[attr-defined]
         if aConstraint["op"] in (apsw.SQLITE_INDEX_CONSTRAINT_OFFSET, apsw.SQLITE_INDEX_CONSTRAINT_LIMIT):
             del aConstraint["iColumn"]
         if aConstraint["op"] >= apsw.SQLITE_INDEX_CONSTRAINT_FUNCTION and aConstraint["op"] <= 255:
@@ -439,7 +440,7 @@ def index_info_to_dict(o: apsw.IndexInfo,
             if "iColumn" in aconstraint:
                 aconstraint["iColumn_name"] = rowid_name if aconstraint["iColumn"] == -1 else column_names[
                     aconstraint["iColumn"]]
-        for aorderby in res["aOrderBy"]:
+        for aorderby in res["aOrderBy"]:  # type: ignore[attr-defined]
             aorderby["iColumn_name"] = rowid_name if aorderby["iColumn"] == -1 else column_names[aorderby["iColumn"]]
         # colUsed has all bits set when SQLite just wants the whole row
         # eg when doing an update
@@ -521,13 +522,13 @@ def format_query_table(db: apsw.Connection,
         "word_wrap": word_wrap
     }
 
-    res = []
+    res: list[str] = []
 
     cursor = db.cursor()
     colnames = None
     rows = []
 
-    def trace(c, query, bindings):
+    def trace(c: apsw.Cursor, query: str, bindings: apsw.Bindings | None) -> bool:
         nonlocal colnames, rows
         if colnames:
             res.append(format_query_table._format_table(colnames, rows, **kwargs))
@@ -544,7 +545,7 @@ def format_query_table(db: apsw.Connection,
         rows.append(list(row))
 
     if colnames:
-        res.append(format_query_table._format_table(colnames, rows, **kwargs))
+        res.append(format_query_table._format_table(colnames, rows, **kwargs))  # type: ignore[attr-defined]
 
     if len(res) == 1:
         return res[0]
@@ -577,7 +578,7 @@ def _format_table(colnames: list[str], rows: list[apsw.SQLiteValues], colour: bo
             "number_end": c(39),
         }
 
-        def colour_wrap(text: str, kind: type, header: bool = False) -> str:
+        def colour_wrap(text: str, kind: type | None, header: bool = False) -> str:
             if header:
                 return colours["header_start"] + text + colours["header_end"]
             if kind == str:
@@ -593,7 +594,7 @@ def _format_table(colnames: list[str], rows: list[apsw.SQLiteValues], colour: bo
     else:
         colours = {}
 
-        def colour_wrap(text: str, kind: type, header: bool = False) -> str:
+        def colour_wrap(text: str, kind: type | None, header: bool = False) -> str:
             return text
 
     colwidths = [max(len(v) for v in c.splitlines()) for c in colnames]
@@ -654,13 +655,13 @@ def _format_table(colnames: list[str], rows: list[apsw.SQLiteValues], colour: bo
 
             if truncate > 0 and len(val) > truncate:
                 val = val[:truncate] + truncate_val
-            row[i] = (val, type(cell))
+            row[i] = (val, type(cell))  # type: ignore[index]
             colwidths[i] = max(colwidths[i], max(len(v) for v in val.splitlines()) if val else 0)
 
     ## work out widths
     # we need a space each side of a cell plus a cell separator hence 3
     # "| cell " and another for the final "|"
-    total_width = lambda: sum(w + 3 for w in colwidths) + 1
+    total_width: Callable[[], int] = lambda: sum(w + 3 for w in colwidths) + 1
 
     # proportionally reduce column widths
     victim = len(colwidths) - 1
@@ -720,14 +721,14 @@ def _format_table(colnames: list[str], rows: list[apsw.SQLiteValues], colour: bo
                     res.extend([para[s:s + width] for s in range(0, len(para), width)])
             return res
 
-    colnames = [wrap(colnames[i], colwidths[i]) for i in range(len(colwidths))]
+    colnames = [wrap(colnames[i], colwidths[i]) for i in range(len(colwidths))]  # type: ignore
     for row in rows:
-        for i, (text, t) in enumerate(row):
-            row[i] = (wrap(text, colwidths[i]), t)
+        for i, (text, t) in enumerate(row):  # type: ignore[misc]
+            row[i] = (wrap(text, colwidths[i]), t)  # type: ignore
 
     ## output
     # are any cells more than one line?
-    multiline = max(len(cell[0]) for cell in row for row in rows) > 1
+    multiline = max(len(cell[0]) for cell in row for row in rows) > 1  # type: ignore
 
     out_lines: list[str] = []
 
@@ -782,7 +783,7 @@ def _format_table(colnames: list[str], rows: list[apsw.SQLiteValues], colour: bo
     return "\n".join(out_lines) + "\n"
 
 
-format_query_table._format_table = _format_table
+format_query_table._format_table = _format_table  # type: ignore[attr-defined]
 del _format_table
 
 
@@ -956,7 +957,7 @@ def make_virtual_module(db: apsw.Connection,
             if both:
                 raise ValueError(f"Same name in columns and in paramters: { both }")
 
-            self.all_columns: tuple[str] = tuple(self.columns) + tuple(self.parameters)
+            self.all_columns: tuple[str] = tuple(self.columns) + tuple(self.parameters)  # type: ignore[assignment]
             self.primary_key = primary_key
             if self.primary_key is not None and not (0 <= self.primary_key < len(self.columns)):
                 raise ValueError(f"{self.primary_key!r} should be None or a column number < { len(self.columns) }")
@@ -982,7 +983,7 @@ def make_virtual_module(db: apsw.Connection,
 
             param_values = dict(zip(self.parameters, args))
 
-            return self.schema, self.Table(self, param_values)
+            return self.schema, self.Table(self, param_values)  # type: ignore[return-value]
 
         Connect = Create
 
