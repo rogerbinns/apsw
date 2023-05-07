@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 # See the accompanying LICENSE file.
 
+# This testing code deliberately does nasty stuff so mypy isn't helpful
+# mypy: ignore-errors
+
 import sys
 import os
 import warnings

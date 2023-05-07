@@ -12,7 +12,7 @@ from pathlib import Path
 
 # Note: this code uses Python's optional typing annotations.  You can
 # ignore them and do not need to use them
-from typing import Optional, Iterator, Tuple
+from typing import Optional, Iterator
 
 ### version_check: Checking APSW and SQLite versions
 
@@ -625,7 +625,7 @@ connection.authorizer = None
 # feedback and allows cancelling.
 
 
-def some_numbers(how_many: int) -> Iterator[Tuple[int]]:
+def some_numbers(how_many: int) -> Iterator[tuple[int]]:
     for _ in range(how_many):
         yield (random.randint(0, 9999999999), )
 
@@ -1034,7 +1034,7 @@ query = """WITH RECURSIVE
             SELECT group_concat(rtrim(t),x'0a') FROM a;"""
 
 
-def trace_hook(trace: Dict) -> None:
+def trace_hook(trace: dict) -> None:
     # check the sql and connection are as expected and remove from trace
     # so we don't print them
     assert trace.pop("sql") == query and trace.pop("connection") is connection

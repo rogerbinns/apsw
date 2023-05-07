@@ -11,6 +11,12 @@ next
 enabled when using APSW from `PyPI <https://pypi.org/project/apsw/>`__
 (binary or source). (:issue:`435`)
 
+:ref:`Type stubs <type_stubs>` and typing information in the
+documentation use newer Python conventions such as `|` instead of
+`Union` and `list` instead of `typing.List`, being more concise and
+readable.  (A recent Python is required to use them, but they have no
+effect at runtime.)  (:issue:`438`)
+
 Shell: Errors when SQLite are preparing a statement now show the
 relevant extract of the query, and where the error was detected.
 

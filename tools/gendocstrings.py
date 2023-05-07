@@ -17,6 +17,8 @@ it was modified.
 Beware that this code evolved and was not intelligently designed
 """
 
+from typing import Any
+
 import sys
 import os
 import io
@@ -29,8 +31,6 @@ import collections
 import copy
 import pathlib
 
-from typing import Union, List
-
 # symbols to skip because we can't apply docstrings (PyModule_AddObject doesn't take docstring)
 docstrings_skip = {
     "apsw.compile_options",
@@ -41,6 +41,9 @@ docstrings_skip = {
 }
 
 virtual_table_classes = {"VTCursor", "VTModule", "VTTable"}
+
+# which classes can be subclassed at runtime - all others are marked final
+subclassable = {"Connection", "Cursor", "VFS", "VFSFile", "zeroblob"}
 
 
 def sqlite_links():
@@ -125,7 +128,7 @@ def get_exc_doc(name: str) -> list[str]:
     return all_exc_doc[name]
 
 
-def process_docdb(data: dict) -> list:
+def process_docdb(data: dict[str, Any]) -> list:
     res = []
     for klass, members in data.items():
         for name, docstring in members.items():
@@ -142,7 +145,7 @@ def process_docdb(data: dict) -> list:
     return res
 
 
-def classify(doc: list[str]) -> Union[dict, None]:
+def classify(doc: list[str]) -> dict | None:
     "Process docstring and ignore or update details"
     line = doc[0]
     assert line.startswith(".. ")
@@ -207,7 +210,7 @@ def make_symbol(n: str) -> str:
     return n.rstrip("_")
 
 
-def cppsafe(lines: List[str], eol: str) -> str:
+def cppsafe(lines: list[str], eol: str) -> str:
 
     def backslash(l: str) -> str:
         return l.replace('"', '\\"').replace("\n", "\\n")
@@ -229,7 +232,7 @@ def fixup(item: dict, eol: str) -> str:
     return cppsafe(lines, eol)
 
 
-def simple_signature(signature: List[dict]) -> str:
+def simple_signature(signature: list[dict]) -> str:
     "Return signature simple enough to be accepted for __text_signature__"
     res = ["$self"]
     for param in signature:
@@ -242,7 +245,7 @@ def simple_signature(signature: List[dict]) -> str:
     return "(" + ",".join(res) + ")"
 
 
-def analyze_signature(s: str) -> List[dict]:
+def analyze_signature(s: str) -> list[dict]:
     "parse signature returning info about each item"
     res = []
     if "->" in s:
@@ -312,7 +315,7 @@ def analyze_signature(s: str) -> List[dict]:
     return res
 
 
-def check_and_update(symbol: str, code: str):
+def check_and_update(symbol: str, code: str) -> None:
     for fn in glob.glob("src/*.c"):
         orig = pathlib.Path(fn).read_text()
         if symbol not in orig:
@@ -322,7 +325,7 @@ def check_and_update(symbol: str, code: str):
         raise ValueError(f"Failed to find code with { symbol }")
 
 
-def check_and_update_file(filename: str, symbol: str, code: str):
+def check_and_update_file(filename: str, symbol: str, code: str) -> None:
     lines = pathlib.Path(filename).read_text().split("\n")
     insection = False
     for lineno, line in enumerate(lines):
@@ -391,7 +394,7 @@ type_overrides = {
     },
     "VFSFile.__init__": {
         "filename": "PyObject",
-        "flags": "List[int,int]"
+        "flags": "list[int,int]"
     },
     "VFSFile.xFileControl": {
         "ptr": "pointer"
@@ -415,7 +418,7 @@ type_overrides = {
         "pointer": "pointer"
     },
     "VFS.xOpen": {
-        "flags": "List[int,int]"
+        "flags": "list[int,int]"
     },
     "zeroblob.__init__": {
         "size": "int64"
@@ -574,7 +577,7 @@ def do_argparse(item):
                     default_check = f"{ pname } == NULL"
                 else:
                     breakpoint()
-        elif param["type"] == "Optional[Union[str,URIFilename]]":
+        elif param["type"] == "Optional[str | URIFilename]":
             type = "PyObject *"
             kind = "O&"
             args = ["argcheck_Optional_str_URIFilename"] + args
@@ -622,7 +625,7 @@ def do_argparse(item):
             if param["default"]:
                 breakpoint()
                 pass
-        elif param["type"] == "List[int,int]":
+        elif param["type"] == "list[int,int]":
             type = "PyObject *"
             kind = "O&"
             args = ["argcheck_List_int_int"] + args
@@ -680,11 +683,11 @@ def do_argparse(item):
     return "\n".join(res) + "\n"
 
 
-def is_sequence(s):
+def is_sequence(s: Any) -> bool:
     return isinstance(s, (list, tuple))
 
 
-def get_class_doc(klass: str, items: List[dict]) -> str:
+def get_class_doc(klass: str, items: list[dict]) -> str:
     for item in items:
         if item["name"] == klass:
             return item["doc"]
@@ -717,7 +720,7 @@ def attr_docstring(doc: list[str]) -> list[str]:
     return ds
 
 
-def generate_typestubs(items: list[dict]):
+def generate_typestubs(items: list[dict]) -> None:
     try:
         import apsw
     except ImportError:
@@ -755,22 +758,23 @@ def generate_typestubs(items: list[dict]):
         else:
             if klass != lastclass:
                 lastclass = klass
+                #print("\n", file=out)
                 doc = get_class_doc(klass, items)
 
+                baseindent = ""
+                extra = ""
                 if klass in virtual_table_classes:
-                    baseindent = "    "
-                    print("\nif sys.version_info >= (3, 8):", file=out)
-                    print(f"\n{ baseindent }class { klass }(Protocol):", file=out)
-                else:
-                    baseindent = ""
-                    print(f"\n{ baseindent }class { klass }:", file=out)
+                    extra = "(Protocol)"
+                if klass not in subclassable and klass not in virtual_table_classes:
+                    print("@final", file=out)
+                print(f"{ baseindent }class { klass }{ extra }:", file=out)
                 print(fmt_docstring(doc, indent=f"{ baseindent }    "), file=out)
                 print("", file=out)
 
             if item["kind"] == "method":
                 for find, replace in (
                     ("apsw.", ""),  # some constants
-                    ("List[int,int]", "List[int]"),  # can't see how to type a 2 item list
+                    ("list[int,int]", "list[int]"),  # can't see how to type a 2 item list
                 ):
                     signature = signature.replace(find, replace)
                 if not signature.startswith("(self"):
@@ -804,7 +808,7 @@ def generate_typestubs(items: list[dict]):
         if not n.startswith("mapping_"):
             continue
         mi = get_mapping_info(n)
-        print(f"{ n }: Dict[Union[str,int],Union[int,str]]", file=out)
+        print(f"{ n }: dict[str | int, int | str]", file=out)
         print(f'''"""{ mi["title"] } mapping names to int and int to names.
 Doc at { mi["url"] }
 

@@ -596,7 +596,7 @@ finally:
   return result;
 }
 
-/** .. method:: xOpen(name: Optional[Union[str,URIFilename]], flags: List[int,int]) -> VFSFile
+/** .. method:: xOpen(name: Optional[str | URIFilename], flags: list[int,int]) -> VFSFile
 
     This method should return a new file object based on name.  You
     can return a :class:`VFSFile` from a completely different VFS.
@@ -1244,7 +1244,7 @@ end:
   return res;
 }
 
-/** .. method:: xGetLastError() -> Tuple[int, str]
+/** .. method:: xGetLastError() -> tuple[int, str]
 
    This method is to return an integer error code and (optional) text describing
    the last error that happened in this thread.
@@ -1805,7 +1805,7 @@ APSWVFSFile_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUS
   return (PyObject *)self;
 }
 
-/** .. method:: __init__(vfs: str, filename: Union[str,URIFilename], flags: List[int])
+/** .. method:: __init__(vfs: str, filename: str | URIFilename, flags: list[int])
 
     :param vfs: The vfs you want to inherit behaviour from.  You can
        use an empty string ``""`` to inherit from the default vfs.

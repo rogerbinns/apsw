@@ -21,14 +21,30 @@ APSW Module
 The module is the main interface to SQLite.  Methods and data on the
 module have process wide effects.
 
+.. _type_stubs:
+
 Type Annotations
 ================
 
 Comprehensive `type annotations
-<https://docs.python.org/3/library/typing.html>`__ are included, and
-your code using apsw can be checked using tools like `mypy
-<http://mypy-lang.org/>`__.  You can refer to the types below for
-your annotations (eg as :class:`apsw.SQLiteValue`)
+<https://docs.python.org/3/library/typing.html>`__ `are included <https://github.com/rogerbinns/apsw/blob/master/apsw/__init__.pyi>`__,
+and your code can be checked using tools like `mypy
+<http://mypy-lang.org/>`__.  You can refer to the types below for your
+annotations (eg as :class:`apsw.SQLiteValue`)
+
+Your source files should include::
+
+    from __future__ import annotations
+
+.. note::
+
+  These types are not available at run time, and have no effect when
+  your code is running.  They are only referenced when running a type
+  checker, or using an `IDE
+  <https://en.wikipedia.org/wiki/Language_Server_Protocol>`__.
+
+You will require a recent version of Python to use the type
+annotations.
 
 .. include:: ../doc/typing.rstgen
 
@@ -692,7 +708,7 @@ releasememory(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
   return PyLong_FromLong(sqlite3_release_memory(amount));
 }
 
-/** .. method:: status(op: int, reset: bool = False) -> Tuple[int, int]
+/** .. method:: status(op: int, reset: bool = False) -> tuple[int, int]
 
   Returns current and highwater measurements.
 
@@ -730,7 +746,7 @@ status(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
   return Py_BuildValue("(LL)", current, highwater);
 }
 
-/** .. method:: vfsnames() -> List[str]
+/** .. method:: vfsnames() -> list[str]
 
   Returns a list of the currently installed :ref:`vfs <vfs>`.  The first
   item in the list is the default vfs.
@@ -1155,7 +1171,7 @@ fail:
 #endif
 
 /** .. attribute:: compile_options
-    :type: Tuple[str, ...]
+    :type: tuple[str, ...]
 
     A tuple of the options used to compile SQLite.  For example it
     will be something like this::
@@ -1202,7 +1218,7 @@ fail:
 }
 
 /** .. attribute:: keywords
-    :type: Set[str]
+    :type: set[str]
 
     A set containing every SQLite keyword
 
@@ -1804,7 +1820,7 @@ PyInit_apsw(void)
 #undef ADD
 
   /** .. attribute:: connection_hooks
-       :type: List[Callable[[Connection], None]]
+       :type: list[Callable[[Connection], None]]
 
        The purpose of the hooks is to allow the easy registration of
        :meth:`functions <Connection.createscalarfunction>`,

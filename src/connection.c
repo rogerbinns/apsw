@@ -857,7 +857,7 @@ Connection_getautocommit(Connection *self)
   Py_RETURN_FALSE;
 }
 
-/** .. method:: db_names() -> List[str]
+/** .. method:: db_names() -> list[str]
 
  Returns the list of database names.  For example the first database
  is named 'main', the next 'temp', and the rest with the name provided
@@ -3531,7 +3531,7 @@ Connection_wal_autocheckpoint(Connection *self, PyObject *args, PyObject *kwds)
   return NULL;
 }
 
-/** .. method:: wal_checkpoint(dbname: Optional[str] = None, mode: int = apsw.SQLITE_CHECKPOINT_PASSIVE) -> Tuple[int, int]
+/** .. method:: wal_checkpoint(dbname: Optional[str] = None, mode: int = apsw.SQLITE_CHECKPOINT_PASSIVE) -> tuple[int, int]
 
     Does a WAL checkpoint.  Has no effect if the database(s) are not in WAL mode.
 
@@ -4087,7 +4087,7 @@ Connection_config(Connection *self, PyObject *args)
   }
 }
 
-/** .. method:: status(op: int, reset: bool = False) -> Tuple[int, int]
+/** .. method:: status(op: int, reset: bool = False) -> tuple[int, int]
 
   Returns current and highwater measurements for the database.
 
@@ -4357,7 +4357,7 @@ error:
   return res;
 }
 
-/** .. method:: cache_stats(include_entries: bool = False) -> Dict[str, int]
+/** .. method:: cache_stats(include_entries: bool = False) -> dict[str, int]
 
 Returns information about the statement cache as dict.
 
@@ -4466,7 +4466,7 @@ Connection_table_exists(Connection *self, PyObject *args, PyObject *kwds)
   return Py_NewRef((res == SQLITE_OK) ? Py_True : Py_False);
 }
 
-/** .. method:: column_metadata(dbname: Optional[str], table_name: str, column_name: str) -> Tuple[str, str, bool, bool, bool]
+/** .. method:: column_metadata(dbname: Optional[str], table_name: str, column_name: str) -> tuple[str, str, bool, bool, bool]
 
   `dbname` is the specific database (eg "main", "temp") or None to search
   all databases.
