@@ -328,7 +328,7 @@
 "\n" \
 "Calls: `sqlite3_libversion <https://sqlite.org/c3ref/libversion.html>`__\n" 
 
-#define  Apsw_status_DOC "status($self,op,reset=False)\n--\n\napsw.status(op: int, reset: bool = False) -> Tuple[int, int]\n\n" \
+#define  Apsw_status_DOC "status($self,op,reset=False)\n--\n\napsw.status(op: int, reset: bool = False) -> tuple[int, int]\n\n" \
 "Returns current and highwater measurements.\n" \
 "\n" \
 ":param op: A `status parameter <https://sqlite.org/c3ref/c_status_malloc_size.html>`_\n" \
@@ -341,9 +341,9 @@
 "\n" \
 "Calls: `sqlite3_status64 <https://sqlite.org/c3ref/status.html>`__\n" 
 
-#define Apsw_status_reset_MSG  "argument 'reset' of apsw.status(op: int, reset: bool = False) -> Tuple[int, int]" 
+#define Apsw_status_reset_MSG  "argument 'reset' of apsw.status(op: int, reset: bool = False) -> tuple[int, int]" 
 
-#define Apsw_status_USAGE "apsw.status(op: int, reset: bool = False) -> Tuple[int, int]"
+#define Apsw_status_USAGE "apsw.status(op: int, reset: bool = False) -> tuple[int, int]"
 
 #define Apsw_status_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(op), int)); \
@@ -423,7 +423,7 @@
 } while(0)
 
 
-#define  Apsw_vfsnames_DOC "vfsnames($self)\n--\n\napsw.vfsnames() -> List[str]\n\n" \
+#define  Apsw_vfsnames_DOC "vfsnames($self)\n--\n\napsw.vfsnames() -> list[str]\n\n" \
 "Returns a list of the currently installed :ref:`vfs <vfs>`.  The first\n" \
 "item in the list is the default vfs.\n" 
 
@@ -608,7 +608,7 @@
 } while(0)
 
 
-#define  Blob_readinto_DOC "readinto($self,buffer,offset=0,length=-1)\n--\n\nBlob.readinto(buffer: Union[bytearray, array.array[Any], memoryview], offset: int = 0, length: int = -1) -> None\n\n" \
+#define  Blob_readinto_DOC "readinto($self,buffer,offset=0,length=-1)\n--\n\nBlob.readinto(buffer: bytearray |  array.array[Any] | memoryview, offset: int = 0, length: int = -1) -> None\n\n" \
 "Reads from the blob into a buffer you have supplied.  This method is\n" \
 "useful if you already have a buffer like object that data is being\n" \
 "assembled in, and avoids allocating results in :meth:`Blob.read` and\n" \
@@ -628,7 +628,7 @@
 "\n" \
 "Calls: `sqlite3_blob_read <https://sqlite.org/c3ref/blob_read.html>`__\n" 
 
-#define Blob_readinto_USAGE "Blob.readinto(buffer: Union[bytearray, array.array[Any], memoryview], offset: int = 0, length: int = -1) -> None"
+#define Blob_readinto_USAGE "Blob.readinto(buffer: bytearray |  array.array[Any] | memoryview, offset: int = 0, length: int = -1) -> None"
 
 #define Blob_readinto_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(buffer), PyObject *)); \
@@ -809,7 +809,7 @@
 } while(0)
 
 
-#define  Connection_cache_stats_DOC "cache_stats($self,include_entries=False)\n--\n\nConnection.cache_stats(include_entries: bool = False) -> Dict[str, int]\n\n" \
+#define  Connection_cache_stats_DOC "cache_stats($self,include_entries=False)\n--\n\nConnection.cache_stats(include_entries: bool = False) -> dict[str, int]\n\n" \
 "Returns information about the statement cache as dict.\n" \
 "\n" \
 ".. note::\n" \
@@ -868,9 +868,9 @@
 "    - Boolean indicating if there was more query text than\n" \
 "      the first statement\n" 
 
-#define Connection_cache_stats_include_entries_MSG  "argument 'include_entries' of Connection.cache_stats(include_entries: bool = False) -> Dict[str, int]" 
+#define Connection_cache_stats_include_entries_MSG  "argument 'include_entries' of Connection.cache_stats(include_entries: bool = False) -> dict[str, int]" 
 
-#define Connection_cache_stats_USAGE "Connection.cache_stats(include_entries: bool = False) -> Dict[str, int]"
+#define Connection_cache_stats_USAGE "Connection.cache_stats(include_entries: bool = False) -> dict[str, int]"
 
 #define Connection_cache_stats_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(include_entries), int)); \
@@ -958,7 +958,7 @@
 } while(0)
 
 
-#define  Connection_column_metadata_DOC "column_metadata($self,dbname,table_name,column_name)\n--\n\nConnection.column_metadata(dbname: Optional[str], table_name: str, column_name: str) -> Tuple[str, str, bool, bool, bool]\n\n" \
+#define  Connection_column_metadata_DOC "column_metadata($self,dbname,table_name,column_name)\n--\n\nConnection.column_metadata(dbname: Optional[str], table_name: str, column_name: str) -> tuple[str, str, bool, bool, bool]\n\n" \
 "`dbname` is the specific database (eg \"main\", \"temp\") or None to search\n" \
 "all databases.\n" \
 "\n" \
@@ -976,7 +976,7 @@
 "\n" \
 "Calls: `sqlite3_table_column_metadata <https://sqlite.org/c3ref/table_column_metadata.html>`__\n" 
 
-#define Connection_column_metadata_USAGE "Connection.column_metadata(dbname: Optional[str], table_name: str, column_name: str) -> Tuple[str, str, bool, bool, bool]"
+#define Connection_column_metadata_USAGE "Connection.column_metadata(dbname: Optional[str], table_name: str, column_name: str) -> tuple[str, str, bool, bool, bool]"
 
 #define Connection_column_metadata_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(dbname), const char *)); \
@@ -1249,7 +1249,7 @@
 } while(0)
 
 
-#define  Connection_db_names_DOC "db_names($self)\n--\n\nConnection.db_names() -> List[str]\n\n" \
+#define  Connection_db_names_DOC "db_names($self)\n--\n\nConnection.db_names() -> list[str]\n\n" \
 "Returns the list of database names.  For example the first database\n" \
 "is named 'main', the next 'temp', and the rest with the name provided\n" \
 "in `ATTACH <https://www.sqlite.org/lang_attach.html>`__\n" \
@@ -1939,7 +1939,7 @@
 ":meth:`sqlitelibversion` and ensure it is the same as the other\n" \
 "libraries.\n" 
 
-#define  Connection_status_DOC "status($self,op,reset=False)\n--\n\nConnection.status(op: int, reset: bool = False) -> Tuple[int, int]\n\n" \
+#define  Connection_status_DOC "status($self,op,reset=False)\n--\n\nConnection.status(op: int, reset: bool = False) -> tuple[int, int]\n\n" \
 "Returns current and highwater measurements for the database.\n" \
 "\n" \
 ":param op: A `status parameter <https://sqlite.org/c3ref/c_dbstatus_options.html>`_\n" \
@@ -1954,9 +1954,9 @@
 "\n" \
 "Calls: `sqlite3_db_status <https://sqlite.org/c3ref/db_status.html>`__\n" 
 
-#define Connection_status_reset_MSG  "argument 'reset' of Connection.status(op: int, reset: bool = False) -> Tuple[int, int]" 
+#define Connection_status_reset_MSG  "argument 'reset' of Connection.status(op: int, reset: bool = False) -> tuple[int, int]" 
 
-#define Connection_status_USAGE "Connection.status(op: int, reset: bool = False) -> Tuple[int, int]"
+#define Connection_status_USAGE "Connection.status(op: int, reset: bool = False) -> tuple[int, int]"
 
 #define Connection_status_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(op), int)); \
@@ -2092,7 +2092,7 @@
 } while(0)
 
 
-#define  Connection_wal_checkpoint_DOC "wal_checkpoint($self,dbname=None,mode=apsw.SQLITE_CHECKPOINT_PASSIVE)\n--\n\nConnection.wal_checkpoint(dbname: Optional[str] = None, mode: int = apsw.SQLITE_CHECKPOINT_PASSIVE) -> Tuple[int, int]\n\n" \
+#define  Connection_wal_checkpoint_DOC "wal_checkpoint($self,dbname=None,mode=apsw.SQLITE_CHECKPOINT_PASSIVE)\n--\n\nConnection.wal_checkpoint(dbname: Optional[str] = None, mode: int = apsw.SQLITE_CHECKPOINT_PASSIVE) -> tuple[int, int]\n\n" \
 "Does a WAL checkpoint.  Has no effect if the database(s) are not in WAL mode.\n" \
 "\n" \
 "  :param dbname:  The name of the database or all databases if None\n" \
@@ -2106,7 +2106,7 @@
 "\n" \
 "Calls: `sqlite3_wal_checkpoint_v2 <https://sqlite.org/c3ref/wal_checkpoint_v2.html>`__\n" 
 
-#define Connection_wal_checkpoint_USAGE "Connection.wal_checkpoint(dbname: Optional[str] = None, mode: int = apsw.SQLITE_CHECKPOINT_PASSIVE) -> Tuple[int, int]"
+#define Connection_wal_checkpoint_USAGE "Connection.wal_checkpoint(dbname: Optional[str] = None, mode: int = apsw.SQLITE_CHECKPOINT_PASSIVE) -> tuple[int, int]"
 
 #define Connection_wal_checkpoint_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(dbname), const char *)); \
@@ -2151,14 +2151,14 @@
 "\n" \
 ":class:`Connection` this cursor is using\n" 
 
-#define  Cursor_description_DOC ":type: Tuple[Tuple[str, str, None, None, None, None, None], ...]\n" \
+#define  Cursor_description_DOC ":type: tuple[tuple[str, str, None, None, None, None, None], ...]\n" \
 "\n" \
 "Based on the `DB-API cursor property\n" \
 "<http://www.python.org/dev/peps/pep-0249/>`__, this returns the\n" \
 "same as :meth:`getdescription` but with 5 Nones appended.  See\n" \
 "also :issue:`131`.\n" 
 
-#define  Cursor_description_full_DOC ":type: Tuple[Tuple[str, str, str, str, str], ...]\n" \
+#define  Cursor_description_full_DOC ":type: tuple[tuple[str, str, str, str, str], ...]\n" \
 "\n" \
 "Only present if SQLITE_ENABLE_COLUMN_METADATA was defined at\n" \
 "compile time.\n" \
@@ -2317,7 +2317,7 @@
 "\n" \
 "Calls: `sqlite3_expanded_sql <https://sqlite.org/c3ref/expanded_sql.html>`__\n" 
 
-#define  Cursor_fetchall_DOC "fetchall($self)\n--\n\nCursor.fetchall() -> list[Tuple[SQLiteValue, ...]]\n\n" \
+#define  Cursor_fetchall_DOC "fetchall($self)\n--\n\nCursor.fetchall() -> list[tuple[SQLiteValue, ...]]\n\n" \
 "Returns all remaining result rows as a list.  This method is defined\n" \
 "in DBAPI.  It is a longer way of doing ``list(cursor)``.\n" 
 
@@ -2350,7 +2350,7 @@
 #define  Cursor_getconnection_DOC "getconnection($self)\n--\n\nCursor.getconnection() -> Connection\n\n" \
 "Returns the :attr:`connection` this cursor is using\n" 
 
-#define  Cursor_getdescription_DOC "getdescription($self)\n--\n\nCursor.getdescription() -> Tuple[Tuple[str, str], ...]\n\n" \
+#define  Cursor_getdescription_DOC "getdescription($self)\n--\n\nCursor.getdescription() -> tuple[tuple[str, str], ...]\n\n" \
 "If you are trying to get information about a table or view,\n" \
 "then `pragma table_info <https://sqlite.org/pragma.html#pragma_table_info>`__\n" \
 "is better.\n" \
@@ -2424,6 +2424,16 @@
 "\n" \
 "`True` if the SQL can be evaluated.  Comments have nothing to\n" \
 " evaluate, and so are `False`.\n" 
+
+#define  Cursor_init_DOC "__init__($self,connection)\n--\n\nCursor.__init__(connection: Connection)\n\n" \
+"Use :meth:`Connection.cursor` to make a new cursor.\n" 
+
+#define Cursor_init_USAGE "Cursor.__init__(connection: Connection)"
+
+#define Cursor_init_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(connection), Connection *)); \
+} while(0)
+
 
 #define  Cursor_is_explain_DOC ":type: int\n" \
 "\n" \
@@ -2767,7 +2777,7 @@
 ":param etraceback: The exception traceback.  Note this\n" \
 "  includes all frames all the way up to the thread being started.\n" 
 
-#define  VFSFile_init_DOC "__init__($self,vfs,filename,flags)\n--\n\nVFSFile.__init__(vfs: str, filename: Union[str,URIFilename], flags: List[int])\n\n" \
+#define  VFSFile_init_DOC "__init__($self,vfs,filename,flags)\n--\n\nVFSFile.__init__(vfs: str, filename: str | URIFilename, flags: list[int])\n\n" \
 ":param vfs: The vfs you want to inherit behaviour from.  You can\n" \
 "   use an empty string ``\"\"`` to inherit from the default vfs.\n" \
 ":param name: The name of the file being opened.  May be an instance of :class:`URIFilename`.\n" \
@@ -2785,9 +2795,9 @@
 "\n" \
 "  :meth:`VFS.xOpen`\n" 
 
-#define VFSFile_init_flags_MSG  "argument 'flags' of VFSFile.__init__(vfs: str, filename: Union[str,URIFilename], flags: List[int])" 
+#define VFSFile_init_flags_MSG  "argument 'flags' of VFSFile.__init__(vfs: str, filename: str | URIFilename, flags: list[int])" 
 
-#define VFSFile_init_USAGE "VFSFile.__init__(vfs: str, filename: Union[str,URIFilename], flags: List[int])"
+#define VFSFile_init_USAGE "VFSFile.__init__(vfs: str, filename: str | URIFilename, flags: list[int])"
 
 #define VFSFile_init_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(vfs), const char *)); \
@@ -3129,7 +3139,7 @@
 } while(0)
 
 
-#define  VFS_xGetLastError_DOC "xGetLastError($self)\n--\n\nVFS.xGetLastError() -> Tuple[int, str]\n\n" \
+#define  VFS_xGetLastError_DOC "xGetLastError($self)\n--\n\nVFS.xGetLastError() -> tuple[int, str]\n\n" \
 "This method is to return an integer error code and (optional) text describing\n" \
 "the last error that happened in this thread.\n" 
 
@@ -3158,7 +3168,7 @@
 } while(0)
 
 
-#define  VFS_xOpen_DOC "xOpen($self,name,flags)\n--\n\nVFS.xOpen(name: Optional[Union[str,URIFilename]], flags: List[int,int]) -> VFSFile\n\n" \
+#define  VFS_xOpen_DOC "xOpen($self,name,flags)\n--\n\nVFS.xOpen(name: Optional[str | URIFilename], flags: list[int,int]) -> VFSFile\n\n" \
 "This method should return a new file object based on name.  You\n" \
 "can return a :class:`VFSFile` from a completely different VFS.\n" \
 "\n" \
@@ -3176,10 +3186,10 @@
 "  opened it read only then *SQLITE_OPEN_READONLY* should be\n" \
 "  set.\n" 
 
-#define VFS_xOpen_name_MSG  "argument 'name' of VFS.xOpen(name: Optional[Union[str,URIFilename]], flags: List[int,int]) -> VFSFile" 
-#define VFS_xOpen_flags_MSG  "argument 'flags' of VFS.xOpen(name: Optional[Union[str,URIFilename]], flags: List[int,int]) -> VFSFile" 
+#define VFS_xOpen_name_MSG  "argument 'name' of VFS.xOpen(name: Optional[str | URIFilename], flags: list[int,int]) -> VFSFile" 
+#define VFS_xOpen_flags_MSG  "argument 'flags' of VFS.xOpen(name: Optional[str | URIFilename], flags: list[int,int]) -> VFSFile" 
 
-#define VFS_xOpen_USAGE "VFS.xOpen(name: Optional[Union[str,URIFilename]], flags: List[int,int]) -> VFSFile"
+#define VFS_xOpen_USAGE "VFS.xOpen(name: Optional[str | URIFilename], flags: list[int,int]) -> VFSFile"
 
 #define VFS_xOpen_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), PyObject *)); \

@@ -2,23 +2,19 @@
 
 import sys
 
-from typing import Union, Tuple, List, Optional, Callable, Any, Dict, \
-        Iterator, Sequence, Literal, Set
+from typing import Optional, Callable, Any, Iterator, Sequence, Literal, final, Protocol
 from collections.abc import Mapping
 import array
 import types
 
-if sys.version_info >= (3, 8):
-        from typing import Protocol
-
-SQLiteValue = Union[None, int, float, bytes, str]
+SQLiteValue = None |  int | float |  bytes | str
 """SQLite supports 5 types - None (NULL), 64 bit signed int, 64 bit
 float, bytes, and str (unicode text)"""
 
-SQLiteValues = Union[Tuple[()], Tuple[SQLiteValue, ...]]
+SQLiteValues = tuple[()] | tuple[SQLiteValue, ...]
 "A sequence of zero or more SQLiteValue"
 
-Bindings = Union[Sequence[Union[SQLiteValue, zeroblob]], Mapping[str, Union[SQLiteValue, zeroblob]]]
+Bindings = Sequence[SQLiteValue | zeroblob] | Mapping[str, SQLiteValue | zeroblob]
 """Query bindings are either a sequence of SQLiteValue, or a dict mapping names
 to SQLiteValues.  You can also provide zeroblob in Bindings. You can use
 dict subclasses or any type registered with :class:`collections.abc.Mapping`
@@ -28,87 +24,83 @@ for named bindings"""
 AggregateT = Any
 "An object provided as first parameter of step and final aggregate functions"
 
-AggregateStep = Union [
-        Callable[[AggregateT], None],
-        Callable[[AggregateT, SQLiteValue], None],
-        Callable[[AggregateT, SQLiteValue, SQLiteValue], None],
-        Callable[[AggregateT, SQLiteValue, SQLiteValue, SQLiteValue], None],
-        Callable[[AggregateT, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], None],
-        Callable[[AggregateT, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], None],
-        Callable[[AggregateT, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], None],
-]
+AggregateStep = \
+        Callable[[AggregateT], None] | \
+        Callable[[AggregateT, SQLiteValue], None] | \
+        Callable[[AggregateT, SQLiteValue, SQLiteValue], None] | \
+        Callable[[AggregateT, SQLiteValue, SQLiteValue, SQLiteValue], None] | \
+        Callable[[AggregateT, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], None] | \
+        Callable[[AggregateT, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], None] | \
+        Callable[[AggregateT, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], None]
+
 "AggregateStep is called on each matching row with the relevant number of SQLiteValue"
 
 AggregateFinal= Callable[[AggregateT], SQLiteValue]
 "Final is called after all matching rows have been processed by step, and returns a SQLiteValue"
 
-AggregateFactory = Callable[[], Tuple[AggregateT, AggregateStep, AggregateFinal]]
+AggregateFactory = Callable[[], tuple[AggregateT, AggregateStep, AggregateFinal]]
 """Called each time for the start of a new calculation using an aggregate function,
 returning an object, a step function and a final function"""
 
-ScalarProtocol = Union [
-        Callable[[], SQLiteValue],
-        Callable[[SQLiteValue], SQLiteValue],
-        Callable[[SQLiteValue, SQLiteValue], SQLiteValue],
-        Callable[[SQLiteValue, SQLiteValue, SQLiteValue], SQLiteValue],
-        Callable[[SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], SQLiteValue],
-        Callable[[SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], SQLiteValue],
-        Callable[[SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], SQLiteValue],
+ScalarProtocol = \
+        Callable[[], SQLiteValue] | \
+        Callable[[SQLiteValue], SQLiteValue] | \
+        Callable[[SQLiteValue, SQLiteValue], SQLiteValue] | \
+        Callable[[SQLiteValue, SQLiteValue, SQLiteValue], SQLiteValue] | \
+        Callable[[SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], SQLiteValue] | \
+        Callable[[SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], SQLiteValue] | \
+        Callable[[SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], SQLiteValue] | \
         Callable[[SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], SQLiteValue]
-]
+
 """Scalar callbacks take zero or more SQLiteValues, and return a SQLiteValue"""
 
 
-if sys.version_info >= (3, 8):
-    class WindowClass(Protocol):
+class WindowClass(Protocol):
         "Represents a running window function"
         def step(self, param: SQLiteValue) -> None:
-            "Adds the param(s) to the window"
-            ...
+                "Adds the param(s) to the window"
+                ...
         def final(self) -> SQLiteValue:
-            "Finishes the function and returns final value"
-            ...
+                "Finishes the function and returns final value"
+                ...
         def value(self) -> SQLiteValue:
-            "Returns the current value"
-            ...
+                "Returns the current value"
+                ...
         def inverse(self, param: SQLiteValue) -> None:
-            "Removes the param(s) from the window"
-            ...
+                "Removes the param(s) from the window"
+                ...
 
 WindowT = Any
 "An object provided as first parameter of the 4 window functions, if not using class based callbacks"
 
-WindowStep = Union[
-        Callable[[WindowT], None],
-        Callable[[WindowT, SQLiteValue], None],
-        Callable[[WindowT, SQLiteValue, SQLiteValue], None],
-        Callable[[WindowT, SQLiteValue, SQLiteValue, SQLiteValue], None],
+WindowStep = \
+        Callable[[WindowT], None] | \
+        Callable[[WindowT, SQLiteValue], None] | \
+        Callable[[WindowT, SQLiteValue, SQLiteValue], None] | \
+        Callable[[WindowT, SQLiteValue, SQLiteValue, SQLiteValue], None] | \
         Callable[[WindowT, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], None]
-]
 """Window function step takes zero or more SQLiteValues"""
 
-WindowFinal = Union[
-        Callable[[WindowT], SQLiteValue],
-        Callable[[WindowT, SQLiteValue], SQLiteValue],
-        Callable[[WindowT, SQLiteValue, SQLiteValue], SQLiteValue],
-        Callable[[WindowT, SQLiteValue, SQLiteValue, SQLiteValue], SQLiteValue],
+WindowFinal = \
+        Callable[[WindowT], SQLiteValue] | \
+        Callable[[WindowT, SQLiteValue], SQLiteValue] | \
+        Callable[[WindowT, SQLiteValue, SQLiteValue], SQLiteValue] | \
+        Callable[[WindowT, SQLiteValue, SQLiteValue, SQLiteValue], SQLiteValue] | \
         Callable[[WindowT, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], SQLiteValue]
-]
 """Window function final takes zero or more SQLiteValues, and returns a SQLiteValue"""
 
 WindowValue = Callable[[WindowT], SQLiteValue]
 """Window function value returns the current  SQLiteValue"""
 
-WindowInverse = Union[
-        Callable[[WindowT], None],
-        Callable[[WindowT, SQLiteValue], None],
-        Callable[[WindowT, SQLiteValue, SQLiteValue], None],
-        Callable[[WindowT, SQLiteValue, SQLiteValue, SQLiteValue], None],
+WindowInverse = \
+        Callable[[WindowT], None] | \
+        Callable[[WindowT, SQLiteValue], None] | \
+        Callable[[WindowT, SQLiteValue, SQLiteValue], None] | \
+        Callable[[WindowT, SQLiteValue, SQLiteValue, SQLiteValue], None] | \
         Callable[[WindowT, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], None]
-]
 """Window function inverse takes zero or more SQLiteValues"""
 
-WindowFactory = Callable[[], Union[WindowClass, Tuple[WindowT, WindowStep, WindowFinal, WindowValue, WindowInverse]]]
+WindowFactory = Callable[[], WindowClass |  tuple[WindowT, WindowStep, WindowFinal, WindowValue, WindowInverse]]
 """Called each time at the start of a new window function execution.  It should return either an object
 with relevant methods or an object used as the first parameter and the 4 methods"""
 
@@ -157,7 +149,7 @@ def apswversion() -> str:
     """Returns the APSW version."""
     ...
 
-compile_options: Tuple[str, ...]
+compile_options: tuple[str, ...]
 """A tuple of the options used to compile SQLite.  For example it
 will be something like this::
 
@@ -194,7 +186,7 @@ def config(op: int, *args: Any) -> None:
     Calls: `sqlite3_config <https://sqlite.org/c3ref/config.html>`__"""
     ...
 
-connection_hooks: List[Callable[[Connection], None]]
+connection_hooks: list[Callable[[Connection], None]]
 """The purpose of the hooks is to allow the easy registration of
 :meth:`functions <Connection.createscalarfunction>`,
 :ref:`virtual tables <virtualtables>` or similar items with
@@ -307,7 +299,7 @@ def initialize() -> None:
     Calls: `sqlite3_initialize <https://sqlite.org/c3ref/initialize.html>`__"""
     ...
 
-keywords: Set[str]
+keywords: set[str]
 """A set containing every SQLite keyword
 
 Calls:
@@ -419,7 +411,7 @@ def sqlitelibversion() -> str:
     Calls: `sqlite3_libversion <https://sqlite.org/c3ref/libversion.html>`__"""
     ...
 
-def status(op: int, reset: bool = False) -> Tuple[int, int]:
+def status(op: int, reset: bool = False) -> tuple[int, int]:
     """Returns current and highwater measurements.
 
     :param op: A `status parameter <https://sqlite.org/c3ref/c_status_malloc_size.html>`_
@@ -474,12 +466,12 @@ use (statically compiled into APSW).  Using the amalgamation means
 that SQLite shared libraries are not used and will not affect your
 code."""
 
-def vfsnames() -> List[str]:
+def vfsnames() -> list[str]:
     """Returns a list of the currently installed :ref:`vfs <vfs>`.  The first
     item in the list is the default vfs."""
     ...
 
-
+@final
 class Backup:
     """You create a backup instance by calling :meth:`Connection.backup`."""
 
@@ -554,7 +546,7 @@ class Backup:
         Calls: `sqlite3_backup_step <https://sqlite.org/c3ref/backup_finish.html#sqlite3backupstep>`__"""
         ...
 
-
+@final
 class Blob:
     """This object is created by :meth:`Connection.blobopen` and provides
     access to a blob in the database.  It behaves like a Python file.
@@ -626,7 +618,7 @@ class Blob:
         Calls: `sqlite3_blob_read <https://sqlite.org/c3ref/blob_read.html>`__"""
         ...
 
-    def readinto(self, buffer: Union[bytearray, array.array[Any], memoryview], offset: int = 0, length: int = -1) -> None:
+    def readinto(self, buffer: bytearray |  array.array[Any] | memoryview, offset: int = 0, length: int = -1) -> None:
         """Reads from the blob into a buffer you have supplied.  This method is
         useful if you already have a buffer like object that data is being
         assembled in, and avoids allocating results in :meth:`Blob.read` and
@@ -682,7 +674,6 @@ class Blob:
 
         Calls: `sqlite3_blob_write <https://sqlite.org/c3ref/blob_write.html>`__"""
         ...
-
 
 class Connection:
     """This object wraps a `sqlite3 pointer
@@ -774,7 +765,7 @@ class Connection:
         Calls: `sqlite3_blob_open <https://sqlite.org/c3ref/blob_open.html>`__"""
         ...
 
-    def cache_stats(self, include_entries: bool = False) -> Dict[str, int]:
+    def cache_stats(self, include_entries: bool = False) -> dict[str, int]:
         """Returns information about the statement cache as dict.
 
         .. note::
@@ -896,7 +887,7 @@ class Connection:
         Calls: `sqlite3_collation_needed <https://sqlite.org/c3ref/collation_needed.html>`__"""
         ...
 
-    def column_metadata(self, dbname: Optional[str], table_name: str, column_name: str) -> Tuple[str, str, bool, bool, bool]:
+    def column_metadata(self, dbname: Optional[str], table_name: str, column_name: str) -> tuple[str, str, bool, bool, bool]:
         """`dbname` is the specific database (eg "main", "temp") or None to search
         all databases.
 
@@ -1098,7 +1089,7 @@ class Connection:
         Calls: `sqlite3_db_filename <https://sqlite.org/c3ref/db_filename.html>`__"""
         ...
 
-    def db_names(self) -> List[str]:
+    def db_names(self) -> list[str]:
         """Returns the list of database names.  For example the first database
         is named 'main', the next 'temp', and the rest with the name provided
         in `ATTACH <https://www.sqlite.org/lang_attach.html>`__
@@ -1602,7 +1593,7 @@ class Connection:
         libraries."""
         ...
 
-    def status(self, op: int, reset: bool = False) -> Tuple[int, int]:
+    def status(self, op: int, reset: bool = False) -> tuple[int, int]:
         """Returns current and highwater measurements for the database.
 
         :param op: A `status parameter <https://sqlite.org/c3ref/c_dbstatus_options.html>`_
@@ -1708,7 +1699,7 @@ class Connection:
         Calls: `sqlite3_wal_autocheckpoint <https://sqlite.org/c3ref/wal_autocheckpoint.html>`__"""
         ...
 
-    def wal_checkpoint(self, dbname: Optional[str] = None, mode: int = SQLITE_CHECKPOINT_PASSIVE) -> Tuple[int, int]:
+    def wal_checkpoint(self, dbname: Optional[str] = None, mode: int = SQLITE_CHECKPOINT_PASSIVE) -> tuple[int, int]:
         """Does a WAL checkpoint.  Has no effect if the database(s) are not in WAL mode.
 
           :param dbname:  The name of the database or all databases if None
@@ -1722,7 +1713,6 @@ class Connection:
 
         Calls: `sqlite3_wal_checkpoint_v2 <https://sqlite.org/c3ref/wal_checkpoint_v2.html>`__"""
         ...
-
 
 class Cursor:
     """You obtain cursors by calling :meth:`Connection.cursor`."""
@@ -1750,13 +1740,13 @@ class Cursor:
     connection: Connection
     """:class:`Connection` this cursor is using"""
 
-    description: Tuple[Tuple[str, str, None, None, None, None, None], ...]
+    description: tuple[tuple[str, str, None, None, None, None, None], ...]
     """Based on the `DB-API cursor property
     <http://www.python.org/dev/peps/pep-0249/>`__, this returns the
     same as :meth:`getdescription` but with 5 Nones appended.  See
     also :issue:`131`."""
 
-    description_full: Tuple[Tuple[str, str, str, str, str], ...]
+    description_full: tuple[tuple[str, str, str, str, str], ...]
     """Only present if SQLITE_ENABLE_COLUMN_METADATA was defined at
     compile time.
 
@@ -1884,7 +1874,7 @@ class Cursor:
 
     Calls: `sqlite3_expanded_sql <https://sqlite.org/c3ref/expanded_sql.html>`__"""
 
-    def fetchall(self) -> list[Tuple[SQLiteValue, ...]]:
+    def fetchall(self) -> list[tuple[SQLiteValue, ...]]:
         """Returns all remaining result rows as a list.  This method is defined
         in DBAPI.  It is a longer way of doing ``list(cursor)``."""
         ...
@@ -1919,7 +1909,7 @@ class Cursor:
         """Returns the :attr:`connection` this cursor is using"""
         ...
 
-    def getdescription(self) -> Tuple[Tuple[str, str], ...]:
+    def getdescription(self) -> tuple[tuple[str, str], ...]:
         """If you are trying to get information about a table or view,
         then `pragma table_info <https://sqlite.org/pragma.html#pragma_table_info>`__
         is better.
@@ -1996,6 +1986,10 @@ class Cursor:
     """`True` if the SQL can be evaluated.  Comments have nothing to
      evaluate, and so are `False`."""
 
+    def __init__(self, connection: Connection):
+        """Use :meth:`Connection.cursor` to make a new cursor."""
+        ...
+
     is_explain: int
     """Returns 0 if executing a normal query, 1 if it is an EXPLAIN query,
     and 2 if an EXPLAIN QUERY PLAN query.
@@ -2039,7 +2033,7 @@ class Cursor:
         """Sets the :attr:`row tracer <Cursor.rowtrace>`"""
         ...
 
-
+@final
 class IndexInfo:
     """IndexInfo represents the `sqlite3_index_info
     <https://www.sqlite.org/c3ref/index_info.html>`__ and associated
@@ -2150,7 +2144,7 @@ class IndexInfo:
         """Sets *omit* for *aConstraintUsage[which]*"""
         ...
 
-
+@final
 class URIFilename:
     """SQLite uses a convoluted method of storing `uri parameters
     <https://sqlite.org/uri.html>`__ after the filename binding the
@@ -2189,7 +2183,6 @@ class URIFilename:
         Calls: `sqlite3_uri_parameter <https://sqlite.org/c3ref/uri_boolean.html>`__"""
         ...
 
-
 class VFSFile:
     """Wraps access to a file.  You only need to derive from this class
     if you want the file object returned from :meth:`VFS.xOpen` to
@@ -2212,7 +2205,7 @@ class VFSFile:
           includes all frames all the way up to the thread being started."""
         ...
 
-    def __init__(self, vfs: str, filename: Union[str,URIFilename], flags: List[int]):
+    def __init__(self, vfs: str, filename: str | URIFilename, flags: list[int]):
         """:param vfs: The vfs you want to inherit behaviour from.  You can
            use an empty string ``""`` to inherit from the default vfs.
         :param name: The name of the file being opened.  May be an instance of :class:`URIFilename`.
@@ -2338,7 +2331,6 @@ class VFSFile:
 
         :param offset: Where to start writing. This number may be 64 bit once the database is larger than 2GB."""
         ...
-
 
 class VFS:
     """Provides operating system access.  You can get an overview in the
@@ -2469,7 +2461,7 @@ class VFS:
         """Return the absolute pathname for name.  You can use ``os.path.abspath`` to do this."""
         ...
 
-    def xGetLastError(self) -> Tuple[int, str]:
+    def xGetLastError(self) -> tuple[int, str]:
         """This method is to return an integer error code and (optional) text describing
         the last error that happened in this thread."""
         ...
@@ -2487,7 +2479,7 @@ class VFS:
         then return None."""
         ...
 
-    def xOpen(self, name: Optional[Union[str,URIFilename]], flags: List[int]) -> VFSFile:
+    def xOpen(self, name: Optional[str | URIFilename], flags: list[int]) -> VFSFile:
         """This method should return a new file object based on name.  You
         can return a :class:`VFSFile` from a completely different VFS.
 
@@ -2546,515 +2538,505 @@ class VFS:
           should return that rounded up value."""
         ...
 
+class VTCursor(Protocol):
+    """.. note::
 
-if sys.version_info >= (3, 8):
-
-    class VTCursor(Protocol):
-        """.. note::
-
-          There is no actual *VTCursor* class - it is shown this way for
-          documentation convenience and is present as a `typing protocol
-          <https://docs.python.org/3/library/typing.html#typing.Protocol>`__.
-          Your cursor instance should implement all the methods documented
-          here.
+      There is no actual *VTCursor* class - it is shown this way for
+      documentation convenience and is present as a `typing protocol
+      <https://docs.python.org/3/library/typing.html#typing.Protocol>`__.
+      Your cursor instance should implement all the methods documented
+      here.
 
 
-        The :class:`VTCursor` object is used for iterating over a table.
-        There may be many cursors simultaneously so each one needs to keep
-        track of where      :ref:`Virtual table structure <vtablestructure>`
-        it is.
+    The :class:`VTCursor` object is used for iterating over a table.
+    There may be many cursors simultaneously so each one needs to keep
+    track of where      :ref:`Virtual table structure <vtablestructure>`
+    it is.
+
+    .. seealso::
+
+         :ref:`Virtual table structure <vtablestructure>`"""
+
+    def Close(self) -> None:
+        """This is the destructor for the cursor. Note that you must
+        cleanup. The method will not be called again if you raise an
+        exception."""
+        ...
+
+    def Column(self, number: int) -> SQLiteValue:
+        """Requests the value of the specified column *number* of the current
+        row.  If *number* is -1 then return the rowid.
+
+        :returns: Must be one one of the :ref:`5
+          supported types <types>`"""
+        ...
+
+    def ColumnNoChange(self, number: int) -> SQLiteValue:
+        """:meth:`VTTable.UpdateChangeRow` is going to be called which includes
+        values for all columns.  However this column is not going to be changed
+        in that update.
+
+        If you return :attr:`apsw.no_change` then :meth:`VTTable.UpdateChangeRow`
+        will have :attr:`apsw.no_change` for this column.  If you return
+        anything else then it will have that value - as though :meth:`VTCursor.Column`
+        had been called.
+
+        This method will only be called if *use_no_change* was *True* in the
+        call to :meth:`Connection.createmodule`.
+
+        Calls: `sqlite3_vtab_nochange <https://sqlite.org/c3ref/vtab_nochange.html>`__"""
+        ...
+
+    def Eof(self) -> bool:
+        """Called to ask if we are at the end of the table. It is called after each call to Filter and Next.
+
+        :returns: False if the cursor is at a valid row of data, else True
+
+        .. note::
+
+          This method can only return True or False to SQLite.  If you have
+          an exception in the method or provide a non-boolean return then
+          True (no more data) will be returned to SQLite."""
+        ...
+
+    def Filter(self, indexnum: int, indexname: str, constraintargs: Optional[tuple]) -> None:
+        """This method is always called first to initialize an iteration to the
+        first row of the table. The arguments come from the
+        :meth:`~VTTable.BestIndex` or :meth:`~VTTable.BestIndexObject`
+        with constraintargs being a tuple of the constraints you
+        requested. If you always return None in BestIndex then indexnum will
+        be zero, indexstring will be None and constraintargs will be empty).
+
+        If you had an *in* constraint and set :meth:`IndexInfo.set_aConstraintUsage_in`
+        then that value will be a :class:`set`.
+
+        Calls:
+          * `sqlite3_vtab_in_first <https://sqlite.org/c3ref/vtab_in_first.html>`__
+          * `sqlite3_vtab_in_next <https://sqlite.org/c3ref/vtab_in_first.html>`__"""
+        ...
+
+    def Next(self) -> None:
+        """Move the cursor to the next row.  Do not have an exception if there
+        is no next row.  Instead return False when :meth:`~VTCursor.Eof` is
+        subsequently called.
+
+        If you said you had indices in your :meth:`VTTable.BestIndex`
+        return, and they were selected for use as provided in the parameters
+        to :meth:`~VTCursor.Filter` then you should move to the next
+        appropriate indexed and constrained row."""
+        ...
+
+    def Rowid(self) -> int:
+        """Return the current rowid."""
+        ...
+
+class VTModule(Protocol):
+    """.. note::
+
+      There is no actual *VTModule* class - it is shown this way for
+      documentation convenience and is present as a `typing protocol
+      <https://docs.python.org/3/library/typing.html#typing.Protocol>`__.
+      Your module instance should implement all the methods documented here.
+
+    A module instance is used to create the virtual tables.  Once you have
+    a module object, you register it with a connection by calling
+    :meth:`Connection.createmodule`::
+
+      # make an instance
+      mymod=MyModuleClass()
+
+      # register the vtable on connection con
+      con.createmodule("modulename", mymod)
+
+      # tell SQLite about the table
+      con.execute("create VIRTUAL table tablename USING modulename('arg1', 2)")
+
+    The create step is to tell SQLite about the existence of the table.
+    Any number of tables referring to the same module can be made this
+    way.  Note the (optional) arguments which are passed to the module."""
+
+    def Connect(self, connection: Connection, modulename: str, databasename: str, tablename: str, *args: tuple[SQLiteValue, ...])  -> tuple[str, VTTable]:
+        """The parameters and return are identical to
+        :meth:`~VTModule.Create`.  This method is called
+        when there are additional references to the table.  :meth:`~VTModule.Create` will be called the first time and
+        :meth:`~VTModule.Connect` after that.
+
+        The advise is to create caches, generated data and other
+        heavyweight processing on :meth:`~VTModule.Create` calls and then
+        find and reuse that on the subsequent :meth:`~VTModule.Connect`
+        calls.
+
+        The corresponding call is :meth:`VTTable.Disconnect`.  If you have a simple virtual table implementation, then just
+        set :meth:`~VTModule.Connect` to be the same as :meth:`~VTModule.Create`::
+
+          class MyModule:
+
+               def Create(self, connection, modulename, databasename, tablename, *args):
+                   # do lots of hard work
+
+               Connect=Create"""
+        ...
+
+    def Create(self, connection: Connection, modulename: str, databasename: str, tablename: str, *args: tuple[SQLiteValue, ...])  -> tuple[str, VTTable]:
+        """Called when a table is first created on a :class:`connection
+        <Connection>`.
+
+        :param connection: An instance of :class:`Connection`
+        :param modulename: The string name under which the module was :meth:`registered <Connection.createmodule>`
+        :param databasename: The name of the database.  This will be ``main`` for directly opened files and the name specified in
+                `ATTACH <https://sqlite.org/lang_attach.html>`_ statements.
+        :param tablename: Name of the table the user wants to create.
+        :param args: Any arguments that were specified in the `create virtual table <https://sqlite.org/lang_createvtab.html>`_ statement.
+
+        :returns: A list of two items.  The first is a SQL `create table <https://sqlite.org/lang_createtable.html>`_ statement.  The
+             columns are parsed so that SQLite knows what columns and declared types exist for the table.  The second item
+             is an object that implements the :class:`table <VTTable>` methods.
+
+        The corresponding call is :meth:`VTTable.Destroy`."""
+        ...
+
+    def ShadowName(self, table_suffix: str) -> bool:
+        """This method is called to check if
+        *table_suffix* is a `shadow name
+        <https://www.sqlite.org/vtab.html#the_xshadowname_method>`__
+
+        The default implementation always returns *False*.
+
+        If a virtual table is created using this module
+        named :code:`example` and then a  real table is created
+        named :code:`example_content`, this would be called with
+        a *table_suffix* of :code:`content`"""
+        ...
+
+class VTTable(Protocol):
+    """.. note::
+
+      There is no actual *VTTable* class - it is shown this way for
+      documentation convenience and is present as a `typing protocol
+      <https://docs.python.org/3/library/typing.html#typing.Protocol>`__.
+      Your table instance should implement the methods documented here.
+
+    The :class:`VTTable` object contains knowledge of the indices, makes
+    cursors and can perform transactions.
+
+
+    .. _vtablestructure:
+
+    A virtual table is structured as a series of rows, each of which has
+    the same number of columns.  The value in a column must be one of the `5
+    supported types <https://sqlite.org/datatype3.html>`_, but the
+    type can be different between rows for the same column.  The virtual
+    table routines identify the columns by number, starting at zero.
+
+    Each row has a **unique** 64 bit integer `rowid
+    <https://sqlite.org/autoinc.html>`_ with the :class:`Cursor
+    <VTCursor>` routines operating on this number, as well as some of
+    the :class:`Table <VTTable>` routines such as :meth:`UpdateChangeRow
+    <VTTable.UpdateChangeRow>`.
+
+    It is possible to not have a rowid - read more at `the SQLite
+    site <https://www.sqlite.org/vtab.html#_without_rowid_virtual_tables_>`__"""
+
+    def Begin(self) -> None:
+        """This function is used as part of transactions.  You do not have to
+        provide the method."""
+        ...
+
+    def BestIndex(self, constraints: Sequence[tuple[int, int]], orderbys: Sequence[tuple[int, int]]) -> Any:
+        """This is a complex method. To get going initially, just return
+        *None* and you will be fine. You should also consider using
+        :meth:`BestIndexObject` instead.
+
+        Implementing this method reduces the number of rows scanned
+        in your table to satisfy queries, but only if you have an
+        index or index like mechanism available.
+
+        .. note::
+
+          The implementation of this method differs slightly from the
+          `SQLite documentation
+          <https://sqlite.org/vtab.html>`__
+          for the C API. You are not passed "unusable" constraints. The
+          argv/constraintarg positions are not off by one. In the C api, you
+          have to return position 1 to get something passed to
+          :meth:`VTCursor.Filter` in position 0. With the APSW
+          implementation, you return position 0 to get Filter arg 0,
+          position 1 to get Filter arg 1 etc.
+
+        The purpose of this method is to ask if you have the ability to
+        determine if a row meets certain constraints that doesn't involve
+        visiting every row. An example constraint is ``price > 74.99``. In a
+        traditional SQL database, queries with constraints can be speeded up
+        `with indices <https://sqlite.org/lang_createindex.html>`_. If
+        you return None, then SQLite will visit every row in your table and
+        evaluate the constraint itself. Your index choice returned from
+        BestIndex will also be passed to the :meth:`~VTCursor.Filter` method on your cursor
+        object. Note that SQLite may call this method multiple times trying
+        to find the most efficient way of answering a complex query.
+
+        **constraints**
+
+        You will be passed the constraints as a sequence of tuples containing two
+        items. The first item is the column number and the second item is
+        the operation.
+
+           Example query: ``select * from foo where price > 74.99 and
+           quantity<=10 and customer='Acme Widgets'``
+
+           If customer is column 0, price column 2 and quantity column 5
+           then the constraints will be::
+
+             (2, apsw.SQLITE_INDEX_CONSTRAINT_GT),
+             (5, apsw.SQLITE_INDEX_CONSTRAINT_LE),
+             (0, apsw.SQLITE_INDEX_CONSTRAINT_EQ)
+
+           Note that you do not get the value of the constraint (ie "Acme
+           Widgets", 74.99 and 10 in this example).
+
+        If you do have any suitable indices then you return a sequence the
+        same length as constraints with the members mapping to the
+        constraints in order. Each can be one of None, an integer or a tuple
+        of an integer and a boolean.  Conceptually SQLite is giving you a
+        list of constraints and you are returning a list of the same length
+        describing how you could satisfy each one.
+
+        Each list item returned corresponding to a constraint is one of:
+
+           None
+             This means you have no index for that constraint. SQLite
+             will have to iterate over every row for it.
+
+           integer
+             This is the argument number for the constraintargs being passed
+             into the :meth:`~VTCursor.Filter` function of your
+             :class:`cursor <VTCursor>` (the values "Acme Widgets", 74.99
+             and 10 in the example).
+
+           (integer, boolean)
+             By default SQLite will check what you return. For example if
+             you said that you had an index on price and so would only
+             return rows greater than 74.99, then SQLite will still
+             check that each row you returned is greater than 74.99.
+             If the boolean is True then SQLite will not double
+             check, while False retains the default double checking.
+
+        Example query: ``select * from foo where price > 74.99 and
+        quantity<=10 and customer=='Acme Widgets'``.  customer is column 0,
+        price column 2 and quantity column 5.  You can index on customer
+        equality and price.
+
+        +----------------------------------------+--------------------------------+
+        | Constraints (in)                       | Constraints used (out)         |
+        +========================================+================================+
+        | ::                                     | ::                             |
+        |                                        |                                |
+        |  (2, apsw.SQLITE_INDEX_CONSTRAINT_GT), |     1,                         |
+        |  (5, apsw.SQLITE_INDEX_CONSTRAINT_LE), |     None,                      |
+        |  (0, apsw.SQLITE_INDEX_CONSTRAINT_EQ)  |     0                          |
+        |                                        |                                |
+        +----------------------------------------+--------------------------------+
+
+        When your :class:`~VTCursor.Filter` method in the cursor is called,
+        constraintarg[0] will be "Acme Widgets" (customer constraint value)
+        and constraintarg[1] will be 74.99 (price constraint value). You can
+        also return an index number (integer) and index string to use
+        (SQLite attaches no significance to these values - they are passed
+        as is to your :meth:`VTCursor.Filter` method as a way for the
+        BestIndex method to let the :meth:`~VTCursor.Filter` method know
+        which of your indices or similar mechanism to use.
+
+        **orderbys**
+
+
+        The second argument to BestIndex is a sequence of orderbys because
+        the query requested the results in a certain order. If your data is
+        already in that order then SQLite can give the results back as
+        is. If not, then SQLite will have to sort the results first.
+
+          Example query: ``select * from foo order by price desc, quantity asc``
+
+          Price is column 2, quantity column 5 so orderbys will be::
+
+            (2, True),  # True means descending, False is ascending
+            (5, False)
+
+        **Return**
+
+        You should return up to 5 items. Items not present in the return have a default value.
+
+        0: constraints used (default None)
+          This must either be None or a sequence the same length as
+          constraints passed in. Each item should be as specified above
+          saying if that constraint is used, and if so which constraintarg
+          to make the value be in your :meth:`VTCursor.Filter` function.
+
+        1: index number (default zero)
+          This value is passed as is to :meth:`VTCursor.Filter`
+
+        2: index string (default None)
+          This value is passed as is to :meth:`VTCursor.Filter`
+
+        3: orderby consumed (default False)
+          Return True if your output will be in exactly the same order as the orderbys passed in
+
+        4: estimated cost (default a huge number)
+          Approximately how many disk operations are needed to provide the
+          results. SQLite uses the cost to optimise queries. For example if
+          the query includes *A or B* and A has 2,000 operations and B has 100
+          then it is best to evaluate B before A.
+
+        **A complete example**
+
+        Query is ``select * from foo where price>74.99 and quantity<=10 and
+        customer=="Acme Widgets" order by price desc, quantity asc``.
+        Customer is column 0, price column 2 and quantity column 5. You can
+        index on customer equality and price.
+
+        ::
+
+          BestIndex(constraints, orderbys)
+
+          constraints= ( (2, apsw.SQLITE_INDEX_CONSTRAINT_GT),
+                         (5, apsw.SQLITE_INDEX_CONSTRAINT_LE),
+                         (0, apsw.SQLITE_INDEX_CONSTRAINT_EQ)  )
+
+          orderbys= ( (2, True), (5, False) )
+
+
+          # You return
+
+          ( (1, None, 0),   # constraints used
+            27,             # index number
+            "idx_pr_cust",  # index name
+            False,          # results are not in orderbys order
+            1000            # about 1000 disk operations to access index
+          )
+
+
+          # Your Cursor.Filter method will be called with:
+
+          27,              # index number you returned
+          "idx_pr_cust",   # index name you returned
+          "Acme Widgets",  # constraintarg[0] - customer
+          74.99            # constraintarg[1] - price"""
+        ...
+
+    def BestIndexObject(self, index_info: IndexInfo) -> bool:
+        """This method is called instead of :meth:`BestIndex` if
+        *use_bestindex_object* was *True* in the call to
+        :meth:`Connection.createmodule`.
+
+        Use the :class:`IndexInfo` to tell SQLite about your indexes, and
+        extract other information.
+
+        Return *True* to indicate all is well.  If you return *False* or there is an error,
+        then `SQLITE_CONSTRAINT
+        <https://www.sqlite.org/vtab.html#return_value>`__ is returned to
+        SQLite."""
+        ...
+
+    def Commit(self) -> None:
+        """This function is used as part of transactions.  You do not have to
+        provide the method."""
+        ...
+
+    def Destroy(self) -> None:
+        """The opposite of :meth:`VTModule.Create`.  This method is called when
+        the table is no longer used.  Note that you must always release
+        resources even if you intend to return an error, as it will not be
+        called again on error.  SQLite may also leak memory
+        if you return an error."""
+        ...
+
+    def Disconnect(self) -> None:
+        """The opposite of :meth:`VTModule.Connect`.  This method is called when
+        a reference to a virtual table is no longer used, but :meth:`VTTable.Destroy` will
+        be called when the table is no longer used."""
+        ...
+
+    def FindFunction(self, name: str, nargs: int) -> None |  Callable | tuple[int, Callable]:
+        """Called to find if the virtual table has its own implementation of a
+        particular scalar function. You do not have to provide this method.
+
+        :param name: The function name
+        :param nargs: How many arguments the function takes
+
+        Return *None* if you don't have the function.  Zero is then returned to SQLite.
+
+        Return a callable if you have one.  One is then returned to SQLite with the function.
+
+        Return a sequence of int, callable.  The int is returned to SQLite with the function.
+        This is useful for *SQLITE_INDEX_CONSTRAINT_FUNCTION* returns.
+
+        It isn't possible to tell SQLite about exceptions in this function, so an
+        :ref:`unraisable exception <unraisable>` is used.
 
         .. seealso::
 
-             :ref:`Virtual table structure <vtablestructure>`"""
-
-        def Close(self) -> None:
-            """This is the destructor for the cursor. Note that you must
-            cleanup. The method will not be called again if you raise an
-            exception."""
-            ...
-
-        def Column(self, number: int) -> SQLiteValue:
-            """Requests the value of the specified column *number* of the current
-            row.  If *number* is -1 then return the rowid.
-
-            :returns: Must be one one of the :ref:`5
-              supported types <types>`"""
-            ...
-
-        def ColumnNoChange(self, number: int) -> SQLiteValue:
-            """:meth:`VTTable.UpdateChangeRow` is going to be called which includes
-            values for all columns.  However this column is not going to be changed
-            in that update.
-
-            If you return :attr:`apsw.no_change` then :meth:`VTTable.UpdateChangeRow`
-            will have :attr:`apsw.no_change` for this column.  If you return
-            anything else then it will have that value - as though :meth:`VTCursor.Column`
-            had been called.
-
-            This method will only be called if *use_no_change* was *True* in the
-            call to :meth:`Connection.createmodule`.
-
-            Calls: `sqlite3_vtab_nochange <https://sqlite.org/c3ref/vtab_nochange.html>`__"""
-            ...
-
-        def Eof(self) -> bool:
-            """Called to ask if we are at the end of the table. It is called after each call to Filter and Next.
-
-            :returns: False if the cursor is at a valid row of data, else True
-
-            .. note::
-
-              This method can only return True or False to SQLite.  If you have
-              an exception in the method or provide a non-boolean return then
-              True (no more data) will be returned to SQLite."""
-            ...
-
-        def Filter(self, indexnum: int, indexname: str, constraintargs: Optional[Tuple]) -> None:
-            """This method is always called first to initialize an iteration to the
-            first row of the table. The arguments come from the
-            :meth:`~VTTable.BestIndex` or :meth:`~VTTable.BestIndexObject`
-            with constraintargs being a tuple of the constraints you
-            requested. If you always return None in BestIndex then indexnum will
-            be zero, indexstring will be None and constraintargs will be empty).
-
-            If you had an *in* constraint and set :meth:`IndexInfo.set_aConstraintUsage_in`
-            then that value will be a :class:`set`.
-
-            Calls:
-              * `sqlite3_vtab_in_first <https://sqlite.org/c3ref/vtab_in_first.html>`__
-              * `sqlite3_vtab_in_next <https://sqlite.org/c3ref/vtab_in_first.html>`__"""
-            ...
-
-        def Next(self) -> None:
-            """Move the cursor to the next row.  Do not have an exception if there
-            is no next row.  Instead return False when :meth:`~VTCursor.Eof` is
-            subsequently called.
-
-            If you said you had indices in your :meth:`VTTable.BestIndex`
-            return, and they were selected for use as provided in the parameters
-            to :meth:`~VTCursor.Filter` then you should move to the next
-            appropriate indexed and constrained row."""
-            ...
-
-        def Rowid(self) -> int:
-            """Return the current rowid."""
-            ...
-
-
-if sys.version_info >= (3, 8):
-
-    class VTModule(Protocol):
-        """.. note::
-
-          There is no actual *VTModule* class - it is shown this way for
-          documentation convenience and is present as a `typing protocol
-          <https://docs.python.org/3/library/typing.html#typing.Protocol>`__.
-          Your module instance should implement all the methods documented here.
-
-        A module instance is used to create the virtual tables.  Once you have
-        a module object, you register it with a connection by calling
-        :meth:`Connection.createmodule`::
-
-          # make an instance
-          mymod=MyModuleClass()
-
-          # register the vtable on connection con
-          con.createmodule("modulename", mymod)
-
-          # tell SQLite about the table
-          con.execute("create VIRTUAL table tablename USING modulename('arg1', 2)")
-
-        The create step is to tell SQLite about the existence of the table.
-        Any number of tables referring to the same module can be made this
-        way.  Note the (optional) arguments which are passed to the module."""
-
-        def Connect(self, connection: Connection, modulename: str, databasename: str, tablename: str, *args: Tuple[SQLiteValue, ...])  -> Tuple[str, VTTable]:
-            """The parameters and return are identical to
-            :meth:`~VTModule.Create`.  This method is called
-            when there are additional references to the table.  :meth:`~VTModule.Create` will be called the first time and
-            :meth:`~VTModule.Connect` after that.
-
-            The advise is to create caches, generated data and other
-            heavyweight processing on :meth:`~VTModule.Create` calls and then
-            find and reuse that on the subsequent :meth:`~VTModule.Connect`
-            calls.
-
-            The corresponding call is :meth:`VTTable.Disconnect`.  If you have a simple virtual table implementation, then just
-            set :meth:`~VTModule.Connect` to be the same as :meth:`~VTModule.Create`::
-
-              class MyModule:
-
-                   def Create(self, connection, modulename, databasename, tablename, *args):
-                       # do lots of hard work
-
-                   Connect=Create"""
-            ...
-
-        def Create(self, connection: Connection, modulename: str, databasename: str, tablename: str, *args: Tuple[SQLiteValue, ...])  -> Tuple[str, VTTable]:
-            """Called when a table is first created on a :class:`connection
-            <Connection>`.
-
-            :param connection: An instance of :class:`Connection`
-            :param modulename: The string name under which the module was :meth:`registered <Connection.createmodule>`
-            :param databasename: The name of the database.  This will be ``main`` for directly opened files and the name specified in
-                    `ATTACH <https://sqlite.org/lang_attach.html>`_ statements.
-            :param tablename: Name of the table the user wants to create.
-            :param args: Any arguments that were specified in the `create virtual table <https://sqlite.org/lang_createvtab.html>`_ statement.
-
-            :returns: A list of two items.  The first is a SQL `create table <https://sqlite.org/lang_createtable.html>`_ statement.  The
-                 columns are parsed so that SQLite knows what columns and declared types exist for the table.  The second item
-                 is an object that implements the :class:`table <VTTable>` methods.
-
-            The corresponding call is :meth:`VTTable.Destroy`."""
-            ...
-
-        def ShadowName(self, table_suffix: str) -> bool:
-            """This method is called to check if
-            *table_suffix* is a `shadow name
-            <https://www.sqlite.org/vtab.html#the_xshadowname_method>`__
-
-            The default implementation always returns *False*.
-
-            If a virtual table is created using this module
-            named :code:`example` and then a  real table is created
-            named :code:`example_content`, this would be called with
-            a *table_suffix* of :code:`content`"""
-            ...
-
-
-if sys.version_info >= (3, 8):
-
-    class VTTable(Protocol):
-        """.. note::
-
-          There is no actual *VTTable* class - it is shown this way for
-          documentation convenience and is present as a `typing protocol
-          <https://docs.python.org/3/library/typing.html#typing.Protocol>`__.
-          Your table instance should implement the methods documented here.
-
-        The :class:`VTTable` object contains knowledge of the indices, makes
-        cursors and can perform transactions.
-
-
-        .. _vtablestructure:
-
-        A virtual table is structured as a series of rows, each of which has
-        the same number of columns.  The value in a column must be one of the `5
-        supported types <https://sqlite.org/datatype3.html>`_, but the
-        type can be different between rows for the same column.  The virtual
-        table routines identify the columns by number, starting at zero.
-
-        Each row has a **unique** 64 bit integer `rowid
-        <https://sqlite.org/autoinc.html>`_ with the :class:`Cursor
-        <VTCursor>` routines operating on this number, as well as some of
-        the :class:`Table <VTTable>` routines such as :meth:`UpdateChangeRow
-        <VTTable.UpdateChangeRow>`.
-
-        It is possible to not have a rowid - read more at `the SQLite
-        site <https://www.sqlite.org/vtab.html#_without_rowid_virtual_tables_>`__"""
-
-        def Begin(self) -> None:
-            """This function is used as part of transactions.  You do not have to
-            provide the method."""
-            ...
-
-        def BestIndex(self, constraints: Sequence[Tuple[int, int], ...], orderbys: Sequence[Tuple[int, int], ...]) -> Any:
-            """This is a complex method. To get going initially, just return
-            *None* and you will be fine. You should also consider using
-            :meth:`BestIndexObject` instead.
-
-            Implementing this method reduces the number of rows scanned
-            in your table to satisfy queries, but only if you have an
-            index or index like mechanism available.
-
-            .. note::
-
-              The implementation of this method differs slightly from the
-              `SQLite documentation
-              <https://sqlite.org/vtab.html>`__
-              for the C API. You are not passed "unusable" constraints. The
-              argv/constraintarg positions are not off by one. In the C api, you
-              have to return position 1 to get something passed to
-              :meth:`VTCursor.Filter` in position 0. With the APSW
-              implementation, you return position 0 to get Filter arg 0,
-              position 1 to get Filter arg 1 etc.
-
-            The purpose of this method is to ask if you have the ability to
-            determine if a row meets certain constraints that doesn't involve
-            visiting every row. An example constraint is ``price > 74.99``. In a
-            traditional SQL database, queries with constraints can be speeded up
-            `with indices <https://sqlite.org/lang_createindex.html>`_. If
-            you return None, then SQLite will visit every row in your table and
-            evaluate the constraint itself. Your index choice returned from
-            BestIndex will also be passed to the :meth:`~VTCursor.Filter` method on your cursor
-            object. Note that SQLite may call this method multiple times trying
-            to find the most efficient way of answering a complex query.
-
-            **constraints**
-
-            You will be passed the constraints as a sequence of tuples containing two
-            items. The first item is the column number and the second item is
-            the operation.
-
-               Example query: ``select * from foo where price > 74.99 and
-               quantity<=10 and customer='Acme Widgets'``
-
-               If customer is column 0, price column 2 and quantity column 5
-               then the constraints will be::
-
-                 (2, apsw.SQLITE_INDEX_CONSTRAINT_GT),
-                 (5, apsw.SQLITE_INDEX_CONSTRAINT_LE),
-                 (0, apsw.SQLITE_INDEX_CONSTRAINT_EQ)
-
-               Note that you do not get the value of the constraint (ie "Acme
-               Widgets", 74.99 and 10 in this example).
-
-            If you do have any suitable indices then you return a sequence the
-            same length as constraints with the members mapping to the
-            constraints in order. Each can be one of None, an integer or a tuple
-            of an integer and a boolean.  Conceptually SQLite is giving you a
-            list of constraints and you are returning a list of the same length
-            describing how you could satisfy each one.
-
-            Each list item returned corresponding to a constraint is one of:
-
-               None
-                 This means you have no index for that constraint. SQLite
-                 will have to iterate over every row for it.
-
-               integer
-                 This is the argument number for the constraintargs being passed
-                 into the :meth:`~VTCursor.Filter` function of your
-                 :class:`cursor <VTCursor>` (the values "Acme Widgets", 74.99
-                 and 10 in the example).
-
-               (integer, boolean)
-                 By default SQLite will check what you return. For example if
-                 you said that you had an index on price and so would only
-                 return rows greater than 74.99, then SQLite will still
-                 check that each row you returned is greater than 74.99.
-                 If the boolean is True then SQLite will not double
-                 check, while False retains the default double checking.
-
-            Example query: ``select * from foo where price > 74.99 and
-            quantity<=10 and customer=='Acme Widgets'``.  customer is column 0,
-            price column 2 and quantity column 5.  You can index on customer
-            equality and price.
-
-            +----------------------------------------+--------------------------------+
-            | Constraints (in)                       | Constraints used (out)         |
-            +========================================+================================+
-            | ::                                     | ::                             |
-            |                                        |                                |
-            |  (2, apsw.SQLITE_INDEX_CONSTRAINT_GT), |     1,                         |
-            |  (5, apsw.SQLITE_INDEX_CONSTRAINT_LE), |     None,                      |
-            |  (0, apsw.SQLITE_INDEX_CONSTRAINT_EQ)  |     0                          |
-            |                                        |                                |
-            +----------------------------------------+--------------------------------+
-
-            When your :class:`~VTCursor.Filter` method in the cursor is called,
-            constraintarg[0] will be "Acme Widgets" (customer constraint value)
-            and constraintarg[1] will be 74.99 (price constraint value). You can
-            also return an index number (integer) and index string to use
-            (SQLite attaches no significance to these values - they are passed
-            as is to your :meth:`VTCursor.Filter` method as a way for the
-            BestIndex method to let the :meth:`~VTCursor.Filter` method know
-            which of your indices or similar mechanism to use.
-
-            **orderbys**
-
-
-            The second argument to BestIndex is a sequence of orderbys because
-            the query requested the results in a certain order. If your data is
-            already in that order then SQLite can give the results back as
-            is. If not, then SQLite will have to sort the results first.
-
-              Example query: ``select * from foo order by price desc, quantity asc``
-
-              Price is column 2, quantity column 5 so orderbys will be::
-
-                (2, True),  # True means descending, False is ascending
-                (5, False)
-
-            **Return**
-
-            You should return up to 5 items. Items not present in the return have a default value.
-
-            0: constraints used (default None)
-              This must either be None or a sequence the same length as
-              constraints passed in. Each item should be as specified above
-              saying if that constraint is used, and if so which constraintarg
-              to make the value be in your :meth:`VTCursor.Filter` function.
-
-            1: index number (default zero)
-              This value is passed as is to :meth:`VTCursor.Filter`
-
-            2: index string (default None)
-              This value is passed as is to :meth:`VTCursor.Filter`
-
-            3: orderby consumed (default False)
-              Return True if your output will be in exactly the same order as the orderbys passed in
-
-            4: estimated cost (default a huge number)
-              Approximately how many disk operations are needed to provide the
-              results. SQLite uses the cost to optimise queries. For example if
-              the query includes *A or B* and A has 2,000 operations and B has 100
-              then it is best to evaluate B before A.
-
-            **A complete example**
-
-            Query is ``select * from foo where price>74.99 and quantity<=10 and
-            customer=="Acme Widgets" order by price desc, quantity asc``.
-            Customer is column 0, price column 2 and quantity column 5. You can
-            index on customer equality and price.
-
-            ::
-
-              BestIndex(constraints, orderbys)
-
-              constraints= ( (2, apsw.SQLITE_INDEX_CONSTRAINT_GT),
-                             (5, apsw.SQLITE_INDEX_CONSTRAINT_LE),
-                             (0, apsw.SQLITE_INDEX_CONSTRAINT_EQ)  )
-
-              orderbys= ( (2, True), (5, False) )
-
-
-              # You return
-
-              ( (1, None, 0),   # constraints used
-                27,             # index number
-                "idx_pr_cust",  # index name
-                False,          # results are not in orderbys order
-                1000            # about 1000 disk operations to access index
-              )
-
-
-              # Your Cursor.Filter method will be called with:
-
-              27,              # index number you returned
-              "idx_pr_cust",   # index name you returned
-              "Acme Widgets",  # constraintarg[0] - customer
-              74.99            # constraintarg[1] - price"""
-            ...
-
-        def BestIndexObject(self, index_info: IndexInfo) -> bool:
-            """This method is called instead of :meth:`BestIndex` if
-            *use_bestindex_object* was *True* in the call to
-            :meth:`Connection.createmodule`.
-
-            Use the :class:`IndexInfo` to tell SQLite about your indexes, and
-            extract other information.
-
-            Return *True* to indicate all is well.  If you return *False* or there is an error,
-            then `SQLITE_CONSTRAINT
-            <https://www.sqlite.org/vtab.html#return_value>`__ is returned to
-            SQLite."""
-            ...
-
-        def Commit(self) -> None:
-            """This function is used as part of transactions.  You do not have to
-            provide the method."""
-            ...
-
-        def Destroy(self) -> None:
-            """The opposite of :meth:`VTModule.Create`.  This method is called when
-            the table is no longer used.  Note that you must always release
-            resources even if you intend to return an error, as it will not be
-            called again on error.  SQLite may also leak memory
-            if you return an error."""
-            ...
-
-        def Disconnect(self) -> None:
-            """The opposite of :meth:`VTModule.Connect`.  This method is called when
-            a reference to a virtual table is no longer used, but :meth:`VTTable.Destroy` will
-            be called when the table is no longer used."""
-            ...
-
-        def FindFunction(self, name: str, nargs: int) -> Union[None, Callable, Sequence[int, Callable]]:
-            """Called to find if the virtual table has its own implementation of a
-            particular scalar function. You do not have to provide this method.
-
-            :param name: The function name
-            :param nargs: How many arguments the function takes
-
-            Return *None* if you don't have the function.  Zero is then returned to SQLite.
-
-            Return a callable if you have one.  One is then returned to SQLite with the function.
-
-            Return a sequence of int, callable.  The int is returned to SQLite with the function.
-            This is useful for *SQLITE_INDEX_CONSTRAINT_FUNCTION* returns.
-
-            It isn't possible to tell SQLite about exceptions in this function, so an
-            :ref:`unraisable exception <unraisable>` is used.
-
-            .. seealso::
-
-              * :meth:`Connection.overloadfunction`
-              * `FindFunction documentation <https://www.sqlite.org/vtab.html#xfindfunction>`__"""
-            ...
-
-        def Open(self) -> VTCursor:
-            """Returns a :class:`cursor <VTCursor>` object."""
-            ...
-
-        def Release(self, level: int) -> None:
-            """Release nested transactions back to *level*.
-
-            If you do not provide this method then the call succeeds (matching
-            SQLite behaviour when no callback is provided)."""
-            ...
-
-        def Rename(self, newname: str) -> None:
-            """Notification that the table will be given a new name. If you return
-            without raising an exception, then SQLite renames the table (you
-            don't have to do anything). If you raise an exception then the
-            renaming is prevented.  You do not have to provide this method."""
-            ...
-
-        def Rollback(self) -> None:
-            """This function is used as part of transactions.  You do not have to
-            provide the method."""
-            ...
-
-        def Savepoint(self, level: int) -> None:
-            """Set nested transaction to *level*.
-
-            If you do not provide this method then the call succeeds (matching
-            SQLite behaviour when no callback is provided)."""
-            ...
-
-        def Sync(self) -> None:
-            """This function is used as part of transactions.  You do not have to
-            provide the method."""
-            ...
-
-        def UpdateChangeRow(self, row: int, newrowid: int, fields: Tuple[SQLiteValue, ...]) -> None:
-            """Change an existing row.  You may also need to change the rowid - for example if the query was
-            ``UPDATE table SET rowid=rowid+100 WHERE ...``
-
-            :param row: The existing 64 bit integer rowid
-            :param newrowid: If not the same as *row* then also change the rowid to this.
-            :param fields: A tuple of values the same length and order as columns in your table"""
-            ...
-
-        def UpdateDeleteRow(self, rowid: int) -> None:
-            """Delete the row with the specified *rowid*.
-
-            :param rowid: 64 bit integer"""
-            ...
-
-        def UpdateInsertRow(self, rowid: Optional[int], fields: Tuple[SQLiteValue, ...])  -> Optional[int]:
-            """Insert a row with the specified *rowid*.
-
-            :param rowid: *None* if you should choose the rowid yourself, else a 64 bit integer
-            :param fields: A tuple of values the same length and order as columns in your table
-
-            :returns: If *rowid* was *None* then return the id you assigned
-              to the row.  If *rowid* was not *None* then the return value
-              is ignored."""
-            ...
-
+          * :meth:`Connection.overloadfunction`
+          * `FindFunction documentation <https://www.sqlite.org/vtab.html#xfindfunction>`__"""
+        ...
+
+    def Open(self) -> VTCursor:
+        """Returns a :class:`cursor <VTCursor>` object."""
+        ...
+
+    def Release(self, level: int) -> None:
+        """Release nested transactions back to *level*.
+
+        If you do not provide this method then the call succeeds (matching
+        SQLite behaviour when no callback is provided)."""
+        ...
+
+    def Rename(self, newname: str) -> None:
+        """Notification that the table will be given a new name. If you return
+        without raising an exception, then SQLite renames the table (you
+        don't have to do anything). If you raise an exception then the
+        renaming is prevented.  You do not have to provide this method."""
+        ...
+
+    def Rollback(self) -> None:
+        """This function is used as part of transactions.  You do not have to
+        provide the method."""
+        ...
+
+    def Savepoint(self, level: int) -> None:
+        """Set nested transaction to *level*.
+
+        If you do not provide this method then the call succeeds (matching
+        SQLite behaviour when no callback is provided)."""
+        ...
+
+    def Sync(self) -> None:
+        """This function is used as part of transactions.  You do not have to
+        provide the method."""
+        ...
+
+    def UpdateChangeRow(self, row: int, newrowid: int, fields: tuple[SQLiteValue, ...]) -> None:
+        """Change an existing row.  You may also need to change the rowid - for example if the query was
+        ``UPDATE table SET rowid=rowid+100 WHERE ...``
+
+        :param row: The existing 64 bit integer rowid
+        :param newrowid: If not the same as *row* then also change the rowid to this.
+        :param fields: A tuple of values the same length and order as columns in your table"""
+        ...
+
+    def UpdateDeleteRow(self, rowid: int) -> None:
+        """Delete the row with the specified *rowid*.
+
+        :param rowid: 64 bit integer"""
+        ...
+
+    def UpdateInsertRow(self, rowid: Optional[int], fields: tuple[SQLiteValue, ...])  -> Optional[int]:
+        """Insert a row with the specified *rowid*.
+
+        :param rowid: *None* if you should choose the rowid yourself, else a 64 bit integer
+        :param fields: A tuple of values the same length and order as columns in your table
+
+        :returns: If *rowid* was *None* then return the id you assigned
+          to the row.  If *rowid* was not *None* then the return value
+          is ignored."""
+        ...
 
 class zeroblob:
     """If you want to insert a blob into a row, you previously needed to
@@ -3832,13 +3814,13 @@ SQLITE_WARNING_AUTOINDEX: int = 284
 """For `Extended Result Codes <https://sqlite.org/rescode.html>'__"""
 
 
-mapping_access: Dict[Union[str,int],Union[int,str]]
+mapping_access: dict[str | int, int | str]
 """Flags for the xAccess VFS method mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_access_exists.html
 
 SQLITE_ACCESS_EXISTS SQLITE_ACCESS_READ SQLITE_ACCESS_READWRITE"""
 
-mapping_authorizer_function: Dict[Union[str,int],Union[int,str]]
+mapping_authorizer_function: dict[str | int, int | str]
 """Authorizer Action Codes mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_alter_table.html
 
@@ -3853,13 +3835,13 @@ SQLITE_DROP_VIEW SQLITE_DROP_VTABLE SQLITE_FUNCTION SQLITE_INSERT
 SQLITE_PRAGMA SQLITE_READ SQLITE_RECURSIVE SQLITE_REINDEX
 SQLITE_SAVEPOINT SQLITE_SELECT SQLITE_TRANSACTION SQLITE_UPDATE"""
 
-mapping_authorizer_return_codes: Dict[Union[str,int],Union[int,str]]
+mapping_authorizer_return_codes: dict[str | int, int | str]
 """Authorizer Return Codes mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_deny.html
 
 SQLITE_DENY SQLITE_IGNORE"""
 
-mapping_bestindex_constraints: Dict[Union[str,int],Union[int,str]]
+mapping_bestindex_constraints: dict[str | int, int | str]
 """Virtual Table Constraint Operator Codes mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_index_constraint_eq.html
 
@@ -3873,7 +3855,7 @@ SQLITE_INDEX_CONSTRAINT_LT SQLITE_INDEX_CONSTRAINT_MATCH
 SQLITE_INDEX_CONSTRAINT_NE SQLITE_INDEX_CONSTRAINT_OFFSET
 SQLITE_INDEX_CONSTRAINT_REGEXP"""
 
-mapping_config: Dict[Union[str,int],Union[int,str]]
+mapping_config: dict[str | int, int | str]
 """Configuration Options mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_config_covering_index_scan.html
 
@@ -3890,13 +3872,13 @@ SQLITE_CONFIG_SMALL_MALLOC SQLITE_CONFIG_SORTERREF_SIZE
 SQLITE_CONFIG_SQLLOG SQLITE_CONFIG_STMTJRNL_SPILL SQLITE_CONFIG_URI
 SQLITE_CONFIG_WIN32_HEAPSIZE"""
 
-mapping_conflict_resolution_modes: Dict[Union[str,int],Union[int,str]]
+mapping_conflict_resolution_modes: dict[str | int, int | str]
 """Conflict resolution modes mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_fail.html
 
 SQLITE_FAIL SQLITE_REPLACE SQLITE_ROLLBACK"""
 
-mapping_db_config: Dict[Union[str,int],Union[int,str]]
+mapping_db_config: dict[str | int, int | str]
 """Database Connection Configuration Options mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_dbconfig_defensive.html
 
@@ -3911,7 +3893,7 @@ SQLITE_DBCONFIG_MAX SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE
 SQLITE_DBCONFIG_RESET_DATABASE SQLITE_DBCONFIG_TRIGGER_EQP
 SQLITE_DBCONFIG_TRUSTED_SCHEMA SQLITE_DBCONFIG_WRITABLE_SCHEMA"""
 
-mapping_db_status: Dict[Union[str,int],Union[int,str]]
+mapping_db_status: dict[str | int, int | str]
 """Status Parameters for database connections mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_dbstatus_options.html
 
@@ -3924,7 +3906,7 @@ SQLITE_DBSTATUS_LOOKASIDE_MISS_SIZE SQLITE_DBSTATUS_LOOKASIDE_USED
 SQLITE_DBSTATUS_MAX SQLITE_DBSTATUS_SCHEMA_USED
 SQLITE_DBSTATUS_STMT_USED"""
 
-mapping_device_characteristics: Dict[Union[str,int],Union[int,str]]
+mapping_device_characteristics: dict[str | int, int | str]
 """Device Characteristics mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_iocap_atomic.html
 
@@ -3935,7 +3917,7 @@ SQLITE_IOCAP_BATCH_ATOMIC SQLITE_IOCAP_IMMUTABLE
 SQLITE_IOCAP_POWERSAFE_OVERWRITE SQLITE_IOCAP_SAFE_APPEND
 SQLITE_IOCAP_SEQUENTIAL SQLITE_IOCAP_UNDELETABLE_WHEN_OPEN"""
 
-mapping_extended_result_codes: Dict[Union[str,int],Union[int,str]]
+mapping_extended_result_codes: dict[str | int, int | str]
 """Extended Result Codes mapping names to int and int to names.
 Doc at https://sqlite.org/rescode.html
 
@@ -3971,7 +3953,7 @@ SQLITE_READONLY_DBMOVED SQLITE_READONLY_DIRECTORY
 SQLITE_READONLY_RECOVERY SQLITE_READONLY_ROLLBACK
 SQLITE_WARNING_AUTOINDEX"""
 
-mapping_file_control: Dict[Union[str,int],Union[int,str]]
+mapping_file_control: dict[str | int, int | str]
 """Standard File Control Opcodes mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html
 
@@ -3994,13 +3976,13 @@ SQLITE_FCNTL_VFS_POINTER SQLITE_FCNTL_WAL_BLOCK
 SQLITE_FCNTL_WIN32_AV_RETRY SQLITE_FCNTL_WIN32_GET_HANDLE
 SQLITE_FCNTL_WIN32_SET_HANDLE SQLITE_FCNTL_ZIPVFS"""
 
-mapping_function_flags: Dict[Union[str,int],Union[int,str]]
+mapping_function_flags: dict[str | int, int | str]
 """Function Flags mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_deterministic.html
 
 SQLITE_DETERMINISTIC SQLITE_DIRECTONLY SQLITE_INNOCUOUS SQLITE_SUBTYPE"""
 
-mapping_limits: Dict[Union[str,int],Union[int,str]]
+mapping_limits: dict[str | int, int | str]
 """Run-Time Limit Categories mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_limit_attached.html
 
@@ -4010,14 +3992,14 @@ SQLITE_LIMIT_LIKE_PATTERN_LENGTH SQLITE_LIMIT_SQL_LENGTH
 SQLITE_LIMIT_TRIGGER_DEPTH SQLITE_LIMIT_VARIABLE_NUMBER
 SQLITE_LIMIT_VDBE_OP SQLITE_LIMIT_WORKER_THREADS"""
 
-mapping_locking_level: Dict[Union[str,int],Union[int,str]]
+mapping_locking_level: dict[str | int, int | str]
 """File Locking Levels mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_lock_exclusive.html
 
 SQLITE_LOCK_EXCLUSIVE SQLITE_LOCK_NONE SQLITE_LOCK_PENDING
 SQLITE_LOCK_RESERVED SQLITE_LOCK_SHARED"""
 
-mapping_open_flags: Dict[Union[str,int],Union[int,str]]
+mapping_open_flags: dict[str | int, int | str]
 """Flags For File Open Operations mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_open_autoproxy.html
 
@@ -4030,14 +4012,14 @@ SQLITE_OPEN_SUBJOURNAL SQLITE_OPEN_SUPER_JOURNAL SQLITE_OPEN_TEMP_DB
 SQLITE_OPEN_TEMP_JOURNAL SQLITE_OPEN_TRANSIENT_DB SQLITE_OPEN_URI
 SQLITE_OPEN_WAL"""
 
-mapping_prepare_flags: Dict[Union[str,int],Union[int,str]]
+mapping_prepare_flags: dict[str | int, int | str]
 """Prepare Flags mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_prepare_normalize.html
 
 SQLITE_PREPARE_NORMALIZE SQLITE_PREPARE_NO_VTAB
 SQLITE_PREPARE_PERSISTENT"""
 
-mapping_result_codes: Dict[Union[str,int],Union[int,str]]
+mapping_result_codes: dict[str | int, int | str]
 """Result Codes mapping names to int and int to names.
 Doc at https://sqlite.org/rescode.html
 
@@ -4049,7 +4031,7 @@ SQLITE_NOTADB SQLITE_NOTFOUND SQLITE_NOTICE SQLITE_OK SQLITE_PERM
 SQLITE_PROTOCOL SQLITE_RANGE SQLITE_READONLY SQLITE_ROW SQLITE_SCHEMA
 SQLITE_TOOBIG SQLITE_WARNING"""
 
-mapping_statement_status: Dict[Union[str,int],Union[int,str]]
+mapping_statement_status: dict[str | int, int | str]
 """Status Parameters for prepared statements mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_stmtstatus_counter.html
 
@@ -4058,7 +4040,7 @@ SQLITE_STMTSTATUS_FILTER_MISS SQLITE_STMTSTATUS_FULLSCAN_STEP
 SQLITE_STMTSTATUS_MEMUSED SQLITE_STMTSTATUS_REPREPARE
 SQLITE_STMTSTATUS_RUN SQLITE_STMTSTATUS_SORT SQLITE_STMTSTATUS_VM_STEP"""
 
-mapping_status: Dict[Union[str,int],Union[int,str]]
+mapping_status: dict[str | int, int | str]
 """Status Parameters mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_status_malloc_count.html
 
@@ -4068,46 +4050,46 @@ SQLITE_STATUS_PAGECACHE_SIZE SQLITE_STATUS_PAGECACHE_USED
 SQLITE_STATUS_PARSER_STACK SQLITE_STATUS_SCRATCH_OVERFLOW
 SQLITE_STATUS_SCRATCH_SIZE SQLITE_STATUS_SCRATCH_USED"""
 
-mapping_sync: Dict[Union[str,int],Union[int,str]]
+mapping_sync: dict[str | int, int | str]
 """Synchronization Type Flags mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_sync_dataonly.html
 
 SQLITE_SYNC_DATAONLY SQLITE_SYNC_FULL SQLITE_SYNC_NORMAL"""
 
-mapping_trace_codes: Dict[Union[str,int],Union[int,str]]
+mapping_trace_codes: dict[str | int, int | str]
 """SQL Trace Event Codes mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_trace.html
 
 SQLITE_TRACE SQLITE_TRACE_CLOSE SQLITE_TRACE_PROFILE SQLITE_TRACE_ROW
 SQLITE_TRACE_STMT"""
 
-mapping_txn_state: Dict[Union[str,int],Union[int,str]]
+mapping_txn_state: dict[str | int, int | str]
 """Allowed return values from [sqlite3_txn_state()] mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_txn_none.html
 
 SQLITE_TXN_NONE SQLITE_TXN_READ SQLITE_TXN_WRITE"""
 
-mapping_virtual_table_configuration_options: Dict[Union[str,int],Union[int,str]]
+mapping_virtual_table_configuration_options: dict[str | int, int | str]
 """Virtual Table Configuration Options mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_vtab_constraint_support.html
 
 SQLITE_VTAB_CONSTRAINT_SUPPORT SQLITE_VTAB_DIRECTONLY
 SQLITE_VTAB_INNOCUOUS"""
 
-mapping_virtual_table_scan_flags: Dict[Union[str,int],Union[int,str]]
+mapping_virtual_table_scan_flags: dict[str | int, int | str]
 """Virtual Table Scan Flags mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_index_scan_unique.html
 
 SQLITE_INDEX_SCAN_UNIQUE"""
 
-mapping_wal_checkpoint: Dict[Union[str,int],Union[int,str]]
+mapping_wal_checkpoint: dict[str | int, int | str]
 """Checkpoint Mode Values mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_checkpoint_full.html
 
 SQLITE_CHECKPOINT_FULL SQLITE_CHECKPOINT_PASSIVE
 SQLITE_CHECKPOINT_RESTART SQLITE_CHECKPOINT_TRUNCATE"""
 
-mapping_xshmlock_flags: Dict[Union[str,int],Union[int,str]]
+mapping_xshmlock_flags: dict[str | int, int | str]
 """Flags for the xShmLock VFS method mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_shm_exclusive.html
 
