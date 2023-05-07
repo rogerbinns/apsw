@@ -67,7 +67,7 @@ doc-depends: ## pip installs packages needed to build doc
 	$(PYTHON) -m pip install --user -U --break-system-packages --upgrade-strategy eager sphinx sphinx_rtd_theme
 
 dev-depends: ## pip installs packages useful for development (none are necessary)
-	$(PYTHON) -m pip install --user -U --break-system-packages --upgrade-strategy eager yapf mypy pdbpp coverage
+	$(PYTHON) -m pip install --user -U --break-system-packages --upgrade-strategy eager yapf mypy pdbpp coverage build wheel
 
 # This is probably gnu make specific but only developers use this makefile
 $(GENDOCS): doc/%.rst: src/%.c tools/code2rst.py
