@@ -1,13 +1,10 @@
 
 import sys
 
-from typing import Optional, Callable, Any, Iterator, Sequence, Literal
+from typing import Optional, Callable, Any, Iterator, Sequence, Literal, final, Protocol
 from collections.abc import Mapping
 import array
 import types
-
-if sys.version_info >= (3, 8):
-        from typing import Protocol
 
 SQLiteValue = None |  int | float |  bytes | str
 """SQLite supports 5 types - None (NULL), 64 bit signed int, 64 bit
@@ -57,21 +54,20 @@ ScalarProtocol = \
 """Scalar callbacks take zero or more SQLiteValues, and return a SQLiteValue"""
 
 
-if sys.version_info >= (3, 8):
-    class WindowClass(Protocol):
+class WindowClass(Protocol):
         "Represents a running window function"
         def step(self, param: SQLiteValue) -> None:
-            "Adds the param(s) to the window"
-            ...
+                "Adds the param(s) to the window"
+                ...
         def final(self) -> SQLiteValue:
-            "Finishes the function and returns final value"
-            ...
+                "Finishes the function and returns final value"
+                ...
         def value(self) -> SQLiteValue:
-            "Returns the current value"
-            ...
+                "Returns the current value"
+                ...
         def inverse(self, param: SQLiteValue) -> None:
-            "Removes the param(s) from the window"
-            ...
+                "Removes the param(s) from the window"
+                ...
 
 WindowT = Any
 "An object provided as first parameter of the 4 window functions, if not using class based callbacks"
