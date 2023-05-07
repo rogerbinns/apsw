@@ -347,7 +347,7 @@ APSWCursor_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSE
 static int
 APSWCursor_init(APSWCursor *self, PyObject *args, PyObject *kwds)
 {
-  PyObject *connection = NULL;
+  Connection *connection = NULL;
 
   {
     static char *kwlist[] = {"connection", NULL};
@@ -356,7 +356,7 @@ APSWCursor_init(APSWCursor *self, PyObject *args, PyObject *kwds)
       return -1;
   }
 
-  self->connection = (Connection *)Py_NewRef(connection);
+  self->connection = Py_NewRef((PyObject *)connection);
 
   return 0;
 }
