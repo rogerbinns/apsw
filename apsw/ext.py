@@ -2,17 +2,15 @@
 
 from __future__ import annotations
 import collections, collections.abc
-import sys
-if sys.version_info >= (3, 10):
-    from types import NoneType
-else:
-    NoneType = type(None)
+
 
 import dataclasses
 from dataclasses import dataclass, make_dataclass, is_dataclass
 
-from typing import Union, Any, Callable, Sequence, TextIO, Literal, Iterator, Generator
-import types
+import typing
+if typing.TYPE_CHECKING:
+    from typing import Union, Any, Callable, Sequence, TextIO, Literal, Iterator, Generator
+    import types
 
 import functools
 import abc
@@ -120,7 +118,7 @@ class DataClassRowFactory:
         this is just a hint.
         """
         if not t:
-            return Any
+            return typing.Any
         # From 3.1 https://www.sqlite.org/datatype3.html
         t = t.upper()
         if "INT" in t:
@@ -131,7 +129,7 @@ class DataClassRowFactory:
             return bytes
         if "REAL" in t or "FLOA" in t or "DOUB" in t:
             return float
-        return Union[float, int]
+        return typing.Union[float, int]
 
     def __call__(self, cursor: apsw.Cursor, row: apsw.SQLiteValues) -> Any:
         """What the row tracer calls
