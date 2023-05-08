@@ -96,9 +96,11 @@ def write_whole_file(name, mode, data):
 # work out version number
 version = read_whole_file(os.path.join("src", "apswversion.h"), "rt").split()[2].strip('"')
 
+
 def sqliteversion(v):
     assert len(v.split(".")) == 4
     return v.rsplit(".", 1)[0]
+
 
 # They keep messing with where files are in URI
 def fixup_download_url(url):
@@ -239,7 +241,7 @@ class fetch(Command):
             match = re.search(r'sqlite-amalgamation-3([0-9][0-9])([0-9][0-9])([0-9][0-9])\.zip', page)
             if match:
                 self.version = "3.%d.%d.%d" % tuple([int(match.group(n)) for n in range(1, 4)])
-                assert self.version.endswith(".0") # sqlite doesn't use last component so we do now
+                assert self.version.endswith(".0")  # sqlite doesn't use last component so we do now
                 self.version = sqliteversion(self.version)
             else:
                 write("Unable to determine latest SQLite version.  Use --version=VERSION", sys.stderr)
@@ -303,7 +305,7 @@ class fetch(Command):
                         break
                 if not defline:
                     write("Unable to determine compile flags.  Create sqlite3/sqlite3config.h to manually set.",
-                            sys.stderr)
+                          sys.stderr)
                     sys.exit(18)
                 defs = []
                 for part in shlex.split(defline):
@@ -440,7 +442,7 @@ class apsw_build(bparent):
     boolean_options = bparent.boolean_options + ["enable-all-extensions", "fetch"]
 
     def __init__(self, dist):
-        self._saved_dist=dist
+        self._saved_dist = dist
         bparent.__init__(self, dist)
 
     def initialize_options(self):
@@ -716,11 +718,11 @@ class apsw_sdist(sparent):
 
     def run(self):
         cfg = "pypi" if self.for_pypi else "default"
-        shutil.copy2(f"tools/setup-{ cfg }.cfg", "setup.cfg")
+        shutil.copy2(f"tools/setup-{ cfg }.cfg", "setup.apsw")
         try:
             v = sparent.run(self)
         finally:
-            os.remove("setup.cfg")
+            os.remove("setup.apsw")
 
         if self.add_doc:
             if len(list(help_walker(''))) == 0:
@@ -728,6 +730,7 @@ class apsw_sdist(sparent):
             for archive in self.get_archive_files():
                 add_doc(archive, self.distribution.get_fullname())
         return v
+
 
 def set_config_from_system(outputfilename: str):
     import ctypes, ctypes.util
@@ -782,7 +785,6 @@ def set_config_from_system(outputfilename: str):
         if k in configs:
             del configs[k]
 
-
     # write out the results
     os.makedirs(os.path.dirname(outputfilename), exist_ok=True)
     with open(outputfilename, "wt", encoding="utf8") as f:
@@ -831,7 +833,6 @@ def add_doc(archive, topdir):
         raise Exception("Don't know what to do with " + archive)
 
 
-
 # We depend on every .[ch] file in src
 depends = [f for f in glob.glob("src/*.[ch]") if f != "src/apsw.c"]
 for f in (findamalgamation(), ):
@@ -840,41 +841,40 @@ for f in (findamalgamation(), ):
 
 if __name__ == '__main__':
     setup(name="apsw",
-        version=version,
-        description="Another Python SQLite Wrapper",
-        long_description=pathlib.Path("README.rst").read_text(encoding="utf8"),
-        author="Roger Binns",
-        author_email="rogerb@rogerbinns.com",
-        url="https://github.com/rogerbinns/apsw/",
-        project_urls = project_urls,
-        classifiers=[
-        "Development Status :: 5 - Production/Stable",
-        "Intended Audience :: Developers",
-        "License :: OSI Approved",
-        "Operating System :: OS Independent",
-        "Programming Language :: C",
-        "Programming Language :: Python :: 3",
-        "Topic :: Database :: Front-Ends",
-        ],
-        keywords=["database", "sqlite"],
-        license="OSI Approved",
-        platforms="any",
-
-        ext_modules=[Extension("apsw.__init__",
-                                ["src/apsw.c"],
-                                include_dirs=include_dirs,
-                                library_dirs=library_dirs,
-                                libraries=libraries,
-                                define_macros=define_macros,
-                                depends=depends)],
-        packages=["apsw"],
-        package_data={"apsw": ["__init__.pyi", "py.typed"]},
-
-
-      cmdclass={'test': run_tests,
-                'build_test_extension': build_test_extension,
-                'fetch': fetch,
-                'build_ext': apsw_build_ext,
-                'build': apsw_build,
-                'sdist': apsw_sdist,
-      })
+          version=version,
+          description="Another Python SQLite Wrapper",
+          long_description=pathlib.Path("README.rst").read_text(encoding="utf8"),
+          author="Roger Binns",
+          author_email="rogerb@rogerbinns.com",
+          url="https://github.com/rogerbinns/apsw/",
+          project_urls=project_urls,
+          classifiers=[
+              "Development Status :: 5 - Production/Stable",
+              "Intended Audience :: Developers",
+              "License :: OSI Approved",
+              "Operating System :: OS Independent",
+              "Programming Language :: C",
+              "Programming Language :: Python :: 3",
+              "Topic :: Database :: Front-Ends",
+          ],
+          keywords=["database", "sqlite"],
+          license="OSI Approved",
+          platforms="any",
+          ext_modules=[
+              Extension("apsw.__init__", ["src/apsw.c"],
+                        include_dirs=include_dirs,
+                        library_dirs=library_dirs,
+                        libraries=libraries,
+                        define_macros=define_macros,
+                        depends=depends)
+          ],
+          packages=["apsw"],
+          package_data={"apsw": ["__init__.pyi", "py.typed"]},
+          cmdclass={
+              'test': run_tests,
+              'build_test_extension': build_test_extension,
+              'fetch': fetch,
+              'build_ext': apsw_build_ext,
+              'build': apsw_build,
+              'sdist': apsw_sdist,
+          })
