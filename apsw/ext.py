@@ -85,7 +85,7 @@ class DataClassRowFactory:
         The dataclass is what is returned for each row with that
         :meth:`description <apsw.Cursor.getdescription>`
 
-        This method caches it results.
+        This method caches its results.
         """
         names = [d[0] for d in description]
         if self.rename:
