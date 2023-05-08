@@ -42,12 +42,12 @@ See the :ref:`recommended <recommended_build>` way to build or all the
 
 .. downloads-begin
 
-* `apsw-3.41.2.3.zip
-  <https://github.com/rogerbinns/apsw/releases/download/3.41.2.3/apsw-3.41.2.3.zip>`__
+* `apsw-3.41.2.4.zip
+  <https://github.com/rogerbinns/apsw/releases/download/3.41.2.4/apsw-3.41.2.4.zip>`__
   (Source, includes this HTML Help)
 
-* `apsw-3.41.2.3-sigs.zip 
-  <https://github.com/rogerbinns/apsw/releases/download/3.41.2.3/apsw-3.41.2.3-sigs.zip>`__
+* `apsw-3.41.2.4-sigs.zip 
+  <https://github.com/rogerbinns/apsw/releases/download/3.41.2.4/apsw-3.41.2.4-sigs.zip>`__
   GPG signatures for all files
 
 .. downloads-end
@@ -94,7 +94,7 @@ Verify
   To verify a file just use --verify specifying the corresponding
   ``.asc`` filename.  This example verifies the source::
 
-      $ gpg --verify apsw-3.41.2.3.zip.asc
+      $ gpg --verify apsw-3.41.2.4.zip.asc
       gpg: Signature made ... date ... using DSA key ID 0DFBD904
       gpg: Good signature from "Roger Binns <rogerb@rogerbinns.com>"
 
