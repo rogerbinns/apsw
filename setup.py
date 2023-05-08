@@ -719,10 +719,7 @@ class apsw_sdist(sparent):
     def run(self):
         cfg = "pypi" if self.for_pypi else "default"
         shutil.copy2(f"tools/setup-{ cfg }.cfg", "setup.apsw")
-        try:
-            v = sparent.run(self)
-        finally:
-            os.remove("setup.apsw")
+        v = sparent.run(self)
 
         if self.add_doc:
             if len(list(help_walker(''))) == 0:
