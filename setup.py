@@ -28,6 +28,29 @@ define_macros = []
 libraries = []
 
 ##
+## Workaround for https://github.com/pypa/cibuildwheel/issues/1487
+##
+
+patch = False
+try:
+    import distutils.dist
+    if hasattr(distutils.dist.Distribution, "find_config_files"):
+        patch = True
+except Exception:
+    pass
+
+if patch:
+
+    def monkey_patched_find_config_files(self):
+        res = orig_find_local_files(self)
+        if os.path.isfile("setup.apsw"):
+            res.append("setup.apsw")
+        return res
+
+    orig_find_local_files = distutils.dist.Distribution.find_config_files
+    distutils.dist.Distribution.find_config_files = monkey_patched_find_config_files
+
+##
 ## End of customizations
 ##
 
