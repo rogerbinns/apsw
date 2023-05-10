@@ -4,10 +4,9 @@ on: workflow_dispatch
 
 jobs:
 
-  build_binary:
+  build_binary_native:
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
       matrix:
        os: [ubuntu-20.04, windows-2019, macos-11]
 
@@ -18,18 +17,11 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Set up QEMU
-        if: runner.os == 'Linux'
-        uses: docker/setup-qemu-action@v2
-        with:
-          platforms: all
-
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.12.3
         env:
           CIBW_SKIP: pp*
-          CIBW_ARCHS_LINUX: auto aarch64
-          CIBW_ARCHS_MACOS: x86_64 arm64 universal2
+          CIBW_ARCHS_MACOS: all
           CIBW_BEFORE_BUILD: python -c "import shutil ; shutil.copyfile('tools/setup-pypi.cfg','setup.apsw')"
           CIBW_TEST_COMMAND: python -m apsw.tests -v
           APSW_HEAVY_DURATION: 2
@@ -39,6 +31,37 @@ jobs:
         with:
           name: wheelhouse
           path: ./wheelhouse/*.whl
+
+
+  build_binary_qemu:
+      runs-on: ubuntu-latest
+
+      steps:
+        - uses: actions/checkout@v3
+
+        - uses: actions/setup-python@v4
+          with:
+            python-version: "3.11"
+
+        - name: Set up QEMU
+          uses: docker/setup-qemu-action@v2
+          with:
+            platforms: all
+
+        - name: Build wheels
+          uses: pypa/cibuildwheel@v2.12.3
+          env:
+            CIBW_SKIP: pp*
+            CIBW_ARCHS_LINUX: aarch64
+            CIBW_BEFORE_BUILD: python -c "import shutil ; shutil.copyfile('tools/setup-pypi.cfg','setup.apsw')"
+            CIBW_TEST_COMMAND: python -m apsw.tests -v
+            APSW_HEAVY_DURATION: 2
+            APSW_TEST_FSYNC_OFF: set
+
+        - uses: actions/upload-artifact@v3
+          with:
+            name: wheelhouse
+            path: ./wheelhouse/*.whl
 
 
   build_source:
@@ -65,7 +88,7 @@ jobs:
         path: ./dist/*
 
   pypi_publish:
-    needs: [build_source, build_binary]
+    needs: [build_source, build_binary_native, build_binary_qemu]
     runs-on: ubuntu-latest
     permissions:
         id-token: write
@@ -82,7 +105,7 @@ jobs:
         ls -l dist/
 
     - name: Publish package
-      uses: pypa/gh-action-pypi-publish@release/v1
+      uses: pypa/gh-action-pypi-publish@v1.8.6
       with:
-       repository_url: https://test.pypi.org/legacy/
+       repository-url: https://test.pypi.org/legacy/
 
