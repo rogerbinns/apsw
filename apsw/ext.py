@@ -214,6 +214,7 @@ class TypesConverterCursorFactory:
 
     def wrap_sequence_bindings(self,
                                sequenceofbindings: Sequence[apsw.Bindings]) -> Generator[apsw.Bindings, None, None]:
+        "Wraps a sequence of bindings that are supplied to the underlying executemany"
         for binding in sequenceofbindings:
             yield self.wrap_bindings(binding)  # type: ignore[misc]
 
