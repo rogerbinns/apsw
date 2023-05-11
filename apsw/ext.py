@@ -1,7 +1,8 @@
 # Provides various useful routines
 
 from __future__ import annotations
-import collections, collections.abc
+import collections
+import collections.abc
 
 
 import dataclasses
@@ -23,6 +24,7 @@ import re
 import string
 import textwrap
 import apsw
+import sys
 
 try:
     from keyword import iskeyword as _iskeyword
