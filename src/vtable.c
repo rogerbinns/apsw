@@ -25,7 +25,7 @@ Some examples of how you might use this:
 
 * Dynamic information (eg currently running processes, files and directories, objects in your program)
 
-* Information that needs reformatting (eg if you have complex rules about how to convert strings to/from Unicode
+* Information that needs reformatting (eg if you have complex rules about how to convert bytes to/from Unicode
   in the dataset)
 
 * Information that isn't relationally correct (eg if you have data that has ended up with duplicate "unique" keys

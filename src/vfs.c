@@ -39,11 +39,6 @@ instance that has your overridden :class:`VFSFile` methods.  The
 :ref:`example <example_vfs>` demonstrates obfuscating the database
 file contents.
 
-.. note::
-
-  All strings supplied and returned to :class:`VFS`/:class:`VFSFile`
-  routines are treated as Unicode.
-
 .. _vfserrors:
 
 Exceptions and errors
