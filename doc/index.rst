@@ -10,8 +10,7 @@ APSW |version| documentation
    about
    tips
    example
-   download
-   build
+   install
    extensions
 
    apsw

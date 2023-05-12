@@ -8,7 +8,7 @@ next
 
 `SQLITE_ENABLE_COLUMN_METADATA
 <https://www.sqlite.org/compile.html#enable_column_metadata>`__ is
-enabled when using APSW from `PyPI <https://pypi.org/project/apsw/>`__
+enabled when installing  APSW from `PyPI <https://pypi.org/project/apsw/>`__
 (binary or source). (:issue:`435`)
 
 :ref:`Type stubs <type_stubs>` and typing information in the
@@ -586,7 +586,7 @@ No APSW changes.
 Updated completions in shell (eg added pragmas).
 
 `Resumable Bulk Update (RBU) <https://www.sqlite.org/rbu.html>`__
-extension is now built by default for :doc:`--enable-all-extensions <build>`.
+extension is now built by default for :code:`--enable-all-extensions`.
 
 Added :meth:`Connection.set_last_insert_rowid`.
 
@@ -627,7 +627,7 @@ Added SQLITE_DBSTATUS_CACHE_USED_SHARED and SQLITE_OK_LOAD_PERMANENTLY constants
 
 Added SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION constant.
 
-Added a pip command line in the :doc:`download` page.
+Added a pip command line in the download page.
 
 3.12.2-r1
 =========
@@ -674,7 +674,7 @@ Allow :class:`Connection` subclasses for backup api (:issue:`199`).
 
 `FTS5 <https://www.sqlite.org/fts5.html>`__ and `JSON1
 <https://www.sqlite.org/json1.html>`__ extensions are now built by default for
-:doc:`--enable-all-extensions <build>`.  It is recommended you wait a few more
+:code:`--enable-all-extensions`.  It is recommended you wait a few more
 releases for these extensions to mature.
 
 Added a mapping for `virtual table scan flags
@@ -777,7 +777,7 @@ Added SQLITE_LIMIT_WORKER_THREADS constant
 Updated test suite for Python 3.4 unittest garbage collection changes
 (:issue:`164` :issue:`169`)
 
-Using the :ref:`recommended <recommended_build>` build option of
+Using the recommended build option of
 **--enable-all-extensions** turns on `STAT4
 <https://sqlite.org/compile.html#enable_stat4>`__.  Windows binaries
 include this too.
@@ -806,7 +806,7 @@ Mike C. Fletcher for `pointing the way
 <http://blog.vrplumber.com/b/2014/02/12/step-2-get-amd64-compatible-vs-2010/>`__
 
 Correct detection of current SQLite version from download page for
-:doc:`setup.py <build>` fetch command
+:file:`setup.py` fetch command
 
 Tested against Python 3.4 and binaries for Windows.
 
@@ -1410,7 +1410,7 @@ more likely to match your machine.  You can use
 to the build/build_ext commands to explicitly disable/enable extension
 loading.  :issue:`67`
 
-:ref:`setup.py <building>` will now abort on a download that has no
+:file:`setup.py` will now abort on a download that has no
 checksum.  See :ref:`more information <fetch_checksums>` on checksums.
 
 :ref:`setup.py <setup_py_flags>` can also fetch the version of SQLite
@@ -1581,8 +1581,7 @@ sqlite3 module if it can't find an externally installed pysqlite.
 3.6.6.2-r1
 ==========
 
-Windows binary download for Python 3.0 is :ref:`available
-<source_and_binaries>`.
+Windows binary download for Python 3.0 is available.
 
 Various changes in data structures and containers to reduce code size.
 

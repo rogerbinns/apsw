@@ -9,6 +9,11 @@ Version Compatibility
 Use with `SQLite <https://sqlite.org/>`__ 3.41 or later, `Python
 <https://www.python.org/downloads/>`__ 3.6 and later.
 
+Dependencies
+------------
+
+APSW has no dependencies other than Python itself.
+
 What it does
 ------------
 
@@ -33,9 +38,9 @@ control SQLite's configuration (primarily done at `compile time
 Hosting
 -------
 
-APSW is hosted at https://github.com/rogerbinns/apsw and can be
-installed from `PyPI <https://pypi.org/project/apsw/>`__ with `source
-releases at Github <https://github.com/rogerbinns/apsw/releases>`__
+APSW is hosted at https://github.com/rogerbinns/apsw  with `source
+releases at Github <https://github.com/rogerbinns/apsw/releases>`__.
+See the :doc:`installation instructions <install>`.
 
 Mailing lists/contacts
 ----------------------
