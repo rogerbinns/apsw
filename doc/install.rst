@@ -134,6 +134,19 @@ It is recommended you get the source from `Github releases
 source from `PyPi <https://pypi.org/project/apsw/>`__ then ensure you
 edit the :file:`setup.apsw` file inside.
 
+.. downloads-begin
+
+* `apsw-3.41.2.4.zip
+  <https://github.com/rogerbinns/apsw/releases/download/3.41.2.4/apsw-3.41.2.4.zip>`__
+  (Source, includes this HTML Help)
+
+* `apsw-3.41.2.4-sigs.zip 
+  <https://github.com/rogerbinns/apsw/releases/download/3.41.2.4/apsw-3.41.2.4-sigs.zip>`__
+  GPG signatures for all files
+
+.. downloads-end
+
+
 .. _verifydownload:
 
 Verifying your download
@@ -151,7 +164,7 @@ Verify
   To verify a file use --verify specifying the corresponding
   ``.asc`` filename.  This example verifies the source::
 
-      $ gpg --verify apsw-3.41.2.0.zip.asc
+      $ gpg --verify apsw-3.41.2.4.zip.asc
       gpg: Signature made ... date ... using DSA key ID 0DFBD904
       gpg: Good signature from "Roger Binns <rogerb@rogerbinns.com>"
 

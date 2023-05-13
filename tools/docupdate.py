@@ -13,12 +13,12 @@ url = "  <https://github.com/rogerbinns/apsw/releases/download/" + version + "/%
 version_no_r = version.split("-r")[0]
 
 
-download = open("doc/download.rst", "rt").read()
+download = open("doc/install.rst", "rt").read()
 
 
 op = []
 incomment = False
-for line in open("doc/download.rst", "rt"):
+for line in open("doc/install.rst", "rt"):
     line = line.rstrip()
     if line == ".. downloads-begin":
         op.append(line)
@@ -43,7 +43,7 @@ for line in open("doc/download.rst", "rt"):
 
 op = "\n".join(op)
 if op != download:
-    open("doc/download.rst", "wt").write(op)
+    open("doc/install.rst", "wt").write(op)
 
 # put usage and description for speedtest into benchmark
 
