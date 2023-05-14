@@ -90,6 +90,9 @@ html_theme_options = {
     "prev_next_buttons_location": "both",
 }
 
+if os.getenv("APSW_NO_GA"):
+    del html_theme_options["analytics_id"]
+
 html_favicon = "favicon.ico"
 
 html_static_path = ['.static']

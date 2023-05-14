@@ -214,7 +214,8 @@ setup-wheel:  ## Ensures all Python Windows version have wheel support
 	c:/python36-64/python -m pip install --upgrade wheel setuptools
 
 
-source_nocheck: docs src/apswversion.h
+source_nocheck: src/apswversion.h
+	env APSW_NO_GA=t $(MAKE) doc
 	$(PYTHON) setup.py sdist --formats zip --add-doc
 
 source: source_nocheck # Make the source and then check it builds and tests correctly.  This will catch missing files etc
