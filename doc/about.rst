@@ -3,44 +3,41 @@ About
 
 **APSW** |version| **released** |today|
 
-Version Compatibility
----------------------
-
 Use with `SQLite <https://sqlite.org/>`__ 3.41 or later, `Python
 <https://www.python.org/downloads/>`__ 3.6 and later.
+
+
+What APSW does
+--------------
+
+APSW lets you get the most out of the `SQLite <https://sqlite.org/>`__
+embedded relational database engine from Python, and the most out of
+Python from SQLite.  APSW glues together the complete `SQLite C API
+<https://sqlite.org/c3ref/intro.html>`__ and `Python's C API
+<https://docs.python.org/3/c-api/index.html>`__, staying up to date
+with both SQLite and Python.
+
+It is recommended to use the builtin :mod:`sqlite3 <sqlite3>` module
+if you want SQLite to appear interchangeable with the other database
+drivers.
+
+Use APSW when you want to use SQLite fully, and have an improved
+developer experience.  See more about the :doc:`differences between
+APSW and sqlite3 <pysqlite>`.
 
 Dependencies
 ------------
 
 APSW has no dependencies other than Python itself.
 
-What it does
-------------
-
-APSW provides an SQLite 3 wrapper that provides the thinnest layer
-over the `SQLite <https://sqlite.org>`_ database library possible.
-Everything you can do from the `SQLite C API
-<https://sqlite.org/c3ref/intro.html>`_, you can do from Python.
-Although APSW looks vaguely similar to the :pep:`249` (DBAPI), it is
-:ref:`not compliant <dbapinotes>` with that API because instead it
-works the way SQLite 3 does. (Read more about the :ref:`differences
-<pysqlitediffs>`).
-
-In general you should use Python's `builtin sqlite3 module
-<https://docs.python.org/3/library/sqlite3.html>`__.  Use APSW when
-you are intentionally using SQLite, want to use its APIs, want to
-control what :ref:`versions <version_stuff>` are used, or want to
-control SQLite's configuration (primarily done at `compile time
-<https://www.sqlite.org/compile.html>`__) or extensions (like `JSON
-<https://www.sqlite.org/json1.html>`__ or `FTS
-<https://www.sqlite.org/fts5.html>`__)
-
 Hosting
 -------
 
 APSW is hosted at https://github.com/rogerbinns/apsw  with `source
-releases at Github <https://github.com/rogerbinns/apsw/releases>`__.
-See the :doc:`installation instructions <install>`.
+releases at Github <https://github.com/rogerbinns/apsw/releases>`__
+and :code:`pip install apsw` at `PyPI
+<https://pypi.org/project/apsw/>`__.  See the :doc:`installation
+details <install>`.
 
 Mailing lists/contacts
 ----------------------

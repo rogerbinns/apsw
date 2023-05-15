@@ -200,7 +200,8 @@ These are the relevant :file:`setup.py` commands and their relevant options.
 build
 ^^^^^
 
-Does the complete build.  This will invoke `build_ext` - use only one.
+Does the complete build.  This will invoke `build_ext` - use only one of
+`build` or `build_ext`.
 
 .. list-table::
     :widths: auto
