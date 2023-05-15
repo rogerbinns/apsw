@@ -156,8 +156,7 @@ APSW/SQLite was operating on.
 SQLite has a `warning/error logging facility
 <http://www.sqlite.org/errlog.html>`__.  You can call
 :meth:`apsw.ext.log_sqlite` which installs a handler that forwards
-SQLite messages to the `logging module
-<https://docs.python.org/3/library/logging.html>`__.
+SQLite messages to the :mod:`logging module <logging>`.`
 
 To do it yourself::
 
@@ -167,13 +166,6 @@ To do it yourself::
                + apsw.mapping_extended_result_codes.get(errcode, ""))
 
     apsw.config(apsw.SQLITE_CONFIG_LOG, handler)
-
-.. note::
-
-   The handler **must** be set before any other calls to SQLite.
-   Once SQLite is initialised you cannot change the logger - a
-   :exc:`MisuseError` will happen (this restriction is in SQLite not
-   APSW).
 
 This is an example of what gets printed when I use ``/dev/null`` as
 the database name in the :class:`Connection` and then tried to create

@@ -34,8 +34,7 @@ print("   Using amalgamation", apsw.using_amalgamation)
 
 ### logging: Logging
 # It is a good idea to get SQLite's logs as you will get more
-# information about errors.  This has to be done first (a SQLite
-# limitation, not APSW). :meth:`apsw.ext.log_sqlite` forwards
+# information about errors.  :meth:`apsw.ext.log_sqlite` forwards
 # SQLite's log messages to the :mod:`logging` module.
 
 apsw.ext.log_sqlite()
