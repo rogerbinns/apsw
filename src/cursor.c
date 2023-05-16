@@ -356,7 +356,7 @@ APSWCursor_init(APSWCursor *self, PyObject *args, PyObject *kwds)
       return -1;
   }
 
-  self->connection = Py_NewRef((PyObject *)connection);
+  self->connection = (Connection *)Py_NewRef((PyObject *)connection);
 
   return 0;
 }
