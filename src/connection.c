@@ -4068,6 +4068,7 @@ Connection_config(Connection *self, PyObject *args)
   case SQLITE_DBCONFIG_TRIGGER_EQP:
   case SQLITE_DBCONFIG_LEGACY_FILE_FORMAT:
   case SQLITE_DBCONFIG_TRUSTED_SCHEMA:
+  case SQLITE_DBCONFIG_REVERSE_SCANORDER:
   {
     int opdup, val, current;
     if (!PyArg_ParseTuple(args, "ii", &opdup, &val))

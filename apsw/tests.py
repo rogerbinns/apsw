@@ -477,6 +477,11 @@ class APSW(unittest.TestCase):
             self.assertEqual(1, self.db.config(i, 1))
             self.assertEqual(1, self.db.config(i, -1))
             self.assertEqual(0, self.db.config(i, 0))
+        self.assertEqual(0, self.db.config(apsw.SQLITE_DBCONFIG_REVERSE_SCANORDER, -1))
+        self.db.pragma("reverse_unordered_selects", 1)
+        self.assertEqual(1, self.db.config(apsw.SQLITE_DBCONFIG_REVERSE_SCANORDER, -1))
+        self.db.config(apsw.SQLITE_DBCONFIG_REVERSE_SCANORDER, 0)
+        self.assertEqual(0, self.db.pragma("reverse_unordered_selects"))
 
     def testConnectionMetadata(self):
         "Test uses of sqlite3_table_column_metadata"
