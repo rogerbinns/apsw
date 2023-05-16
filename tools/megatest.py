@@ -208,7 +208,7 @@ PYVERS = (
     'system',
 )
 
-SQLITEVERS = ('3.41.0', '3.41.1', '3.41.2')
+SQLITEVERS = ('3.42.0',)
 
 BITS = (64, 32)
 
