@@ -3264,6 +3264,10 @@ SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE: int = 1006
 """For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
 SQLITE_DBCONFIG_RESET_DATABASE: int = 1009
 """For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
+SQLITE_DBCONFIG_REVERSE_SCANORDER: int = 1019
+"""For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
+SQLITE_DBCONFIG_STMT_SCANSTATUS: int = 1018
+"""For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
 SQLITE_DBCONFIG_TRIGGER_EQP: int = 1008
 """For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
 SQLITE_DBCONFIG_TRUSTED_SCHEMA: int = 1017
@@ -3807,6 +3811,8 @@ SQLITE_VTAB_CONSTRAINT_SUPPORT: int = 1
 SQLITE_VTAB_DIRECTONLY: int = 3
 """For `Virtual Table Configuration Options <https://sqlite.org/c3ref/c_vtab_constraint_support.html>'__"""
 SQLITE_VTAB_INNOCUOUS: int = 2
+"""For `Virtual Table Configuration Options <https://sqlite.org/c3ref/c_vtab_constraint_support.html>'__"""
+SQLITE_VTAB_USES_ALL_SCHEMAS: int = 4
 """For `Virtual Table Configuration Options <https://sqlite.org/c3ref/c_vtab_constraint_support.html>'__"""
 SQLITE_WARNING: int = 28
 """For `Result Codes <https://sqlite.org/rescode.html>'__"""
