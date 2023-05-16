@@ -3258,7 +3258,7 @@ SQLITE_DBCONFIG_LOOKASIDE: int = 1001
 """For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
 SQLITE_DBCONFIG_MAINDBNAME: int = 1000
 """For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
-SQLITE_DBCONFIG_MAX: int = 1017
+SQLITE_DBCONFIG_MAX: int = 1019
 """For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
 SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE: int = 1006
 """For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
@@ -3890,7 +3890,8 @@ SQLITE_DBCONFIG_ENABLE_TRIGGER SQLITE_DBCONFIG_ENABLE_VIEW
 SQLITE_DBCONFIG_LEGACY_ALTER_TABLE SQLITE_DBCONFIG_LEGACY_FILE_FORMAT
 SQLITE_DBCONFIG_LOOKASIDE SQLITE_DBCONFIG_MAINDBNAME
 SQLITE_DBCONFIG_MAX SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE
-SQLITE_DBCONFIG_RESET_DATABASE SQLITE_DBCONFIG_TRIGGER_EQP
+SQLITE_DBCONFIG_RESET_DATABASE SQLITE_DBCONFIG_REVERSE_SCANORDER
+SQLITE_DBCONFIG_STMT_SCANSTATUS SQLITE_DBCONFIG_TRIGGER_EQP
 SQLITE_DBCONFIG_TRUSTED_SCHEMA SQLITE_DBCONFIG_WRITABLE_SCHEMA"""
 
 mapping_db_status: dict[str | int, int | str]
@@ -4074,7 +4075,7 @@ mapping_virtual_table_configuration_options: dict[str | int, int | str]
 Doc at https://sqlite.org/c3ref/c_vtab_constraint_support.html
 
 SQLITE_VTAB_CONSTRAINT_SUPPORT SQLITE_VTAB_DIRECTONLY
-SQLITE_VTAB_INNOCUOUS"""
+SQLITE_VTAB_INNOCUOUS SQLITE_VTAB_USES_ALL_SCHEMAS"""
 
 mapping_virtual_table_scan_flags: dict[str | int, int | str]
 """Virtual Table Scan Flags mapping names to int and int to names.
