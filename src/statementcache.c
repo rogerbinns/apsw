@@ -4,7 +4,7 @@
   See the accompanying LICENSE file.
 */
 
-/* sqlite3_prepare takes quite a while to run, and is often run on the
+/* sqlite3_prepare_v3 takes quite a while to run, and is often run on the
    same query over and over.  This statement cache uses extra memory
    saving previous prepares in order to save the cpu of repreparing.
 
@@ -203,7 +203,7 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
   }
   /* cache miss */
 
-  /* Undocumented stuff alert:  if the size passed to sqlite3_prepare
+  /* Undocumented stuff alert:  if the size passed to sqlite3_prepare_v3
      doesn't include the trailing null then sqlite makes a copy of the
      sql text in order to run on a buffer that does have a trailing
      null.  When using speedtest bigstmt (about 20MB of sql text)
@@ -213,7 +213,7 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
      The utf8 we originally got from PyUnicode_AsUTF8AndSize is
      documented to always have a trailing null (not included in the
      size) so we have an assert to verify that, and add one to the
-     length passed to sqlite3_prepare */
+     length passed to sqlite3_prepare_v3 */
 
   assert(0 == utf8[utf8size]);
   /* note that prepare can return ok while a python level exception occurred that couldn't be reported */

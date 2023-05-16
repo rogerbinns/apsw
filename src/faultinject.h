@@ -145,8 +145,6 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef sqlite3_open
 #undef sqlite3_open_v2
 #undef sqlite3_overload_function
-#undef sqlite3_prepare
-#undef sqlite3_prepare_v2
 #undef sqlite3_prepare_v3
 #undef sqlite3_realloc
 #undef sqlite3_realloc64
@@ -2134,36 +2132,6 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res = (typeof (_res))18;                                                                                           \
     }                                                                                                                       \
     _res;                                                                                                                   \
-})
-#define sqlite3_prepare(...) \
-({                                                                                                                \
-    __auto_type _res = 0 ? sqlite3_prepare(__VA_ARGS__) : 0;                                                      \
-                                                                                                                  \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_prepare", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                  \
-    if ((typeof (_res))0x1FACADE == _res)                                                                         \
-       _res = sqlite3_prepare(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                     \
-    {                                                                                                             \
-        sqlite3_prepare(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                 \
-    }                                                                                                             \
-    _res;                                                                                                         \
-})
-#define sqlite3_prepare_v2(...) \
-({                                                                                                                   \
-    __auto_type _res = 0 ? sqlite3_prepare_v2(__VA_ARGS__) : 0;                                                      \
-                                                                                                                     \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_prepare_v2", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                     \
-    if ((typeof (_res))0x1FACADE == _res)                                                                            \
-       _res = sqlite3_prepare_v2(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                        \
-    {                                                                                                                \
-        sqlite3_prepare_v2(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                    \
-    }                                                                                                                \
-    _res;                                                                                                            \
 })
 #define sqlite3_prepare_v3(...) \
 ({                                                                                                                   \

@@ -1081,7 +1081,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *args, PyObject *kwds)
   INUSE_CALL(self->statement = statementcache_prepare(self->connection->stmtcache, statements, &options));
   if (!self->statement)
   {
-    AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_execute.sqlite3_prepare", "{s: O, s: O}",
+    AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_execute.sqlite3_prepare_v3", "{s: O, s: O}",
                      "Connection", self->connection,
                      "statement", OBJ(statements));
     return NULL;
@@ -1207,7 +1207,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args, PyObject *kwds)
   INUSE_CALL(self->statement = statementcache_prepare(self->connection->stmtcache, statements, &self->emoptions));
   if (!self->statement)
   {
-    AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_executemany.sqlite3_prepare", "{s: O, s: O}",
+    AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_executemany.sqlite3_prepare_v3", "{s: O, s: O}",
                      "Connection", self->connection,
                      "statements", OBJ(statements));
     return NULL;

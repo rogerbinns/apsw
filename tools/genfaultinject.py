@@ -113,8 +113,8 @@ returns = {
             sqlite3_expanded_sql sqlite3_initialize
             sqlite3_load_extension sqlite3_malloc sqlite3_malloc64
             sqlite3_mprintf sqlite3_normalized_sql sqlite3_open
-            sqlite3_open_v2 sqlite3_overload_function sqlite3_prepare
-            sqlite3_prepare_v2 sqlite3_prepare_v3 sqlite3_realloc
+            sqlite3_open_v2 sqlite3_overload_function
+            sqlite3_prepare_v3 sqlite3_realloc
             sqlite3_realloc64 sqlite3_result_zeroblob64
             sqlite3_set_authorizer sqlite3_shutdown sqlite3_status64
             sqlite3_table_column_metadata sqlite3_threadsafe
