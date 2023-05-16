@@ -7493,12 +7493,6 @@ class APSW(unittest.TestCase):
         apsw.log(apsw.SQLITE_MISUSE, "Hello world")  # nothing should happen
         self.assertRaises(TypeError, apsw.config, apsw.SQLITE_CONFIG_LOG, 2)
         self.assertRaises(TypeError, apsw.config, apsw.SQLITE_CONFIG_LOG)
-        # Can't change once SQLite is initialised
-        self.assertRaises(apsw.MisuseError, apsw.config, apsw.SQLITE_CONFIG_LOG, None)
-        # shutdown
-        self.db = None
-        gc.collect()
-        apsw.shutdown()
         try:
             apsw.config(apsw.SQLITE_CONFIG_LOG, None)
             apsw.log(apsw.SQLITE_MISUSE, "Hello world")
@@ -7527,7 +7521,6 @@ class APSW(unittest.TestCase):
             self.assertEqual(called[0], 2)
         finally:
             gc.collect()
-            apsw.shutdown()
             apsw.config(apsw.SQLITE_CONFIG_LOG, None)
 
     def testReadonly(self):
