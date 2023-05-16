@@ -684,7 +684,7 @@ Connection_backup(Connection *self, PyObject *args, PyObject *kwds)
   if (!apswbackup)
     goto finally;
 
-  APSWBackup_init(apswbackup, (Connection *)Py_NewRef(self), (Connection *)Py_NewRef(sourceconnection), backup);
+  APSWBackup_init(apswbackup, (Connection *)Py_NewRef((PyObject *)self), (Connection *)Py_NewRef((PyObject *)sourceconnection), backup);
   backup = NULL;
 
   /* add to dependent lists */
@@ -4639,7 +4639,7 @@ Connection_drop_modules(Connection *self, PyObject *args, PyObject *kwds)
 finally:
   Py_CLEAR(sequence);
   PyMem_Free(strings);
-  PyMem_Free(array);
+  PyMem_Free((void *)array);
   if (PyErr_Occurred())
     return NULL;
 
