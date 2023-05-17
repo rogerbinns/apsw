@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tips &mdash; APSW 3.41.2.0 documentation</title>
+  <title>Tips &mdash; APSW 3.42.0.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/favicon.ico"/>
@@ -18,11 +18,12 @@
         <script src="_static/doctools.js"></script>
         <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
     <link rel="next" title="Example/Tour" href="example.html" />
-    <link rel="prev" title="APSW 3.41.2.0 documentation" href="index.html" /> 
+    <link rel="prev" title="About" href="about.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -38,7 +39,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.41.2.0
+                3.42.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -49,6 +50,7 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Tips</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#about-python-apsw-and-sqlite-versions">About Python, APSW, and SQLite versions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#sqlite-is-different">SQLite is different</a></li>
@@ -68,8 +70,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="example.html">Example/Tour</a></li>
-<li class="toctree-l1"><a class="reference internal" href="download.html">Download</a></li>
-<li class="toctree-l1"><a class="reference internal" href="build.html">Building</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation and customization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="apsw.html">APSW Module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="connection.html">Connections to a database</a></li>
@@ -111,7 +112,7 @@
             <a href="_sources/tips.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul><div class="rst-breadcrumbs-buttons" role="navigation" aria-label="Sequential page navigation">
-        <a href="index.html" class="btn btn-neutral float-left" title="APSW 3.41.2.0 documentation" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="about.html" class="btn btn-neutral float-left" title="About" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="example.html" class="btn btn-neutral float-right" title="Example/Tour" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
   </div>
   <hr/>
@@ -244,7 +245,7 @@ will be signalled via an <a class="reference internal" href="exceptions.html"><s
 APSW/SQLite was operating on.</p>
 <p>SQLite has a <a class="reference external" href="http://www.sqlite.org/errlog.html">warning/error logging facility</a>.  You can call
 <a class="reference internal" href="ext.html#apsw.ext.log_sqlite" title="apsw.ext.log_sqlite"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.ext.log_sqlite()</span></code></a> which installs a handler that forwards
-SQLite messages to the <a class="reference external" href="https://docs.python.org/3/library/logging.html">logging module</a>.</p>
+SQLite messages to the <a class="reference external" href="https://docs.python.org/3/library/logging.html#module-logging" title="(in Python v3.11)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">logging</span> <span class="pre">module</span></code></a>.`</p>
 <p>To do it yourself:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">handler</span><span class="p">(</span><span class="n">errcode</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
     <span class="n">errstr</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">mapping_result_codes</span><span class="p">[</span><span class="n">errcode</span> <span class="o">&amp;</span> <span class="mi">255</span><span class="p">]</span>
@@ -253,13 +254,6 @@ SQLite messages to the <a class="reference external" href="https://docs.python.o
 
 <span class="n">apsw</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_CONFIG_LOG</span><span class="p">,</span> <span class="n">handler</span><span class="p">)</span>
 </pre></div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The handler <strong>must</strong> be set before any other calls to SQLite.
-Once SQLite is initialised you cannot change the logger - a
-<a class="reference internal" href="exceptions.html#apsw.MisuseError" title="apsw.MisuseError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">MisuseError</span></code></a> will happen (this restriction is in SQLite not
-APSW).</p>
 </div>
 <p>This is an example of what gets printed when I use <code class="docutils literal notranslate"><span class="pre">/dev/null</span></code> as
 the database name in the <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> and then tried to create
@@ -276,29 +270,27 @@ a table.</p>
 and update your schema.  The hard way of doing this is to test for the
 existence of tables and their columns, and doing that maintenance
 programmatically.  The easy way is to use <a class="reference external" href="https://sqlite.org/pragma.html#pragma_user_version">pragma user_version</a> as in this example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">user_version</span><span class="p">(</span><span class="n">db</span><span class="p">):</span>
-  <span class="k">return</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;pragma user_version&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-
-<span class="k">def</span> <span class="nf">ensure_schema</span><span class="p">(</span><span class="n">db</span><span class="p">):</span>
-  <span class="k">if</span> <span class="n">user_version</span><span class="p">(</span><span class="n">db</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">ensure_schema</span><span class="p">(</span><span class="n">db</span><span class="p">):</span>
+  <span class="c1"># a new database starts at user_version 0</span>
+  <span class="k">if</span> <span class="n">db</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;user_version&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
     <span class="k">with</span> <span class="n">db</span><span class="p">:</span>
       <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">        CREATE TABLE IF NOT EXISTS foo(x,y,z);</span>
 <span class="s2">        CREATE TABLE IF NOT EXISTS bar(x,y,z);</span>
-<span class="s2">        PRAGMA user_version=1;&quot;&quot;&quot;</span><span class="p">)</span>
+<span class="s2">        PRAGMA user_version = 1;&quot;&quot;&quot;</span><span class="p">)</span>
 
-  <span class="k">if</span> <span class="n">user_version</span><span class="p">(</span><span class="n">db</span><span class="p">)</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+  <span class="k">if</span> <span class="n">db</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;user_version&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
     <span class="k">with</span> <span class="n">db</span><span class="p">:</span>
       <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">      CREATE TABLE IF NOT EXISTS baz(x,y,z);</span>
 <span class="s2">      CREATE INDEX ....</span>
-<span class="s2">      PRAGMA user_version=2;&quot;&quot;&quot;</span><span class="p">)</span>
+<span class="s2">      PRAGMA user_version = 2;&quot;&quot;&quot;</span><span class="p">)</span>
 
-  <span class="k">if</span> <span class="n">user_version</span><span class="p">(</span><span class="n">con</span><span class="p">)</span><span class="o">==</span><span class="mi">2</span><span class="p">:</span>
+  <span class="k">if</span> <span class="n">db</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;user_version&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
     <span class="k">with</span> <span class="n">db</span><span class="p">:</span>
       <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">      ALTER TABLE .....</span>
-<span class="s2">      PRAGMA user_version=3;&quot;&quot;&quot;</span><span class="p">)</span>
+<span class="s2">      PRAGMA user_version = 3;&quot;&quot;&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>This approach will automatically upgrade the schema as you expect.
@@ -443,7 +435,7 @@ indirect call via Python.)</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="index.html" class="btn btn-neutral float-left" title="APSW 3.41.2.0 documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="about.html" class="btn btn-neutral float-left" title="About" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="example.html" class="btn btn-neutral float-right" title="Example/Tour" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
@@ -451,7 +443,7 @@ indirect call via Python.)</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Mar 26, 2023.
+      <span class="lastupdated">Last updated on May 17, 2023.
       </span></p>
   </div>
 

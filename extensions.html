@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Extensions &mdash; APSW 3.41.2.0 documentation</title>
+  <title>Extensions &mdash; APSW 3.42.0.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/favicon.ico"/>
@@ -18,11 +18,12 @@
         <script src="_static/doctools.js"></script>
         <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
     <link rel="next" title="APSW Module" href="apsw.html" />
-    <link rel="prev" title="Building" href="build.html" /> 
+    <link rel="prev" title="Installation and customization" href="install.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -38,7 +39,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.41.2.0
+                3.42.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -49,10 +50,10 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tips.html">Tips</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example.html">Example/Tour</a></li>
-<li class="toctree-l1"><a class="reference internal" href="download.html">Download</a></li>
-<li class="toctree-l1"><a class="reference internal" href="build.html">Building</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation and customization</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Extensions</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#fts3-4-5">FTS3/4/5</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#icu">ICU</a></li>
@@ -101,7 +102,7 @@
             <a href="_sources/extensions.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul><div class="rst-breadcrumbs-buttons" role="navigation" aria-label="Sequential page navigation">
-        <a href="build.html" class="btn btn-neutral float-left" title="Building" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="install.html" class="btn btn-neutral float-left" title="Installation and customization" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="apsw.html" class="btn btn-neutral float-right" title="APSW Module" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
   </div>
   <hr/>
@@ -113,13 +114,13 @@
 <span id="id1"></span><h1>Extensions<a class="headerlink" href="#extensions" title="Permalink to this heading"></a></h1>
 <p>SQLite includes a number of extensions providing additional
 functionality.  All extensions are disabled by default and you need to
-<a class="reference internal" href="build.html#setup-build-flags"><span class="std std-ref">take steps</span></a> to have them available at compilation
+<a class="reference internal" href="install.html#setup-build-flags"><span class="std std-ref">take steps</span></a> to have them available at compilation
 time, to enable them and then to use them.</p>
 <section id="fts3-4-5">
 <span id="ext-fts3"></span><h2>FTS3/4/5<a class="headerlink" href="#fts3-4-5" title="Permalink to this heading"></a></h2>
 <p>FTS3 is the third version of the <a class="reference external" href="https://sqlite.org/fts3.html">full text search</a> extension.  It
 makes it easy to find words in multi-word text fields.  You must
-enable the extension via <a class="reference internal" href="build.html#setup-build-flags"><span class="std std-ref">setup.py build flags</span></a> before it will work.  There are no additional
+enable the extension via <a class="reference internal" href="install.html#setup-build-flags"><span class="std std-ref">setup.py build flags</span></a> before it will work.  There are no additional
 APIs and the <a class="reference external" href="https://sqlite.org/fts3.html">documented SQL</a> works as is.</p>
 <p>Note that FTS4 is some augmentations to FTS3 and are enabled whenever
 FTS3 is enabled as described in the <a class="reference external" href="https://sqlite.org/fts3.html#fts4">documentation</a></p>
@@ -146,7 +147,7 @@ use with large SQLite databases on low power devices at the edge of a network.</
 <section id="rtree">
 <span id="ext-rtree"></span><h2>RTree<a class="headerlink" href="#rtree" title="Permalink to this heading"></a></h2>
 <p>The RTree extension provides a <a class="reference external" href="http://en.wikipedia.org/wiki/R-tree">spatial table</a> - see the <a class="reference external" href="https://sqlite.org/rtree.html">documentation</a>.
-You must enable the extension via <a class="reference internal" href="build.html#setup-build-flags"><span class="std std-ref">setup.py build flags</span></a> before it will work.  There are no additional
+You must enable the extension via <a class="reference internal" href="install.html#setup-build-flags"><span class="std std-ref">setup.py build flags</span></a> before it will work.  There are no additional
 APIs and the <a class="reference external" href="https://sqlite.org/rtree.html">documented SQL</a>
 works as is.</p>
 </section>
@@ -156,7 +157,7 @@ works as is.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="build.html" class="btn btn-neutral float-left" title="Building" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="install.html" class="btn btn-neutral float-left" title="Installation and customization" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="apsw.html" class="btn btn-neutral float-right" title="APSW Module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
@@ -164,7 +165,7 @@ works as is.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Mar 26, 2023.
+      <span class="lastupdated">Last updated on May 17, 2023.
       </span></p>
   </div>
 

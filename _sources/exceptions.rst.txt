@@ -58,16 +58,19 @@ Exception Classes
          <https://sqlite.org/rescode.html>`_ turned on.
          This attribute includes the detailed code.
 
+         As an example, if SQLite issued a read request and the system
+         returned less data than expected then :attr:`~Error.result`
+         would have the value *SQLITE_IOERR* while
+         :attr:`~Error.extendedresult` would have the value
+         *SQLITE_IOERR_SHORT_READ*.
+
 .. attribute:: Error.error_offset
 
         The location of the error in the SQL when encoded in UTF-8.
         The value is from `sqlite3_error_offset
-        <https://www.sqlite.org/c3ref/errcode.html>`__.
+        <https://www.sqlite.org/c3ref/errcode.html>`__, and will be
+        `-1` when a specific token in the input is not the cause.
 
-As an example, if SQLite issued a read request and the system returned
-less data than expected then :attr:`~Error.result` would have the value
-*SQLITE_IOERR* while :attr:`~Error.extendedresult` would have
-the value *SQLITE_IOERR_SHORT_READ*.
 
 
 APSW specific exceptions
@@ -121,19 +124,6 @@ The following exceptions happen when APSW detects various problems.
   named style or entirely numeric (unnamed) style::
 
      cursor.execute("select * from foo where x=:name and y=?")
-
-  .. note::
-
-     It is not considered an error to have missing keys in a dictionary. For example this is perfectly valid::
-
-          cursor.execute("insert into foo values($a,:b,$c)", {'a': 1})
-
-     *b* and *c* are not in the dict.  For missing keys, None/NULL
-     will be used. This is so you don't have to add lots of spurious
-     values to the supplied dict. If your schema requires every column
-     have a value, then SQLite will generate an error due to some
-     values being None/NULL so that case will be caught.
-
 
 .. exception:: ExecutionCompleteError
 
@@ -266,9 +256,7 @@ Abort/Busy Etc
   *SQLITE_CONSTRAINT*. Abort due to `constraint
   <https://sqlite.org/lang_createtable.html>`_ violation.  This
   would happen if the schema required a column to be within a specific
-  range.  If you have multiple constraints, you `can't tell
-  <https://sqlite.org/src/tktview/23b212820161c6599cbf414aa99bf8a5bfa5e7a3>`__
-  which one was the cause.
+  range.
 
 Memory/Disk
 ^^^^^^^^^^^

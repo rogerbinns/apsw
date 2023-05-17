@@ -170,7 +170,7 @@ Connection class
 
    Calls: `sqlite3_blob_open <https://sqlite.org/c3ref/blob_open.html>`__
 
-.. method:: Connection.cache_stats(include_entries: bool = False) -> Dict[str, int]
+.. method:: Connection.cache_stats(include_entries: bool = False) -> dict[str, int]
 
 Returns information about the statement cache as dict.
 
@@ -302,7 +302,7 @@ If `entries` is present, then each list entry is a dict with the following infor
 
 .. index:: sqlite3_table_column_metadata
 
-.. method:: Connection.column_metadata(dbname: Optional[str], table_name: str, column_name: str) -> Tuple[str, str, bool, bool, bool]
+.. method:: Connection.column_metadata(dbname: Optional[str], table_name: str, column_name: str) -> tuple[str, str, bool, bool, bool]
 
   `dbname` is the specific database (eg "main", "temp") or None to search
   all databases.
@@ -328,8 +328,6 @@ If `entries` is present, then each list entry is a dict with the following infor
     :param op: A `configuration operation
       <https://sqlite.org/c3ref/c_dbconfig_enable_fkey.html>`__
     :param args: Zero or more arguments as appropriate for *op*
-
-    Only optiona that take an int and return one are implemented.
 
     Calls: `sqlite3_db_config <https://sqlite.org/c3ref/db_config.html>`__
 
@@ -524,7 +522,7 @@ If `entries` is present, then each list entry is a dict with the following infor
 
 .. index:: sqlite3_db_name
 
-.. method:: Connection.db_names() -> List[str]
+.. method:: Connection.db_names() -> list[str]
 
  Returns the list of database names.  For example the first database
  is named 'main', the next 'temp', and the rest with the name provided
@@ -803,6 +801,17 @@ See :meth:`Cursor.executemany` for more details.
 
   Calls: `sqlite3_overload_function <https://sqlite.org/c3ref/overload_function.html>`__
 
+.. method:: Connection.pragma(name: str, value: Optional[SQLiteValue] = None) -> Any
+
+  Issues the pragma (with the value if supplied) and returns the result with
+  :attr:`the least amount of structure <Cursor.get>`.  For example
+  :code:`pragma("user_version")` will return just the number.
+
+  Pragmas do not support bindings, so this method is a convenient
+  alternative to composing SQL text.
+
+  * :ref:`Example <example_pragma>`
+
 .. index:: sqlite3_db_readonly
 
 .. method:: Connection.readonly(name: str) -> bool
@@ -1037,7 +1046,7 @@ libraries.
 
 .. index:: sqlite3_db_status
 
-.. method:: Connection.status(op: int, reset: bool = False) -> Tuple[int, int]
+.. method:: Connection.status(op: int, reset: bool = False) -> tuple[int, int]
 
   Returns current and highwater measurements for the database.
 
@@ -1163,7 +1172,7 @@ libraries.
 
 .. index:: sqlite3_wal_checkpoint_v2
 
-.. method:: Connection.wal_checkpoint(dbname: Optional[str] = None, mode: int = apsw.SQLITE_CHECKPOINT_PASSIVE) -> Tuple[int, int]
+.. method:: Connection.wal_checkpoint(dbname: Optional[str] = None, mode: int = apsw.SQLITE_CHECKPOINT_PASSIVE) -> tuple[int, int]
 
     Does a WAL checkpoint.  Has no effect if the database(s) are not in WAL mode.
 

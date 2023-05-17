@@ -22,7 +22,7 @@ Some examples of how you might use this:
 
 * Dynamic information (eg currently running processes, files and directories, objects in your program)
 
-* Information that needs reformatting (eg if you have complex rules about how to convert strings to/from Unicode
+* Information that needs reformatting (eg if you have complex rules about how to convert bytes to/from Unicode
   in the dataset)
 
 * Information that isn't relationally correct (eg if you have data that has ended up with duplicate "unique" keys
@@ -178,10 +178,14 @@ IndexInfo class
 
  Sets *argvIndex* for *aConstraintUsage[which]*
 
+.. index:: sqlite3_vtab_in
+
 .. method:: IndexInfo.set_aConstraintUsage_in(which: int, filter_all: bool) -> None
 
  If *which* is an *in* constraint, and *filter_all* is True then your :meth:`VTCursor.Filter`
  method will have all of the values at once.
+
+ Calls: `sqlite3_vtab_in <https://sqlite.org/c3ref/vtab_in.html>`__
 
 .. method:: IndexInfo.set_aConstraintUsage_omit(which: int, omit: bool) -> None
 
@@ -216,7 +220,7 @@ The create step is to tell SQLite about the existence of the table.
 Any number of tables referring to the same module can be made this
 way.  Note the (optional) arguments which are passed to the module.
 
-.. method:: VTModule.Connect(connection: Connection, modulename: str, databasename: str, tablename: str, *args: Tuple[SQLiteValue, ...])  -> Tuple[str, VTTable]
+.. method:: VTModule.Connect(connection: Connection, modulename: str, databasename: str, tablename: str, *args: tuple[SQLiteValue, ...])  -> tuple[str, VTTable]
 
     The parameters and return are identical to
     :meth:`~VTModule.Create`.  This method is called
@@ -238,7 +242,7 @@ way.  Note the (optional) arguments which are passed to the module.
 
            Connect=Create
 
-.. method:: VTModule.Create(connection: Connection, modulename: str, databasename: str, tablename: str, *args: Tuple[SQLiteValue, ...])  -> Tuple[str, VTTable]
+.. method:: VTModule.Create(connection: Connection, modulename: str, databasename: str, tablename: str, *args: tuple[SQLiteValue, ...])  -> tuple[str, VTTable]
 
    Called when a table is first created on a :class:`connection
    <Connection>`.
@@ -306,7 +310,7 @@ VTTable class
   This function is used as part of transactions.  You do not have to
   provide the method.
 
-.. method:: VTTable.BestIndex(constraints: Sequence[Tuple[int, int], ...], orderbys: Sequence[Tuple[int, int], ...]) -> Any
+.. method:: VTTable.BestIndex(constraints: Sequence[tuple[int, int]], orderbys: Sequence[tuple[int, int]]) -> Any
 
   This is a complex method. To get going initially, just return
   *None* and you will be fine. You should also consider using
@@ -515,7 +519,7 @@ VTTable class
   a reference to a virtual table is no longer used, but :meth:`VTTable.Destroy` will
   be called when the table is no longer used.
 
-.. method:: VTTable.FindFunction(name: str, nargs: int) -> Union[None, Callable, Sequence[int, Callable]]
+.. method:: VTTable.FindFunction(name: str, nargs: int) -> None |  Callable | tuple[int, Callable]
 
   Called to find if the virtual table has its own implementation of a
   particular scalar function. You do not have to provide this method.
@@ -573,7 +577,7 @@ VTTable class
   This function is used as part of transactions.  You do not have to
   provide the method.
 
-.. method:: VTTable.UpdateChangeRow(row: int, newrowid: int, fields: Tuple[SQLiteValue, ...]) -> None
+.. method:: VTTable.UpdateChangeRow(row: int, newrowid: int, fields: tuple[SQLiteValue, ...]) -> None
 
   Change an existing row.  You may also need to change the rowid - for example if the query was
   ``UPDATE table SET rowid=rowid+100 WHERE ...``
@@ -588,7 +592,7 @@ VTTable class
 
   :param rowid: 64 bit integer
 
-.. method:: VTTable.UpdateInsertRow(rowid: Optional[int], fields: Tuple[SQLiteValue, ...])  -> Optional[int]
+.. method:: VTTable.UpdateInsertRow(rowid: Optional[int], fields: tuple[SQLiteValue, ...])  -> Optional[int]
 
   Insert a row with the specified *rowid*.
 
@@ -667,7 +671,7 @@ it is.
 
 .. index:: sqlite3_vtab_in_first, sqlite3_vtab_in_next
 
-.. method:: VTCursor.Filter(indexnum: int, indexname: str, constraintargs: Optional[Tuple]) -> None
+.. method:: VTCursor.Filter(indexnum: int, indexname: str, constraintargs: Optional[tuple]) -> None
 
   This method is always called first to initialize an iteration to the
   first row of the table. The arguments come from the

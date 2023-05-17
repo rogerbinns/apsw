@@ -156,8 +156,7 @@ APSW/SQLite was operating on.
 SQLite has a `warning/error logging facility
 <http://www.sqlite.org/errlog.html>`__.  You can call
 :meth:`apsw.ext.log_sqlite` which installs a handler that forwards
-SQLite messages to the `logging module
-<https://docs.python.org/3/library/logging.html>`__.
+SQLite messages to the :mod:`logging module <logging>`.`
 
 To do it yourself::
 
@@ -167,13 +166,6 @@ To do it yourself::
                + apsw.mapping_extended_result_codes.get(errcode, ""))
 
     apsw.config(apsw.SQLITE_CONFIG_LOG, handler)
-
-.. note::
-
-   The handler **must** be set before any other calls to SQLite.
-   Once SQLite is initialised you cannot change the logger - a
-   :exc:`MisuseError` will happen (this restriction is in SQLite not
-   APSW).
 
 This is an example of what gets printed when I use ``/dev/null`` as
 the database name in the :class:`Connection` and then tried to create
@@ -195,29 +187,27 @@ existence of tables and their columns, and doing that maintenance
 programmatically.  The easy way is to use `pragma user_version
 <https://sqlite.org/pragma.html#pragma_user_version>`__ as in this example::
 
-  def user_version(db):
-    return db.execute("pragma user_version").fetchall()[0][0]
-
   def ensure_schema(db):
-    if user_version(db)==0:
+    # a new database starts at user_version 0
+    if db.pragma("user_version") == 0:
       with db:
         db.execute("""
           CREATE TABLE IF NOT EXISTS foo(x,y,z);
           CREATE TABLE IF NOT EXISTS bar(x,y,z);
-          PRAGMA user_version=1;""")
+          PRAGMA user_version = 1;""")
 
-    if user_version(db)==1:
+    if db.pragma("user_version") == 1:
       with db:
         db.execute("""
         CREATE TABLE IF NOT EXISTS baz(x,y,z);
         CREATE INDEX ....
-        PRAGMA user_version=2;""")
+        PRAGMA user_version = 2;""")
 
-    if user_version(con)==2:
+    if db.pragma("user_version") == 2:
       with db:
         db.execute("""
         ALTER TABLE .....
-        PRAGMA user_version=3;""")
+        PRAGMA user_version = 3;""")
 
 This approach will automatically upgrade the schema as you expect.
 You can also use `pragma application_id

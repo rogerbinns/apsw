@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>APSW 3.41.2.0 documentation &mdash; APSW 3.41.2.0 documentation</title>
+  <title>APSW 3.42.0.0 documentation &mdash; APSW 3.42.0.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/favicon.ico"/>
@@ -18,10 +18,11 @@
         <script src="_static/doctools.js"></script>
         <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="next" title="Tips" href="tips.html" /> 
+    <link rel="next" title="About" href="about.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -37,7 +38,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.41.2.0
+                3.42.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -48,10 +49,10 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tips.html">Tips</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example.html">Example/Tour</a></li>
-<li class="toctree-l1"><a class="reference internal" href="download.html">Download</a></li>
-<li class="toctree-l1"><a class="reference internal" href="build.html">Building</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation and customization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="apsw.html">APSW Module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="connection.html">Connections to a database</a></li>
@@ -88,12 +89,12 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">APSW 3.41.2.0 documentation</li>
+      <li class="breadcrumb-item active">APSW 3.42.0.0 documentation</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul><div class="rst-breadcrumbs-buttons" role="navigation" aria-label="Sequential page navigation">
-        <a href="tips.html" class="btn btn-neutral float-right" title="Tips" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="about.html" class="btn btn-neutral float-right" title="About" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
   </div>
   <hr/>
 </div>
@@ -101,28 +102,18 @@
            <div itemprop="articleBody">
              
   <section id="apsw-version-documentation">
-<h1>APSW 3.41.2.0 documentation<a class="headerlink" href="#apsw-version-documentation" title="Permalink to this heading"></a></h1>
+<h1>APSW 3.42.0.0 documentation<a class="headerlink" href="#apsw-version-documentation" title="Permalink to this heading"></a></h1>
 <p class="centered">
-<strong>APSW 3.41.2.0 released 26 March 2023</strong></p><p>Use with SQLite 3.41 or later, CPython 3.6 and later:</p>
-<blockquote>
-<div><p>Version <a class="reference external" href="https://github.com/rogerbinns/apsw/releases/tag/3.37.0-r1">3.37.0-r1</a> from
-January 2022 supports all CPython versions back to 2.3.  The
-<a class="reference internal" href="tips.html"><span class="doc">tips</span></a> include more information about APSW and SQLite versions.</p>
-</div></blockquote>
-<p>APSW provides an SQLite 3 wrapper that provides the thinnest layer
-over the <a class="reference external" href="https://sqlite.org">SQLite</a> database library possible.
-Everything you can do from the <a class="reference external" href="https://sqlite.org/c3ref/intro.html">SQLite C API</a>, you can do from Python.
-Although APSW looks vaguely similar to the <span class="target" id="index-0"></span><a class="pep reference external" href="https://peps.python.org/pep-0249/"><strong>PEP 249</strong></a> (DBAPI), it is
-<a class="reference internal" href="dbapi.html#dbapinotes"><span class="std std-ref">not compliant</span></a> with that API because instead it
-works the way SQLite 3 does. (Read more about the <a class="reference internal" href="pysqlite.html#pysqlitediffs"><span class="std std-ref">differences</span></a>).</p>
-<p>In general you should use Python's <a class="reference external" href="https://docs.python.org/3/library/sqlite3.html">builtin sqlite3 module</a>.  Use APSW when
-you are intentionally using SQLite, want to use its APIs, want to
-control what <a class="reference internal" href="tips.html#version-stuff"><span class="std std-ref">versions</span></a> are used, or want to
-control SQLite's configuration (primarily done at <a class="reference external" href="https://www.sqlite.org/compile.html">compile time</a>) or extensions (like <a class="reference external" href="https://www.sqlite.org/json1.html">JSON</a> or <a class="reference external" href="https://www.sqlite.org/fts5.html">FTS</a>)</p>
-<p>APSW is hosted at <a class="reference external" href="https://github.com/rogerbinns/apsw">https://github.com/rogerbinns/apsw</a> and can be
-<a class="reference internal" href="download.html"><span class="doc">downloaded</span></a> from <a class="reference external" href="https://pypi.org/project/apsw/">PyPI</a></p>
-<div class="toctree-wrapper compound">
+<strong>APSW 3.42.0.0 released 18 May 2023</strong></p><div class="toctree-wrapper compound">
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="about.html#what-apsw-does">What APSW does</a></li>
+<li class="toctree-l2"><a class="reference internal" href="about.html#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="about.html#hosting">Hosting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="about.html#mailing-lists-contacts">Mailing lists/contacts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="about.html#issue-tracking">Issue tracking</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="tips.html">Tips</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="tips.html#about-python-apsw-and-sqlite-versions">About Python, APSW, and SQLite versions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tips.html#sqlite-is-different">SQLite is different</a></li>
@@ -152,6 +143,7 @@ control SQLite's configuration (primarily done at <a class="reference external" 
 <li class="toctree-l2"><a class="reference internal" href="example.html#using-different-types">Using different types</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#transactions">Transactions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#executemany">executemany</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example.html#pragmas">Pragmas</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#tracing-execution">Tracing execution</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#tracing-returned-rows">Tracing returned rows</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#defining-your-own-functions">Defining your own functions</a></li>
@@ -177,22 +169,11 @@ control SQLite's configuration (primarily done at <a class="reference external" 
 <li class="toctree-l2"><a class="reference internal" href="example.html#cleanup">Cleanup</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="download.html">Download</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="download.html#pypi-pip">PyPI/pip</a></li>
-<li class="toctree-l2"><a class="reference internal" href="download.html#source">Source</a></li>
-<li class="toctree-l2"><a class="reference internal" href="download.html#linux-bsd-provided-package">Linux/BSD provided package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="download.html#verifying-your-download">Verifying your download</a></li>
-<li class="toctree-l2"><a class="reference internal" href="download.html#source-code-control">Source code control</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="build.html">Building</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="build.html#setup-py">setup.py</a></li>
-<li class="toctree-l2"><a class="reference internal" href="build.html#additional-setup-py-flags">Additional <code class="file docutils literal notranslate"><span class="pre">setup.py</span></code> flags</a></li>
-<li class="toctree-l2"><a class="reference internal" href="build.html#matching-apsw-and-sqlite-options">Matching APSW and SQLite options</a></li>
-<li class="toctree-l2"><a class="reference internal" href="build.html#finding-sqlite-3">Finding SQLite 3</a></li>
-<li class="toctree-l2"><a class="reference internal" href="build.html#recommended">Recommended</a></li>
-<li class="toctree-l2"><a class="reference internal" href="build.html#source-distribution-advanced">Source distribution (advanced)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="build.html#testing">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation and customization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install.html#pypi-recommended">PyPI (recommended)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#linux-bsd-provided">Linux/BSD provided</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#building-and-customization">Building and customization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#testing">Testing</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a><ul>
@@ -252,6 +233,7 @@ control SQLite's configuration (primarily done at <a class="reference external" 
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ext.html#pretty-printing">Pretty printing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ext.html#logging-and-tracebacks">Logging and tracebacks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ext.html#virtual-tables">Virtual Tables</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ext.html#accessing-result-rows-by-column-name">Accessing result rows by column name</a></li>
@@ -298,128 +280,129 @@ control SQLite's configuration (primarily done at <a class="reference external" 
 </li>
 <li class="toctree-l1"><a class="reference internal" href="copyright.html">Copyright and License</a></li>
 <li class="toctree-l1"><a class="reference internal" href="changes.html">Change History</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id1">3.41.2.0</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id2">3.41.0.0</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id3">3.40.1.0</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id4">3.40.0.0</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id5">3.39.4.0</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id6">3.39.3.0</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id7">3.39.2.1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id8">3.39.2.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id1">3.42.0.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id2">3.41.2.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id3">3.41.0.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id4">3.40.1.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id5">3.40.0.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id6">3.39.4.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id7">3.39.3.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id8">3.39.2.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id9">3.39.2.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="changes.html#r1">3.38.5-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id9">3.38.1-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id10">3.37.0-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id11">3.36.0-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id12">3.35.4-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id13">3.34.0-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id14">3.33.0-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id15">3.32.2-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id16">3.31.1-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id17">3.30.1-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id18">3.29.0-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id19">3.28.0-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id20">3.27.2-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id21">3.26.0-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id22">3.25.2-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id23">3.24.0-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id24">3.23.1-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id25">3.22.0-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id26">3.21.0-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id27">3.20.1-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id28">3.19.3-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id29">3.18.0-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id30">3.17.0-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id31">3.16.2-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id32">3.15.2-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id33">3.15.1-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id34">3.15.0-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id35">3.14.1-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id36">3.13.0-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id37">3.12.2-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id38">3.11.1-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id39">3.11.0-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id40">3.9.2-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id41">3.8.11.1-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id42">3.8.10.1-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id43">3.8.9-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id44">3.8.8.2-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id45">3.8.8.1-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id46">3.8.7.3-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id47">3.8.7.2-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id48">3.8.7.1-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id49">3.8.6-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id50">3.8.5-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id51">3.8.4.3-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id52">3.8.4.2-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id53">3.8.4.1-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id54">3.8.3.1-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id55">3.8.3-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id56">3.8.2-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id57">3.8.1-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id58">3.8.0.2-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id59">3.8.0.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id10">3.38.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id11">3.37.0-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id12">3.36.0-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id13">3.35.4-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id14">3.34.0-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id15">3.33.0-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id16">3.32.2-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id17">3.31.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id18">3.30.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id19">3.29.0-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id20">3.28.0-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id21">3.27.2-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id22">3.26.0-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id23">3.25.2-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id24">3.24.0-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id25">3.23.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id26">3.22.0-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id27">3.21.0-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id28">3.20.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id29">3.19.3-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id30">3.18.0-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id31">3.17.0-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id32">3.16.2-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id33">3.15.2-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id34">3.15.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id35">3.15.0-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id36">3.14.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id37">3.13.0-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id38">3.12.2-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id39">3.11.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id40">3.11.0-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id41">3.9.2-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id42">3.8.11.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id43">3.8.10.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id44">3.8.9-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id45">3.8.8.2-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id46">3.8.8.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id47">3.8.7.3-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id48">3.8.7.2-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id49">3.8.7.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id50">3.8.6-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id51">3.8.5-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id52">3.8.4.3-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id53">3.8.4.2-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id54">3.8.4.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id55">3.8.3.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id56">3.8.3-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id57">3.8.2-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id58">3.8.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id59">3.8.0.2-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id60">3.8.0.1-r1</a></li>
 <li class="toctree-l2"><a class="reference internal" href="changes.html#r2">3.8.0-r2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id60">3.8.0-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id61">3.7.17-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id62">3.7.16.2-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id63">3.7.16.1-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id64">3.7.16-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id65">3.7.15.2-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id66">3.7.15.1-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id67">3.7.15-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id68">3.7.14.1-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id69">3.7.14-r2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id70">3.7.14-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id71">3.7.13-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id72">3.7.12.1-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id73">3.7.12-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id74">3.7.11-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id75">3.7.10-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id76">3.7.9-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id77">3.7.8-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id78">3.7.7.1-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id79">3.7.6.3-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id80">3.7.6.2-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id81">3.7.5-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id82">3.7.4-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id83">3.7.3-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id84">3.7.2-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id85">3.7.1-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id86">3.7.0.1-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id87">3.7.0-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id88">3.6.23.1-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id89">3.6.23-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id90">3.6.22-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id91">3.6.21-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id92">3.6.20-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id93">3.6.19-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id94">3.6.18-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id95">3.6.17-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id96">3.6.16-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id97">3.6.15-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id98">3.6.14.2-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id99">3.6.14.1-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id100">3.6.13-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id101">3.6.11-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id102">3.6.10-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id103">3.6.6.2-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id104">3.6.5-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id105">3.6.3-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id106">3.5.9-r2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id107">3.5.9-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id108">3.3.13-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id109">3.3.10-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id110">3.3.9-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id112">3.3.8-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id113">3.3.7-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id114">3.3.5-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id115">3.2.7-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id116">3.2.2-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id117">3.2.1-r1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id118">3.1.3-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id61">3.8.0-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id62">3.7.17-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id63">3.7.16.2-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id64">3.7.16.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id65">3.7.16-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id66">3.7.15.2-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id67">3.7.15.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id68">3.7.15-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id69">3.7.14.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id70">3.7.14-r2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id71">3.7.14-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id72">3.7.13-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id73">3.7.12.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id74">3.7.12-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id75">3.7.11-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id76">3.7.10-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id77">3.7.9-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id78">3.7.8-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id79">3.7.7.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id80">3.7.6.3-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id81">3.7.6.2-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id82">3.7.5-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id83">3.7.4-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id84">3.7.3-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id85">3.7.2-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id86">3.7.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id87">3.7.0.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id88">3.7.0-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id89">3.6.23.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id90">3.6.23-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id91">3.6.22-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id92">3.6.21-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id93">3.6.20-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id94">3.6.19-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id95">3.6.18-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id96">3.6.17-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id97">3.6.16-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id98">3.6.15-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id99">3.6.14.2-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id100">3.6.14.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id101">3.6.13-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id102">3.6.11-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id103">3.6.10-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id104">3.6.6.2-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id105">3.6.5-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id106">3.6.3-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id107">3.5.9-r2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id108">3.5.9-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id109">3.3.13-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id110">3.3.10-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id111">3.3.9-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id113">3.3.8-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id114">3.3.7-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id115">3.3.5-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id116">3.2.7-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id117">3.2.2-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id118">3.2.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id119">3.1.3-r1</a></li>
 <li class="toctree-l2"><a class="reference internal" href="changes.html#r3">3.0.8-r3</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id119">3.0.8-r2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changes.html#id120">3.0.8-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id120">3.0.8-r2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id121">3.0.8-r1</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="py-modindex.html">Module Index</a></li>
@@ -432,14 +415,14 @@ control SQLite's configuration (primarily done at <a class="reference external" 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="tips.html" class="btn btn-neutral float-right" title="Tips" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="about.html" class="btn btn-neutral float-right" title="About" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Mar 26, 2023.
+      <span class="lastupdated">Last updated on May 17, 2023.
       </span></p>
   </div>
 

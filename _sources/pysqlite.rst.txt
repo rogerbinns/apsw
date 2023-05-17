@@ -12,16 +12,17 @@ to SQLite from Python from fundamentally different directions.
 APSW provides access in whatever way is normal for SQLite.  It makes
 no effort to hide how SQLite is different from other databases.
 
-sqlite3 tries to provide a DBAPI compliant wrapper for SQLite and in
-doing so needs to make it have the same behaviour as other databases.
-Consequently it does hide some of SQLite's nuances.
+sqlite3 tries to provide a DBAPI (:pep:`249`) compliant wrapper for
+SQLite and in doing so needs to make it have the same behaviour as
+other databases.  Consequently it does hide some of SQLite's nuances.
 
 .. note::
 
    I suggest using APSW when you want to directly use SQLite and its
    functionality or are using your own code to deal with database
-   independence rather than DBAPI.  Use sqlite3 and DBAPI if your
-   needs are simple, and you don't want to use SQLite features.
+   independence rather than DBAPI.  Use :mod:`sqlite3` and DBAPI if
+   your needs are simple, and you don't want to use SQLite specific
+   features.
 
 
 What APSW does better
@@ -32,6 +33,11 @@ module:
 
 * APSW stays up to date with SQLite.  As features are added and
   functionality changed in SQLite, APSW tracks them.
+
+* APSW stays up to date with Python, including releases under
+  development as well as older still supported releases.  The current
+  APSW release brings the most recent SQLite to Python 3.6 all the way
+  through Python 3.12.
 
 * APSW gives all functionality of SQLite including :ref:`virtual
   tables <virtualtables>`, :ref:`VFS`, :ref:`BLOB I/O <blobio>`,

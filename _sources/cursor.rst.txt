@@ -116,9 +116,11 @@ separated statements.  For example::
 Cursor class
 ============
 
-.. class:: Cursor
+.. class:: Cursor(connection: Connection)
 
   You obtain cursors by calling :meth:`Connection.cursor`.
+
+ Use :meth:`Connection.cursor` to make a new cursor.
 
 .. method:: Cursor.__iter__(self: Cursor) -> Cursor
 
@@ -154,7 +156,7 @@ Cursor class
   :class:`Connection` this cursor is using
 
 .. attribute:: Cursor.description
-    :type: Tuple[Tuple[str, str, None, None, None, None, None], ...]
+    :type: tuple[tuple[str, str, None, None, None, None, None], ...]
 
     Based on the `DB-API cursor property
     <http://www.python.org/dev/peps/pep-0249/>`__, this returns the
@@ -164,7 +166,7 @@ Cursor class
 .. index:: sqlite3_column_name, sqlite3_column_decltype, sqlite3_column_database_name, sqlite3_column_table_name, sqlite3_column_origin_name
 
 .. attribute:: Cursor.description_full
-  :type: Tuple[Tuple[str, str, str, str, str], ...]
+  :type: tuple[tuple[str, str, str, str, str], ...]
 
 Only present if SQLITE_ENABLE_COLUMN_METADATA was defined at
 compile time.
@@ -305,7 +307,7 @@ Calls:
 
   Calls: `sqlite3_expanded_sql <https://sqlite.org/c3ref/expanded_sql.html>`__
 
-.. method:: Cursor.fetchall() -> list[Tuple[SQLiteValue, ...]]
+.. method:: Cursor.fetchall() -> list[tuple[SQLiteValue, ...]]
 
   Returns all remaining result rows as a list.  This method is defined
   in DBAPI.  It is a longer way of doing ``list(cursor)``.
@@ -314,13 +316,37 @@ Calls:
 
   Returns the next row of data or None if there are no more rows.
 
+.. attribute:: Cursor.get
+ :type: Any
+
+ Like :meth:`fetchall` but returns the data with the least amount of structure
+ possible.
+
+ .. list-table:: Some examples
+    :header-rows: 1
+
+    * - Query
+      - Result
+    * - select 3
+      - 3
+    * - select 3,4
+      - (3, 4)
+    * - select 3; select 4
+      - [3, 4]
+    * - select 3,4; select 4,5
+      - [(3, 4), (4, 5)]
+    * - select 3,4; select 5
+      - [(3, 4), 5]
+
+ Row tracers are not called when using this method.
+
 .. method:: Cursor.getconnection() -> Connection
 
   Returns the :attr:`connection` this cursor is using
 
 .. index:: sqlite3_column_name, sqlite3_column_decltype
 
-.. method:: Cursor.getdescription() -> Tuple[Tuple[str, str], ...]
+.. method:: Cursor.getdescription() -> tuple[tuple[str, str], ...]
 
    If you are trying to get information about a table or view,
    then `pragma table_info <https://sqlite.org/pragma.html#pragma_table_info>`__
@@ -392,6 +418,12 @@ Calls:
   .. seealso::
 
     * :ref:`tracing`
+
+.. attribute:: Cursor.has_vdbe
+  :type: bool
+
+  `True` if the SQL can be evaluated.  Comments have nothing to
+   evaluate, and so are `False`.
 
 .. index:: sqlite3_stmt_isexplain
 

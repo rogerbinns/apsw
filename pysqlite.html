@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>sqlite3 module differences &mdash; APSW 3.41.2.0 documentation</title>
+  <title>sqlite3 module differences &mdash; APSW 3.42.0.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/favicon.ico"/>
@@ -18,6 +18,7 @@
         <script src="_static/doctools.js"></script>
         <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
@@ -38,7 +39,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.41.2.0
+                3.42.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -49,10 +50,10 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tips.html">Tips</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example.html">Example/Tour</a></li>
-<li class="toctree-l1"><a class="reference internal" href="download.html">Download</a></li>
-<li class="toctree-l1"><a class="reference internal" href="build.html">Building</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation and customization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="apsw.html">APSW Module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="connection.html">Connections to a database</a></li>
@@ -113,15 +114,16 @@ standard module and APSW approached the problem of providing access
 to SQLite from Python from fundamentally different directions.</p>
 <p>APSW provides access in whatever way is normal for SQLite.  It makes
 no effort to hide how SQLite is different from other databases.</p>
-<p>sqlite3 tries to provide a DBAPI compliant wrapper for SQLite and in
-doing so needs to make it have the same behaviour as other databases.
-Consequently it does hide some of SQLite's nuances.</p>
+<p>sqlite3 tries to provide a DBAPI (<span class="target" id="index-0"></span><a class="pep reference external" href="https://peps.python.org/pep-0249/"><strong>PEP 249</strong></a>) compliant wrapper for
+SQLite and in doing so needs to make it have the same behaviour as
+other databases.  Consequently it does hide some of SQLite's nuances.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>I suggest using APSW when you want to directly use SQLite and its
 functionality or are using your own code to deal with database
-independence rather than DBAPI.  Use sqlite3 and DBAPI if your
-needs are simple, and you don't want to use SQLite features.</p>
+independence rather than DBAPI.  Use <a class="reference external" href="https://docs.python.org/3/library/sqlite3.html#module-sqlite3" title="(in Python v3.11)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">sqlite3</span></code></a> and DBAPI if
+your needs are simple, and you don't want to use SQLite specific
+features.</p>
 </div>
 <section id="what-apsw-does-better">
 <h2>What APSW does better<a class="headerlink" href="#what-apsw-does-better" title="Permalink to this heading"></a></h2>
@@ -130,6 +132,10 @@ module:</p>
 <ul>
 <li><p>APSW stays up to date with SQLite.  As features are added and
 functionality changed in SQLite, APSW tracks them.</p></li>
+<li><p>APSW stays up to date with Python, including releases under
+development as well as older still supported releases.  The current
+APSW release brings the most recent SQLite to Python 3.6 all the way
+through Python 3.12.</p></li>
 <li><p>APSW gives all functionality of SQLite including <a class="reference internal" href="vtable.html#virtualtables"><span class="std std-ref">virtual
 tables</span></a>, <a class="reference internal" href="vfs.html#vfs"><span class="std std-ref">Virtual File System (VFS)</span></a>, <a class="reference internal" href="blob.html#blobio"><span class="std std-ref">BLOB I/O</span></a>,
 <a class="reference internal" href="backup.html#backup"><span class="std std-ref">backups</span></a> and <a class="reference internal" href="connection.html#apsw.Connection.filecontrol" title="apsw.Connection.filecontrol"><code class="xref py py-meth docutils literal notranslate"><span class="pre">file</span> <span class="pre">control</span></code></a>.</p></li>
@@ -139,7 +145,7 @@ that the <a class="reference internal" href="connection.html#apsw.Connection" ti
 used in the same thread.  You can disable its checking, but unless
 you are very careful with your own mutexes you will have a crash or
 a deadlock.</p></li>
-<li><p>APSW <a class="reference internal" href="build.html#building"><span class="std std-ref">build instructions</span></a> show you how to include
+<li><p>APSW <a class="reference external" href="https://docs.python.org/3/extending/building.html#building" title="(in Python v3.11)"><span class="xref std std-ref">build instructions</span></a> show you how to include
 SQLite statically in the extension, avoiding a dependency on system
 SQLite.</p></li>
 <li><p><strong>Nothing</strong> happens behind your back. By default sqlite3 tries to
@@ -272,7 +278,7 @@ libraries that abstract away the database layer</p></li>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Mar 26, 2023.
+      <span class="lastupdated">Last updated on May 17, 2023.
       </span></p>
   </div>
 

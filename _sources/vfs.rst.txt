@@ -9,7 +9,7 @@ Virtual File System (VFS)
 *************************
 
 SQLite 3.6 added `VFS functionality
-<https://sqlite.org/c3ref/vfs.html>`_ which defines the interface
+<https://sqlite.org/c3ref/vfs.html>`__ which defines the interface
 between the SQLite core and the underlying operating system. The
 majority of the functionality deals with files. APSW exposes this
 functionality letting you provide your own routines. You can also
@@ -35,11 +35,6 @@ are done then you have to override :meth:`VFS.xOpen` to return a file
 instance that has your overridden :class:`VFSFile` methods.  The
 :ref:`example <example_vfs>` demonstrates obfuscating the database
 file contents.
-
-.. note::
-
-  All strings supplied and returned to :class:`VFS`/:class:`VFSFile`
-  routines are treated as Unicode.
 
 .. _vfserrors:
 
@@ -144,8 +139,8 @@ VFS class
 
     :param maxpathname: The maximum length of database name in bytes when
         represented in UTF-8.  If a pathname is passed in longer than
-        this value then SQLite will not `be able to open it
-        <https://sqlite.org/src/tktview/c060923a5422590b3734eb92eae0c94934895b68>`__.
+        this value then SQLite will not`be able to open it.  If you are
+        using a base, then a value of zero will use the value from base.
 
     :raises ValueError: If *base* is not *None* and the named vfs is not
       currently registered.
@@ -254,13 +249,10 @@ VFS class
 
   Return the absolute pathname for name.  You can use ``os.path.abspath`` to do this.
 
-.. method:: VFS.xGetLastError() -> Tuple[int, str]
+.. method:: VFS.xGetLastError() -> tuple[int, str]
 
    This method is to return an integer error code and (optional) text describing
    the last error that happened in this thread.
-
-   .. note:: SQLite 3.12 changed the semantics in an incompatible way from
-        earlier versions.  You will need to rewrite earlier implementations.
 
 .. method:: VFS.xGetSystemCall(name: str) -> Optional[int]
 
@@ -275,14 +267,7 @@ VFS class
     name after the one passed in.  If name is the last system call
     then return None.
 
-    .. note::
-
-      Because of internal SQLite implementation semantics memory will
-      be leaked on each call to this function.  Consequently you
-      should build up the list of call names once rather than
-      repeatedly doing it.
-
-.. method:: VFS.xOpen(name: Optional[Union[str,URIFilename]], flags: List[int,int]) -> VFSFile
+.. method:: VFS.xOpen(name: Optional[str | URIFilename], flags: list[int,int]) -> VFSFile
 
     This method should return a new file object based on name.  You
     can return a :class:`VFSFile` from a completely different VFS.
@@ -344,7 +329,7 @@ VFS class
 VFSFile class
 =============
 
-.. class:: VFSFile(vfs: str, filename: Union[str,URIFilename], flags: List[int])
+.. class:: VFSFile(vfs: str, filename: str | URIFilename, flags: list[int])
 
     Wraps access to a file.  You only need to derive from this class
     if you want the file object returned from :meth:`VFS.xOpen` to

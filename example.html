@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Example/Tour &mdash; APSW 3.41.2.0 documentation</title>
+  <title>Example/Tour &mdash; APSW 3.42.0.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/favicon.ico"/>
@@ -18,10 +18,11 @@
         <script src="_static/doctools.js"></script>
         <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="next" title="Download" href="download.html" />
+    <link rel="next" title="Installation and customization" href="install.html" />
     <link rel="prev" title="Tips" href="tips.html" /> 
 </head>
 
@@ -38,7 +39,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.41.2.0
+                3.42.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -49,6 +50,7 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tips.html">Tips</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Example/Tour</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#checking-apsw-and-sqlite-versions">Checking APSW and SQLite versions</a></li>
@@ -61,6 +63,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#using-different-types">Using different types</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#transactions">Transactions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#executemany">executemany</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pragmas">Pragmas</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#tracing-execution">Tracing execution</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#tracing-returned-rows">Tracing returned rows</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#defining-your-own-functions">Defining your own functions</a></li>
@@ -86,8 +89,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#cleanup">Cleanup</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="download.html">Download</a></li>
-<li class="toctree-l1"><a class="reference internal" href="build.html">Building</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation and customization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="apsw.html">APSW Module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="connection.html">Connections to a database</a></li>
@@ -130,7 +132,7 @@
       </li>
   </ul><div class="rst-breadcrumbs-buttons" role="navigation" aria-label="Sequential page navigation">
         <a href="tips.html" class="btn btn-neutral float-left" title="Tips" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="download.html" class="btn btn-neutral float-right" title="Download" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="install.html" class="btn btn-neutral float-right" title="Installation and customization" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
   </div>
   <hr/>
 </div>
@@ -156,7 +158,7 @@ see what gets printed when you run the code.</p>
 
 <span class="c1"># Note: this code uses Python&#39;s optional typing annotations.  You can</span>
 <span class="c1"># ignore them and do not need to use them</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Iterator</span>
 </pre></div>
 </div>
 <section id="checking-apsw-and-sqlite-versions">
@@ -178,10 +180,10 @@ see what gets printed when you run the code.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   Using amalgamation&quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">using_amalgamation</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">      Using APSW file /space/apsw/./apsw/__init__.cpython-310-x86_64-linux-gnu.so</span>
-<span class="go">         APSW version 3.41.2.0</span>
-<span class="go">SQLite header version 3041002</span>
-<span class="go">   SQLite lib version 3.41.2</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">      Using APSW file /space/apsw/apsw/__init__.cpython-311-x86_64-linux-gnu.so</span>
+<span class="go">         APSW version 3.42.0.0</span>
+<span class="go">SQLite header version 3042000</span>
+<span class="go">   SQLite lib version 3.42.0</span>
 <span class="go">   Using amalgamation True</span>
 </pre></div>
 </div>
@@ -189,8 +191,7 @@ see what gets printed when you run the code.</p>
 <section id="logging">
 <span id="example-logging"></span><span id="index-1"></span><h2>Logging<a class="headerlink" href="#logging" title="Permalink to this heading"></a></h2>
 <p>It is a good idea to get SQLite's logs as you will get more
-information about errors.  This has to be done first (a SQLite
-limitation, not APSW). <a class="reference internal" href="ext.html#apsw.ext.log_sqlite" title="apsw.ext.log_sqlite"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.ext.log_sqlite()</span></code></a> forwards
+information about errors.  <a class="reference internal" href="ext.html#apsw.ext.log_sqlite" title="apsw.ext.log_sqlite"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.ext.log_sqlite()</span></code></a> forwards
 SQLite's log messages to the <a class="reference external" href="https://docs.python.org/3/library/logging.html#module-logging" title="(in Python v3.11)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">logging</span></code></a> module.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">log_sqlite</span><span class="p">()</span>
 
@@ -371,8 +372,30 @@ a while.</p>
 </pre></div>
 </div>
 </section>
+<section id="pragmas">
+<span id="example-pragma"></span><span id="index-10"></span><h2>Pragmas<a class="headerlink" href="#pragmas" title="Permalink to this heading"></a></h2>
+<p>SQLite has a <a class="reference external" href="https://www.sqlite.org/pragma.html">wide variety of pragmas</a> to control
+the database configuration and library behaviour.  See the <a class="reference internal" href="tips.html"><span class="doc">Tips</span></a> for maintaining
+your schema.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># WAL mode is good for write performance</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;journal_mode&quot;</span><span class="p">,</span> <span class="s2">&quot;wal&quot;</span><span class="p">)</span>
+
+<span class="c1"># Foreign keys are off by default, so turn them on</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;foreign_keys&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># You can use this to see if any other connection (including other processes) has</span>
+<span class="c1"># changed the database</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;data_version&quot;</span><span class="p">)</span>
+
+<span class="c1"># Useful at startup to detect some database corruption</span>
+<span class="n">check</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;integrity_check&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">check</span> <span class="o">!=</span> <span class="s2">&quot;ok&quot;</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Integrity check errors&quot;</span><span class="p">,</span> <span class="n">check</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
 <section id="tracing-execution">
-<span id="example-exectrace"></span><span id="index-10"></span><h2>Tracing execution<a class="headerlink" href="#tracing-execution" title="Permalink to this heading"></a></h2>
+<span id="example-exectrace"></span><span id="index-11"></span><h2>Tracing execution<a class="headerlink" href="#tracing-execution" title="Permalink to this heading"></a></h2>
 <p>You can trace execution of SQL statements.  See <a class="reference internal" href="execution.html#tracing"><span class="std std-ref">more about
 tracing</span></a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">my_tracer</span><span class="p">(</span><span class="n">cursor</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">,</span> <span class="n">statement</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">bindings</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -408,7 +431,7 @@ tracing</span></a>.</p>
 </div>
 </section>
 <section id="tracing-returned-rows">
-<span id="example-rowtrace"></span><span id="index-11"></span><h2>Tracing returned rows<a class="headerlink" href="#tracing-returned-rows" title="Permalink to this heading"></a></h2>
+<span id="example-rowtrace"></span><span id="index-12"></span><h2>Tracing returned rows<a class="headerlink" href="#tracing-returned-rows" title="Permalink to this heading"></a></h2>
 <p>You can trace returned rows, including modifying what is returned or
 skipping it completely.  See <a class="reference internal" href="execution.html#tracing"><span class="std std-ref">more about tracing</span></a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">row_tracer</span><span class="p">(</span><span class="n">cursor</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span><span class="p">:</span>
@@ -436,7 +459,7 @@ skipping it completely.  See <a class="reference internal" href="execution.html#
 </div>
 </section>
 <section id="defining-your-own-functions">
-<span id="example-scalar"></span><span id="index-12"></span><h2>Defining your own functions<a class="headerlink" href="#defining-your-own-functions" title="Permalink to this heading"></a></h2>
+<span id="example-scalar"></span><span id="index-13"></span><h2>Defining your own functions<a class="headerlink" href="#defining-your-own-functions" title="Permalink to this heading"></a></h2>
 <p>Scalar functions take one or more values and return one value.  They
 are registered by calling <a class="reference internal" href="connection.html#apsw.Connection.createscalarfunction" title="apsw.Connection.createscalarfunction"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.createscalarfunction()</span></code></a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">ilove7</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
@@ -459,7 +482,7 @@ are registered by calling <a class="reference internal" href="connection.html#ap
 </div>
 </section>
 <section id="defining-aggregate-functions">
-<span id="example-aggregate"></span><span id="index-13"></span><h2>Defining aggregate functions<a class="headerlink" href="#defining-aggregate-functions" title="Permalink to this heading"></a></h2>
+<span id="example-aggregate"></span><span id="index-14"></span><h2>Defining aggregate functions<a class="headerlink" href="#defining-aggregate-functions" title="Permalink to this heading"></a></h2>
 <p>Aggregate functions are called multiple times with matching rows,
 and then provide a final value.  An example is calculating an
 average.  They are registered by calling
@@ -496,7 +519,7 @@ average.  They are registered by calling
 </div>
 </section>
 <section id="defining-window-functions">
-<span id="example-window"></span><span id="index-14"></span><h2>Defining window functions<a class="headerlink" href="#defining-window-functions" title="Permalink to this heading"></a></h2>
+<span id="example-window"></span><span id="index-15"></span><h2>Defining window functions<a class="headerlink" href="#defining-window-functions" title="Permalink to this heading"></a></h2>
 <p>Window functions input values come from a &quot;window&quot; around a row of
 interest.  Four methods are called to add, remove, get the current
 value, and finalize as the window moves.</p>
@@ -568,7 +591,7 @@ documentation</a></p>
 </div>
 </section>
 <section id="defining-collations-sorting">
-<span id="example-collation"></span><span id="index-15"></span><h2>Defining collations (sorting)<a class="headerlink" href="#defining-collations-sorting" title="Permalink to this heading"></a></h2>
+<span id="example-collation"></span><span id="index-16"></span><h2>Defining collations (sorting)<a class="headerlink" href="#defining-collations-sorting" title="Permalink to this heading"></a></h2>
 <p>How you sort can depend on the languages or values involved.  You
 register a collation by calling <a class="reference internal" href="connection.html#apsw.Connection.createcollation" title="apsw.Connection.createcollation"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.createcollation()</span></code></a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># This example sorting mechanisms understands some text followed by a</span>
@@ -634,7 +657,7 @@ register a collation by calling <a class="reference internal" href="connection.h
 </div>
 </section>
 <section id="accessing-results-by-column-name">
-<span id="example-colnames"></span><span id="index-16"></span><h2>Accessing results by column name<a class="headerlink" href="#accessing-results-by-column-name" title="Permalink to this heading"></a></h2>
+<span id="example-colnames"></span><span id="index-17"></span><h2>Accessing results by column name<a class="headerlink" href="#accessing-results-by-column-name" title="Permalink to this heading"></a></h2>
 <p>You can access results by column name using <a class="reference external" href="https://docs.python.org/3/library/dataclasses.html#module-dataclasses" title="(in Python v3.11)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataclasses</span></code></a>.
 APSW provides <a class="reference internal" href="ext.html#apsw.ext.DataClassRowFactory" title="apsw.ext.DataClassRowFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">apsw.ext.DataClassRowFactory</span></code></a> for names
 instead</p>
@@ -685,7 +708,7 @@ instead</p>
 </div>
 </section>
 <section id="type-conversion-into-out-of-database">
-<span id="example-type-conversion"></span><span id="index-17"></span><h2>Type conversion into/out of database<a class="headerlink" href="#type-conversion-into-out-of-database" title="Permalink to this heading"></a></h2>
+<span id="example-type-conversion"></span><span id="index-18"></span><h2>Type conversion into/out of database<a class="headerlink" href="#type-conversion-into-out-of-database" title="Permalink to this heading"></a></h2>
 <p>You can use <a class="reference internal" href="ext.html#apsw.ext.TypesConverterCursorFactory" title="apsw.ext.TypesConverterCursorFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">apsw.ext.TypesConverterCursorFactory</span></code></a> to do
 conversion, both for types you define and for other types.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">apsw.ext</span>
@@ -762,7 +785,7 @@ conversion, both for types you define and for other types.</p>
 </div>
 </section>
 <section id="query-details">
-<span id="example-query-details"></span><span id="index-18"></span><h2>Query details<a class="headerlink" href="#query-details" title="Permalink to this heading"></a></h2>
+<span id="example-query-details"></span><span id="index-19"></span><h2>Query details<a class="headerlink" href="#query-details" title="Permalink to this heading"></a></h2>
 <p><a class="reference internal" href="ext.html#apsw.ext.query_info" title="apsw.ext.query_info"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.ext.query_info()</span></code></a> can provide a lot of information about a
 query (without running it)</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">apsw.ext</span>
@@ -982,7 +1005,7 @@ query (without running it)</p>
 </div>
 </section>
 <section id="blob-i-o">
-<span id="example-blob-io"></span><span id="index-19"></span><h2>Blob I/O<a class="headerlink" href="#blob-i-o" title="Permalink to this heading"></a></h2>
+<span id="example-blob-io"></span><span id="index-20"></span><h2>Blob I/O<a class="headerlink" href="#blob-i-o" title="Permalink to this heading"></a></h2>
 <p>BLOBS (binary large objects) are supported by SQLite.  Note that you
 cannot change the size of one, but you can allocate one filled with
 zeroes, and then later open it and read / write the contents similar
@@ -994,7 +1017,7 @@ to a file, without having the entire blob in memory.  Use
 <span class="c1"># Or as a binding</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into blobby values(2, ?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">zeroblob</span><span class="p">(</span><span class="mi">20000</span><span class="p">),</span> <span class="p">))</span>
 <span class="c1"># Open a blob for writing.  We need to know the rowid</span>
-<span class="n">rowid</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select ROWID from blobby where x=1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">rowid</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select ROWID from blobby where x=1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span>
 <span class="n">blob</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">blobopen</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="s2">&quot;blobby&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">rowid</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 <span class="n">blob</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;hello world&quot;</span><span class="p">)</span>
 <span class="n">blob</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">2000</span><span class="p">)</span>
@@ -1004,7 +1027,7 @@ to a file, without having the entire blob in memory.  Use
 </div>
 </section>
 <section id="authorizer-control-what-sql-can-do">
-<span id="example-authorizer"></span><span id="index-20"></span><h2>Authorizer (control what SQL can do)<a class="headerlink" href="#authorizer-control-what-sql-can-do" title="Permalink to this heading"></a></h2>
+<span id="example-authorizer"></span><span id="index-21"></span><h2>Authorizer (control what SQL can do)<a class="headerlink" href="#authorizer-control-what-sql-can-do" title="Permalink to this heading"></a></h2>
 <p>You can allow, deny, or ignore what SQL does.  Use
 <a class="reference internal" href="connection.html#apsw.Connection.authorizer" title="apsw.Connection.authorizer"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Connection.authorizer</span></code></a> to set an authorizer.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">auth</span><span class="p">(</span><span class="n">operation</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">p1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">p2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">db_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
@@ -1042,12 +1065,12 @@ to a file, without having the entire blob in memory.  Use
 </div>
 </section>
 <section id="progress-handler">
-<span id="example-progress-handler"></span><span id="index-21"></span><h2>Progress handler<a class="headerlink" href="#progress-handler" title="Permalink to this heading"></a></h2>
+<span id="example-progress-handler"></span><span id="index-22"></span><h2>Progress handler<a class="headerlink" href="#progress-handler" title="Permalink to this heading"></a></h2>
 <p>Some operations (eg joins, sorting) can take many operations to
 complete.  Register a progress handler callback with
 <a class="reference internal" href="connection.html#apsw.Connection.setprogresshandler" title="apsw.Connection.setprogresshandler"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.setprogresshandler()</span></code></a> which lets you provide
 feedback and allows cancelling.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">some_numbers</span><span class="p">(</span><span class="n">how_many</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">some_numbers</span><span class="p">(</span><span class="n">how_many</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
     <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">how_many</span><span class="p">):</span>
         <span class="k">yield</span> <span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">9999999999</span><span class="p">),</span> <span class="p">)</span>
 
@@ -1082,12 +1105,12 @@ feedback and allows cancelling.</p>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
-<span class="go">(9953270732,)</span>
+<span class="go">(9977724111,)</span>
 </pre></div>
 </div>
 </section>
 <section id="commit-hook">
-<span id="example-commit-hook"></span><span id="index-22"></span><h2>Commit hook<a class="headerlink" href="#commit-hook" title="Permalink to this heading"></a></h2>
+<span id="example-commit-hook"></span><span id="index-23"></span><h2>Commit hook<a class="headerlink" href="#commit-hook" title="Permalink to this heading"></a></h2>
 <p>A commit hook can allow or veto commits.  Register a commit hook
 with  <a class="reference internal" href="connection.html#apsw.Connection.setcommithook" title="apsw.Connection.setcommithook"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.setcommithook()</span></code></a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">my_commit_hook</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -1116,7 +1139,7 @@ with  <a class="reference internal" href="connection.html#apsw.Connection.setcom
 </div>
 </section>
 <section id="update-hook">
-<span id="example-update-hook"></span><span id="index-23"></span><h2>Update hook<a class="headerlink" href="#update-hook" title="Permalink to this heading"></a></h2>
+<span id="example-update-hook"></span><span id="index-24"></span><h2>Update hook<a class="headerlink" href="#update-hook" title="Permalink to this heading"></a></h2>
 <p>Update hooks let you know that data has been added, changed, or
 removed.  For example you could use this to discard cached
 information.  Register a hook using
@@ -1142,7 +1165,7 @@ information.  Register a hook using
 </div>
 </section>
 <section id="virtual-tables">
-<span id="example-virtual-tables"></span><span id="index-24"></span><h2>Virtual tables<a class="headerlink" href="#virtual-tables" title="Permalink to this heading"></a></h2>
+<span id="example-virtual-tables"></span><span id="index-25"></span><h2>Virtual tables<a class="headerlink" href="#virtual-tables" title="Permalink to this heading"></a></h2>
 <p>Virtual tables let you provide data on demand as a SQLite table so
 you can use SQL queries against that data. <a class="reference internal" href="vtable.html#virtualtables"><span class="std std-ref">Read more about
 virtual tables</span></a>.</p>
@@ -1243,15 +1266,15 @@ useful instead.</p>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">┌──────────┬──────────┐</span>
 <span class="go">│ count(*) │ category │</span>
 <span class="go">│ 30       │ Cf       │</span>
-<span class="go">│ 998      │ Cn       │</span>
+<span class="go">│ 926      │ Cn       │</span>
 <span class="go">│ 6400     │ Co       │</span>
 <span class="go">│ 2048     │ Cs       │</span>
-<span class="go">│ 867      │ Ll       │</span>
-<span class="go">│ 180      │ Lm       │</span>
-<span class="go">│ 44918    │ Lo       │</span>
+<span class="go">│ 874      │ Ll       │</span>
+<span class="go">│ 183      │ Lm       │</span>
+<span class="go">│ 44924    │ Lo       │</span>
 <span class="go">│ 27       │ Lt       │</span>
-<span class="go">│ 654      │ Lu       │</span>
-<span class="go">│ 154      │ Mc       │</span>
+<span class="go">│ 659      │ Lu       │</span>
+<span class="go">│ 156      │ Mc       │</span>
 <span class="go">└──────────┴──────────┘</span>
 </pre></div>
 </div>
@@ -1301,13 +1324,17 @@ useful instead.</p>
 <span class="nb">print</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">format_query_table</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">bindings</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">┌─────────┬────────────────────────────────────────────┬───────────────────────┐</span>
-<span class="go">│ st_size │                 directory                  │         name          │</span>
-<span class="go">│ 744430  │ /usr/lib/python3.10/pydoc_data             │ topics.py             │</span>
-<span class="go">│ 472737  │ /usr/lib/python3.10/pydoc_data/__pycache__ │ topics.cpython-       │</span>
-<span class="go">│         │                                            │ 310.pyc               │</span>
-<span class="go">│ 228676  │ /usr/lib/python3.10                        │ _pydecimal.py         │</span>
-<span class="go">└─────────┴────────────────────────────────────────────┴───────────────────────┘</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">┌─────────┬──────────────────────────────────────────┬─────────────────────────┐</span>
+<span class="go">│ st_size │                directory                 │          name           │</span>
+<span class="go">├─────────┼──────────────────────────────────────────┼─────────────────────────┤</span>
+<span class="go">│ 756209  │ /usr/lib/python3.11/pydoc_data           │ topics.py               │</span>
+<span class="go">├─────────┼──────────────────────────────────────────┼─────────────────────────┤</span>
+<span class="go">│ 470013  │ /usr/lib/python3.11/pydoc_data/__pycache │ topics.cpython-311.pyc  │</span>
+<span class="go">│         │ __                                       │                         │</span>
+<span class="go">├─────────┼──────────────────────────────────────────┼─────────────────────────┤</span>
+<span class="go">│ 257926  │ /usr/lib/python3.11/tkinter/__pycache__  │ __init__.cpython-       │</span>
+<span class="go">│         │                                          │ 311.pyc                 │</span>
+<span class="go">└─────────┴──────────────────────────────────────────┴─────────────────────────┘</span>
 </pre></div>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Find the 3 oldest Python files</span>
@@ -1321,9 +1348,9 @@ useful instead.</p>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">┌────────────┬────────────────────────────────┬───────────────┐</span>
 <span class="go">│    date    │           directory            │     name      │</span>
-<span class="go">│ 2023-03-20 │ /usr/lib/python3.10/pydoc_data │ topics.py     │</span>
-<span class="go">│ 2023-03-20 │ /usr/lib/python3.10            │ _pydecimal.py │</span>
-<span class="go">│ 2022-10-04 │ /usr/lib/python3.10/tkinter    │ __init__.py   │</span>
+<span class="go">│ 2023-04-17 │ /usr/lib/python3.11/pydoc_data │ topics.py     │</span>
+<span class="go">│ 2023-04-17 │ /usr/lib/python3.11            │ _pydecimal.py │</span>
+<span class="go">│ 2023-04-17 │ /usr/lib/python3.11/tkinter    │ __init__.py   │</span>
 <span class="go">└────────────┴────────────────────────────────┴───────────────┘</span>
 </pre></div>
 </div>
@@ -1337,25 +1364,27 @@ useful instead.</p>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">┌────────────┬────────────┐</span>
 <span class="go">│ extension  │ total_size │</span>
-<span class="go">│            │ 267878     │</span>
-<span class="go">│ .a         │ 84430968   │</span>
-<span class="go">│ .allowlist │ 86         │</span>
-<span class="go">│ .c         │ 10714      │</span>
-<span class="go">│ .cfg       │ 279        │</span>
+<span class="go">│            │ 380625     │</span>
+<span class="go">│ .a         │ 113962916  │</span>
+<span class="go">│ .allowlist │ 56         │</span>
+<span class="go">│ .bootstrap │ 1756       │</span>
+<span class="go">│ .c         │ 11116      │</span>
+<span class="go">│ .cfg       │ 296        │</span>
 <span class="go">│ .csh       │ 935        │</span>
-<span class="go">│ .css       │ 96         │</span>
-<span class="go">│ .fish      │ 2077       │</span>
-<span class="go">│ .in        │ 3246       │</span>
-<span class="go">│ .local     │ 3040       │</span>
-<span class="go">│ .o         │ 20184      │</span>
+<span class="go">│ .css       │ 1325       │</span>
+<span class="go">│ .fish      │ 2215       │</span>
+<span class="go">│ .in        │ 3504       │</span>
+<span class="go">│ .local     │ 1534       │</span>
+<span class="go">│ .o         │ 20256      │</span>
 <span class="go">│ .ps1       │ 9033       │</span>
-<span class="go">│ .py        │ 11511926   │</span>
-<span class="go">│ .pyc       │ 8230189    │</span>
+<span class="go">│ .py        │ 11736442   │</span>
+<span class="go">│ .pyc       │ 13217236   │</span>
 <span class="go">│ .rst       │ 9561       │</span>
-<span class="go">│ .sh        │ 3754       │</span>
-<span class="go">│ .so        │ 19362544   │</span>
+<span class="go">│ .sh        │ 3888       │</span>
+<span class="go">│ .so        │ 27564264   │</span>
+<span class="go">│ .stdlib    │ 10752      │</span>
 <span class="go">│ .supp      │ 70         │</span>
-<span class="go">│ .txt       │ 23420      │</span>
+<span class="go">│ .txt       │ 23425      │</span>
 <span class="go">└────────────┴────────────┘</span>
 </pre></div>
 </div>
@@ -1365,7 +1394,7 @@ useful instead.</p>
 </div>
 </section>
 <section id="vfs-virtual-file-system">
-<span id="example-vfs"></span><span id="index-25"></span><h2>VFS - Virtual File System<a class="headerlink" href="#vfs-virtual-file-system" title="Permalink to this heading"></a></h2>
+<span id="example-vfs"></span><span id="index-26"></span><h2>VFS - Virtual File System<a class="headerlink" href="#vfs-virtual-file-system" title="Permalink to this heading"></a></h2>
 <p>VFS lets you control access to the filesystem from SQLite.  APSW
 makes it easy to &quot;inherit&quot; from an existing VFS and monitor or alter
 data as it flows through.  Read more about <a class="reference internal" href="vfs.html#vfs"><span class="std std-ref">VFS</span></a>.</p>
@@ -1460,7 +1489,7 @@ data as it flows through.  Read more about <a class="reference internal" href="v
 </div>
 </section>
 <section id="limits">
-<span id="example-limits"></span><span id="index-26"></span><h2>Limits<a class="headerlink" href="#limits" title="Permalink to this heading"></a></h2>
+<span id="example-limits"></span><span id="index-27"></span><h2>Limits<a class="headerlink" href="#limits" title="Permalink to this heading"></a></h2>
 <p>SQLite lets you see and update various limits via
 <a class="reference internal" href="connection.html#apsw.Connection.limit" title="apsw.Connection.limit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.limit()</span></code></a></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Print some limits</span>
@@ -1499,7 +1528,7 @@ data as it flows through.  Read more about <a class="reference internal" href="v
 </div>
 </section>
 <section id="backup-an-open-database">
-<span id="example-backup"></span><span id="index-27"></span><h2>Backup an open database<a class="headerlink" href="#backup-an-open-database" title="Permalink to this heading"></a></h2>
+<span id="example-backup"></span><span id="index-28"></span><h2>Backup an open database<a class="headerlink" href="#backup-an-open-database" title="Permalink to this heading"></a></h2>
 <p>You can backup a database that is open.  The pages are copied in
 batches of your choosing and allow continued use of the database.
 <a class="reference internal" href="backup.html#backup"><span class="std std-ref">Read more</span></a>.</p>
@@ -1513,7 +1542,7 @@ batches of your choosing and allow continued use of the database.
 </div>
 </section>
 <section id="shell">
-<span id="example-shell"></span><span id="index-28"></span><h2>Shell<a class="headerlink" href="#shell" title="Permalink to this heading"></a></h2>
+<span id="example-shell"></span><span id="index-29"></span><h2>Shell<a class="headerlink" href="#shell" title="Permalink to this heading"></a></h2>
 <p>APSW includes a <a class="reference internal" href="shell.html#shell"><span class="std std-ref">shell</span></a>  like the one in <a class="reference external" href="https://sqlite.org/cli.html">SQLite</a>, and is also extensible from
 Python.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">apsw.shell</span>
@@ -1563,9 +1592,9 @@ Python.</p>
 
 <span class="go">Dump output</span>
 
-<span class="go">-- SQLite dump (by APSW 3.41.2.0)</span>
-<span class="go">-- SQLite version 3.41.2</span>
-<span class="go">-- Date: Sun Mar 26 08:06:22 2023</span>
+<span class="go">-- SQLite dump (by APSW 3.42.0.0)</span>
+<span class="go">-- SQLite version 3.42.0</span>
+<span class="go">-- Date: Wed May 17 09:17:52 2023</span>
 <span class="go">-- Tables like: csvtest%</span>
 <span class="go">-- Database: /space/apsw/dbfile</span>
 <span class="go">-- User: rogerb @ clamps</span>
@@ -1591,18 +1620,18 @@ Python.</p>
 </div>
 </section>
 <section id="statistics">
-<span id="example-status"></span><span id="index-29"></span><h2>Statistics<a class="headerlink" href="#statistics" title="Permalink to this heading"></a></h2>
+<span id="example-status"></span><span id="index-30"></span><h2>Statistics<a class="headerlink" href="#statistics" title="Permalink to this heading"></a></h2>
 <p>SQLite provides statistics by <a class="reference internal" href="apsw.html#apsw.status" title="apsw.status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">status()</span></code></a></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">current_usage</span><span class="p">,</span> <span class="n">max_usage</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">status</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_STATUS_MEMORY_USED</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SQLite memory usage </span><span class="si">{</span><span class="w"> </span><span class="n">current_usage</span><span class="w"> </span><span class="si">}</span><span class="s2"> max </span><span class="si">{</span><span class="w"> </span><span class="n">max_usage</span><span class="w"> </span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite memory usage 322448 max 2241168</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite memory usage 423488 max 2336416</span>
 </pre></div>
 </div>
 </section>
 <section id="tracing">
-<span id="example-trace-v2"></span><span id="index-30"></span><h2>Tracing<a class="headerlink" href="#tracing" title="Permalink to this heading"></a></h2>
+<span id="example-trace-v2"></span><span id="index-31"></span><h2>Tracing<a class="headerlink" href="#tracing" title="Permalink to this heading"></a></h2>
 <p>This shows using <a class="reference internal" href="connection.html#apsw.Connection.trace_v2" title="apsw.Connection.trace_v2"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.trace_v2()</span></code></a></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># From https://www.sqlite.org/lang_with.html</span>
 <span class="c1"># Outlandish Recursive Query Examples</span>
@@ -1626,7 +1655,7 @@ Python.</p>
 <span class="s2">            SELECT group_concat(rtrim(t),x&#39;0a&#39;) FROM a;&quot;&quot;&quot;</span>
 
 
-<span class="k">def</span> <span class="nf">trace_hook</span><span class="p">(</span><span class="n">trace</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">trace_hook</span><span class="p">(</span><span class="n">trace</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="c1"># check the sql and connection are as expected and remove from trace</span>
     <span class="c1"># so we don&#39;t print them</span>
     <span class="k">assert</span> <span class="n">trace</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;sql&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">query</span> <span class="ow">and</span> <span class="n">trace</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;connection&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="n">connection</span>
@@ -1651,7 +1680,7 @@ Python.</p>
 
 <span class="go">code is  SQLITE_TRACE_PROFILE</span>
 <span class="go">{&#39;code&#39;: 2,</span>
-<span class="go"> &#39;nanoseconds&#39;: 30000000,</span>
+<span class="go"> &#39;nanoseconds&#39;: 35000000,</span>
 <span class="go"> &#39;stmt_status&#39;: {&#39;SQLITE_STMTSTATUS_AUTOINDEX&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FILTER_HIT&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FILTER_MISS&#39;: 0,</span>
@@ -1665,11 +1694,12 @@ Python.</p>
 </div>
 </section>
 <section id="formatting-query-results-table">
-<span id="example-format-query"></span><span id="index-31"></span><h2>Formatting query results table<a class="headerlink" href="#formatting-query-results-table" title="Permalink to this heading"></a></h2>
+<span id="example-format-query"></span><span id="index-32"></span><h2>Formatting query results table<a class="headerlink" href="#formatting-query-results-table" title="Permalink to this heading"></a></h2>
 <p><a class="reference internal" href="ext.html#apsw.ext.format_query_table" title="apsw.ext.format_query_table"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.ext.format_query_table()</span></code></a> makes it easy
 to format the results of a query in an automatic
 adjusting table, colour, sanitizing strings,
-truncation etc</p>
+truncation etc.  The documentation viewer may not
+show the lines joining, but they do on terminals.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create a table with some dummy data</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;CREATE TABLE dummy(quantity, [spaces in name], last);</span>
@@ -1764,7 +1794,7 @@ truncation etc</p>
 </div>
 </section>
 <section id="cleanup">
-<span id="example-cleanup"></span><span id="index-32"></span><h2>Cleanup<a class="headerlink" href="#cleanup" title="Permalink to this heading"></a></h2>
+<span id="example-cleanup"></span><span id="index-33"></span><h2>Cleanup<a class="headerlink" href="#cleanup" title="Permalink to this heading"></a></h2>
 <p>As a general rule you do not need to do any cleanup.  Standard
 Python garbage collection will take of everything.  Even if the
 process crashes with a connection in the middle of a transaction,
@@ -1784,14 +1814,14 @@ rollback the partial data.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="tips.html" class="btn btn-neutral float-left" title="Tips" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="download.html" class="btn btn-neutral float-right" title="Download" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="install.html" class="btn btn-neutral float-right" title="Installation and customization" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Mar 26, 2023.
+      <span class="lastupdated">Last updated on May 17, 2023.
       </span></p>
   </div>
 
