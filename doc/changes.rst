@@ -3,8 +3,8 @@ Change History
 
 .. currentmodule:: apsw
 
-next
-====
+3.42.0.0
+========
 
 `SQLITE_ENABLE_COLUMN_METADATA
 <https://www.sqlite.org/compile.html#enable_column_metadata>`__ is
