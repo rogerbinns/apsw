@@ -344,9 +344,6 @@ OPTIONS include:
     ### but also by random other pieces of code.
     ###
 
-    _binary_type = bytes
-    _basestring = str
-
     # bytes that are ok in C strings - no need for quoting
     _printable = [
         ord(x) for x in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~!@#$%^&*()`_-+={}[]:;,.<>/?|"
@@ -354,7 +351,7 @@ OPTIONS include:
 
     def _fmt_c_string(self, v):
         "Format as a C string including surrounding double quotes"
-        if isinstance(v, self._basestring):
+        if isinstance(v, str):
             op = ['"']
             for c in v:
                 if c == "\\":
@@ -373,7 +370,7 @@ OPTIONS include:
             return "".join(op)
         elif v is None:
             return '"' + self.nullvalue + '"'
-        elif isinstance(v, self._binary_type):
+        elif isinstance(v, bytes):
             o = lambda x: x
             fromc = chr
             res = ['"']
@@ -399,7 +396,7 @@ OPTIONS include:
 
     def _fmt_json_value(self, v):
         "Format a value."
-        if isinstance(v, self._basestring):
+        if isinstance(v, str):
             # we assume utf8 so only some characters need to be escaed
             op = ['"']
             for c in v:
@@ -428,7 +425,7 @@ OPTIONS include:
             return "".join(op)
         elif v is None:
             return 'null'
-        elif isinstance(v, self._binary_type):
+        elif isinstance(v, bytes):
             o = base64.encodebytes(v).decode("ascii")
             if o[-1] == "\n":
                 o = o[:-1]
@@ -441,9 +438,9 @@ OPTIONS include:
         "Format as python literal"
         if v is None:
             return "None"
-        elif isinstance(v, self._basestring):
+        elif isinstance(v, str):
             return repr(v)
-        elif isinstance(v, self._binary_type):
+        elif isinstance(v, bytes):
             res = ['b"']
             for i in v:
                 if i in self._printable:
@@ -474,9 +471,9 @@ OPTIONS include:
         "Regular text formatting"
         if v is None:
             return self.nullvalue
-        elif isinstance(v, self._basestring):
+        elif isinstance(v, str):
             return v
-        elif isinstance(v, self._binary_type):
+        elif isinstance(v, bytes):
             # sqlite gives back raw bytes!
             return "<Binary data>"
         else:
@@ -3061,9 +3058,9 @@ Enter SQL statements terminated with a ";"
             c = self.colour
             if val is None:
                 return self.vnull + formatted + self.vnull_
-            if isinstance(val, Shell._basestring):
+            if isinstance(val, str):
                 return self.vstring + formatted + self.vstring_
-            if isinstance(val, Shell._binary_type):
+            if isinstance(val, bytes):
                 return self.vblob + formatted + self.vblob_
             # must be a number - we don't distinguish between float/int
             return self.vnumber + formatted + self.vnumber_
