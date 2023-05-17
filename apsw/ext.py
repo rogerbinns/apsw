@@ -283,9 +283,6 @@ def log_sqlite(*, level: int = logging.ERROR) -> None:
     """Send SQLite log messages to :mod:`logging`
 
     :param level: level to log at (default *logging.ERROR*)
-
-    This must be called before doing any operations with SQLite, otherwise a :exc:`apsw.MisuseError`
-    will be raised.  (This is a SQLite limitation, not APSW.)
     """
 
     def handler(errcode: int, message: str) -> None:
