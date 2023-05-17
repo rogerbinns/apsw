@@ -1116,6 +1116,15 @@ class APSW(unittest.TestCase):
                           vfs="vfsa")
         sys.setrecursionlimit(1000)
 
+        def handler(): # incorrect number of arguments on purpose
+            pass
+
+        try:
+            apsw.config(apsw.SQLITE_CONFIG_LOG, handler)
+            self.assertRaisesUnraisable(TypeError, apsw.log, 11, "recursion error forced")
+        finally:
+            apsw.config(apsw.SQLITE_CONFIG_LOG, None)
+
     def testTypes(self):
         "Check type information is maintained"
 

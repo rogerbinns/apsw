@@ -159,14 +159,17 @@ apsw_write_unraisable(PyObject *hookobject)
   PyErr_NormalizeException(&err_type, &err_value, &err_traceback);
 
   /* tell sqlite3_log */
-  if (err_value)
+  if (err_value && 0 == Py_EnterRecursiveCall("apsw_write_unraisable forwarding to sqlite3_log"))
   {
     PyObject *message = PyObject_Str(err_value);
     const char *utf8 = message ? PyUnicode_AsUTF8(message) : "failed to get string of error";
     PyErr_Clear();
     sqlite3_log(SQLITE_ERROR, "apsw_write_unraisable %s: %s", Py_TypeName(err_value), utf8);
     Py_CLEAR(message);
+    Py_LeaveRecursiveCall();
   }
+  else
+    PyErr_Clear(); /* we are already reporting an error so ignore recursive */
 
   if (hookobject)
   {
