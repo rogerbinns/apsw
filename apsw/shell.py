@@ -2928,6 +2928,20 @@ Enter SQL statements terminated with a ";"
                             res.append(w)
         return res
 
+    # completion for the dot commands are messy because some take
+    # variable numbers of parameters and the meanings of the
+    # parameters differ depending on how many there are.  so
+    # we make some effort for some of the commands
+    _command_params = {
+        "bail": bool,
+        "echo": bool,
+        "exceptions": bool,
+        "explain": bool,
+        "header": bool,
+        "timer": bool,
+    }
+    _command_params["headers"] = _command_params["header"]
+
     _builtin_commands = None
 
     def complete_command(self, line, token, beg, end):
@@ -2943,11 +2957,28 @@ Enter SQL statements terminated with a ";"
             self._builtin_commands = [
                 "." + x[len("command_"):] for x in dir(self) if x.startswith("command_") and x != "command_headers"
             ]
-        if beg == 0:
-            # some commands don't need a space because they take no
-            # params but who cares?
+
+        t = self._get_prev_tokens(line, end)
+        if len(t) <= 1 and token:
             return [x + " " for x in self._builtin_commands if x.startswith(token)]
-        return None
+
+        if t[0] in {"colour", "color"}:
+            completions = list(self._colours.keys())
+        elif t[0] in {"mode"}:
+            if not self._output_modes:
+                self._cache_output_modes()
+            completions = self._output_modes
+        elif t[0] == "help":
+            completions = [v[1:] for v in self._builtin_commands] + ["all"]
+        elif self._command_params.get(t[0], None) is bool:
+            completions = ["on", "off", "ON", "OFF"]
+        elif t[0] in self._command_params:
+            completions = self._command_params[t[0]]
+        else:
+            return None
+
+        return [v for v in sorted(completions) if v.startswith(token)]
+
 
     def get_resource_usage(self):
         """Return a dict of various numbers (ints or floats).  The
