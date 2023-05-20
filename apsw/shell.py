@@ -784,6 +784,8 @@ Enter SQL statements terminated with a ";"
                 try:
                     command = self.getcompleteline()
                     if command is None:  # EOF
+                        if self.interactive:
+                            self.write(self.stdout, "\n")
                         return
                     self.process_complete_line(command)
                 except:
