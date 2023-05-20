@@ -19,6 +19,7 @@ import base64
 import argparse
 import contextlib
 import io
+import traceback
 
 from typing import TextIO, Optional
 
@@ -144,7 +145,7 @@ class Shell:
         if args:
             try:
                 self.process_args(args)
-            except:
+            except Exception:
                 if len(self._input_descriptions):
                     self._input_descriptions.append("Processing command line arguments")
                 self.handle_exception()
@@ -760,14 +761,7 @@ Enter SQL statements terminated with a ";"
                 using_readline = True
                 try:
                     readline.read_history_file(os.path.expanduser(self.history_file))
-                except:
-                    # We only expect IOError here but if the history
-                    # file does not exist and this code has been
-                    # compiled into the module it is possible to get
-                    # an IOError that doesn't match the IOError from
-                    # Python parse time resulting in an IOError
-                    # exception being raised.  Consequently we just
-                    # catch all exceptions.
+                except IOError:
                     pass
         except ImportError:
             pass
@@ -846,7 +840,7 @@ Enter SQL statements terminated with a ";"
                     for k, v in vars:
                         try:
                             v = repr(v)[:80]
-                        except:
+                        except Exception:
                             v = "<Unable to convert to string>"
                         self.write(self.stderr, "%10s = %s\n" % (k, v))
                 self.write(self.stderr, "\n%s: %s\n" % (eclass, repr(eval)))
@@ -1097,7 +1091,7 @@ Enter SQL statements terminated with a ";"
         outputstrencoding = getattr(self.stdout, "encoding", "ascii")
         try:
             codecs.lookup(outputstrencoding)
-        except:
+        except Exception:
             outputstrencoding = "ascii"
 
         def unicodify(s):
@@ -1678,13 +1672,13 @@ Enter SQL statements terminated with a ";"
                     raise self.Error("row %d has %d columns but should have %d" % (row, len(line), ncols))
                 try:
                     cur.execute(sql, line)
-                except:
+                except Exception:
                     self.write(self.stderr, "Error inserting row %d" % (row, ))
                     raise
                 row += 1
             self.db.execute("COMMIT")
 
-        except:
+        except Exception:
             if final:
                 self.db.execute(final)
             raise
@@ -1837,7 +1831,7 @@ Enter SQL statements terminated with a ";"
                         possibles.append((format.copy(), ncols, lines, datas))
                 except UnicodeDecodeError:
                     encodingissue = True
-                except:
+                except Exception:
                     s = str(sys.exc_info()[1])
                     if s not in errors:
                         errors.append(s)
@@ -1890,7 +1884,7 @@ Enter SQL statements terminated with a ";"
 
             c.execute("COMMIT")
             self.write(self.stdout, "Auto-import into table \"%s\" complete\n" % (tablename, ))
-        except:
+        except Exception:
             if final:
                 self.db.execute(final)
             raise
@@ -1965,7 +1959,7 @@ Enter SQL statements terminated with a ";"
             raise self.Error("load takes one or two parameters")
         try:
             self.db.enableloadextension(True)
-        except:
+        except Exception:
             raise self.Error("Extension loading is not supported")
 
         self.db.loadextension(*cmd)
@@ -2252,10 +2246,8 @@ Enter SQL statements terminated with a ";"
                         if line is None:
                             break
                         self.process_complete_line(line)
-                except:
-                    eval = sys.exc_info()[1]
-                    if not isinstance(eval, SystemExit):
-                        self._append_input_description()
+                except Exception:
+                    self._append_input_description()
                     raise
 
             finally:
@@ -2433,7 +2425,7 @@ Enter SQL statements terminated with a ";"
             raise self.Error("timeout takes a number")
         try:
             t = int(cmd[0])
-        except:
+        except ValueError:
             raise self.Error("%s is not a number" % (cmd[0], ))
         self.db.setbusytimeout(t)
 
@@ -2448,7 +2440,7 @@ Enter SQL statements terminated with a ";"
         if self._boolean_command("timer", cmd):
             try:
                 self.get_resource_usage()
-            except:
+            except Exception:
                 raise self.Error("Timing not supported by this Python version/platform")
             self.timer = True
         else:
@@ -2467,7 +2459,7 @@ Enter SQL statements terminated with a ";"
         for i in cmd:
             try:
                 w.append(int(i))
-            except:
+            except ValueError:
                 raise self.Error("'%s' is not a valid number" % (i, ))
         self.widths = w
 
@@ -2489,13 +2481,13 @@ Enter SQL statements terminated with a ";"
                 s = struct.pack('HHHH', 0, 0, 0, 0)
                 x = fcntl.ioctl(2, termios.TIOCGWINSZ, s)
                 return struct.unpack('HHHH', x)[1]
-        except:
+        except Exception:
             try:
                 v = int(os.getenv("COLUMNS"))
                 if v < 10:
                     return 80
                 return v
-            except:
+            except Exception:
                 return 80
 
     def push_output(self):
@@ -2700,10 +2692,9 @@ Enter SQL statements terminated with a ";"
                     self.completions = self.complete_command(line, token, beg, end)
                 else:
                     self.completions = self.complete_sql(line, token, beg, end)
-            except:
+            except Exception:
                 # Readline swallows any exceptions we raise.  We
                 # shouldn't be raising any so this is to catch that
-                import traceback
                 traceback.print_exc()
                 raise
 
@@ -3151,7 +3142,7 @@ Enter SQL statements terminated with a ";"
         del n
         del x
         del v
-    except:
+    except Exception:
         pass
 
 
