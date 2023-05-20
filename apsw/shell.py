@@ -2596,11 +2596,6 @@ Enter SQL statements terminated with a ";"
             else:
                 line = self.stdin.readline()  # includes newline unless last line of file doesn't have one
             self.input_line_number += 1
-            if sys.version_info < (3, 0):
-                if type(line) != unicode:
-                    enc = getattr(self.stdin, "encoding", self.encoding[0])
-                    if not enc: enc = self.encoding[0]
-                    line = line.decode(enc)
         except EOFError:
             return None
         if len(line) == 0:  # always a \n on the end normally so this is EOF
