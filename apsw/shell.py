@@ -134,7 +134,7 @@ class Shell:
                 "string_sanitize": 1,
                 "null": "NULL",
                 "truncate": 4096,
-                "text_width": 0,
+                "text_width": self._terminal_width(),
                 "use_unicode": True
             }
 
@@ -709,12 +709,7 @@ OPTIONS include:
         kwargs = self._fqt_kwargs.copy()
         kwargs.update(self.box_options)
         if kwargs["text_width"] < 1:
-            kwargs["text_width"] = 80
-            if self.interactive:
-                try:
-                    kwargs["text_width"] = os.get_terminal_size(self.stdout.fileno()).columns
-                except Exception:
-                    pass
+            kwargs["text_width"] = self._terminal_width()
 
         kwargs.update({"colour": self.colour != self._colours["off"]})
 
@@ -2509,29 +2504,16 @@ Enter ".help" for instructions
     def _terminal_width(self):
         """Works out the terminal width which is used for word wrapping
         some output (eg .help)"""
+
+        w = 80
         try:
-            if sys.platform == "win32":
-                import ctypes, struct
-                h = ctypes.windll.kernel32.GetStdHandle(-12)  # -12 is stderr
-                buf = ctypes.create_string_buffer(22)
-                if ctypes.windll.kernel32.GetConsoleScreenBufferInfo(h, buf):
-                    _, _, _, _, _, left, top, right, bottom, _, _ = struct.unpack("hhhhHhhhhhh", buf.raw)
-                    return right - left
-                raise Exception()
-            else:
-                # posix
-                import struct, fcntl, termios
-                s = struct.pack('HHHH', 0, 0, 0, 0)
-                x = fcntl.ioctl(2, termios.TIOCGWINSZ, s)
-                return struct.unpack('HHHH', x)[1]
+            # we don't use shutil version because it can't be passed a
+            # file descriptor
+            if self.stdout.isatty():
+                w = os.get_terminal_size(self.stdout.fileno()).columns
         except Exception:
-            try:
-                v = int(os.getenv("COLUMNS"))
-                if v < 10:
-                    return 80
-                return v
-            except Exception:
-                return 80
+            pass
+        return w
 
     def push_output(self):
         """Saves the current output settings onto a stack.  See
