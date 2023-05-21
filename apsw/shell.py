@@ -118,15 +118,11 @@ class Shell:
 
         # other stuff
         self.set_encoding(encoding)
-        if stdin is None: stdin = sys.stdin
-        if stdout is None: stdout = sys.stdout
-        if stderr is None: stderr = sys.stderr
-        self.stdin = stdin
-        self.stdout = stdout
-        self._original_stdout = stdout
-        self.stderr = stderr
+        self.stdin = stdin or sys.stdin
+        self._original_stdout = self.stdout = stdout or sys.stdout
+        self.stderr = stderr or sys.stderr
 
-        # default to qbox output
+        # default to box output
         if self._using_a_terminal() and hasattr(self, "output_box"):
             self.output = self.output_box
             self.box_options = {
