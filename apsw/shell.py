@@ -82,7 +82,13 @@ class Shell:
         types of errors doesn't matter."""
         pass
 
-    def __init__(self, stdin: Optional[TextIO] = None, stdout=None, stderr=None, encoding: str = "utf8", args=None, db=None):
+    def __init__(self,
+                 stdin: Optional[TextIO] = None,
+                 stdout=None,
+                 stderr=None,
+                 encoding: str = "utf8",
+                 args=None,
+                 db=None):
         """Create instance, set defaults and do argument processing."""
         # The parameter doc has to be in main class doc as sphinx
         # ignores any described here
@@ -1035,11 +1041,10 @@ Enter ".help" for instructions
     def command_colour(self, cmd=[]):
         """colour SCHEME: Selects a colour scheme
 
-        Residents of both countries that have not adopted the metric
-        system may also spell this command without a 'u'.  If using a
-        colour terminal in interactive mode then output is
+        If using a colour terminal in interactive mode then output is
         automatically coloured to make it more readable.  Use 'off' to
-        turn off colour, and no name or 'default' for the default.
+        turn off colour, and no name or 'default' for the default colour
+        scheme.
         """
         if len(cmd) > 1:
             raise self.Error("Too many colour schemes")
@@ -2063,8 +2068,14 @@ Enter ".help" for instructions
                        action="store_true",
                        dest="use_unicode",
                        help="Use ascii line drawing like +=-+ ")
-        p.add_argument("--word-wrap", action="store_true", dest="word_wrap", help="Wrap text at word boundaries [%(default)s]")
-        p.add_argument("--no-word-wrap", action="store_false", dest="word_wrap", help="Wrap at column width ignoring words")
+        p.add_argument("--word-wrap",
+                       action="store_true",
+                       dest="word_wrap",
+                       help="Wrap text at word boundaries [%(default)s]")
+        p.add_argument("--no-word-wrap",
+                       action="store_false",
+                       dest="word_wrap",
+                       help="Wrap at column width ignoring words")
         text = io.StringIO()
         try:
             with contextlib.redirect_stderr(text):
@@ -2148,7 +2159,6 @@ Enter ".help" for instructions
                             break
                         # under windows tag alongs can delay being able to
                         # delete after we have closed the file
-                        import gc
                         gc.collect(2)
                         time.sleep(.05 * retry)
                 else:
@@ -2981,7 +2991,6 @@ Enter ".help" for instructions
             return None
 
         return [v for v in sorted(completions) if v.startswith(token)]
-
 
     def get_resource_usage(self):
         """Return a dict of various numbers (ints or floats).  The
