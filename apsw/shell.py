@@ -2471,6 +2471,20 @@ Enter ".help" for instructions
         else:
             self.timer = False
 
+    def command_version(self, cmd):
+        if cmd:
+            raise self.Error("No parameters taken")
+        versions = {
+            "SQLite": f"{ apsw.sqlitelibversion() } { apsw.sqlite3_sourceid() }",
+            "Python": f"{ sys.version } - { sys.executable }",
+            "APSW": apsw.apswversion(),
+            "APSW file": apsw.__file__,
+            "Amalgamation": apsw.using_amalgamation,
+        }
+        maxw=max(len(k) for k in versions)
+        for k, v in versions.items():
+            self.write(self.stdout, " "*(maxw-len(k)) + f"{ k }  { v}\n")
+
     def command_width(self, cmd):
         """width NUM NUM ...: Set the column widths for "column" mode
 
