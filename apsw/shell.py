@@ -1420,7 +1420,7 @@ Enter ".help" for instructions
         self.exceptions = self._boolean_command("exceptions", cmd)
 
     def command_exit(self, cmd):
-        """exit ?CODE: Exit this program"""
+        """exit ?CODE?: Exit this program"""
         if len(cmd) > 1:
             raise self.Error("Too many parameters for exit")
         try:
@@ -2471,6 +2471,7 @@ Enter ".help" for instructions
             self.timer = False
 
     def command_version(self, cmd):
+        "version: Displays SQLite, APSW, and Python version information"
         if cmd:
             raise self.Error("No parameters taken")
         versions = {
