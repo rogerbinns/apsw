@@ -10,6 +10,8 @@ import sys
 import apsw
 import shlex
 import os
+import io
+import inspect
 import csv
 import re
 import textwrap
@@ -18,8 +20,8 @@ import codecs
 import base64
 import argparse
 import contextlib
-import io
 import traceback
+import gc
 
 from typing import TextIO, Optional
 
@@ -551,7 +553,6 @@ OPTIONS include:
         fixdata = lambda x: x
 
         if header:
-            import io
             s = io.StringIO()
             kwargs = {}
             if self.separator == ",":
@@ -693,7 +694,6 @@ OPTIONS include:
         "Outputs using line drawing and auto sizing columns"
         if self._fqt_kwargs is None:
             # figure out default args
-            import inspect
             sig = inspect.signature(apsw.ext.format_query_table)
             self._fqt_kwargs = {
                 k: v.default
@@ -3174,7 +3174,6 @@ def main() -> None:
             pass
         else:
             # Where did this exception come from?
-            import traceback
             traceback.print_exc()
         sys.exit(1)
 
