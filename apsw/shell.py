@@ -734,22 +734,26 @@ OPTIONS include:
     ### Various routines
     ###
 
-    def cmdloop(self, intro=None):
+    def cmdloop(self, intro=None, transient=None):
         """Runs the main interactive command loop.
 
         :param intro: Initial text banner to display instead of the
            default.  Make sure you newline terminate it.
+        :param transient: Additional message about being connected to
+          a transient in memory database
         """
         if intro is None:
-            intro = """
-SQLite version %s (APSW %s)
+            intro = f"""
+SQLite version { apsw.sqlitelibversion() } (APSW { apsw.apswversion() })
 Enter ".help" for instructions
-Enter SQL statements terminated with a ";"
-""" % (apsw.sqlitelibversion(), apsw.apswversion())
+"""
             intro = intro.lstrip()
         if self.interactive and intro:
             c = self.colour
             self.write(self.stdout, c.intro + intro + c.intro_)
+            if not self.dbfilename:
+                transient = transient or "Connected to a transient in-memory database.\n"
+                self.write(self.stdout, c.transient + transient + c.transient_)
 
         using_readline = False
         try:
@@ -3123,6 +3127,8 @@ Enter SQL statements terminated with a ";"
                                         error_=d.bold_ + d.fg_,
                                         intro=d.fg_blue + d.bold,
                                         intro_=d.bold_ + d.fg_,
+                                        transient=d.fg_green,
+                                        transient_=d.fg_,
                                         summary=d.fg_blue + d.bold,
                                         summary_=d.bold_ + d.fg_,
                                         header=d.underline,
