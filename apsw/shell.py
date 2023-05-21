@@ -1021,6 +1021,17 @@ Enter ".help" for instructions
         """
         self.bail = self._boolean_command("bail", cmd)
 
+    def command_cd(self, cmd):
+        """cd ?DIR: Changes current directory
+
+        If no directory suppliend then change to home directory"""
+        if len(cmd) > 1:
+            raise self.Error("Too many directories")
+        d = cmd and cmd[0] or os.path.expanduser("~")
+        if not os.path.isdir(d):
+            raise self.Error(f"'{ d }' is not a directory")
+        os.chdir(d)
+
     def command_colour(self, cmd=[]):
         """colour SCHEME: Selects a colour scheme
 
