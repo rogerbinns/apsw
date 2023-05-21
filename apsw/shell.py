@@ -1425,10 +1425,14 @@ Enter ".help" for instructions
         self.exceptions = self._boolean_command("exceptions", cmd)
 
     def command_exit(self, cmd):
-        """exit:Exit this program"""
-        if len(cmd):
-            raise self.Error("Exit doesn't take any parameters")
-        sys.exit(0)
+        """exit ?CODE: Exit this program"""
+        if len(cmd) > 1:
+            raise self.Error("Too many parameters for exit")
+        try:
+            c = 0 if not cmd else int(cmd[0])
+        except ValueError:
+            raise self.Error(f"{ cmd[0] } isn't an exit code")
+        sys.exit(c)
 
     def command_quit(self, cmd):
         """quit:Exit this program"""
