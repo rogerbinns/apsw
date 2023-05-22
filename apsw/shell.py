@@ -919,8 +919,8 @@ Enter ".help" for instructions
                         fixws(query[offset:][:35].decode("utf8"))
                     print("  ", before + after, file=self.stderr)
                     print("   " + (" " * len(before)) + "^--- error here", file=self.stderr)
-                    qd[4]._handle_exception_saw_this = True
-                    raise qd[4]
+                qd[4]._handle_exception_saw_this = True
+                raise qd[4]
             timing_start = self.get_resource_usage()
 
             column_names = None
