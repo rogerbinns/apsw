@@ -1979,6 +1979,15 @@ Enter ".help" for instructions
 
         self.db.loadextension(*cmd)
 
+    def log_handler(self, code, message):
+        code = f"( { code } - { apsw.mapping_result_codes.get(code, 'unknown') } ) "
+        self.write(self.stderr, self.colour.error + code + message + "\n" + self.colour.error_ )
+
+    def command_log(self, cmd):
+        "log ON|OFF: Shows SQLite log messages"
+        setting = self._boolean_command("bail", cmd)
+        apsw.config(apsw.SQLITE_CONFIG_LOG, self.log_handler if setting else None)
+
     _output_modes = None
 
     def command_mode(self, cmd):
