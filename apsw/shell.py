@@ -1425,12 +1425,6 @@ Enter ".help" for instructions
             raise self.Error(f"{ cmd[0] } isn't an exit code")
         sys.exit(c)
 
-    def command_quit(self, cmd):
-        """quit:Exit this program"""
-        if len(cmd):
-            raise self.Error("Quit doesn't take any parameters")
-        sys.exit(0)
-
     def command_explain(self, cmd):
         """explain ON|OFF: Set output mode suitable for explain (default OFF)
 
