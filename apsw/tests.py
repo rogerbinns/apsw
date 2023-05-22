@@ -7590,8 +7590,10 @@ class APSW(unittest.TestCase):
             x.seek(0)
             return x.read()
 
-        # Make one
-        shellclass(stdin=fh[0], stdout=fh[1], stderr=fh[2])
+        # Make one and ensure help works
+        shellclass(stdin=fh[0], stdout=fh[1], stderr=fh[2], args=["", ".help"])
+        self.assertNotIn("Traceback", get(fh[2]))
+        reset()
 
         # Lets give it some harmless sql arguments and do a sanity check
         s = shellclass(args=[TESTFILEPREFIX + "testdb", "create table x(x)", "insert into x values(1)"], **kwargs)
