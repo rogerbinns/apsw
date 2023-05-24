@@ -1977,7 +1977,7 @@ Enter ".help" for instructions
 
     def log_handler(self, code, message):
         code = f"( { code } - { apsw.mapping_result_codes.get(code, 'unknown') } ) "
-        self.write(self.stderr, self.colour.error + code + message + "\n" + self.colour.error_ )
+        self.write(self.stderr, self.colour.error + code + message + "\n" + self.colour.error_)
 
     def command_log(self, cmd):
         "log ON|OFF: Shows SQLite log messages"
@@ -2482,9 +2482,9 @@ Enter ".help" for instructions
             "APSW file": apsw.__file__,
             "Amalgamation": apsw.using_amalgamation,
         }
-        maxw=max(len(k) for k in versions)
+        maxw = max(len(k) for k in versions)
         for k, v in versions.items():
-            self.write(self.stdout, " "*(maxw-len(k)) + f"{ k }  { v}\n")
+            self.write(self.stdout, " " * (maxw - len(k)) + f"{ k }  { v}\n")
 
     def command_width(self, cmd):
         """width NUM NUM ...: Set the column widths for "column" mode
