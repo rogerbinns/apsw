@@ -1547,12 +1547,19 @@ Enter ".help" for instructions
                 if len(multi.strip()) == 0:  # All whitespace
                     multi = None
                 else:
-                    multi = multi.strip("\n")
-                    # we need to keep \n\n as a newline but turn all others into spaces
-                    multi = multi.replace("\n\n", "\x00")
-                    multi = multi.replace("\n", " ")
-                    multi = multi.replace("\x00", "\n\n")
-                    multi = multi.split("\n\n")
+                    # break into paragraphs
+                    lines = multi.strip("\n").split("\n")
+                    # make whitespace only lines be empty
+                    for i in range(len(lines)):
+                        if not lines[i].strip():
+                            lines[i] = ""
+                    multi = [lines[0]]
+                    for l in lines[1:]:
+                        if multi[-1] and l and l.lstrip() == l:
+                            multi[-1] += " " + l
+                        else:
+                            multi.append(l)
+
                 self._help_info[c] = ('.' + firstline[0].strip(), firstline[1].strip(), multi)
 
         self.write(self.stderr, "\n")
@@ -1634,11 +1641,8 @@ Enter ".help" for instructions
         values into that and then use casting.
 
           CREATE TEMPORARY TABLE import(a,b,c);
-
           .import filename import
-
           CREATE TABLE final AS SELECT cast(a as BLOB), cast(b as INTEGER), cast(c as CHAR) from import;
-
           DROP TABLE import;
 
         You can also get more sophisticated using the SQL CASE
