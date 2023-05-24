@@ -8597,9 +8597,9 @@ insert into xxblah values(3);
         # deliberately leave exceptions on
 
         ###
-        ### Command - exit & quit
+        ### Command - exit
         ###
-        for i in ".exit", ".quit":
+        for i in (".exit",):
             reset()
             cmd(i)
             self.assertRaises(SystemExit, s.cmdloop)
