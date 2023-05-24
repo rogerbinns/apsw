@@ -978,6 +978,11 @@ Enter ".help" for instructions
         if len(cmd) > 3 and cmd[0] == "parameter" and cmd[1] == "set":
             pos = command.index(cmd[2], command.index("set") + 4) + len(cmd[2]) + 1
             cmd = cmd[:3] + [command[pos:]]
+        # special handling for shell because we want to preserve the text exactly
+        if cmd[0] == "shell":
+            rest = command[command.index("shell")+6:].strip()
+            if rest:
+                cmd = [cmd[0], rest]
         res = fn(cmd[1:])
 
     ###
@@ -2397,6 +2402,16 @@ Enter ".help" for instructions
 
     _shows = ("echo", "explain", "headers", "mode", "nullvalue", "output", "separator", "width", "exceptions",
               "encoding")
+
+    def command_shell(self, cmd):
+        """shell CMD ARGS...: Run CMD ARGS in a system shell"""
+        if len(cmd) == 0:
+            raise self.Error("Specify command and arguments to run")
+        assert len(cmd) == 1
+        res = os.system(cmd[0])
+        if res != 0:
+            self.write(self.stderr, self.colour.error + f"Exit code { res }" + "\n" + self.colour.error_)
+
 
     def command_show(self, cmd):
         """show: Show the current values for various settings."""
