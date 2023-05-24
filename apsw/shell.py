@@ -130,7 +130,7 @@ class Shell:
                 "string_sanitize": 1,
                 "null": "NULL",
                 "truncate": 4096,
-                "text_width": self._terminal_width(),
+                "text_width": self._terminal_width(32),
                 "use_unicode": True
             }
 
@@ -705,7 +705,7 @@ OPTIONS include:
         kwargs = self._fqt_kwargs.copy()
         kwargs.update(self.box_options)
         if kwargs["text_width"] < 1:
-            kwargs["text_width"] = self._terminal_width()
+            kwargs["text_width"] = self._terminal_width(32)
 
         kwargs.update({"colour": self.colour != self._colours["off"]})
 
@@ -1564,9 +1564,7 @@ Enter ".help" for instructions
 
         self.write(self.stderr, "\n")
 
-        tw = self._terminal_width()
-        if tw < 32:
-            tw = 32
+        tw = self._terminal_width(32)
         if len(cmd) == 0:
             commands = list(self._help_info.keys())
             commands.sort()
@@ -2505,7 +2503,7 @@ Enter ".help" for instructions
                 raise self.Error("'%s' is not a valid number" % (i, ))
         self.widths = w
 
-    def _terminal_width(self):
+    def _terminal_width(self, minimum):
         """Works out the terminal width which is used for word wrapping
         some output (eg .help)"""
 
@@ -2517,7 +2515,7 @@ Enter ".help" for instructions
                 w = os.get_terminal_size(self.stdout.fileno()).columns
         except Exception:
             pass
-        return w
+        return max(w, minimum)
 
     def push_output(self):
         """Saves the current output settings onto a stack.  See
