@@ -8677,8 +8677,8 @@ insert into xxblah values(3);
         # screw up terminal width
         origtw = s._terminal_width
 
-        def tw(*args):
-            return 7
+        def tw(minimum):
+            return minimum
 
         s._terminal_width = tw
         reset()
