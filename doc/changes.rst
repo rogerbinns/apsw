@@ -3,6 +3,17 @@ Change History
 
 .. currentmodule:: apsw
 
+next
+====
+
+Works with SQLite compiled with `SQLITE_OMIT_DEPRECATED
+<https://www.sqlite.org/compile.html#omit_deprecated>`__.
+:meth:`Connection.setprofile` was changed from using the deprecated
+`sqlite3_profile <https://sqlite.org/c3ref/profile.html>`__ to
+`sqlite3_trace_v2 <https://sqlite.org/c3ref/trace_v2.html>`__ giving
+the same results.  When including the amalgamation,
+SQLITE_OMIT_DEPRECATED is defined. (:issue:`443`)
+
 3.42.0.0
 ========
 

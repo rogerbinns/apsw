@@ -65,6 +65,8 @@ API Reference
 
 /* SQLite amalgamation */
 #ifdef APSW_USE_SQLITE_AMALGAMATION
+#define SQLITE_OMIT_DEPRECATED
+
 #ifndef SQLITE_MAX_ATTACHED
 #define SQLITE_MAX_ATTACHED 125
 #endif
