@@ -10,17 +10,19 @@ else
   args="$@"
 fi
 
-showleaks="--leak-check=full --leak-resolution=high --show-leak-kinds=all --track-origins=yes --expensive-definedness-checks=yes"
+DEFS="-DAPSW_USE_SQLITE_AMALGAMATION -DAPSW_USE_SQLITE_CONFIG"
 
 if [ -z "$CALLGRIND" ]
 then
    cflags="-DAPSW_TESTFIXTURES -DAPSW_NO_NDEBUG"
    opt=""
+   showleaks="--leak-check=full --leak-resolution=high --show-leak-kinds=all --track-origins=yes --expensive-definedness-checks=yes"
    options="--track-fds=yes --num-callers=50 $showleaks --freelist-vol=500000000 --suppressions=`dirname $0`/sqlite3.supp --track-origins=yes"
    APSW_TEST_ITERATIONS=${APSW_TEST_ITERATIONS:=1}
    apswopt="APSW_NO_MEMLEAK=t APSW_TEST_ITERATIONS=$APSW_TEST_ITERATIONS"
    APSW_VALGRIND=t
    export APSW_VALGRIND
+   DEFS="$DEFS -DAPSW_NO_NDEBUG -DAPSW_TESTFIXTURES"
 else
    options="--tool=callgrind --dump-line=yes --trace-jump=yes"
    cflags=""
@@ -28,7 +30,7 @@ else
    apswopt=""
 fi
 
-DEFS="-DAPSW_NO_NDEBUG -DAPSW_TESTFIXTURES -DAPSW_USE_SQLITE_AMALGAMATION -DAPSW_USE_SQLITE_CONFIG"
+
 
 # find python
 PYTHON=${PYTHON:-python3} # use whatever is in the path

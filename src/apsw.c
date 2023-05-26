@@ -65,17 +65,20 @@ API Reference
 
 /* SQLite amalgamation */
 #ifdef APSW_USE_SQLITE_AMALGAMATION
+
+#define SQLITE_OMIT_DEPRECATED
+#define SQLITE_ENABLE_API_ARMOR 1
+
 #ifndef SQLITE_MAX_ATTACHED
 #define SQLITE_MAX_ATTACHED 125
 #endif
+
 #ifndef APSW_NO_NDEBUG
-/* See SQLite ticket 2554 */
 #define SQLITE_API static
 #define SQLITE_EXTERN static
 #endif
-#define SQLITE_ENABLE_API_ARMOR 1
+
 #include "sqlite3.c"
-#undef small
 
 /* Fight with SQLite over ndebug */
 #ifdef APSW_NO_NDEBUG

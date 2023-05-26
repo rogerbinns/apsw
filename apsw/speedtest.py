@@ -12,7 +12,8 @@ import os
 import random
 import time
 import gc
-import optparse
+import argparse
+import statistics
 
 timerfn = time.process_time
 
@@ -32,10 +33,10 @@ def doit():
     if options.apsw:
         import apsw
 
-        print("    Testing with APSW file ", apsw.__file__)
-        print("              APSW version ", apsw.apswversion())
-        print("        SQLite lib version ", apsw.sqlitelibversion())
-        print("    SQLite headers version ", apsw.SQLITE_VERSION_NUMBER, end="\n\n")
+        print("   Testing with APSW file ", apsw.__file__)
+        print("             APSW version ", apsw.apswversion())
+        print("       SQLite lib version ", apsw.sqlitelibversion())
+        print("   SQLite headers version ", apsw.SQLITE_VERSION_NUMBER, end="\n\n")
 
         def apsw_setup(dbfile):
             con = apsw.Connection(dbfile, statementcachesize=options.scsize)
@@ -46,7 +47,8 @@ def doit():
         import sqlite3
 
         print("Testing with sqlite3 file ", sqlite3.__file__)
-        print("          sqlite3 version ", sqlite3.version)
+        if sqlite3.version != "2.6.0": # stdlib version never changed this
+            print("          sqlite3 version ", sqlite3.version)
         print("           SQLite version ", sqlite3.sqlite_version, end="\n\n")
 
         def sqlite3_setup(dbfile):
@@ -109,17 +111,20 @@ def doit():
     def number_name(n):
         text = _number_name(n)
         if options.size:
-            text = text * int(random.randint(0, options.size) / len(text))
+            text = text * random.randint(1, options.size)
         return text
 
-    def getlines(scale=50, bindings=False):
+    def getlines(scale, bindings=False):
         random.seed(0)
 
         # RogerB added two pragmas so that only memory is used.  This means that the
         # vagaries of disk access times don't alter the results
 
+        # numbers in the comments reflect the original SQLite speedtest not
+        # what we actually do
+
         # database schema
-        for i in """PRAGMA page_size=1024;
+        for i in """PRAGMA page_size=4096;
       PRAGMA cache_size=8192;
       PRAGMA locking_mode=EXCLUSIVE;
       PRAGMA journal_mode = OFF;
@@ -351,12 +356,7 @@ def doit():
 
     def apsw_bigstmt(con):
         "APSW big statement"
-        try:
-            for row in con.execute(text):
-                pass
-        except:
-            import pdb
-            pdb.set_trace()
+        for row in con.execute(text):
             pass
 
     def sqlite3_bigstmt(con):
@@ -387,10 +387,17 @@ def doit():
         return sqlite3_statements(con, withoutbindings)
 
     # Do the work
-    print("\nRunning tests - elapsed, CPU (results in seconds, lower is better)\n")
+    print("\nRunning tests ", end="", flush=True)
+    if options.showruns:
+        print("- elapsed, CPU (in seconds, lower is better)\n")
+
+    timings = {}
 
     for i in range(options.iterations):
-        print("%d/%d" % (i + 1, options.iterations))
+        if options.showruns:
+            print("%d/%d" % (i + 1, options.iterations))
+        else:
+            print("", i + 1, end="", flush=True)
         for test in options.tests:
             # funky stuff is to alternate order each round
             for driver in (("apsw", "sqlite3"), ("sqlite3", "apsw"))[i % 2]:
@@ -399,10 +406,15 @@ def doit():
                     func = locals().get(name, None)
                     if not func:
                         sys.exit("No such test " + name + "\n")
+                    if driver not in timings:
+                        timings[driver] = {}
+                    if test not in timings[driver]:
+                        timings[driver][test] = []
 
                     if os.path.exists(options.database):
                         os.remove(options.database)
-                    print("\t" + func.__name__ + (" " * (40 - len(func.__name__))), end="")
+                    if options.showruns:
+                        print("\t" + func.__name__ + (" " * (40 - len(func.__name__))), end="")
                     con = locals().get(driver + "_setup")(options.database)
                     gc.collect(2)
                     b4cpu = timerfn()
@@ -412,64 +424,92 @@ def doit():
                     gc.collect(2)
                     after = time.time()
                     aftercpu = timerfn()
-                    print("%0.3f %0.3f" % (after - b4, aftercpu - b4cpu))
+                    if options.showruns:
+                        print("%0.3f %0.3f" % (after - b4, aftercpu - b4cpu))
+                    timings[driver][test].append((after - b4, aftercpu - b4cpu))
+
+    vals = []
+    for driver in timings.keys():
+        for test in timings[driver].keys():
+            elapsed = [t[0] for t in timings[driver][test]]
+            cpu = [t[1] for t in timings[driver][test]]
+            vals.append((test, driver, f"{ driver }_{ test }", statistics.median(elapsed), statistics.stdev(elapsed),
+                         statistics.median(cpu), statistics.stdev(cpu)))
+
+    print("\nMedian (standard deviation) for elapsed, CPU time - in seconds, lower is better\n")
+    vals.sort()
+    w = max(len(v[2]) for v in vals)
+    for v in vals:
+        print(v[2], " " * (w - len(v[2])), "\t%0.3f (%0.3f)\t%0.3f (%0.3f)" % v[3:])
+    print()
 
 
-parser = optparse.OptionParser()
-parser.add_option("--apsw", dest="apsw", action="store_true", default=False, help="Include apsw in testing (%default)")
-parser.add_option("--sqlite3", action="store_true", default=False, help="Include sqlite3 module in testing (%default)")
-parser.add_option("--correctness", dest="correctness", action="store_true", default=False, help="Do a correctness test")
-parser.add_option(
+parser = argparse.ArgumentParser(prog="apsw.speedtest", description="Tests performance of apsw and sqlite3 packages")
+parser.add_argument("--apsw",
+                    dest="apsw",
+                    action="store_true",
+                    default=False,
+                    help="Include apsw in testing [%(default)s]")
+parser.add_argument("--sqlite3",
+                    action="store_true",
+                    default=False,
+                    help="Include sqlite3 module in testing [%(default)s]")
+parser.add_argument("--correctness",
+                    dest="correctness",
+                    action="store_true",
+                    default=False,
+                    help="Do a correctness test")
+parser.add_argument(
     "--scale",
     dest="scale",
-    type="int",
+    type=int,
     default=10,
     help=
-    "How many statements to execute.  Each unit takes about 2 seconds per test on memory only databases. [Default %default]"
+    "How many statements to execute.  Each 5 units takes about 1 second per test on memory only databases. [%(default)s]"
 )
-parser.add_option("--database", dest="database", default=":memory:", help="The database file to use [Default %default]")
-parser.add_option("--tests",
-                  dest="tests",
-                  default="bigstmt,statements,statements_nobindings",
-                  help="What tests to run [Default %default]")
-parser.add_option("--iterations",
-                  dest="iterations",
-                  default=4,
-                  type="int",
-                  metavar="N",
-                  help="How many times to run the tests [Default %default]")
-parser.add_option("--tests-detail",
-                  dest="tests_detail",
-                  default=False,
-                  action="store_true",
-                  help="Print details of what the tests do.  (Does not run the tests)")
-parser.add_option("--dump-sql",
-                  dest="dump_filename",
-                  metavar="FILENAME",
-                  help="Name of file to dump SQL to.  This is useful for feeding into the SQLite command line shell.")
-parser.add_option(
-    "--sc-size",
-    dest="scsize",
-    type="int",
-    default=100,
-    metavar="N",
-    help=
-    "Size of the statement cache. APSW will disable cache with value of zero.  sqlite3 ensures a minimum of 5 [Default %default]"
-)
-parser.add_option("--unicode",
-                  dest="unicode",
-                  type="int",
-                  default=0,
-                  help="Percentage of text that is non-ascii unicode characters [Default %default]")
-parser.add_option(
+parser.add_argument("--database", dest="database", default=":memory:", help="The database file to use [%(default)s]")
+parser.add_argument("--tests",
+                    dest="tests",
+                    default="bigstmt,statements,statements_nobindings",
+                    help="What tests to run [%(default)s]")
+parser.add_argument("--iterations",
+                    dest="iterations",
+                    default=4,
+                    type=int,
+                    metavar="N",
+                    help="How many times to run the tests [%(default)s]")
+parser.add_argument("--tests-detail",
+                    dest="tests_detail",
+                    default=False,
+                    action="store_true",
+                    help="Print details of what the tests do.  (Does not run the tests)")
+parser.add_argument("--dump-sql",
+                    dest="dump_filename",
+                    metavar="FILENAME",
+                    help="Name of file to dump SQL to.  This is useful for feeding into the SQLite command line shell.")
+parser.add_argument("--sc-size",
+                    dest="scsize",
+                    type=int,
+                    default=128,
+                    metavar="N",
+                    help="Size of the statement cache. [%(default)s]")
+parser.add_argument("--unicode",
+                    dest="unicode",
+                    type=int,
+                    default=0,
+                    help="Percentage of text that is non-ascii unicode characters [%(default)s]")
+parser.add_argument(
     "--data-size",
     dest="size",
-    type="int",
+    type=int,
     default=0,
     metavar="SIZE",
-    help=
-    "Maximum size in characters of data items - keep this number small unless you are on 64 bits and have lots of memory with a small scale - you can easily consume multiple gigabytes [Default same as original TCL speedtest]"
-)
+    help="Duplicate the ~50 byte text column value up to this many times (amount randomly selected per row)")
+parser.add_argument("--hide-runs",
+                    dest="showruns",
+                    action="store_false",
+                    default=True,
+                    help="Don't show the individual iteration timings, only final summary")
 
 tests_detail = """\
 bigstmt:
@@ -477,7 +517,7 @@ bigstmt:
   Supplies the SQL as a single string consisting of multiple
   statements.  apsw handles this normally via cursor.execute while
   sqlite3 requires that cursor.executescript is called.  The string
-  will be several kilobytes and with a factor of 50 will be in the
+  will be several kilobytes and with a scale of 50 will be in the
   megabyte range.  This is the kind of query you would run if you were
   restoring a database from a dump.  (Note that sqlite3 silently
   ignores returned data which also makes it execute faster).
@@ -508,16 +548,13 @@ statements_nobindings:
     \n"""
 
 if __name__ == "__main__":
-    options, args = parser.parse_args()
-
-    if len(args):
-        parser.error("Unexpected arguments " + str(args))
+    options = parser.parse_args()
 
     if options.tests_detail:
         print(tests_detail)
         sys.exit(0)
 
     if not options.apsw and not options.sqlite3 and not options.dump_filename:
-        parser.error("You should select at least one of --apsw or --sqlite3")
+        parser.error("You should select at least one of --apsw or --sqlite3 or --dump-sql")
 
     doit()

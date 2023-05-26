@@ -1155,21 +1155,19 @@ Connection_setrollbackhook(Connection *self, PyObject *args, PyObject *kwds)
   Py_RETURN_NONE;
 }
 
-static void
-profilecb(void *context, const char *statement, sqlite_uint64 runtime)
+static int
+profilecb(unsigned event, void *context, void *stmt, void *elapsed)
 {
-  /* The hook returns void. That makes it impossible for us to
-     abort immediately due to an error in the callback */
+  PyGILState_STATE gilstate = PyGILState_Ensure();
 
-  PyGILState_STATE gilstate;
   PyObject *retval = NULL;
   Connection *self = (Connection *)context;
+  const char *statement = sqlite3_sql((sqlite3_stmt *)stmt);
+  sqlite3_uint64 runtime = *(sqlite3_uint64 *)elapsed;
 
   assert(self);
   assert(self->profile);
   assert(!Py_IsNone(self->profile));
-
-  gilstate = PyGILState_Ensure();
 
   MakeExistingException();
 
@@ -1181,6 +1179,8 @@ profilecb(void *context, const char *statement, sqlite_uint64 runtime)
 finally:
   Py_XDECREF(retval);
   PyGILState_Release(gilstate);
+
+  return 0;
 }
 
 /** .. method:: setprofile(callable: Optional[Callable[[str, int], None]]) -> None
@@ -1188,17 +1188,20 @@ finally:
   Sets a callable which is invoked at the end of execution of each
   statement and passed the statement string and how long it took to
   execute. (The execution time is in nanoseconds.) Note that it is
-  called only on completion. If for example you do a ``SELECT`` and
-  only read the first result, then you won't reach the end of the
-  statement.
+  called only on completion. If for example you do a ``SELECT`` and only
+  read the first result, then you won't reach the end of the statement.
 
-  -* sqlite3_profile
+  This used to call the now deprecated `sqlite3_profile API
+  <https://sqlite.org/c3ref/profile.html>`__
+
+
+-* sqlite3_trace_v2
 */
 
 static PyObject *
 Connection_setprofile(Connection *self, PyObject *args, PyObject *kwds)
 {
-  /* sqlite3_profile doesn't return an error code */
+  int res;
   PyObject *callable;
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
@@ -1210,21 +1213,17 @@ Connection_setprofile(Connection *self, PyObject *args, PyObject *kwds)
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_setprofile_USAGE, kwlist, argcheck_Optional_Callable, &callable_param))
       return NULL;
   }
-  if (!callable)
+
+  PYSQLITE_CON_CALL(res = sqlite3_trace_v2(self->db, SQLITE_TRACE_PROFILE, callable ? profilecb : NULL, callable ? self : NULL));
+  if (res == SQLITE_OK)
   {
-    PYSQLITE_VOID_CALL(sqlite3_profile(self->db, NULL, NULL));
-    callable = NULL;
-  }
-  else
-  {
-    PYSQLITE_VOID_CALL(sqlite3_profile(self->db, profilecb, self));
-    Py_INCREF(callable);
+    Py_XDECREF(self->profile);
+    self->profile = callable ? Py_NewRef(callable) : NULL;
+    Py_RETURN_NONE;
   }
 
-  Py_XDECREF(self->profile);
-  self->profile = callable;
-
-  Py_RETURN_NONE;
+  SET_EXC(res, self->db);
+  return NULL;
 }
 
 static int
