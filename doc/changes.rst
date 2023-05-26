@@ -6,7 +6,7 @@ Change History
 next
 ====
 
-Works with SQLite compiled with `SQLITE_OMIT_DEPRECATED
+Work with SQLite compiled with `SQLITE_OMIT_DEPRECATED
 <https://www.sqlite.org/compile.html#omit_deprecated>`__.
 :meth:`Connection.setprofile` was changed from using the deprecated
 `sqlite3_profile <https://sqlite.org/c3ref/profile.html>`__ to
