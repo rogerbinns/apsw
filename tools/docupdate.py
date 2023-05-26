@@ -5,6 +5,7 @@
 # various automagic documentation updates
 
 import sys
+import os
 
 # get the download file names correct
 
@@ -62,9 +63,14 @@ for line in open("doc/benchmarking.rst", "rt"):
         op.append(".. code-block:: text")
         op.append("")
         op.append("    $ python3 -m apsw.speedtest --help")
-        apsw.speedtest.parser.set_usage("Usage: apsw.speedtest [options]")
+        cols = os.environ.get("COLUMNS", None)
+        os.environ["COLUMNS"] = "80"
         for line in apsw.speedtest.parser.format_help().split("\n"):
             op.append("    " + line)
+        if cols is None:
+            del os.environ["COLUMNS"]
+        else:
+            os.environ["COLUMNS"] = cols
         op.append("")
         op.append("    $ python3 -m apsw.speedtest --tests-detail")
         for line in apsw.speedtest.tests_detail.split("\n"):

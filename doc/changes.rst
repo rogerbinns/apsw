@@ -14,6 +14,9 @@ Works with SQLite compiled with `SQLITE_OMIT_DEPRECATED
 the same results.  When including the amalgamation,
 SQLITE_OMIT_DEPRECATED is defined. (:issue:`443`)
 
+:ref:`speedtest` now shows summary statistics, and improved help text.
+(:issue:`444`)
+
 3.42.0.0
 ========
 

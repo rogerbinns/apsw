@@ -33,34 +33,36 @@ underlying queries are based on `SQLite's speed test
 .. code-block:: text
 
     $ python3 -m apsw.speedtest --help
-    Usage: apsw.speedtest [options]
+    usage: apsw.speedtest [-h] [--apsw] [--sqlite3] [--correctness]
+                          [--scale SCALE] [--database DATABASE] [--tests TESTS]
+                          [--iterations N] [--tests-detail] [--dump-sql FILENAME]
+                          [--sc-size N] [--unicode UNICODE] [--data-size SIZE]
+                          [--hide-runs]
     
-    Options:
+    Tests performance of apsw and sqlite3 packages
+    
+    options:
       -h, --help           show this help message and exit
-      --apsw               Include apsw in testing (False)
-      --sqlite3            Include sqlite3 module in testing (False)
+      --apsw               Include apsw in testing [False]
+      --sqlite3            Include sqlite3 module in testing [False]
       --correctness        Do a correctness test
-      --scale=SCALE        How many statements to execute.  Each unit takes about
-                           2 seconds per test on memory only databases. [Default
-                           10]
-      --database=DATABASE  The database file to use [Default :memory:]
-      --tests=TESTS        What tests to run [Default
-                           bigstmt,statements,statements_nobindings]
-      --iterations=N       How many times to run the tests [Default 4]
-      --tests-detail       Print details of what the tests do.  (Does not run the
+      --scale SCALE        How many statements to execute. Each 5 units takes
+                           about 1 second per test on memory only databases. [10]
+      --database DATABASE  The database file to use [:memory:]
+      --tests TESTS        What tests to run
+                           [bigstmt,statements,statements_nobindings]
+      --iterations N       How many times to run the tests [4]
+      --tests-detail       Print details of what the tests do. (Does not run the
                            tests)
-      --dump-sql=FILENAME  Name of file to dump SQL to.  This is useful for
-                           feeding into the SQLite command line shell.
-      --sc-size=N          Size of the statement cache. APSW will disable cache
-                           with value of zero.  sqlite3 ensures a minimum of 5
-                           [Default 100]
-      --unicode=UNICODE    Percentage of text that is non-ascii unicode characters
-                           [Default 0]
-      --data-size=SIZE     Maximum size in characters of data items - keep this
-                           number small unless you are on 64 bits and have lots of
-                           memory with a small scale - you can easily consume
-                           multiple gigabytes [Default same as original TCL
-                           speedtest]
+      --dump-sql FILENAME  Name of file to dump SQL to. This is useful for feeding
+                           into the SQLite command line shell.
+      --sc-size N          Size of the statement cache. [128]
+      --unicode UNICODE    Percentage of text that is non-ascii unicode characters
+                           [0]
+      --data-size SIZE     Duplicate the ~50 byte text column value up to this
+                           many times (amount randomly selected per row)
+      --hide-runs          Don't show the individual iteration timings, only final
+                           summary
     
 
     $ python3 -m apsw.speedtest --tests-detail
@@ -69,7 +71,7 @@ underlying queries are based on `SQLite's speed test
       Supplies the SQL as a single string consisting of multiple
       statements.  apsw handles this normally via cursor.execute while
       sqlite3 requires that cursor.executescript is called.  The string
-      will be several kilobytes and with a factor of 50 will be in the
+      will be several kilobytes and with a scale of 50 will be in the
       megabyte range.  This is the kind of query you would run if you were
       restoring a database from a dump.  (Note that sqlite3 silently
       ignores returned data which also makes it execute faster).
