@@ -21,7 +21,7 @@ GENDOCS = \
 
 .PHONY : help all tagpush clean doc docs build_ext build_ext_debug coverage pycoverage test test_debug fulltest linkcheck unwrapped \
 		 publish stubtest showsymbols compile-win setup-wheel source_nocheck source release pydebug pyvalgrind valgrind valgrind1 \
-		 fossil doc-depends dev-depends docs-no-fetch
+		 fossil doc-depends dev-depends docs-no-fetch compile-win-one
 
 help: ## Show this help
 	@egrep -h '\s##\s' $(MAKEFILE_LIST) | sort | \
@@ -147,10 +147,6 @@ showsymbols:  ## Finds any C symbols that aren't static(private)
 	test -f apsw/__init__`$(PYTHON) -c "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX'))"`
 	set +e; nm --extern-only --defined-only apsw/__init__`$(PYTHON) -c "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX'))"` | egrep -v ' (__bss_start|_edata|_end|_fini|_init|initapsw|PyInit_apsw)$$' ; test $$? -eq 1 || false
 
-# Windows compilation
-WINBPREFIX=fetch --version=$(SQLITEVERSION) --all build_ext --enable-all-extensions --inplace build
-WINBSUFFIX=build_test_extension test
-WINBWHEEL=bdist_wheel
 # config used in CI
 WINCICONFIG=set APSW_TEST_FSYNC_OFF=set &
 
@@ -158,62 +154,39 @@ compile-win:  ## Builds and tests against all the Python versions on Windows
 	-del /q apsw\\*.pyd
 	-del /q dist\\*.egg
 	-del /q testextension.*
+	-del /q *.whl
+	-del /q setup.apsw
 	-cmd /c del /s /q __pycache__
 	-cmd /c del /s /q sqlite3
-	cmd /c del /s /q dist
-	cmd /c del /s /q build
+	-cmd /c del /s /q dist
+	-cmd /c del /s /q build
+	-cmd /c del /s /q .venv
 	-cmd /c md dist
-	c:/python311-32/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	$(WINCICONFIG) c:/python311-32/python -m apsw.tests
-	c:/python311/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	$(WINCICONFIG) c:/python311/python -m apsw.tests
-	c:/python310-32/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	$(WINCICONFIG) c:/python310-32/python -m apsw.tests
-	c:/python310/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	$(WINCICONFIG) c:/python310/python -m apsw.tests
-	c:/python39-32/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	$(WINCICONFIG) c:/python39-32/python -m apsw.tests
-	c:/python39/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	$(WINCICONFIG) c:/python39/python -m apsw.tests
-	c:/python38/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	$(WINCICONFIG) c:/python38/python -m apsw.tests
-	c:/python38-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	$(WINCICONFIG) c:/python38-64/python -m apsw.tests
-	c:/python37/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	$(WINCICONFIG) c:/python37/python -m apsw.tests
-	c:/python37-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	$(WINCICONFIG) c:/python37-64/python -m apsw.tests
-	c:/python36/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	$(WINCICONFIG) c:/python36/python -m apsw.tests
-	c:/python36-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	$(WINCICONFIG) c:/python36-64/python -m apsw.tests
+	$(MAKE) compile-win-one PYTHON=c:/python312/python
+	$(MAKE) compile-win-one PYTHON=c:/python312-32/python
+	$(MAKE) compile-win-one PYTHON=c:/python311/python
+	$(MAKE) compile-win-one PYTHON=c:/python311-32/python
+	$(MAKE) compile-win-one PYTHON=c:/python310-32/python
+	$(MAKE) compile-win-one PYTHON=c:/python310/python
+	$(MAKE) compile-win-one PYTHON=c:/python39-32/python
+	$(MAKE) compile-win-one PYTHON=c:/python39/python
+	$(MAKE) compile-win-one PYTHON=c:/python38/python
+	$(MAKE) compile-win-one PYTHON=c:/python38-64/python
+	$(MAKE) compile-win-one PYTHON=c:/python37-64/python
+	$(MAKE) compile-win-one PYTHON=c:/python37/python
+	$(MAKE) compile-win-one PYTHON=c:/python36-64/python
+	$(MAKE) compile-win-one PYTHON=c:/python36/python
 
-setup-wheel:  ## Ensures all Python Windows version have wheel support
-	c:/python311/python -m ensurepip
-	c:/python311/python -m pip install --upgrade wheel setuptools
-	c:/python311-32/python -m ensurepip
-	c:/python311-32/python -m pip install --upgrade wheel setuptools
-	c:/python310/python -m ensurepip
-	c:/python310/python -m pip install --upgrade wheel setuptools
-	c:/python310-32/python -m ensurepip
-	c:/python310-32/python -m pip install --upgrade wheel setuptools
-	c:/python39/python -m ensurepip
-	c:/python39/python -m pip install --upgrade wheel setuptools
-	c:/python39-32/python -m ensurepip
-	c:/python39-32/python -m pip install --upgrade wheel setuptools
-	c:/python38/python -m ensurepip
-	c:/python38/python -m pip install --upgrade wheel setuptools
-	c:/python38-64/python -m ensurepip
-	c:/python38-64/python -m pip install --upgrade wheel setuptools
-	c:/python37/python -m ensurepip
-	c:/python37/python -m pip install --upgrade wheel setuptools
-	c:/python37-64/python -m ensurepip
-	c:/python37-64/python -m pip install --upgrade wheel setuptools
-	c:/python36/python -m ensurepip
-	c:/python36/python -m pip install --upgrade wheel setuptools
-	c:/python36-64/python -m ensurepip
-	c:/python36-64/python -m pip install --upgrade wheel setuptools
-
+# I did try to make this use venv but then the pip inside the venv and
+# other packages were skipped due to metadata issues
+compile-win-one:  ## Does one Windows build - set PYTHON variable
+	$(PYTHON) -m pip install --upgrade --upgrade-strategy eager pip wheel setuptools
+	copy tools\\setup-pypi.cfg setup.apsw
+	$(PYTHON)  -m pip wheel -v .
+	$(PYTHON)  -m pip install --force-reinstall --find-links=. apsw
+	$(PYTHON) setup.py build_test_extension
+	$(WINCICONFIG) $(PYTHON) -m apsw.tests
+	del setup.apsw *.whl
 
 source_nocheck: src/apswversion.h
 	env APSW_NO_GA=t $(MAKE) doc
