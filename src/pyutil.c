@@ -235,6 +235,11 @@ parameters for AddTraceBackHere to be provided.
      which happened while handling
         incoming exception
    */
+#if PY_VERSION_HEX < 0x030c0000
+#define _chainexcapi(a1,a2,a3) _PyErr_ChainExceptions(a1,a2,a3)
+#else
+#define _chainexcapi(a1,a2,a3) _PyErr_ChainExceptions1(a2)
+#endif
 #define CHAIN_EXC(x)                           \
   do                                           \
   {                                            \
@@ -248,7 +253,7 @@ parameters for AddTraceBackHere to be provided.
     if (_exc)                                  \
     {                                          \
       if (PyErr_Occurred())                    \
-        _PyErr_ChainExceptions(_e1, _e2, _e3); \
+        _chainexcapi(_e1, _e2, _e3);           \
       else                                     \
         PyErr_Restore(_e1, _e2, _e3);          \
     }                                          \
