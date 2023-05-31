@@ -1044,6 +1044,12 @@ Enter ".help" for instructions
             raise self.Error(f"'{ d }' is not a directory")
         os.chdir(d)
 
+    def command_close(self, cmd):
+        """close: Closes the current database"""
+        if len(cmd):
+            raise self.Error("Unexpected arguments")
+        self.db.close()
+
     def command_colour(self, cmd=[]):
         """colour SCHEME: Selects a colour scheme
 
