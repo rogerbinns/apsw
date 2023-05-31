@@ -1628,6 +1628,33 @@
 } while(0)
 
 
+#define  Connection_read_DOC "read($self,schema,offset,amount)\n--\n\nConnection.read(schema: str, offset: int, amount: int) -> tuple[bool, bytes]\n\n" \
+"Invokes the underlying VFS method to read data from the database.  It\n" \
+"is strongly recommended to read aligned complete pages, since that is\n" \
+"only what SQLite does.  `schema` is `main`, `temp`, or the name of an attached\n" \
+"database.\n" \
+"\n" \
+"The return value is a tuple of a boolean indicating a complete read if\n" \
+"True, and the bytes read which will always be the amount requested\n" \
+"in size.\n" \
+"\n" \
+"`SQLITE_IOERR_SHORT_READ` will give a `False` value for the boolean,\n" \
+"and there is no way of knowing how much was read.\n" \
+"\n" \
+"Implemented using `SQLITE_FCNTL_FILE_POINTER`.\n" \
+"Errors will usually be generic `SQLITE_ERROR` with no message.\n" \
+"\n" \
+"Calls: `sqlite3_file_control <https://sqlite.org/c3ref/file_control.html>`__\n" 
+
+#define Connection_read_USAGE "Connection.read(schema: str, offset: int, amount: int) -> tuple[bool, bytes]"
+
+#define Connection_read_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(schema), const char *)); \
+  assert(__builtin_types_compatible_p(typeof(offset), long long)); \
+  assert(__builtin_types_compatible_p(typeof(amount), int)); \
+} while(0)
+
+
 #define  Connection_readonly_DOC "readonly($self,name)\n--\n\nConnection.readonly(name: str) -> bool\n\n" \
 "True or False if the named (attached) database was opened readonly or file\n" \
 "permissions don't allow writing.  The main database is named \"main\".\n" \
@@ -1801,13 +1828,16 @@
 
 #define  Connection_setprofile_DOC "setprofile($self,callable)\n--\n\nConnection.setprofile(callable: Optional[Callable[[str, int], None]]) -> None\n\n" \
 "Sets a callable which is invoked at the end of execution of each\n" \
-"statement and passed the statement string and how long it took to\n" \
-"execute. (The execution time is in nanoseconds.) Note that it is\n" \
-"called only on completion. If for example you do a ``SELECT`` and\n" \
-"only read the first result, then you won't reach the end of the\n" \
-"statement.\n" \
+"  statement and passed the statement string and how long it took to\n" \
+"  execute. (The execution time is in nanoseconds.) Note that it is\n" \
+"  called only on completion. If for example you do a ``SELECT`` and only\n" \
+"  read the first result, then you won't reach the end of the statement.\n" \
 "\n" \
-"Calls: `sqlite3_profile <https://sqlite.org/c3ref/profile.html>`__\n" 
+"  This used to call the now deprecated `sqlite3_profile API\n" \
+"  <https://sqlite.org/c3ref/profile.html>`__\n" \
+"\n" \
+"\n" \
+"Calls: `sqlite3_trace_v2 <https://sqlite.org/c3ref/trace_v2.html>`__\n" 
 
 #define Connection_setprofile_callable_MSG  "argument 'callable' of Connection.setprofile(callable: Optional[Callable[[str, int], None]]) -> None" 
 

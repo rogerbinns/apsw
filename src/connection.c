@@ -3460,10 +3460,10 @@ Connection_filecontrol(Connection *self, PyObject *args, PyObject *kwds)
       return NULL;
   }
 
-  PYSQLITE_CON_CALL(res = sqlite3_file_control(self->db, dbname, op, pointer));
+  PYSQLITE_VOID_CALL(res = sqlite3_file_control(self->db, dbname, op, pointer));
 
   if (res != SQLITE_OK && res != SQLITE_NOTFOUND)
-    SET_EXC(res, self->db);
+    SET_EXC(res, NULL);
 
   if (PyErr_Occurred())
     return NULL;
@@ -4645,6 +4645,75 @@ finally:
   Py_RETURN_NONE;
 }
 
+/** .. method:: read(schema: str, offset: int, amount: int) -> tuple[bool, bytes]
+
+  Invokes the underlying VFS method to read data from the database.  It
+  is strongly recommended to read aligned complete pages, since that is
+  only what SQLite does.  `schema` is `main`, `temp`, or the name of an attached
+  database.
+
+  The return value is a tuple of a boolean indicating a complete read if
+  True, and the bytes read which will always be the amount requested
+  in size.
+
+  `SQLITE_IOERR_SHORT_READ` will give a `False` value for the boolean,
+  and there is no way of knowing how much was read.
+
+  Implemented using `SQLITE_FCNTL_FILE_POINTER`.
+  Errors will usually be generic `SQLITE_ERROR` with no message.
+
+  -* sqlite3_file_control
+*/
+static PyObject *
+Connection_read(Connection *self, PyObject *args, PyObject *kwds)
+{
+  const char *schema = NULL;
+  int amount;
+  sqlite3_int64 offset;
+  int res;
+  sqlite3_file *fp = NULL;
+  PyObject *bytes = NULL;
+
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  {
+    static char *kwlist[] = {"schema", "offset", "amount", NULL};
+    Connection_read_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sLi:" Connection_read_USAGE, kwlist, &schema, &offset, &amount))
+      return NULL;
+  }
+
+  if (amount < 1)
+    return PyErr_Format(PyExc_ValueError, "amount needs to be greater than zero, not %d", amount);
+
+  if (offset < 0)
+    return PyErr_Format(PyExc_ValueError, "offset needs to non-negative, not %lld", offset);
+
+  bytes = PyBytes_FromStringAndSize(NULL, amount);
+  if (!bytes)
+    goto error;
+
+  PYSQLITE_VOID_CALL(res = sqlite3_file_control(self->db, schema, SQLITE_FCNTL_FILE_POINTER, &fp));
+  if (res || !fp || !fp->pMethods || !fp->pMethods->xRead)
+  {
+    SET_EXC(res ? res : SQLITE_ERROR, NULL); /* errmsg is not set by file control */
+    goto error;
+  }
+  PYSQLITE_VOID_CALL(res = fp->pMethods->xRead(fp, PyBytes_AS_STRING(bytes), amount, offset));
+  if (res && res != SQLITE_IOERR_SHORT_READ)
+  {
+    SET_EXC(res, NULL);
+    goto error;
+  }
+
+  return Py_BuildValue("ON", (res == SQLITE_OK) ? Py_True : Py_False, bytes);
+
+error:
+  Py_XDECREF(bytes);
+  return NULL;
+}
+
 /** .. attribute:: filename
   :type: str
 
@@ -5098,6 +5167,7 @@ static PyMethodDef Connection_methods[] = {
     {"vtab_config", (PyCFunction)Connection_vtab_config, METH_VARARGS | METH_KEYWORDS, Connection_vtab_config_DOC},
     {"vtab_on_conflict", (PyCFunction)Connection_vtab_on_conflict, METH_NOARGS, Connection_vtab_on_conflict_DOC},
     {"pragma", (PyCFunction)Connection_pragma, METH_VARARGS | METH_KEYWORDS, Connection_pragma_DOC},
+    {"read", (PyCFunction)Connection_read, METH_VARARGS | METH_KEYWORDS, Connection_read_DOC},
     {0, 0, 0, 0} /* Sentinel */
 };
 

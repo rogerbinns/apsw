@@ -464,6 +464,13 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, self.db.filecontrol, "main", 1001, "foo")
         self.assertRaises(OverflowError, self.db.filecontrol, "main", 1001, 45236748972389749283)
         self.assertEqual(self.db.filecontrol("main", 1001, 25), False)
+        self.assertRaises(apsw.SQLError, self.db.read, "kljlkjlkj", 0, 10)
+        self.assertRaises(ValueError, self.db.read, "kljlkjlkj", -1, -1)
+        self.assertRaises(ValueError, self.db.read, "kljlkjlkj", 0, -1)
+        self.assertEqual((False, b"\0" * 10), self.db.read("main", 50*1024*1024, 10))
+        # file is empty unless we do something
+        self.db.execute("create table foo(x)")
+        self.assertEqual((True, b'SQLite format 3'), self.db.read("main", 0, 15))
 
     def testConnectionConfig(self):
         "Test Connection.config function"

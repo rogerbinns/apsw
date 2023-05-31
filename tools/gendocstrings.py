@@ -379,6 +379,9 @@ type_overrides = {
     "Connection.filecontrol": {
         "pointer": "pointer"
     },
+    "Connection.read": {
+        "offset": "int64",
+    },
     "Connection.set_last_insert_rowid": {
         "rowid": "int64"
     },
