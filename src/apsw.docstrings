@@ -1628,11 +1628,14 @@
 } while(0)
 
 
-#define  Connection_read_DOC "read($self,schema,offset,amount)\n--\n\nConnection.read(schema: str, offset: int, amount: int) -> tuple[bool, bytes]\n\n" \
+#define  Connection_read_DOC "read($self,schema,which,offset,amount)\n--\n\nConnection.read(schema: str, which: int, offset: int, amount: int) -> tuple[bool, bytes]\n\n" \
 "Invokes the underlying VFS method to read data from the database.  It\n" \
 "is strongly recommended to read aligned complete pages, since that is\n" \
-"only what SQLite does.  `schema` is `main`, `temp`, or the name of an attached\n" \
-"database.\n" \
+"only what SQLite does.\n" \
+"\n" \
+"`schema` is `main`, `temp`, or the name of an attached database.\n" \
+"\n" \
+"`which` is 0 for the database file, 1 for the journal.\n" \
 "\n" \
 "The return value is a tuple of a boolean indicating a complete read if\n" \
 "True, and the bytes read which will always be the amount requested\n" \
@@ -1641,15 +1644,16 @@
 "`SQLITE_IOERR_SHORT_READ` will give a `False` value for the boolean,\n" \
 "and there is no way of knowing how much was read.\n" \
 "\n" \
-"Implemented using `SQLITE_FCNTL_FILE_POINTER`.\n" \
+"Implemented using `SQLITE_FCNTL_FILE_POINTER` and `SQLITE_FCNTL_JOURNAL_POINTER`.\n" \
 "Errors will usually be generic `SQLITE_ERROR` with no message.\n" \
 "\n" \
 "Calls: `sqlite3_file_control <https://sqlite.org/c3ref/file_control.html>`__\n" 
 
-#define Connection_read_USAGE "Connection.read(schema: str, offset: int, amount: int) -> tuple[bool, bytes]"
+#define Connection_read_USAGE "Connection.read(schema: str, which: int, offset: int, amount: int) -> tuple[bool, bytes]"
 
 #define Connection_read_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(schema), const char *)); \
+  assert(__builtin_types_compatible_p(typeof(which), int)); \
   assert(__builtin_types_compatible_p(typeof(offset), long long)); \
   assert(__builtin_types_compatible_p(typeof(amount), int)); \
 } while(0)

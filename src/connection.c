@@ -4645,12 +4645,15 @@ finally:
   Py_RETURN_NONE;
 }
 
-/** .. method:: read(schema: str, offset: int, amount: int) -> tuple[bool, bytes]
+/** .. method:: read(schema: str, which: int, offset: int, amount: int) -> tuple[bool, bytes]
 
   Invokes the underlying VFS method to read data from the database.  It
   is strongly recommended to read aligned complete pages, since that is
-  only what SQLite does.  `schema` is `main`, `temp`, or the name of an attached
-  database.
+  only what SQLite does.
+
+  `schema` is `main`, `temp`, or the name of an attached database.
+
+  `which` is 0 for the database file, 1 for the journal.
 
   The return value is a tuple of a boolean indicating a complete read if
   True, and the bytes read which will always be the amount requested
@@ -4659,7 +4662,7 @@ finally:
   `SQLITE_IOERR_SHORT_READ` will give a `False` value for the boolean,
   and there is no way of knowing how much was read.
 
-  Implemented using `SQLITE_FCNTL_FILE_POINTER`.
+  Implemented using `SQLITE_FCNTL_FILE_POINTER` and `SQLITE_FCNTL_JOURNAL_POINTER`.
   Errors will usually be generic `SQLITE_ERROR` with no message.
 
   -* sqlite3_file_control
@@ -4668,7 +4671,7 @@ static PyObject *
 Connection_read(Connection *self, PyObject *args, PyObject *kwds)
 {
   const char *schema = NULL;
-  int amount;
+  int amount, which, opcode;
   sqlite3_int64 offset;
   int res;
   sqlite3_file *fp = NULL;
@@ -4678,10 +4681,22 @@ Connection_read(Connection *self, PyObject *args, PyObject *kwds)
   CHECK_CLOSED(self, NULL);
 
   {
-    static char *kwlist[] = {"schema", "offset", "amount", NULL};
+    static char *kwlist[] = {"schema", "which", "offset", "amount", NULL};
     Connection_read_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sLi:" Connection_read_USAGE, kwlist, &schema, &offset, &amount))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "siLi:" Connection_read_USAGE, kwlist, &schema, &which, &offset, &amount))
       return NULL;
+  }
+
+  switch (which)
+  {
+  case 0:
+    opcode = SQLITE_FCNTL_FILE_POINTER;
+    break;
+  case 1:
+    opcode = SQLITE_FCNTL_JOURNAL_POINTER;
+    break;
+  default:
+    return PyErr_Format(PyExc_ValueError, "Unexpected value for which %d", which);
   }
 
   if (amount < 1)
@@ -4694,14 +4709,14 @@ Connection_read(Connection *self, PyObject *args, PyObject *kwds)
   if (!bytes)
     goto error;
 
-  PYSQLITE_VOID_CALL(res = sqlite3_file_control(self->db, schema, SQLITE_FCNTL_FILE_POINTER, &fp));
-  if (res || !fp || !fp->pMethods || !fp->pMethods->xRead)
+  PYSQLITE_VOID_CALL(res = sqlite3_file_control(self->db, schema, opcode, &fp));
+  if (res != SQLITE_OK || !fp || !fp->pMethods || !fp->pMethods->xRead)
   {
     SET_EXC(res ? res : SQLITE_ERROR, NULL); /* errmsg is not set by file control */
     goto error;
   }
   PYSQLITE_VOID_CALL(res = fp->pMethods->xRead(fp, PyBytes_AS_STRING(bytes), amount, offset));
-  if (res && res != SQLITE_IOERR_SHORT_READ)
+  if (res != SQLITE_OK && res != SQLITE_IOERR_SHORT_READ)
   {
     SET_EXC(res, NULL);
     goto error;
