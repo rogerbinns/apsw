@@ -101,6 +101,8 @@ class Shell:
             self.db = db, db.filename
         else:
             self.db = None, None
+        # keep a reference around allowing switching connections
+        self.db_references = set()
         self.prompt = "sqlite> "
         self.moreprompt = "    ..> "
         self.separator = "|"
@@ -1049,6 +1051,37 @@ Enter ".help" for instructions
         if len(cmd):
             raise self.Error("Unexpected arguments")
         self.db.close()
+
+    def command_connection(self, cmd):
+        """connection ?NUMBER?: List connections, or switch active connection
+
+        This covers all connections, not just those started in this
+        shell.  Closed connections are not shown.
+        """
+        self.db_references.add(self.db)
+        dbs = []
+        for c in apsw.connections():
+            try:
+                c.filename
+            except apsw.ConnectionClosedError:
+                continue
+            dbs.append(c)
+
+        if len(cmd) == 0:
+            for i, c in enumerate(dbs):
+                sel = "*" if self.db is c else " "
+                co = self.colour
+                self.write(
+                    self.stdout,
+                    f"{ co.bold}{ sel }{ co.bold_} { co.vnumber }{ i: 2}{ co.vnumber_ } - ({ c.open_vfs }) \"{ co.vstring }{ c.filename }{ co.vstring_ }\"\n"
+                )
+        elif len(cmd) == 1:
+            c = dbs[int(cmd[0])]
+            if self.db is not c:
+                self._db = c
+                self.dbfilename = c.filename
+        else:
+            raise self.Error("Too many arguments")
 
     def command_colour(self, cmd=[]):
         """colour SCHEME: Selects a colour scheme
@@ -2142,9 +2175,12 @@ Enter ".help" for instructions
         self.nullvalue = self.fixup_backslashes(cmd[0])
 
     def command_open(self, cmd):
-        """open ?OPTIONS? ?FILE?: Closes existing database and opens a different one
+        """open ?OPTIONS? ?FILE?: Opens a database connection
 
-        Options are: --new which deletes the file if it already exists
+        Options are:
+
+        --new   Closes amy existing connection referring to the same file
+                and deletes the database files before opening
 
         If FILE is omitted then a memory database is opened
         """
@@ -2162,28 +2198,23 @@ Enter ".help" for instructions
                 raise self.Error("Too many arguments: " + p)
             dbname = p
 
-        if new and dbname:
-            # close it first in case re-opening existing.  windows doesn't
-            # allow deleting open files, tag alongs cause problems etc
-            # hence retry and sleeps
-            self.db = (None, None)
+        if new:
+            if not dbname:
+                raise self.Error("You must specify a filename with --new")
+            for c in apsw.connections():
+                try:
+                    if os.path.samefile(c.filename, dbname):
+                        c.close()
+                except apsw.ConnectionClosedError:
+                    pass
             for suffix in "", "-journal", "-wal", "-shm":
-                fn = dbname + suffix
-                for retry in range(1, 5):
-                    try:
-                        os.remove(fn)
-                        break
-                    except OSError:
-                        if not os.path.isfile(fn):
-                            break
-                        # under windows tag alongs can delay being able to
-                        # delete after we have closed the file
-                        gc.collect(2)
-                        time.sleep(.05 * retry)
-                else:
-                    os.rename(fn, fn + "-DELETEME")
-
-        self.db = (None, dbname)
+                try:
+                    os.remove(dbname + suffix)
+                except OSError:
+                    pass
+        self.db_references.add(self.db)
+        self._db = None
+        self.dbfilename = dbname
 
     def command_output(self, cmd):
         """output FILENAME: Send output to FILENAME (or stdout)
