@@ -982,7 +982,7 @@ Enter ".help" for instructions
             cmd = cmd[:3] + [command[pos:]]
         # special handling for shell because we want to preserve the text exactly
         if cmd[0] == "shell":
-            rest = command[command.index("shell")+6:].strip()
+            rest = command[command.index("shell") + 6:].strip()
             if rest:
                 cmd = [cmd[0], rest]
         res = fn(cmd[1:])
@@ -2448,7 +2448,6 @@ Enter ".help" for instructions
         res = os.system(cmd[0])
         if res != 0:
             self.write(self.stderr, self.colour.error + f"Exit code { res }" + "\n" + self.colour.error_)
-
 
     def command_show(self, cmd):
         """show: Show the current values for various settings."""
