@@ -1117,6 +1117,41 @@ Enter ".help" for instructions
         finally:
             self.pop_output()
 
+    def command_dbinfo(self, cmd):
+        """dbinfo ?NAME?: Shows summary and file information about the database
+
+        This includes the numbers of tables, indices etc, as well as fields from
+        the files as returned by :func:`apsw.ext.dbinfo`.
+
+        NAME defaults to 'main', and can be the attached name of a database.
+        """
+        if len(cmd) > 1:
+            raise self.Error("too many parameters")
+        schema = cmd[0] if cmd else "main"
+
+        def total(t):
+            return self.db.execute(f"select count(*) from [{ schema }].sqlite_schema where type='{ t }'").get
+
+        outputs = {
+            "number of tables": total("table"),
+            "number of indexes": total("index"),
+            "number of triggers": total("trigger"),
+            "number of views": total("view"),
+            "schema size": int(self.db.execute(f"select total(length(sql)) from [{ schema }].sqlite_schema").get),
+        }
+        for i in apsw.ext.dbinfo(self.db, schema):
+            if not i:
+                continue
+            outputs.update(dataclasses.asdict(i))
+
+        w = max(len(k) for k in outputs.keys())
+        for k, v in outputs.items():
+            self.write(self.stdout, " " * (w - len(k)))
+            self.write(self.stdout, k + ":  ")
+            self.write(self.stdout, self.colour.colour_value(v, apsw.format_sql_value(v)))
+            self.write(self.stdout, "\n")
+
+
     def command_dump(self, cmd):
         """dump ?TABLE? [TABLE...]: Dumps all or specified tables in SQL text format
 
@@ -3283,9 +3318,11 @@ Enter ".help" for instructions
 try:
     # uses dataclasses and annotations, only available in Python 3.7+
     import apsw.ext
+    import dataclasses
 except (ImportError, SyntaxError):
     for n in "box", "table", "qbox":
         delattr(Shell, f"output_{ n }")
+    delattr(Shell, "command_dbinfo")
 
 
 def main() -> None:

@@ -4,7 +4,6 @@ from __future__ import annotations
 import collections
 import collections.abc
 
-
 import dataclasses
 from dataclasses import dataclass, make_dataclass, is_dataclass
 
@@ -447,6 +446,102 @@ def index_info_to_dict(o: apsw.IndexInfo,
             res["colUsed_names"].update(column_names[63:])  # type: ignore[attr-defined]
 
     return res
+
+
+def dbinfo(db: apsw.Connection, schema: str = "main") -> tuple[DatabaseFileInfo | None, JournalFileInfo | WALFileInfo | None]:
+    """Extracts fields from the database files
+
+    Based on the `file format description <https://www.sqlite.org/fileformat2.html>`__.  The
+    headers are read using :meth:`Connection.read` so you see inside encrypted, compressed,
+    zip etc formats. not necessarily the actual on disk file."""
+
+    dbinfo = journalinfo = None
+
+    ok, header_page = db.read(schema, 0, 0, 128)
+
+    be_int = functools.partial(int.from_bytes, byteorder="big", signed=False)
+
+    be_sint = functools.partial(int.from_bytes, byteorder="big", signed=True)
+
+    def be_bool(b: bytes) -> bool:
+        return bool(be_int(b))
+
+    def be_page_size(b: bytes) -> int:
+        v = be_int(b)
+        if v == 1:
+            v = 65536
+        return v
+
+    def text_encoding(b: bytes) -> str:
+        v = be_int(b)
+        return {1: "UTF-8", 2: "UTF-16le", 3: "UTF-16be"}.get(v, f"<< INVALID VALUE { v } >>")
+
+    if ok:
+        kw = {"filename": db.filename}
+        for name, offset, size, converter in (
+            ("header", 0, 16, bytes),
+            ("page_size", 16, 2, be_page_size),
+            ("write_format", 18, 1, be_int),
+            ("read_format", 19, 1, be_int),
+            ("reserved_bytes", 20, 1, be_int),
+            ("file_change_counter", 24, 4, be_int),
+            ("page_count", 28, 4, be_int),
+            ("freelist_pages", 36, 4, be_int),
+            ("schema_cookie", 40, 4, be_int),
+            ("schema_format", 44, 4, be_int),
+            ("default_cache_size", 48, 4, be_int),
+            ("autovacuum_top_root", 52, 4, be_int),
+            ("text_encoding", 56, 4, text_encoding),
+            ("user_version", 60, 4, be_int),
+            ("incremental_vacuum", 64, 4, be_bool),
+            ("application_id", 68, 4, be_int),
+            ("version_valid_for", 92, 4, be_int),
+            ("sqlite_version", 96, 4, be_int),
+        ):
+            b = header_page[offset:offset + size]
+            kw[name] = converter(b)
+        dbinfo = DatabaseFileInfo(**kw)
+
+    try:
+        ok, journal_page = db.read(schema, 1, 0, 32)
+    except apsw.SQLError:
+        ok = False
+
+    if ok:
+        kw = {}
+        if db.pragma("journal_mode") == "wal":
+            kw["filename"] = db.filename_wal
+            for name, offset, size, converter in (
+                ("magic_number", 0, 4, be_int),
+                ("format_version", 4, 4, be_int),
+                ("page_size", 8, 4, be_page_size),
+                ("checkpoint_sequence_number", 12, 4, be_int),
+                ("salt_1", 16, 4, be_int),
+                ("salt_2", 20, 4, be_int),
+                ("checksum_1", 24, 4, be_int),
+                ("checksum_2", 28, 4, be_int),
+            ):
+                b = journal_page[offset:offset + size]
+                kw[name] = converter(b)
+            journalinfo = WALFileInfo(**kw)
+        else:
+            kw["filename"] = db.filename_journal
+            for name, offset, size, converter in (
+                ("header", 0, 8, bytes),
+                ("page_count", 8, 4, be_sint),
+                ("random_nonce", 12, 4, be_int),
+                ("initial_pages", 16, 4, be_int),
+                ("sector_size", 20, 4, be_int),
+                ("page_size", 24, 4, be_int),
+            ):
+                b = journal_page[offset:offset + size]
+                kw[name] = converter(b)
+            # if the journal is not in use but present like in persist
+            # mode then the header is all zeroes
+            if any(b != 0 for b in kw["header"]):
+                journalinfo = JournalFileInfo(**kw)
+
+    return dbinfo, journalinfo
 
 
 def format_query_table(db: apsw.Connection,
@@ -1429,3 +1524,94 @@ class VDBEInstruction:
     "Fourth opcode parameter"
     p5: int | None = None
     "Fifth opcode parameter"
+
+
+@dataclass
+class DatabaseFileInfo:
+    """Information about the main database file returned by :meth:`dbinfo`
+
+    See `file format description <https://www.sqlite.org/fileformat.html#the_database_header>`__"""
+    "database filena name"
+    filename: str
+    "Header string"
+    header: bytes
+    "The database page size in bytes"
+    page_size: int
+    "File format write version. 1 for legacy; 2 for WAL"
+    write_format: int
+    "File format read version. 1 for legacy; 2 for WAL."
+    read_format: int
+    'Bytes of unused "reserved" space at the end of each page. Usually 0'
+    reserved_bytes: int
+    "File change counter"
+    file_change_counter: int
+    "Size of the database file in pages"
+    page_count: int
+    "Total number of freelist pages"
+    freelist_pages: int
+    "The schema cookie"
+    schema_cookie: int
+    "The schema format number. Supported schema formats are 1, 2, 3, and 4"
+    schema_format: int
+    "Default page cache size"
+    default_cache_size: int
+    "The page number of the largest root b-tree page when in auto-vacuum or incremental-vacuum modes, or zero otherwise"
+    autovacuum_top_root: int
+    "The database text encoding"
+    text_encoding: str
+    'The "user version" as read and set by the user_version pragma.'
+    user_version: int
+    "True (non-zero) for incremental-vacuum mode. False (zero) otherwise."
+    incremental_vacuum: bool
+    'The "Application ID" set by PRAGMA application_id'
+    application_id: int
+    "The version-valid-for number."
+    version_valid_for: int
+    "SQLite version that lost wrote"
+    sqlite_version: int
+
+
+@dataclass
+class JournalFileInfo:
+    """Information about the rollback journal returned by :meth:`dbinfo`
+
+    See the `file format description <https://www.sqlite.org/fileformat2.html#the_rollback_journal>__"""
+    "journal file name"
+    filename: str
+    "Header string"
+    header: bytes
+    'The "Page Count" - The number of pages in the next segment of the journal, or -1 to mean all content to the end of the file'
+    page_count: int
+    "A random nonce for the checksum"
+    random_nonce: int
+    "Initial size of the database in pages"
+    initial_pages: int
+    "Size of a disk sector assumed by the process that wrote this journal"
+    sector_size: int
+    "Size of pages in this journal"
+    page_size: int
+
+
+@dataclass
+class WALFileInfo:
+    """Information about the rollback journal returned by :meth:`dbinfo`
+
+    See the `file format description <https://www.sqlite.org/fileformat2.html#wal_file_format>__"""
+    "WAL file name"
+    filename: str
+    "Magic number"
+    magic_number: int
+    "File format version. Currently 3007000"
+    format_version: int
+    "Database page size"
+    page_size: int
+    "Checkpoint sequence number"
+    checkpoint_sequence_number: int
+    "Salt-1: random integer incremented with each checkpoint"
+    salt_1: int
+    "Salt-2: a different random number for each checkpoint"
+    salt_2: int
+    "Checksum-1: First part of a checksum on the first 24 bytes of header"
+    checksum_1: int
+    "Checksum-2: Second part of the checksum on the first 24 bytes of header"
+    checksum_2: int
