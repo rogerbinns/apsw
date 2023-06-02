@@ -1117,6 +1117,42 @@ Enter ".help" for instructions
         finally:
             self.pop_output()
 
+    def command_dbconfig(self, cmd):
+        """dbconfig ?NAME VALUE?: Show all dbconfig, or set a specific one
+
+        With no arguments lists all settings.  Supply a name and integer value
+        to change.  For example:
+
+        .dbconfig enable_fkey 1
+        """
+        ignore = {
+            "SQLITE_DBCONFIG_MAINDBNAME", "SQLITE_DBCONFIG_LOOKASIDE", "SQLITE_DBCONFIG_MAX",
+            "SQLITE_DBCONFIG_STMT_SCANSTATUS"
+        }
+        if len(cmd) == 0:
+            outputs = {}
+            for k in apsw.mapping_db_config:
+                if type(k) is not str or k in ignore:
+                    continue
+                pretty = k[len("SQLITE_DBCONFIG_"):].lower()
+                outputs[pretty] = self.db.config(getattr(apsw, k), -1)
+            w = max(len(k) for k in outputs.keys())
+            for k, v in outputs.items():
+                self.write(self.stdout, " " * (w - len(k)))
+                self.write(self.stdout, k + ":  ")
+                self.write(self.stdout, self.colour.colour_value(v, apsw.format_sql_value(v)))
+                self.write(self.stdout, "\n")
+            return
+        elif len(cmd) != 2:
+            raise self.Error("Expected zero or two parameters")
+        key = "SQLITE_DBCONFIG_" + cmd[0].upper()
+        if key not in apsw.mapping_db_config:
+            raise self.Error(f"Unknown config option { key }")
+        v = self.db.config(getattr(apsw, key), int(cmd[1]))
+        self.write(self.stdout, cmd[0].lower() + ": ")
+        self.write(self.stdout, self.colour.colour_value(v, apsw.format_sql_value(v)))
+        self.write(self.stdout, "\n")
+
     def command_dbinfo(self, cmd):
         """dbinfo ?NAME?: Shows summary and file information about the database
 
@@ -1150,7 +1186,6 @@ Enter ".help" for instructions
             self.write(self.stdout, k + ":  ")
             self.write(self.stdout, self.colour.colour_value(v, apsw.format_sql_value(v)))
             self.write(self.stdout, "\n")
-
 
     def command_dump(self, cmd):
         """dump ?TABLE? [TABLE...]: Dumps all or specified tables in SQL text format
