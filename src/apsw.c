@@ -536,7 +536,7 @@ config(PyObject *Py_UNUSED(self), PyObject *args)
   case SQLITE_CONFIG_MMAP_SIZE:
   {
     sqlite3_int64 default_limit, max_limit;
-    if(!PyArg_ParseTuple(args, "iLL", &optdup, &default_limit, &max_limit))
+    if (!PyArg_ParseTuple(args, "iLL", &optdup, &default_limit, &max_limit))
       return NULL;
     assert(opt == optdup);
     res = sqlite3_config(opt, default_limit, max_limit);
@@ -546,7 +546,7 @@ config(PyObject *Py_UNUSED(self), PyObject *args)
   case SQLITE_CONFIG_MEMDB_MAXSIZE:
   {
     sqlite3_int64 limit;
-    if(!PyArg_ParseTuple(args, "iL", &optdup, &limit))
+    if (!PyArg_ParseTuple(args, "iL", &optdup, &limit))
       return NULL;
     assert(opt == optdup);
     res = sqlite3_config(opt, limit);
@@ -847,7 +847,7 @@ vfs_details(PyObject *Py_UNUSED(self))
     }
     res = PyList_Append(result, dict);
     Py_DECREF(dict);
-    if(res!=0)
+    if (res != 0)
     {
       Py_DECREF(result);
       return NULL;
