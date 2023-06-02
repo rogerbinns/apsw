@@ -4031,6 +4031,13 @@ Connection_exit(Connection *self, PyObject *args, PyObject *kwds)
       <https://sqlite.org/c3ref/c_dbconfig_enable_fkey.html>`__
     :param args: Zero or more arguments as appropriate for *op*
 
+    This is how to get the fkey setting::
+
+      val = config(apsw.SQLITE_DBCONFIG_ENABLE_FKEY, -1)
+
+    A parameter of zero would turn it off, 1 turns on, and negative
+    leaves unaltered.  The effective value is always returned.
+
     -* sqlite3_db_config
 */
 static PyObject *
