@@ -423,6 +423,17 @@
 } while(0)
 
 
+#define  Apsw_vfs_details_DOC "vfs_details($self)\n--\n\napsw.vfs_details() -> list[dict[str, int | str]]\n\n" \
+"Returns a list with details of each :ref:`vfs <vfs>`.  The detail is a\n" \
+"dictionary with the keys being the names of the `sqlitye3_vfs\n" \
+"<https://sqlite.org/c3ref/vfs.html>`__ data structure, and their\n" \
+"corresponding values.\n" \
+"\n" \
+"Pointers are converted using `PyLong_FromVoidPtr\n" \
+"<https://docs.python.org/3/c-api/long.html?highlight=voidptr#c.PyLong_FromVoidPtr>`__.\n" \
+"\n" \
+"Calls: `sqlite3_vfs_find <https://sqlite.org/c3ref/vfs_find.html>`__\n" 
+
 #define  Apsw_vfsnames_DOC "vfsnames($self)\n--\n\napsw.vfsnames() -> list[str]\n\n" \
 "Returns a list of the currently installed :ref:`vfs <vfs>`.  The first\n" \
 "item in the list is the default vfs.\n" 

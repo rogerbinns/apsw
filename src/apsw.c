@@ -753,6 +753,8 @@ status(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
 
   Returns a list of the currently installed :ref:`vfs <vfs>`.  The first
   item in the list is the default vfs.
+
+  -* sqlite3_vfs_find
 */
 static PyObject *
 vfsnames(PyObject *Py_UNUSED(self))
@@ -783,6 +785,82 @@ error:
   Py_XDECREF(result);
   return NULL;
 }
+
+/* macros to build the format string and values.  int, string and pointers */
+#define I(n) #n, vfs->n
+#define S(n) #n, vfs->n
+#define P(n) #n, PyLong_FromVoidPtr, vfs->n
+
+#define VFS1_BUILD "si si si ss sO& sO& sO& sO& sO& sO& sO& sO& sO& sO& sO& sO& sO& "
+
+#define VFS1_FIELDS I(iVersion), I(szOsFile), I(mxPathname), S(zName), P(pAppData),              \
+                    P(xOpen), P(xDelete), P(xAccess), P(xFullPathname), P(xDlOpen), P(xDlError), \
+                    P(xDlSym), P(xDlClose), P(xRandomness), P(xSleep), P(xCurrentTime),          \
+                    P(xGetLastError)
+
+#define VFS2_BUILD "sO&"
+#define VFS2_FIELDS P(xCurrentTimeInt64)
+
+#define VFS3_BUILD "sO& sO& sO&"
+#define VFS3_FIELDS P(xSetSystemCall), P(xGetSystemCall), P(xNextSystemCall)
+
+/** .. method:: vfs_details() -> list[dict[str, int | str]]
+
+Returns a list with details of each :ref:`vfs <vfs>`.  The detail is a
+dictionary with the keys being the names of the `sqlitye3_vfs
+<https://sqlite.org/c3ref/vfs.html>`__ data structure, and their
+corresponding values.
+
+Pointers are converted using `PyLong_FromVoidPtr
+<https://docs.python.org/3/c-api/long.html?highlight=voidptr#c.PyLong_FromVoidPtr>`__.
+
+-* sqlite3_vfs_find
+*/
+static PyObject *
+vfs_details(PyObject *Py_UNUSED(self))
+{
+  PyObject *result, *dict;
+  sqlite3_vfs *vfs = sqlite3_vfs_find(0);
+  int res;
+
+  result = PyList_New(0);
+  if (!result)
+    return NULL;
+  while (vfs)
+  {
+    switch (vfs->iVersion)
+    {
+    case 0: /* some older sqlite source does this */
+    case 1:
+      dict = Py_BuildValue("{" VFS1_BUILD "}", VFS1_FIELDS);
+      break;
+    case 2:
+      dict = Py_BuildValue("{" VFS1_BUILD VFS2_BUILD "}", VFS1_FIELDS, VFS2_FIELDS);
+      break;
+    default: /* handle 4+ */
+    case 3:
+      dict = Py_BuildValue("{" VFS1_BUILD VFS2_BUILD VFS3_BUILD "}", VFS1_FIELDS, VFS2_FIELDS, VFS3_FIELDS);
+    }
+    if (!dict)
+    {
+      Py_DECREF(result);
+      return NULL;
+    }
+    res = PyList_Append(result, dict);
+    Py_DECREF(dict);
+    if(res!=0)
+    {
+      Py_DECREF(result);
+      return NULL;
+    }
+    vfs = vfs->pNext;
+  }
+  return result;
+}
+
+#undef I
+#undef S
+#undef P
 
 /** .. method:: exceptionfor(code: int) -> Exception
 
@@ -1694,6 +1772,8 @@ static PyMethodDef module_methods[] = {
      Apsw_apswversion_DOC},
     {"vfsnames", (PyCFunction)vfsnames, METH_NOARGS,
      Apsw_vfsnames_DOC},
+    {"vfs_details", (PyCFunction)vfs_details, METH_NOARGS,
+     Apsw_vfs_details_DOC},
     {"enablesharedcache", (PyCFunction)enablesharedcache, METH_VARARGS | METH_KEYWORDS,
      Apsw_enablesharedcache_DOC},
     {"initialize", (PyCFunction)initialize, METH_NOARGS,

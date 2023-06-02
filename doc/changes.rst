@@ -18,6 +18,9 @@ Added :meth:`Connection.read` and :func:`apsw.ext.dbinfo` to provide
 information from the database and journal/wal files.  The shell
 commannd `.dbinfo` displays it.
 
+Added :meth:`Connection.vfs_details`.  The shell command `.vfslist`
+displays it.
+
 :ref:`speedtest` now shows summary statistics, and improved help text.
 (:issue:`444`)
 
