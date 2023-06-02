@@ -2657,6 +2657,37 @@ Enter ".help" for instructions
         for k, v in versions.items():
             self.write(self.stdout, " " * (maxw - len(k)) + f"{ k }  { v}\n")
 
+    def command_vfsname(self, cmd):
+        "vfsname: VFS name used to open current database"
+        if cmd:
+            raise self.Error("No parameters taken")
+        self.write(self.stdout, self.db.open_vfs + "\n")
+
+    def _format_vfs(self, vfs):
+        w = max(len(k) for k in vfs.keys())
+        for k, v in vfs.items():
+            self.write(self.stdout, " " * (w - len(k)))
+            self.write(self.stdout, k + ":  ")
+            vout = "0x%x" % v if k.startswith("x") else str(v)
+            self.write(self.stdout, self.colour.colour_value(v, vout))
+            self.write(self.stdout, "\n")
+
+    def command_vfsinfo(self, cmd):
+        "vfsinfo: Shows detailed information about the VFS for the database"
+        if cmd:
+            raise self.Error("No parameters taken")
+        for vfs in apsw.vfs_details():
+            if vfs["zName"] == self.db.open_vfs:
+                self._format_vfs(vfs)
+
+    def command_vfslist(self, cmd):
+        if cmd:
+            raise self.Error("No parameters taken")
+        for i, vfs in enumerate(apsw.vfs_details()):
+            if i:
+                self.write(self.stdout, "\n")
+            self._format_vfs(vfs)
+
     def command_width(self, cmd):
         """width NUM NUM ...: Set the column widths for "column" mode
 

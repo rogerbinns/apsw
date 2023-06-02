@@ -795,8 +795,7 @@ error:
 
 #define VFS1_FIELDS I(iVersion), I(szOsFile), I(mxPathname), S(zName), P(pAppData),              \
                     P(xOpen), P(xDelete), P(xAccess), P(xFullPathname), P(xDlOpen), P(xDlError), \
-                    P(xDlSym), P(xDlClose), P(xRandomness), P(xSleep), P(xCurrentTime),          \
-                    P(xGetLastError)
+                    P(xDlSym), P(xDlClose), P(xRandomness), P(xSleep), P(xGetLastError), P(xCurrentTime)
 
 #define VFS2_BUILD "sO&"
 #define VFS2_FIELDS P(xCurrentTimeInt64)
