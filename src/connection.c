@@ -1195,7 +1195,7 @@ finally:
   <https://sqlite.org/c3ref/profile.html>`__
 
 
--* sqlite3_trace_v2
+  -* sqlite3_trace_v2
 */
 
 static PyObject *
