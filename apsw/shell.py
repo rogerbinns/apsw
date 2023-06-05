@@ -145,6 +145,7 @@ class Shell:
         self._using_readline = False
         self._input_stack = []
         self.input_line_number = 0
+        self._calculate_output_modes()
         self.push_input()
         self.push_output()
         self._input_descriptions = []
@@ -162,8 +163,8 @@ class Shell:
             self.interactive = self._using_a_terminal()
 
     def _using_a_terminal(self):
-        return getattr(self.stdin, "isatty", False) and self.stdin.isatty() and getattr(self.stdout, "isatty",
-                                                                                        False) and self.stdout.isatty()
+        return getattr(self.stdin, "isatty", None) and self.stdin.isatty() and getattr(self.stdout, "isatty",
+                                                                                        None) and self.stdout.isatty()
 
     def _ensure_db(self):
         "The database isn't opened until first use.  This function ensures it is now open."
@@ -1660,8 +1661,6 @@ Enter ".help" for instructions
                 else:
                     multi = textwrap.dedent(parts[1])
                 if c == "mode":
-                    if not self._output_modes:
-                        self._cache_output_modes()
                     firstline[1] = firstline[1] + " " + " ".join(self._output_modes)
                     multi = multi + "\n\n" + "\n\n".join(self._output_modes_detail)
                 if c == "colour":
@@ -2110,9 +2109,8 @@ Enter ".help" for instructions
 
     def command_mode(self, cmd):
         """mode MODE ?OPTIONS?: Sets output mode to one of"""
-        if not self._output_modes:
-            self._cache_output_modes()
-
+        if not cmd:
+            raise self.Error("Specify an output mode")
         w = cmd[0]
         if w == "tabs":
             w = "list"
@@ -2209,7 +2207,7 @@ Enter ".help" for instructions
         self.output = self.output_box
 
     # needed so command completion and help can use it
-    def _cache_output_modes(self):
+    def _calculate_output_modes(self):
         modes = [m[len("output_"):] for m in dir(self) if m.startswith("output_")]
         modes.append("tabs")
         modes.sort()
@@ -2549,8 +2547,6 @@ Enter ".help" for instructions
             elif i in ("nullvalue", "separator"):
                 v = self._fmt_c_string(getattr(self, i))
             elif i == "mode":
-                if not self._output_modes:
-                    self._cache_output_modes()
                 for v in self._output_modes:
                     if self.output == getattr(self, "output_" + v):
                         break
@@ -3184,8 +3180,6 @@ Enter ".help" for instructions
         if t[0] in {"colour", "color"}:
             completions = list(self._colours.keys())
         elif t[0] in {"mode"}:
-            if not self._output_modes:
-                self._cache_output_modes()
             completions = self._output_modes
         elif t[0] == "help":
             completions = [v[1:] for v in self._builtin_commands] + ["all"]
