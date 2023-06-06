@@ -6,6 +6,8 @@
 
 import sys
 import os
+import textwrap
+import re
 
 # get the download file names correct
 
@@ -13,9 +15,7 @@ version = sys.argv[1]
 url = "  <https://github.com/rogerbinns/apsw/releases/download/" + version + "/%s>`__"
 version_no_r = version.split("-r")[0]
 
-
 download = open("doc/install.rst", "rt").read()
-
 
 op = []
 incomment = False
@@ -90,6 +90,7 @@ if op != benchmark:
 # shell stuff
 
 import apsw, io, apsw.shell
+
 shell = apsw.shell.Shell()
 incomment = False
 op = []
@@ -99,18 +100,55 @@ for line in open("doc/shell.rst", "rt"):
         op.append(line)
         incomment = True
         op.append("")
-        op.append(".. code-block:: text")
-        op.append("")
+
         s = io.StringIO()
 
         def tw(*args):
             return 80
 
+        def backtickify(s):
+            s = s.group(0)
+            if s in {"SQL", "APSW", "TCL", "C"}:
+                return s
+            if s == "'3'": # example in command_parameter
+                return "``'3'``"
+            if s.startswith("'") and s.endswith("'"):
+                s = s.strip("'")
+                return f"``{ s }``"
+            if all(c.upper() == c and not c.isdigit() for c in s):
+                return f"``{ s }``"
+            return s
+
         shell.stderr = s
         shell._terminal_width = tw
         shell.command_help([])
-        op.extend(["  " + x for x in s.getvalue().split("\n")])
-        op.append("")
+
+        for k, v in shell._help_info.items():
+            op.append(".. index::")
+            op.append("    single: " + v[0].lstrip(".").split()[0] + " (Shell command)")
+            op.append("")
+            op.append(v[0].lstrip("."))
+            op.append("-" * len(v[0].lstrip(".")))
+            op.append("")
+            op.append("*" + v[1] + "*")
+            op.append("")
+            if v[2]:
+                for i, para in enumerate(v[2]):
+                    if not para:
+                        op.append("")
+                    else:
+                        para = para.replace("\\", "\\\\")
+                        if para.lstrip() == para:
+                            para = re.sub(r"'?[\w%]+'?", backtickify, para)
+                        if para.endswith(":"):
+                            c = i + 1
+                            while not v[2][c]:
+                                c += 1
+                            if v[2][c].lstrip() != v[2][c]:
+                                para += ":"
+                        op.extend(textwrap.wrap(para, width=80))
+                op.append("")
+
         continue
     if line == ".. usage-begin:":
         op.append(line)

@@ -1039,7 +1039,7 @@ Enter ".help" for instructions
     def command_cd(self, cmd):
         """cd ?DIR: Changes current directory
 
-        If no directory suppliend then change to home directory"""
+        If no directory supplied then change to home directory"""
         if len(cmd) > 1:
             raise self.Error("Too many directories")
         d = cmd and cmd[0] or os.path.expanduser("~")
@@ -1124,7 +1124,7 @@ Enter ".help" for instructions
         With no arguments lists all settings.  Supply a name and integer value
         to change.  For example:
 
-        .dbconfig enable_fkey 1
+            .dbconfig enable_fkey 1
         """
         ignore = {
             "SQLITE_DBCONFIG_MAINDBNAME", "SQLITE_DBCONFIG_LOOKASIDE", "SQLITE_DBCONFIG_MAX",
@@ -1205,7 +1205,7 @@ Enter ".help" for instructions
         information.  For example if you create a FTS3 table named
         *recipes* then it also creates *recipes_content*,
         *recipes_segdir* etc.  Consequently to dump this example
-        correctly use::
+        correctly use:
 
            .dump recipes recipes_%
 
@@ -1541,7 +1541,7 @@ Enter ".help" for instructions
         self.exceptions = self._boolean_command("exceptions", cmd)
 
     def command_exit(self, cmd):
-        """exit ?CODE?: Exit this program"""
+        """exit ?CODE?: Exit this program with optional exit code"""
         if len(cmd) > 1:
             raise self.Error("Too many parameters for exit")
         try:
@@ -1578,14 +1578,14 @@ Enter ".help" for instructions
         for example to find a string or any references to an id.
 
         You can specify a like pattern to limit the search to a subset
-        of tables (eg specifying 'CUSTOMER%' for all tables beginning
+        of tables (eg specifying CUSTOMER% for all tables beginning
         with CUSTOMER).
 
         The what value will be treated as a string and/or integer if
-        possible.  If what contains % or _ then it is also treated as
+        possible.  If what contains '%' or '_' then it is also treated as
         a like pattern.
 
-        This command will take a long time to execute needing to read
+        This command can take a long time to execute needing to scan
         all of the relevant tables.
         """
         if len(cmd) < 1 or len(cmd) > 2:
@@ -1757,11 +1757,12 @@ Enter ".help" for instructions
           https://sqlite.org/datatype3.html
 
         Another alternative is to create a temporary table, insert the
-        values into that and then use casting.
+        values into that and then use casting.:
 
           CREATE TEMPORARY TABLE import(a,b,c);
           .import filename import
-          CREATE TABLE final AS SELECT cast(a as BLOB), cast(b as INTEGER), cast(c as CHAR) from import;
+          CREATE TABLE final AS SELECT cast(a as BLOB), cast(b as INTEGER),
+               cast(c as CHAR) from import;
           DROP TABLE import;
 
         You can also get more sophisticated using the SQL CASE
@@ -1829,9 +1830,8 @@ Enter ".help" for instructions
 
         The import command requires that you precisely pre-setup the
         table and schema, and set the data separators (eg commas or
-        tabs).  In many cases this information can be automatically
-        deduced from the file contents which is what this command
-        does.  There must be at least two columns and two rows.
+        tabs).  This command figures out the separator and csv dialect
+        automatically.  There must be at least two columns and two rows.
 
         If the table is not specified then the basename of the file
         will be used.
@@ -1911,7 +1911,7 @@ Enter ".help" for instructions
                 return float(v)
 
             # Work out the file format
-            formats = [{"dialect": "excel"}, {"dialect": "excel-tab"}]
+            formats = [{"dialect": "excel"}, {"dialect": "excel-tab"}, {'dialect': 'unix'}]
             seps = ["|", ";", ":"]
             if self.separator not in seps:
                 seps.append(self.separator)
@@ -2074,10 +2074,6 @@ Enter ".help" for instructions
         Note: Extension loading may not be enabled in the SQLite
         library version you are using.
 
-        Extensions are an easy way to add new functions and
-        functionality.  For a useful extension look at the bottom of
-        https://sqlite.org/contrib
-
         By default sqlite3_extension_init is called in the library but
         you can specify an alternate entry point.
 
@@ -2102,7 +2098,7 @@ Enter ".help" for instructions
 
     def command_log(self, cmd):
         "log ON|OFF: Shows SQLite log messages"
-        setting = self._boolean_command("bail", cmd)
+        setting = self._boolean_command("log", cmd)
         apsw.config(apsw.SQLITE_CONFIG_LOG, self.log_handler if setting else None)
 
     _output_modes = None
@@ -2247,8 +2243,8 @@ Enter ".help" for instructions
 
         Options are:
 
-        --new   Closes amy existing connection referring to the same file
-                and deletes the database files before opening
+        --new:  Closes amy existing connection referring to the same file
+        and deletes the database files before opening
 
         If FILE is omitted then a memory database is opened
         """
@@ -2287,9 +2283,9 @@ Enter ".help" for instructions
     def command_output(self, cmd):
         """output FILENAME: Send output to FILENAME (or stdout)
 
-        If the FILENAME is stdout then output is sent to standard
+        If the FILENAME is 'stdout' then output is sent to standard
         output from when the shell was started.  The file is opened
-        using the current encoding (change with .encoding command).
+        using the current encoding (change with 'encoding' command).
         """
         # Flush everything
         self.stdout.flush()
@@ -2677,6 +2673,7 @@ Enter ".help" for instructions
                 self._format_vfs(vfs)
 
     def command_vfslist(self, cmd):
+        "vfslist: Shows detailed information about all the VFS available"
         if cmd:
             raise self.Error("No parameters taken")
         for i, vfs in enumerate(apsw.vfs_details()):
