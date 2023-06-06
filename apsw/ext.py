@@ -1575,7 +1575,7 @@ class DatabaseFileInfo:
 class JournalFileInfo:
     """Information about the rollback journal returned by :meth:`dbinfo`
 
-    See the `file format description <https://www.sqlite.org/fileformat2.html#the_rollback_journal>__"""
+    See the `file format description <https://www.sqlite.org/fileformat2.html#the_rollback_journal>`__"""
     "journal file name"
     filename: str
     "Header string"
@@ -1596,7 +1596,7 @@ class JournalFileInfo:
 class WALFileInfo:
     """Information about the rollback journal returned by :meth:`dbinfo`
 
-    See the `file format description <https://www.sqlite.org/fileformat2.html#wal_file_format>__"""
+    See the `file format description <https://www.sqlite.org/fileformat2.html#wal_file_format>`__"""
     "WAL file name"
     filename: str
     "Magic number"
