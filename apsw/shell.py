@@ -114,9 +114,9 @@ class Shell:
         self.output = self.output_list
         self._output_table = self._fmt_sql_identifier("table")
         self.widths = []
-        # do we truncate output in list mode?  (explain doesn't, regular does)
+        # do we truncate output in list mode?
         self.truncate = True
-        # a stack of previous outputs. turning on explain saves previous, off restores
+        # a stack of previous outputs
         self._output_stack = []
 
         # other stuff
@@ -164,7 +164,7 @@ class Shell:
 
     def _using_a_terminal(self):
         return getattr(self.stdin, "isatty", None) and self.stdin.isatty() and getattr(self.stdout, "isatty",
-                                                                                        None) and self.stdout.isatty()
+                                                                                       None) and self.stdout.isatty()
 
     def _ensure_db(self):
         "The database isn't opened until first use.  This function ensures it is now open."
@@ -862,10 +862,12 @@ Enter ".help" for instructions
         # but Py 3.6 doesn't have them
         cur = self.db.cursor()
         saved = sql
+        explain = None
 
         def et(cursor, statement, bindings):
-            nonlocal saved
+            nonlocal saved, explain
             saved = statement
+            explain = cursor.is_explain
             return False
 
         cur.exectrace = et
@@ -875,12 +877,12 @@ Enter ".help" for instructions
         except apsw.ExecTraceAbort:
             pass
         except apsw.Error as e:
-            return (sql[:len(saved)], sql[len(saved):], str(e), e.error_offset, e)
+            return (sql[:len(saved)], sql[len(saved):], str(e), e.error_offset, e, explain)
         except KeyError as e:
             var = e.args[0]
             return (None, None, f"No binding present for '{ var }' - use .parameter set { var } VALUE to provide one",
-                    -1, e)
-        return (sql[:len(saved)], sql[len(saved):], None, None)
+                    -1, e, explain)
+        return (sql[:len(saved)], sql[len(saved):], None, None, explain)
 
     def process_sql(self, sql, bindings=None, internal=False, summary=None):
         """Processes SQL text consisting of one or more statements
@@ -929,6 +931,20 @@ Enter ".help" for instructions
                     print("   " + (" " * len(before)) + "^--- error here", file=self.stderr)
                 qd[4]._handle_exception_saw_this = True
                 raise qd[4]
+
+            if qd[4] == 1:  # explain
+                self.push_output()
+                self.header = True
+                self.widths = [-4, 13, 4, 4, 4, 13, 2, 13]
+                self.truncate = False
+                self.output = self.output_column
+            elif qd[4] == 2:  # explain query plan
+                self.push_output()
+                self.header = True
+                self.widths = [-4, -6, 22]
+                self.truncate = False
+                self.output = self.output_column
+
             timing_start = self.get_resource_usage()
 
             column_names = None
@@ -943,10 +959,16 @@ Enter ".help" for instructions
             for row in cur.execute(qd[0], bindings):
                 if column_names is None:
                     column_names = [h for h, d in cur.getdescription()]
+                    if qd[4] == 2:
+                        del column_names[2]
                     if summary:
                         self._output_summary(summary[0])
                     if rows is None:
                         self.output(True, column_names)
+                if qd[4] == 2:
+                    row = list(row)
+                    del row[2]
+                    row = tuple(row)
                 if rows is None:
                     self.output(False, row)
                 else:
@@ -960,6 +982,9 @@ Enter ".help" for instructions
 
             if self.timer:
                 self.display_timing(timing_start, self.get_resource_usage())
+
+            if qd[4]:
+                self.pop_output()
 
     def process_command(self, command):
         """Processes a dot command.
@@ -1549,27 +1574,6 @@ Enter ".help" for instructions
         except ValueError:
             raise self.Error(f"{ cmd[0] } isn't an exit code")
         sys.exit(c)
-
-    def command_explain(self, cmd):
-        """explain ON|OFF: Set output mode suitable for explain (default OFF)
-
-        Explain shows the underlying SQLite virtual machine code for a
-        statement.  You need to prefix the SQL with explain.  For example:
-
-           explain select * from table;
-
-        This output mode formats the explain output nicely.  If you do
-        '.explain OFF' then the output mode and settings in place when
-        you did '.explain ON' are restored.
-        """
-        if len(cmd) == 0 or self._boolean_command("explain", cmd):
-            self.push_output()
-            self.header = True
-            self.widths = [4, 13, 4, 4, 4, 13, 2, 13]
-            self.truncate = False
-            self.output = self.output_column
-        else:
-            self.pop_output()
 
     def command_find(self, cmd):
         """find what ?TABLE?: Searches all columns of all tables for a value
@@ -2501,8 +2505,7 @@ Enter ".help" for instructions
             raise self.Error("separator takes exactly one parameter")
         self.separator = self.fixup_backslashes(cmd[0])
 
-    _shows = ("echo", "explain", "headers", "mode", "nullvalue", "output", "separator", "width", "exceptions",
-              "encoding")
+    _shows = ("echo", "headers", "mode", "nullvalue", "output", "separator", "width", "exceptions", "encoding")
 
     def command_shell(self, cmd):
         """shell CMD ARGS...: Run CMD ARGS in a system shell"""
@@ -2535,11 +2538,6 @@ Enter ".help" for instructions
                 v = "off"
                 if getattr(self, i):
                     v = "on"
-            elif i == "explain":
-                # we cheat by looking at truncate setting!
-                v = "on"
-                if self.truncate:
-                    v = "off"
             elif i in ("nullvalue", "separator"):
                 v = self._fmt_c_string(getattr(self, i))
             elif i == "mode":
@@ -3146,7 +3144,6 @@ Enter ".help" for instructions
         "bail": bool,
         "echo": bool,
         "exceptions": bool,
-        "explain": bool,
         "header": bool,
         "timer": bool,
     }
