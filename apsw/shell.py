@@ -21,7 +21,6 @@ import base64
 import argparse
 import contextlib
 import traceback
-import gc
 
 from typing import TextIO, Optional
 
@@ -107,6 +106,7 @@ class Shell:
         self.moreprompt = "    ..> "
         self.separator = "|"
         self.bail = False
+        self.changes = False
         self.echo = False
         self.timer = False
         self.header = False
@@ -902,6 +902,8 @@ Enter ".help" for instructions
           command which shows table names.
         """
 
+        changes_start = self.db.totalchanges()
+
         def fixws(s: str):
             return re.sub(r"\s", " ", s, flags=re.UNICODE)
 
@@ -985,6 +987,12 @@ Enter ".help" for instructions
 
             if qd[4]:
                 self.pop_output()
+
+        changes = self.db.totalchanges() - changes_start
+        if not internal and changes and self.changes:
+            text = ("changes: " + self.colour.colour_value(changes, str(changes)) + "\t" + "total changes: " +
+                    self.colour.colour_value(self.db.totalchanges(), str(self.db.totalchanges())) + "\n")
+            self.write(self.stdout, text)
 
     def process_command(self, command):
         """Processes a dot command.
@@ -1071,6 +1079,14 @@ Enter ".help" for instructions
         if not os.path.isdir(d):
             raise self.Error(f"'{ d }' is not a directory")
         os.chdir(d)
+
+    def command_changes(self, cmd):
+        """changes ON|OFF: Show changes from last SQL and total changes (default OFF)
+
+        After executing SQL that makes changes, the number of affected
+        rows is displayed as well as a running count of all changes.
+        """
+        self.changes = self._boolean_command("changes", cmd)
 
     def command_close(self, cmd):
         """close: Closes the current database"""
@@ -2505,7 +2521,8 @@ Enter ".help" for instructions
             raise self.Error("separator takes exactly one parameter")
         self.separator = self.fixup_backslashes(cmd[0])
 
-    _shows = ("echo", "headers", "mode", "nullvalue", "output", "separator", "width", "exceptions", "encoding")
+    _shows = ("echo", "headers", "mode", "changes", "nullvalue", "output", "separator", "width", "exceptions",
+              "encoding")
 
     def command_shell(self, cmd):
         """shell CMD ARGS...: Run CMD ARGS in a system shell"""
@@ -2533,7 +2550,7 @@ Enter ".help" for instructions
             if what and i != what:
                 continue
             # boolean settings
-            if i in ("echo", "headers", "exceptions"):
+            if i in ("echo", "headers", "exceptions", "changes"):
                 if i == "headers": i = "header"
                 v = "off"
                 if getattr(self, i):
@@ -3142,6 +3159,7 @@ Enter ".help" for instructions
     # we make some effort for some of the commands
     _command_params = {
         "bail": bool,
+        "changes": bool,
         "echo": bool,
         "exceptions": bool,
         "header": bool,
