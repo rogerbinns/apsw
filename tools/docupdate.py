@@ -108,7 +108,7 @@ for line in open("doc/shell.rst", "rt"):
 
         def backtickify(s):
             s = s.group(0)
-            if s in {"SQL", "APSW", "TCL", "C"}:
+            if s in {"SQL", "APSW", "TCL", "C", "HTML", "JSON", "CSV", "TSV"}:
                 return s
             if s == "'3'": # example in command_parameter
                 return "``'3'``"

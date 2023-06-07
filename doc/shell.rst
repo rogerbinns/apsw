@@ -38,8 +38,10 @@ Commands
 ========
 
 In addition to executing SQL, these are the commands available with
-their short help description.  Use `.help *command*` eg (`.help
-autoimport`) to get more detailed information.
+their description.  Commands are distinguished from SQL by having a
+leading ``.`` - for example::
+
+  .help
 
 .. help-begin:
 
