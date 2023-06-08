@@ -2730,7 +2730,7 @@ apswvtabShadowName(int which, const char *table_suffix)
 
   if (PyErr_Occurred())
   {
-    AddTraceBackHere(__FILE__, __LINE__, "VTModule.ShadowName", "{s: s, s: O}", "table_suffix", table_suffix, res, OBJ(res));
+    AddTraceBackHere(__FILE__, __LINE__, "VTModule.ShadowName", "{s: s, s: O}", "table_suffix", table_suffix, "res", OBJ(res));
     apsw_write_unraisable(NULL);
   }
   Py_XDECREF(res);
