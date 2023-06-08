@@ -9826,6 +9826,7 @@ SELECT group_concat(rtrim(t),x'0a') FROM a;
         import multiprocessing
         val = multiprocessing.Value("i", 0)
         p = multiprocessing.Process(target=childtest, args=[val] + list(child))
+        self.suppressWarning("DeprecationWarning") # we are deliberately forking
         p.start()
         p.join()
         self.assertEqual(1, val.value)  # did child complete ok?
