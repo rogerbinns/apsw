@@ -2939,25 +2939,8 @@ Enter ".help" for instructions
             return None
         return self.completions[state]
 
-    # Taken from https://sqlite.org/lang_keywords.html
-    _sqlite_keywords = """ABORT ACTION ADD AFTER ALL ALTER ANALYZE AND AS ASC ATTACH
-    AUTOINCREMENT BEFORE BEGIN BETWEEN BY CASCADE CASE CAST CHECK
-    COLLATE COLUMN COMMIT CONFLICT CONSTRAINT CREATE CROSS
-    CURRENT_DATE CURRENT_TIME CURRENT_TIMESTAMP DATABASE DEFAULT
-    DEFERRABLE DEFERRED DELETE DESC DETACH DISTINCT DROP EACH ELSE END
-    ESCAPE EXCEPT EXCLUSIVE EXISTS EXPLAIN FAIL FOR FOREIGN FROM FULL
-    GLOB GROUP HAVING IF IGNORE IMMEDIATE IN INDEX INDEXED INITIALLY
-    INNER INSERT INSTEAD INTERSECT INTO IS ISNULL JOIN KEY LEFT LIKE
-    LIMIT MATCH NATURAL NO NOT NOTNULL NULL OF OFFSET ON OR ORDER
-    OUTER PLAN PRAGMA PRIMARY QUERY RAISE RECURSIVE REFERENCES REGEXP
-    REINDEX RELEASE RENAME REPLACE RESTRICT RIGHT ROLLBACK ROW
-    SAVEPOINT SELECT SET TABLE TEMP TEMPORARY THEN TO TRANSACTION
-    TRIGGER UNION UNIQUE UPDATE USING VACUUM VALUES VIEW VIRTUAL WHEN
-    WHERE WITH WITHOUT""".split()
-
-    _sqlite_keywords.extend(getattr(apsw, "keywords", []))
-
-    # reserved words need to be quoted.  Only a subset of the above are reserved
+    _sqlite_keywords = apsw.keywords
+    # reserved words need to be quoted.  Only a subset of the keywords are reserved
     # but what the heck
     _sqlite_reserved = _sqlite_keywords
     # add a space after each of them except functions which get parentheses
@@ -2966,18 +2949,9 @@ Enter ".help" for instructions
     _sqlite_special_names = """_ROWID_ OID ROWID sqlite_schema
            SQLITE_SEQUENCE""".split()
 
-    _sqlite_functions = """abs( changes() char( coalesce( glob( ifnull( hex( instr(
-           last_insert_rowid() length( like( likelihood( likely(
-           load_extension( lower( ltrim( max( min( nullif( printf(
-           quote( random() randomblob( replace( round( rtrim( soundex(
-           sqlite_compileoption_get( sqlite_compileoption_used(
-           sqlite_source_id() sqlite_version() substr( total_changes()
-           trim( typeof( unlikely( unicode( upper( zeroblob( date(
-           time( datetime( julianday( strftime( avg( count(
-           group_concat( sum( total(""".split()
-
     _pragmas_bool = ("yes", "true", "on", "no", "false", "off")
     _pragmas = {
+        "analysis_limit=": None,
         "application_id": None,
         "auto_vacuum=": ("NONE", "FULL", "INCREMENTAL"),
         "automatic_index=": _pragmas_bool,
@@ -2992,14 +2966,14 @@ Enter ".help" for instructions
         "data_version": None,
         "database_list": None,
         "defer_foreign_keys=": _pragmas_bool,
-        "encoding=": None,
-        # ('"UTF-8"', '"UTF-16"', '"UTF-16le"', '"UTF16-16be"'),
-        # too hard to get " to be part of token just in this special case
+        "encoding=": ('UTF-8', 'UTF-16', 'UTF-16le', 'UTF16-16be'),
         "foreign_key_check": None,
         "foreign_key_list(": None,
         "foreign_keys": _pragmas_bool,
         "freelist_count": None,
         "fullfsync=": _pragmas_bool,
+        "function_list": None,
+        "hard_heap_limit=": None,
         "ignore_check_constraints": _pragmas_bool,
         "incremental_vacuum(": None,
         "index_info(": None,
@@ -3008,10 +2982,12 @@ Enter ".help" for instructions
         "integrity_check": None,
         "journal_mode=": ("DELETE", "TRUNCATE", "PERSIST", "MEMORY", "OFF", "WAL"),
         "journal_size_limit=": None,
+        "legacy_alter_table=": _pragmas_bool,
         "legacy_file_format=": _pragmas_bool,
         "locking_mode=": ("NORMAL", "EXCLUSIVE"),
         "max_page_count=": None,
         "mmap_size=": None,
+        "module_list": None,
         "optimize(": None,
         "page_count;": None,
         "page_size=": None,
@@ -3027,8 +3003,10 @@ Enter ".help" for instructions
         "synchronous=": ("OFF", "NORMAL", "FULL"),
         "table_info(": None,
         "table_list": None,
+        "table_xinfo(": None,
         "temp_store=": ("DEFAULT", "FILE", "MEMORY"),
         "threads=": None,
+        "trusted_schema": _pragmas_bool,
         "user_version=": None,
         "wal_autocheckpoint=": None,
         "wal_checkpoint": None,
@@ -3052,7 +3030,7 @@ Enter ".help" for instructions
             cur = self.db.cursor()
             collations = [row[1] for row in cur.execute("pragma collation_list")]
             databases = [row[1] for row in cur.execute("pragma database_list")]
-            other = []
+            other = [row[0] for row in cur.execute("pragma module_list")]
             for db in databases:
                 if db == "temp":
                     master = "sqlite_temp_schema"
