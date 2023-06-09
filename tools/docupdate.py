@@ -124,6 +124,7 @@ for line in open("doc/shell.rst", "rt"):
         shell.command_help([])
 
         for k, v in shell._help_info.items():
+            op.append(f".. _shell-cmd-{ k }:")
             op.append(".. index::")
             op.append("    single: " + v[0].lstrip(".").split()[0] + " (Shell command)")
             op.append("")

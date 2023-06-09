@@ -14,12 +14,15 @@ Work with SQLite compiled with `SQLITE_OMIT_DEPRECATED
 the same results.  When including the amalgamation,
 SQLITE_OMIT_DEPRECATED is defined. (:issue:`443`)
 
+:doc:`shell` updates adding various commands to match the SQLite
+shell, as well as code and documentation improvements. (:issue:`397`)
+
 Added :meth:`Connection.read` and :func:`apsw.ext.dbinfo` to provide
 information from the database and journal/wal files.  The shell
-commannd `.dbinfo` displays it.
+command :ref:`.dbinfo <shell-cmd-dbinfo>` displays it.
 
-Added :meth:`Connection.vfs_details`.  The shell command `.vfslist`
-displays it.
+Added :meth:`Connection.vfs_details`.  The shell command
+:ref:`.vfslist <shell-cmd-vfslist>` displays it.
 
 :ref:`speedtest` now shows summary statistics, and improved help text.
 (:issue:`444`)

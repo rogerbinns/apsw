@@ -11,11 +11,15 @@ after the `shell that comes with SQLite
 <https://sqlite.org/cli.html>`__ which requires separate
 compilation and installation.
 
-A number of the quirks and bugs in the SQLite shell are also
-addressed.  It provides command line editing and completion.  You can
-easily include it into your own program to provide SQLite interaction
-and add your own commands.  The autoimport and find commands are also
-useful.
+Notable improvements include:
+
+* You can invoke this shell programmatically - very useful for
+  development and debugging
+* Output is in colour
+* Tab completion is available
+* Nicer text dump output, including metadata like user_version
+* Useful :ref:`autoimport <shell-cmd-autoimport>` and :ref:`find
+  <shell-cmd-find>` commands
 
 Notes
 =====
@@ -34,89 +38,19 @@ is enabled by default in current versions of Windows, and a registry
 key enables for older versions `(details)
 <https://github.com/kiedtl/winfetch/wiki/ANSI-Colors>`__.
 
-Commands
-========
-
-In addition to executing SQL, these are the commands available with
-their description.  Commands are distinguished from SQL by having a
-leading ``.`` - for example::
-
-  .help
-
-.. help-begin:
-
-.. code-block:: text
-
-  
-  .autoimport FILENAME ?TABLE?  Imports filename creating a table and
-                                automatically working out separators and data
-                                types (alternative to .import command)
-  .backup ?DB? FILE             Backup DB (default "main") to FILE
-  .bail ON|OFF                  Stop after hitting an error (default OFF)
-  .colour SCHEME                Selects a colour scheme from default, off
-  .databases                    Lists names and files of attached databases
-  .dump ?TABLE? [TABLE...]      Dumps all or specified tables in SQL text format
-  .echo ON|OFF                  If ON then each SQL statement or command is
-                                printed before execution (default OFF)
-  .encoding ENCODING            Set the encoding used for new files opened via
-                                .output and imports
-  .exceptions ON|OFF            If ON then detailed tracebacks are shown on
-                                exceptions (default OFF)
-  .exit                         Exit this program
-  .explain ON|OFF               Set output mode suitable for explain (default OFF)
-  .find what ?TABLE?            Searches all columns of all tables for a value
-  .header(s) ON|OFF             Display the column names in output (default OFF)
-  .help ?COMMAND?               Shows list of commands and their usage.  If
-                                COMMAND is specified then shows detail about that
-                                COMMAND.  ('.help all' will show detailed help
-                                about all commands.)
-  .import FILE TABLE            Imports separated data from FILE into TABLE
-  .indices TABLE                Lists all indices on table TABLE
-  .load FILE ?ENTRY?            Loads a SQLite extension library
-  .mode MODE ?OPTIONS?          Sets output mode to one of box column columns csv
-                                html insert json line lines list python qbox table
-                                tabs tcl
-  .nullvalue STRING             Print STRING in place of null values
-  .open ?OPTIONS? ?FILE?        Closes existing database and opens a different one
-  .output FILENAME              Send output to FILENAME (or stdout)
-  .print STRING                 print the literal STRING
-  .prompt MAIN ?CONTINUE?       Changes the prompts for first line and
-                                continuation lines
-  .quit                         Exit this program
-  .read FILENAME                Processes SQL and commands in FILENAME (or Python
-                                if FILENAME ends with .py)
-  .restore ?DB? FILE            Restore database from FILE into DB (default
-                                "main")
-  .schema ?TABLE? [TABLE...]    Shows SQL for table
-  .separator STRING             Change separator for output mode and .import
-  .show                         Show the current values for various settings.
-  .tables ?PATTERN?             Lists names of tables matching LIKE pattern
-  .timeout MS                   Try opening locked tables for MS milliseconds
-  .timer ON|OFF                 Control printing of time and resource usage after
-                                each query
-  .width NUM NUM ...            Set the column widths for "column" mode
-  
-  
-
-.. help-end:
-
 Command Line Usage
 ==================
 
-You can use the shell directly from the command line.  Invoke it like
-this::
-
-  $ python3 -m apsw  [options and arguments]
-
-The following command line options are accepted:
+You can use the shell directly from the command line.
 
 .. usage-begin:
 
 .. code-block:: text
 
-  Usage: program [OPTIONS] FILENAME [SQL|CMD] [SQL|CMD]...
+  Usage: python3 -m apsw [OPTIONS] FILENAME [SQL|CMD] [SQL|CMD]...
   FILENAME is the name of a SQLite database. A new database is
-  created if the file does not exist.
+  created if the file does not exist. If omitted or an empty
+  string then an in-memory database is created.
   OPTIONS include:
      -init filename       read/process named file
      -echo                print commands before execution
@@ -140,59 +74,698 @@ The following command line options are accepted:
 
 .. usage-end:
 
-Example
-=======
-
-All examples of using the SQLite shell should work as is, plus you get
-extra features and functionality like colour, command line completion
-and better dumps.  (The standard SQLite shell does have several more Commands
-that help with debugging and introspecting SQLite itself.)
+Programmatic Usage
+==================
 
 You can also use the shell programmatically (or even interactively and
 programmatically at the same time).  See the :ref:`example
 <example_shell>` for using the API.
 
-Unicode
-=======
+To quickly invoke the shell similar to the Python debugger, do this::
 
-SQLite only works with `Unicode
-<http://en.wikipedia.org/wiki/Unicode>`__ strings.  All data supplied
-to it should be Unicode and all data retrieved is Unicode.  (APSW
-functions the same way because of this.)
+  apsw.shell.Shell(db=database_of_interest).cmdloop()
 
-At the technical level there is a difference between bytes and
-characters.  Bytes are how data is stored in files and transmitted
-over the network.  In order to turn bytes into characters and
-characters into bytes an encoding has to be used.  Some example
-encodings are ASCII, UTF-8, ISO8859-1, SJIS etc.  (With the exception
-of UTF-8/16/32, other encodings can only map a very small subset of
-Unicode.)
+You can use :ref:`.connection <shell-cmd-connection>` to switch
+amongst connections.  Press Control-D at the prompt (Control-Z on
+Windows) will exit the shell.
 
-If the shell reads data that is not valid for the input encoding or
-cannot convert Unicode to the output encoding then you will get an
-error.  When the shell starts, Python automatically detects the
-encodings to use for console input and output.
+Commands
+========
 
-There is also a .encoding command.  This sets what encoding is used
-for any subsequent .read, .import and .output commands but does not
-affect existing open files and console.  When other programs offer you
-a choice for encoding the best value to pick is UTF8 as it allows full
-representation of Unicode.
+In addition to executing SQL, these are the commands available with
+their description.  Commands are distinguished from SQL by having a
+leading ``.`` (period) - for example::
 
-In addition to specifying the encoding, you can also specify the error
-handling when a character needs to be output but is not present in the
-encoding.  The default is 'strict' which results in an error.
-'replace' will replace the character with '?' or something similar
-while 'xmlcharrefreplace' uses xml entities.  To specify the error
-handling add a colon and error after the encoding - eg::
+  .help
+  .mode qbox
+  .find winchester
 
-   .encoding iso-8859-1:replace
+.. help-begin:
 
-The same method is used when setting PYTHONIOENCODING.
+.. _shell-cmd-autoimport:
+.. index::
+    single: autoimport (Shell command)
 
-This `Joel on Software article
-<http://www.joelonsoftware.com/articles/Unicode.html>`__ contains an
-excellent overview of character sets, code pages and Unicode.
+autoimport FILENAME ?TABLE?
+---------------------------
+
+*Imports filename creating a table and automatically working out separators and data types (alternative to .import command)*
+
+The import command requires that you precisely pre-setup the table and schema,
+and set the data separators (eg commas or tabs).  This command figures out the
+separator and csv dialect automatically.  There must be at least two columns and
+two rows.
+
+If the table is not specified then the basename of the file will be used.
+
+Additionally the type of the contents of each column is also deduced - for
+example if it is a number or date.  Empty values are turned into nulls.  Dates
+are normalized into ``YYYY``-``MM``-``DD`` format and DateTime are normalized
+into ISO8601 format to allow easy sorting and searching.  4 digit years must be
+used to detect dates.  ``US`` (swapped day and month) versus rest of the world
+is also detected providing there is at least one value that resolves the
+ambiguity.
+
+Care is taken to ensure that columns looking like numbers are only treated as
+numbers if they do not have unnecessary leading zeroes or plus signs.  This is
+to avoid treating phone numbers and similar number like strings as integers.
+
+This command can take quite some time on large files as they are effectively
+imported twice.  The first time is to determine the format and the types for
+each column while the second pass actually imports the data.
+
+.. _shell-cmd-backup:
+.. index::
+    single: backup (Shell command)
+
+backup ?DB? FILE
+----------------
+
+*Backup DB (default "main") to FILE*
+
+Copies the contents of the current database to ``FILE`` overwriting whatever was
+in ``FILE``.  If you have attached databases then you can specify their name
+instead of the default of "main".
+
+The backup is done at the page level - SQLite copies the pages as is.  There is
+no round trip through SQL code.
+
+.. _shell-cmd-bail:
+.. index::
+    single: bail (Shell command)
+
+bail ON|OFF
+-----------
+
+*Stop after hitting an error (default OFF)*
+
+If an error is encountered while processing commands or SQL then exit.  (Note
+this is different than SQLite shell which only exits for errors in SQL.)
+
+.. _shell-cmd-cd:
+.. index::
+    single: cd (Shell command)
+
+cd ?DIR
+-------
+
+*Changes current directory*
+
+If no directory supplied then change to home directory
+
+.. _shell-cmd-changes:
+.. index::
+    single: changes (Shell command)
+
+changes ON|OFF
+--------------
+
+*Show changes from last SQL and total changes (default OFF)*
+
+After executing SQL that makes changes, the number of affected rows is displayed
+as well as a running count of all changes.
+
+.. _shell-cmd-close:
+.. index::
+    single: close (Shell command)
+
+close
+-----
+
+*Closes the current database*
+
+.. _shell-cmd-colour:
+.. index::
+    single: colour (Shell command)
+
+colour SCHEME
+-------------
+
+*Selects a colour scheme from default, off*
+
+If using a colour terminal in interactive mode then output is automatically
+coloured to make it more readable.  Use ``off`` to turn off colour, and no name
+or ``default`` for the default colour scheme.
+
+.. _shell-cmd-connection:
+.. index::
+    single: connection (Shell command)
+
+connection ?NUMBER?
+-------------------
+
+*List connections, or switch active connection*
+
+This covers all connections, not just those started in this shell.  Closed
+connections are not shown.
+
+.. _shell-cmd-databases:
+.. index::
+    single: databases (Shell command)
+
+databases
+---------
+
+*Lists names and files of attached databases*
+
+.. _shell-cmd-dbconfig:
+.. index::
+    single: dbconfig (Shell command)
+
+dbconfig ?NAME VALUE?
+---------------------
+
+*Show all dbconfig, or set a specific one*
+
+With no arguments lists all settings.  Supply a name and integer value to
+change.  For example::
+
+    .dbconfig enable_fkey 1
+
+.. _shell-cmd-dbinfo:
+.. index::
+    single: dbinfo (Shell command)
+
+dbinfo ?NAME?
+-------------
+
+*Shows summary and file information about the database*
+
+This includes the numbers of tables, indices etc, as well as fields from the
+files as returned by :func:`apsw.ext.dbinfo`.
+
+``NAME`` defaults to ``main``, and can be the attached name of a database.
+
+.. _shell-cmd-dump:
+.. index::
+    single: dump (Shell command)
+
+dump ?TABLE? [TABLE...]
+-----------------------
+
+*Dumps all or specified tables in SQL text format*
+
+The table name is treated as like pattern so you can use ``%`` as a wildcard.
+You can use dump to make a text based backup of the database.  It is also useful
+for comparing differences or making the data available to other databases.
+Indices and triggers for the table(s) are also dumped.  Finally views matching
+the table pattern name are dumped (it isn't possible to work out which views
+access which table and views can access multiple tables anyway).
+
+Note that if you are dumping virtual tables such as used by the FTS3 module then
+they may use other tables to store information.  For example if you create a
+FTS3 table named *recipes* then it also creates *recipes_content*,
+*recipes_segdir* etc.  Consequently to dump this example correctly use::
+
+   .dump recipes recipes_%
+
+If the database is empty or no tables/views match then there is no output.
+
+.. _shell-cmd-echo:
+.. index::
+    single: echo (Shell command)
+
+echo ON|OFF
+-----------
+
+*If ON then each SQL statement or command is printed before execution (default OFF)*
+
+The SQL statement or command is sent to error output so that it is not
+intermingled with regular output.
+
+.. _shell-cmd-encoding:
+.. index::
+    single: encoding (Shell command)
+
+encoding ENCODING
+-----------------
+
+*Set the encoding used for new files opened via .output and imports*
+
+SQLite and APSW work internally using Unicode and characters. Files however are
+a sequence of bytes.  An encoding describes how to convert between bytes and
+characters.  The default encoding is utf8 and that is generally the best value
+to use when other programs give you a choice.
+
+You can also specify an error handler.  For example 'cp437:replace' will use
+code page 437 and any Unicode codepoints not present in cp437 will be replaced
+(typically with something like a question mark).  Other error handlers include
+``ignore``, ``strict`` (default) and ``xmlcharrefreplace``.
+
+For the default input/output/error streams on startup the shell defers to
+Python's detection of encoding.  For example on Windows it asks what code page
+is in use and on Unix it looks at the ``LC_CTYPE`` environment variable.  You
+can set the ``PYTHONIOENCODING`` environment variable to override this
+detection.
+
+This command affects files opened after setting the encoding as well as imports.
+
+.. _shell-cmd-exceptions:
+.. index::
+    single: exceptions (Shell command)
+
+exceptions ON|OFF
+-----------------
+
+*If ON then detailed tracebacks are shown on exceptions (default OFF)*
+
+Normally when an exception occurs the error string only is displayed.  However
+it is sometimes useful to get a full traceback.  An example would be when you
+are developing virtual tables and using the shell to exercise them.  In addition
+to displaying each stack frame, the local variables within each frame are also
+displayed.
+
+.. _shell-cmd-exit:
+.. index::
+    single: exit (Shell command)
+
+exit ?CODE?
+-----------
+
+*Exit this program with optional exit code*
+
+.. _shell-cmd-find:
+.. index::
+    single: find (Shell command)
+
+find what ?TABLE?
+-----------------
+
+*Searches all columns of all tables for a value*
+
+The find command helps you locate data across your database for example to find
+a string or any references to an id.
+
+You can specify a like pattern to limit the search to a subset of tables (eg
+specifying ``CUSTOMER%`` for all tables beginning with ``CUSTOMER``).
+
+The what value will be treated as a string and/or integer if possible.  If what
+contains ``%`` or ``_`` then it is also treated as a like pattern.
+
+This command can take a long time to execute needing to scan all of the relevant
+tables.
+
+.. _shell-cmd-header:
+.. index::
+    single: header(s) (Shell command)
+
+header(s) ON|OFF
+----------------
+
+*Display the column names in output (default OFF)*
+
+.. _shell-cmd-help:
+.. index::
+    single: help (Shell command)
+
+help ?COMMAND?
+--------------
+
+*Shows list of commands and their usage.  If COMMAND is specified then shows detail about that COMMAND.  ('.help all' will show detailed help about all commands.)*
+
+.. _shell-cmd-import:
+.. index::
+    single: import (Shell command)
+
+import FILE TABLE
+-----------------
+
+*Imports separated data from FILE into TABLE*
+
+Reads data from the file into the named table using the current separator and
+encoding.  For example if the separator is currently a comma then the file
+should be CSV (comma separated values).
+
+All values read in are supplied to SQLite as strings.  If you want SQLite to
+treat them as other types then declare your columns appropriately.  For example
+declaring a column ``REAL`` will result in the values being stored as floating
+point if they can be safely converted.  See this page for more details::
+
+  https://sqlite.org/datatype3.html
+
+Another alternative is to create a temporary table, insert the values into that
+and then use casting.::
+
+  CREATE TEMPORARY TABLE import(a,b,c);
+  .import filename import
+  CREATE TABLE final AS SELECT cast(a as BLOB), cast(b as INTEGER),
+       cast(c as CHAR) from import;
+  DROP TABLE import;
+
+You can also get more sophisticated using the SQL ``CASE`` operator.  For
+example this will turn zero length strings into null::
+
+  SELECT CASE col WHEN '' THEN null ELSE col END FROM ...
+
+.. _shell-cmd-indices:
+.. index::
+    single: indices (Shell command)
+
+indices TABLE
+-------------
+
+*Lists all indices on table TABLE*
+
+.. _shell-cmd-load:
+.. index::
+    single: load (Shell command)
+
+load FILE ?ENTRY?
+-----------------
+
+*Loads a SQLite extension library*
+
+Note: Extension loading may not be enabled in the SQLite library version you are
+using.
+
+By default sqlite3_extension_init is called in the library but you can specify
+an alternate entry point.
+
+If you get an error about the extension not being found you may need to
+explicitly specify the directory.  For example if it is in the current directory
+then use::
+
+  .load ./extension.so
+
+.. _shell-cmd-log:
+.. index::
+    single: log (Shell command)
+
+log ON|OFF
+----------
+
+*Shows SQLite log messages*
+
+.. _shell-cmd-mode:
+.. index::
+    single: mode (Shell command)
+
+mode MODE ?OPTIONS?
+-------------------
+
+*Sets output mode to one of box column columns csv html insert json line lines list python qbox table tabs tcl*
+
+box: Outputs using line drawing and auto sizing columns
+
+column: Items left aligned in space padded columns. They are truncated if they
+do not fit. If the width hasn't been specified for a column then 10 is used
+unless the column name (header) is longer in which case that width is used. Use
+the .width command to change column sizes.
+
+columns: Items left aligned in space padded columns. They are truncated if they
+do not fit. If the width hasn't been specified for a column then 10 is used
+unless the column name (header) is longer in which case that width is used. Use
+the .width command to change column sizes.
+
+csv: Items in csv format (comma separated). Use tabs mode for tab separated. You
+can use the .separator command to use a different one after switching mode.
+``A`` separator of comma uses double quotes for quoting while other separators
+do not do any quoting. The Python csv library used for this only supports single
+character separators.
+
+html: HTML table style
+
+insert: Lines as SQL insert statements. The table name is "table" unless you
+specified a different one as the second parameter to the .mode command.
+
+json: Each line as a JSON object with a trailing comma. Blobs are output as
+base64 encoded strings. You should be using UTF8 output encoding.
+
+line: One value per line in the form 'column = value' with a blank line between
+rows.
+
+lines: One value per line in the form 'column = value' with a blank line between
+rows.
+
+list: All items on one line with separator
+
+python: Tuples in Python source form for each row
+
+qbox: Outputs using line drawing and auto sizing columns quoting values
+
+table: Outputs using ascii line drawing and strongly sanitized text
+
+tcl: Outputs TCL/C style strings using current separator
+
+.. _shell-cmd-nullvalue:
+.. index::
+    single: nullvalue (Shell command)
+
+nullvalue STRING
+----------------
+
+*Print STRING in place of null values*
+
+This affects textual output modes like column and list and sets how SQL null
+values are shown.  The default is a zero length string.  Insert mode and dumps
+are not affected by this setting.  You can use double quotes to supply a zero
+length string.  For example::
+
+  .nullvalue ""         # the default
+  .nullvalue <NULL>     # rather obvious
+  .nullvalue " \\t "     # A tab surrounded by spaces
+
+.. _shell-cmd-open:
+.. index::
+    single: open (Shell command)
+
+open ?OPTIONS? ?FILE?
+---------------------
+
+*Opens a database connection*
+
+Options are:
+
+--new:  Closes amy existing connection referring to the same file and deletes
+the database files before opening
+
+If ``FILE`` is omitted then a memory database is opened
+
+.. _shell-cmd-output:
+.. index::
+    single: output (Shell command)
+
+output FILENAME
+---------------
+
+*Send output to FILENAME (or stdout)*
+
+If the ``FILENAME`` is ``stdout`` then output is sent to standard output from
+when the shell was started.  The file is opened using the current encoding
+(change with ``encoding`` command).
+
+.. _shell-cmd-parameter:
+.. index::
+    single: parameter (Shell command)
+
+parameter CMD ...
+-----------------
+
+*Maintain named bindings you can use in your queries.*
+
+Specify a subcommand::
+
+   list            -- shows current bindings
+   clear           -- deletes all bindings
+   unset NAME      -- deletes named binding
+   set NAME VALUE  -- sets binding to VALUE
+
+The value must be a valid SQL literal.  For example 3 will be an integer 3 while
+``'3'`` will be a string.
+
+.. _shell-cmd-print:
+.. index::
+    single: print (Shell command)
+
+print STRING
+------------
+
+*print the literal STRING*
+
+If more than one argument is supplied then they are printed space separated.
+You can use backslash escapes such as \\n and \\t.
+
+.. _shell-cmd-prompt:
+.. index::
+    single: prompt (Shell command)
+
+prompt MAIN ?CONTINUE?
+----------------------
+
+*Changes the prompts for first line and continuation lines*
+
+The default is to print 'sqlite> ' for the main prompt where you can enter a dot
+command or a SQL statement.  If the SQL statement is complete (eg not ;
+terminated) then you are prompted for more using the continuation prompt which
+defaults to ' ..> '.  Example::
+
+  .prompt "command> " "more command> "
+
+You can use backslash escapes such as \\n and \\t.
+
+.. _shell-cmd-read:
+.. index::
+    single: read (Shell command)
+
+read FILENAME
+-------------
+
+*Processes SQL and commands in FILENAME (or Python if FILENAME ends with .py)*
+
+Treats the specified file as input (a mixture or SQL and/or dot commands).  If
+the filename ends in .py then it is treated as Python code instead.
+
+For Python code the symbol ``shell`` refers to the instance of the shell and
+``apsw`` is the apsw module.
+
+.. _shell-cmd-restore:
+.. index::
+    single: restore (Shell command)
+
+restore ?DB? FILE
+-----------------
+
+*Restore database from FILE into DB (default "main")*
+
+Copies the contents of ``FILE`` to the current database (default "main"). The
+backup is done at the page level - SQLite copies the pages as is.  There is no
+round trip through SQL code.
+
+.. _shell-cmd-schema:
+.. index::
+    single: schema (Shell command)
+
+schema ?TABLE? [TABLE...]
+-------------------------
+
+*Shows SQL for table*
+
+If you give one or more tables then their schema is listed (including indices).
+If you don't specify any then all schemas are listed. ``TABLE`` is a like
+pattern so you can ``%`` for wildcards.
+
+.. _shell-cmd-separator:
+.. index::
+    single: separator (Shell command)
+
+separator STRING
+----------------
+
+*Change separator for output mode and .import*
+
+You can use quotes and backslashes.  For example to set the separator to space
+tab space you can use::
+
+  .separator " \\t "
+
+The setting is automatically changed when you switch to csv or tabs output mode.
+You should also set it before doing an import (ie , for CSV and \\t for TSV).
+
+.. _shell-cmd-shell:
+.. index::
+    single: shell (Shell command)
+
+shell CMD ARGS...
+-----------------
+
+*Run CMD ARGS in a system shell*
+
+.. _shell-cmd-show:
+.. index::
+    single: show (Shell command)
+
+show
+----
+
+*Show the current values for various settings.*
+
+.. _shell-cmd-tables:
+.. index::
+    single: tables (Shell command)
+
+tables ?PATTERN?
+----------------
+
+*Lists names of tables matching LIKE pattern*
+
+This also returns views.
+
+.. _shell-cmd-timeout:
+.. index::
+    single: timeout (Shell command)
+
+timeout MS
+----------
+
+*Try opening locked tables for MS milliseconds*
+
+If a database is locked by another process SQLite will keep retrying.  This sets
+how many thousandths of a second it will keep trying for.  If you supply zero or
+a negative number then all busy handlers are disabled.
+
+.. _shell-cmd-timer:
+.. index::
+    single: timer (Shell command)
+
+timer ON|OFF
+------------
+
+*Control printing of time and resource usage after each query*
+
+The values displayed are in seconds when shown as floating point or an absolute
+count.  Only items that have changed since starting the query are shown.  On
+non-Windows platforms considerably more information can be shown.
+
+.. _shell-cmd-version:
+.. index::
+    single: version (Shell command)
+
+version
+-------
+
+*Displays SQLite, APSW, and Python version information*
+
+.. _shell-cmd-vfsinfo:
+.. index::
+    single: vfsinfo (Shell command)
+
+vfsinfo
+-------
+
+*Shows detailed information about the VFS for the database*
+
+.. _shell-cmd-vfslist:
+.. index::
+    single: vfslist (Shell command)
+
+vfslist
+-------
+
+*Shows detailed information about all the VFS available*
+
+.. _shell-cmd-vfsname:
+.. index::
+    single: vfsname (Shell command)
+
+vfsname
+-------
+
+*VFS name used to open current database*
+
+.. _shell-cmd-width:
+.. index::
+    single: width (Shell command)
+
+width NUM NUM ...
+-----------------
+
+*Set the column widths for "column" mode*
+
+In "column" output mode, each column is a fixed width with values truncated to
+fit.  Specify new widths using this command.  Use a negative number to right
+justify and zero for default column width.
+
+.. help-end:
 
 Shell class
 ===========

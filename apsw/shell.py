@@ -46,9 +46,7 @@ class Shell:
     SQLite.
 
     You can inherit from this class to embed in your own code and user
-    interface.  Internally everything is handled as unicode.
-    Conversions only happen at the point of input or output which you
-    can override in your own code.
+    interface.
 
     Errors and diagnostics are only ever sent to error output
     (self.stderr) and never to the regular output (self.stdout).  This
@@ -322,9 +320,10 @@ class Shell:
         "Returns the usage message.  Make sure it is newline terminated"
 
         msg = """
-Usage: program [OPTIONS] FILENAME [SQL|CMD] [SQL|CMD]...
+Usage: python3 -m apsw [OPTIONS] FILENAME [SQL|CMD] [SQL|CMD]...
 FILENAME is the name of a SQLite database. A new database is
-created if the file does not exist.
+created if the file does not exist. If omitted or an empty
+string then an in-memory database is created.
 OPTIONS include:
    -init filename       read/process named file
    -echo                print commands before execution
@@ -1562,8 +1561,6 @@ Enter ".help" for instructions
 
         This command affects files opened after setting the encoding
         as well as imports.
-
-        See the online APSW documentation for more details.
         """
         if len(cmd) != 1:
             raise self.Error("Encoding takes one argument")
