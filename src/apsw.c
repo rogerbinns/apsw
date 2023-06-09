@@ -806,7 +806,7 @@ error:
 /** .. method:: vfs_details() -> list[dict[str, int | str]]
 
 Returns a list with details of each :ref:`vfs <vfs>`.  The detail is a
-dictionary with the keys being the names of the `sqlitye3_vfs
+dictionary with the keys being the names of the `sqlite3_vfs
 <https://sqlite.org/c3ref/vfs.html>`__ data structure, and their
 corresponding values.
 

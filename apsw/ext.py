@@ -452,7 +452,7 @@ def dbinfo(db: apsw.Connection, schema: str = "main") -> tuple[DatabaseFileInfo 
     """Extracts fields from the database files
 
     Based on the `file format description <https://www.sqlite.org/fileformat2.html>`__.  The
-    headers are read using :meth:`Connection.read` so you see inside encrypted, compressed,
+    headers are read using :meth:`apsw.Connection.read` so you see inside encrypted, compressed,
     zip etc formats. not necessarily the actual on disk file."""
 
     dbinfo = journalinfo = None

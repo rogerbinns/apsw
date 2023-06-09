@@ -466,9 +466,23 @@ use (statically compiled into APSW).  Using the amalgamation means
 that SQLite shared libraries are not used and will not affect your
 code."""
 
+def vfs_details() -> list[dict[str, int | str]]:
+    """Returns a list with details of each :ref:`vfs <vfs>`.  The detail is a
+    dictionary with the keys being the names of the `sqlite3_vfs
+    <https://sqlite.org/c3ref/vfs.html>`__ data structure, and their
+    corresponding values.
+
+    Pointers are converted using `PyLong_FromVoidPtr
+    <https://docs.python.org/3/c-api/long.html?highlight=voidptr#c.PyLong_FromVoidPtr>`__.
+
+    Calls: `sqlite3_vfs_find <https://sqlite.org/c3ref/vfs_find.html>`__"""
+    ...
+
 def vfsnames() -> list[str]:
     """Returns a list of the currently installed :ref:`vfs <vfs>`.  The first
-    item in the list is the default vfs."""
+    item in the list is the default vfs.
+
+    Calls: `sqlite3_vfs_find <https://sqlite.org/c3ref/vfs_find.html>`__"""
     ...
 
 @final
@@ -910,6 +924,13 @@ class Connection:
         """:param op: A `configuration operation
           <https://sqlite.org/c3ref/c_dbconfig_enable_fkey.html>`__
         :param args: Zero or more arguments as appropriate for *op*
+
+        This is how to get the fkey setting::
+
+          val = config(apsw.SQLITE_DBCONFIG_ENABLE_FKEY, -1)
+
+        A parameter of zero would turn it off, 1 turns on, and negative
+        leaves unaltered.  The effective value is always returned.
 
         Calls: `sqlite3_db_config <https://sqlite.org/c3ref/db_config.html>`__"""
         ...
@@ -1387,6 +1408,28 @@ class Connection:
         * :ref:`Example <example_pragma>`"""
         ...
 
+    def read(self, schema: str, which: int, offset: int, amount: int) -> tuple[bool, bytes]:
+        """Invokes the underlying VFS method to read data from the database.  It
+        is strongly recommended to read aligned complete pages, since that is
+        only what SQLite does.
+
+        `schema` is `main`, `temp`, or the name of an attached database.
+
+        `which` is 0 for the database file, 1 for the journal.
+
+        The return value is a tuple of a boolean indicating a complete read if
+        True, and the bytes read which will always be the amount requested
+        in size.
+
+        `SQLITE_IOERR_SHORT_READ` will give a `False` value for the boolean,
+        and there is no way of knowing how much was read.
+
+        Implemented using `SQLITE_FCNTL_FILE_POINTER` and `SQLITE_FCNTL_JOURNAL_POINTER`.
+        Errors will usually be generic `SQLITE_ERROR` with no message.
+
+        Calls: `sqlite3_file_control <https://sqlite.org/c3ref/file_control.html>`__"""
+        ...
+
     def readonly(self, name: str) -> bool:
         """True or False if the named (attached) database was opened readonly or file
         permissions don't allow writing.  The main database is named "main".
@@ -1506,11 +1549,14 @@ class Connection:
         """Sets a callable which is invoked at the end of execution of each
         statement and passed the statement string and how long it took to
         execute. (The execution time is in nanoseconds.) Note that it is
-        called only on completion. If for example you do a ``SELECT`` and
-        only read the first result, then you won't reach the end of the
-        statement.
+        called only on completion. If for example you do a ``SELECT`` and only
+        read the first result, then you won't reach the end of the statement.
 
-        Calls: `sqlite3_profile <https://sqlite.org/c3ref/profile.html>`__"""
+        This used to call the now deprecated `sqlite3_profile API
+        <https://sqlite.org/c3ref/profile.html>`__
+
+
+        Calls: `sqlite3_trace_v2 <https://sqlite.org/c3ref/trace_v2.html>`__"""
         ...
 
     def setprogresshandler(self, callable: Optional[Callable[[], bool]], nsteps: int = 20) -> None:
