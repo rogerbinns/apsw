@@ -9267,11 +9267,6 @@ shell.write(shell.stdout, "hello world\\n")
 
         vfs = FaultVFS()
 
-        ## xCurrentTimeFail
-        apsw.faultdict["xCurrentTimeFail"] = True
-        self.assertRaisesUnraisable(apsw.SQLError,
-                                    apsw.Connection(":memory:", vfs="faultvfs").cursor().execute, "select date('now')")
-
         ## APSWVFSBadVersion
         apsw.faultdict["APSWVFSBadVersion"] = True
         self.assertRaises(ValueError, apsw.VFS, "foo", "")

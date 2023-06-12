@@ -1149,8 +1149,6 @@ apswvfspy_xCurrentTime(APSWVFS *self)
 
   res = self->basevfs->xCurrentTime(self->basevfs, &julian);
 
-  APSW_FAULT_INJECT(xCurrentTimeFail, , res = 1);
-
   if (res != 0)
   {
     SET_EXC(SQLITE_ERROR, NULL); /* general sqlite error code */
