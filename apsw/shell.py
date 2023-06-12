@@ -1928,7 +1928,7 @@ Enter ".help" for instructions
                 return float(v)
 
             # Work out the file format
-            formats = [{"dialect": "excel"}, {"dialect": "excel-tab"}, {'dialect': 'unix'}]
+            formats = [{"dialect": "excel"}, {"dialect": "excel-tab"}]
             seps = ["|", ";", ":"]
             if self.separator not in seps:
                 seps.append(self.separator)
