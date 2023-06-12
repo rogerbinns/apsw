@@ -8979,7 +8979,7 @@ shell.write(shell.stdout, "hello world\\n")
         ### Command - show
         ###
         # set all settings to known values
-        resetcmd = ".echo off\n.explain off\n.headers off\n.mode list\n.nullvalue ''\n.output stdout\n.separator |\n.width 1 2 3\n.exceptions off"
+        resetcmd = ".echo off\n.changes off\n.headers off\n.mode list\n.nullvalue ''\n.output stdout\n.separator |\n.width 1 2 3\n.exceptions off"
         reset()
         cmd(resetcmd)
         s.cmdloop()
@@ -8991,7 +8991,7 @@ shell.write(shell.stdout, "hello world\\n")
         isempty(fh[1])
         isnotempty(fh[2])
         baseline = get(fh[2])
-        for i in ".echo on", ".explain", ".headers on", ".mode column", ".nullvalue T", ".separator %", ".width 8 9 1", ".exceptions on":
+        for i in ".echo on", ".changes on", ".headers on", ".mode column", ".nullvalue T", ".separator %", ".width 8 9 1", ".exceptions on":
             reset()
             cmd(resetcmd)
             s.cmdloop()
