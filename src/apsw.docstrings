@@ -3093,6 +3093,11 @@
 "is the time. Do not adjust for timezone (ie use `UTC\n" \
 "<http://en.wikipedia.org/wiki/Universal_Time>`_).\n" 
 
+#define  VFS_xCurrentTimeInt64_DOC "xCurrentTimeInt64($self)\n--\n\nVFS.xCurrentTimeInt64()  -> int\n\n" \
+"Returns as an integer the `Julian Day Number\n" \
+"<http://en.wikipedia.org/wiki/Julian_day>`__ multiplied by 86400000\n" \
+"(the number of milliseconds in a 24-hour day).\n" 
+
 #define  VFS_xDelete_DOC "xDelete($self,filename,syncdir)\n--\n\nVFS.xDelete(filename: str, syncdir: bool) -> None\n\n" \
 "Delete the named file. If the file is missing then raise an\n" \
 ":exc:`IOError` exception with extendedresult\n" \

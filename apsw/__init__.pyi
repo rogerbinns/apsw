@@ -2444,6 +2444,12 @@ class VFS:
         <http://en.wikipedia.org/wiki/Universal_Time>`_)."""
         ...
 
+    def xCurrentTimeInt64(self)  -> int:
+        """Returns as an integer the `Julian Day Number
+        <http://en.wikipedia.org/wiki/Julian_day>`__ multiplied by 86400000
+        (the number of milliseconds in a 24-hour day)."""
+        ...
+
     def xDelete(self, filename: str, syncdir: bool) -> None:
         """Delete the named file. If the file is missing then raise an
         :exc:`IOError` exception with extendedresult

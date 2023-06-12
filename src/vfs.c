@@ -1160,6 +1160,56 @@ apswvfspy_xCurrentTime(APSWVFS *self)
 }
 
 static int
+apswvfs_xCurrentTimeInt64(sqlite3_vfs *vfs, sqlite3_int64 *time)
+{
+  PyObject *pyresult = NULL;
+  int result = 0;
+  VFSPREAMBLE;
+
+  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xCurrentTimeInt64", 1, "()");
+
+  if (pyresult)
+    *time = PyLong_AsLongLong(pyresult);
+
+  if (PyErr_Occurred())
+  {
+    AddTraceBackHere(__FILE__, __LINE__, "vfs.xCurrentTimeInt64", "{s: O}", "result", OBJ(pyresult));
+    result = 1;
+  }
+
+  Py_XDECREF(pyresult);
+  VFSPOSTAMBLE;
+  return result;
+}
+
+/** .. method:: xCurrentTimeInt64()  -> int
+
+  Returns as an integer the `Julian Day Number
+  <http://en.wikipedia.org/wiki/Julian_day>`__ multiplied by 86400000
+  (the number of milliseconds in a 24-hour day).
+*/
+static PyObject *
+apswvfspy_xCurrentTimeInt64(APSWVFS *self)
+{
+  int res;
+  sqlite3_int64 time;
+
+  CHECKVFSPY;
+  VFSNOTIMPLEMENTED(xCurrentTimeInt64, 1);
+
+  res = self->basevfs->xCurrentTimeInt64(self->basevfs, &time);
+
+  if (res != 0)
+  {
+    SET_EXC(SQLITE_ERROR, NULL); /* general sqlite error code */
+    AddTraceBackHere(__FILE__, __LINE__, "vfspy.xCurrentTimeInt64", NULL);
+    return NULL;
+  }
+
+  return PyLong_FromLongLong(time);
+}
+
+static int
 apswvfs_xGetLastError(sqlite3_vfs *vfs, int nByte, char *zErrMsg)
 {
   PyObject *pyresult = NULL, *item0 = NULL, *item1 = NULL;
@@ -1668,7 +1718,7 @@ APSWVFS_init(APSWVFS *self, PyObject *args, PyObject *kwds)
   METHOD(Sleep);
   METHOD(CurrentTime);
   METHOD(GetLastError);
-  /* The VFS2 method is not particularly useful */
+  METHOD(CurrentTimeInt64);
   METHOD(SetSystemCall);
   METHOD(GetSystemCall);
   METHOD(NextSystemCall);
@@ -1708,6 +1758,7 @@ static PyMethodDef APSWVFS_methods[] = {
     {"xRandomness", (PyCFunction)apswvfspy_xRandomness, METH_VARARGS | METH_KEYWORDS, VFS_xRandomness_DOC},
     {"xSleep", (PyCFunction)apswvfspy_xSleep, METH_VARARGS | METH_KEYWORDS, VFS_xSleep_DOC},
     {"xCurrentTime", (PyCFunction)apswvfspy_xCurrentTime, METH_NOARGS, VFS_xCurrentTime_DOC},
+    {"xCurrentTimeInt64", (PyCFunction)apswvfspy_xCurrentTimeInt64, METH_NOARGS, VFS_xCurrentTimeInt64_DOC},
     {"xGetLastError", (PyCFunction)apswvfspy_xGetLastError, METH_NOARGS, VFS_xGetLastError_DOC},
     {"xSetSystemCall", (PyCFunction)apswvfspy_xSetSystemCall, METH_VARARGS | METH_KEYWORDS, VFS_xSetSystemCall_DOC},
     {"xGetSystemCall", (PyCFunction)apswvfspy_xGetSystemCall, METH_VARARGS | METH_KEYWORDS, VFS_xGetSystemCall_DOC},

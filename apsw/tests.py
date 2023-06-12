@@ -6411,6 +6411,31 @@ class APSW(unittest.TestCase):
             def xCurrentTime99(self):
                 return super(TestVFS, self).xCurrentTime()
 
+            def xCurrentTimeInt641(self, bad, args):
+                1 / 0
+
+            def xCurrentTimeInt642(self):
+                1 / 0
+
+            def xCurrentTimeInt643(self):
+                return super(TestVFS, self).xCurrentTimeInt64("three")
+
+            def xCurrentTimeInt644(self):
+                return "three"
+
+            def xCurrentTimeInt645(self):
+                return 2 ** 65
+
+            def xCurrentTimeCorrect(self):
+                # actual correct implementation http://stackoverflow.com/questions/466321/convert-unix-timestamp-to-julian
+                return time.time() / 86400.0 + 2440587.5
+
+            def xCurrentTime99(self):
+                return super(TestVFS, self).xCurrentTime()
+
+            def xCurrentTimeInt6499(self):
+                return super(TestVFS, self).xCurrentTimeInt64()
+
             def xGetLastError1(self, bad, args):
                 1 / 0
 
@@ -6865,21 +6890,31 @@ class APSW(unittest.TestCase):
         testdb(mode="delete")
         testtimeout = False
 
-        ## xCurrentTime
+        ## xCurrentTime / xCurrentTimeInt64
+        # The Int64 version is usually called.  We set both here
         self.assertRaises(TypeError, vfs.xCurrentTime, "three")
+        self.assertRaises(TypeError, vfs.xCurrentTimeInt64, "three")
         TestVFS.xCurrentTime = TestVFS.xCurrentTime1
+        TestVFS.xCurrentTimeInt64 = TestVFS.xCurrentTimeInt641
         self.assertRaisesUnraisable(TypeError, testdb)
         TestVFS.xCurrentTime = TestVFS.xCurrentTime2
+        TestVFS.xCurrentTimeInt64 = TestVFS.xCurrentTimeInt642
         self.assertRaisesUnraisable(ZeroDivisionError, testdb)
         TestVFS.xCurrentTime = TestVFS.xCurrentTime3
+        TestVFS.xCurrentTimeInt64 = TestVFS.xCurrentTimeInt643
         self.assertRaisesUnraisable(TypeError, testdb)
         TestVFS.xCurrentTime = TestVFS.xCurrentTime4
+        TestVFS.xCurrentTimeInt64 = TestVFS.xCurrentTimeInt644
         self.assertRaisesUnraisable(TypeError, testdb)
         TestVFS.xCurrentTime = TestVFS.xCurrentTime5
-        testdb()
+        TestVFS.xCurrentTimeInt64 = TestVFS.xCurrentTimeInt645
+        self.assertMayRaiseUnraisable(OverflowError, testdb)
         TestVFS.xCurrentTime = TestVFS.xCurrentTime99
+        TestVFS.xCurrentTimeInt64 = TestVFS.xCurrentTimeInt6499
         self.assertMayRaiseUnraisable(apsw.VFSNotImplementedError, testdb)
         TestVFS.xCurrentTime = TestVFS.xCurrentTimeCorrect
+        TestVFS.xCurrentTimeInt64 = TestVFS.xCurrentTimeInt6499
+        testdb()
 
         ## xGetLastError
         # We can't directly test because the methods are called as side effects
