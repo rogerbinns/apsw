@@ -2275,7 +2275,7 @@ Enter ".help" for instructions
                     new = True
                     continue
                 raise self.Error("Unknown open param: " + p)
-            if dbname:
+            if dbname is not None:
                 raise self.Error("Too many arguments: " + p)
             dbname = p
 
@@ -2284,9 +2284,9 @@ Enter ".help" for instructions
                 raise self.Error("You must specify a filename with --new")
             for c in apsw.connections():
                 try:
-                    if os.path.samefile(c.filename, dbname):
+                    if c.filename and os.path.samefile(c.filename, dbname):
                         c.close()
-                except apsw.ConnectionClosedError:
+                except (apsw.ConnectionClosedError, FileNotFoundError):
                     pass
             for suffix in "", "-journal", "-wal", "-shm":
                 try:
