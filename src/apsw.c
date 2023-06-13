@@ -791,7 +791,7 @@ error:
 #define S(n) #n, vfs->n
 #define P(n) #n, PyLong_FromVoidPtr, vfs->n
 
-#define VFS1_BUILD "si si si ss sO& sO& sO& sO& sO& sO& sO& sO& sO& sO& sO& sO& sO& "
+#define VFS1_BUILD "si si si ss sO& sO& sO& sO& sO& sO& sO& sO& sO& sO& sO& sO& sO&"
 
 #define VFS1_FIELDS I(iVersion), I(szOsFile), I(mxPathname), S(zName), P(pAppData),              \
                     P(xOpen), P(xDelete), P(xAccess), P(xFullPathname), P(xDlOpen), P(xDlError), \
