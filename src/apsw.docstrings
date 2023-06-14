@@ -3021,7 +3021,7 @@
 ":func:`sys.unraisablehook` and :func:`sys.excepthook`, falling back to\n" \
 "`PyErr_Display`.\n" 
 
-#define  VFS_init_DOC "__init__($self,name,base=None,makedefault=False,maxpathname=1024)\n--\n\nVFS.__init__(name: str, base: Optional[str] = None, makedefault: bool = False, maxpathname: int = 1024)\n\n" \
+#define  VFS_init_DOC "__init__($self,name,base=None,makedefault=False,maxpathname=1024,*,iVersion=3,exclude=None)\n--\n\nVFS.__init__(name: str, base: Optional[str] = None, makedefault: bool = False, maxpathname: int = 1024, *, iVersion: int = 3, exclude: Optional[set[str]] = None)\n\n" \
 ":param name: The name to register this vfs under.  If the name\n" \
 "    already exists then this vfs will replace the prior one of the\n" \
 "    same name.  Use :meth:`apsw.vfsnames` to get a list of\n" \
@@ -3039,6 +3039,13 @@
 "    this value then SQLite will not`be able to open it.  If you are\n" \
 "    using a base, then a value of zero will use the value from base.\n" \
 "\n" \
+":param iVersion: Version number for the `sqlite3_vfs <https://sqlite.org/c3ref/vfs.html>`__\n" \
+"    structure.\n" \
+"\n" \
+":param exclude: A set of strings, naming the methods that will be filled in with ``NULL`` in the `sqlite3_vfs\n" \
+"    <https://sqlite.org/c3ref/vfs.html>`__  structure to indicate to SQLite that they are\n" \
+"    not supported.\n" \
+"\n" \
 ":raises ValueError: If *base* is not *None* and the named vfs is not\n" \
 "  currently registered.\n" \
 "\n" \
@@ -3046,9 +3053,10 @@
 "  * `sqlite3_vfs_register <https://sqlite.org/c3ref/vfs_find.html>`__\n" \
 "  * `sqlite3_vfs_find <https://sqlite.org/c3ref/vfs_find.html>`__\n" 
 
-#define VFS_init_makedefault_MSG  "argument 'makedefault' of VFS.__init__(name: str, base: Optional[str] = None, makedefault: bool = False, maxpathname: int = 1024)" 
+#define VFS_init_makedefault_MSG  "argument 'makedefault' of VFS.__init__(name: str, base: Optional[str] = None, makedefault: bool = False, maxpathname: int = 1024, *, iVersion: int = 3, exclude: Optional[set[str]] = None)" 
+#define VFS_init_exclude_MSG  "argument 'exclude' of VFS.__init__(name: str, base: Optional[str] = None, makedefault: bool = False, maxpathname: int = 1024, *, iVersion: int = 3, exclude: Optional[set[str]] = None)" 
 
-#define VFS_init_USAGE "VFS.__init__(name: str, base: Optional[str] = None, makedefault: bool = False, maxpathname: int = 1024)"
+#define VFS_init_USAGE "VFS.__init__(name: str, base: Optional[str] = None, makedefault: bool = False, maxpathname: int = 1024, *, iVersion: int = 3, exclude: Optional[set[str]] = None)"
 
 #define VFS_init_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
@@ -3058,6 +3066,10 @@
   assert(makedefault == 0); \
   assert(__builtin_types_compatible_p(typeof(maxpathname), int)); \
   assert(maxpathname == (1024)); \
+  assert(__builtin_types_compatible_p(typeof(iVersion), int)); \
+  assert(iVersion == (3)); \
+  assert(__builtin_types_compatible_p(typeof(exclude), PyObject *)); \
+  assert(exclude == NULL); \
 } while(0)
 
 

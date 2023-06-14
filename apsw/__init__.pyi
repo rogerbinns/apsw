@@ -2391,7 +2391,7 @@ class VFS:
         `PyErr_Display`."""
         ...
 
-    def __init__(self, name: str, base: Optional[str] = None, makedefault: bool = False, maxpathname: int = 1024):
+    def __init__(self, name: str, base: Optional[str] = None, makedefault: bool = False, maxpathname: int = 1024, *, iVersion: int = 3, exclude: Optional[set[str]] = None):
         """:param name: The name to register this vfs under.  If the name
             already exists then this vfs will replace the prior one of the
             same name.  Use :meth:`apsw.vfsnames` to get a list of
@@ -2408,6 +2408,13 @@ class VFS:
             represented in UTF-8.  If a pathname is passed in longer than
             this value then SQLite will not`be able to open it.  If you are
             using a base, then a value of zero will use the value from base.
+
+        :param iVersion: Version number for the `sqlite3_vfs <https://sqlite.org/c3ref/vfs.html>`__
+            structure.
+
+        :param exclude: A set of strings, naming the methods that will be filled in with ``NULL`` in the `sqlite3_vfs
+            <https://sqlite.org/c3ref/vfs.html>`__  structure to indicate to SQLite that they are
+            not supported.
 
         :raises ValueError: If *base* is not *None* and the named vfs is not
           currently registered.

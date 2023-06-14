@@ -6007,6 +6007,13 @@ class APSW(unittest.TestCase):
 
         # some coverage related stuff
         self.assertRaises(TypeError, apsw.VFSFile, "", 3, [0, 0])
+        self.assertRaises(TypeError, apsw.VFS, "ignored", base=7)
+        self.assertRaises(TypeError, apsw.VFS, 7)
+        self.assertRaises(TypeError, apsw.VFS, "ignored", maxpathname="seven")
+        self.assertRaises(TypeError, apsw.VFS, "ignored", iVersion="seven")
+        self.assertRaises(ValueError, apsw.VFS, "ignored", iVersion=-2)
+        self.assertRaises(TypeError, apsw.VFS, "ignored", exclude=2)
+        self.assertNotIn("ignored", apsw.vfsnames())
 
         # Check basic functionality and inheritance - make an obfuscated provider
 
@@ -6060,6 +6067,32 @@ class APSW(unittest.TestCase):
             self.assertEqual(one[96:], two[96:])
 
         compare(orig, encryptme(obfu))
+
+        # versioning and exlcudes
+        meth_names = {}
+        for ver in (1, 2, 3):
+            name = f"foo{ ver }"
+            v = apsw.VFS(name, iVersion=ver)
+            registered = [vfs for vfs in apsw.vfs_details() if vfs["zName"] == name][0]
+            assert registered["iVersion"] == ver
+            for k in registered:
+                if k.startswith("x") and k not in meth_names:
+                    meth_names[k] = ver
+
+        for ver in (1,2,3):
+            name = f"bar{ ver }"
+            exclude = set(random.sample(list(meth_names.keys()), 3))
+            v = apsw.VFS(name, iVersion=ver, exclude=exclude)
+            registered = [vfs for vfs in apsw.vfs_details() if vfs["zName"] == name][0]
+            assert registered["iVersion"] == ver
+            for name in registered:
+                if not name.startswith("x"):
+                    continue
+                assert meth_names[name] <=ver
+                if name in exclude:
+                    assert registered[name] == 0
+                else:
+                    assert registered[name] != 0
 
         # helper routines
         self.assertRaises(TypeError, apsw.exceptionfor, "three")

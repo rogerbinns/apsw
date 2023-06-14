@@ -57,6 +57,30 @@ typedef struct
 {
     PyObject **result;
     const char *message;
+} argcheck_Optional_set_param;
+
+static int
+argcheck_Optional_set(PyObject *object, void *vparam)
+{
+    argcheck_Optional_set_param *param = (argcheck_Optional_set_param *)vparam;
+    if (Py_IsNone(object))
+    {
+        *param->result = NULL;
+        return 1;
+    }
+    if (!PySet_Check(object))
+    {
+        PyErr_Format(PyExc_TypeError, "Function argument expected a set: %s", param->message);
+        return 0;
+    }
+    *param->result = object;
+    return 1;
+}
+
+typedef struct
+{
+    PyObject **result;
+    const char *message;
 } argcheck_List_int_int_param;
 
 /* Doing this here avoids cleanup in the calling function */

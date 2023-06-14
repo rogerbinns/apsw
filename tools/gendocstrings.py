@@ -635,6 +635,12 @@ def do_argparse(item):
             if param["default"]:
                 breakpoint()
                 pass
+        elif param["type"] == "Optional[set[str]]":
+            type = "PyObject *"
+            kind = "O&"
+            args = ["argcheck_Optional_set"] + args
+            assert param["default"] == "None"
+            default_check = f"{ pname } == NULL"
         else:
             assert False, f"Don't know how to handle type for { item ['name'] } param { param }"
 
