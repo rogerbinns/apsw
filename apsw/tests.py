@@ -6088,7 +6088,7 @@ class APSW(unittest.TestCase):
                 if k.startswith("x") and k not in meth_names:
                     meth_names[k] = ver
 
-        for ver in (1,2,3):
+        for ver in (1, 2, 3):
             name = f"bar{ ver }"
             exclude = set(random.sample(list(meth_names.keys()), 3))
             v = apsw.VFS(name, iVersion=ver, exclude=exclude)
@@ -6097,7 +6097,7 @@ class APSW(unittest.TestCase):
             for name in registered:
                 if not name.startswith("x"):
                     continue
-                assert meth_names[name] <=ver
+                assert meth_names[name] <= ver
                 if name in exclude:
                     assert registered[name] == 0
                 else:
@@ -6466,7 +6466,7 @@ class APSW(unittest.TestCase):
                 return "three"
 
             def xCurrentTimeInt645(self):
-                return 2 ** 65
+                return 2**65
 
             def xCurrentTimeCorrect(self):
                 # actual correct implementation http://stackoverflow.com/questions/466321/convert-unix-timestamp-to-julian
@@ -9908,7 +9908,7 @@ SELECT group_concat(rtrim(t),x'0a') FROM a;
         import multiprocessing
         val = multiprocessing.Value("i", 0)
         p = multiprocessing.Process(target=childtest, args=[val] + list(child))
-        self.suppressWarning("DeprecationWarning") # we are deliberately forking
+        self.suppressWarning("DeprecationWarning")  # we are deliberately forking
         p.start()
         p.join()
         self.assertEqual(1, val.value)  # did child complete ok?
