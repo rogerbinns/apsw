@@ -146,12 +146,12 @@ connection.execute("insert into point values(2, 2, 2)")
 connection.execute("insert into point values(3, 3, 3)")
 connection.execute("insert into point values(4, 4, 4)")
 
-# You can use BEGIN / END to manually make a transaction
+# You can use BEGIN / COMMIT to manually make a transaction
 connection.execute("BEGIN")
 connection.execute("insert into point values(2, 2, 2)")
 connection.execute("insert into point values(3, 3, 3)")
 connection.execute("insert into point values(4, 4, 4)")
-connection.execute("END")
+connection.execute("COMMIT")
 
 # Or use `with` that does it automatically
 with connection:

@@ -77,7 +77,7 @@ If you do nothing, then each statement is a single transaction::
    db.execute("INSERT ...")
    db.execute("INSERT ...")
 
-You can use BEGIN/END to set the transaction boundary::
+You can use BEGIN/COMMIT to set the transaction boundary::
 
    # this will be one transaction
    db.execute("BEGIN")
