@@ -9,6 +9,7 @@ import os
 import glob
 import inspect
 import atexit
+import random
 
 import tempfile
 
@@ -234,6 +235,9 @@ def exercise(example_code, expect_exception):
 
     con.drop_modules(["something", "vtable", "something else"])
 
+    con.setprofile(lambda: 1)
+    con.setprofile(None)
+
     # this is to work MakeSqliteMsgFromPyException
     def meth(*args):
         raise apsw.SchemaChangeError("a" * 16384)
@@ -359,6 +363,18 @@ def exercise(example_code, expect_exception):
     del con
     if expect_exception:
         return
+
+    vname = "foo"
+    v = apsw.VFS(vname, iVersion=3)
+    registered = [vfs for vfs in apsw.vfs_details() if vfs["zName"] == vname][0]
+    meth_names = [n for n in registered if n.startswith("x")]
+    for ver in (1,2,3):
+        v = apsw.VFS(f"{vname}{ver}", exclude=set(random.sample(meth_names, 5)))
+        apsw.vfs_details()
+        try:
+            v.xCurrentTime()
+        except Exception:
+            pass
 
     class MYVFS(apsw.VFS):
 

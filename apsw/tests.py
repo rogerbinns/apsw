@@ -6039,7 +6039,7 @@ class APSW(unittest.TestCase):
             def __init__(self, vfsname="obfu", basevfs=""):
                 self.vfsname = vfsname
                 self.basevfs = basevfs
-                apsw.VFS.__init__(self, self.vfsname, self.basevfs)
+                apsw.VFS.__init__(self, self.vfsname, self.basevfs, exclude=None)
 
             def xOpen(self, name, flags):
                 return ObfuscatedVFSFile(self.basevfs, name, flags)
@@ -6218,8 +6218,8 @@ class APSW(unittest.TestCase):
             def init1(self):
                 super(TestVFS, self).__init__("apswtest")
 
-            def init99(self, name="apswtest", base=""):
-                super(TestVFS, self).__init__(name, base)
+            def init99(self, name="apswtest", base="", **kwargs):
+                super(TestVFS, self).__init__(name, base, **kwargs)
 
             def xDelete1(self, name, syncdir):
                 super(TestVFS, self).xDelete(".", False)
@@ -6742,7 +6742,11 @@ class APSW(unittest.TestCase):
         gc.collect()
         TestVFS.__init__ = TestVFS.init99
         vfs = TestVFS()
-
+        vfs_notime64_base = TestVFS(name="apswtest_notime64_base", exclude={"xCurrentTimeInt64"})
+        vfs_notime64_base.xCurrentTime = lambda *args: 3.1415
+        vfs_notime64 = TestVFS(name="apswtest_notime64", base="apswtest_notime64_base", exclude={"xCurrentTimeInt64"})
+        self.assertIn("apswtest", apsw.vfsnames())
+        self.assertIn("apswtest_notime64", apsw.vfsnames())
         # Should work without any overridden methods
         testdb()
 
@@ -6924,30 +6928,30 @@ class APSW(unittest.TestCase):
         testtimeout = False
 
         ## xCurrentTime / xCurrentTimeInt64
-        # The Int64 version is usually called.  We set both here
         self.assertRaises(TypeError, vfs.xCurrentTime, "three")
         self.assertRaises(TypeError, vfs.xCurrentTimeInt64, "three")
-        TestVFS.xCurrentTime = TestVFS.xCurrentTime1
-        TestVFS.xCurrentTimeInt64 = TestVFS.xCurrentTimeInt641
-        self.assertRaisesUnraisable(TypeError, testdb)
-        TestVFS.xCurrentTime = TestVFS.xCurrentTime2
-        TestVFS.xCurrentTimeInt64 = TestVFS.xCurrentTimeInt642
-        self.assertRaisesUnraisable(ZeroDivisionError, testdb)
-        TestVFS.xCurrentTime = TestVFS.xCurrentTime3
-        TestVFS.xCurrentTimeInt64 = TestVFS.xCurrentTimeInt643
-        self.assertRaisesUnraisable(TypeError, testdb)
-        TestVFS.xCurrentTime = TestVFS.xCurrentTime4
-        TestVFS.xCurrentTimeInt64 = TestVFS.xCurrentTimeInt644
-        self.assertRaisesUnraisable(TypeError, testdb)
-        TestVFS.xCurrentTime = TestVFS.xCurrentTime5
-        TestVFS.xCurrentTimeInt64 = TestVFS.xCurrentTimeInt645
-        self.assertMayRaiseUnraisable(OverflowError, testdb)
-        TestVFS.xCurrentTime = TestVFS.xCurrentTime99
-        TestVFS.xCurrentTimeInt64 = TestVFS.xCurrentTimeInt6499
-        self.assertMayRaiseUnraisable(apsw.VFSNotImplementedError, testdb)
-        TestVFS.xCurrentTime = TestVFS.xCurrentTimeCorrect
-        TestVFS.xCurrentTimeInt64 = TestVFS.xCurrentTimeInt6499
-        testdb()
+        for vname in "apswtest", "apswtest_notime64":
+            TestVFS.xCurrentTime = TestVFS.xCurrentTime1
+            TestVFS.xCurrentTimeInt64 = TestVFS.xCurrentTimeInt641
+            self.assertRaisesUnraisable(TypeError, testdb, vfsname=vname)
+            TestVFS.xCurrentTime = TestVFS.xCurrentTime2
+            TestVFS.xCurrentTimeInt64 = TestVFS.xCurrentTimeInt642
+            self.assertRaisesUnraisable(ZeroDivisionError, testdb, vfsname=vname)
+            TestVFS.xCurrentTime = TestVFS.xCurrentTime3
+            TestVFS.xCurrentTimeInt64 = TestVFS.xCurrentTimeInt643
+            self.assertRaisesUnraisable(TypeError, testdb, vfsname=vname)
+            TestVFS.xCurrentTime = TestVFS.xCurrentTime4
+            TestVFS.xCurrentTimeInt64 = TestVFS.xCurrentTimeInt644
+            self.assertRaisesUnraisable(TypeError, testdb, vfsname=vname)
+            TestVFS.xCurrentTime = TestVFS.xCurrentTime5
+            TestVFS.xCurrentTimeInt64 = TestVFS.xCurrentTimeInt645
+            self.assertMayRaiseUnraisable(OverflowError, testdb, vfsname=vname)
+            TestVFS.xCurrentTime = TestVFS.xCurrentTime99
+            TestVFS.xCurrentTimeInt64 = TestVFS.xCurrentTimeInt6499
+            self.assertMayRaiseUnraisable(apsw.VFSNotImplementedError, testdb, vfsname=vname)
+            TestVFS.xCurrentTime = TestVFS.xCurrentTimeCorrect
+            TestVFS.xCurrentTimeInt64 = TestVFS.xCurrentTimeInt6499
+            testdb(vfsname=vname)
 
         ## xGetLastError
         # We can't directly test because the methods are called as side effects
