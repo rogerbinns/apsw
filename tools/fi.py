@@ -238,6 +238,11 @@ def exercise(example_code, expect_exception):
     con.setprofile(lambda: 1)
     con.setprofile(None)
 
+    # has to be done on a real file not memory db
+    con2=apsw.Connection("/tmp/fitesting")
+    con2.pragma("user_version", 77)
+    con2.read("main", 0, 0, 256_000)
+
     # this is to work MakeSqliteMsgFromPyException
     def meth(*args):
         raise apsw.SchemaChangeError("a" * 16384)

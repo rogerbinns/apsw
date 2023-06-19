@@ -4723,6 +4723,7 @@ Connection_read(Connection *self, PyObject *args, PyObject *kwds)
     goto error;
   }
   PYSQLITE_VOID_CALL(res = fp->pMethods->xRead(fp, PyBytes_AS_STRING(bytes), amount, offset));
+  APSW_FAULT_INJECT(ConnectionReadError, , res=SQLITE_IOERR_CORRUPTFS);
   if (res != SQLITE_OK && res != SQLITE_IOERR_SHORT_READ)
   {
     SET_EXC(res, NULL);

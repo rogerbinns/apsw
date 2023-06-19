@@ -465,9 +465,18 @@ class APSW(unittest.TestCase):
         self.assertRaises(OverflowError, self.db.filecontrol, "main", 1001, 45236748972389749283)
         self.assertEqual(self.db.filecontrol("main", 1001, 25), False)
         self.assertRaises(apsw.SQLError, self.db.read, "kljlkjlkj", 0, 0, 10)
+        self.assertRaises(TypeError, self.db.read, "kljlkjlkj", 0, deliberate="error")
         self.assertRaises(ValueError, self.db.read, "kljlkjlkj", 0, -1, -1)
         self.assertRaises(ValueError, self.db.read, "kljlkjlkj", 0, 0, -1)
         self.assertRaises(ValueError, self.db.read, "main", 77, 0, 1)
+        self.assertRaises(ValueError, self.db.read, "main", 0, -1, 1)
+
+        # Connection.read fails on memory databases
+        db2 = apsw.Connection("")
+        db2.pragma("user_version", 2)
+        self.assertRaises(apsw.SQLError, db2.read, "main", 0, 0, 16384)
+        db2.close()
+
         self.assertEqual((False, b"\0" * 10), self.db.read("main", 0, 50 * 1024 * 1024, 10))
         # db and journal are empty unless we do something
         self.db.execute("create table foo(x); begin immediate; insert into foo values(3); insert into foo values(4)")
@@ -9318,6 +9327,12 @@ shell.write(shell.stdout, "hello world\\n")
             gc.collect()
 
         self.assertRaisesUnraisable(apsw.ReadOnlyError, f)
+
+        ## ConnectionReadError
+        self.db.pragma("application_id", 0xdeadbeef)
+        self.db.read("main", 0, 0, 1)
+        apsw.faultdict["ConnectionReadError"] = True
+        self.assertRaises(apsw.IOError, self.db.read, "main", 0, 0, 1)
 
         ### vfs routines
 
