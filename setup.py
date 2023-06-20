@@ -282,8 +282,11 @@ class fetch(Command):
             import zlib
             tar = tarfile.open("nonexistentname to keep old python happy", 'r', data)
             configmember = None
+            kwargs = {}
+            if sys.version_info >= (3, 11, 4):
+                kwargs["filter"] = "tar"
             for member in tar.getmembers():
-                tar.extract(member)
+                tar.extract(member, **kwargs)
                 # find first file named configure
                 if not configmember and member.name.endswith("/configure"):
                     configmember = member
