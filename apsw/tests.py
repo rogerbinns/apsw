@@ -10053,6 +10053,10 @@ def setup():
             if name.startswith("testExt"):
                 delattr(APSW, name)
 
+    # earlier py versions make recursion error fatal
+    if sys.version_info < (3, 9):
+        del APSW.testIssue425
+
     forkcheck = False
     if hasattr(apsw, "fork_checker") and hasattr(os, "fork") and platform.python_implementation() != "PyPy":
         try:

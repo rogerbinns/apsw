@@ -57,7 +57,7 @@ def dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug, sysconfig):
     run(f"""(
             set -ex ;
             cd { workdir } ;
-            { pybin } -m ensurepip ;
+            { pybin } -m ensurepip || true ;
             { pybin } -m pip install --upgrade --upgrade-strategy eager pip wheel setuptools ;
             env LD_LIBRARY_PATH={ pylib } { pybin } -bb -Werror { pyflags } setup.py fetch \
                 --version={ sqlitever } --all build_test_extension build_ext --inplace --force --enable-all-extensions \
@@ -65,7 +65,7 @@ def dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug, sysconfig):
             cp tools/setup-pypi.cfg setup.apsw ;
             { pybin } -m pip wheel -v . ;
             { pybin } -m pip install --force-reinstall --find-links=. apsw ;
-            cd pyinst ; cp ../testextension.sqlext . ;
+            mkdir clean ; cd clean ;  cp ../testextension.sqlext . ;
             { pybin } -m apsw.tests
             ) >{ logf }  2>&1""")
 
