@@ -32,7 +32,7 @@ import apsw.shell
 
 
 def print_version_info():
-    print("                Python ", sys.executable, sys.version_info)
+    print("                Python ", sys.executable, sys.version_info, " ".join(platform.architecture()))
     print("Testing with APSW file ", apsw.__file__)
     print("          APSW version ", apsw.apswversion())
     print("    SQLite lib version ", apsw.sqlitelibversion())
