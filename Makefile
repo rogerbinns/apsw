@@ -99,7 +99,7 @@ PYCOVERAGEOPTS=--source apsw --append
 pycoverage:  ## Coverage of the Python code
 	-rm -rf .coverage htmlcov
 	$(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw.tests
-	$(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw ":memory:" .quit
+	$(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw ":memory:" .exit
 	$(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw.speedtest --apsw --sqlite3
 	$(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw.trace -o /dev/null --sql --rows --timestamps --thread example-code.py >/dev/null
 	$(PYTHON) -m coverage report -m
