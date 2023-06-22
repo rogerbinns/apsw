@@ -10054,7 +10054,7 @@ def setup():
                 delattr(APSW, name)
 
     # earlier py versions make recursion error fatal
-    if sys.version_info < (3, 9):
+    if sys.version_info < (3, 10):
         del APSW.testIssue425
 
     forkcheck = False
