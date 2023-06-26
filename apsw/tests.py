@@ -7759,6 +7759,8 @@ class APSW(unittest.TestCase):
         self.assertEqual(s.header, False)
         s.process_args(["--noheader", "-header", "-noheader", "--header"])
         self.assertEqual(s.header, True)
+        s.process_args(["-no-colour", "--nocolor"])
+        self.assertEqual(s.colour_scheme, "off")
         # did they actually turn on?
         isempty(fh[1])
         isempty(fh[2])
@@ -8164,6 +8166,24 @@ class APSW(unittest.TestCase):
         self.assertTrue('"a"-"b"-"c"-"d"-"e"' in get(fh[1]))
         testnasty()
 
+        ###
+        ### Output formats - box/qbox/table
+        ###
+        if hasattr(s, "output_box"):
+            # ensure others error
+            reset()
+            cmd(".mode tcl --foo bar")
+            self.assertRaises(apsw.shell.Shell.Error, s.cmdloop)
+            for mode in "box", "qbox", "table":
+                reset()
+                cmd(f".mode { mode } --no-unicode --word-wrap --width 65")
+                s.cmdloop()
+                isempty(fh[1])
+                isempty(fh[2])
+                testnasty()
+
+
+
         # What happens if db cannot be opened?
         s.process_args(args=["/"])
         reset()
@@ -8347,6 +8367,25 @@ class APSW(unittest.TestCase):
         s.cmdloop()
         self.assertTrue("3" in get(fh[1]))
         self.assertTrue("4" in get(fh[1]))
+
+        ###
+        ### Commands - changes
+        ###
+        reset()
+        cmd(".changes on\nselect 3;")
+        s.cmdloop()
+        isempty(fh[2])
+        self.assertNotIn("changes:", get(fh[1]))
+        reset()
+        cmd("create table testchange(x); insert into testchange values(3);")
+        s.cmdloop()
+        isempty(fh[2])
+        self.assertIn("changes:", get(fh[1]))
+        reset()
+        cmd(".changes off\ninsert into testchange values(4);")
+        s.cmdloop()
+        isempty(fh[2])
+        self.assertNotIn("changes:", get(fh[1]))
 
         ###
         ### Commands - databases
@@ -8702,9 +8741,28 @@ insert into xxblah values(3);
             isnotempty(fh[2])
 
         ###
-        ### Command explain and header are tested above
+        ### Explain auto format
         ###
-        # pass
+        reset()
+        cmd(".mode tcl\n.header off\nselect 3;")
+        s.cmdloop()
+        isempty(fh[2])
+        self.assertIn('"3"', get(fh[1]))
+        reset()
+        cmd("explain select 3;")
+        s.cmdloop()
+        isempty(fh[2])
+        self.assertIn('opcode', get(fh[1]))
+        reset()
+        cmd("explain query plan select 3;")
+        s.cmdloop()
+        isempty(fh[2])
+        self.assertIn('detail', get(fh[1]))
+        reset()
+        cmd("select 3;")
+        s.cmdloop()
+        isempty(fh[2])
+        self.assertIn('"3"', get(fh[1]))
 
         ###
         ### Command find
