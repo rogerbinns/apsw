@@ -97,7 +97,7 @@ coverage:  src/faultinject.h ## Coverage of the C code
 PYCOVERAGEOPTS=--source apsw --append
 
 pycoverage:  ## Coverage of the Python code
-	-rm -rf .coverage htmlcov
+	-rm -rf .coverage htmlcov dbfile
 	$(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw.tests
 	$(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw ":memory:" .exit
 	$(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw.speedtest --apsw --sqlite3
