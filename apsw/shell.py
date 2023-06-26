@@ -1158,6 +1158,11 @@ Enter ".help" for instructions
         finally:
             self.pop_output()
 
+    _dbconfig_ignore = {
+        "SQLITE_DBCONFIG_MAINDBNAME", "SQLITE_DBCONFIG_LOOKASIDE", "SQLITE_DBCONFIG_MAX",
+        "SQLITE_DBCONFIG_STMT_SCANSTATUS"
+    }
+
     def command_dbconfig(self, cmd):
         """dbconfig ?NAME VALUE?: Show all dbconfig, or set a specific one
 
@@ -1166,14 +1171,10 @@ Enter ".help" for instructions
 
             .dbconfig enable_fkey 1
         """
-        ignore = {
-            "SQLITE_DBCONFIG_MAINDBNAME", "SQLITE_DBCONFIG_LOOKASIDE", "SQLITE_DBCONFIG_MAX",
-            "SQLITE_DBCONFIG_STMT_SCANSTATUS"
-        }
         if len(cmd) == 0:
             outputs = {}
             for k in apsw.mapping_db_config:
-                if type(k) is not str or k in ignore:
+                if type(k) is not str or k in self._dbconfig_ignore:
                     continue
                 pretty = k[len("SQLITE_DBCONFIG_"):].lower()
                 outputs[pretty] = self.db.config(getattr(apsw, k), -1)
@@ -3170,6 +3171,11 @@ Enter ".help" for instructions
             completions = self._output_modes
         elif t[0] == "help":
             completions = [v[1:] for v in self._builtin_commands] + ["all"]
+        elif t[0] == "dbconfig":
+            completions = [
+                v[len("SQLITE_DBCONFIG_"):].lower() for v in apsw.mapping_db_config
+                if isinstance(v, str) and v not in self._dbconfig_ignore
+            ]
         elif t[0] == "parameter":
             if len(t) == 1 or (len(t) == 2 and token):
                 completions = ["clear", "list", "unset ", "set "]
