@@ -106,7 +106,7 @@ jobs:
         ls -l dist/
 
     - name: Publish package
-      uses: pypa/gh-action-pypi-publish@v1.8.6
+      uses: pypa/gh-action-pypi-publish@v1.8.7
       with:
        repository-url: https://test.pypi.org/legacy/
 
