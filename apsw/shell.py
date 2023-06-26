@@ -416,7 +416,7 @@ OPTIONS include:
                     op.append("\\n")
                 elif c == "\t":
                     op.append("\\t")
-                elif c == "/":  # yes you have to escape forward slash for some reason
+                elif c == "/":
                     op.append("\\/")
                 elif c == '"':
                     op.append("\\" + c)
@@ -440,7 +440,7 @@ OPTIONS include:
             return '"' + o + '"'
         else:
             # number of some kind
-            return '%s' % (v, )
+            return str(v)
 
     def _fmt_python(self, v):
         "Format as python literal"
