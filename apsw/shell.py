@@ -21,6 +21,7 @@ import base64
 import argparse
 import contextlib
 import traceback
+import code
 
 from typing import TextIO, Optional
 
@@ -2410,6 +2411,21 @@ Enter ".help" for instructions
         self.prompt = self.fixup_backslashes(cmd[0])
         if len(cmd) == 2:
             self.moreprompt = self.fixup_backslashes(cmd[1])
+
+    def command_py(self, cmd):
+        """py ?PYTHON?: Starts a python REPL or runs the Python statement provided
+
+        The namespace provided includes ``apsw`` for the module, ``shell`` for this
+        shell and ``db`` for the current database.
+        """
+        vars = {"shell": self, "apsw": apsw, "db": self.db}
+        interp = code.InteractiveConsole(locals = vars)
+        if cmd:
+            res = interp.runsource(" ".join(shlex.quote(c) for c in cmd))
+            if res:
+                self.write(self.stderr, "Incomplete Python statement")
+        else:
+            interp.interact(exitmsg="Returning to APSW shell")
 
     def command_read(self, cmd):
         """read FILENAME: Processes SQL and commands in FILENAME (or Python if FILENAME ends with .py)
