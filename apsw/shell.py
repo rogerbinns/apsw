@@ -1014,9 +1014,9 @@ Enter ".help" for instructions
         if len(cmd) > 3 and cmd[0] == "parameter" and cmd[1] == "set":
             pos = command.index(cmd[2], command.index("set") + 4) + len(cmd[2]) + 1
             cmd = cmd[:3] + [command[pos:]]
-        # special handling for shell because we want to preserve the text exactly
-        if cmd[0] == "shell":
-            rest = command[command.index("shell") + 6:].strip()
+        # special handling for shell / py because we want to preserve the text exactly
+        if cmd[0] in {"shell", "py"}:
+            rest = command[command.index(cmd[0]) + len(cmd[0]):].strip()
             if rest:
                 cmd = [cmd[0], rest]
         res = fn(cmd[1:])
@@ -2421,7 +2421,8 @@ Enter ".help" for instructions
         vars = {"shell": self, "apsw": apsw, "db": self.db}
         interp = code.InteractiveConsole(locals = vars)
         if cmd:
-            res = interp.runsource(" ".join(shlex.quote(c) for c in cmd))
+            assert len(cmd) == 1
+            res = interp.runsource(cmd[0])
             if res:
                 self.write(self.stderr, "Incomplete Python statement")
         else:
