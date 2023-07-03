@@ -453,11 +453,17 @@ def dbinfo(db: apsw.Connection, schema: str = "main") -> tuple[DatabaseFileInfo 
 
     Based on the `file format description <https://www.sqlite.org/fileformat2.html>`__.  The
     headers are read using :meth:`apsw.Connection.read` so you see inside encrypted, compressed,
-    zip etc formats. not necessarily the actual on disk file."""
+    zip etc formats. not necessarily the actual on disk file.
+
+    Memory databases return `None` for both.
+    """
 
     dbinfo = journalinfo = None
 
-    ok, header_page = db.read(schema, 0, 0, 128)
+    try:
+        ok, header_page = db.read(schema, 0, 0, 128)
+    except apsw.SQLError:
+        return dbinfo, journalinfo
 
     be_int = functools.partial(int.from_bytes, byteorder="big", signed=False)
 
