@@ -8417,6 +8417,20 @@ class APSW(unittest.TestCase):
             self.assertTrue(i not in get(fh[1]))
 
         ###
+        ### Command - dbconfig
+        ###
+        reset()
+        cmd(".dbconfig")
+        s.cmdloop()
+        isempty(fh[2])
+        self.assertIn("trigger_eqp:", get(fh[1]))
+        reset()
+        self.assertFalse(s.db.config(apsw.SQLITE_DBCONFIG_TRIGGER_EQP, -1))
+        cmd(".dbconfig trigger_eqp 1")
+        s.cmdloop()
+        isempty(fh[2])
+        self.assertTrue(s.db.config(apsw.SQLITE_DBCONFIG_TRIGGER_EQP, -1))
+
         ### Commands - dump
         ###
         reset()
