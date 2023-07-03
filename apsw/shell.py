@@ -1211,20 +1211,21 @@ Enter ".help" for instructions
         def total(t):
             return self.db.execute(f"select count(*) from [{ schema }].sqlite_schema where type='{ t }'").get
 
-        outputs = {
-            "number of tables": total("table"),
-            "number of indexes": total("index"),
-            "number of triggers": total("trigger"),
-            "number of views": total("view"),
-            "schema size": int(self.db.execute(f"select total(length(sql)) from [{ schema }].sqlite_schema").get),
-        }
-        for i in apsw.ext.dbinfo(self.db, schema):
-            if not i:
-                continue
-            outputs.update(dataclasses.asdict(i))
+        outputs = [
+            ("number of tables", total("table")),
+            ("number of indexes", total("index")),
+            ("number of triggers", total("trigger")),
+            ("number of views", total("view")),
+            ("schema size", int(self.db.execute(f"select total(length(sql)) from [{ schema }].sqlite_schema").get)),
+        ]
+        for i, info in enumerate(apsw.ext.dbinfo(self.db, schema)):
+            if i == 1:
+                outputs.append(("journal mode", self.db.pragma("journal_mode")))
+            if info:
+                outputs.extend(v for v in dataclasses.asdict(info).items())
 
-        w = max(len(k) for k in outputs.keys())
-        for k, v in outputs.items():
+        w = max(len(k) for k,v in outputs)
+        for k, v in outputs:
             self.write(self.stdout, " " * (w - len(k)))
             self.write(self.stdout, k + ":  ")
             self.write(self.stdout, self.colour.colour_value(v, apsw.format_sql_value(v)))
