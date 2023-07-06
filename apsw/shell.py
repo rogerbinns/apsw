@@ -1223,8 +1223,15 @@ Enter ".help" for instructions
                 outputs.append(("journal mode", self.db.pragma("journal_mode")))
             if info:
                 outputs.extend(v for v in dataclasses.asdict(info).items())
+            else:
+                if i == 0:
+                    outputs.append(("filename", self.db.filename))
+                else:
+                    outputs.append(
+                        ("filename",
+                         self.db.filename_wal if self.db.pragma("journal_mode") == "wal" else self.db.filename_journal))
 
-        w = max(len(k) for k,v in outputs)
+        w = max(len(k) for k, v in outputs)
         for k, v in outputs:
             self.write(self.stdout, " " * (w - len(k)))
             self.write(self.stdout, k + ":  ")
@@ -2420,7 +2427,7 @@ Enter ".help" for instructions
         shell and ``db`` for the current database.
         """
         vars = {"shell": self, "apsw": apsw, "db": self.db}
-        interp = code.InteractiveConsole(locals = vars)
+        interp = code.InteractiveConsole(locals=vars)
         if cmd:
             assert len(cmd) == 1
             res = interp.runsource(cmd[0])
