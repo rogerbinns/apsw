@@ -481,7 +481,7 @@ def dbinfo(db: apsw.Connection,
 
     def text_encoding(b: bytes) -> str:
         v = be_int(b)
-        return {1: "UTF-8", 2: "UTF-16le", 3: "UTF-16be"}.get(v, f"<< INVALID VALUE { v } >>")
+        return {0: "(pending)", 1: "UTF-8", 2: "UTF-16le", 3: "UTF-16be"}.get(v, f"<< INVALID VALUE { v } >>")
 
     if ok:
         kw = {"filename": db.filename}
