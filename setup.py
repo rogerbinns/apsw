@@ -844,6 +844,7 @@ if __name__ == '__main__':
           version=version,
           description="Another Python SQLite Wrapper",
           long_description=pathlib.Path("README.rst").read_text(encoding="utf8"),
+          long_description_content_type="text/x-rst",
           author="Roger Binns",
           author_email="rogerb@rogerbinns.com",
           url="https://github.com/rogerbinns/apsw/",
