@@ -9260,6 +9260,32 @@ shell.write(shell.stdout, "hello world\\n")
         # timer is tested earlier
 
         ###
+        ### Command - version
+        ###
+        reset()
+        cmd(".version")
+        s.cmdloop()
+        isempty(fh[2])
+        self.assertIn(apsw.apswversion(), get(fh[1]))
+
+        ###
+        ### Command - vfsname / vfsinfo / vfslist
+        ###
+        name = s.db.open_vfs
+        reset()
+        cmd(".vfsname")
+        s.cmdloop()
+        self.assertEqual(name, get(fh[1]).strip())
+        reset()
+        cmd(".vfsinfo")
+        s.cmdloop()
+        self.assertIn(name, get(fh[1]))
+        reset()
+        cmd(".vfslist")
+        s.cmdloop()
+        self.assertIn(name, get(fh[1]))
+
+        ###
         ### Command width
         ###
         # does it work?
