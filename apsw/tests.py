@@ -9067,6 +9067,18 @@ insert into xxblah values(3);
             self.assertTrue("1" in get(fh[1]))
 
         ###
+        ### Command - log
+        ###
+        reset()
+        cmd(".log on\n+;")
+        s.cmdloop()
+        self.assertIn("SQLITE_ERROR", get(fh[2]))
+        reset()
+        cmd(".log off\n+;")
+        s.cmdloop()
+        self.assertNotIn("SQLITE_ERROR", get(fh[2]))
+
+        ###
         ### Command - mode
         ###
         # already thoroughly tested in code above
