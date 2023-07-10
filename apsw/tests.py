@@ -9171,6 +9171,21 @@ shell.write(shell.stdout, "hello world\\n")
         # separator done earlier
 
         ###
+        ### Command - shell
+        ###
+        reset()
+        # this uses the process stdout/err which we can't capture without heroics
+        cmd(".shell exit 1")
+        s.cmdloop()
+        self.assertIn("Exit code", get(fh[2]))
+        reset()
+        cmd(".shell %s > %s" % ("dir" if sys.platform == "win32" else "ls", os.devnull))
+        s.cmdloop()
+        # should always work on these platforms
+        if sys.platform in {"win32", "linux", "darwin"}:
+            self.assertNotIn("Exit code", get(fh[2]))
+
+        ###
         ### Command - show
         ###
         # set all settings to known values
