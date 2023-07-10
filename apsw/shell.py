@@ -2548,7 +2548,11 @@ Enter ".help" for instructions
               "encoding")
 
     def command_shell(self, cmd):
-        """shell CMD ARGS...: Run CMD ARGS in a system shell"""
+        """shell CMD ARGS...: Run CMD ARGS in a system shell
+
+        Note that output goes to the process standard output, not
+        whatever the shell .output command has configured.
+        """
         if len(cmd) == 0:
             raise self.Error("Specify command and arguments to run")
         assert len(cmd) == 1
