@@ -2425,16 +2425,29 @@ Enter ".help" for instructions
 
         The namespace provided includes ``apsw`` for the module, ``shell`` for this
         shell and ``db`` for the current database.
+
+        Using the .output command does not affect output from this command.
         """
         vars = {"shell": self, "apsw": apsw, "db": self.db}
-        interp = code.InteractiveConsole(locals=vars)
         if cmd:
             assert len(cmd) == 1
-            res = interp.runsource(cmd[0])
+            interp = code.InteractiveInterpreter(locals=vars)
+            try:
+                # we have to make sys.excepthook and sys.__excepthook__ be
+                # the same otherwise the traceback includes methods in the
+                # code module.  Ubuntu's apport messes with excepthook
+                hook = sys.excepthook
+                sys.excepthook = sys.__excepthook__
+                res = interp.runsource(cmd[0])
+            finally:
+                sys.excepthook = hook
             if res:
-                self.write(self.stderr, "Incomplete Python statement")
+                self.write(self.stderr, "Incomplete Python statement\n")
         else:
-            interp.interact(exitmsg="Returning to APSW shell")
+            # that shoiuld be locals (plural) but the method is written
+            # in singular and works due to being passed as positional
+            # argument
+            code.interact(local=vars, exitmsg="Returning to APSW shell")
 
     def command_read(self, cmd):
         """read FILENAME: Processes SQL and commands in FILENAME (or Python if FILENAME ends with .py)
