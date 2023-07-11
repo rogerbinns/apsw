@@ -9128,6 +9128,20 @@ insert into xxblah values(3);
             self.assertEqual(b4, (s.prompt, s.moreprompt))
 
         ###
+        ### Command - py
+        ###
+        reset()
+        cmd(".py None")
+        s.cmdloop()
+        isempty(fh[1])
+        isempty(fh[2])
+        reset()
+        cmd(".py [")
+        s.cmdloop()
+        self.assertIn("Incomplete", get(fh[2]))
+        # interactive use is tested interactively
+
+        ###
         ### Command read
         ###
         # pretty much thoroughly tested above
