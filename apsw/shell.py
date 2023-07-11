@@ -2426,8 +2426,11 @@ Enter ".help" for instructions
         The namespace provided includes ``apsw`` for the module, ``shell`` for this
         shell and ``db`` for the current database.
 
-        Using the .output command does not affect output from this command.
+        Using the .output command does not affect output from this command.  You
+        can write to `shell.stdout` and `shell.stderr`.
         """
+        self.stdout.flush()
+        self.stderr.flush()
         vars = {"shell": self, "apsw": apsw, "db": self.db}
         if cmd:
             assert len(cmd) == 1
@@ -2442,12 +2445,12 @@ Enter ".help" for instructions
             finally:
                 sys.excepthook = hook
             if res:
-                self.write(self.stderr, "Incomplete Python statement\n")
+                self.write(self.stderr, self.colour.error + "Incomplete Python statement\n" + self.colour.error_)
         else:
-            # that shoiuld be locals (plural) but the method is written
-            # in singular and works due to being passed as positional
+            # this should be locals (plural) but the method is written
+            # in singular and works due to being passed as a positional
             # argument
-            code.interact(local=vars, exitmsg="Returning to APSW shell")
+            code.interact(local=vars, exitmsg=self.colour.intro + "Returning to APSW shell" + self.colour.intro_)
 
     def command_read(self, cmd):
         """read FILENAME: Processes SQL and commands in FILENAME (or Python if FILENAME ends with .py)
