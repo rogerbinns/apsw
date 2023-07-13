@@ -9115,6 +9115,36 @@ insert into xxblah values(3);
             self.assertEqual(b4, s.stdout)
 
         ###
+        ### Command - parameter
+        ###
+        reset()
+        cmd("select :foo;")
+        s.cmdloop()
+        isempty(fh[1])
+        self.assertIn("No binding present for 'foo' -", get(fh[2]))
+        for val in ('orange', 'banana'):
+            reset()
+            cmd(f".parameter set foo '{ val }'\nselect $foo;")
+            s.cmdloop()
+            isempty(fh[2])
+            self.assertIn(val, get(fh[1]))
+        reset()
+        cmd(".parameter list")
+        s.cmdloop()
+        isempty(fh[2])
+        self.assertIn("banana", get(fh[1]))
+        reset()
+        cmd(".parameter unset foo\nselect $foo;")
+        s.cmdloop()
+        isempty(fh[1])
+        self.assertIn("No binding present for 'foo' -", get(fh[2]))
+        reset()
+        cmd(".parameter set bar 3\n.parameter clear\nselect $bar;")
+        s.cmdloop()
+        isempty(fh[1])
+        self.assertIn("No binding present for 'bar' -", get(fh[2]))
+
+        ###
         ### Command prompt
         ###
         # not much to test until pty testing is working
