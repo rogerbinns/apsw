@@ -1090,7 +1090,11 @@ Enter ".help" for instructions
         self.changes = self._boolean_command("changes", cmd)
 
     def command_close(self, cmd):
-        """close: Closes the current database"""
+        """close: Closes the current database
+
+        Use .open to open a database, or .connection to switch to another
+        connection
+        """
         if len(cmd):
             raise self.Error("Unexpected arguments")
         self.db.close()
