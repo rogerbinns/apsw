@@ -1115,9 +1115,11 @@ Enter ".help" for instructions
             dbs.append(c)
 
         if len(cmd) == 0:
+            co = self.colour
+            if self.db not in dbs:
+                self.write(self.stdout, co.bold + "(Current connection is closed)\n" + co.bold_)
             for i, c in enumerate(dbs):
                 sel = "*" if self.db is c else " "
-                co = self.colour
                 self.write(
                     self.stdout,
                     f"{ co.bold}{ sel }{ co.bold_} { co.vnumber }{ i: 2}{ co.vnumber_ } - ({ c.open_vfs }) \"{ co.vstring }{ c.filename }{ co.vstring_ }\"\n"
