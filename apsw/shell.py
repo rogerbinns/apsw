@@ -2277,28 +2277,34 @@ Enter ".help" for instructions
 
         Options are:
 
-        --new:  Closes amy existing connection referring to the same file
-        and deletes the database files before opening
+        --wipe   Closes any existing connections in this process referring to
+                 the same file  and deletes the database file, journals etc
+                 before opening
+        --vfs    VFS to use when opening
 
         If FILE is omitted then a memory database is opened
         """
-        new = False
+        wipe = False
+        vfs = None
         dbname = None
         c = cmd
         while c:
             p = c.pop(0)
             if p.startswith("--"):
-                if p == "--new":
-                    new = True
+                if p == "--wipe":
+                    wipe = True
+                    continue
+                if p == "--vfs":
+                    vfs = c.pop(0)
                     continue
                 raise self.Error("Unknown open param: " + p)
             if dbname is not None:
                 raise self.Error("Too many arguments: " + p)
             dbname = p
 
-        if new:
+        if wipe:
             if not dbname:
-                raise self.Error("You must specify a filename with --new")
+                raise self.Error("You must specify a filename with --wipe")
             for c in apsw.connections():
                 try:
                     if c.filename and os.path.samefile(c.filename, dbname):
@@ -2311,8 +2317,11 @@ Enter ".help" for instructions
                 except OSError:
                     pass
         self.db_references.add(self.db)
-        self._db = None
         self.dbfilename = dbname
+        self._db = apsw.Connection(self.dbfilename,
+                                   vfs=vfs,
+                                   flags=apsw.SQLITE_OPEN_URI | apsw.SQLITE_OPEN_READWRITE
+                                   | apsw.SQLITE_OPEN_CREATE)
 
     def command_output(self, cmd):
         """output FILENAME: Send output to FILENAME (or stdout)
