@@ -1117,7 +1117,7 @@ Enter ".help" for instructions
         if len(cmd) == 0:
             co = self.colour
             if self.db not in dbs:
-                self.write(self.stdout, co.bold + "(Current connection is closed)\n" + co.bold_)
+                self.write(self.stdout, co.bold + "(Current connection is closed)" + co.bold_ + "\n")
             for i, c in enumerate(dbs):
                 sel = "*" if self.db is c else " "
                 self.write(
