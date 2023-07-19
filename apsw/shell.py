@@ -2318,7 +2318,7 @@ Enter ".help" for instructions
                 except OSError:
                     pass
         self.db_references.add(self.db)
-        self.dbfilename = dbname
+        self.dbfilename = dbname if dbname is  not None else ""
         self._db = apsw.Connection(self.dbfilename,
                                    vfs=vfs,
                                    flags=apsw.SQLITE_OPEN_URI | apsw.SQLITE_OPEN_READWRITE
