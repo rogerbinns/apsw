@@ -52,10 +52,11 @@ You can use the shell directly from the command line.
   created if the file does not exist. If omitted or an empty
   string then an in-memory database is created.
   OPTIONS include:
+  
      -init filename       read/process named file
      -echo                print commands before execution
      -[no]header          turn headers on or off
-     -bail                stop after hitting an error
+     -bail                stop after hitting the first error
      -interactive         force interactive I/O
      -batch               force batch I/O
      -column              set output mode to 'column'
@@ -69,7 +70,7 @@ You can use the shell directly from the command line.
      -version             show SQLite version
      -encoding 'name'     the encoding to use for files
                           opened via .import, .read & .output
-     -nocolour            disables colour output to screen
+     -nocolour            disables interactive colour output
   
 
 .. usage-end:
@@ -193,6 +194,8 @@ close
 -----
 
 *Closes the current database*
+
+Use .open to open a database, or .connection to switch to another connection
 
 .. _shell-cmd-colour:
 .. index::
@@ -536,8 +539,11 @@ open ?OPTIONS? ?FILE?
 
 Options are:
 
---new:  Closes amy existing connection referring to the same file and deletes
-the database files before opening
+--wipe     Closes any existing connections in this process referring to
+           the same file  and deletes the database file, journals etc
+           before opening
+
+--vfs ``VFS``  Which vfs to use when opening
 
 If ``FILE`` is omitted then a memory database is opened
 
@@ -570,8 +576,14 @@ Specify a subcommand::
    unset NAME      -- deletes named binding
    set NAME VALUE  -- sets binding to VALUE
 
-The value must be a valid SQL literal.  For example 3 will be an integer 3 while
-``'3'`` will be a string.
+The value must be a valid SQL literal or expression.  For example `3` will be an
+integer 3 while ```'3'``` will be a string.
+
+Example:::
+
+  .parameter set floor 10.99
+  .parameter set text 'Acme''s Glove'
+  select * from sales where price > $floor and description != $text;
 
 .. _shell-cmd-print:
 .. index::
@@ -602,6 +614,21 @@ defaults to ' ..> '.  Example::
   .prompt "command> " "more command> "
 
 You can use backslash escapes such as \\n and \\t.
+
+.. _shell-cmd-py:
+.. index::
+    single: py (Shell command)
+
+py ?PYTHON?
+-----------
+
+*Starts a python REPL or runs the Python statement provided*
+
+The namespace provided includes ``apsw`` for the module, ``shell`` for this
+shell and ``db`` for the current database.
+
+Using the .output command does not affect output from this command.  You can
+write to `shell.stdout` and `shell.stderr`.
 
 .. _shell-cmd-read:
 .. index::
@@ -669,6 +696,9 @@ shell CMD ARGS...
 -----------------
 
 *Run CMD ARGS in a system shell*
+
+Note that output goes to the process standard output, not whatever the shell
+.output command has configured.
 
 .. _shell-cmd-show:
 .. index::

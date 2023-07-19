@@ -2277,10 +2277,11 @@ Enter ".help" for instructions
 
         Options are:
 
-        --wipe   Closes any existing connections in this process referring to
-                 the same file  and deletes the database file, journals etc
-                 before opening
-        --vfs    VFS to use when opening
+        --wipe     Closes any existing connections in this process referring to
+                   the same file  and deletes the database file, journals etc
+                   before opening
+
+        --vfs VFS  Which vfs to use when opening
 
         If FILE is omitted then a memory database is opened
         """
