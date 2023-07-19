@@ -2482,14 +2482,15 @@ Enter ".help" for instructions
         dot commands).  If the filename ends in .py then it is treated
         as Python code instead.
 
-        For Python code the symbol 'shell' refers to the instance of
-        the shell and 'apsw' is the apsw module.
+        For Python code the symbol 'db' refers to the current database,
+        'shell' refers to the instance of the shell and 'apsw' is the
+        apsw module.
         """
         if len(cmd) != 1:
             raise self.Error("read takes a single filename")
         if cmd[0].lower().endswith(".py"):
             g = {}
-            g.update({'apsw': apsw, 'shell': self})
+            g.update({'apsw': apsw, 'shell': self, 'db': self.db})
             # compile step is needed to associate name with code
             f = open(cmd[0], "rb")
             try:
