@@ -16,6 +16,7 @@ import struct
 import contextlib
 import tempfile
 import textwrap
+import shlex
 
 def ShouldFault(name, pending_exception):
     # You can't use print because calls involving print can be nested
@@ -7890,10 +7891,23 @@ class APSW(unittest.TestCase):
         else:
             self.fail("Table doesn't have any rows")
         reset()
-        cmd(".open --new " + fn)
+        cmd(".open --wipe " + fn)
         s.cmdloop()
         for row in s.db.cursor().execute("select * from sqlite_schema"):
-            self.fail("--new didn't wipe file")
+            self.fail("--wipe didn't wipe file")
+
+        N="sentinel-chidh-jklhfd"
+        class vfstest(apsw.VFS):
+            def __init__(self):
+                super().__init__(name=N, base="")
+
+        ref = vfstest()
+        reset()
+        cmd(f".open --vfs { N } { fn }\n.connection\n.close")
+        s.cmdloop()
+        isempty(fh[2])
+        self.assertIn(f"({ N })", get(fh[1]))
+        del ref
 
         ###
         ### Some test data
@@ -8387,6 +8401,58 @@ class APSW(unittest.TestCase):
         s.cmdloop()
         isempty(fh[2])
         self.assertNotIn("changes:", get(fh[1]))
+
+        ###
+        ### Commands - cd / connection / close
+        ###
+        @contextlib.contextmanager
+        def chdir(path):
+            before = os.getcwd()
+            os.chdir(path)
+            yield
+            os.chdir(before)
+
+        def in_open_dbs(filename):
+            count = 0
+            for c in apsw.connections():
+                try:
+                    if not c.filename:
+                        continue
+                except apsw.ConnectionClosedError:
+                    continue
+                if os.path.samefile(filename, c.filename):
+                    count += 1
+            return count
+
+        with tempfile.TemporaryDirectory(prefix="apsw-shell-test-") as tmpd1:
+            with chdir("."):
+                reset()
+                cmd(f".cd { shlex.quote( tmpd1 )}")
+                s.cmdloop()
+                isempty(fh[1])
+                isempty(fh[2])
+                self.assertTrue(os.path.samefile(tmpd1, os.getcwd()))
+
+            with chdir(tmpd1):
+                reset()
+                V="sentinel-jhdgfsfjdskh-1"
+                cmd(f".open { shlex.quote(V) }\ncreate table foo(x);\n.open { shlex.quote(V) }")
+                s.cmdloop()
+                isempty(fh[1])
+                isempty(fh[2])
+                self.assertEqual(2, in_open_dbs(V))
+                reset()
+                cmd(f".open --wipe { shlex.quote(V) }")
+                s.cmdloop()
+                isempty(fh[1])
+                isempty(fh[2])
+                self.assertEqual(1, in_open_dbs(V))
+                reset()
+                cmd(f".close")
+                s.cmdloop()
+                isempty(fh[1])
+                isempty(fh[2])
+                self.assertEqual(0, in_open_dbs(V))
 
         ###
         ### Commands - databases
