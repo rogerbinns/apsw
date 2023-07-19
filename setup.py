@@ -842,6 +842,7 @@ for f in (findamalgamation(), ):
 if __name__ == '__main__':
     setup(name="apsw",
           version=version,
+          python_requires=">=3.6",
           description="Another Python SQLite Wrapper",
           long_description=pathlib.Path("README.rst").read_text(encoding="utf8"),
           long_description_content_type="text/x-rst",
