@@ -8504,7 +8504,7 @@ class APSW(unittest.TestCase):
         if hasattr(s, "command_dbinfo"):
             with tempfile.TemporaryDirectory(prefix="apsw-test-shell-dbinfo-") as tmpd:
                 reset()
-                cmd(f".open { tmpd }/newdb")
+                cmd(f".open { shlex.quote(tmpd) }/newdb")
                 s.cmdloop()
                 isempty(fh[2])
                 reset()
