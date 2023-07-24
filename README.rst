@@ -38,8 +38,8 @@ The latest documentation is at https://rogerbinns.github.io/apsw/
 Mailing lists/contacts
 ======================
 
-* `Python SQLite discussion group <http://groups.google.com/group/python-sqlite>`__
-  (preferred)
+* `Python SQLite discussion group
+  <http://groups.google.com/group/python-sqlite>`__  (preferred)
 * `Github discussions <https://github.com/rogerbinns/apsw/discussions>`__
 * You can also email the author at `rogerb@rogerbinns.com
   <mailto:rogerb@rogerbinns.com>`__
@@ -56,7 +56,8 @@ group <http://groups.google.com/group/python-sqlite>`__ and there is
 an `RSS feed from PyPI
 <https://pypi.org/rss/project/apsw/releases.xml>`__.
 
-`Full detailed list of changes <http://rogerbinns.github.io/apsw/changes.html>`__
+`Full detailed list of changes
+<http://rogerbinns.github.io/apsw/changes.html>`__
 
 Bugs
 ====
