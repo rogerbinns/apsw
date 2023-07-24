@@ -3,8 +3,8 @@ Change History
 
 .. currentmodule:: apsw
 
-next
-====
+3.42.0.1
+========
 
 Work with SQLite compiled with `SQLITE_OMIT_DEPRECATED
 <https://www.sqlite.org/compile.html#omit_deprecated>`__.
@@ -14,8 +14,9 @@ Work with SQLite compiled with `SQLITE_OMIT_DEPRECATED
 the same results.  When including the amalgamation,
 SQLITE_OMIT_DEPRECATED is defined. (:issue:`443`)
 
-:doc:`shell` updates adding various commands to match the SQLite
-shell, as well as code and documentation improvements. (:issue:`397`)
+:doc:`shell` updates adding :ref:`various commands <shell-commands>`
+to match the SQLite shell, as well as code and documentation
+improvements. (:issue:`397`)
 
 Added :meth:`Connection.read` and :func:`apsw.ext.dbinfo` to provide
 information from the database and journal/wal files.  The shell
