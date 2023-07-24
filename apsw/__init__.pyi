@@ -2416,9 +2416,6 @@ class VFS:
             <https://sqlite.org/c3ref/vfs.html>`__  structure to indicate to SQLite that they are
             not supported.
 
-        :raises ValueError: If *base* is not *None* and the named vfs is not
-          currently registered.
-
         Calls:
           * `sqlite3_vfs_register <https://sqlite.org/c3ref/vfs_find.html>`__
           * `sqlite3_vfs_find <https://sqlite.org/c3ref/vfs_find.html>`__"""

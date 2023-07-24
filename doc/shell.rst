@@ -90,6 +90,8 @@ You can use :ref:`.connection <shell-cmd-connection>` to switch
 amongst connections.  Press Control-D at the prompt (Control-Z on
 Windows) will exit the shell.
 
+.. _shell-commands:
+
 Commands
 ========
 
@@ -123,9 +125,8 @@ Additionally the type of the contents of each column is also deduced - for
 example if it is a number or date.  Empty values are turned into nulls.  Dates
 are normalized into ``YYYY``-``MM``-``DD`` format and DateTime are normalized
 into ISO8601 format to allow easy sorting and searching.  4 digit years must be
-used to detect dates.  ``US`` (swapped day and month) versus rest of the world
-is also detected providing there is at least one value that resolves the
-ambiguity.
+used to detect dates.  US (swapped day and month) versus rest of the world is
+also detected providing there is at least one value that resolves the ambiguity.
 
 Care is taken to ensure that columns looking like numbers are only treated as
 numbers if they do not have unnecessary leading zeroes or plus signs.  This is
@@ -167,8 +168,8 @@ this is different than SQLite shell which only exits for errors in SQL.)
 .. index::
     single: cd (Shell command)
 
-cd ?DIR
--------
+cd ?DIR?
+--------
 
 *Changes current directory*
 
@@ -275,9 +276,9 @@ Indices and triggers for the table(s) are also dumped.  Finally views matching
 the table pattern name are dumped (it isn't possible to work out which views
 access which table and views can access multiple tables anyway).
 
-Note that if you are dumping virtual tables such as used by the FTS3 module then
+Note that if you are dumping virtual tables such as used by the FTS5 module then
 they may use other tables to store information.  For example if you create a
-FTS3 table named *recipes* then it also creates *recipes_content*,
+FTS5 table named *recipes* then it also creates *recipes_content*,
 *recipes_segdir* etc.  Consequently to dump this example correctly use::
 
    .dump recipes recipes_%
@@ -310,10 +311,10 @@ a sequence of bytes.  An encoding describes how to convert between bytes and
 characters.  The default encoding is utf8 and that is generally the best value
 to use when other programs give you a choice.
 
-You can also specify an error handler.  For example 'cp437:replace' will use
+You can also specify an error handler.  For example `cp437:replace` will use
 code page 437 and any Unicode codepoints not present in cp437 will be replaced
 (typically with something like a question mark).  Other error handlers include
-``ignore``, ``strict`` (default) and ``xmlcharrefreplace``.
+`ignore`, `strict` (default) and `xmlcharrefreplace`.
 
 For the default input/output/error streams on startup the shell defers to
 Python's detection of encoding.  For example on Windows it asks what code page
@@ -351,8 +352,8 @@ exit ?CODE?
 .. index::
     single: find (Shell command)
 
-find what ?TABLE?
------------------
+find value ?TABLE?
+------------------
 
 *Searches all columns of all tables for a value*
 
@@ -362,7 +363,7 @@ a string or any references to an id.
 You can specify a like pattern to limit the search to a subset of tables (eg
 specifying ``CUSTOMER%`` for all tables beginning with ``CUSTOMER``).
 
-The what value will be treated as a string and/or integer if possible.  If what
+The value will be treated as a string and/or integer if possible.  If value
 contains ``%`` or ``_`` then it is also treated as a like pattern.
 
 This command can take a long time to execute needing to scan all of the relevant
@@ -384,7 +385,10 @@ header(s) ON|OFF
 help ?COMMAND?
 --------------
 
-*Shows list of commands and their usage.  If COMMAND is specified then shows detail about that COMMAND.  ('.help all' will show detailed help about all commands.)*
+*Shows list of commands and their usage*
+
+If ``COMMAND`` is specified then shows detail about that ``COMMAND``. ``.help
+all`` will show detailed help about all commands.
 
 .. _shell-cmd-import:
 .. index::
@@ -402,9 +406,7 @@ should be CSV (comma separated values).
 All values read in are supplied to SQLite as strings.  If you want SQLite to
 treat them as other types then declare your columns appropriately.  For example
 declaring a column ``REAL`` will result in the values being stored as floating
-point if they can be safely converted.  See this page for more details::
-
-  https://sqlite.org/datatype3.html
+point if they can be safely converted.
 
 Another alternative is to create a temporary table, insert the values into that
 and then use casting.::
@@ -457,7 +459,7 @@ then use::
 log ON|OFF
 ----------
 
-*Shows SQLite log messages*
+*Shows SQLite log messages (default off)*
 
 .. _shell-cmd-mode:
 .. index::
@@ -469,11 +471,6 @@ mode MODE ?OPTIONS?
 *Sets output mode to one of box column columns csv html insert json line lines list python qbox table tabs tcl*
 
 box: Outputs using line drawing and auto sizing columns
-
-column: Items left aligned in space padded columns. They are truncated if they
-do not fit. If the width hasn't been specified for a column then 10 is used
-unless the column name (header) is longer in which case that width is used. Use
-the .width command to change column sizes.
 
 columns: Items left aligned in space padded columns. They are truncated if they
 do not fit. If the width hasn't been specified for a column then 10 is used
@@ -493,9 +490,6 @@ specified a different one as the second parameter to the .mode command.
 
 json: Each line as a JSON object with a trailing comma. Blobs are output as
 base64 encoded strings. You should be using UTF8 output encoding.
-
-line: One value per line in the form 'column = value' with a blank line between
-rows.
 
 lines: One value per line in the form 'column = value' with a blank line between
 rows.
@@ -543,7 +537,7 @@ Options are:
            the same file  and deletes the database file, journals etc
            before opening
 
---vfs ``VFS``  Which vfs to use when opening
+--vfs VFS  Which vfs to use when opening
 
 If ``FILE`` is omitted then a memory database is opened
 
@@ -577,13 +571,13 @@ Specify a subcommand::
    set NAME VALUE  -- sets binding to VALUE
 
 The value must be a valid SQL literal or expression.  For example `3` will be an
-integer 3 while ```'3'``` will be a string.
+integer 3 while ``'3'`` will be a string.
 
 Example:::
 
   .parameter set floor 10.99
   .parameter set text 'Acme''s Glove'
-  select * from sales where price > $floor and description != $text;
+  SELECT * FROM sales WHERE price > $floor AND description != $text;
 
 .. _shell-cmd-print:
 .. index::
@@ -642,8 +636,8 @@ read FILENAME
 Treats the specified file as input (a mixture or SQL and/or dot commands).  If
 the filename ends in .py then it is treated as Python code instead.
 
-For Python code the symbol ``shell`` refers to the instance of the shell and
-``apsw`` is the apsw module.
+For Python code the symbol ``db`` refers to the current database, ``shell``
+refers to the instance of the shell and ``apsw`` is the apsw module.
 
 .. _shell-cmd-restore:
 .. index::

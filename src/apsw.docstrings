@@ -3046,9 +3046,6 @@
 "    <https://sqlite.org/c3ref/vfs.html>`__  structure to indicate to SQLite that they are\n" \
 "    not supported.\n" \
 "\n" \
-":raises ValueError: If *base* is not *None* and the named vfs is not\n" \
-"  currently registered.\n" \
-"\n" \
 "Calls:\n" \
 "  * `sqlite3_vfs_register <https://sqlite.org/c3ref/vfs_find.html>`__\n" \
 "  * `sqlite3_vfs_find <https://sqlite.org/c3ref/vfs_find.html>`__\n" 
