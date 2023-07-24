@@ -1071,7 +1071,7 @@ Enter ".help" for instructions
         self.bail = self._boolean_command("bail", cmd)
 
     def command_cd(self, cmd):
-        """cd ?DIR: Changes current directory
+        """cd ?DIR?: Changes current directory
 
         If no directory supplied then change to home directory"""
         if len(cmd) > 1:
@@ -1258,8 +1258,8 @@ Enter ".help" for instructions
         access multiple tables anyway).
 
         Note that if you are dumping virtual tables such as used by
-        the FTS3 module then they may use other tables to store
-        information.  For example if you create a FTS3 table named
+        the FTS5 module then they may use other tables to store
+        information.  For example if you create a FTS5 table named
         *recipes* then it also creates *recipes_content*,
         *recipes_segdir* etc.  Consequently to dump this example
         correctly use:
@@ -1564,10 +1564,10 @@ Enter ".help" for instructions
         when other programs give you a choice.
 
         You can also specify an error handler.  For example
-        'cp437:replace' will use code page 437 and any Unicode
+        `cp437:replace` will use code page 437 and any Unicode
         codepoints not present in cp437 will be replaced (typically
         with something like a question mark).  Other error handlers
-        include 'ignore', 'strict' (default) and 'xmlcharrefreplace'.
+        include `ignore`, `strict` (default) and `xmlcharrefreplace`.
 
         For the default input/output/error streams on startup the
         shell defers to Python's detection of encoding.  For example
@@ -1606,7 +1606,7 @@ Enter ".help" for instructions
         sys.exit(c)
 
     def command_find(self, cmd):
-        """find what ?TABLE?: Searches all columns of all tables for a value
+        """find value ?TABLE?: Searches all columns of all tables for a value
 
         The find command helps you locate data across your database
         for example to find a string or any references to an id.
@@ -1615,8 +1615,8 @@ Enter ".help" for instructions
         of tables (eg specifying CUSTOMER% for all tables beginning
         with CUSTOMER).
 
-        The what value will be treated as a string and/or integer if
-        possible.  If what contains '%' or '_' then it is also treated as
+        The value will be treated as a string and/or integer if
+        possible.  If value contains '%' or '_' then it is also treated as
         a like pattern.
 
         This command can take a long time to execute needing to scan
@@ -1667,7 +1667,10 @@ Enter ".help" for instructions
     _help_info = None
 
     def command_help(self, cmd):
-        """help ?COMMAND?: Shows list of commands and their usage.  If COMMAND is specified then shows detail about that COMMAND.  ('.help all' will show detailed help about all commands.)
+        """help ?COMMAND?: Shows list of commands and their usage
+
+        If COMMAND is specified then shows detail about that COMMAND.
+        ``.help all`` will show detailed help about all commands.
         """
         if not self._help_info:
             # buildup help database
@@ -1786,9 +1789,7 @@ Enter ".help" for instructions
         want SQLite to treat them as other types then declare your
         columns appropriately.  For example declaring a column 'REAL'
         will result in the values being stored as floating point if
-        they can be safely converted.  See this page for more details:
-
-          https://sqlite.org/datatype3.html
+        they can be safely converted.
 
         Another alternative is to create a temporary table, insert the
         values into that and then use casting.:
@@ -2131,7 +2132,7 @@ Enter ".help" for instructions
         self.write_error(code + message + "\n")
 
     def command_log(self, cmd):
-        "log ON|OFF: Shows SQLite log messages"
+        "log ON|OFF: Shows SQLite log messages (default off)"
         setting = self._boolean_command("log", cmd)
         apsw.config(apsw.SQLITE_CONFIG_LOG, self.log_handler if setting else None)
 
@@ -2246,7 +2247,8 @@ Enter ".help" for instructions
         detail = []
 
         for m in modes:
-            if m == 'tabs': continue
+            if m in {'tabs', "column", "line"}:
+                continue
             d = getattr(self, "output_" + m).__doc__
             assert d, "output mode " + m + " needs doc"
             d = d.replace("\n", " ").strip()
@@ -2318,7 +2320,7 @@ Enter ".help" for instructions
                 except OSError:
                     pass
         self.db_references.add(self.db)
-        self.dbfilename = dbname if dbname is  not None else ""
+        self.dbfilename = dbname if dbname is not None else ""
         self._db = apsw.Connection(self.dbfilename,
                                    vfs=vfs,
                                    flags=apsw.SQLITE_OPEN_URI | apsw.SQLITE_OPEN_READWRITE
@@ -2378,13 +2380,13 @@ Enter ".help" for instructions
            set NAME VALUE  -- sets binding to VALUE
 
         The value must be a valid SQL literal or expression.  For example
-        `3` will be an integer 3 while `'3'` will be a string.
+        `3` will be an integer 3 while '3' will be a string.
 
         Example::
 
           .parameter set floor 10.99
           .parameter set text 'Acme''s Glove'
-          select * from sales where price > $floor and description != $text;
+          SELECT * FROM sales WHERE price > $floor AND description != $text;
         """
         if cmd:
             if len(cmd) == 1 and cmd[0] in {"clear", "init"}:
@@ -2429,7 +2431,7 @@ Enter ".help" for instructions
 
         The default is to print 'sqlite> ' for the main prompt where
         you can enter a dot command or a SQL statement.  If the SQL
-        statement is complete (eg not ; terminated) then you are
+        statement is not complete (eg not ; terminated) then you are
         prompted for more using the continuation prompt which defaults
         to ' ..> '.  Example:
 
