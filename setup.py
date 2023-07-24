@@ -849,7 +849,6 @@ if __name__ == '__main__':
           author="Roger Binns",
           author_email="rogerb@rogerbinns.com",
           url="https://github.com/rogerbinns/apsw/",
-          docs_url=project_urls["Documentation"],
           project_urls=project_urls,
           classifiers=[
               "Development Status :: 5 - Production/Stable",
