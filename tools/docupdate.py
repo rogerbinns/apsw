@@ -123,6 +123,13 @@ for line in open("doc/shell.rst", "rt"):
         shell._terminal_width = tw
         shell.command_help([])
 
+        op.append(".. hlist::")
+        op.append("  :columns: 3")
+        op.append("")
+        for k in shell._help_info:
+            op.append(f"  * :ref:`{ k } <shell-cmd-{ k }>`")
+        op.append("")
+
         for k, v in shell._help_info.items():
             op.append(f".. _shell-cmd-{ k }:")
             op.append(".. index::")

@@ -105,6 +105,55 @@ leading ``.`` (period) - for example::
 
 .. help-begin:
 
+.. hlist::
+  :columns: 3
+
+  * :ref:`autoimport <shell-cmd-autoimport>`
+  * :ref:`backup <shell-cmd-backup>`
+  * :ref:`bail <shell-cmd-bail>`
+  * :ref:`cd <shell-cmd-cd>`
+  * :ref:`changes <shell-cmd-changes>`
+  * :ref:`close <shell-cmd-close>`
+  * :ref:`colour <shell-cmd-colour>`
+  * :ref:`connection <shell-cmd-connection>`
+  * :ref:`databases <shell-cmd-databases>`
+  * :ref:`dbconfig <shell-cmd-dbconfig>`
+  * :ref:`dbinfo <shell-cmd-dbinfo>`
+  * :ref:`dump <shell-cmd-dump>`
+  * :ref:`echo <shell-cmd-echo>`
+  * :ref:`encoding <shell-cmd-encoding>`
+  * :ref:`exceptions <shell-cmd-exceptions>`
+  * :ref:`exit <shell-cmd-exit>`
+  * :ref:`find <shell-cmd-find>`
+  * :ref:`header <shell-cmd-header>`
+  * :ref:`help <shell-cmd-help>`
+  * :ref:`import <shell-cmd-import>`
+  * :ref:`indices <shell-cmd-indices>`
+  * :ref:`load <shell-cmd-load>`
+  * :ref:`log <shell-cmd-log>`
+  * :ref:`mode <shell-cmd-mode>`
+  * :ref:`nullvalue <shell-cmd-nullvalue>`
+  * :ref:`open <shell-cmd-open>`
+  * :ref:`output <shell-cmd-output>`
+  * :ref:`parameter <shell-cmd-parameter>`
+  * :ref:`print <shell-cmd-print>`
+  * :ref:`prompt <shell-cmd-prompt>`
+  * :ref:`py <shell-cmd-py>`
+  * :ref:`read <shell-cmd-read>`
+  * :ref:`restore <shell-cmd-restore>`
+  * :ref:`schema <shell-cmd-schema>`
+  * :ref:`separator <shell-cmd-separator>`
+  * :ref:`shell <shell-cmd-shell>`
+  * :ref:`show <shell-cmd-show>`
+  * :ref:`tables <shell-cmd-tables>`
+  * :ref:`timeout <shell-cmd-timeout>`
+  * :ref:`timer <shell-cmd-timer>`
+  * :ref:`version <shell-cmd-version>`
+  * :ref:`vfsinfo <shell-cmd-vfsinfo>`
+  * :ref:`vfslist <shell-cmd-vfslist>`
+  * :ref:`vfsname <shell-cmd-vfsname>`
+  * :ref:`width <shell-cmd-width>`
+
 .. _shell-cmd-autoimport:
 .. index::
     single: autoimport (Shell command)
@@ -601,7 +650,7 @@ prompt MAIN ?CONTINUE?
 *Changes the prompts for first line and continuation lines*
 
 The default is to print 'sqlite> ' for the main prompt where you can enter a dot
-command or a SQL statement.  If the SQL statement is complete (eg not ;
+command or a SQL statement.  If the SQL statement is not complete (eg not ;
 terminated) then you are prompted for more using the continuation prompt which
 defaults to ' ..> '.  Example::
 
