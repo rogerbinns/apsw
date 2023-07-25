@@ -854,7 +854,6 @@ if __name__ == '__main__':
               "Development Status :: 5 - Production/Stable",
               "Intended Audience :: Developers",
               "License :: OSI Approved",
-              "Operating System :: OS Independent",
               "Programming Language :: C",
               "Programming Language :: Python :: 3",
               "Topic :: Database :: Front-Ends",
