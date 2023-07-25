@@ -119,7 +119,7 @@ VFS class
 
 .. index:: sqlite3_vfs_register, sqlite3_vfs_find
 
-.. class:: VFS(name: str, base: Optional[str] = None, makedefault: bool = False, maxpathname: int = 1024)
+.. class:: VFS(name: str, base: Optional[str] = None, makedefault: bool = False, maxpathname: int = 1024, *, iVersion: int = 3, exclude: Optional[set[str]] = None)
 
     Provides operating system access.  You can get an overview in the
     `SQLite documentation <https://sqlite.org/c3ref/vfs.html>`_.  To
@@ -142,8 +142,12 @@ VFS class
         this value then SQLite will not`be able to open it.  If you are
         using a base, then a value of zero will use the value from base.
 
-    :raises ValueError: If *base* is not *None* and the named vfs is not
-      currently registered.
+    :param iVersion: Version number for the `sqlite3_vfs <https://sqlite.org/c3ref/vfs.html>`__
+        structure.
+
+    :param exclude: A set of strings, naming the methods that will be filled in with ``NULL`` in the `sqlite3_vfs
+        <https://sqlite.org/c3ref/vfs.html>`__  structure to indicate to SQLite that they are
+        not supported.
 
     Calls:
       * `sqlite3_vfs_register <https://sqlite.org/c3ref/vfs_find.html>`__
@@ -185,6 +189,12 @@ VFS class
   number where the integer portion is the day and the fractional part
   is the time. Do not adjust for timezone (ie use `UTC
   <http://en.wikipedia.org/wiki/Universal_Time>`_).
+
+.. method:: VFS.xCurrentTimeInt64()  -> int
+
+  Returns as an integer the `Julian Day Number
+  <http://en.wikipedia.org/wiki/Julian_day>`__ multiplied by 86400000
+  (the number of milliseconds in a 24-hour day).
 
 .. method:: VFS.xDelete(filename: str, syncdir: bool) -> None
 

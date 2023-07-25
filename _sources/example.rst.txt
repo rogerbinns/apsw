@@ -59,7 +59,7 @@ Checking APSW and SQLite versions
 .. code-block:: output
 
           Using APSW file /space/apsw/apsw/__init__.cpython-311-x86_64-linux-gnu.so
-             APSW version 3.42.0.0
+             APSW version 3.42.0.1
     SQLite header version 3042000
        SQLite lib version 3.42.0
        Using amalgamation True
@@ -277,12 +277,12 @@ a while.
    connection.execute("insert into point values(3, 3, 3)")
    connection.execute("insert into point values(4, 4, 4)")
    
-   # You can use BEGIN / END to manually make a transaction
+   # You can use BEGIN / COMMIT to manually make a transaction
    connection.execute("BEGIN")
    connection.execute("insert into point values(2, 2, 2)")
    connection.execute("insert into point values(3, 3, 3)")
    connection.execute("insert into point values(4, 4, 4)")
-   connection.execute("END")
+   connection.execute("COMMIT")
    
    # Or use `with` that does it automatically
    with connection:
@@ -1193,7 +1193,7 @@ feedback and allows cancelling.
     progress handler called
     progress handler called
     progress handler called
-    (9977724111,)
+    (9971236249,)
 
 
 .. index:: Commit hook (example code)
@@ -1495,8 +1495,8 @@ useful instead.
 
     ┌────────────┬────────────────────────────────┬───────────────┐
     │    date    │           directory            │     name      │
-    │ 2023-04-17 │ /usr/lib/python3.11/pydoc_data │ topics.py     │
-    │ 2023-04-17 │ /usr/lib/python3.11            │ _pydecimal.py │
+    │ 2023-06-06 │ /usr/lib/python3.11/pydoc_data │ topics.py     │
+    │ 2023-06-06 │ /usr/lib/python3.11            │ _pydecimal.py │
     │ 2023-04-17 │ /usr/lib/python3.11/tkinter    │ __init__.py   │
     └────────────┴────────────────────────────────┴───────────────┘
     
@@ -1518,7 +1518,7 @@ useful instead.
     ┌────────────┬────────────┐
     │ extension  │ total_size │
     │            │ 380625     │
-    │ .a         │ 113962916  │
+    │ .a         │ 113966532  │
     │ .allowlist │ 56         │
     │ .bootstrap │ 1756       │
     │ .c         │ 11116      │
@@ -1528,13 +1528,13 @@ useful instead.
     │ .fish      │ 2215       │
     │ .in        │ 3504       │
     │ .local     │ 1534       │
-    │ .o         │ 20256      │
+    │ .o         │ 20304      │
     │ .ps1       │ 9033       │
-    │ .py        │ 11736442   │
-    │ .pyc       │ 13217236   │
+    │ .py        │ 11740290   │
+    │ .pyc       │ 13228981   │
     │ .rst       │ 9561       │
-    │ .sh        │ 3888       │
-    │ .so        │ 27564264   │
+    │ .sh        │ 3919       │
+    │ .so        │ 27565432   │
     │ .stdlib    │ 10752      │
     │ .supp      │ 70         │
     │ .txt       │ 23425      │
@@ -1787,9 +1787,9 @@ Python.
     
     Dump output
     
-    -- SQLite dump (by APSW 3.42.0.0)
+    -- SQLite dump (by APSW 3.42.0.1)
     -- SQLite version 3.42.0
-    -- Date: Wed May 17 09:17:52 2023
+    -- Date: Mon Jul 24 09:39:05 2023
     -- Tables like: csvtest%
     -- Database: /space/apsw/dbfile
     -- User: rogerb @ clamps
@@ -1832,7 +1832,7 @@ SQLite provides statistics by :meth:`status`
 
 .. code-block:: output
 
-    SQLite memory usage 423488 max 2336416
+    SQLite memory usage 423456 max 2336400
 
 
 .. index:: Tracing (example code)
@@ -1896,7 +1896,7 @@ This shows using :meth:`Connection.trace_v2`
     
     code is  SQLITE_TRACE_PROFILE
     {'code': 2,
-     'nanoseconds': 35000000,
+     'nanoseconds': 18000000,
      'stmt_status': {'SQLITE_STMTSTATUS_AUTOINDEX': 0,
                      'SQLITE_STMTSTATUS_FILTER_HIT': 0,
                      'SQLITE_STMTSTATUS_FILTER_MISS': 0,

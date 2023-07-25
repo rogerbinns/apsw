@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Various interesting and useful bits of functionality &mdash; APSW 3.42.0.0 documentation</title>
+  <title>Various interesting and useful bits of functionality &mdash; APSW 3.42.0.1 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/favicon.ico"/>
@@ -39,7 +39,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.42.0.0
+                3.42.0.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -96,6 +96,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#apsw.ext.log_sqlite"><code class="docutils literal notranslate"><span class="pre">log_sqlite()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.ext.print_augmented_traceback"><code class="docutils literal notranslate"><span class="pre">print_augmented_traceback()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.ext.index_info_to_dict"><code class="docutils literal notranslate"><span class="pre">index_info_to_dict()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.ext.dbinfo"><code class="docutils literal notranslate"><span class="pre">dbinfo()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.ext.format_query_table"><code class="docutils literal notranslate"><span class="pre">format_query_table()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.ext.VTColumnAccess"><code class="docutils literal notranslate"><span class="pre">VTColumnAccess</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.ext.VTColumnAccess.By_Index"><code class="docutils literal notranslate"><span class="pre">VTColumnAccess.By_Index</span></code></a></li>
@@ -155,6 +156,51 @@
 <li class="toctree-l4"><a class="reference internal" href="#apsw.ext.VDBEInstruction.p3"><code class="docutils literal notranslate"><span class="pre">VDBEInstruction.p3</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.ext.VDBEInstruction.p4"><code class="docutils literal notranslate"><span class="pre">VDBEInstruction.p4</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.ext.VDBEInstruction.p5"><code class="docutils literal notranslate"><span class="pre">VDBEInstruction.p5</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.ext.DatabaseFileInfo"><code class="docutils literal notranslate"><span class="pre">DatabaseFileInfo</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.DatabaseFileInfo.filename"><code class="docutils literal notranslate"><span class="pre">DatabaseFileInfo.filename</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.DatabaseFileInfo.header"><code class="docutils literal notranslate"><span class="pre">DatabaseFileInfo.header</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.DatabaseFileInfo.page_size"><code class="docutils literal notranslate"><span class="pre">DatabaseFileInfo.page_size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.DatabaseFileInfo.write_format"><code class="docutils literal notranslate"><span class="pre">DatabaseFileInfo.write_format</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.DatabaseFileInfo.read_format"><code class="docutils literal notranslate"><span class="pre">DatabaseFileInfo.read_format</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.DatabaseFileInfo.reserved_bytes"><code class="docutils literal notranslate"><span class="pre">DatabaseFileInfo.reserved_bytes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.DatabaseFileInfo.file_change_counter"><code class="docutils literal notranslate"><span class="pre">DatabaseFileInfo.file_change_counter</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.DatabaseFileInfo.page_count"><code class="docutils literal notranslate"><span class="pre">DatabaseFileInfo.page_count</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.DatabaseFileInfo.freelist_pages"><code class="docutils literal notranslate"><span class="pre">DatabaseFileInfo.freelist_pages</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.DatabaseFileInfo.schema_cookie"><code class="docutils literal notranslate"><span class="pre">DatabaseFileInfo.schema_cookie</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.DatabaseFileInfo.schema_format"><code class="docutils literal notranslate"><span class="pre">DatabaseFileInfo.schema_format</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.DatabaseFileInfo.default_cache_size"><code class="docutils literal notranslate"><span class="pre">DatabaseFileInfo.default_cache_size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.DatabaseFileInfo.autovacuum_top_root"><code class="docutils literal notranslate"><span class="pre">DatabaseFileInfo.autovacuum_top_root</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.DatabaseFileInfo.text_encoding"><code class="docutils literal notranslate"><span class="pre">DatabaseFileInfo.text_encoding</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.DatabaseFileInfo.user_version"><code class="docutils literal notranslate"><span class="pre">DatabaseFileInfo.user_version</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.DatabaseFileInfo.incremental_vacuum"><code class="docutils literal notranslate"><span class="pre">DatabaseFileInfo.incremental_vacuum</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.DatabaseFileInfo.application_id"><code class="docutils literal notranslate"><span class="pre">DatabaseFileInfo.application_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.DatabaseFileInfo.version_valid_for"><code class="docutils literal notranslate"><span class="pre">DatabaseFileInfo.version_valid_for</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.DatabaseFileInfo.sqlite_version"><code class="docutils literal notranslate"><span class="pre">DatabaseFileInfo.sqlite_version</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.ext.JournalFileInfo"><code class="docutils literal notranslate"><span class="pre">JournalFileInfo</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.JournalFileInfo.filename"><code class="docutils literal notranslate"><span class="pre">JournalFileInfo.filename</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.JournalFileInfo.header"><code class="docutils literal notranslate"><span class="pre">JournalFileInfo.header</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.JournalFileInfo.header_valid"><code class="docutils literal notranslate"><span class="pre">JournalFileInfo.header_valid</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.JournalFileInfo.page_count"><code class="docutils literal notranslate"><span class="pre">JournalFileInfo.page_count</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.JournalFileInfo.random_nonce"><code class="docutils literal notranslate"><span class="pre">JournalFileInfo.random_nonce</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.JournalFileInfo.initial_pages"><code class="docutils literal notranslate"><span class="pre">JournalFileInfo.initial_pages</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.JournalFileInfo.sector_size"><code class="docutils literal notranslate"><span class="pre">JournalFileInfo.sector_size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.JournalFileInfo.page_size"><code class="docutils literal notranslate"><span class="pre">JournalFileInfo.page_size</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.ext.WALFileInfo"><code class="docutils literal notranslate"><span class="pre">WALFileInfo</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.WALFileInfo.filename"><code class="docutils literal notranslate"><span class="pre">WALFileInfo.filename</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.WALFileInfo.magic_number"><code class="docutils literal notranslate"><span class="pre">WALFileInfo.magic_number</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.WALFileInfo.format_version"><code class="docutils literal notranslate"><span class="pre">WALFileInfo.format_version</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.WALFileInfo.page_size"><code class="docutils literal notranslate"><span class="pre">WALFileInfo.page_size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.WALFileInfo.checkpoint_sequence_number"><code class="docutils literal notranslate"><span class="pre">WALFileInfo.checkpoint_sequence_number</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.WALFileInfo.salt_1"><code class="docutils literal notranslate"><span class="pre">WALFileInfo.salt_1</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.WALFileInfo.salt_2"><code class="docutils literal notranslate"><span class="pre">WALFileInfo.salt_2</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.WALFileInfo.checksum_1"><code class="docutils literal notranslate"><span class="pre">WALFileInfo.checksum_1</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.WALFileInfo.checksum_2"><code class="docutils literal notranslate"><span class="pre">WALFileInfo.checksum_2</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -446,8 +492,6 @@ register with <a class="reference internal" href="#apsw.ext.TypesConverterCursor
 <dd class="field-odd"><p><strong>level</strong> -- level to log at (default <em>logging.ERROR</em>)</p>
 </dd>
 </dl>
-<p>This must be called before doing any operations with SQLite, otherwise a <a class="reference internal" href="exceptions.html#apsw.MisuseError" title="apsw.MisuseError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">apsw.MisuseError</span></code></a>
-will be raised.  (This is a SQLite limitation, not APSW.)</p>
 </dd></dl>
 
 <dl class="py function">
@@ -526,6 +570,16 @@ names are present, using <em>rowid_name</em> for the rowid.</p>
 <span class="s1">&#39;orderByConsumed&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.ext.dbinfo">
+<span class="sig-name descname"><span class="pre">dbinfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'main'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.11)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#apsw.ext.DatabaseFileInfo" title="apsw.ext.DatabaseFileInfo"><span class="pre">apsw.ext.DatabaseFileInfo</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#apsw.ext.JournalFileInfo" title="apsw.ext.JournalFileInfo"><span class="pre">apsw.ext.JournalFileInfo</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#apsw.ext.WALFileInfo" title="apsw.ext.WALFileInfo"><span class="pre">apsw.ext.WALFileInfo</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/apsw/ext.html#dbinfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.dbinfo" title="Permalink to this definition"></a></dt>
+<dd><p>Extracts fields from the database files</p>
+<p>Based on the <a class="reference external" href="https://www.sqlite.org/fileformat2.html">file format description</a>.  The
+headers are read using <a class="reference internal" href="connection.html#apsw.Connection.read" title="apsw.Connection.read"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.Connection.read()</span></code></a> so you see inside encrypted, compressed,
+zip etc formats. not necessarily the actual on disk file.</p>
+<p>Memory databases return <cite>None</cite> for both.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -1018,6 +1072,240 @@ directly expressed in the query itself</p>
 
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="apsw.ext.DatabaseFileInfo">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DatabaseFileInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.11)"><span class="pre">bytes</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">page_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">reserved_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_change_counter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">page_count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">freelist_pages</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema_cookie</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_cache_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">autovacuum_top_root</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">text_encoding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">incremental_vacuum</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">application_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">version_valid_for</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">sqlite_version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/ext.html#DatabaseFileInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.DatabaseFileInfo" title="Permalink to this definition"></a></dt>
+<dd><p>Information about the main database file returned by <a class="reference internal" href="#apsw.ext.dbinfo" title="apsw.ext.dbinfo"><code class="xref py py-meth docutils literal notranslate"><span class="pre">dbinfo()</span></code></a></p>
+<p>See <a class="reference external" href="https://www.sqlite.org/fileformat.html#the_database_header">file format description</a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.DatabaseFileInfo.filename">
+<span class="sig-name descname"><span class="pre">filename</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></em><a class="headerlink" href="#apsw.ext.DatabaseFileInfo.filename" title="Permalink to this definition"></a></dt>
+<dd><p>Header string</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.DatabaseFileInfo.header">
+<span class="sig-name descname"><span class="pre">header</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.11)"><span class="pre">bytes</span></a></em><a class="headerlink" href="#apsw.ext.DatabaseFileInfo.header" title="Permalink to this definition"></a></dt>
+<dd><p>The database page size in bytes</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.DatabaseFileInfo.page_size">
+<span class="sig-name descname"><span class="pre">page_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.DatabaseFileInfo.page_size" title="Permalink to this definition"></a></dt>
+<dd><p>File format write version. 1 for legacy; 2 for WAL</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.DatabaseFileInfo.write_format">
+<span class="sig-name descname"><span class="pre">write_format</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.DatabaseFileInfo.write_format" title="Permalink to this definition"></a></dt>
+<dd><p>File format read version. 1 for legacy; 2 for WAL.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.DatabaseFileInfo.read_format">
+<span class="sig-name descname"><span class="pre">read_format</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.DatabaseFileInfo.read_format" title="Permalink to this definition"></a></dt>
+<dd><p>Bytes of unused &quot;reserved&quot; space at the end of each page. Usually 0</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.DatabaseFileInfo.reserved_bytes">
+<span class="sig-name descname"><span class="pre">reserved_bytes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.DatabaseFileInfo.reserved_bytes" title="Permalink to this definition"></a></dt>
+<dd><p>File change counter</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.DatabaseFileInfo.file_change_counter">
+<span class="sig-name descname"><span class="pre">file_change_counter</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.DatabaseFileInfo.file_change_counter" title="Permalink to this definition"></a></dt>
+<dd><p>Size of the database file in pages</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.DatabaseFileInfo.page_count">
+<span class="sig-name descname"><span class="pre">page_count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.DatabaseFileInfo.page_count" title="Permalink to this definition"></a></dt>
+<dd><p>Total number of freelist pages</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.DatabaseFileInfo.freelist_pages">
+<span class="sig-name descname"><span class="pre">freelist_pages</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.DatabaseFileInfo.freelist_pages" title="Permalink to this definition"></a></dt>
+<dd><p>The schema cookie</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.DatabaseFileInfo.schema_cookie">
+<span class="sig-name descname"><span class="pre">schema_cookie</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.DatabaseFileInfo.schema_cookie" title="Permalink to this definition"></a></dt>
+<dd><p>The schema format number. Supported schema formats are 1, 2, 3, and 4</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.DatabaseFileInfo.schema_format">
+<span class="sig-name descname"><span class="pre">schema_format</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.DatabaseFileInfo.schema_format" title="Permalink to this definition"></a></dt>
+<dd><p>Default page cache size</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.DatabaseFileInfo.default_cache_size">
+<span class="sig-name descname"><span class="pre">default_cache_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.DatabaseFileInfo.default_cache_size" title="Permalink to this definition"></a></dt>
+<dd><p>The page number of the largest root b-tree page when in auto-vacuum or incremental-vacuum modes, or zero otherwise</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.DatabaseFileInfo.autovacuum_top_root">
+<span class="sig-name descname"><span class="pre">autovacuum_top_root</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.DatabaseFileInfo.autovacuum_top_root" title="Permalink to this definition"></a></dt>
+<dd><p>The database text encoding</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.DatabaseFileInfo.text_encoding">
+<span class="sig-name descname"><span class="pre">text_encoding</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></em><a class="headerlink" href="#apsw.ext.DatabaseFileInfo.text_encoding" title="Permalink to this definition"></a></dt>
+<dd><p>The &quot;user version&quot; as read and set by the user_version pragma.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.DatabaseFileInfo.user_version">
+<span class="sig-name descname"><span class="pre">user_version</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.DatabaseFileInfo.user_version" title="Permalink to this definition"></a></dt>
+<dd><p>True (non-zero) for incremental-vacuum mode. False (zero) otherwise.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.DatabaseFileInfo.incremental_vacuum">
+<span class="sig-name descname"><span class="pre">incremental_vacuum</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></em><a class="headerlink" href="#apsw.ext.DatabaseFileInfo.incremental_vacuum" title="Permalink to this definition"></a></dt>
+<dd><p>The &quot;Application ID&quot; set by PRAGMA application_id</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.DatabaseFileInfo.application_id">
+<span class="sig-name descname"><span class="pre">application_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.DatabaseFileInfo.application_id" title="Permalink to this definition"></a></dt>
+<dd><p>The version-valid-for number.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.DatabaseFileInfo.version_valid_for">
+<span class="sig-name descname"><span class="pre">version_valid_for</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.DatabaseFileInfo.version_valid_for" title="Permalink to this definition"></a></dt>
+<dd><p>SQLite version that lost wrote</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.DatabaseFileInfo.sqlite_version">
+<span class="sig-name descname"><span class="pre">sqlite_version</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.DatabaseFileInfo.sqlite_version" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apsw.ext.JournalFileInfo">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">JournalFileInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.11)"><span class="pre">bytes</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">header_valid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">page_count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_nonce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_pages</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">sector_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">page_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/ext.html#JournalFileInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.JournalFileInfo" title="Permalink to this definition"></a></dt>
+<dd><p>Information about the rollback journal returned by <a class="reference internal" href="#apsw.ext.dbinfo" title="apsw.ext.dbinfo"><code class="xref py py-meth docutils literal notranslate"><span class="pre">dbinfo()</span></code></a></p>
+<p>See the <a class="reference external" href="https://www.sqlite.org/fileformat2.html#the_rollback_journal">file format description</a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.JournalFileInfo.filename">
+<span class="sig-name descname"><span class="pre">filename</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></em><a class="headerlink" href="#apsw.ext.JournalFileInfo.filename" title="Permalink to this definition"></a></dt>
+<dd><p>Header string</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.JournalFileInfo.header">
+<span class="sig-name descname"><span class="pre">header</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.11)"><span class="pre">bytes</span></a></em><a class="headerlink" href="#apsw.ext.JournalFileInfo.header" title="Permalink to this definition"></a></dt>
+<dd><p>The &quot;Page Count&quot; - The number of pages in the next segment of the journal, or -1 to mean all content to the end of the file</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.JournalFileInfo.header_valid">
+<span class="sig-name descname"><span class="pre">header_valid</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></em><a class="headerlink" href="#apsw.ext.JournalFileInfo.header_valid" title="Permalink to this definition"></a></dt>
+<dd><p>If the header is the expected bytes</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.JournalFileInfo.page_count">
+<span class="sig-name descname"><span class="pre">page_count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.JournalFileInfo.page_count" title="Permalink to this definition"></a></dt>
+<dd><p>A random nonce for the checksum</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.JournalFileInfo.random_nonce">
+<span class="sig-name descname"><span class="pre">random_nonce</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.JournalFileInfo.random_nonce" title="Permalink to this definition"></a></dt>
+<dd><p>Initial size of the database in pages</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.JournalFileInfo.initial_pages">
+<span class="sig-name descname"><span class="pre">initial_pages</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.JournalFileInfo.initial_pages" title="Permalink to this definition"></a></dt>
+<dd><p>Size of a disk sector assumed by the process that wrote this journal</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.JournalFileInfo.sector_size">
+<span class="sig-name descname"><span class="pre">sector_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.JournalFileInfo.sector_size" title="Permalink to this definition"></a></dt>
+<dd><p>Size of pages in this journal</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.JournalFileInfo.page_size">
+<span class="sig-name descname"><span class="pre">page_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.JournalFileInfo.page_size" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apsw.ext.WALFileInfo">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">WALFileInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">magic_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">format_version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">page_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">checkpoint_sequence_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">salt_1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">salt_2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">checksum_1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">checksum_2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/ext.html#WALFileInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.WALFileInfo" title="Permalink to this definition"></a></dt>
+<dd><p>Information about the rollback journal returned by <a class="reference internal" href="#apsw.ext.dbinfo" title="apsw.ext.dbinfo"><code class="xref py py-meth docutils literal notranslate"><span class="pre">dbinfo()</span></code></a></p>
+<p>See the <a class="reference external" href="https://www.sqlite.org/fileformat2.html#wal_file_format">file format description</a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.WALFileInfo.filename">
+<span class="sig-name descname"><span class="pre">filename</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></em><a class="headerlink" href="#apsw.ext.WALFileInfo.filename" title="Permalink to this definition"></a></dt>
+<dd><p>Magic number</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.WALFileInfo.magic_number">
+<span class="sig-name descname"><span class="pre">magic_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.WALFileInfo.magic_number" title="Permalink to this definition"></a></dt>
+<dd><p>File format version. Currently 3007000</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.WALFileInfo.format_version">
+<span class="sig-name descname"><span class="pre">format_version</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.WALFileInfo.format_version" title="Permalink to this definition"></a></dt>
+<dd><p>Database page size</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.WALFileInfo.page_size">
+<span class="sig-name descname"><span class="pre">page_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.WALFileInfo.page_size" title="Permalink to this definition"></a></dt>
+<dd><p>Checkpoint sequence number</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.WALFileInfo.checkpoint_sequence_number">
+<span class="sig-name descname"><span class="pre">checkpoint_sequence_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.WALFileInfo.checkpoint_sequence_number" title="Permalink to this definition"></a></dt>
+<dd><p>Salt-1: random integer incremented with each checkpoint</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.WALFileInfo.salt_1">
+<span class="sig-name descname"><span class="pre">salt_1</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.WALFileInfo.salt_1" title="Permalink to this definition"></a></dt>
+<dd><p>Salt-2: a different random number for each checkpoint</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.WALFileInfo.salt_2">
+<span class="sig-name descname"><span class="pre">salt_2</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.WALFileInfo.salt_2" title="Permalink to this definition"></a></dt>
+<dd><p>Checksum-1: First part of a checksum on the first 24 bytes of header</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.WALFileInfo.checksum_1">
+<span class="sig-name descname"><span class="pre">checksum_1</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.WALFileInfo.checksum_1" title="Permalink to this definition"></a></dt>
+<dd><p>Checksum-2: Second part of the checksum on the first 24 bytes of header</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.WALFileInfo.checksum_2">
+<span class="sig-name descname"><span class="pre">checksum_2</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.WALFileInfo.checksum_2" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </section>
 </section>
 
@@ -1033,7 +1321,7 @@ directly expressed in the query itself</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on May 17, 2023.
+      <span class="lastupdated">Last updated on Jul 25, 2023.
       </span></p>
   </div>
 

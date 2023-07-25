@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Example/Tour &mdash; APSW 3.42.0.0 documentation</title>
+  <title>Example/Tour &mdash; APSW 3.42.0.1 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/favicon.ico"/>
@@ -39,7 +39,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.42.0.0
+                3.42.0.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -181,7 +181,7 @@ see what gets printed when you run the code.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">      Using APSW file /space/apsw/apsw/__init__.cpython-311-x86_64-linux-gnu.so</span>
-<span class="go">         APSW version 3.42.0.0</span>
+<span class="go">         APSW version 3.42.0.1</span>
 <span class="go">SQLite header version 3042000</span>
 <span class="go">   SQLite lib version 3.42.0</span>
 <span class="go">   Using amalgamation True</span>
@@ -330,12 +330,12 @@ a while.</p>
 <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into point values(3, 3, 3)&quot;</span><span class="p">)</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into point values(4, 4, 4)&quot;</span><span class="p">)</span>
 
-<span class="c1"># You can use BEGIN / END to manually make a transaction</span>
+<span class="c1"># You can use BEGIN / COMMIT to manually make a transaction</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;BEGIN&quot;</span><span class="p">)</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into point values(2, 2, 2)&quot;</span><span class="p">)</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into point values(3, 3, 3)&quot;</span><span class="p">)</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into point values(4, 4, 4)&quot;</span><span class="p">)</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;END&quot;</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;COMMIT&quot;</span><span class="p">)</span>
 
 <span class="c1"># Or use `with` that does it automatically</span>
 <span class="k">with</span> <span class="n">connection</span><span class="p">:</span>
@@ -1105,7 +1105,7 @@ feedback and allows cancelling.</p>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
-<span class="go">(9977724111,)</span>
+<span class="go">(9971236249,)</span>
 </pre></div>
 </div>
 </section>
@@ -1348,8 +1348,8 @@ useful instead.</p>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">┌────────────┬────────────────────────────────┬───────────────┐</span>
 <span class="go">│    date    │           directory            │     name      │</span>
-<span class="go">│ 2023-04-17 │ /usr/lib/python3.11/pydoc_data │ topics.py     │</span>
-<span class="go">│ 2023-04-17 │ /usr/lib/python3.11            │ _pydecimal.py │</span>
+<span class="go">│ 2023-06-06 │ /usr/lib/python3.11/pydoc_data │ topics.py     │</span>
+<span class="go">│ 2023-06-06 │ /usr/lib/python3.11            │ _pydecimal.py │</span>
 <span class="go">│ 2023-04-17 │ /usr/lib/python3.11/tkinter    │ __init__.py   │</span>
 <span class="go">└────────────┴────────────────────────────────┴───────────────┘</span>
 </pre></div>
@@ -1365,7 +1365,7 @@ useful instead.</p>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">┌────────────┬────────────┐</span>
 <span class="go">│ extension  │ total_size │</span>
 <span class="go">│            │ 380625     │</span>
-<span class="go">│ .a         │ 113962916  │</span>
+<span class="go">│ .a         │ 113966532  │</span>
 <span class="go">│ .allowlist │ 56         │</span>
 <span class="go">│ .bootstrap │ 1756       │</span>
 <span class="go">│ .c         │ 11116      │</span>
@@ -1375,13 +1375,13 @@ useful instead.</p>
 <span class="go">│ .fish      │ 2215       │</span>
 <span class="go">│ .in        │ 3504       │</span>
 <span class="go">│ .local     │ 1534       │</span>
-<span class="go">│ .o         │ 20256      │</span>
+<span class="go">│ .o         │ 20304      │</span>
 <span class="go">│ .ps1       │ 9033       │</span>
-<span class="go">│ .py        │ 11736442   │</span>
-<span class="go">│ .pyc       │ 13217236   │</span>
+<span class="go">│ .py        │ 11740290   │</span>
+<span class="go">│ .pyc       │ 13228981   │</span>
 <span class="go">│ .rst       │ 9561       │</span>
-<span class="go">│ .sh        │ 3888       │</span>
-<span class="go">│ .so        │ 27564264   │</span>
+<span class="go">│ .sh        │ 3919       │</span>
+<span class="go">│ .so        │ 27565432   │</span>
 <span class="go">│ .stdlib    │ 10752      │</span>
 <span class="go">│ .supp      │ 70         │</span>
 <span class="go">│ .txt       │ 23425      │</span>
@@ -1592,9 +1592,9 @@ Python.</p>
 
 <span class="go">Dump output</span>
 
-<span class="go">-- SQLite dump (by APSW 3.42.0.0)</span>
+<span class="go">-- SQLite dump (by APSW 3.42.0.1)</span>
 <span class="go">-- SQLite version 3.42.0</span>
-<span class="go">-- Date: Wed May 17 09:17:52 2023</span>
+<span class="go">-- Date: Mon Jul 24 09:39:05 2023</span>
 <span class="go">-- Tables like: csvtest%</span>
 <span class="go">-- Database: /space/apsw/dbfile</span>
 <span class="go">-- User: rogerb @ clamps</span>
@@ -1626,7 +1626,7 @@ Python.</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SQLite memory usage </span><span class="si">{</span><span class="w"> </span><span class="n">current_usage</span><span class="w"> </span><span class="si">}</span><span class="s2"> max </span><span class="si">{</span><span class="w"> </span><span class="n">max_usage</span><span class="w"> </span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite memory usage 423488 max 2336416</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite memory usage 423456 max 2336400</span>
 </pre></div>
 </div>
 </section>
@@ -1680,7 +1680,7 @@ Python.</p>
 
 <span class="go">code is  SQLITE_TRACE_PROFILE</span>
 <span class="go">{&#39;code&#39;: 2,</span>
-<span class="go"> &#39;nanoseconds&#39;: 35000000,</span>
+<span class="go"> &#39;nanoseconds&#39;: 18000000,</span>
 <span class="go"> &#39;stmt_status&#39;: {&#39;SQLITE_STMTSTATUS_AUTOINDEX&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FILTER_HIT&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FILTER_MISS&#39;: 0,</span>
@@ -1821,7 +1821,7 @@ rollback the partial data.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on May 17, 2023.
+      <span class="lastupdated">Last updated on Jul 25, 2023.
       </span></p>
   </div>
 

@@ -444,10 +444,28 @@ API Reference
       that SQLite shared libraries are not used and will not affect your
       code.
 
+.. index:: sqlite3_vfs_find
+
+.. method:: vfs_details() -> list[dict[str, int | str]]
+
+Returns a list with details of each :ref:`vfs <vfs>`.  The detail is a
+dictionary with the keys being the names of the `sqlite3_vfs
+<https://sqlite.org/c3ref/vfs.html>`__ data structure, and their
+corresponding values.
+
+Pointers are converted using `PyLong_FromVoidPtr
+<https://docs.python.org/3/c-api/long.html?highlight=voidptr#c.PyLong_FromVoidPtr>`__.
+
+Calls: `sqlite3_vfs_find <https://sqlite.org/c3ref/vfs_find.html>`__
+
+.. index:: sqlite3_vfs_find
+
 .. method:: vfsnames() -> list[str]
 
   Returns a list of the currently installed :ref:`vfs <vfs>`.  The first
   item in the list is the default vfs.
+
+  Calls: `sqlite3_vfs_find <https://sqlite.org/c3ref/vfs_find.html>`__
 
 .. _sqliteconstants:
 

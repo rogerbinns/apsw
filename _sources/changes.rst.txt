@@ -3,6 +3,42 @@ Change History
 
 .. currentmodule:: apsw
 
+3.42.0.1
+========
+
+Work with SQLite compiled with `SQLITE_OMIT_DEPRECATED
+<https://www.sqlite.org/compile.html#omit_deprecated>`__.
+:meth:`Connection.setprofile` was changed from using the deprecated
+`sqlite3_profile <https://sqlite.org/c3ref/profile.html>`__ to
+`sqlite3_trace_v2 <https://sqlite.org/c3ref/trace_v2.html>`__ giving
+the same results.  When including the amalgamation,
+SQLITE_OMIT_DEPRECATED is defined. (:issue:`443`)
+
+:doc:`shell` updates adding :ref:`various commands <shell-commands>`
+to match the SQLite shell, as well as code and documentation
+improvements. (:issue:`397`)
+
+Added :meth:`Connection.read` and :func:`apsw.ext.dbinfo` to provide
+information from the database and journal/wal files.  The shell
+command :ref:`.dbinfo <shell-cmd-dbinfo>` displays it.
+
+Added :meth:`apsw.vfs_details`.  The shell command
+:ref:`.vfslist <shell-cmd-vfslist>` displays it.
+
+Implemented `VFS method xCurrentTimeInt64
+<https://sqlite.org/c3ref/vfs.html>`__.  The default SQLite VFS no
+longer provide ``xCurrentTime`` (floating point version) if
+``SQLITE_OMIT_DEPRECATED`` is defined, so this is needed for
+inheritance to work. (:issue:`451`)
+
+**Backwards incompatible change**: *VFS* If you override
+``xCurrentTime``, then you will need to override ``xCurrentTimeInt64``
+in the same way, or ``exclude`` ``xCurrentTimeInt64`` in :class:`VFS`,
+or use ``iVersion`` of ``1``.
+
+:ref:`speedtest` now shows summary statistics, and improved help text.
+(:issue:`444`)
+
 3.42.0.0
 ========
 

@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Virtual File System (VFS) &mdash; APSW 3.42.0.0 documentation</title>
+  <title>Virtual File System (VFS) &mdash; APSW 3.42.0.1 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/favicon.ico"/>
@@ -39,7 +39,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.42.0.0
+                3.42.0.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -69,6 +69,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#apsw.VFS.unregister"><code class="docutils literal notranslate"><span class="pre">VFS.unregister()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.VFS.xAccess"><code class="docutils literal notranslate"><span class="pre">VFS.xAccess()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.VFS.xCurrentTime"><code class="docutils literal notranslate"><span class="pre">VFS.xCurrentTime()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.VFS.xCurrentTimeInt64"><code class="docutils literal notranslate"><span class="pre">VFS.xCurrentTimeInt64()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.VFS.xDelete"><code class="docutils literal notranslate"><span class="pre">VFS.xDelete()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.VFS.xDlClose"><code class="docutils literal notranslate"><span class="pre">VFS.xDlClose()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.VFS.xDlError"><code class="docutils literal notranslate"><span class="pre">VFS.xDlError()</span></code></a></li>
@@ -281,7 +282,7 @@ them.</p></td>
 <h2>VFS class<a class="headerlink" href="#vfs-class" title="Permalink to this heading"></a></h2>
 <span class="target" id="index-0"></span><dl class="py class">
 <dt class="sig sig-object py" id="apsw.VFS">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">base</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">makedefault</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxpathname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFS" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">base</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">makedefault</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxpathname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iVersion</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.11)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFS" title="Permalink to this definition"></a></dt>
 <dd><p>Provides operating system access.  You can get an overview in the
 <a class="reference external" href="https://sqlite.org/c3ref/vfs.html">SQLite documentation</a>.  To
 create a VFS your Python class must inherit from <a class="reference internal" href="#apsw.VFS" title="apsw.VFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">VFS</span></code></a>.</p>
@@ -301,11 +302,11 @@ used by any opens that don't specify a vfs.</p></li>
 represented in UTF-8.  If a pathname is passed in longer than
 this value then SQLite will not`be able to open it.  If you are
 using a base, then a value of zero will use the value from base.</p></li>
+<li><p><strong>iVersion</strong> -- Version number for the <a class="reference external" href="https://sqlite.org/c3ref/vfs.html">sqlite3_vfs</a>
+structure.</p></li>
+<li><p><strong>exclude</strong> -- A set of strings, naming the methods that will be filled in with <code class="docutils literal notranslate"><span class="pre">NULL</span></code> in the <a class="reference external" href="https://sqlite.org/c3ref/vfs.html">sqlite3_vfs</a>  structure to indicate to SQLite that they are
+not supported.</p></li>
 </ul>
-</dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.11)"><strong>ValueError</strong></a> -- If <em>base</em> is not <em>None</em> and the named vfs is not
-currently registered.</p>
 </dd>
 </dl>
 <dl class="simple">
@@ -360,6 +361,13 @@ accordingly.</p>
 <dd><p>Return the <a class="reference external" href="http://en.wikipedia.org/wiki/Julian_day">Julian Day Number</a> as a floating point
 number where the integer portion is the day and the fractional part
 is the time. Do not adjust for timezone (ie use <a class="reference external" href="http://en.wikipedia.org/wiki/Universal_Time">UTC</a>).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.VFS.xCurrentTimeInt64">
+<span class="sig-prename descclassname"><span class="pre">VFS.</span></span><span class="sig-name descname"><span class="pre">xCurrentTimeInt64</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.VFS.xCurrentTimeInt64" title="Permalink to this definition"></a></dt>
+<dd><p>Returns as an integer the <a class="reference external" href="http://en.wikipedia.org/wiki/Julian_day">Julian Day Number</a> multiplied by 86400000
+(the number of milliseconds in a 24-hour day).</p>
 </dd></dl>
 
 <dl class="py method">
@@ -812,7 +820,7 @@ present.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on May 17, 2023.
+      <span class="lastupdated">Last updated on Jul 25, 2023.
       </span></p>
   </div>
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; APSW 3.42.0.0 documentation</title>
+  <title>Index &mdash; APSW 3.42.0.1 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/favicon.ico"/>
@@ -36,7 +36,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.42.0.0
+                3.42.0.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -110,6 +110,7 @@
  | <a href="#G"><strong>G</strong></a>
  | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
+ | <a href="#J"><strong>J</strong></a>
  | <a href="#K"><strong>K</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
@@ -188,6 +189,8 @@
 </li>
       <li><a href="apsw.html#apsw.allow_missing_dict_bindings">allow_missing_dict_bindings() (in module apsw)</a>
 </li>
+      <li><a href="ext.html#apsw.ext.DatabaseFileInfo.application_id">application_id (DatabaseFileInfo attribute)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li>
@@ -221,7 +224,11 @@
 </li>
       <li><a href="example.html#index-21">Authorizer (control what SQL can do) (example code)</a>
 </li>
+      <li><a href="shell.html#index-0">autoimport (Shell command)</a>
+</li>
       <li><a href="connection.html#apsw.Connection.autovacuum_pages">autovacuum_pages() (Connection method)</a>
+</li>
+      <li><a href="ext.html#apsw.ext.DatabaseFileInfo.autovacuum_top_root">autovacuum_top_root (DatabaseFileInfo attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -231,9 +238,13 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="backup.html#apsw.Backup">Backup (class in apsw)</a>
 </li>
+      <li><a href="shell.html#index-1">backup (Shell command)</a>
+</li>
       <li><a href="example.html#index-28">Backup an open database (example code)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.backup">backup() (Connection method)</a>
+</li>
+      <li><a href="shell.html#index-2">bail (Shell command)</a>
 </li>
       <li><a href="vtable.html#apsw.VTTable.Begin">Begin() (VTTable method)</a>
 </li>
@@ -245,10 +256,10 @@
 </li>
       <li><a href="example.html#index-6">Bindings (dict) (example code)</a>
 </li>
-      <li><a href="ext.html#apsw.ext.QueryDetails.bindings">bindings (QueryDetails attribute)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ext.html#apsw.ext.QueryDetails.bindings">bindings (QueryDetails attribute)</a>
+</li>
       <li><a href="example.html#index-5">Bindings (sequence) (example code)</a>
 </li>
       <li><a href="exceptions.html#apsw.BindingsError">BindingsError</a>
@@ -279,11 +290,23 @@
 </li>
       <li><a href="exceptions.html#apsw.CantOpenError">CantOpenError</a>
 </li>
+      <li><a href="shell.html#index-3">cd (Shell command)</a>
+</li>
+      <li><a href="shell.html#index-4">changes (Shell command)</a>
+</li>
       <li><a href="connection.html#apsw.Connection.changes">changes() (Connection method)</a>
 </li>
       <li><a href="example.html#index-0">Checking APSW and SQLite versions (example code)</a>
 </li>
+      <li><a href="ext.html#apsw.ext.WALFileInfo.checkpoint_sequence_number">checkpoint_sequence_number (WALFileInfo attribute)</a>
+</li>
+      <li><a href="ext.html#apsw.ext.WALFileInfo.checksum_1">checksum_1 (WALFileInfo attribute)</a>
+</li>
+      <li><a href="ext.html#apsw.ext.WALFileInfo.checksum_2">checksum_2 (WALFileInfo attribute)</a>
+</li>
       <li><a href="example.html#index-33">Cleanup (example code)</a>
+</li>
+      <li><a href="shell.html#index-5">close (Shell command)</a>
 </li>
       <li><a href="backup.html#apsw.Backup.close">close() (Backup method)</a>
 
@@ -301,6 +324,8 @@
 </li>
       <li><a href="connection.html#apsw.Connection.collationneeded">collationneeded() (Connection method)</a>
 </li>
+      <li><a href="shell.html#index-6">colour (Shell command)</a>
+</li>
       <li><a href="vtable.html#apsw.VTCursor.Column">Column() (VTCursor method)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.column_metadata">column_metadata() (Connection method)</a>
@@ -317,6 +342,8 @@
 </li>
       <li><a href="vtable.html#apsw.VTTable.Commit">Commit() (VTTable method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="apsw.html#apsw.CommitHook">CommitHook (class in apsw)</a>
 </li>
       <li><a href="apsw.html#apsw.compile_options">compile_options (in module apsw)</a>
@@ -327,8 +354,6 @@
         <li><a href="shell.html#apsw.shell.Shell.complete">(Shell method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="shell.html#apsw.shell.Shell.complete_command">complete_command() (Shell method)</a>
 </li>
       <li><a href="shell.html#apsw.shell.Shell.complete_sql">complete_sql() (Shell method)</a>
@@ -344,7 +369,11 @@
       <li><a href="connection.html#apsw.Connection">Connection (class in apsw)</a>
 </li>
       <li><a href="cursor.html#apsw.Cursor.connection">connection (Cursor attribute)</a>
+
+      <ul>
+        <li><a href="shell.html#index-7">(Shell command)</a>
 </li>
+      </ul></li>
       <li><a href="apsw.html#apsw.connection_hooks">connection_hooks (in module apsw)</a>
 </li>
       <li><a href="exceptions.html#apsw.ConnectionClosedError">ConnectionClosedError</a>
@@ -387,6 +416,10 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ext.html#apsw.ext.QueryAction.database_name">database_name (QueryAction attribute)</a>
 </li>
+      <li><a href="ext.html#apsw.ext.DatabaseFileInfo">DatabaseFileInfo (class in apsw.ext)</a>
+</li>
+      <li><a href="shell.html#index-8">databases (Shell command)</a>
+</li>
       <li><a href="ext.html#apsw.ext.DataClassRowFactory">DataClassRowFactory (class in apsw.ext)</a>
 </li>
       <li><a href="shell.html#apsw.shell.Shell.db">db (Shell property)</a>
@@ -395,12 +428,22 @@
 </li>
       <li><a href="connection.html#apsw.Connection.db_names">db_names() (Connection method)</a>
 </li>
+      <li><a href="shell.html#index-9">dbconfig (Shell command)</a>
+</li>
+      <li><a href="shell.html#index-10">dbinfo (Shell command)</a>
+</li>
+      <li><a href="ext.html#apsw.ext.dbinfo">dbinfo() (in module apsw.ext)</a>
+</li>
+      <li><a href="ext.html#apsw.ext.DatabaseFileInfo.default_cache_size">default_cache_size (DatabaseFileInfo attribute)</a>
+</li>
       <li><a href="example.html#index-14">Defining aggregate functions (example code)</a>
 </li>
       <li><a href="example.html#index-16">Defining collations (sorting) (example code)</a>
 </li>
       <li><a href="example.html#index-15">Defining window functions (example code)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="example.html#index-13">Defining your own functions (example code)</a>
 </li>
       <li><a href="cursor.html#apsw.Cursor.description">description (Cursor attribute)</a>
@@ -409,8 +452,6 @@
         <li><a href="ext.html#apsw.ext.QueryDetails.description">(QueryDetails attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="cursor.html#apsw.Cursor.description_full">description_full (Cursor attribute)</a>
 
       <ul>
@@ -433,17 +474,23 @@
 </li>
       <li><a href="connection.html#apsw.Connection.drop_modules">drop_modules() (Connection method)</a>
 </li>
+      <li><a href="shell.html#index-11">dump (Shell command)</a>
+</li>
   </ul></td>
 </tr></table>
 
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="shell.html#index-12">echo (Shell command)</a>
+</li>
       <li><a href="exceptions.html#apsw.EmptyError">EmptyError</a>
 </li>
       <li><a href="connection.html#apsw.Connection.enableloadextension">enableloadextension() (Connection method)</a>
 </li>
       <li><a href="apsw.html#apsw.enablesharedcache">enablesharedcache() (in module apsw)</a>
+</li>
+      <li><a href="shell.html#index-13">encoding (Shell command)</a>
 </li>
       <li><a href="vtable.html#apsw.VTCursor.Eof">Eof() (VTCursor method)</a>
 </li>
@@ -463,16 +510,18 @@
       </ul></li>
       <li><a href="apsw.html#apsw.exceptionfor">exceptionfor() (in module apsw)</a>
 </li>
+      <li><a href="shell.html#index-14">exceptions (Shell command)</a>
+</li>
       <li><a href="connection.html#apsw.Connection.exectrace">exectrace (Connection attribute)</a>
 
       <ul>
         <li><a href="cursor.html#apsw.Cursor.exectrace">(Cursor attribute)</a>
 </li>
       </ul></li>
-      <li><a href="exceptions.html#apsw.ExecTraceAbort">ExecTraceAbort</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="exceptions.html#apsw.ExecTraceAbort">ExecTraceAbort</a>
+</li>
       <li><a href="apsw.html#apsw.ExecTracer">ExecTracer (class in apsw)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.execute">execute() (Connection method)</a>
@@ -497,6 +546,8 @@
 </li>
       <li><a href="exceptions.html#apsw.ExecutionCompleteError">ExecutionCompleteError</a>
 </li>
+      <li><a href="shell.html#index-15">exit (Shell command)</a>
+</li>
       <li><a href="cursor.html#apsw.Cursor.expanded_sql">expanded_sql (Cursor attribute)</a>
 
       <ul>
@@ -519,12 +570,22 @@
 </li>
       <li><a href="cursor.html#apsw.Cursor.fetchone">fetchone() (Cursor method)</a>
 </li>
+      <li><a href="ext.html#apsw.ext.DatabaseFileInfo.file_change_counter">file_change_counter (DatabaseFileInfo attribute)</a>
+</li>
       <li><a href="ext.html#apsw.ext.QueryAction.file_name">file_name (QueryAction attribute)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.filecontrol">filecontrol() (Connection method)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.filename">filename (Connection attribute)</a>
+
+      <ul>
+        <li><a href="ext.html#apsw.ext.DatabaseFileInfo.filename">(DatabaseFileInfo attribute)</a>
 </li>
+        <li><a href="ext.html#apsw.ext.JournalFileInfo.filename">(JournalFileInfo attribute)</a>
+</li>
+        <li><a href="ext.html#apsw.ext.WALFileInfo.filename">(WALFileInfo attribute)</a>
+</li>
+      </ul></li>
       <li><a href="vfs.html#apsw.URIFilename.filename">filename() (URIFilename method)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.filename_journal">filename_journal (Connection attribute)</a>
@@ -533,10 +594,12 @@
 </li>
       <li><a href="vtable.html#apsw.VTCursor.Filter">Filter() (VTCursor method)</a>
 </li>
-      <li><a href="vtable.html#apsw.VTTable.FindFunction">FindFunction() (VTTable method)</a>
+      <li><a href="shell.html#index-16">find (Shell command)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="vtable.html#apsw.VTTable.FindFunction">FindFunction() (VTTable method)</a>
+</li>
       <li><a href="backup.html#apsw.Backup.finish">finish() (Backup method)</a>
 </li>
       <li><a href="ext.html#apsw.ext.QueryDetails.first_query">first_query (QueryDetails attribute)</a>
@@ -551,9 +614,13 @@
 </li>
       <li><a href="apsw.html#apsw.format_sql_value">format_sql_value() (in module apsw)</a>
 </li>
+      <li><a href="ext.html#apsw.ext.WALFileInfo.format_version">format_version (WALFileInfo attribute)</a>
+</li>
       <li><a href="exceptions.html#apsw.FormatError">FormatError</a>
 </li>
       <li><a href="example.html#index-32">Formatting query results table (example code)</a>
+</li>
+      <li><a href="ext.html#apsw.ext.DatabaseFileInfo.freelist_pages">freelist_pages (DatabaseFileInfo attribute)</a>
 </li>
       <li><a href="exceptions.html#apsw.FullError">FullError</a>
 </li>
@@ -633,8 +700,6 @@
 </li>
       <li><a href="shell.html#apsw.shell.Shell.handle_interrupt">handle_interrupt() (Shell method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="apsw.html#apsw.hard_heap_limit">hard_heap_limit() (in module apsw)</a>
 </li>
       <li><a href="cursor.html#apsw.Cursor.has_vdbe">has_vdbe (Cursor attribute)</a>
@@ -643,6 +708,20 @@
         <li><a href="ext.html#apsw.ext.QueryDetails.has_vdbe">(QueryDetails attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ext.html#apsw.ext.DatabaseFileInfo.header">header (DatabaseFileInfo attribute)</a>
+
+      <ul>
+        <li><a href="ext.html#apsw.ext.JournalFileInfo.header">(JournalFileInfo attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="shell.html#index-17">header(s) (Shell command)</a>
+</li>
+      <li><a href="ext.html#apsw.ext.JournalFileInfo.header_valid">header_valid (JournalFileInfo attribute)</a>
+</li>
+      <li><a href="shell.html#index-18">help (Shell command)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -655,18 +734,26 @@
 </li>
       <li><a href="vtable.html#apsw.IndexInfo.idxStr">idxStr (IndexInfo attribute)</a>
 </li>
+      <li><a href="shell.html#index-19">import (Shell command)</a>
+</li>
       <li><a href="connection.html#apsw.Connection.in_transaction">in_transaction (Connection attribute)</a>
 </li>
       <li><a href="exceptions.html#apsw.IncompleteExecutionError">IncompleteExecutionError</a>
+</li>
+      <li><a href="ext.html#apsw.ext.DatabaseFileInfo.incremental_vacuum">incremental_vacuum (DatabaseFileInfo attribute)</a>
 </li>
       <li><a href="ext.html#apsw.ext.index_info_to_dict">index_info_to_dict() (in module apsw.ext)</a>
 </li>
       <li><a href="vtable.html#apsw.IndexInfo">IndexInfo (class in apsw)</a>
 </li>
-      <li><a href="apsw.html#apsw.initialize">initialize() (in module apsw)</a>
+      <li><a href="shell.html#index-20">indices (Shell command)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ext.html#apsw.ext.JournalFileInfo.initial_pages">initial_pages (JournalFileInfo attribute)</a>
+</li>
+      <li><a href="apsw.html#apsw.initialize">initialize() (in module apsw)</a>
+</li>
       <li><a href="exceptions.html#apsw.InternalError">InternalError</a>
 </li>
       <li><a href="connection.html#apsw.Connection.interrupt">interrupt() (Connection method)</a>
@@ -689,6 +776,14 @@
         <li><a href="ext.html#apsw.ext.QueryDetails.is_readonly">(QueryDetails attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="J">J</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ext.html#apsw.ext.JournalFileInfo">JournalFileInfo (class in apsw.ext)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -715,13 +810,19 @@
 </li>
       <li><a href="example.html#index-27">Limits (example code)</a>
 </li>
+      <li><a href="shell.html#index-21">load (Shell command)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="connection.html#apsw.Connection.loadextension">loadextension() (Connection method)</a>
 </li>
       <li><a href="exceptions.html#apsw.LockedError">LockedError</a>
 </li>
+      <li><a href="shell.html#index-22">log (Shell command)</a>
+</li>
       <li><a href="apsw.html#apsw.log">log() (in module apsw)</a>
+</li>
+      <li><a href="shell.html#apsw.shell.Shell.log_handler">log_handler() (Shell method)</a>
 </li>
       <li><a href="ext.html#apsw.ext.log_sqlite">log_sqlite() (in module apsw.ext)</a>
 </li>
@@ -733,6 +834,8 @@
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ext.html#apsw.ext.WALFileInfo.magic_number">magic_number (WALFileInfo attribute)</a>
+</li>
       <li><a href="shell.html#apsw.shell.main">main() (in module apsw.shell)</a>
 </li>
       <li><a href="ext.html#apsw.ext.make_virtual_module">make_virtual_module() (in module apsw.ext)</a>
@@ -799,6 +902,8 @@
 </li>
       <li><a href="exceptions.html#apsw.MisuseError">MisuseError</a>
 </li>
+      <li><a href="shell.html#index-23">mode (Shell command)</a>
+</li>
       <li>
     module
 
@@ -836,6 +941,8 @@
 </li>
       <li><a href="exceptions.html#apsw.NotFoundError">NotFoundError</a>
 </li>
+      <li><a href="shell.html#index-24">nullvalue (Shell command)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -843,6 +950,8 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ext.html#apsw.ext.VDBEInstruction.opcode">opcode (VDBEInstruction attribute)</a>
+</li>
+      <li><a href="shell.html#index-25">open (Shell command)</a>
 </li>
       <li><a href="vtable.html#apsw.VTTable.Open">Open() (VTTable method)</a>
 </li>
@@ -857,6 +966,8 @@
       <li><a href="ext.html#apsw.ext.QueryAction.operation">operation (QueryAction attribute)</a>
 </li>
       <li><a href="vtable.html#apsw.IndexInfo.orderByConsumed">orderByConsumed (IndexInfo attribute)</a>
+</li>
+      <li><a href="shell.html#index-26">output (Shell command)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.overloadfunction">overloadfunction() (Connection method)</a>
 </li>
@@ -876,7 +987,23 @@
 </li>
       <li><a href="ext.html#apsw.ext.VDBEInstruction.p5">p5 (VDBEInstruction attribute)</a>
 </li>
+      <li><a href="ext.html#apsw.ext.DatabaseFileInfo.page_count">page_count (DatabaseFileInfo attribute)</a>
+
+      <ul>
+        <li><a href="ext.html#apsw.ext.JournalFileInfo.page_count">(JournalFileInfo attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="ext.html#apsw.ext.DatabaseFileInfo.page_size">page_size (DatabaseFileInfo attribute)</a>
+
+      <ul>
+        <li><a href="ext.html#apsw.ext.JournalFileInfo.page_size">(JournalFileInfo attribute)</a>
+</li>
+        <li><a href="ext.html#apsw.ext.WALFileInfo.page_size">(WALFileInfo attribute)</a>
+</li>
+      </ul></li>
       <li><a href="backup.html#apsw.Backup.pagecount">pagecount (Backup attribute)</a>
+</li>
+      <li><a href="shell.html#index-27">parameter (Shell command)</a>
 </li>
       <li><a href="exceptions.html#apsw.PermissionsError">PermissionsError</a>
 </li>
@@ -888,12 +1015,14 @@
 </li>
       <li><a href="ext.html#apsw.ext.QueryAction.pragma_name">pragma_name (QueryAction attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ext.html#apsw.ext.QueryAction.pragma_value">pragma_value (QueryAction attribute)</a>
 </li>
       <li><a href="example.html#index-10">Pragmas (example code)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="shell.html#index-28">print (Shell command)</a>
+</li>
       <li><a href="ext.html#apsw.ext.print_augmented_traceback">print_augmented_traceback() (in module apsw.ext)</a>
 </li>
       <li><a href="shell.html#apsw.shell.Shell.process_args">process_args() (Shell method)</a>
@@ -908,11 +1037,15 @@
 </li>
       <li><a href="example.html#index-22">Progress handler (example code)</a>
 </li>
+      <li><a href="shell.html#index-29">prompt (Shell command)</a>
+</li>
       <li><a href="exceptions.html#apsw.ProtocolError">ProtocolError</a>
 </li>
       <li><a href="shell.html#apsw.shell.Shell.push_input">push_input() (Shell method)</a>
 </li>
       <li><a href="shell.html#apsw.shell.Shell.push_output">push_output() (Shell method)</a>
+</li>
+      <li><a href="shell.html#index-30">py (Shell command)</a>
 </li>
       <li>
     Python Enhancement Proposals
@@ -953,11 +1086,21 @@
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ext.html#apsw.ext.JournalFileInfo.random_nonce">random_nonce (JournalFileInfo attribute)</a>
+</li>
       <li><a href="apsw.html#apsw.randomness">randomness() (in module apsw)</a>
 </li>
       <li><a href="exceptions.html#apsw.RangeError">RangeError</a>
 </li>
+      <li><a href="shell.html#index-31">read (Shell command)</a>
+</li>
       <li><a href="blob.html#apsw.Blob.read">read() (Blob method)</a>
+
+      <ul>
+        <li><a href="connection.html#apsw.Connection.read">(Connection method)</a>
+</li>
+      </ul></li>
+      <li><a href="ext.html#apsw.ext.DatabaseFileInfo.read_format">read_format (DatabaseFileInfo attribute)</a>
 </li>
       <li><a href="blob.html#apsw.Blob.readinto">readinto() (Blob method)</a>
 </li>
@@ -971,10 +1114,10 @@
 </li>
       <li><a href="vtable.html#apsw.VTTable.Release">Release() (VTTable method)</a>
 </li>
-      <li><a href="connection.html#apsw.Connection.release_memory">release_memory() (Connection method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="connection.html#apsw.Connection.release_memory">release_memory() (Connection method)</a>
+</li>
       <li><a href="apsw.html#apsw.releasememory">releasememory() (in module apsw)</a>
 </li>
       <li><a href="backup.html#apsw.Backup.remaining">remaining (Backup attribute)</a>
@@ -982,6 +1125,10 @@
       <li><a href="vtable.html#apsw.VTTable.Rename">Rename() (VTTable method)</a>
 </li>
       <li><a href="blob.html#apsw.Blob.reopen">reopen() (Blob method)</a>
+</li>
+      <li><a href="ext.html#apsw.ext.DatabaseFileInfo.reserved_bytes">reserved_bytes (DatabaseFileInfo attribute)</a>
+</li>
+      <li><a href="shell.html#index-32">restore (Shell command)</a>
 </li>
       <li><a href="exceptions.html#apsw.Error.result">result (Error attribute)</a>
 </li>
@@ -1003,13 +1150,27 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ext.html#apsw.ext.WALFileInfo.salt_1">salt_1 (WALFileInfo attribute)</a>
+</li>
+      <li><a href="ext.html#apsw.ext.WALFileInfo.salt_2">salt_2 (WALFileInfo attribute)</a>
+</li>
       <li><a href="vtable.html#apsw.VTTable.Savepoint">Savepoint() (VTTable method)</a>
 </li>
       <li><a href="apsw.html#apsw.ScalarProtocol">ScalarProtocol (class in apsw)</a>
 </li>
+      <li><a href="shell.html#index-33">schema (Shell command)</a>
+</li>
+      <li><a href="ext.html#apsw.ext.DatabaseFileInfo.schema_cookie">schema_cookie (DatabaseFileInfo attribute)</a>
+</li>
+      <li><a href="ext.html#apsw.ext.DatabaseFileInfo.schema_format">schema_format (DatabaseFileInfo attribute)</a>
+</li>
       <li><a href="exceptions.html#apsw.SchemaChangeError">SchemaChangeError</a>
 </li>
+      <li><a href="ext.html#apsw.ext.JournalFileInfo.sector_size">sector_size (JournalFileInfo attribute)</a>
+</li>
       <li><a href="blob.html#apsw.Blob.seek">seek() (Blob method)</a>
+</li>
+      <li><a href="shell.html#index-34">separator (Shell command)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.serialize">serialize() (Connection method)</a>
 </li>
@@ -1063,7 +1224,11 @@
         <li><a href="example.html#index-29">(example code)</a>
 </li>
       </ul></li>
+      <li><a href="shell.html#index-35">shell (Shell command)</a>
+</li>
       <li><a href="shell.html#apsw.shell.Shell.Error">Shell.Error</a>
+</li>
+      <li><a href="shell.html#index-36">show (Shell command)</a>
 </li>
       <li><a href="apsw.html#apsw.shutdown">shutdown() (in module apsw)</a>
 </li>
@@ -1109,9 +1274,9 @@
 </li>
       <li><a href="blob.html#index-6">sqlite3_blob_write</a>
 </li>
-      <li><a href="connection.html#index-37">sqlite3_busy_handler</a>
+      <li><a href="connection.html#index-38">sqlite3_busy_handler</a>
 </li>
-      <li><a href="connection.html#index-38">sqlite3_busy_timeout</a>
+      <li><a href="connection.html#index-39">sqlite3_busy_timeout</a>
 </li>
       <li><a href="connection.html#index-7">sqlite3_changes64</a>
 </li>
@@ -1129,7 +1294,7 @@
 </li>
       <li><a href="cursor.html#index-0">sqlite3_column_table_name</a>
 </li>
-      <li><a href="connection.html#index-39">sqlite3_commit_hook</a>
+      <li><a href="connection.html#index-40">sqlite3_commit_hook</a>
 </li>
       <li><a href="apsw.html#index-0">sqlite3_compileoption_get</a>
 </li>
@@ -1153,26 +1318,26 @@
 </li>
       <li><a href="connection.html#index-18">sqlite3_db_name</a>
 </li>
-      <li><a href="connection.html#index-33">sqlite3_db_readonly</a>
+      <li><a href="connection.html#index-34">sqlite3_db_readonly</a>
 </li>
-      <li><a href="connection.html#index-34">sqlite3_db_release_memory</a>
+      <li><a href="connection.html#index-35">sqlite3_db_release_memory</a>
 </li>
-      <li><a href="connection.html#index-45">sqlite3_db_status</a>
+      <li><a href="connection.html#index-46">sqlite3_db_status</a>
 </li>
       <li><a href="connection.html#index-19">sqlite3_deserialize</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="connection.html#index-20">sqlite3_enable_load_extension</a>
 </li>
       <li><a href="apsw.html#index-3">sqlite3_enable_shared_cache</a>
 </li>
       <li><a href="cursor.html#index-2">sqlite3_expanded_sql</a>
 </li>
-      <li><a href="connection.html#index-21">sqlite3_file_control</a>
+      <li><a href="connection.html#index-21">sqlite3_file_control</a>, <a href="connection.html#index-33">[1]</a>
 </li>
       <li><a href="connection.html#index-23">sqlite3_filename_journal</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="connection.html#index-24">sqlite3_filename_wal</a>
 </li>
       <li><a href="connection.html#index-25">sqlite3_get_autocommit</a>, <a href="connection.html#index-26">[1]</a>
@@ -1209,21 +1374,19 @@
 </li>
       <li><a href="cursor.html#index-1">sqlite3_prepare_v3</a>
 </li>
-      <li><a href="connection.html#index-40">sqlite3_profile</a>
-</li>
-      <li><a href="connection.html#index-41">sqlite3_progress_handler</a>
+      <li><a href="connection.html#index-42">sqlite3_progress_handler</a>
 </li>
       <li><a href="apsw.html#index-10">sqlite3_randomness</a>
 </li>
       <li><a href="apsw.html#index-11">sqlite3_release_memory</a>
 </li>
-      <li><a href="connection.html#index-42">sqlite3_rollback_hook</a>
+      <li><a href="connection.html#index-43">sqlite3_rollback_hook</a>
 </li>
-      <li><a href="connection.html#index-35">sqlite3_serialize</a>
+      <li><a href="connection.html#index-36">sqlite3_serialize</a>
 </li>
       <li><a href="connection.html#index-2">sqlite3_set_authorizer</a>
 </li>
-      <li><a href="connection.html#index-36">sqlite3_set_last_insert_rowid</a>
+      <li><a href="connection.html#index-37">sqlite3_set_last_insert_rowid</a>
 </li>
       <li><a href="apsw.html#index-13">sqlite3_shutdown</a>
 </li>
@@ -1243,7 +1406,7 @@
 </li>
       <li><a href="cursor.html#index-5">sqlite3_stmt_readonly</a>
 </li>
-      <li><a href="connection.html#index-49">sqlite3_stmt_status</a>
+      <li><a href="connection.html#index-50">sqlite3_stmt_status</a>
 </li>
       <li><a href="apsw.html#index-19">sqlite3_strglob</a>
 </li>
@@ -1253,17 +1416,17 @@
 </li>
       <li><a href="apsw.html#index-22">sqlite3_strnicmp</a>
 </li>
-      <li><a href="connection.html#index-46">sqlite3_system_errno</a>
+      <li><a href="connection.html#index-47">sqlite3_system_errno</a>
 </li>
-      <li><a href="connection.html#index-10">sqlite3_table_column_metadata</a>, <a href="connection.html#index-47">[1]</a>
+      <li><a href="connection.html#index-10">sqlite3_table_column_metadata</a>, <a href="connection.html#index-48">[1]</a>
 </li>
-      <li><a href="connection.html#index-48">sqlite3_total_changes64</a>
+      <li><a href="connection.html#index-49">sqlite3_total_changes64</a>
 </li>
-      <li><a href="connection.html#index-49">sqlite3_trace_v2</a>
+      <li><a href="connection.html#index-41">sqlite3_trace_v2</a>, <a href="connection.html#index-50">[1]</a>
 </li>
-      <li><a href="connection.html#index-50">sqlite3_txn_state</a>
+      <li><a href="connection.html#index-51">sqlite3_txn_state</a>
 </li>
-      <li><a href="connection.html#index-43">sqlite3_update_hook</a>
+      <li><a href="connection.html#index-44">sqlite3_update_hook</a>
 </li>
       <li><a href="vfs.html#index-2">sqlite3_uri_boolean</a>
 </li>
@@ -1271,7 +1434,7 @@
 </li>
       <li><a href="vfs.html#index-4">sqlite3_uri_parameter</a>
 </li>
-      <li><a href="apsw.html#index-12">sqlite3_vfs_find</a>, <a href="apsw.html#index-23">[1]</a>, <a href="vfs.html#index-0">[2]</a>
+      <li><a href="apsw.html#index-12">sqlite3_vfs_find</a>, <a href="apsw.html#index-23">[1]</a>, <a href="apsw.html#index-24">[2]</a>, <a href="apsw.html#index-25">[3]</a>, <a href="vfs.html#index-0">[4]</a>
 </li>
       <li><a href="apsw.html#index-12">sqlite3_vfs_register</a>, <a href="vfs.html#index-0">[1]</a>
 </li>
@@ -1279,7 +1442,7 @@
 </li>
       <li><a href="vtable.html#index-2">sqlite3_vtab_collation</a>
 </li>
-      <li><a href="connection.html#index-51">sqlite3_vtab_config</a>
+      <li><a href="connection.html#index-52">sqlite3_vtab_config</a>
 </li>
       <li><a href="vtable.html#index-0">sqlite3_vtab_distinct</a>
 </li>
@@ -1291,17 +1454,19 @@
 </li>
       <li><a href="vtable.html#index-5">sqlite3_vtab_nochange</a>
 </li>
-      <li><a href="connection.html#index-52">sqlite3_vtab_on_conflict</a>
+      <li><a href="connection.html#index-53">sqlite3_vtab_on_conflict</a>
 </li>
       <li><a href="vtable.html#index-3">sqlite3_vtab_rhs_value</a>
 </li>
-      <li><a href="connection.html#index-53">sqlite3_wal_autocheckpoint</a>
+      <li><a href="connection.html#index-54">sqlite3_wal_autocheckpoint</a>
 </li>
-      <li><a href="connection.html#index-54">sqlite3_wal_checkpoint_v2</a>
+      <li><a href="connection.html#index-55">sqlite3_wal_checkpoint_v2</a>
 </li>
-      <li><a href="connection.html#index-44">sqlite3_wal_hook</a>
+      <li><a href="connection.html#index-45">sqlite3_wal_hook</a>
 </li>
       <li><a href="connection.html#apsw.Connection.sqlite3pointer">sqlite3pointer() (Connection method)</a>
+</li>
+      <li><a href="ext.html#apsw.ext.DatabaseFileInfo.sqlite_version">sqlite_version (DatabaseFileInfo attribute)</a>
 </li>
       <li><a href="apsw.html#apsw.SQLITE_VERSION_NUMBER">SQLITE_VERSION_NUMBER (in module apsw)</a>
 </li>
@@ -1347,9 +1512,17 @@
 </li>
       <li><a href="ext.html#apsw.ext.QueryAction.table_name">table_name (QueryAction attribute)</a>
 </li>
+      <li><a href="shell.html#index-37">tables (Shell command)</a>
+</li>
       <li><a href="blob.html#apsw.Blob.tell">tell() (Blob method)</a>
 </li>
+      <li><a href="ext.html#apsw.ext.DatabaseFileInfo.text_encoding">text_encoding (DatabaseFileInfo attribute)</a>
+</li>
       <li><a href="exceptions.html#apsw.ThreadingViolationError">ThreadingViolationError</a>
+</li>
+      <li><a href="shell.html#index-38">timeout (Shell command)</a>
+</li>
+      <li><a href="shell.html#index-39">timer (Shell command)</a>
 </li>
       <li><a href="ext.html#apsw.ext.SQLiteTypeAdapter.to_sqlite_value">to_sqlite_value() (SQLiteTypeAdapter method)</a>
 </li>
@@ -1357,12 +1530,12 @@
 </li>
       <li><a href="connection.html#apsw.Connection.totalchanges">totalchanges() (Connection method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="connection.html#apsw.Connection.trace_v2">trace_v2() (Connection method)</a>
 </li>
       <li><a href="example.html#index-31">Tracing (example code)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="example.html#index-11">Tracing execution (example code)</a>
 </li>
       <li><a href="example.html#index-12">Tracing returned rows (example code)</a>
@@ -1401,10 +1574,10 @@
 </li>
       <li><a href="vtable.html#apsw.VTTable.UpdateInsertRow">UpdateInsertRow() (VTTable method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="vfs.html#apsw.URIFilename.uri_boolean">uri_boolean() (URIFilename method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="vfs.html#apsw.URIFilename.uri_int">uri_int() (URIFilename method)</a>
 </li>
       <li><a href="vfs.html#apsw.URIFilename.uri_parameter">uri_parameter() (URIFilename method)</a>
@@ -1412,6 +1585,8 @@
       <li><a href="vfs.html#apsw.URIFilename">URIFilename (class in apsw)</a>
 </li>
       <li><a href="shell.html#apsw.shell.Shell.usage">usage() (Shell method)</a>
+</li>
+      <li><a href="ext.html#apsw.ext.DatabaseFileInfo.user_version">user_version (DatabaseFileInfo attribute)</a>
 </li>
       <li><a href="example.html#index-7">Using different types (example code)</a>
 </li>
@@ -1425,20 +1600,32 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ext.html#apsw.ext.VDBEInstruction">VDBEInstruction (class in apsw.ext)</a>
 </li>
+      <li><a href="shell.html#index-40">version (Shell command)</a>
+</li>
+      <li><a href="ext.html#apsw.ext.DatabaseFileInfo.version_valid_for">version_valid_for (DatabaseFileInfo attribute)</a>
+</li>
       <li><a href="vfs.html#apsw.VFS">VFS (class in apsw)</a>
 </li>
       <li><a href="example.html#index-26">VFS - Virtual File System (example code)</a>
+</li>
+      <li><a href="apsw.html#apsw.vfs_details">vfs_details() (in module apsw)</a>
 </li>
       <li><a href="vfs.html#apsw.VFSFile">VFSFile (class in apsw)</a>
 </li>
       <li><a href="exceptions.html#apsw.VFSFileClosedError">VFSFileClosedError</a>
 </li>
+      <li><a href="shell.html#index-41">vfsinfo (Shell command)</a>
+</li>
+      <li><a href="shell.html#index-42">vfslist (Shell command)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="shell.html#index-43">vfsname (Shell command)</a>
+</li>
       <li><a href="apsw.html#apsw.vfsnames">vfsnames() (in module apsw)</a>
 </li>
       <li><a href="exceptions.html#apsw.VFSNotImplementedError">VFSNotImplementedError</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ext.html#apsw.ext.QueryAction.view_name">view_name (QueryAction attribute)</a>
 </li>
       <li><a href="example.html#index-25">Virtual tables (example code)</a>
@@ -1465,7 +1652,11 @@
 </li>
       <li><a href="connection.html#apsw.Connection.wal_checkpoint">wal_checkpoint() (Connection method)</a>
 </li>
+      <li><a href="ext.html#apsw.ext.WALFileInfo">WALFileInfo (class in apsw.ext)</a>
+</li>
       <li><a href="example.html#index-4">Why you use bindings to provide values (example code)</a>
+</li>
+      <li><a href="shell.html#index-44">width (Shell command)</a>
 </li>
       <li><a href="apsw.html#apsw.WindowFactory">WindowFactory (class in apsw)</a>
 </li>
@@ -1473,10 +1664,10 @@
 </li>
       <li><a href="apsw.html#apsw.WindowInverse">WindowInverse (class in apsw)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="apsw.html#apsw.WindowStep">WindowStep (class in apsw)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="apsw.html#apsw.WindowT">WindowT (class in apsw)</a>
 </li>
       <li><a href="apsw.html#apsw.WindowValue">WindowValue (class in apsw)</a>
@@ -1491,6 +1682,12 @@
         <li><a href="shell.html#apsw.shell.Shell.write">(Shell method)</a>
 </li>
       </ul></li>
+      <li><a href="shell.html#apsw.shell.Shell.write_error">write_error() (Shell method)</a>
+</li>
+      <li><a href="ext.html#apsw.ext.DatabaseFileInfo.write_format">write_format (DatabaseFileInfo attribute)</a>
+</li>
+      <li><a href="shell.html#apsw.shell.Shell.write_value">write_value() (Shell method)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -1504,6 +1701,8 @@
       <li><a href="vfs.html#apsw.VFSFile.xClose">xClose() (VFSFile method)</a>
 </li>
       <li><a href="vfs.html#apsw.VFS.xCurrentTime">xCurrentTime() (VFS method)</a>
+</li>
+      <li><a href="vfs.html#apsw.VFS.xCurrentTimeInt64">xCurrentTimeInt64() (VFS method)</a>
 </li>
       <li><a href="vfs.html#apsw.VFS.xDelete">xDelete() (VFS method)</a>
 </li>
@@ -1574,7 +1773,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on May 17, 2023.
+      <span class="lastupdated">Last updated on Jul 25, 2023.
       </span></p>
   </div>
 

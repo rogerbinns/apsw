@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>apsw.ext &mdash; APSW 3.42.0.0 documentation</title>
+  <title>apsw.ext &mdash; APSW 3.42.0.1 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
@@ -36,7 +36,7 @@
               <img src="../../_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.42.0.0
+                3.42.0.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -104,7 +104,6 @@
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 <span class="kn">import</span> <span class="nn">collections</span>
 <span class="kn">import</span> <span class="nn">collections.abc</span>
-
 
 <span class="kn">import</span> <span class="nn">dataclasses</span>
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">make_dataclass</span><span class="p">,</span> <span class="n">is_dataclass</span>
@@ -384,9 +383,6 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Send SQLite log messages to :mod:`logging`</span>
 
 <span class="sd">    :param level: level to log at (default *logging.ERROR*)</span>
-
-<span class="sd">    This must be called before doing any operations with SQLite, otherwise a :exc:`apsw.MisuseError`</span>
-<span class="sd">    will be raised.  (This is a SQLite limitation, not APSW.)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">handler</span><span class="p">(</span><span class="n">errcode</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -551,6 +547,108 @@
             <span class="n">res</span><span class="p">[</span><span class="s2">&quot;colUsed_names&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">column_names</span><span class="p">[</span><span class="mi">63</span><span class="p">:])</span>  <span class="c1"># type: ignore[attr-defined]</span>
 
     <span class="k">return</span> <span class="n">res</span></div>
+
+
+<div class="viewcode-block" id="dbinfo"><a class="viewcode-back" href="../../ext.html#apsw.ext.dbinfo">[docs]</a><span class="k">def</span> <span class="nf">dbinfo</span><span class="p">(</span><span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span>
+           <span class="n">schema</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DatabaseFileInfo</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">JournalFileInfo</span> <span class="o">|</span> <span class="n">WALFileInfo</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extracts fields from the database files</span>
+
+<span class="sd">    Based on the `file format description &lt;https://www.sqlite.org/fileformat2.html&gt;`__.  The</span>
+<span class="sd">    headers are read using :meth:`apsw.Connection.read` so you see inside encrypted, compressed,</span>
+<span class="sd">    zip etc formats. not necessarily the actual on disk file.</span>
+
+<span class="sd">    Memory databases return `None` for both.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">dbinfo</span> <span class="o">=</span> <span class="n">journalinfo</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">ok</span><span class="p">,</span> <span class="n">header_page</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">128</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLError</span><span class="p">:</span>
+        <span class="n">ok</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="n">be_int</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">,</span> <span class="n">byteorder</span><span class="o">=</span><span class="s2">&quot;big&quot;</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="n">be_sint</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">,</span> <span class="n">byteorder</span><span class="o">=</span><span class="s2">&quot;big&quot;</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">be_bool</span><span class="p">(</span><span class="n">b</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">be_int</span><span class="p">(</span><span class="n">b</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">be_page_size</span><span class="p">(</span><span class="n">b</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">be_int</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">v</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="mi">65536</span>
+        <span class="k">return</span> <span class="n">v</span>
+
+    <span class="k">def</span> <span class="nf">text_encoding</span><span class="p">(</span><span class="n">b</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">be_int</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;(pending)&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;UTF-8&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;UTF-16le&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="s2">&quot;UTF-16be&quot;</span><span class="p">}</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;&lt;&lt; INVALID VALUE </span><span class="si">{</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="si">}</span><span class="s2"> &gt;&gt;&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">ok</span><span class="p">:</span>
+        <span class="n">kw</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;filename&quot;</span><span class="p">:</span> <span class="n">db</span><span class="o">.</span><span class="n">filename</span><span class="p">}</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">converter</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="p">(</span><span class="s2">&quot;header&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;page_size&quot;</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">be_page_size</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;write_format&quot;</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">be_int</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;read_format&quot;</span><span class="p">,</span> <span class="mi">19</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">be_int</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;reserved_bytes&quot;</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">be_int</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;file_change_counter&quot;</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">be_int</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;page_count&quot;</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">be_int</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;freelist_pages&quot;</span><span class="p">,</span> <span class="mi">36</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">be_int</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;schema_cookie&quot;</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">be_int</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;schema_format&quot;</span><span class="p">,</span> <span class="mi">44</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">be_int</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;default_cache_size&quot;</span><span class="p">,</span> <span class="mi">48</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">be_int</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;autovacuum_top_root&quot;</span><span class="p">,</span> <span class="mi">52</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">be_int</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;text_encoding&quot;</span><span class="p">,</span> <span class="mi">56</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">text_encoding</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;user_version&quot;</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">be_int</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;incremental_vacuum&quot;</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">be_bool</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;application_id&quot;</span><span class="p">,</span> <span class="mi">68</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">be_int</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;version_valid_for&quot;</span><span class="p">,</span> <span class="mi">92</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">be_int</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;sqlite_version&quot;</span><span class="p">,</span> <span class="mi">96</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">be_int</span><span class="p">),</span>
+        <span class="p">):</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="n">header_page</span><span class="p">[</span><span class="n">offset</span><span class="p">:</span><span class="n">offset</span> <span class="o">+</span> <span class="n">size</span><span class="p">]</span>
+            <span class="n">kw</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">converter</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+        <span class="n">dbinfo</span> <span class="o">=</span> <span class="n">DatabaseFileInfo</span><span class="p">(</span><span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">ok</span><span class="p">,</span> <span class="n">journal_page</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLError</span><span class="p">:</span>
+        <span class="n">ok</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">if</span> <span class="n">ok</span><span class="p">:</span>
+        <span class="n">kw</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">db</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;journal_mode&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;wal&quot;</span><span class="p">:</span>
+            <span class="n">kw</span><span class="p">[</span><span class="s2">&quot;filename&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">filename_wal</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">converter</span> <span class="ow">in</span> <span class="p">(</span>
+                <span class="p">(</span><span class="s2">&quot;magic_number&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">be_int</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;format_version&quot;</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">be_int</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;page_size&quot;</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">be_page_size</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;checkpoint_sequence_number&quot;</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">be_int</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;salt_1&quot;</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">be_int</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;salt_2&quot;</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">be_int</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;checksum_1&quot;</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">be_int</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;checksum_2&quot;</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">be_int</span><span class="p">),</span>
+            <span class="p">):</span>
+                <span class="n">b</span> <span class="o">=</span> <span class="n">journal_page</span><span class="p">[</span><span class="n">offset</span><span class="p">:</span><span class="n">offset</span> <span class="o">+</span> <span class="n">size</span><span class="p">]</span>
+                <span class="n">kw</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">converter</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+            <span class="n">journalinfo</span> <span class="o">=</span> <span class="n">WALFileInfo</span><span class="p">(</span><span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">header_valid</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">b</span><span class="p">:</span> <span class="n">b</span> <span class="o">==</span> <span class="sa">b</span><span class="s2">&quot;</span><span class="se">\xd9\xd5\x05\xf9\x20\xa1\x63\xd7</span><span class="s2">&quot;</span>
+            <span class="n">kw</span><span class="p">[</span><span class="s2">&quot;filename&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">filename_journal</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">converter</span> <span class="ow">in</span> <span class="p">(</span>
+                <span class="p">(</span><span class="s2">&quot;header&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;header_valid&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="n">header_valid</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;page_count&quot;</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">be_sint</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;random_nonce&quot;</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">be_int</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;initial_pages&quot;</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">be_int</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;sector_size&quot;</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">be_int</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;page_size&quot;</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">be_int</span><span class="p">),</span>
+            <span class="p">):</span>
+                <span class="n">b</span> <span class="o">=</span> <span class="n">journal_page</span><span class="p">[</span><span class="n">offset</span><span class="p">:</span><span class="n">offset</span> <span class="o">+</span> <span class="n">size</span><span class="p">]</span>
+                <span class="n">kw</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">converter</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+            <span class="n">journalinfo</span> <span class="o">=</span> <span class="n">JournalFileInfo</span><span class="p">(</span><span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">dbinfo</span><span class="p">,</span> <span class="n">journalinfo</span></div>
 
 
 <div class="viewcode-block" id="format_query_table"><a class="viewcode-back" href="../../ext.html#apsw.ext.format_query_table">[docs]</a><span class="k">def</span> <span class="nf">format_query_table</span><span class="p">(</span><span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span>
@@ -1533,6 +1631,99 @@
     <span class="s2">&quot;Fourth opcode parameter&quot;</span>
     <span class="n">p5</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="s2">&quot;Fifth opcode parameter&quot;</span></div>
+
+
+<div class="viewcode-block" id="DatabaseFileInfo"><a class="viewcode-back" href="../../ext.html#apsw.ext.DatabaseFileInfo">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">DatabaseFileInfo</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Information about the main database file returned by :meth:`dbinfo`</span>
+
+<span class="sd">    See `file format description &lt;https://www.sqlite.org/fileformat.html#the_database_header&gt;`__&quot;&quot;&quot;</span>
+    <span class="s2">&quot;database filena name&quot;</span>
+    <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="s2">&quot;Header string&quot;</span>
+    <span class="n">header</span><span class="p">:</span> <span class="nb">bytes</span>
+    <span class="s2">&quot;The database page size in bytes&quot;</span>
+    <span class="n">page_size</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;File format write version. 1 for legacy; 2 for WAL&quot;</span>
+    <span class="n">write_format</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;File format read version. 1 for legacy; 2 for WAL.&quot;</span>
+    <span class="n">read_format</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s1">&#39;Bytes of unused &quot;reserved&quot; space at the end of each page. Usually 0&#39;</span>
+    <span class="n">reserved_bytes</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;File change counter&quot;</span>
+    <span class="n">file_change_counter</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;Size of the database file in pages&quot;</span>
+    <span class="n">page_count</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;Total number of freelist pages&quot;</span>
+    <span class="n">freelist_pages</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;The schema cookie&quot;</span>
+    <span class="n">schema_cookie</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;The schema format number. Supported schema formats are 1, 2, 3, and 4&quot;</span>
+    <span class="n">schema_format</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;Default page cache size&quot;</span>
+    <span class="n">default_cache_size</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;The page number of the largest root b-tree page when in auto-vacuum or incremental-vacuum modes, or zero otherwise&quot;</span>
+    <span class="n">autovacuum_top_root</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;The database text encoding&quot;</span>
+    <span class="n">text_encoding</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="s1">&#39;The &quot;user version&quot; as read and set by the user_version pragma.&#39;</span>
+    <span class="n">user_version</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;True (non-zero) for incremental-vacuum mode. False (zero) otherwise.&quot;</span>
+    <span class="n">incremental_vacuum</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="s1">&#39;The &quot;Application ID&quot; set by PRAGMA application_id&#39;</span>
+    <span class="n">application_id</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;The version-valid-for number.&quot;</span>
+    <span class="n">version_valid_for</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;SQLite version that lost wrote&quot;</span>
+    <span class="n">sqlite_version</span><span class="p">:</span> <span class="nb">int</span></div>
+
+
+<div class="viewcode-block" id="JournalFileInfo"><a class="viewcode-back" href="../../ext.html#apsw.ext.JournalFileInfo">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">JournalFileInfo</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Information about the rollback journal returned by :meth:`dbinfo`</span>
+
+<span class="sd">    See the `file format description &lt;https://www.sqlite.org/fileformat2.html#the_rollback_journal&gt;`__&quot;&quot;&quot;</span>
+    <span class="s2">&quot;journal file name&quot;</span>
+    <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="s2">&quot;Header string&quot;</span>
+    <span class="n">header</span><span class="p">:</span> <span class="nb">bytes</span>
+    <span class="s1">&#39;The &quot;Page Count&quot; - The number of pages in the next segment of the journal, or -1 to mean all content to the end of the file&#39;</span>
+    <span class="n">header_valid</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="s2">&quot;If the header is the expected bytes&quot;</span>
+    <span class="n">page_count</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;A random nonce for the checksum&quot;</span>
+    <span class="n">random_nonce</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;Initial size of the database in pages&quot;</span>
+    <span class="n">initial_pages</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;Size of a disk sector assumed by the process that wrote this journal&quot;</span>
+    <span class="n">sector_size</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;Size of pages in this journal&quot;</span>
+    <span class="n">page_size</span><span class="p">:</span> <span class="nb">int</span></div>
+
+
+<div class="viewcode-block" id="WALFileInfo"><a class="viewcode-back" href="../../ext.html#apsw.ext.WALFileInfo">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">WALFileInfo</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Information about the rollback journal returned by :meth:`dbinfo`</span>
+
+<span class="sd">    See the `file format description &lt;https://www.sqlite.org/fileformat2.html#wal_file_format&gt;`__&quot;&quot;&quot;</span>
+    <span class="s2">&quot;WAL file name&quot;</span>
+    <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="s2">&quot;Magic number&quot;</span>
+    <span class="n">magic_number</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;File format version. Currently 3007000&quot;</span>
+    <span class="n">format_version</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;Database page size&quot;</span>
+    <span class="n">page_size</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;Checkpoint sequence number&quot;</span>
+    <span class="n">checkpoint_sequence_number</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;Salt-1: random integer incremented with each checkpoint&quot;</span>
+    <span class="n">salt_1</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;Salt-2: a different random number for each checkpoint&quot;</span>
+    <span class="n">salt_2</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;Checksum-1: First part of a checksum on the first 24 bytes of header&quot;</span>
+    <span class="n">checksum_1</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;Checksum-2: Second part of the checksum on the first 24 bytes of header&quot;</span>
+    <span class="n">checksum_2</span><span class="p">:</span> <span class="nb">int</span></div>
 </pre></div>
 
            </div>
@@ -1543,7 +1734,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on May 17, 2023.
+      <span class="lastupdated">Last updated on Jul 25, 2023.
       </span></p>
   </div>
 

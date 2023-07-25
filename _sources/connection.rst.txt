@@ -329,6 +329,13 @@ If `entries` is present, then each list entry is a dict with the following infor
       <https://sqlite.org/c3ref/c_dbconfig_enable_fkey.html>`__
     :param args: Zero or more arguments as appropriate for *op*
 
+    This is how to get the fkey setting::
+
+      val = config(apsw.SQLITE_DBCONFIG_ENABLE_FKEY, -1)
+
+    A parameter of zero would turn it off, 1 turns on, and negative
+    leaves unaltered.  The effective value is always returned.
+
     Calls: `sqlite3_db_config <https://sqlite.org/c3ref/db_config.html>`__
 
 .. index:: sqlite3_create_window_function
@@ -812,6 +819,30 @@ See :meth:`Cursor.executemany` for more details.
 
   * :ref:`Example <example_pragma>`
 
+.. index:: sqlite3_file_control
+
+.. method:: Connection.read(schema: str, which: int, offset: int, amount: int) -> tuple[bool, bytes]
+
+  Invokes the underlying VFS method to read data from the database.  It
+  is strongly recommended to read aligned complete pages, since that is
+  only what SQLite does.
+
+  `schema` is `main`, `temp`, or the name of an attached database.
+
+  `which` is 0 for the database file, 1 for the journal.
+
+  The return value is a tuple of a boolean indicating a complete read if
+  True, and the bytes read which will always be the amount requested
+  in size.
+
+  `SQLITE_IOERR_SHORT_READ` will give a `False` value for the boolean,
+  and there is no way of knowing how much was read.
+
+  Implemented using `SQLITE_FCNTL_FILE_POINTER` and `SQLITE_FCNTL_JOURNAL_POINTER`.
+  Errors will usually be generic `SQLITE_ERROR` with no message.
+
+  Calls: `sqlite3_file_control <https://sqlite.org/c3ref/file_control.html>`__
+
 .. index:: sqlite3_db_readonly
 
 .. method:: Connection.readonly(name: str) -> bool
@@ -943,18 +974,20 @@ See :meth:`Cursor.executemany` for more details.
 
    Method to set :attr:`Connection.exectrace`
 
-.. index:: sqlite3_profile
+.. index:: sqlite3_trace_v2
 
 .. method:: Connection.setprofile(callable: Optional[Callable[[str, int], None]]) -> None
 
   Sets a callable which is invoked at the end of execution of each
   statement and passed the statement string and how long it took to
   execute. (The execution time is in nanoseconds.) Note that it is
-  called only on completion. If for example you do a ``SELECT`` and
-  only read the first result, then you won't reach the end of the
-  statement.
+  called only on completion. If for example you do a ``SELECT`` and only
+  read the first result, then you won't reach the end of the statement.
 
-  Calls: `sqlite3_profile <https://sqlite.org/c3ref/profile.html>`__
+  This used to call the now deprecated `sqlite3_profile API
+  <https://sqlite.org/c3ref/profile.html>`__
+
+  Calls: `sqlite3_trace_v2 <https://sqlite.org/c3ref/trace_v2.html>`__
 
 .. index:: sqlite3_progress_handler
 

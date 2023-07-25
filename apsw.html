@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>APSW Module &mdash; APSW 3.42.0.0 documentation</title>
+  <title>APSW Module &mdash; APSW 3.42.0.1 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/favicon.ico"/>
@@ -39,7 +39,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.42.0.0
+                3.42.0.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -112,6 +112,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#apsw.strnicmp"><code class="docutils literal notranslate"><span class="pre">strnicmp()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.unregister_vfs"><code class="docutils literal notranslate"><span class="pre">unregister_vfs()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.using_amalgamation"><code class="docutils literal notranslate"><span class="pre">using_amalgamation</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.vfs_details"><code class="docutils literal notranslate"><span class="pre">vfs_details()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.vfsnames"><code class="docutils literal notranslate"><span class="pre">vfsnames()</span></code></a></li>
 </ul>
 </li>
@@ -829,11 +830,22 @@ that SQLite shared libraries are not used and will not affect your
 code.</p>
 </dd></dl>
 
-<dl class="py method">
+<span class="target" id="index-24"></span><dl class="py method">
+<dt class="sig sig-object py" id="apsw.vfs_details">
+<span class="sig-name descname"><span class="pre">vfs_details</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.11)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.11)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#apsw.vfs_details" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<p>Returns a list with details of each <a class="reference internal" href="vfs.html#vfs"><span class="std std-ref">vfs</span></a>.  The detail is a
+dictionary with the keys being the names of the <a class="reference external" href="https://sqlite.org/c3ref/vfs.html">sqlite3_vfs</a> data structure, and their
+corresponding values.</p>
+<p>Pointers are converted using <a class="reference external" href="https://docs.python.org/3/c-api/long.html?highlight=voidptr#c.PyLong_FromVoidPtr">PyLong_FromVoidPtr</a>.</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/vfs_find.html">sqlite3_vfs_find</a></p>
+<span class="target" id="index-25"></span><dl class="py method">
 <dt class="sig sig-object py" id="apsw.vfsnames">
 <span class="sig-name descname"><span class="pre">vfsnames</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.11)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#apsw.vfsnames" title="Permalink to this definition"></a></dt>
 <dd><p>Returns a list of the currently installed <a class="reference internal" href="vfs.html#vfs"><span class="std std-ref">vfs</span></a>.  The first
 item in the list is the default vfs.</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/vfs_find.html">sqlite3_vfs_find</a></p>
 </dd></dl>
 
 </section>
@@ -1050,7 +1062,7 @@ modules etc. For example:</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on May 17, 2023.
+      <span class="lastupdated">Last updated on Jul 25, 2023.
       </span></p>
   </div>
 
