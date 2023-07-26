@@ -52,7 +52,6 @@ docs-no-fetch: $(GENDOCS) doc/example.rst doc/.static doc/typing.rstgen
 	make PYTHONPATH="`pwd`" VERSION=$(VERSION) RELEASEDATE=$(RELEASEDATE) -C doc clean html epub
 	tools/spellcheck.sh
 	rst2html.py --strict --verbose --exit-status 1 README.rst >/dev/null
-	sphinx-lint --enable all README.rst
 
 doc/example.rst: example-code.py tools/example2rst.py src/apswversion.h
 	rm -f dbfile
@@ -67,7 +66,7 @@ doc/.static:
 	mkdir -p doc/.static
 
 doc-depends: ## pip installs packages needed to build doc
-	$(PYTHON) -m pip install -U --upgrade-strategy eager sphinx sphinx_rtd_theme sphinx-lint
+	$(PYTHON) -m pip install -U --upgrade-strategy eager sphinx sphinx_rtd_theme
 
 dev-depends: ## pip installs packages useful for development (none are necessary except setuptools)
 	$(PYTHON) -m pip install -U --upgrade-strategy eager yapf mypy pdbpp coverage build wheel setuptools
