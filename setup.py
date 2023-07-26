@@ -568,7 +568,7 @@ class apsw_build_ext(beparent):
             write("SQLite: Using amalgamation", path)
         else:
             d = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sqlite3")
-            if os.path.isdir(d):
+            if os.path.isdir(d) and len(glob.glob(f"{d}/*")) > 3:
                 write("SQLite: Using include/libraries in sqlite3 subdirectory")
                 ext.include_dirs.insert(0, d)
                 ext.library_dirs.append(d)
