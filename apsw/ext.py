@@ -459,7 +459,8 @@ def dbinfo(db: apsw.Connection,
     Memory databases return `None` for both.
     """
 
-    dbinfo = journalinfo = None
+    dbinfo: DatabaseFileInfo | None = None
+    journalinfo: JournalFileInfo | WALFileInfo | None = None
 
     try:
         ok, header_page = db.read(schema, 0, 0, 128)
@@ -484,7 +485,7 @@ def dbinfo(db: apsw.Connection,
         return {0: "(pending)", 1: "UTF-8", 2: "UTF-16le", 3: "UTF-16be"}.get(v, f"<< INVALID VALUE { v } >>")
 
     if ok:
-        kw = {"filename": db.filename}
+        kw: dict[str, Any] = {"filename": db.filename}
         for name, offset, size, converter in (
             ("header", 0, 16, bytes),
             ("page_size", 16, 2, be_page_size),
@@ -506,7 +507,7 @@ def dbinfo(db: apsw.Connection,
             ("sqlite_version", 96, 4, be_int),
         ):
             b = header_page[offset:offset + size]
-            kw[name] = converter(b)
+            kw[name] = converter(b)  # type: ignore [operator]
         dbinfo = DatabaseFileInfo(**kw)
 
     try:
@@ -515,7 +516,7 @@ def dbinfo(db: apsw.Connection,
         ok = False
 
     if ok:
-        kw = {}
+        kw: dict[str, Any] = {}  # type: ignore [no-redef]
         if db.pragma("journal_mode") == "wal":
             kw["filename"] = db.filename_wal
             for name, offset, size, converter in (
@@ -529,7 +530,7 @@ def dbinfo(db: apsw.Connection,
                 ("checksum_2", 28, 4, be_int),
             ):
                 b = journal_page[offset:offset + size]
-                kw[name] = converter(b)
+                kw[name] = converter(b)  # type: ignore [operator]
             journalinfo = WALFileInfo(**kw)
         else:
             header_valid = lambda b: b == b"\xd9\xd5\x05\xf9\x20\xa1\x63\xd7"
@@ -544,7 +545,7 @@ def dbinfo(db: apsw.Connection,
                 ("page_size", 24, 4, be_int),
             ):
                 b = journal_page[offset:offset + size]
-                kw[name] = converter(b)
+                kw[name] = converter(b)  # type: ignore [operator]
             journalinfo = JournalFileInfo(**kw)
 
     return dbinfo, journalinfo
