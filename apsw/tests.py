@@ -30,6 +30,14 @@ def ShouldFault(name, pending_exception):
 sys.apsw_should_fault = ShouldFault
 
 import apsw
+
+if not all(hasattr(apsw, name) for name in ("initialize", "format_sql_value")):
+    msg = """
+The compiled portion of APSW is not present where the tests are being run.
+It needs to be compiled and in-place first.
+    """.strip()
+    sys.exit(msg)
+
 import apsw.shell
 
 
