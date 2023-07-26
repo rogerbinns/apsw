@@ -10352,7 +10352,7 @@ def setup():
 
     # We can do extension loading but no extension present ...
     if getattr(memdb, "enableloadextension", None) and not os.path.exists(LOADEXTENSIONFILENAME):
-        print("Not doing LoadExtension test.  You need to compile the extension first\n")
+        print("Not doing the optional LoadExtension test.  You need to compile the extension first\n")
         print("  python3 setup.py build_test_extension")
         del APSW.testLoadExtension
 
