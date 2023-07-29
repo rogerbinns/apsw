@@ -650,6 +650,46 @@ for max_num in connection.execute("select max(x) from numbers"):
 # Clear handler
 connection.setprogresshandler(None)
 
+### filecontrol: File Control
+# We can get/set low level information using the
+# :meth:`Connection.filecontrol` interface.  In this example we get
+# the `data version
+# <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntldataversion>`__.
+# There is a `pragma
+# <https://sqlite.org/pragma.html#pragma_data_version>`__ but it
+# doesn't change for commits on the same connection.
+
+# We use ctypes to provide the correct C level data types and pointers
+import ctypes
+
+
+def get_data_version(db):
+    # unsigned 32 bit integer
+    data_version = ctypes.c_uint32(0)
+    ok = db.filecontrol(
+        "main",  # or an attached database name
+        apsw.SQLITE_FCNTL_DATA_VERSION,  # code
+        ctypes.addressof(data_version))  # pass C level pointer
+    assert ok, "SQLITE_FCNTL_DATA_VERSION was not understood!"
+    return data_version.value
+
+
+# Show starting values
+print("fcntl", get_data_version(connection), "pragma", connection.pragma("data_version"))
+
+# See the fcntl value versus pragma value
+for sql in (
+        "create table fcntl_example(x)",
+        "begin ; insert into fcntl_example values(3)",
+        # we can see the version doesn't change inside a transaction
+        "insert into fcntl_example values(4)",
+        "commit",
+        "pragma user_version=1234",
+):
+    print(sql)
+    connection.execute(sql)
+    print("fcntl", get_data_version(connection), "pragma", connection.pragma("data_version"))
+
 ### commit_hook: Commit hook
 # A commit hook can allow or veto commits.  Register a commit hook
 # with  :meth:`Connection.setcommithook`.

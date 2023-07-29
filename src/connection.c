@@ -3405,6 +3405,10 @@ Connection_createcollation(Connection *self, PyObject *args, PyObject *kwds)
 
   :returns: True or False indicating if the VFS understood the op.
 
+  The :ref:`example <example_filecontrol>` shows getting
+  `SQLITE_FCNTL_DATA_VERSION
+  <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntldataversion>`__.
+
   If you want data returned back then the *pointer* needs to point to
   something mutable.  Here is an example using `ctypes
   <https://docs.python.org/3/library/ctypes.html>`_ of
