@@ -3434,7 +3434,7 @@ Connection_createcollation(Connection *self, PyObject *args, PyObject *kwds)
             return True
         else:
             # pass to parent/superclass
-            return super(MyFile, self).xFileControl(op, pointer)
+            return super().xFileControl(op, pointer)
 
   This is how you set the chunk size by which the database grows.  Do
   not combine it into one line as the c_int would be garbage collected

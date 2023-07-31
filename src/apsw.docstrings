@@ -1413,6 +1413,10 @@
 "\n" \
 ":returns: True or False indicating if the VFS understood the op.\n" \
 "\n" \
+"The :ref:`example <example_filecontrol>` shows getting\n" \
+"`SQLITE_FCNTL_DATA_VERSION\n" \
+"<https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntldataversion>`__.\n" \
+"\n" \
 "If you want data returned back then the *pointer* needs to point to\n" \
 "something mutable.  Here is an example using `ctypes\n" \
 "<https://docs.python.org/3/library/ctypes.html>`_ of\n" \
@@ -1438,7 +1442,7 @@
 "          return True\n" \
 "      else:\n" \
 "          # pass to parent/superclass\n" \
-"          return super(MyFile, self).xFileControl(op, pointer)\n" \
+"          return super().xFileControl(op, pointer)\n" \
 "\n" \
 "This is how you set the chunk size by which the database grows.  Do\n" \
 "not combine it into one line as the c_int would be garbage collected\n" \
@@ -2900,7 +2904,7 @@
 "                 obj=ctypes.py_object.from_address(ptr).value\n" \
 "             else:\n" \
 "                 # this ensures superclass implementation is called\n" \
-"                 return super(MyFile, self).xFileControl(op, ptr)\n" \
+"                 return super().xFileControl(op, ptr)\n" \
 " # we understood the op\n" \
 "       return True\n" 
 

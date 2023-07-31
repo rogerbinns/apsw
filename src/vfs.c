@@ -2652,7 +2652,7 @@ apswvfsfile_xFileControl(sqlite3_file *file, int op, void *pArg)
                     obj=ctypes.py_object.from_address(ptr).value
                 else:
                     # this ensures superclass implementation is called
-                    return super(MyFile, self).xFileControl(op, ptr)
+                    return super().xFileControl(op, ptr)
     # we understood the op
           return True
 */

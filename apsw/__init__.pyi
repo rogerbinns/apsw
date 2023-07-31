@@ -1228,6 +1228,10 @@ class Connection:
 
         :returns: True or False indicating if the VFS understood the op.
 
+        The :ref:`example <example_filecontrol>` shows getting
+        `SQLITE_FCNTL_DATA_VERSION
+        <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntldataversion>`__.
+
         If you want data returned back then the *pointer* needs to point to
         something mutable.  Here is an example using `ctypes
         <https://docs.python.org/3/library/ctypes.html>`_ of
@@ -1253,7 +1257,7 @@ class Connection:
                   return True
               else:
                   # pass to parent/superclass
-                  return super(MyFile, self).xFileControl(op, pointer)
+                  return super().xFileControl(op, pointer)
 
         This is how you set the chunk size by which the database grows.  Do
         not combine it into one line as the c_int would be garbage collected
@@ -2313,7 +2317,7 @@ class VFSFile:
                          obj=ctypes.py_object.from_address(ptr).value
                      else:
                          # this ensures superclass implementation is called
-                         return super(MyFile, self).xFileControl(op, ptr)
+                         return super().xFileControl(op, ptr)
          # we understood the op
                return True"""
         ...
