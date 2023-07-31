@@ -898,7 +898,7 @@ class ObfuscatedVFS(apsw.VFS):
     def __init__(self, vfsname="obfuscated", basevfs=""):
         self.vfs_name = vfsname
         self.base_vfs = basevfs
-        apsw.VFS.__init__(self, self.vfs_name, self.base_vfs)
+        super().__init__(self.vfs_name, self.base_vfs)
 
     # We want to return our own file implementation, but also
     # want it to inherit
@@ -920,7 +920,7 @@ class ObfuscatedVFS(apsw.VFS):
 class ObfuscatedVFSFile(apsw.VFSFile):
 
     def __init__(self, inheritfromvfsname, filename, flags):
-        apsw.VFSFile.__init__(self, inheritfromvfsname, filename, flags)
+        super().__init__(inheritfromvfsname, filename, flags)
 
     def xRead(self, amount, offset):
         return obfuscate(super().xRead(amount, offset))
