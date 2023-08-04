@@ -38,7 +38,7 @@ clean: ## Cleans up everything
 	rm -rf dist build work/* megatestresults apsw.egg-info __pycache__ apsw/__pycache__ :memory: .mypy_cache .ropeproject htmlcov "System Volume Information" doc/docdb.json
 	mkdir dist
 	for i in 'vgcore.*' '.coverage' '*.pyc' '*.pyo' '*~' '*.o' '*.so' '*.dll' '*.pyd' '*.gcov' '*.gcda' '*.gcno' '*.orig' '*.tmp' 'testdb*' 'testextension.sqlext' ; do \
-		find . -type f -name "$$i" -print0 | xargs -0t --no-run-if-empty rm -f ; done
+		find . -type f -name "$$i" -print0 | xargs -0 --no-run-if-empty rm -f ; done
 	rm -f doc/typing.rstgen doc/example.rst $(GENDOCS)
 	-rm -rf sqlite3/
 
