@@ -119,6 +119,126 @@ across.
 
 */
 
+/* make working with file control pragma easier */
+
+/** .. class:: VFSFcntlPragma
+
+A helper class to work with `SQLITE_FCNTL_PRAGMA
+<https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlpragma>`__
+in :meth:`VFSFile.xFileControl`. The :ref:`example <example_vfs>`
+shows usage of this class.
+
+It is only valid while in :meth:`VFSFile.xFileControl`, and using
+outside of that will result in memory corruption and crashes.
+
+*/
+typedef struct apswfcntl_pragma
+{
+  PyObject_HEAD char **strings;
+} apswfcntl_pragma;
+
+static PyObject *
+apswfcntl_pragma_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+  apswfcntl_pragma *self = (apswfcntl_pragma *)type->tp_alloc(type, 0);
+  if (self != NULL)
+  {
+    self->strings = NULL;
+  }
+  return (PyObject *)self;
+}
+
+/** .. method:: __init__(pointer: int)
+
+The pointer must be what your xFileControl method received.
+
+*/
+static int
+apswfcntl_pragma_init(apswfcntl_pragma *self, PyObject *args, PyObject *kwds)
+{
+  void *pointer = NULL;
+  {
+    static char *kwlist[] = {"pointer", NULL};
+    VFSFcntlPragma_init_CHECK;
+    argcheck_pointer_param pointer_param = {&pointer, VFSFcntlPragma_init_pointer_MSG};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" VFSFcntlPragma_init_USAGE, kwlist, argcheck_pointer, &pointer_param))
+      return -1;
+  }
+  self->strings = pointer;
+  return 0;
+}
+
+/** .. attribute:: result
+    :type: str | None
+
+    The first element which becomes the result or error message
+*/
+static PyObject *
+apswfcntl_pragma_get_result(apswfcntl_pragma *self)
+{
+  return convertutf8string(self->strings[0]);
+}
+
+static int
+apswfcntl_pragma_set_result(apswfcntl_pragma *self, PyObject *value)
+{
+  if (!Py_IsNone(value) && !PyUnicode_Check(value))
+  {
+    PyErr_Format(PyExc_TypeError, "Expected None or str, not %s", Py_TypeName(value));
+    return -1;
+  }
+  if (self->strings[0])
+  {
+    sqlite3_free(self->strings[0]);
+    self->strings[0] = NULL;
+  }
+  if (!Py_IsNone(value))
+    self->strings[0] = sqlite3_mprintf("%s", PyUnicode_AsUTF8(value));
+  return 0;
+}
+
+/** .. attribute:: name
+    :type: str
+
+    The name of the pragma
+*/
+static PyObject *
+apswfcntl_pragma_get_name(apswfcntl_pragma *self)
+{
+  return convertutf8string(self->strings[1]);
+}
+
+/** .. attribute:: value
+    :type: str | None
+
+    The value for the pragma, if provided else None,
+*/
+static PyObject *
+apswfcntl_pragma_get_value(apswfcntl_pragma *self)
+{
+  return convertutf8string(self->strings[2]);
+}
+
+static PyGetSetDef apswfcntl_pragma_getsetters[] = {
+    {"result", (getter)apswfcntl_pragma_get_result, (setter)apswfcntl_pragma_set_result, VFSFcntlPragma_result_DOC},
+    {"name", (getter)apswfcntl_pragma_get_name, NULL, VFSFcntlPragma_name_DOC},
+    {"value", (getter)apswfcntl_pragma_get_value, NULL, VFSFcntlPragma_value_DOC},
+    /* sentinel */
+    {
+        NULL, NULL, NULL, NULL}};
+
+static PyTypeObject apswfcntl_pragma_Type = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+        .tp_name = "apsw.VFSFcntlPragma",
+    .tp_doc = VFSFcntlPragma_class_DOC,
+    .tp_basicsize = sizeof(apswfcntl_pragma),
+    .tp_itemsize = 0,
+    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_new = apswfcntl_pragma_new,
+    .tp_init = (initproc)apswfcntl_pragma_init,
+    .tp_getset = apswfcntl_pragma_getsetters,
+};
+
 /* Naming convention prefixes.  Since sqlite3.c is #included alongside
    this file we have to ensure there is no clash with its names.
    There are two objects - the VFS itself and a VFSFile as returned

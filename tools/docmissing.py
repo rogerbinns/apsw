@@ -54,6 +54,7 @@ for name, obj in (
     ('VFS', vfs),
     ('VFSFile', vfsfile),
     ('apsw', apsw),
+    ('VFSFcntlPragma', apsw.VFSFcntlPragma)
 ):
     if name not in classes:
         retval = 1
@@ -80,7 +81,7 @@ for name, obj in (
             if isinstance(getattr(apsw, c), type) and issubclass(getattr(apsw, c), Exception):
                 continue
             # ignore classes !!!
-            if c in ("Connection", "VFS", "VFSFile", "zeroblob", "Shell", "URIFilename", "Cursor", "Blob", "Backup", "IndexInfo"):
+            if c in ("Connection", "VFS", "VFSFile", "zeroblob", "Shell", "URIFilename", "Cursor", "Blob", "Backup", "IndexInfo", "VFSFcntlPragma"):
                 continue
             # ignore mappings !!!
             if c.startswith("mapping_"):

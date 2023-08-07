@@ -411,6 +411,10 @@ type_overrides = {
     "VFSFile.xWrite": {
         "offset": "int64"
     },
+    "VFSFcntlPragma.__init__":
+    {
+        "pointer": "pointer",
+    },
     "VFS.xDlClose": {
         "handle": "pointer"
     },

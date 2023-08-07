@@ -928,6 +928,16 @@ class ObfuscatedVFSFile(apsw.VFSFile):
     def xWrite(self, data, offset):
         super().xWrite(obfuscate(data), offset)
 
+    def xFileControl(self, op: int, ptr: int) -> bool:
+        if op != apsw.SQLITE_FCNTL_PRAGMA:
+            return super().xFileControl(op, ptr)
+        # implement our own pragma
+        p = apsw.VFSFcntlPragma(ptr)
+        print(f"pragma received { p.name } = { p.value }")
+        p.result = "orange"
+        # return False if you don't understand
+        return True
+
 
 # To register the VFS we just instantiate it
 obfuvfs = ObfuscatedVFS()
@@ -953,6 +963,9 @@ print("What is on disk", repr(Path("myobfudb").read_bytes()[:20]))
 
 # And unobfuscating it
 print("Unobfuscated disk", repr(obfuscate(Path("myobfudb").read_bytes()[:20])))
+
+# Custom pragma
+print("pragma returned", obfudb.pragma("my_custom_pragma", "my value"))
 
 # Tidy up
 obfudb.close()

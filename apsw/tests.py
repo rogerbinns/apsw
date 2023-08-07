@@ -18,6 +18,7 @@ import tempfile
 import textwrap
 import shlex
 
+
 def ShouldFault(name, pending_exception):
     # You can't use print because calls involving print can be nested
     # and will then have a fatal exception.  Directly writing
@@ -5263,6 +5264,9 @@ class APSW(unittest.TestCase):
                     "check": "CHECK_INDEX",
                 },
             },
+            "apswfcntl": {
+                "req": {}
+            },
         }
 
         prefix, base = name.split("_", 1)
@@ -7904,8 +7908,10 @@ class APSW(unittest.TestCase):
         for row in s.db.cursor().execute("select * from sqlite_schema"):
             self.fail("--wipe didn't wipe file")
 
-        N="sentinel-chidh-jklhfd"
+        N = "sentinel-chidh-jklhfd"
+
         class vfstest(apsw.VFS):
+
             def __init__(self):
                 super().__init__(name=N, base="")
 
@@ -8205,8 +8211,6 @@ class APSW(unittest.TestCase):
                 isempty(fh[2])
                 testnasty()
 
-
-
         # What happens if db cannot be opened?
         s.process_args(args=["/"])
         reset()
@@ -8443,7 +8447,7 @@ class APSW(unittest.TestCase):
 
             with chdir(tmpd1):
                 reset()
-                V="sentinel-jhdgfsfjdskh-1"
+                V = "sentinel-jhdgfsfjdskh-1"
                 cmd(f".open { shlex.quote(V) }\ncreate table foo(x);\n.open { shlex.quote(V) }")
                 s.cmdloop()
                 isempty(fh[1])
@@ -8516,7 +8520,8 @@ class APSW(unittest.TestCase):
                 s.cmdloop()
                 isempty(fh[2])
                 reset()
-                cmd(textwrap.dedent("""
+                cmd(
+                    textwrap.dedent("""
                     .dbinfo
                     pragma journal_mode=wal;
                     .dbinfo
@@ -10102,6 +10107,78 @@ SELECT group_concat(rtrim(t),x'0a') FROM a;
 
         # at time of writing it was 24 nodes
         self.assertGreater(count(qd.query_plan), 10)
+
+    def testVFSFcntlPragma(self):
+        "Test wrapping fcntl pragmas"
+
+        class testvfs(apsw.VFS):
+            name = "testingpragma"
+
+            def __init__(self):
+                super().__init__(self.name, "")
+
+            def xOpen(self, name, flags):
+                return testvfsfile(name, flags)
+
+        testvfs = testvfs()
+        seen_unraiseable = None
+
+        class testvfsfile(apsw.VFSFile):
+
+            def __init__(self, name, flags):
+                super().__init__("", name, flags)
+
+            def excepthook(self, etype, evalue, etraceback):
+                nonlocal seen_unraiseable
+                seen_unraiseable = (etype, evalue, etraceback)
+
+            # note 'self' is for the test not this file instance
+            def xFileControl(fileself, op, ptr):
+                if op != apsw.SQLITE_FCNTL_PRAGMA:
+                    return super().xFileControl(op, ptr)
+                self.assertRaises(TypeError, apsw.VFSFcntlPragma, "a string")
+                p = apsw.VFSFcntlPragma(ptr)
+                self.assertIn((p.name, p.value), test_pragmas)
+                self.assertRaises(TypeError, setattr, p, "result", 3)
+                v = test_pragmas[(p.name, p.value)]
+                if isinstance(v, Exception):
+                    p.result = v.args[0]
+                    p.result = "message: " + p.result
+                    raise v
+                if v is not False:
+                    p.result = v
+                    return True
+                return False
+
+        con = apsw.Connection(self.db.db_filename("main"), vfs=testvfs.name)
+
+        test_pragmas = {
+            ("once", None): "some text for the result",
+            ("once", "valueeee"): "completely different text",
+            ("donot", "understand"): False,
+            ("autherror", None): apsw.AuthError("yet more different text"),
+        }
+
+        for (k, v), r in test_pragmas.items():
+            seen_unraiseable = res = exc = None
+            sql = f"pragma { k }"
+            if v:
+                sql += f"({ v })"
+            try:
+                res = con.execute(sql).get
+            except apsw.Error as e:
+                exc = e
+            if r is False:
+                self.assertIsNone(exc)
+                self.assertIsNone(seen_unraiseable)
+                self.assertIsNone(res)
+            elif isinstance(r, apsw.Error):
+                self.assertIsInstance(exc, r.__class__)
+                self.assertIs(seen_unraiseable[1], r)
+                self.assertTrue(exc.args[0].endswith("message: " + r.args[0]))
+                self.assertIsNone(res)
+            else:
+                self.assertEqual(res, r)
 
     # This test is run last by deliberate name choice.  If it did
     # uncover any bugs there isn't much that can be done to turn the

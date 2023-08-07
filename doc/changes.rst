@@ -3,6 +3,13 @@ Change History
 
 .. currentmodule:: apsw
 
+next
+====
+
+Added documentation and :class:`helper class <VFSFcntlPragma>` for
+implementing custom `pragmas <https://sqlite.org/pragma.html>`__ in
+youe own :ref:`VFS` (:issue:`464`)
+
 3.42.0.1
 ========
 
