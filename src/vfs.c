@@ -1942,9 +1942,10 @@ static PyTypeObject APSWVFSType =
 /** .. method:: excepthook(etype: type[BaseException], evalue: BaseException, etraceback: Optional[types.TracebackType]) ->None
 
     Called when there has been an exception in a :class:`VFSFile`
-    routine.  The default implementation calls ``sys.excepthook`` and
-    if that fails then ``PyErr_Display``.  The three arguments
-    correspond to what ``sys.exc_info()`` would return.
+    routine.  The default implementation passes the exception information
+    to sqlite3_log, and the first non-error of
+    :func:`sys.unraisablehook` and :func:`sys.excepthook`, falling back to
+    `PyErr_Display`.
 
     :param etype: The exception type
     :param evalue: The exception  value
