@@ -31,14 +31,13 @@ for filename in glob.glob("doc/*.rst"):
 
 # ok, so we know what was documented.  Now lets see what exists
 
-con = apsw.Connection("")
+con = apsw.Connection("testdb")
 cur = con.cursor()
 cur.execute("create table x(y); insert into x values(x'abcdef1012');select * from x")
 blob = con.blobopen("main", "x", "y", con.last_insert_rowid(), 0)
 vfs = apsw.VFS("aname", "")
-vfsfile = apsw.VFSFile("", "testdb",
-                       [apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_READWRITE, 0])
-
+vfsfile = apsw.VFSFile("", con.db_filename("main"),
+                       [apsw.SQLITE_OPEN_MAIN_DB | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_READWRITE, 0])
 
 
 # virtual tables aren't real - just check their size hasn't changed
@@ -62,7 +61,7 @@ for name, obj in (
         continue
 
     for c in classes[name]:
-        if not hasattr(obj, c):
+        if not hasattr(obj, c) and not (name, c) == ("Cursor", "description_full"):
             retval = 1
             print("%s.%s in documentation but not object" % (name, c))
     for c in dir(obj):

@@ -7,6 +7,8 @@
 
 import sys
 import os
+import types
+from typing import Optional
 import warnings
 import platform
 import typing

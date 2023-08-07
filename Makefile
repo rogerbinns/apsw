@@ -47,6 +47,7 @@ doc: docs ## Builds all the doc
 docs: build_ext docs-no-fetch
 
 docs-no-fetch: $(GENDOCS) doc/example.rst doc/.static doc/typing.rstgen
+	rm -f testdb
 	env PYTHONPATH=. $(PYTHON) tools/docmissing.py
 	env PYTHONPATH=. $(PYTHON) tools/docupdate.py $(VERSION)
 	make PYTHONPATH="`pwd`" VERSION=$(VERSION) RELEASEDATE=$(RELEASEDATE) -C doc clean html epub
@@ -211,7 +212,7 @@ release: ## Signs built source file(s)
 	cd dist ; zip -m $(VERDIR)-sigs.zip *.asc
 
 # building a python debug interpreter
-PYDEBUG_VER=3.11.3
+PYDEBUG_VER=3.11.4
 PYDEBUG_DIR=/space/pydebug
 PYVALGRIND_VER=$(PYDEBUG_VER)
 PYVALGRIND_DIR=/space/pyvalgrind

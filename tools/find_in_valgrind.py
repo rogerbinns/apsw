@@ -23,6 +23,12 @@ pattern = r"\((" + "|".join(src_files) + r"):[0-9]+\)"
 
 section = r"==[0-9]+== [^\s]"
 
+excludes = {
+    # they also have an exceptions.c
+    "_PyExc_InitTypes",
+    "_PyBuiltins_AddExceptions",
+}
+
 
 def process_file(name: str) -> None:
     cur_section = None
@@ -37,7 +43,7 @@ def process_file(name: str) -> None:
                     print()
                     has_output = False
                 continue
-            if re.search(pattern, line):
+            if re.search(pattern, line) and not any(exc in line for exc in excludes):
                 if cur_section:
                     print(f"{ cur_section_num }:\t{ cur_section }", end="")
                     cur_section = None
