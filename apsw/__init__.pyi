@@ -2233,6 +2233,29 @@ class URIFilename:
         Calls: `sqlite3_uri_parameter <https://sqlite.org/c3ref/uri_boolean.html>`__"""
         ...
 
+@final
+class VFSFcntlPragma:
+    """A helper class to work with `SQLITE_FCNTL_PRAGMA
+    <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlpragma>`__
+    in :meth:`VFSFile.xFileControl`. The :ref:`example <example_vfs>`
+    shows usage of this class.
+
+    It is only valid while in :meth:`VFSFile.xFileControl`, and using
+    outside of that will result in memory corruption and crashes."""
+
+    def __init__(self, pointer: int):
+        """The pointer must be what your xFileControl method received."""
+        ...
+
+    name: str
+    """The name of the pragma"""
+
+    result: str | None
+    """The first element which becomes the result or error message"""
+
+    value: str | None
+    """The value for the pragma, if provided else None,"""
+
 class VFSFile:
     """Wraps access to a file.  You only need to derive from this class
     if you want the file object returned from :meth:`VFS.xOpen` to
@@ -2245,9 +2268,10 @@ class VFSFile:
 
     def excepthook(self, etype: type[BaseException], evalue: BaseException, etraceback: Optional[types.TracebackType]) ->None:
         """Called when there has been an exception in a :class:`VFSFile`
-        routine.  The default implementation calls ``sys.excepthook`` and
-        if that fails then ``PyErr_Display``.  The three arguments
-        correspond to what ``sys.exc_info()`` would return.
+        routine.  The default implementation passes the exception information
+        to sqlite3_log, and the first non-error of
+        :func:`sys.unraisablehook` and :func:`sys.excepthook`, falling back to
+        `PyErr_Display`.
 
         :param etype: The exception type
         :param evalue: The exception  value
