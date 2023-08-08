@@ -1162,11 +1162,11 @@ def make_virtual_module(db: apsw.Connection,
             def Column(self, which: int) -> apsw.SQLiteValue:
                 if which >= self.num_columns:
                     return self.hidden_values[which - self.num_columns]
-                if self.access == VTColumnAccess.By_Index:
+                if self.access is VTColumnAccess.By_Index:
                     v = self.current_row[which]
-                elif self.access == VTColumnAccess.By_Name:
+                elif self.access is VTColumnAccess.By_Name:
                     v = self.current_row[self.columns[which]]
-                elif self.access == VTColumnAccess.By_Attr:
+                elif self.access is VTColumnAccess.By_Attr:
                     v = getattr(self.current_row, self.columns[which])
                 if self.repr_invalid and v is not None and not isinstance(v, (int, float, str, bytes)):
                     v = repr(v)
