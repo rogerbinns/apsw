@@ -1138,6 +1138,13 @@ def make_virtual_module(db: apsw.Connection,
                 self.repr_invalid = module.repr_invalid
                 self.num_columns = len(self.columns)
                 self.access = self.module.column_access
+                col_func = f"_Column_{ self.access.name }"
+                f = getattr(self, col_func, self.Column)
+                if self.repr_invalid:
+                    setattr(self, "Column", self._Column_repr_invalid)
+                    setattr(self, "_Column_get", f)
+                else:
+                    setattr(self, "Column", f)
 
             def Filter(self, idx_num: int, idx_str: str, args: tuple[apsw.SQLiteValue]) -> None:
                 params: dict[str, apsw.SQLiteValue] = self.param_values.copy()
@@ -1160,6 +1167,8 @@ def make_virtual_module(db: apsw.Connection,
                     self.iterating = None
 
             def Column(self, which: int) -> apsw.SQLiteValue:
+                # This is the specification/documentation for the custom
+                # versions which should produce exactly the same output
                 if which >= self.num_columns:
                     return self.hidden_values[which - self.num_columns]
                 if self.access is VTColumnAccess.By_Index:
@@ -1171,6 +1180,23 @@ def make_virtual_module(db: apsw.Connection,
                 if self.repr_invalid and v is not None and not isinstance(v, (int, float, str, bytes)):
                     v = repr(v)
                 return v  # type: ignore[no-any-return]
+
+            def _Column_repr_invalid(self, which: int) -> apsw.SQLiteValue:
+                v = self._Column_get(which)
+                return v if v is None or isinstance(v, (int, float, str, bytes)) else repr(v)
+
+            def _Column_By_Attr(self, which: int) -> apsw.SQLiteValue:
+                return getattr(
+                    self.current_row,
+                    self.columns[which]) if which < self.num_columns else self.hidden_values[which - self.num_columns]
+
+            def _Column_By_Name(self, which: int) -> apsw.SQLiteValue:
+                return self.current_row[self.columns[which]] if which < self.num_columns else self.hidden_values[
+                    which - self.num_columns]
+
+            def _Column_By_Index(self, which: int) -> apsw.SQLiteValue:
+                return self.current_row[which] if which < self.num_columns else self.hidden_values[which -
+                                                                                                   self.num_columns]
 
             def Next(self) -> None:
                 try:
