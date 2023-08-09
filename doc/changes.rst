@@ -8,7 +8,10 @@ next
 
 Added documentation and :class:`helper class <VFSFcntlPragma>` for
 implementing custom `pragmas <https://sqlite.org/pragma.html>`__ in
-youe own :ref:`VFS` (:issue:`464`)
+your own :ref:`VFS` (:issue:`464`)
+
+Reduced overhead of the Column method when using
+:meth:`apsw.ext.make_virtual_module` (:issue:`465`)
 
 3.42.0.1
 ========
