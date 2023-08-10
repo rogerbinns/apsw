@@ -74,17 +74,14 @@ query. You can however make new cursors and use those without
 issue. You may want to remember the Connection object when you set
 your trace or user defined functions.
 
-.. _x64bitpy25:
-
 64 bit hosts
 ============
 
 APSW is tested and works correctly on 32 and 64 bit hosts.
-Unfortunately SQLite is limited to 32 bit quantities for strings,
+SQLite is limited to 32 bit quantities for strings,
 blobs, number of columns etc even when compiled for 64 bit.
-Consequently you will get a TooBig exception from APSW which checks if
-strings/buffers longer than 1GB or 2GB (depends on internal storage)
-are used. cvstrac 2125 and 3246 had more details.
+You will get a :exc:`TooBigError` if trying to use strings
+and blobs larger than 1 gigabyte.
 
 .. _statementcache:
 

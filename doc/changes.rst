@@ -1982,7 +1982,7 @@ The test code has been converted into using the unittest module. Run
 errors.
 
 Updated code to work correctly with new :c:type:`Py_ssize_t` introduced
-in Python 2.5. See :ref:`64 bit hosts, Python 2.5+ <x64bitpy25>` for
+in Python 2.5. See 64 bit hosts, Python 2.5+ for
 more details on how Python and SQLite handle 64 bit sized items.
 
 The following functions were added to SQLite and are wrapped. They are
