@@ -43,19 +43,18 @@ Multi-threading and re-entrancy
 ===============================
 
 ASPW lets you use SQLite in multi-threaded programs and will let other
-threads execute while SQLite is working.  (Technically the `GIL
-<http://www.python.org/doc/2.3.4/api/threads.html>`_ is released when
-`sqlite3_prepare_v2 <https://sqlite.org/c3ref/prepare.html>`_,
-`sqlite3_step <https://sqlite.org/c3ref/step.html>`_ or
-`sqlite3_open_v2 <https://sqlite.org/c3ref/open.html>`_ are running, as
-well as all other functions that could take more than a trivial amount
-of time or use the SQLite mutex. The GIL is re-acquired while user
-defined functions, collations and the various hooks/handlers run.)
+threads execute while SQLite is working.  It checks at start that
+SQLite was compiled in `threadsafe mode
+<https://www.sqlite.org/threadsafe.html>`__ which is the default.  The
+`GIL
+<https://docs.python.org/3/glossary.html#term-global-interpreter-lock>`_
+is released when when SQLite APIs are called, and re-acquired while
+running any Python code.
 
-Note that you cannot use the same cursor object in multiple threads
-concurrently to execute statements. APSW will detect this and throw an
-exception. It is safe to use the object serially (eg calling
-:meth:`Cursor.execute` in one thread and iterator in
+You cannot use the same cursor object in multiple threads concurrently
+to execute statements. APSW will detect this and raise an
+:exc:`ThreadingViolationError`. It is safe to use the object serially
+(eg calling :meth:`Cursor.execute` in one thread and iterator in
 another. You also can't do things like try to
 :meth:`~Connection.close` a Connection concurrently in two threads.
 
