@@ -138,7 +138,7 @@ typedef struct apswfcntl_pragma
 } apswfcntl_pragma;
 
 static PyObject *
-apswfcntl_pragma_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+apswfcntl_pragma_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSED(kwds))
 {
   apswfcntl_pragma *self = (apswfcntl_pragma *)type->tp_alloc(type, 0);
   if (self != NULL)

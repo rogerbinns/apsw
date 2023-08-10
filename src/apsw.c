@@ -1741,7 +1741,7 @@ apsw_allow_missing_dict_bindings(PyObject *Py_UNUSED(module), PyObject *args, Py
 }
 
 static PyObject *
-apsw_getattr(PyObject *module, PyObject *name)
+apsw_getattr(PyObject *Py_UNUSED(module), PyObject *name)
 {
   PyObject *shellmodule = NULL, *res = NULL;
 #undef PyUnicode_AsUTF8

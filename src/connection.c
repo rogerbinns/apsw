@@ -1158,6 +1158,7 @@ Connection_setrollbackhook(Connection *self, PyObject *args, PyObject *kwds)
 static int
 profilecb(unsigned event, void *context, void *stmt, void *elapsed)
 {
+  assert(event == SQLITE_TRACE_PROFILE);
   PyGILState_STATE gilstate = PyGILState_Ensure();
 
   PyObject *retval = NULL;
