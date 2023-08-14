@@ -32,10 +32,19 @@ print("   SQLite lib version", apsw.sqlitelibversion())
 # If False then a shared library is being used, or static linking
 print("   Using amalgamation", apsw.using_amalgamation)
 
+### bestpractice: Best Practice
+# Ensure SQLite usage prevents common mistakes, and best performance
+# via :doc:`apsw.bestpractice <bestpractice>`
+
+import apsw.bestpractice
+
+apsw.bestpractice.apply(apsw.bestpractice.recommended)
+
 ### logging: Logging
 # It is a good idea to get SQLite's logs as you will get more
 # information about errors.  :meth:`apsw.ext.log_sqlite` forwards
-# SQLite's log messages to the :mod:`logging` module.
+# SQLite's log messages to the :mod:`logging` module.  The prior
+# best practice also includes this.
 
 apsw.ext.log_sqlite()
 

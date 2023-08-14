@@ -6,6 +6,8 @@ Change History
 next
 ====
 
+Added :doc:`best practice <bestpractice>` module (:issue:`460`)
+
 Added documentation and :class:`helper class <VFSFcntlPragma>` for
 implementing custom `pragmas <https://sqlite.org/pragma.html>`__ in
 your own :ref:`VFS` (:issue:`464`)

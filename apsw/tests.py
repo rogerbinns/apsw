@@ -7,6 +7,7 @@
 
 import sys
 import os
+import io
 import types
 from typing import Optional
 import warnings
@@ -9720,6 +9721,26 @@ shell.write(shell.stdout, "hello world\\n")
         except apsw.SQLError as e:
             self.assertIn("unsafe use of donotcall", str(e))
 
+    def testBestPractice(self) -> None:
+        "apsw.bestpractice module"
+        import apsw.bestpractice
+        import logging
+        out = io.StringIO()
+        logging.basicConfig(stream=out, level=logging.DEBUG)
+        apsw.log(apsw.SQLITE_NOMEM, "Zebras are striped")
+        self.assertNotIn("Zebras", out.getvalue())
+        apsw.bestpractice.apply(apsw.bestpractice.recommended)
+        apsw.log(apsw.SQLITE_NOMEM, "Zebras are striped")
+        self.assertIn("Zebras", out.getvalue())
+        # I was unable to find a dml statement that errors
+        dqs = 'select "world"'
+        self.db.execute(dqs) # no error
+        self.assertIn("world", out.getvalue())
+        apsw.bestpractice.apply(apsw.bestpractice.recommended)
+        con = apsw.Connection("")
+        # now fail
+        self.assertRaises(apsw.SQLError, con.execute, dqs)
+
     def testExtDataClassRowFactory(self) -> None:
         "apsw.ext.DataClassRowFactory"
         import apsw.ext
@@ -10396,11 +10417,12 @@ def setup():
     if not getattr(memdb, "enableloadextension", None):
         del APSW.testLoadExtension
 
-    # py 3.6 can't load apsw.ext
+    # py 3.6 can't load apsw.ext or bestpractice
     if sys.version_info < (3, 7):
         for name in list(dir(APSW)):
             if name.startswith("testExt"):
                 delattr(APSW, name)
+        del APSW.testBestPractice
 
     # earlier py versions make recursion error fatal
     if sys.version_info < (3, 10):

@@ -21,6 +21,7 @@ APSW |version| documentation
    vtable
    vfs
    shell
+   bestpractice
    ext
 
    exceptions
