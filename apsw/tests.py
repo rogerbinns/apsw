@@ -314,11 +314,9 @@ class APSW(unittest.TestCase):
                 if os.path.exists(TESTFILEPREFIX + name + i):
                     deletefile(TESTFILEPREFIX + name + i)
 
-    saved_connection_hooks = []
-
     def setUp(self):
+        apsw.connection_hooks = []
         # clean out database and journals from last runs
-        self.saved_connection_hooks.append(apsw.connection_hooks)
         for c in apsw.connections():
             c.close()
         gc.collect()
@@ -339,7 +337,6 @@ class APSW(unittest.TestCase):
         if self.db is not None:
             self.db.close(True)
         del self.db
-        apsw.connection_hooks = self.saved_connection_hooks.pop()  # back to original value
         for c in apsw.connections():
             c.close()
         gc.collect()
