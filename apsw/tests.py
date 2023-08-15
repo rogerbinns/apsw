@@ -9733,8 +9733,6 @@ shell.write(shell.stdout, "hello world\\n")
         handler = logging.StreamHandler(out)
         root.addHandler(handler)
         try:
-            logging.info("This is a test")
-            print(f"{out.getvalue()=}")
             apsw.log(apsw.SQLITE_NOMEM, "Zebras are striped")
             self.assertNotIn("Zebras", out.getvalue())
             apsw.bestpractice.apply(apsw.bestpractice.recommended)
