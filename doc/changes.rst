@@ -6,6 +6,11 @@ Change History
 next
 ====
 
+This is the last version that supports Python 3.6 and Python 3.7 (both
+end of life).  The policy as stated in the :doc:`about <about>` page
+is that there will be one more APSW release after a Python version
+goes end of life supporting that Python version.  (:issue:`471`)
+
 Added :doc:`best practice <bestpractice>` module (:issue:`460`)
 
 Added documentation and :class:`helper class <VFSFcntlPragma>` for
