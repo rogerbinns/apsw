@@ -1965,7 +1965,7 @@ PyInit_apsw(void)
     :meth:`VTTable.UpdateChangeRow`
   */
 
-  if (PyModule_AddObject(m, "no_change", Py_NewRef(&apsw_no_change_object)))
+  if (PyModule_AddObject(m, "no_change", Py_NewRef((PyObject *)&apsw_no_change_object)))
     goto fail;
 
 #ifdef APSW_TESTFIXTURES
