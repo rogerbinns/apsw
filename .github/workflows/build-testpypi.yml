@@ -25,7 +25,6 @@ jobs:
           CIBW_BEFORE_BUILD: python -c "import shutil ; shutil.copyfile('tools/setup-pypi.cfg','setup.apsw')"
           CIBW_TEST_COMMAND: python -m apsw.tests -v
           APSW_HEAVY_DURATION: 2
-          APSW_TEST_FSYNC_OFF: set
 
       - uses: actions/upload-artifact@v3
         with:
@@ -57,7 +56,6 @@ jobs:
             CIBW_BEFORE_BUILD: python -c "import shutil ; shutil.copyfile('tools/setup-pypi.cfg','setup.apsw')"
             CIBW_TEST_COMMAND: python -m apsw.tests -v
             APSW_HEAVY_DURATION: 2
-            APSW_TEST_FSYNC_OFF: set
 
         - uses: actions/upload-artifact@v3
           with:

@@ -149,9 +149,6 @@ showsymbols:  ## Finds any C symbols that aren't static(private)
 	test -f apsw/__init__`$(PYTHON) -c "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX'))"`
 	set +e; nm --extern-only --defined-only apsw/__init__`$(PYTHON) -c "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX'))"` | egrep -v ' (__bss_start|_edata|_end|_fini|_init|initapsw|PyInit_apsw)$$' ; test $$? -eq 1 || false
 
-# config used in CI
-WINCICONFIG=set APSW_TEST_FSYNC_OFF=set &
-
 compile-win:  ## Builds and tests against all the Python versions on Windows
 	-del /q apsw\\*.pyd
 	-del /q dist\\*.egg
@@ -188,7 +185,7 @@ compile-win-one:  ## Does one Windows build - set PYTHON variable
 	$(PYTHON)  -m pip --no-cache-dir wheel -v .
 	cmd /c FOR %i in (*.whl) DO $(PYTHON)  -m pip --no-cache-dir install --force-reinstall %i
 	$(PYTHON) setup.py build_test_extension
-	$(WINCICONFIG) $(PYTHON) -m apsw.tests
+	$(PYTHON) -m apsw.tests
 	-del /q setup.apsw *.whl
 
 source_nocheck: src/apswversion.h

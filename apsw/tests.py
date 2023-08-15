@@ -10503,35 +10503,12 @@ if __name__ == '__main__':
     setup()
 
     def runtests():
-
-        def set_wal_mode(c):
-            # Note that WAL won't be on for memory databases.  This
-            # execution returns the active mode
-            c.execute("PRAGMA journal_mode=WAL").fetchall()
-
-        def fsync_off(c):
-            try:
-                c.execute("PRAGMA synchronous=OFF ; PRAGMA fullfsync=OFF; PRAGMA checkpoint_fullfsync=OFF")
-            except apsw.BusyError:
-                pass
-
-        b4 = apsw.connection_hooks[:]
-        try:
-            if "APSW_TEST_WALMODE" in os.environ:
-                apsw.connection_hooks.append(set_wal_mode)
-                print("WAL mode testing")
-
-            if "APSW_TEST_FSYNC_OFF" in os.environ:
-                apsw.connection_hooks.append(fsync_off)
-
-            if os.getenv("PYTRACE"):
-                import trace
-                t = trace.Trace(count=0, trace=1, ignoredirs=[sys.prefix, sys.exec_prefix])
-                t.runfunc(unittest.main)
-            else:
-                unittest.main()
-        finally:
-            apsw.connection_hooks = b4
+        if os.getenv("PYTRACE"):
+            import trace
+            t = trace.Trace(count=0, trace=1, ignoredirs=[sys.prefix, sys.exec_prefix])
+            t.runfunc(unittest.main)
+        else:
+            unittest.main()
 
     v = os.environ.get("APSW_TEST_ITERATIONS", None)
     if v is None:
