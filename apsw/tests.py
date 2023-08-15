@@ -9728,20 +9728,28 @@ shell.write(shell.stdout, "hello world\\n")
         import apsw.bestpractice
         import logging
         out = io.StringIO()
-        logging.basicConfig(stream=out, level=logging.DEBUG)
-        apsw.log(apsw.SQLITE_NOMEM, "Zebras are striped")
-        self.assertNotIn("Zebras", out.getvalue())
-        apsw.bestpractice.apply(apsw.bestpractice.recommended)
-        apsw.log(apsw.SQLITE_NOMEM, "Zebras are striped")
-        self.assertIn("Zebras", out.getvalue())
-        # I was unable to find a dml statement that errors
-        dqs = 'select "world"'
-        self.db.execute(dqs) # no error
-        self.assertIn("world", out.getvalue())
-        apsw.bestpractice.apply(apsw.bestpractice.recommended)
-        con = apsw.Connection("")
-        # now fail
-        self.assertRaises(apsw.SQLError, con.execute, dqs)
+        root = logging.getLogger()
+        root.setLevel(logging.DEBUG)
+        handler = logging.StreamHandler(out)
+        root.addHandler(handler)
+        try:
+            logging.info("This is a test")
+            print(f"{out.getvalue()=}")
+            apsw.log(apsw.SQLITE_NOMEM, "Zebras are striped")
+            self.assertNotIn("Zebras", out.getvalue())
+            apsw.bestpractice.apply(apsw.bestpractice.recommended)
+            apsw.log(apsw.SQLITE_NOMEM, "Zebras are striped")
+            self.assertIn("Zebras", out.getvalue())
+            # I was unable to find a ddl statement that errors
+            dqs = 'select "world"'
+            self.db.execute(dqs)  # no error
+            self.assertIn("world", out.getvalue())
+            apsw.bestpractice.apply(apsw.bestpractice.recommended)
+            con = apsw.Connection("")
+            # now fail
+            self.assertRaises(apsw.SQLError, con.execute, dqs)
+        finally:
+            root.removeHandler(handler)
 
     def testExtDataClassRowFactory(self) -> None:
         "apsw.ext.DataClassRowFactory"
