@@ -18,7 +18,7 @@ jobs:
           python-version: "3.11"
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.14.1
+        uses: pypa/cibuildwheel@v2
         env:
           CIBW_SKIP: pp*
           CIBW_ARCHS_MACOS: all
@@ -48,7 +48,7 @@ jobs:
             platforms: all
 
         - name: Build wheels
-          uses: pypa/cibuildwheel@v2.14.1
+          uses: pypa/cibuildwheel@v2
           env:
             CIBW_SKIP: pp*
             CIBW_ARCHS_LINUX: aarch64
@@ -104,5 +104,5 @@ jobs:
         ls -l dist/
 
     - name: Publish package
-      uses: pypa/gh-action-pypi-publish@v1.8.8
+      uses: pypa/gh-action-pypi-publish@v1
 
