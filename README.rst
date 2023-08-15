@@ -72,12 +72,3 @@ License
 See `LICENSE
 <https://github.com/rogerbinns/apsw/blob/master/LICENSE>`__ - in
 essence any OSI approved open source license.
-
-Older Python versions
-=====================
-
-A `release
-<https://www.rogerbinns.com/blog/apsw-ending-python2early3.html>`__
-from January 2022 supports all CPython versions back to 2.3.  The
-`tips <https://rogerbinns.github.io/apsw/tips.html>`__ include more
-information about versions.

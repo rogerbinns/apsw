@@ -28,7 +28,9 @@ APSW and sqlite3 <pysqlite>`.
 Dependencies
 ------------
 
-APSW has no dependencies other than Python itself.
+APSW has no dependencies other than Python itself, and SQLite which
+you can provide or have APSW fetch and include statically in the
+extension.
 
 Hosting
 -------
@@ -54,3 +56,51 @@ Issue tracking
 You can find existing and fixed bugs by clicking on `Issues
 <https://github.com/rogerbinns/apsw/issues>`__ and using "New Issue"
 to report previously unknown issues.
+
+APSW and SQLite versions
+------------------------
+
+SQLite has approximately quarterly releases.  These include tweaks,
+bug fixes, and new functionality based on the billions of SQLite
+databases in use, and the many many programs that use SQLite (eg
+almost every browser, mail client, photo library, mobile and desktop
+OS).  Despite these changes, SQLite retains backwards and forwards
+compatibility with the `file format
+<https://www.sqlite.org/onefile.html>`__ and APIs.
+
+APSW wraps the `SQLite C API
+<https://www.sqlite.org/c3ref/intro.html>`__.  That means when SQLite
+adds new constant or API, then so does APSW.  You can think of APSW as
+the Python expression of SQLite's C API.  You can `lookup
+<genindex.html#S>`__ SQLite APIs to find which APSW functions and
+attributes call them.
+
+Consequently the APSW version mirrors the SQLite version, with an
+additional component on the end to reflect APSW iterations.  For
+example the SQLite :code:`3.42.1` release would have APSW
+:code:`3.42.1.0` as the corresponding release with the final
+:code:`.0` incrementing if there are more APSW release.
+
+You can use APSW with the corresponding version of SQLite, or any
+newer version of SQLite.  You could use the original 2004 release of
+APSW with today's SQLite just fine, although it wouldn't know about
+the new APIs and constants.
+
+Python versions
+---------------
+
+APSW supports `all supported Python versions
+<https://devguide.python.org/versions/>`__, including versions under
+development.  Once a Python release goes end of life, there will be
+one more APSW release supporting that version of Python.
+
+.. list-table:: Last APSW release
+  :header-rows: 1
+  :widths: auto
+
+  * - Python version
+    - APSW release
+  * - 3.6, 3.7
+    - `3.43.0.0 <https://github.com/rogerbinns/apsw/releases/tag/3.43.0.0>`__
+  * - 2.3 - 3.5
+    - `3.37.0-r1 <https://github.com/rogerbinns/apsw/releases/tag/3.37.0-r1>`__
