@@ -316,6 +316,7 @@ class APSW(unittest.TestCase):
                     deletefile(TESTFILEPREFIX + name + i)
 
     def setUp(self):
+        apsw.config(apsw.SQLITE_CONFIG_LOG, None)
         apsw.connection_hooks = []
         # clean out database and journals from last runs
         for c in apsw.connections():
@@ -335,6 +336,7 @@ class APSW(unittest.TestCase):
                 apsw.unregister_vfs(name)
 
     def tearDown(self):
+        apsw.config(apsw.SQLITE_CONFIG_LOG, None)
         if self.db is not None:
             self.db.close(True)
         del self.db
