@@ -3,6 +3,8 @@
 Module to ensure SQLite usage prevents common mistakes, and best performance.
 """
 
+from __future__ import annotations
+
 from typing import Callable
 
 import apsw
