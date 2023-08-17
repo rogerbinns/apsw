@@ -518,11 +518,12 @@ class apsw_build_ext(beparent):
                 "fts4", "fts3", "fts3_parenthesis", "rtree", "stat4", "json1", "fts5", "rbu", "geopoly",
                 "math_functions"
             ]
-            if find_in_path("icu-config"):
-                exts.append("icu")
-            elif find_in_path("pkg-config"):
-                if len(os.popen("pkg-config --silence-errors --cflags --libs icu-uc icu-i18n", "r").read().strip()):
+            if "icu" not in self.omit.split(","):
+                if find_in_path("icu-config"):
                     exts.append("icu")
+                elif find_in_path("pkg-config"):
+                    if len(os.popen("pkg-config --silence-errors --cflags --libs icu-uc icu-i18n", "r").read().strip()):
+                        exts.append("icu")
             if not self.enable:
                 self.enable = ",".join(exts)
             else:
