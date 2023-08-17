@@ -288,8 +288,11 @@ def log_sqlite(*, level: int = logging.ERROR) -> None:
     """
 
     def handler(errcode: int, message: str) -> None:
-        err_str = apsw.mapping_result_codes[errcode & 255]
+        nonlocal level
+        err_str = apsw.mapping_result_codes.get(errcode & 255, str(errcode))
         extra = {"sqlite_code": errcode, "sqlite_code_name": err_str, "sqlite_message": message}
+        if errcode & 0xff == apsw.SQLITE_WARNING:
+            level = min(level, logging.WARNING)
         logging.log(level,
                     "SQLITE_LOG: %s (%d) %s %s",
                     message,

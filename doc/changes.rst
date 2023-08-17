@@ -13,6 +13,9 @@ goes end of life supporting that Python version.  (:issue:`471`)
 
 Added :doc:`best practice <bestpractice>` module (:issue:`460`)
 
+:meth:`apsw.ext.log_sqlite` outputs SQLite warnings at warning level.
+(:issue:`472`)
+
 Added documentation and :class:`helper class <VFSFcntlPragma>` for
 implementing custom `pragmas <https://sqlite.org/pragma.html>`__ in
 your own :ref:`VFS` (:issue:`464`)
