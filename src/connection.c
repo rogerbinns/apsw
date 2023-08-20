@@ -4230,7 +4230,7 @@ Connection_txn_state(Connection *self, PyObject *args, PyObject *kwds)
   return PyErr_Format(PyExc_ValueError, "unknown schema");
 }
 
-/** .. method:: execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor
+/** .. method:: execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor
 
     Executes the statements using the supplied bindings.  Execution
     returns when the first row is available or all statements have
@@ -4266,7 +4266,7 @@ fail:
   return res;
 }
 
-/** .. method:: executemany(statements: str, sequenceofbindings:Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor
+/** .. method:: executemany(statements: str, sequenceofbindings:Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor
 
 This method is for when you want to execute the same statements over a
 sequence of bindings, such as inserting into a database.  (A cursor is
@@ -4423,6 +4423,9 @@ If `entries` is present, then each list entry is a dict with the following infor
   * - prepare_flags
     - Flags passed to `sqlite3_prepare_v3 <https://sqlite.org/c3ref/prepare.html>`__
       for this query
+  * - explain
+    - The value passed to `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html`__
+      if >= 0
   * - uses
     - How many times this entry has been (re)used
   * - has_more

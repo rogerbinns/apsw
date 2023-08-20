@@ -37,6 +37,7 @@ typedef struct APSWStatementOptions
 {
   int can_cache;     /* are we allowed to cache this statement */
   int prepare_flags; /* sqlite3_prepare_v3 flags */
+  int explain;       /* sqlite3_stmt_explain if >=0 */
 } APSWStatementOptions;
 
 typedef struct APSWStatement
@@ -242,6 +243,17 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
   if (!vdbestatement)
     hash = SC_SENTINEL_HASH;
 
+  if (options->explain >= 0)
+  {
+    PYSQLITE_SC_CALL(res = sqlite3_stmt_explain(vdbestatement, options->explain));
+    if (res != SQLITE_OK)
+    {
+      SET_EXC(res, sc->db);
+      PYSQLITE_SC_CALL(sqlite3_finalize(vdbestatement));
+      return res;
+    }
+  }
+
 #if SC_STATEMENT_RECYCLE_BIN_ENTRIES > 0
   if (apsw_sc_recycle_bin_next)
     statement = apsw_sc_recycle_bin[--apsw_sc_recycle_bin_next];
@@ -420,10 +432,11 @@ statementcache_stats(StatementCache *sc, int include_entries)
       if (sc->hashes[i] != SC_SENTINEL_HASH)
       {
         APSWStatement *stmt = sc->caches[i];
-        entry = Py_BuildValue("{s: s#, s: O, s: i, s: I}",
+        entry = Py_BuildValue("{s: s#, s: O, s: i, s: i, s: I}",
                               "query", stmt->utf8, stmt->query_size,
                               "has_more", (stmt->query_size == stmt->utf8_size) ? Py_False : Py_True,
                               "prepare_flags", stmt->options.prepare_flags,
+                              "explain", stmt->options.explain,
                               "uses", stmt->uses);
         if (!entry)
           goto fail;
