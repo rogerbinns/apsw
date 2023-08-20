@@ -1439,7 +1439,7 @@ def query_info(db: apsw.Connection,
 
     if explain and not res["is_explain"]:
         vdbe: list[VDBEInstruction] = []
-        for row in cur.execute("EXPLAIN " + res["first_query"], bindings):
+        for row in cur.execute(res["first_query"], bindings, explain=1):
             vdbe.append(
                 VDBEInstruction(**dict((v[0][0], v[1]) for v in zip(cur.getdescription(), row) if v[1] is not None)))
         res["explain"] = vdbe
@@ -1448,7 +1448,7 @@ def query_info(db: apsw.Connection,
         subn = "sub"
         byid: Any = {0: {"detail": "QUERY PLAN"}}
 
-        for row in cur.execute("EXPLAIN QUERY PLAN " + res["first_query"], bindings):
+        for row in cur.execute(res["first_query"], bindings, explain=2):
             node = dict((v[0][0], v[1]) for v in zip(cur.getdescription(), row) if v[0][0] != "notused")
             assert len(node) == 3  # catch changes in returned format
             parent: list[str | dict[str, Any]] = byid[node["parent"]]
