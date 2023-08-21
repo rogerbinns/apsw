@@ -518,7 +518,7 @@ class apsw_build_ext(beparent):
                 "fts4", "fts3", "fts3_parenthesis", "rtree", "stat4", "json1", "fts5", "rbu", "geopoly",
                 "math_functions"
             ]
-            if "icu" not in self.omit.split(","):
+            if not self.omit or "icu" not in self.omit.split(","):
                 if find_in_path("icu-config"):
                     exts.append("icu")
                 elif find_in_path("pkg-config"):
