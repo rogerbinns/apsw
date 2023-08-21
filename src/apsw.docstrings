@@ -518,7 +518,7 @@
 "\n" \
 ":param npages: How many pages to copy. If the parameter is omitted\n" \
 "   or negative then all remaining pages are copied. The default page\n" \
-"   size is 1024 bytes (1kb) which can be changed before database\n" \
+"   size is 4096 bytes (4kb) which can be changed before database\n" \
 "   creation using a `pragma\n" \
 "   <https://sqlite.org/pragma.html#modify>`_.\n" \
 "\n" \

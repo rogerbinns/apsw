@@ -547,7 +547,7 @@ class Backup:
 
         :param npages: How many pages to copy. If the parameter is omitted
            or negative then all remaining pages are copied. The default page
-           size is 1024 bytes (1kb) which can be changed before database
+           size is 4096 bytes (4kb) which can be changed before database
            creation using a `pragma
            <https://sqlite.org/pragma.html#modify>`_.
 
