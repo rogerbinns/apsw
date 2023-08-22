@@ -49,7 +49,7 @@ When returning text values from SQLite, ASPW always uses the Python
 unicode class.
 
 If you don't know much about Unicode then read `Joel's article
-<http://www.joelonsoftware.com/articles/Unicode.html>`_.  SQLite does
+<https://www.joelonsoftware.com/articles/Unicode.html>`_.  SQLite does
 not include conversion from random non-Unicode encodings to or from
 Unicode.  (It does include conversion between 8 bit and 16 bit Unicode
 encodings).
@@ -65,7 +65,7 @@ languages have multiple letter i, German has ß which behaves like ss,
 various accents sort differently in different European countries.
 Fortunately there is a library you can ask to do the right locale
 specific thing `ICU
-<http://en.wikipedia.org/wiki/International_Components_for_Unicode>`_.
+<https://en.wikipedia.org/wiki/International_Components_for_Unicode>`_.
 A default SQLite compilation only deals with the 26 letter Roman
 alphabet.  If you enable ICU with SQLite then you get `good stuff
 <https://sqlite.org/src/finfo?name=ext/icu/README.txt>`_.

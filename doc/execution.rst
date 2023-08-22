@@ -253,9 +253,9 @@ Each row starts with the following fields:
 
   id
     This is the `id
-    <http://docs.python.org/library/functions.html#id>`_ of the
+    <https://docs.python.org/library/functions.html#id>`_ of the
     :class:`Cursor` or :class:`Connection`.  You can easily `filter
-    <http://en.wikipedia.org/wiki/Grep>`_ the log if you just want to
+    <https://en.wikipedia.org/wiki/Grep>`_ the log if you just want to
     find out what happened on a specific cursor or connection.
 
   timestamp
@@ -263,7 +263,7 @@ Each row starts with the following fields:
 
   threadid
     The unique `thread identifier
-    <http://docs.python.org/library/thread.html#thread.get_ident>`_
+    <https://docs.python.org/library/thread.html#thread.get_ident>`_
 
 
 The remainder of the line has one of the following forms:

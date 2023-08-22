@@ -45,13 +45,13 @@ APSW uses the system wide SQLite library.
     :widths: auto
 
     * - Debian
-      - Install `python3-apsw <http://packages.debian.org/python3-apsw>`__
+      - Install `python3-apsw <https://packages.debian.org/python3-apsw>`__
     * - Fedora
       - Install `python3-apsw <https://packages.fedoraproject.org/pkgs/python-apsw/>`__
     * - Ubuntu
       - Install `python3-apsw <https://packages.ubuntu.com/search?suite=all&searchon=names&keywords=apsw>`__
     * - Gentoo
-      - Install `dev-python/apsw <http://packages.gentoo.org/package/dev-python/apsw>`_
+      - Install `dev-python/apsw <https://packages.gentoo.org/package/dev-python/apsw>`_
     * - Arch
       - Install `python-apsw <https://www.archlinux.org/packages/?q=apsw>`__
 
@@ -155,7 +155,7 @@ Verifying your download
 `Source releases <https://github.com/rogerbinns/apsw/releases>`__ are
 digitally signed so you can verify they have not been tampered with.
 Download and extract the corresponding zip file of signatures.  These
-instructions are for `GNU Privacy Guard <http://www.gnupg.org/>`__.
+instructions are for `GNU Privacy Guard <https://www.gnupg.org/>`__.
 (GPG is installed as standard on most Unix/Linux platforms and can be
 downloaded for Windows.)
 
@@ -312,7 +312,7 @@ deliberately induces extra conditions such as memory allocation
 failures, SQLite returning undocumented error codes etc. That brings
 coverage up to 99.6% of the code.
 
-A memory checker `Valgrind <http://valgrind.org>`_ is used while
+A memory checker `Valgrind <https://valgrind.org>`_ is used while
 running the test suite. The test suite is run multiple times to make
 any memory leaks or similar issues stand out. A checking version of
 Python is also used.  See :source:`tools/valgrind.sh` in the source.

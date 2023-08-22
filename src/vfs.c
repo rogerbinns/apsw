@@ -1253,10 +1253,10 @@ apswvfs_xCurrentTime(sqlite3_vfs *vfs, double *julian)
 /** .. method:: xCurrentTime()  -> float
 
   Return the `Julian Day Number
-  <http://en.wikipedia.org/wiki/Julian_day>`_ as a floating point
+  <https://en.wikipedia.org/wiki/Julian_day>`_ as a floating point
   number where the integer portion is the day and the fractional part
   is the time. Do not adjust for timezone (ie use `UTC
-  <http://en.wikipedia.org/wiki/Universal_Time>`_).
+  <https://en.wikipedia.org/wiki/Universal_Time>`_).
 */
 static PyObject *
 apswvfspy_xCurrentTime(APSWVFS *self)
@@ -1305,7 +1305,7 @@ apswvfs_xCurrentTimeInt64(sqlite3_vfs *vfs, sqlite3_int64 *time)
 /** .. method:: xCurrentTimeInt64()  -> int
 
   Returns as an integer the `Julian Day Number
-  <http://en.wikipedia.org/wiki/Julian_day>`__ multiplied by 86400000
+  <https://en.wikipedia.org/wiki/Julian_day>`__ multiplied by 86400000
   (the number of milliseconds in a 24-hour day).
 */
 static PyObject *

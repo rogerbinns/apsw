@@ -39,7 +39,7 @@ There are two ways of supplying data to a query.  The **really bad** way is to c
 
 If there were any single quotes in string then you would have invalid
 syntax.  Additionally this is how `SQL injection attacks
-<http://en.wikipedia.org/wiki/SQL_injection>`_ happen. Instead you should use bindings::
+<https://en.wikipedia.org/wiki/SQL_injection>`_ happen. Instead you should use bindings::
 
   sql="insert into example values(?, ?)"
   cursor.execute(sql, ("string", 8390823904))
@@ -113,7 +113,7 @@ separated statements.  For example::
 
   * `SQLite transactions <https://sqlite.org/lang_transaction.html>`_
   * `Atomic commit <https://sqlite.org/atomiccommit.html>`_
-  * `Example of changing the database while running a query problem <http://www.mail-archive.com/sqlite-users@sqlite.org/msg42660.html>`_
+  * `Example of changing the database while running a query problem <https://www.mail-archive.com/sqlite-users@sqlite.org/msg42660.html>`_
   * :ref:`Benchmarking`
 
 */
@@ -516,7 +516,7 @@ static PyObject *APSWCursor_getdescription(APSWCursor *self)
     :type: tuple[tuple[str, str, None, None, None, None, None], ...]
 
     Based on the `DB-API cursor property
-    <http://www.python.org/dev/peps/pep-0249/>`__, this returns the
+    <https://www.python.org/dev/peps/pep-0249/>`__, this returns the
     same as :meth:`getdescription` but with 5 Nones appended.  See
     also :issue:`131`.
 */
@@ -984,7 +984,7 @@ APSWCursor_step(APSWCursor *self)
     :param bindings: If supplied should either be a sequence or a dictionary.  Each item must be one of the :ref:`supported types <types>`
     :param can_cache: If False then the statement cache will not be used to find an already prepared query, nor will it be
       placed in the cache after execution
-    :param prepare_flags: `flags <https://sqlite.org/c3ref/c_prepare_normalize.htm>`__ passed to
+    :param prepare_flags: `flags <https://sqlite.org/c3ref/c_prepare_normalize.html>`__ passed to
       `sqlite_prepare_v3 <https://sqlite.org/c3ref/prepare.html>`__
     :param explain: If 0 or greater then the statement is passed to `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html>`__
        where you can force it to not be an explain, or force explain or explain query plan.

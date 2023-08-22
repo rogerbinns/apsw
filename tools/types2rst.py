@@ -52,6 +52,10 @@ def sub(m: re.Match) -> str:
     if text in std_typing:
         return f"`{ text } <https://docs.python.org/3/library/typing.html#typing.{ text }>`__{sp}"
     if text in std_other:
+        if text in {"int", "bool", "float"}:
+            return f"`{ text } <https://docs.python.org/3/library/functions.html#{ text }>`__{sp}"
+        if text == "None":
+            return f"`{ text } <https://docs.python.org/3/library/constants.html#None>`__{sp}"
         return f"`{ text } <https://docs.python.org/3/library/stdtypes.html#{ text }>`__{sp}"
     return f":class:`{ text }`{sp}"
 

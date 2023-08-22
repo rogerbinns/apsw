@@ -55,7 +55,7 @@ if patch:
 ##
 
 project_urls = {
-    "Changelog": "http://rogerbinns.github.io/apsw/changes.html",
+    "Changelog": "https://rogerbinns.github.io/apsw/changes.html",
     "Documentation": "https://rogerbinns.github.io/apsw/",
     "Issue Tracker": "https://github.com/rogerbinns/apsw/issues",
     "Code": "https://github.com/rogerbinns/apsw",

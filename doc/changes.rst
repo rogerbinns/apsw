@@ -264,7 +264,7 @@ the statement cache.
 
 :meth:`Cursor.execute` now uses `sqlite_prepare_v3
 <https://sqlite.org/c3ref/prepare.html>`__ which allows supplying
-`flags <https://sqlite.org/c3ref/c_prepare_normalize.htm>`__.
+`flags <https://sqlite.org/c3ref/c_prepare_normalize.html#sqlitepreparenormalize>`__.
 
 :meth:`Cursor.execute` has a new `can_cache` parameter to control
 whether the query can use the statement cache.  One example use is
@@ -484,10 +484,12 @@ Small performance improvement in string handling
 
 apsw module exposes Cursor, Blob, and Backup types (:issue:`273`)
 
-pkg-config is used to detect `International Components for Unicode (ICU) sdk
-<http://userguide.icu-project.org/howtouseicu>`__ when the `SQLite ICU extension
-<https://www.sqlite.org/src/artifact?ci=trunk&filename=ext/icu/README.txt>`__ is
-enabled.  It falls back to icu-config as before. (:issue:`268`).
+pkg-config is used to detect `International Components for Unicode
+(ICU) sdk
+<https://unicode-org.github.io/icu/userguide/icu/howtouseicu.html>`__
+when the `SQLite ICU extension
+<https://www.sqlite.org/src/artifact?ci=trunk&filename=ext/icu/README.txt>`__
+is enabled.  It falls back to icu-config as before. (:issue:`268`).
 
 Added constants:
 
@@ -862,8 +864,7 @@ No APSW code changes.  Rebuild due to updated SQLite version.
 ==========
 
 Windows 64 bit binary builds for Python 3.3+ are back - thanks to
-Mike C. Fletcher for `pointing the way
-<http://blog.vrplumber.com/b/2014/02/12/step-2-get-amd64-compatible-vs-2010/>`__
+Mike C. Fletcher for `pointing the way <http://vrplumber.com>`__
 
 Correct detection of current SQLite version from download page for
 :file:`setup.py` fetch command
@@ -1016,7 +1017,7 @@ Updated setup.py to work with changed SQLite download page formatting
 when detecting latest version.
 
 Due to a `Python 3.3.0 regression bug
-<http://bugs.python.org/issue16145>`__ using the csv output mode in the
+<https://bugs.python.org/issue16145>`__ using the csv output mode in the
 shell can result in bad data or Python crashing.  The bug has been
 fixed for Python 3.3.1 which is due in November 2012.
 
@@ -1038,7 +1039,7 @@ Added support for :meth:`Connection.status` (calls `sqlite3_db_status
 <https://sqlite.org/c3ref/db_status.html>`__).
 
 The legacy Windows `Compiled Help Format
-<http://en.wikipedia.org/wiki/Microsoft_Compiled_HTML_Help>`__
+<https://en.wikipedia.org/wiki/Microsoft_Compiled_HTML_Help>`__
 documentation is no longer produced - the help compiler setup program
 can't cope with modern machines.
 
@@ -1151,7 +1152,7 @@ SQLITE_READONLY_CANTLOCK and SQLITE_READONLY_RECOVERY.
 
 64 bit platforms
 (`LP64 - most non-Windows
-<http://en.wikipedia.org/wiki/64-bit#Specific_C-language_data_models>`__)
+<https://en.wikipedia.org/wiki/64-bit_computing#64-bit_data_models>`__)
 and Python 2: The Python int type is returned for 64 bit integers
 instead of Python long type.
 
@@ -1288,7 +1289,7 @@ to a terminal.  See the `--no-colour` argument and **.colour**
 command.  Those of you in the two countries that have not adopted the
 metric system may also omit the 'u'.  For Windows users you won't get
 colour output unless you install `colorama
-<http://pypi.python.org/pypi/colorama>`__
+<https://pypi.python.org/pypi/colorama>`__
 
 When using the context manager (with statement) of a
 :class:`Connection` and the exit commit had an error, then the
@@ -1373,7 +1374,7 @@ table code.
 =========
 
 Support for Python 3.0 has been dropped as it has been `end of lifed
-<http://www.python.org/download/releases/3.0.1/>`__.  Use Python 3.1
+<https://www.python.org/download/releases/3.0.1/>`__.  Use Python 3.1
 onwards.
 
 Changes to how some statements are `prepared
@@ -1381,7 +1382,7 @@ Changes to how some statements are `prepared
 LIKE optimisations with bound variables introduced in SQLite 3.6.20 to
 be used.  See :issue:`85` for the long and gory details.
 
-You can now access `CouchDB <http://couchdb.apache.org>`__ using a
+You can now access `CouchDB <https://couchdb.apache.org>`__ using a
 virtual table.  This lets you easily bidirectionally transfer data
 between SQLite and CouchDB as well as work on data in both sources at
 the same time.  Other example uses are in the documentation.
@@ -1393,11 +1394,11 @@ the same time.  Other example uses are in the documentation.
   other. :issue:`82`
 
 * .dump command now outputs the `user_version
-  <https://sqlite.org/pragma.html#version>`__ as a comment.  It is
+  <https://sqlite.org/pragma.html#pragma_user_version>`__ as a comment.  It is
   used by some programs (such as Firefox) to keep track of the schema
   version.
 
-* Can now output in `JSON <http://json.org>`__.
+* Can now output in `JSON <https://json.org>`__.
 
 * Fixed :issue:`83` - exception if history file didn't exist
 
@@ -1461,7 +1462,7 @@ A :meth:`fork_checker` is available which turns on detection when you
 have used SQLite objects across a fork (a **very** bad thing).  This
 is possible on Unix like operating systems, especially if you use the
 `multiprocessing module
-<http://docs.python.org/library/multiprocessing.html>`__.
+<https://docs.python.org/library/multiprocessing.html>`__.
 
 Extension loading is now compiled in by default when using the
 amalgamation and compiled out when using existing libraries.  This is
@@ -1487,7 +1488,7 @@ or off.  (It is on by default.)
 
 The APSW license has been updated to allow you (at your option) to use
 any `OSI approved license
-<http://opensource.org/licenses/alphabetical>`__.
+<https://opensource.org/licenses/alphabetical>`__.
 
 The :ref:`speedtest` has been updated to (optionally) use unicode
 characters and to (optionally) increase the sizes of data items.
@@ -1500,7 +1501,7 @@ executing a little faster.
 =========
 
 APSW has migrated from Subversion to `Mercurial
-<http://mercurial.selenic.com/wiki/>`_ for source code control.
+<https://en.wikipedia.org/wiki/Mercurial>`_ for source code control.
 Hosting remains at `Google Code <https://code.google.com/p/apsw/>`_
 
 Updated a test due to VFS xUnlock errors now being ignored sometimes
@@ -1596,7 +1597,7 @@ In prior releases a :meth:`closed cursor <Cursor.close>` could still be used
 =========
 
 You can use the database as a `context manager
-<http://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
+<https://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
 as defined in :pep:`0343`.  When you use *with* a transaction is
 started.  If the block finishes with an exception then the transaction
 is rolled back, otherwise it is committed.  See :meth:`Connection.__enter__`
@@ -1653,7 +1654,7 @@ detecting and diagnosing this issue.
 
 :class:`Connections <Connection>`, :class:`cursors <Cursor>` and
 :class:`blobs <Blob>` can be used by `weak references
-<http://docs.python.org/library/weakref.html>`_.
+<https://docs.python.org/library/weakref.html>`_.
 
 You can now install :class:`Connection` wide :meth:`execution
 <Connection.setexectrace>` and :meth:`row <Connection.setrowtrace>`
@@ -1715,10 +1716,10 @@ As a consequence of the prior two changes it is now possible and safe
 to use the same :class:`Connection` across as many threads as you want
 `concurrently <https://sqlite.org/threadsafe.html>`_.
 
-Documentation is now done using `Sphinx <http://sphinx.pocoo.org>`_
+Documentation is now done using `Sphinx <https://www.sphinx-doc.org/>`_
 which was adopted by Python 2.6 and 3.  This has allowed for richer
 documentation and more output formats such as PDF and `Windows CHM
-<http://en.wikipedia.org/wiki/Microsoft_Compiled_HTML_Help>`_ format.
+<https://en.wikipedia.org/wiki/Microsoft_Compiled_HTML_Help>`_ format.
 
 The binary distribution for Windows includes the `full text search
 <https://sqlite.org/fts3.html>`__ (FTS) and `Rtree

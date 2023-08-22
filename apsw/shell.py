@@ -34,7 +34,7 @@ class Shell:
     :param stderr: Where to send errors (default sys.stderr)
     :param encoding: Default encoding for files opened/created by the
       Shell.  If you want stdin/out/err to use a particular encoding
-      then you need to provide them `already configured <http://docs.python.org/library/codecs.html#codecs.open>`__ that way.
+      then you need to provide them `already configured <https://docs.python.org/library/codecs.html#codecs.open>`__ that way.
     :param args: This should be program arguments only (ie if
       passing in sys.argv do not include sys.argv[0] which is the
       program name.  You can also pass in None and then call

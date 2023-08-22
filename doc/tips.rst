@@ -92,13 +92,13 @@ Bindings
 ========
 
 When using a cursor, always use bindings.  `String interpolation
-<http://docs.python.org/library/stdtypes.html#string-formatting-operations>`_
+<https://docs.python.org/library/stdtypes.html#printf-style-string-formatting>`_
 may seem more convenient but you will encounter difficulties.  You may
 feel that you have complete control over all data accessed but if your
 code is at all useful then you will find it being used more and more
 widely.  The computer will always be better than you at parsing SQL
 and the bad guys have years of experience finding and using `SQL
-injection attacks <http://en.wikipedia.org/wiki/SQL_injection>`_ in
+injection attacks <https://en.wikipedia.org/wiki/SQL_injection>`_ in
 ways you never even thought possible.
 
 The :ref:`documentation <cursors>` gives many examples of how to use
@@ -117,7 +117,7 @@ APSW ensures you have :ref:`detailed information
 APSW/SQLite was operating on.
 
 SQLite has a `warning/error logging facility
-<http://www.sqlite.org/errlog.html>`__.  You can call
+<https://www.sqlite.org/errlog.html>`__.  You can call
 :meth:`apsw.ext.log_sqlite` which installs a handler that forwards
 SQLite messages to the :mod:`logging module <logging>`.`
 
@@ -279,7 +279,7 @@ Database schema
 When starting a new database, it can be quite difficult to decide what
 tables and fields to have and how to link them.  The technique used to
 design SQL schemas is called `normalization
-<http://en.wikipedia.org/wiki/Database_normalization>`_.  The page
+<https://en.wikipedia.org/wiki/Database_normalization>`_.  The page
 also shows common pitfalls if you don't normalize your schema.
 
 .. _sharedcache:

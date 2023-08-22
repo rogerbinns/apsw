@@ -1902,14 +1902,14 @@ collationneeded_cb(void *pAux, sqlite3 *Py_UNUSED(db), int eTextRep, const char 
 /** .. method:: collationneeded(callable: Optional[Callable[[Connection, str], None]]) -> None
 
   *callable* will be called if a statement requires a `collation
-  <http://en.wikipedia.org/wiki/Collation>`_ that hasn't been
+  <https://en.wikipedia.org/wiki/Collation>`_ that hasn't been
   registered. Your callable will be passed two parameters. The first
   is the connection object. The second is the name of the
   collation. If you have the collation code available then call
   :meth:`Connection.createcollation`.
 
   This is useful for creating collations on demand.  For example you
-  may include the `locale <http://en.wikipedia.org/wiki/Locale>`_ in
+  may include the `locale <https://en.wikipedia.org/wiki/Locale>`_ in
   the collation name, but since there are thousands of locales in
   popular use it would not be useful to :meth:`prereigster
   <Connection.createcollation>` them all.  Using
@@ -2188,7 +2188,7 @@ Connection_deserialize(Connection *self, PyObject *args, PyObject *kwds)
 /** .. method:: enableloadextension(enable: bool) -> None
 
   Enables/disables `extension loading
-  <https://sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions>`_
+  <https://www.sqlite.org/loadext.html>`_
   which is disabled by default.
 
   :param enable: If True then extension loading is enabled, else it is disabled.
@@ -2227,9 +2227,9 @@ Connection_enableloadextension(Connection *self, PyObject *args, PyObject *kwds)
 
 /** .. method:: loadextension(filename: str, entrypoint: Optional[str] = None) -> None
 
-  Loads *filename* as an `extension <https://sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions>`_
+  Loads *filename* as an `extension <https://www.sqlite.org/loadext.html>`_
 
-  :param filename: The file to load.  This must be Unicode or Unicode compatible
+  :param filename: The file to load.
 
   :param entrypoint: The initialization method to call.  If this
     parameter is not supplied then the SQLite default of
@@ -3329,7 +3329,7 @@ collation_destroy(void *context)
 /** .. method:: createcollation(name: str, callback: Optional[Callable[[str, str], int]]) -> None
 
   You can control how SQLite sorts (termed `collation
-  <http://en.wikipedia.org/wiki/Collation>`_) when giving the
+  <https://en.wikipedia.org/wiki/Collation>`_) when giving the
   ``COLLATE`` term to a `SELECT
   <https://sqlite.org/lang_select.html>`_.  For example your
   collation could take into account locale or do numeric sorting.
@@ -3847,7 +3847,7 @@ Connection_getrowtrace(Connection *self)
 /** .. method:: __enter__() -> Connection
 
   You can use the database as a `context manager
-  <http://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
+  <https://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
   as defined in :pep:`0343`.  When you use *with* a transaction is
   started.  If the block finishes with an exception then the
   transaction is rolled back, otherwise it is committed.  For example::

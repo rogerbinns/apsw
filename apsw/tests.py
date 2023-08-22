@@ -6523,7 +6523,7 @@ class APSW(unittest.TestCase):
                 return math.exp(math.pi) * 26000
 
             def xCurrentTimeCorrect(self):
-                # actual correct implementation http://stackoverflow.com/questions/466321/convert-unix-timestamp-to-julian
+                # actual correct implementation https://stackoverflow.com/questions/466321/convert-unix-timestamp-to-julian
                 return time.time() / 86400.0 + 2440587.5
 
             def xCurrentTime99(self):
@@ -6545,7 +6545,7 @@ class APSW(unittest.TestCase):
                 return 2**65
 
             def xCurrentTimeCorrect(self):
-                # actual correct implementation http://stackoverflow.com/questions/466321/convert-unix-timestamp-to-julian
+                # actual correct implementation https://stackoverflow.com/questions/466321/convert-unix-timestamp-to-julian
                 return time.time() / 86400.0 + 2440587.5
 
             def xCurrentTime99(self):
@@ -10534,7 +10534,7 @@ test_types_vals = (
     "0123456789" * 200000,  # a longer string
     u"a \u1234 unicode \ufe54 string \u0089",  # simple unicode string
     u"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET} ",  # funky unicode or an episode of b5
-    u"\N{MUSICAL SYMBOL G CLEF}",  # http://www.cmlenz.net/archives/2008/07/the-truth-about-unicode-in-python
+    u"\N{MUSICAL SYMBOL G CLEF}",  # https://www.cmlenz.net/archives/2008/07/the-truth-about-unicode-in-python
     97,  # integer
     2147483647,  # numbers on 31 bit boundary (32nd bit used for integer sign), and then
     -2147483647,  # start using 32nd bit (must be represented by 64bit to avoid losing

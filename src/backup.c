@@ -165,9 +165,9 @@ APSWBackup_dealloc(APSWBackup *self)
 
   :param npages: How many pages to copy. If the parameter is omitted
      or negative then all remaining pages are copied. The default page
-     size is 4096 bytes (4kb) which can be changed before database
+     size is 4096 bytes (4kb) which can be viewed, or changed before database
      creation using a `pragma
-     <https://sqlite.org/pragma.html#modify>`_.
+     <https://www.sqlite.org/pragma.html#pragma_page_size>`_.
 
   This method may throw a :exc:`BusyError` or :exc:`LockedError` if
   unable to lock the source database.  You can catch those and try
@@ -316,7 +316,7 @@ APSWBackup_get_pagecount(APSWBackup *self, void *Py_UNUSED(ignored))
 /** .. method:: __enter__() -> Backup
 
   You can use the backup object as a `context manager
-  <http://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
+  <https://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
   as defined in :pep:`0343`.  The :meth:`~Backup.__exit__` method ensures that backup
   is :meth:`finished <Backup.finish>`.
 */

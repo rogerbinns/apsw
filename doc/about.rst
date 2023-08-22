@@ -44,7 +44,7 @@ details <install>`.
 Mailing lists/contacts
 ----------------------
 
-* `Python SQLite discussion group <http://groups.google.com/group/python-sqlite>`__
+* `Python SQLite discussion group <https://groups.google.com/group/python-sqlite>`__
   (preferred)
 * `Github discussions <https://github.com/rogerbinns/apsw/discussions>`__
 * You can also email the author at `rogerb@rogerbinns.com
