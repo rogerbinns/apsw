@@ -832,6 +832,9 @@ class Connection:
           * - prepare_flags
             - Flags passed to `sqlite3_prepare_v3 <https://sqlite.org/c3ref/prepare.html>`__
               for this query
+          * - explain
+            - The value passed to `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html`__
+              if >= 0
           * - uses
             - How many times this entry has been (re)used
           * - has_more
@@ -1193,7 +1196,7 @@ class Connection:
       * :ref:`rowtracer`
       * :attr:`Cursor.exectrace`"""
 
-    def execute(self, statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor:
+    def execute(self, statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor:
         """Executes the statements using the supplied bindings.  Execution
         returns when the first row is available or all statements have
         completed.  (A cursor is automatically obtained).
@@ -1201,7 +1204,7 @@ class Connection:
         See :meth:`Cursor.execute` for more details."""
         ...
 
-    def executemany(self, statements: str, sequenceofbindings:Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor:
+    def executemany(self, statements: str, sequenceofbindings:Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor:
         """This method is for when you want to execute the same statements over a
         sequence of bindings, such as inserting into a database.  (A cursor is
         automatically obtained).
@@ -1825,7 +1828,7 @@ class Cursor:
       * :ref:`executiontracer`
       * :attr:`Connection.exectrace`"""
 
-    def execute(self, statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor:
+    def execute(self, statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor:
         """Executes the statements using the supplied bindings.  Execution
         returns when the first row is available or all statements have
         completed.
@@ -1838,6 +1841,8 @@ class Cursor:
           placed in the cache after execution
         :param prepare_flags: `flags <https://sqlite.org/c3ref/c_prepare_normalize.htm>`__ passed to
           `sqlite_prepare_v3 <https://sqlite.org/c3ref/prepare.html>`__
+        :param explain: If 0 or greater then the statement is passed to `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html`__
+           where you can force it to not be an explain, or force explain or explain query plan.
 
         If you use numbered bindings in the query then supply a sequence.
         Any sequence will work including lists and iterators.  For
@@ -1885,7 +1890,7 @@ class Cursor:
           * `sqlite3_bind_zeroblob <https://sqlite.org/c3ref/bind_blob.html>`__"""
         ...
 
-    def executemany(self, statements: str, sequenceofbindings: Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor:
+    def executemany(self, statements: str, sequenceofbindings: Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor:
         """This method is for when you want to execute the same statements over
         a sequence of bindings.  Conceptually it does this::
 

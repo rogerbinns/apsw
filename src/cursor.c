@@ -972,7 +972,7 @@ APSWCursor_step(APSWCursor *self)
   return NULL;
 }
 
-/** .. method:: execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor
+/** .. method:: execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor
 
     Executes the statements using the supplied bindings.  Execution
     returns when the first row is available or all statements have
@@ -986,6 +986,8 @@ APSWCursor_step(APSWCursor *self)
       placed in the cache after execution
     :param prepare_flags: `flags <https://sqlite.org/c3ref/c_prepare_normalize.htm>`__ passed to
       `sqlite_prepare_v3 <https://sqlite.org/c3ref/prepare.html>`__
+    :param explain: If 0 or greater then the statement is passed to `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html`__
+       where you can force it to not be an explain, or force explain or explain query plan.
 
     If you use numbered bindings in the query then supply a sequence.
     Any sequence will work including lists and iterators.  For
@@ -1036,6 +1038,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *args, PyObject *kwds)
   int savedbindingsoffset = -1;
   int prepare_flags = 0;
   int can_cache = 1;
+  int explain = -1;
   PyObject *retval = NULL;
   PyObject *statements, *bindings = NULL;
   APSWStatementOptions options;
@@ -1052,17 +1055,18 @@ APSWCursor_execute(APSWCursor *self, PyObject *args, PyObject *kwds)
 
   assert(!self->bindings);
   {
-    static char *kwlist[] = {"statements", "bindings", "can_cache", "prepare_flags", NULL};
+    static char *kwlist[] = {"statements", "bindings", "can_cache", "prepare_flags", "explain", NULL};
     Cursor_execute_CHECK;
     argcheck_Optional_Bindings_param bindings_param = {&bindings, Cursor_execute_bindings_MSG};
     argcheck_bool_param can_cache_param = {&can_cache, Cursor_execute_can_cache_MSG};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O&$O&i:" Cursor_execute_USAGE, kwlist, &PyUnicode_Type, &statements, argcheck_Optional_Bindings, &bindings_param, argcheck_bool, &can_cache_param, &prepare_flags))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O&$O&ii:" Cursor_execute_USAGE, kwlist, &PyUnicode_Type, &statements, argcheck_Optional_Bindings, &bindings_param, argcheck_bool, &can_cache_param, &prepare_flags, &explain))
       return NULL;
   }
   self->bindings = bindings;
 
   options.can_cache = can_cache;
   options.prepare_flags = prepare_flags;
+  options.explain = explain;
 
   if (self->bindings)
   {
@@ -1117,7 +1121,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *args, PyObject *kwds)
   return Py_NewRef(retval);
 }
 
-/** .. method:: executemany(statements: str, sequenceofbindings: Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor
+/** .. method:: executemany(statements: str, sequenceofbindings: Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor
 
   This method is for when you want to execute the same statements over
   a sequence of bindings.  Conceptually it does this::
@@ -1150,6 +1154,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args, PyObject *kwds)
   int savedbindingsoffset = -1;
   int can_cache = 1;
   int prepare_flags = 0;
+  int explain = -1;
 
   CHECK_USE(NULL);
   CHECK_CURSOR_CLOSED(NULL);
@@ -1166,10 +1171,10 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args, PyObject *kwds)
   assert(!self->emoriginalquery);
   assert(self->status == C_DONE);
   {
-    static char *kwlist[] = {"statements", "sequenceofbindings", "can_cache", "prepare_flags", NULL};
+    static char *kwlist[] = {"statements", "sequenceofbindings", "can_cache", "prepare_flags", "explain", NULL};
     Cursor_executemany_CHECK;
     argcheck_bool_param can_cache_param = {&can_cache, Cursor_executemany_can_cache_MSG};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!O|$O&i:" Cursor_executemany_USAGE, kwlist, &PyUnicode_Type, &statements, &sequenceofbindings, argcheck_bool, &can_cache_param, &prepare_flags))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!O|$O&ii:" Cursor_executemany_USAGE, kwlist, &PyUnicode_Type, &statements, &sequenceofbindings, argcheck_bool, &can_cache_param, &prepare_flags, &explain))
       return NULL;
   }
   self->emiter = PyObject_GetIter(sequenceofbindings);
@@ -1200,6 +1205,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args, PyObject *kwds)
 
   self->emoptions.can_cache = can_cache;
   self->emoptions.prepare_flags = prepare_flags;
+  self->emoptions.explain = explain;
 
   assert(!self->statement);
   assert(!PyErr_Occurred());

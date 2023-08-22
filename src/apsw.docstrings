@@ -875,6 +875,9 @@
 "  * - prepare_flags\n" \
 "    - Flags passed to `sqlite3_prepare_v3 <https://sqlite.org/c3ref/prepare.html>`__\n" \
 "      for this query\n" \
+"  * - explain\n" \
+"    - The value passed to `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html`__\n" \
+"      if >= 0\n" \
 "  * - uses\n" \
 "    - How many times this entry has been (re)used\n" \
 "  * - has_more\n" \
@@ -1372,14 +1375,14 @@
 "  * :ref:`rowtracer`\n" \
 "  * :attr:`Cursor.exectrace`\n" 
 
-#define  Connection_execute_DOC "execute($self,statements,bindings=None,*,can_cache=True,prepare_flags=0)\n--\n\nConnection.execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor\n\n" \
+#define  Connection_execute_DOC "execute($self,statements,bindings=None,*,can_cache=True,prepare_flags=0,explain=-1)\n--\n\nConnection.execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor\n\n" \
 "Executes the statements using the supplied bindings.  Execution\n" \
 "returns when the first row is available or all statements have\n" \
 "completed.  (A cursor is automatically obtained).\n" \
 "\n" \
 "See :meth:`Cursor.execute` for more details.\n" 
 
-#define  Connection_executemany_DOC "executemany($self,statements,sequenceofbindings,*,can_cache=True,prepare_flags=0)\n--\n\nConnection.executemany(statements: str, sequenceofbindings:Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor\n\n" \
+#define  Connection_executemany_DOC "executemany($self,statements,sequenceofbindings,*,can_cache=True,prepare_flags=0,explain=-1)\n--\n\nConnection.executemany(statements: str, sequenceofbindings:Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor\n\n" \
 "This method is for when you want to execute the same statements over a\n" \
 "sequence of bindings, such as inserting into a database.  (A cursor is\n" \
 "automatically obtained).\n" \
@@ -2247,7 +2250,7 @@
 "  * :ref:`executiontracer`\n" \
 "  * :attr:`Connection.exectrace`\n" 
 
-#define  Cursor_execute_DOC "execute($self,statements,bindings=None,*,can_cache=True,prepare_flags=0)\n--\n\nCursor.execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor\n\n" \
+#define  Cursor_execute_DOC "execute($self,statements,bindings=None,*,can_cache=True,prepare_flags=0,explain=-1)\n--\n\nCursor.execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor\n\n" \
 "Executes the statements using the supplied bindings.  Execution\n" \
 "returns when the first row is available or all statements have\n" \
 "completed.\n" \
@@ -2260,6 +2263,8 @@
 "  placed in the cache after execution\n" \
 ":param prepare_flags: `flags <https://sqlite.org/c3ref/c_prepare_normalize.htm>`__ passed to\n" \
 "  `sqlite_prepare_v3 <https://sqlite.org/c3ref/prepare.html>`__\n" \
+":param explain: If 0 or greater then the statement is passed to `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html`__\n" \
+"   where you can force it to not be an explain, or force explain or explain query plan.\n" \
 "\n" \
 "If you use numbered bindings in the query then supply a sequence.\n" \
 "Any sequence will work including lists and iterators.  For\n" \
@@ -2306,10 +2311,10 @@
 "  * `sqlite3_bind_blob64 <https://sqlite.org/c3ref/bind_blob.html>`__\n" \
 "  * `sqlite3_bind_zeroblob <https://sqlite.org/c3ref/bind_blob.html>`__\n" 
 
-#define Cursor_execute_bindings_MSG  "argument 'bindings' of Cursor.execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor" 
-#define Cursor_execute_can_cache_MSG  "argument 'can_cache' of Cursor.execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor" 
+#define Cursor_execute_bindings_MSG  "argument 'bindings' of Cursor.execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor" 
+#define Cursor_execute_can_cache_MSG  "argument 'can_cache' of Cursor.execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor" 
 
-#define Cursor_execute_USAGE "Cursor.execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor"
+#define Cursor_execute_USAGE "Cursor.execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor"
 
 #define Cursor_execute_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(statements), PyObject *)); \
@@ -2319,10 +2324,12 @@
   assert(can_cache == 1); \
   assert(__builtin_types_compatible_p(typeof(prepare_flags), int)); \
   assert(prepare_flags == (0)); \
+  assert(__builtin_types_compatible_p(typeof(explain), int)); \
+  assert(explain == (-1)); \
 } while(0)
 
 
-#define  Cursor_executemany_DOC "executemany($self,statements,sequenceofbindings,*,can_cache=True,prepare_flags=0)\n--\n\nCursor.executemany(statements: str, sequenceofbindings: Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor\n\n" \
+#define  Cursor_executemany_DOC "executemany($self,statements,sequenceofbindings,*,can_cache=True,prepare_flags=0,explain=-1)\n--\n\nCursor.executemany(statements: str, sequenceofbindings: Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor\n\n" \
 "This method is for when you want to execute the same statements over\n" \
 "a sequence of bindings.  Conceptually it does this::\n" \
 "\n" \
@@ -2342,9 +2349,9 @@
 "statements can return data.  See :meth:`~Cursor.execute` for more\n" \
 "information.\n" 
 
-#define Cursor_executemany_can_cache_MSG  "argument 'can_cache' of Cursor.executemany(statements: str, sequenceofbindings: Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor" 
+#define Cursor_executemany_can_cache_MSG  "argument 'can_cache' of Cursor.executemany(statements: str, sequenceofbindings: Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor" 
 
-#define Cursor_executemany_USAGE "Cursor.executemany(statements: str, sequenceofbindings: Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor"
+#define Cursor_executemany_USAGE "Cursor.executemany(statements: str, sequenceofbindings: Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor"
 
 #define Cursor_executemany_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(statements), PyObject *)); \
@@ -2353,6 +2360,8 @@
   assert(can_cache == 1); \
   assert(__builtin_types_compatible_p(typeof(prepare_flags), int)); \
   assert(prepare_flags == (0)); \
+  assert(__builtin_types_compatible_p(typeof(explain), int)); \
+  assert(explain == (-1)); \
 } while(0)
 
 
