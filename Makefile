@@ -118,7 +118,7 @@ test_debug: $(PYDEBUG_DIR)/bin/python3  src/faultinject.h ## Testing in debug mo
 fulltest: test test_debug
 
 linkcheck:  ## Checks links from doc
-	make RELEASEDATE=$(RELEASEDATE) VERSION=$(VERSION) -C doc linkcheck
+	env PYTHONPATH="`pwd`" make RELEASEDATE=$(RELEASEDATE) VERSION=$(VERSION) -C doc linkcheck
 
 unwrapped:  ## Find SQLite APIs that are not wrapped by APSW
 	env PYTHONPATH=. $(PYTHON) tools/find_unwrapped_apis.py
