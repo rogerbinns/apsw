@@ -16,7 +16,7 @@ Added :doc:`best practice <bestpractice>` module (:issue:`460`)
 :meth:`apsw.ext.log_sqlite` outputs SQLite warnings at warning level.
 (:issue:`472`)
 
-`sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html`__
+`sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html>`__
 is wrapped available as a `explain` keyword parameter on
 execute/executemany methods. (:issue:`474`)
 

@@ -4424,7 +4424,7 @@ If `entries` is present, then each list entry is a dict with the following infor
     - Flags passed to `sqlite3_prepare_v3 <https://sqlite.org/c3ref/prepare.html>`__
       for this query
   * - explain
-    - The value passed to `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html`__
+    - The value passed to `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html>`__
       if >= 0
   * - uses
     - How many times this entry has been (re)used

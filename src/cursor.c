@@ -986,7 +986,7 @@ APSWCursor_step(APSWCursor *self)
       placed in the cache after execution
     :param prepare_flags: `flags <https://sqlite.org/c3ref/c_prepare_normalize.htm>`__ passed to
       `sqlite_prepare_v3 <https://sqlite.org/c3ref/prepare.html>`__
-    :param explain: If 0 or greater then the statement is passed to `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html`__
+    :param explain: If 0 or greater then the statement is passed to `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html>`__
        where you can force it to not be an explain, or force explain or explain query plan.
 
     If you use numbered bindings in the query then supply a sequence.
