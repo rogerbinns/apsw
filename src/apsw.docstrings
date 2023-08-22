@@ -110,7 +110,7 @@
 "support the fork system call.\n" \
 "\n" \
 "SQLite does not allow the use of database connections across `forked\n" \
-"<http://en.wikipedia.org/wiki/Fork_(operating_system)>`__ processes\n" \
+"<https://en.wikipedia.org/wiki/Fork_(operating_system)>`__ processes\n" \
 "(see the `SQLite FAQ Q6 <https://sqlite.org/faq.html#q6>`__).\n" \
 "(Forking creates a child process that is a duplicate of the parent\n" \
 "including the state of all data structures in the program.  If you\n" \
@@ -120,17 +120,17 @@
 "\n" \
 "One example of how you may end up using fork is if you use the\n" \
 "`multiprocessing module\n" \
-"<http://docs.python.org/library/multiprocessing.html>`__ which uses\n" \
+"<https://docs.python.org/library/multiprocessing.html>`__ which uses\n" \
 "fork to make child processes.\n" \
 "\n" \
 "If you do use fork or multiprocessing on a platform that supports\n" \
 "fork then you **must** ensure database connections and their objects\n" \
 "(cursors, backup, blobs etc) are not used in the parent process, or\n" \
 "are all closed before calling fork or starting a `Process\n" \
-"<http://docs.python.org/library/multiprocessing.html#process-and-exceptions>`__.\n" \
+"<https://docs.python.org/library/multiprocessing.html#process-and-exceptions>`__.\n" \
 "(Note you must call close to ensure the underlying SQLite objects\n" \
 "are closed.  It is also a good idea to call `gc.collect(2)\n" \
-"<http://docs.python.org/library/gc.html#gc.collect>`__ to ensure\n" \
+"<https://docs.python.org/library/gc.html#gc.collect>`__ to ensure\n" \
 "anything you may have missed is also deallocated.)\n" \
 "\n" \
 "Once you run this method, extra checking code is inserted into\n" \
@@ -467,7 +467,7 @@
 
 #define  Backup_enter_DOC "__enter__($self)\n--\n\nBackup.__enter__() -> Backup\n\n" \
 "You can use the backup object as a `context manager\n" \
-"<http://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_\n" \
+"<https://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_\n" \
 "as defined in :pep:`0343`.  The :meth:`~Backup.__exit__` method ensures that backup\n" \
 "is :meth:`finished <Backup.finish>`.\n" 
 
@@ -518,9 +518,9 @@
 "\n" \
 ":param npages: How many pages to copy. If the parameter is omitted\n" \
 "   or negative then all remaining pages are copied. The default page\n" \
-"   size is 4096 bytes (4kb) which can be changed before database\n" \
+"   size is 4096 bytes (4kb) which can be viewed, or changed before database\n" \
 "   creation using a `pragma\n" \
-"   <https://sqlite.org/pragma.html#modify>`_.\n" \
+"   <https://www.sqlite.org/pragma.html#pragma_page_size>`_.\n" \
 "\n" \
 "This method may throw a :exc:`BusyError` or :exc:`LockedError` if\n" \
 "unable to lock the source database.  You can catch those and try\n" \
@@ -584,7 +584,7 @@
 
 #define  Blob_enter_DOC "__enter__($self)\n--\n\nBlob.__enter__() -> Blob\n\n" \
 "You can use a blob as a `context manager\n" \
-"<http://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_\n" \
+"<https://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_\n" \
 "as defined in :pep:`0343`.  When you use *with* statement,\n" \
 "the blob is always :meth:`closed <Blob.close>` on exit from the block, even if an\n" \
 "exception occurred in the block.\n" \
@@ -876,7 +876,7 @@
 "    - Flags passed to `sqlite3_prepare_v3 <https://sqlite.org/c3ref/prepare.html>`__\n" \
 "      for this query\n" \
 "  * - explain\n" \
-"    - The value passed to `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html`__\n" \
+"    - The value passed to `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html>`__\n" \
 "      if >= 0\n" \
 "  * - uses\n" \
 "    - How many times this entry has been (re)used\n" \
@@ -945,14 +945,14 @@
 
 #define  Connection_collationneeded_DOC "collationneeded($self,callable)\n--\n\nConnection.collationneeded(callable: Optional[Callable[[Connection, str], None]]) -> None\n\n" \
 "*callable* will be called if a statement requires a `collation\n" \
-"<http://en.wikipedia.org/wiki/Collation>`_ that hasn't been\n" \
+"<https://en.wikipedia.org/wiki/Collation>`_ that hasn't been\n" \
 "registered. Your callable will be passed two parameters. The first\n" \
 "is the connection object. The second is the name of the\n" \
 "collation. If you have the collation code available then call\n" \
 ":meth:`Connection.createcollation`.\n" \
 "\n" \
 "This is useful for creating collations on demand.  For example you\n" \
-"may include the `locale <http://en.wikipedia.org/wiki/Locale>`_ in\n" \
+"may include the `locale <https://en.wikipedia.org/wiki/Locale>`_ in\n" \
 "the collation name, but since there are thousands of locales in\n" \
 "popular use it would not be useful to :meth:`prereigster\n" \
 "<Connection.createcollation>` them all.  Using\n" \
@@ -1111,7 +1111,7 @@
 
 #define  Connection_createcollation_DOC "createcollation($self,name,callback)\n--\n\nConnection.createcollation(name: str, callback: Optional[Callable[[str, str], int]]) -> None\n\n" \
 "You can control how SQLite sorts (termed `collation\n" \
-"<http://en.wikipedia.org/wiki/Collation>`_) when giving the\n" \
+"<https://en.wikipedia.org/wiki/Collation>`_) when giving the\n" \
 "``COLLATE`` term to a `SELECT\n" \
 "<https://sqlite.org/lang_select.html>`_.  For example your\n" \
 "collation could take into account locale or do numeric sorting.\n" \
@@ -1316,7 +1316,7 @@
 
 #define  Connection_enableloadextension_DOC "enableloadextension($self,enable)\n--\n\nConnection.enableloadextension(enable: bool) -> None\n\n" \
 "Enables/disables `extension loading\n" \
-"<https://sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions>`_\n" \
+"<https://www.sqlite.org/loadext.html>`_\n" \
 "which is disabled by default.\n" \
 "\n" \
 ":param enable: If True then extension loading is enabled, else it is disabled.\n" \
@@ -1338,7 +1338,7 @@
 
 #define  Connection_enter_DOC "__enter__($self)\n--\n\nConnection.__enter__() -> Connection\n\n" \
 "You can use the database as a `context manager\n" \
-"<http://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_\n" \
+"<https://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_\n" \
 "as defined in :pep:`0343`.  When you use *with* a transaction is\n" \
 "started.  If the block finishes with an exception then the\n" \
 "transaction is rolled back, otherwise it is committed.  For example::\n" \
@@ -1583,9 +1583,9 @@
 
 
 #define  Connection_loadextension_DOC "loadextension($self,filename,entrypoint=None)\n--\n\nConnection.loadextension(filename: str, entrypoint: Optional[str] = None) -> None\n\n" \
-"Loads *filename* as an `extension <https://sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions>`_\n" \
+"Loads *filename* as an `extension <https://www.sqlite.org/loadext.html>`_\n" \
 "\n" \
-":param filename: The file to load.  This must be Unicode or Unicode compatible\n" \
+":param filename: The file to load.\n" \
 "\n" \
 ":param entrypoint: The initialization method to call.  If this\n" \
 "  parameter is not supplied then the SQLite default of\n" \
@@ -2215,7 +2215,7 @@
 #define  Cursor_description_DOC ":type: tuple[tuple[str, str, None, None, None, None, None], ...]\n" \
 "\n" \
 "Based on the `DB-API cursor property\n" \
-"<http://www.python.org/dev/peps/pep-0249/>`__, this returns the\n" \
+"<https://www.python.org/dev/peps/pep-0249/>`__, this returns the\n" \
 "same as :meth:`getdescription` but with 5 Nones appended.  See\n" \
 "also :issue:`131`.\n" 
 
@@ -2261,9 +2261,9 @@
 ":param bindings: If supplied should either be a sequence or a dictionary.  Each item must be one of the :ref:`supported types <types>`\n" \
 ":param can_cache: If False then the statement cache will not be used to find an already prepared query, nor will it be\n" \
 "  placed in the cache after execution\n" \
-":param prepare_flags: `flags <https://sqlite.org/c3ref/c_prepare_normalize.htm>`__ passed to\n" \
+":param prepare_flags: `flags <https://sqlite.org/c3ref/c_prepare_normalize.html>`__ passed to\n" \
 "  `sqlite_prepare_v3 <https://sqlite.org/c3ref/prepare.html>`__\n" \
-":param explain: If 0 or greater then the statement is passed to `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html`__\n" \
+":param explain: If 0 or greater then the statement is passed to `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html>`__\n" \
 "   where you can force it to not be an explain, or force explain or explain query plan.\n" \
 "\n" \
 "If you use numbered bindings in the query then supply a sequence.\n" \
@@ -3143,14 +3143,14 @@
 
 #define  VFS_xCurrentTime_DOC "xCurrentTime($self)\n--\n\nVFS.xCurrentTime()  -> float\n\n" \
 "Return the `Julian Day Number\n" \
-"<http://en.wikipedia.org/wiki/Julian_day>`_ as a floating point\n" \
+"<https://en.wikipedia.org/wiki/Julian_day>`_ as a floating point\n" \
 "number where the integer portion is the day and the fractional part\n" \
 "is the time. Do not adjust for timezone (ie use `UTC\n" \
-"<http://en.wikipedia.org/wiki/Universal_Time>`_).\n" 
+"<https://en.wikipedia.org/wiki/Universal_Time>`_).\n" 
 
 #define  VFS_xCurrentTimeInt64_DOC "xCurrentTimeInt64($self)\n--\n\nVFS.xCurrentTimeInt64()  -> int\n\n" \
 "Returns as an integer the `Julian Day Number\n" \
-"<http://en.wikipedia.org/wiki/Julian_day>`__ multiplied by 86400000\n" \
+"<https://en.wikipedia.org/wiki/Julian_day>`__ multiplied by 86400000\n" \
 "(the number of milliseconds in a 24-hour day).\n" 
 
 #define  VFS_xDelete_DOC "xDelete($self,filename,syncdir)\n--\n\nVFS.xDelete(filename: str, syncdir: bool) -> None\n\n" \
@@ -3480,7 +3480,7 @@
 #define  ExecutionCompleteError_exc_DOC "A statement is complete but you try to run it more anyway!\n" 
 
 #define  ExtensionLoadingError_exc_DOC "An error happened loading an `extension\n" \
-"<https://sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions>`_.\n" 
+"<https://sqlite.org/loadext.html>`_.\n" 
 
 #define  ForkingViolationError_exc_DOC "See :meth:`apsw.fork_checker`.\n" 
 
@@ -3512,7 +3512,7 @@
 
 #define  NoLFSError_exc_DOC "*SQLITE_NOLFS*.  SQLite has attempted to use a feature not\n" \
 "supported by the operating system such as `large file support\n" \
-"<http://en.wikipedia.org/wiki/Large_file_support>`_.\n" 
+"<https://en.wikipedia.org/wiki/Large_file_support>`_.\n" 
 
 #define  NoMemError_exc_DOC "*SQLITE_NOMEM*.  A memory allocation failed.\n" 
 

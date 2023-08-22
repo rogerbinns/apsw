@@ -232,7 +232,7 @@ def fork_checker() -> None:
     support the fork system call.
 
     SQLite does not allow the use of database connections across `forked
-    <http://en.wikipedia.org/wiki/Fork_(operating_system)>`__ processes
+    <https://en.wikipedia.org/wiki/Fork_(operating_system)>`__ processes
     (see the `SQLite FAQ Q6 <https://sqlite.org/faq.html#q6>`__).
     (Forking creates a child process that is a duplicate of the parent
     including the state of all data structures in the program.  If you
@@ -242,17 +242,17 @@ def fork_checker() -> None:
 
     One example of how you may end up using fork is if you use the
     `multiprocessing module
-    <http://docs.python.org/library/multiprocessing.html>`__ which uses
+    <https://docs.python.org/library/multiprocessing.html>`__ which uses
     fork to make child processes.
 
     If you do use fork or multiprocessing on a platform that supports
     fork then you **must** ensure database connections and their objects
     (cursors, backup, blobs etc) are not used in the parent process, or
     are all closed before calling fork or starting a `Process
-    <http://docs.python.org/library/multiprocessing.html#process-and-exceptions>`__.
+    <https://docs.python.org/library/multiprocessing.html#process-and-exceptions>`__.
     (Note you must call close to ensure the underlying SQLite objects
     are closed.  It is also a good idea to call `gc.collect(2)
-    <http://docs.python.org/library/gc.html#gc.collect>`__ to ensure
+    <https://docs.python.org/library/gc.html#gc.collect>`__ to ensure
     anything you may have missed is also deallocated.)
 
     Once you run this method, extra checking code is inserted into
@@ -461,7 +461,7 @@ def unregister_vfs(name: str) -> None:
 
 using_amalgamation: bool
 """If True then `SQLite amalgamation
-<https://sqlite.org/cvstrac/wiki?p=TheAmalgamation>`__ is in
+<https://www.sqlite.org/amalgamation.html>`__ is in
 use (statically compiled into APSW).  Using the amalgamation means
 that SQLite shared libraries are not used and will not affect your
 code."""
@@ -504,7 +504,7 @@ class Backup:
 
     def __enter__(self) -> Backup:
         """You can use the backup object as a `context manager
-        <http://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
+        <https://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
         as defined in :pep:`0343`.  The :meth:`~Backup.__exit__` method ensures that backup
         is :meth:`finished <Backup.finish>`."""
         ...
@@ -547,9 +547,9 @@ class Backup:
 
         :param npages: How many pages to copy. If the parameter is omitted
            or negative then all remaining pages are copied. The default page
-           size is 4096 bytes (4kb) which can be changed before database
+           size is 4096 bytes (4kb) which can be viewed, or changed before database
            creation using a `pragma
-           <https://sqlite.org/pragma.html#modify>`_.
+           <https://www.sqlite.org/pragma.html#pragma_page_size>`_.
 
         This method may throw a :exc:`BusyError` or :exc:`LockedError` if
         unable to lock the source database.  You can catch those and try
@@ -599,7 +599,7 @@ class Blob:
 
     def __enter__(self) -> Blob:
         """You can use a blob as a `context manager
-        <http://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
+        <https://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
         as defined in :pep:`0343`.  When you use *with* statement,
         the blob is always :meth:`closed <Blob.close>` on exit from the block, even if an
         exception occurred in the block.
@@ -833,7 +833,7 @@ class Connection:
             - Flags passed to `sqlite3_prepare_v3 <https://sqlite.org/c3ref/prepare.html>`__
               for this query
           * - explain
-            - The value passed to `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html`__
+            - The value passed to `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html>`__
               if >= 0
           * - uses
             - How many times this entry has been (re)used
@@ -883,14 +883,14 @@ class Connection:
 
     def collationneeded(self, callable: Optional[Callable[[Connection, str], None]]) -> None:
         """*callable* will be called if a statement requires a `collation
-        <http://en.wikipedia.org/wiki/Collation>`_ that hasn't been
+        <https://en.wikipedia.org/wiki/Collation>`_ that hasn't been
         registered. Your callable will be passed two parameters. The first
         is the connection object. The second is the name of the
         collation. If you have the collation code available then call
         :meth:`Connection.createcollation`.
 
         This is useful for creating collations on demand.  For example you
-        may include the `locale <http://en.wikipedia.org/wiki/Locale>`_ in
+        may include the `locale <https://en.wikipedia.org/wiki/Locale>`_ in
         the collation name, but since there are thousands of locales in
         popular use it would not be useful to :meth:`prereigster
         <Connection.createcollation>` them all.  Using
@@ -1008,7 +1008,7 @@ class Connection:
 
     def createcollation(self, name: str, callback: Optional[Callable[[str, str], int]]) -> None:
         """You can control how SQLite sorts (termed `collation
-        <http://en.wikipedia.org/wiki/Collation>`_) when giving the
+        <https://en.wikipedia.org/wiki/Collation>`_) when giving the
         ``COLLATE`` term to a `SELECT
         <https://sqlite.org/lang_select.html>`_.  For example your
         collation could take into account locale or do numeric sorting.
@@ -1145,7 +1145,7 @@ class Connection:
 
     def enableloadextension(self, enable: bool) -> None:
         """Enables/disables `extension loading
-        <https://sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions>`_
+        <https://www.sqlite.org/loadext.html>`_
         which is disabled by default.
 
         :param enable: If True then extension loading is enabled, else it is disabled.
@@ -1159,7 +1159,7 @@ class Connection:
 
     def __enter__(self) -> Connection:
         """You can use the database as a `context manager
-        <http://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
+        <https://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
         as defined in :pep:`0343`.  When you use *with* a transaction is
         started.  If the block finishes with an exception then the
         transaction is rolled back, otherwise it is committed.  For example::
@@ -1368,9 +1368,9 @@ class Connection:
         ...
 
     def loadextension(self, filename: str, entrypoint: Optional[str] = None) -> None:
-        """Loads *filename* as an `extension <https://sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions>`_
+        """Loads *filename* as an `extension <https://www.sqlite.org/loadext.html>`_
 
-        :param filename: The file to load.  This must be Unicode or Unicode compatible
+        :param filename: The file to load.
 
         :param entrypoint: The initialization method to call.  If this
           parameter is not supplied then the SQLite default of
@@ -1795,7 +1795,7 @@ class Cursor:
 
     description: tuple[tuple[str, str, None, None, None, None, None], ...]
     """Based on the `DB-API cursor property
-    <http://www.python.org/dev/peps/pep-0249/>`__, this returns the
+    <https://www.python.org/dev/peps/pep-0249/>`__, this returns the
     same as :meth:`getdescription` but with 5 Nones appended.  See
     also :issue:`131`."""
 
@@ -1839,9 +1839,9 @@ class Cursor:
         :param bindings: If supplied should either be a sequence or a dictionary.  Each item must be one of the :ref:`supported types <types>`
         :param can_cache: If False then the statement cache will not be used to find an already prepared query, nor will it be
           placed in the cache after execution
-        :param prepare_flags: `flags <https://sqlite.org/c3ref/c_prepare_normalize.htm>`__ passed to
+        :param prepare_flags: `flags <https://sqlite.org/c3ref/c_prepare_normalize.html>`__ passed to
           `sqlite_prepare_v3 <https://sqlite.org/c3ref/prepare.html>`__
-        :param explain: If 0 or greater then the statement is passed to `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html`__
+        :param explain: If 0 or greater then the statement is passed to `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html>`__
            where you can force it to not be an explain, or force explain or explain query plan.
 
         If you use numbered bindings in the query then supply a sequence.
@@ -2475,15 +2475,15 @@ class VFS:
 
     def xCurrentTime(self)  -> float:
         """Return the `Julian Day Number
-        <http://en.wikipedia.org/wiki/Julian_day>`_ as a floating point
+        <https://en.wikipedia.org/wiki/Julian_day>`_ as a floating point
         number where the integer portion is the day and the fractional part
         is the time. Do not adjust for timezone (ie use `UTC
-        <http://en.wikipedia.org/wiki/Universal_Time>`_)."""
+        <https://en.wikipedia.org/wiki/Universal_Time>`_)."""
         ...
 
     def xCurrentTimeInt64(self)  -> int:
         """Returns as an integer the `Julian Day Number
-        <http://en.wikipedia.org/wiki/Julian_day>`__ multiplied by 86400000
+        <https://en.wikipedia.org/wiki/Julian_day>`__ multiplied by 86400000
         (the number of milliseconds in a 24-hour day)."""
         ...
 
@@ -4281,7 +4281,7 @@ class ExecutionCompleteError(Error):
 
 class ExtensionLoadingError(Error):
     """An error happened loading an `extension
-    <https://sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions>`_."""
+    <https://sqlite.org/loadext.html>`_."""
 
 class ForkingViolationError(Error):
     """See :meth:`apsw.fork_checker`."""
@@ -4324,7 +4324,7 @@ class MisuseError(Error):
 class NoLFSError(Error):
     """*SQLITE_NOLFS*.  SQLite has attempted to use a feature not
     supported by the operating system such as `large file support
-    <http://en.wikipedia.org/wiki/Large_file_support>`_."""
+    <https://en.wikipedia.org/wiki/Large_file_support>`_."""
 
 class NoMemError(Error):
     """*SQLITE_NOMEM*.  A memory allocation failed."""
