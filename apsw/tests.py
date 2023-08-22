@@ -4867,6 +4867,29 @@ class APSW(unittest.TestCase):
             self.assertEqual(p[1], query)
             self.assertEqual(p[0].has_vdbe, "select" in query)
 
+    def testIssue475(self):
+        "Unused cursor attributes"
+        # The cause of this issue was a new cursor attribute access, so we check
+        # all objects to catch anything else
+        objects = [
+            apsw, apsw.Connection, apsw.Cursor, apsw.Blob, apsw.Error, apsw.VFS, apsw.VFSFile, self.db,
+            self.db.cursor()
+        ]
+        self.db.execute("create table x(y); insert into x values(x'abcdef1012');select * from x")
+        objects.append(self.db.blobopen("main", "x", "y", self.db.last_insert_rowid(), 0))
+        objects.append(apsw.VFS("aname", ""))
+        objects.append(
+            apsw.VFSFile("", self.db.db_filename("main"),
+                         [apsw.SQLITE_OPEN_MAIN_DB | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_READWRITE, 0]))
+        objects.append(apsw.VFSFcntlPragma)
+
+        for o in objects:
+            for n in dir(o):
+                try:
+                    getattr(o, n)
+                except apsw.Error:
+                    pass
+
     def testCursorGet(self):
         "Cursor.get"
         for query, expected in (("select 3,4", (3, 4)), ("select 3; select 4", [3, 4]), ("select 3,4; select 4,5", [
