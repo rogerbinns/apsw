@@ -1515,8 +1515,7 @@ Enter ".help" for instructions
                 # schema reread
                 blank()
                 comment("We need to force SQLite to reread the schema because otherwise it doesn't know that "
-                        "the virtual tables we inserted directly into sqlite_schema exist.  See "
-                        "last comments of https://sqlite.org/cvstrac/tktview?tn=3425")
+                        "the virtual tables we inserted directly into sqlite_schema exist.")
                 self.write(self.stdout, "BEGIN;\nCREATE TABLE no_such_table(x,y,z);\nROLLBACK;\n")
 
         finally:

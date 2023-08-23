@@ -2209,7 +2209,7 @@ class APSW(unittest.TestCase):
         try:
             self.db.createscalarfunction("twelve", ilove7, 900)  # too many args
         except (apsw.SQLError, apsw.MisuseError):
-            # https://sqlite.org/cvstrac/tktview?tn=3875
+            # misuse can be returned for too many args
             pass
         # some unicode fun
         self.db.createscalarfunction, u"twelve\N{BLACK STAR}", ilove7
@@ -2331,7 +2331,7 @@ class APSW(unittest.TestCase):
             try:
                 self.db.createaggregatefunction("twelve", longest.factory, 923)  # max args is 127
             except (apsw.SQLError, apsw.MisuseError):
-                # used to be SQLerror then changed https://sqlite.org/cvstrac/tktview?tn=3875
+                # misuse is returned for too many args
                 pass
             self.db.createaggregatefunction("twelve", None)
 
@@ -3278,7 +3278,6 @@ class APSW(unittest.TestCase):
             'glue': 'Egg',
             'salmon': 'Fish',
             'burger': 'Mechanically recovered meat',
-            # From https://sqlite.org/cvstrac/wiki?p=FtsUsage
             'broccoli stew': 'broccoli peppers cheese tomatoes',
             'pumpkin stew': 'pumpkin onions garlic celery',
             'broccoli pie': 'broccoli cheese onions flour',
@@ -3485,7 +3484,6 @@ class APSW(unittest.TestCase):
             self.db.createmodule("x" * i, lambda x: i)
 
         # If shared cache is enabled then vtable creation is supposed to fail
-        # See https://sqlite.org/cvstrac/tktview?tn=3144
         try:
             apsw.enablesharedcache(True)
             db = apsw.Connection(TESTFILEPREFIX + "testdb2")
@@ -4062,8 +4060,7 @@ class APSW(unittest.TestCase):
         # findfunction
         # mess with overload function first
         self.assertRaises(TypeError, self.db.overloadfunction, 1, 1)
-        # https://sqlite.org/cvstrac/tktview?tn=3507
-        # self.db.overloadfunction("a"*1024, 1)
+        self.assertRaises(apsw.MisuseError, self.db.overloadfunction, "a"*1024, 1)
         self.db.overloadfunction("xyz", 2)
         self.assertRaises(apsw.SQLError, cur.execute, "select xyz(item,description) from foo", can_cache=False)
         VTable.FindFunction = VTable.FindFunction1
@@ -4389,10 +4386,7 @@ class APSW(unittest.TestCase):
         self.db.limit(apsw.SQLITE_LIMIT_LENGTH, 1023)
         self.assertRaises(apsw.TooBigError, c.execute, "insert into foo values(?)", ("y" * 1024, ))
         self.assertEqual(1023, self.db.limit(apsw.SQLITE_LIMIT_LENGTH, 0))
-        # bug in sqlite - see https://sqlite.org/cvstrac/tktview?tn=3085
-        if False:
-            c.execute("insert into foo values(?)", ("x" * 1024, ))
-            self.assertEqual(apsw.SQLITE_MAX_LENGTH, self.db.limit(apsw.SQLITE_LIMIT_LENGTH))
+        self.assertRaises(apsw.TooBigError,  c.execute, "insert into foo values(?)", ("x" * 1024, ))
 
     def testConnectionHooks(self):
         "Verify connection hooks"
@@ -4732,7 +4726,6 @@ class APSW(unittest.TestCase):
     def testTicket2158(self):
         "Check we are not affected by SQLite ticket #2158"
 
-        # https://sqlite.org/cvstrac/tktview?tn=2158
         def dummy(x, y):
             if x < y: return -1
             if x > y: return 1
@@ -7218,7 +7211,6 @@ class APSW(unittest.TestCase):
         self.assertRaises(OverflowError, t.xTruncate, 0xffffffffeeeeeeee0)
         if not iswindows:
             # windows is happy to truncate to -77 bytes
-            # see https://sqlite.org/cvstrac/tktview?tn=3415
             self.assertRaises(apsw.IOError, t.xTruncate, -77)
         TestFile.xTruncate = TestFile.xTruncate1
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
@@ -9718,7 +9710,6 @@ shell.write(shell.stdout, "hello world\\n")
             ## xUnlockFails
             apsw.faultdict["xUnlockFails"] = True
             # Used to wrap in self.assertRaises(apsw.IOError, ...) but SQLite no longer passes on the error.
-            # See https://sqlite.org/cvstrac/tktview?tn=3946
             self.assertRaisesUnraisable(apsw.IOError,
                                         apsw.Connection(TESTFILEPREFIX + "testdb", vfs="faultvfs").cursor().execute,
                                         "select * from dummy1")

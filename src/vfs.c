@@ -2156,7 +2156,7 @@ apswvfsfile_xRead(sqlite3_file *file, void *bufout, int amount, sqlite3_int64 of
   if (py3buffer.len < amount)
   {
     result = SQLITE_IOERR_SHORT_READ;
-    memset(bufout, 0, amount); /* see https://sqlite.org/cvstrac/chngview?cn=5867 */
+    memset(bufout, 0, amount);
     memcpy(bufout, py3buffer.buf, py3buffer.len);
   }
   else
@@ -2218,8 +2218,7 @@ apswvfsfilepy_xRead(APSWVFSFile *self, PyObject *args, PyObject *kwds)
   if (res == SQLITE_IOERR_SHORT_READ)
   {
     /* We don't know how short the read was, so look for first
-         non-trailing null byte.  See
-         https://sqlite.org/cvstrac/chngview?cn=5867 */
+         non-trailing null byte.  */
     while (amount && PyBytes_AS_STRING(buffy)[amount - 1] == 0)
       amount--;
     if (_PyBytes_Resize(&buffy, amount))

@@ -1399,9 +1399,7 @@ class Connection:
         :param name: Function name
         :param nargs: How many arguments the function takes
 
-        Due to cvstrac 3507 underlying errors will not be returned.
-
-        Calls: `sqlite3_overload_function <https://sqlite.org/c3ref/overload_function.html>`__"""
+          Calls: `sqlite3_overload_function <https://sqlite.org/c3ref/overload_function.html>`__"""
         ...
 
     def pragma(self, name: str, value: Optional[SQLiteValue] = None) -> Any:

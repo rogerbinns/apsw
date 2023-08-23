@@ -3,7 +3,7 @@
 # See the accompanying LICENSE file.
 #
 # Do speed tests.  The tests try to correspond to
-# https://sqlite.org/cvstrac/fileview?f=sqlite/tool/mkspeedsql.tcl
+# https://www.sqlite.org/src/file?name=tool/speedtest.tcl&ci=trunk
 # Command line options etc were added later hence the
 # somewhat weird structuring.
 
