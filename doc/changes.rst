@@ -1556,7 +1556,7 @@ new ones used by SQLite in the amalgamation.
 
 Added :attr:`apsw.using_amalgamation` so you can tell if APSW was
 compiled using the `SQLite amalgamation
-<https://sqlite.org/cvstrac/wiki?p=TheAmalgamation>`__.  Using the
+<https://www.sqlite.org/amalgamation.html>`__.  Using the
 amalgamation means that SQLite shared libraries are not used and will
 not affect your code.
 
@@ -1799,7 +1799,7 @@ APSW is now hosted at https://code.google.com/p/apsw
 You can use this with SQLite 3.5.9 onwards.
 
 SQLite now provides the source all `amalgamated
-<https://sqlite.org/cvstrac/wiki?p=TheAmalgamation>`_ into one file
+<https://www.sqlite.org/amalgamation.html>`_ into one file
 which improves performance and makes compilation and linking of SQLite
 far easier. The build instructions are updated.
 
@@ -1942,7 +1942,7 @@ Authorizer codes *SQLITE_CREATE_VTABLE*,
 *SQLITE_DROP_VTABLE* and *SQLITE_FUNCTION* added.
 
 SQLite `extended result codes
-<https://sqlite.org/cvstrac/wiki?p=ExtendedResultCodes>`_ are
+<https://www.sqlite.org/rescode.html#extrc>`_ are
 available - see :ref:`exceptions` for more detail.
 
 :data:`apsw.connection_hooks` added so you can easily register functions,
@@ -1959,7 +1959,7 @@ Never released as 3.3.8 came along.
 You can use this release against SQLite 3.3.7. There were no changes
 in the SQLite 3.3.6 API from 3.3.5. In SQLite 3.3.7 an API was added
 that allowed removing a chunk of duplicate code. Also added were
-`Virtual Tables <https://sqlite.org/cvstrac/wiki?p=VirtualTables>`_
+`Virtual Tables <https://www.sqlite.org/vtab.html>`_
 and loading of external modules (shared libraries).
 
 APSW had the following changes:
