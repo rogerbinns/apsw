@@ -95,16 +95,10 @@ jobs:
     - name: Stage wheels
       uses: actions/download-artifact@v3
       with:
-        name: wheelhouse
-        path: wheelhouse
-
-    - run: |
-        mkdir -p dist
-        mv -v wheelhouse/* dist/
-        ls -l dist/
-
+        name: artifact
+        path: dist
     - name: Publish package
-      uses: pypa/gh-action-pypi-publish@v1
+      uses: pypa/gh-action-pypi-publish@release/v1
       with:
        repository-url: https://test.pypi.org/legacy/
 
