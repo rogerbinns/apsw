@@ -247,7 +247,7 @@ add_apsw_constants(PyObject *module)
 
     /* Extended Result Codes */
     the_dict = Py_BuildValue(
-        "{siissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiis}",
+        "{siissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiis}",
         "SQLITE_ABORT_ROLLBACK", SQLITE_ABORT_ROLLBACK, SQLITE_ABORT_ROLLBACK, "SQLITE_ABORT_ROLLBACK",
         "SQLITE_AUTH_USER", SQLITE_AUTH_USER, SQLITE_AUTH_USER, "SQLITE_AUTH_USER",
         "SQLITE_BUSY_RECOVERY", SQLITE_BUSY_RECOVERY, SQLITE_BUSY_RECOVERY, "SQLITE_BUSY_RECOVERY",
@@ -294,6 +294,7 @@ add_apsw_constants(PyObject *module)
         "SQLITE_IOERR_FSTAT", SQLITE_IOERR_FSTAT, SQLITE_IOERR_FSTAT, "SQLITE_IOERR_FSTAT",
         "SQLITE_IOERR_FSYNC", SQLITE_IOERR_FSYNC, SQLITE_IOERR_FSYNC, "SQLITE_IOERR_FSYNC",
         "SQLITE_IOERR_GETTEMPPATH", SQLITE_IOERR_GETTEMPPATH, SQLITE_IOERR_GETTEMPPATH, "SQLITE_IOERR_GETTEMPPATH",
+        "SQLITE_IOERR_IN_PAGE", SQLITE_IOERR_IN_PAGE, SQLITE_IOERR_IN_PAGE, "SQLITE_IOERR_IN_PAGE",
         "SQLITE_IOERR_LOCK", SQLITE_IOERR_LOCK, SQLITE_IOERR_LOCK, "SQLITE_IOERR_LOCK",
         "SQLITE_IOERR_MMAP", SQLITE_IOERR_MMAP, SQLITE_IOERR_MMAP, "SQLITE_IOERR_MMAP",
         "SQLITE_IOERR_NOMEM", SQLITE_IOERR_NOMEM, SQLITE_IOERR_NOMEM, "SQLITE_IOERR_NOMEM",
@@ -1015,6 +1016,7 @@ add_apsw_constants(PyObject *module)
         || PyModule_AddIntConstant(module, "SQLITE_IOERR_FSTAT", SQLITE_IOERR_FSTAT)
         || PyModule_AddIntConstant(module, "SQLITE_IOERR_FSYNC", SQLITE_IOERR_FSYNC)
         || PyModule_AddIntConstant(module, "SQLITE_IOERR_GETTEMPPATH", SQLITE_IOERR_GETTEMPPATH)
+        || PyModule_AddIntConstant(module, "SQLITE_IOERR_IN_PAGE", SQLITE_IOERR_IN_PAGE)
         || PyModule_AddIntConstant(module, "SQLITE_IOERR_LOCK", SQLITE_IOERR_LOCK)
         || PyModule_AddIntConstant(module, "SQLITE_IOERR_MMAP", SQLITE_IOERR_MMAP)
         || PyModule_AddIntConstant(module, "SQLITE_IOERR_NOMEM", SQLITE_IOERR_NOMEM)
