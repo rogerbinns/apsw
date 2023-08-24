@@ -32,6 +32,8 @@ extensions = [
     "sphinxcontrib.jquery",
 ]
 
+autodoc_preserve_defaults = True
+
 try:
     import rst2pdf.pdfbuilder
     extensions.append("rst2pdf.pdfbuilder")

@@ -281,7 +281,7 @@ class TypesConverterCursorFactory:
 def log_sqlite(*, level: int = logging.ERROR) -> None:
     """Send SQLite log messages to :mod:`logging`
 
-    :param level: level to log at (default *logging.ERROR*)
+    :param level: level to log at
 
     SQLite's `logging <https://www.sqlite.org/errlog.html>`__ has many
     useful messages, including those that aren't raised as exceptions.
