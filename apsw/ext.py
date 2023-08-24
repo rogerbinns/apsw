@@ -253,21 +253,24 @@ class TypesConverterCursorFactory:
                     bindings: apsw.Bindings | None = None,
                     *,
                     can_cache: bool = True,
-                    prepare_flags: int = 0) -> apsw.Cursor:
+                    prepare_flags: int = 0,
+                    explain: int = -1) -> apsw.Cursor:
             """Executes the statements doing conversions on supplied and returned values
 
             See :meth:`apsw.Cursor.execute` for parameter details"""
             return super().execute(statements,
                                    self.factory.wrap_bindings(bindings),
                                    can_cache=can_cache,
-                                   prepare_flags=prepare_flags)
+                                   prepare_flags=prepare_flags,
+                                   explain=explain)
 
         def executemany(self,
                         statements: str,
                         sequenceofbindings: Sequence[apsw.Bindings],
                         *,
                         can_cache: bool = True,
-                        prepare_flags: int = 0) -> apsw.Cursor:
+                        prepare_flags: int = 0,
+                        explain: int = -1) -> apsw.Cursor:
             """Executes the statements against each item in sequenceofbindings, doing conversions on supplied and returned values
 
             See :meth:`apsw.Cursor.executemany` for parameter details"""
@@ -275,7 +278,8 @@ class TypesConverterCursorFactory:
                 statements,
                 self.factory.wrap_sequence_bindings(sequenceofbindings),  # type: ignore[arg-type]
                 can_cache=can_cache,
-                prepare_flags=prepare_flags)
+                prepare_flags=prepare_flags,
+                explain=explain)
 
 
 def log_sqlite(*, level: int = logging.ERROR) -> None:
@@ -1188,7 +1192,7 @@ def make_virtual_module(db: apsw.Connection,
                 return v  # type: ignore[no-any-return]
 
             def _Column_repr_invalid(self, which: int) -> apsw.SQLiteValue:
-                v = self._Column_get(which)
+                v = self._Column_get(which) # type: ignore[attr-defined]
                 return v if v is None or isinstance(v, (int, float, str, bytes)) else repr(v)
 
             def _Column_By_Attr(self, which: int) -> apsw.SQLiteValue:
