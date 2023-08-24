@@ -3,8 +3,8 @@ Change History
 
 .. currentmodule:: apsw
 
-next
-====
+3.43.0.0
+========
 
 This is the last version that supports Python 3.6 and Python 3.7 (both
 end of life).  The policy as stated in the :doc:`about <about>` page
