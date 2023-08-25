@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Execution and tracing &mdash; APSW 3.42.0.1 documentation</title>
+  <title>Execution and tracing &mdash; APSW 3.43.0.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/favicon.ico"/>
@@ -12,11 +12,11 @@
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="_static/jquery.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=c3a517ee"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
@@ -39,7 +39,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.42.0.1
+                3.43.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -63,6 +63,7 @@
 <li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="types.html">Types</a></li>
@@ -116,9 +117,9 @@
            <div itemprop="articleBody">
              
   <section id="execution-and-tracing">
-<h1>Execution and tracing<a class="headerlink" href="#execution-and-tracing" title="Permalink to this heading"></a></h1>
+<h1>Execution and tracing<a class="headerlink" href="#execution-and-tracing" title="Link to this heading"></a></h1>
 <section id="execution-model">
-<span id="executionmodel"></span><h2>Execution model<a class="headerlink" href="#execution-model" title="Permalink to this heading"></a></h2>
+<span id="executionmodel"></span><h2>Execution model<a class="headerlink" href="#execution-model" title="Link to this heading"></a></h2>
 <p>This section only matters if you give multiple SQL statements in one go to <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-exc docutils literal notranslate"><span class="pre">Cursor.execute</span></code></a>.
 (Statements are separated by semi-colons.)</p>
 <p>SQLite does execution in two steps. First a statement is prepared,
@@ -147,19 +148,17 @@ executed. On the next execute that condition is detected and an
 exception raised.</p>
 </section>
 <section id="multi-threading-and-re-entrancy">
-<h2>Multi-threading and re-entrancy<a class="headerlink" href="#multi-threading-and-re-entrancy" title="Permalink to this heading"></a></h2>
+<h2>Multi-threading and re-entrancy<a class="headerlink" href="#multi-threading-and-re-entrancy" title="Link to this heading"></a></h2>
 <p>ASPW lets you use SQLite in multi-threaded programs and will let other
-threads execute while SQLite is working.  (Technically the <a class="reference external" href="http://www.python.org/doc/2.3.4/api/threads.html">GIL</a> is released when
-<a class="reference external" href="https://sqlite.org/c3ref/prepare.html">sqlite3_prepare_v2</a>,
-<a class="reference external" href="https://sqlite.org/c3ref/step.html">sqlite3_step</a> or
-<a class="reference external" href="https://sqlite.org/c3ref/open.html">sqlite3_open_v2</a> are running, as
-well as all other functions that could take more than a trivial amount
-of time or use the SQLite mutex. The GIL is re-acquired while user
-defined functions, collations and the various hooks/handlers run.)</p>
-<p>Note that you cannot use the same cursor object in multiple threads
-concurrently to execute statements. APSW will detect this and throw an
-exception. It is safe to use the object serially (eg calling
-<a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.execute()</span></code></a> in one thread and iterator in
+threads execute while SQLite is working.  It checks at start that
+SQLite was compiled in <a class="reference external" href="https://www.sqlite.org/threadsafe.html">threadsafe mode</a> which is the default.  The
+<a class="reference external" href="https://docs.python.org/3/glossary.html#term-global-interpreter-lock">GIL</a>
+is released when when SQLite APIs are called, and re-acquired while
+running any Python code.</p>
+<p>You cannot use the same cursor object in multiple threads concurrently
+to execute statements. APSW will detect this and raise an
+<a class="reference internal" href="exceptions.html#apsw.ThreadingViolationError" title="apsw.ThreadingViolationError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ThreadingViolationError</span></code></a>. It is safe to use the object serially
+(eg calling <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.execute()</span></code></a> in one thread and iterator in
 another. You also can't do things like try to
 <a class="reference internal" href="connection.html#apsw.Connection.close" title="apsw.Connection.close"><code class="xref py py-meth docutils literal notranslate"><span class="pre">close()</span></code></a> a Connection concurrently in two threads.</p>
 <p>If you have multiple threads and/or multiple programs accessing the
@@ -178,16 +177,15 @@ issue. You may want to remember the Connection object when you set
 your trace or user defined functions.</p>
 </section>
 <section id="bit-hosts">
-<span id="x64bitpy25"></span><h2>64 bit hosts<a class="headerlink" href="#bit-hosts" title="Permalink to this heading"></a></h2>
+<h2>64 bit hosts<a class="headerlink" href="#bit-hosts" title="Link to this heading"></a></h2>
 <p>APSW is tested and works correctly on 32 and 64 bit hosts.
-Unfortunately SQLite is limited to 32 bit quantities for strings,
+SQLite is limited to 32 bit quantities for strings,
 blobs, number of columns etc even when compiled for 64 bit.
-Consequently you will get a TooBig exception from APSW which checks if
-strings/buffers longer than 1GB or 2GB (depends on internal storage)
-are used. cvstrac 2125 and 3246 had more details.</p>
+You will get a <a class="reference internal" href="exceptions.html#apsw.TooBigError" title="apsw.TooBigError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">TooBigError</span></code></a> if trying to use strings
+and blobs larger than 1 gigabyte.</p>
 </section>
 <section id="statement-cache">
-<span id="statementcache"></span><h2>Statement Cache<a class="headerlink" href="#statement-cache" title="Permalink to this heading"></a></h2>
+<span id="statementcache"></span><h2>Statement Cache<a class="headerlink" href="#statement-cache" title="Link to this heading"></a></h2>
 <p>Each <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> maintains a cache mapping SQL queries to a
 <a class="reference external" href="https://sqlite.org/c3ref/stmt.html">prepared statement</a> to avoid
 the overhead of <a class="reference external" href="https://sqlite.org/c3ref/prepare.html">repreparing</a> queries that are executed
@@ -206,7 +204,7 @@ disable the statement cache completely, use use <cite>can_cache = False</cite>
 flag to <cite>execute</cite>/<cite>executemany</cite>.</p>
 </section>
 <section id="tracing">
-<span id="id1"></span><h2>Tracing<a class="headerlink" href="#tracing" title="Permalink to this heading"></a></h2>
+<span id="id1"></span><h2>Tracing<a class="headerlink" href="#tracing" title="Link to this heading"></a></h2>
 <p>You can install tracers on <a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">cursors</span></code></a> or
 <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">connections</span></code></a> as an easy way of seeing exactly
 what gets executed and what is returned. The tracers can also abort
@@ -225,7 +223,7 @@ in the tracer then do them from a new cursor object.  For example:</p>
 </div>
 </div>
 <section id="execution-tracer">
-<span id="executiontracer"></span><h3>Execution Tracer<a class="headerlink" href="#execution-tracer" title="Permalink to this heading"></a></h3>
+<span id="executiontracer"></span><h3>Execution Tracer<a class="headerlink" href="#execution-tracer" title="Link to this heading"></a></h3>
 <p>The execution tracer is called after an SQL statement has been
 prepared. (ie syntax errors will have caused an exception during
 preparation so you won't see them with a tracer). It is called with
@@ -255,7 +253,7 @@ of the first argument being a cursor, it will be the connection itself
 since there is no cursor involved.</p>
 </section>
 <section id="row-tracer">
-<span id="rowtracer"></span><h3>Row Tracer<a class="headerlink" href="#row-tracer" title="Permalink to this heading"></a></h3>
+<span id="rowtracer"></span><h3>Row Tracer<a class="headerlink" href="#row-tracer" title="Link to this heading"></a></h3>
 <p>The row tracer is called before each row is returned. It is called with
 two arguments.</p>
 <blockquote>
@@ -276,7 +274,7 @@ priority.</p>
 </section>
 </section>
 <section id="apsw-trace">
-<span id="apswtrace"></span><h2>APSW Trace<a class="headerlink" href="#apsw-trace" title="Permalink to this heading"></a></h2>
+<span id="apswtrace"></span><h2>APSW Trace<a class="headerlink" href="#apsw-trace" title="Link to this heading"></a></h2>
 <p>APSW includes a tracer that lets you easily trace SQL execution as
 well as providing a summary report without modifying your code.</p>
 <blockquote>
@@ -333,13 +331,13 @@ Options:
 <p>Each row starts with the following fields:</p>
 <blockquote>
 <div><dl class="simple">
-<dt>id</dt><dd><p>This is the <a class="reference external" href="http://docs.python.org/library/functions.html#id">id</a> of the
-<a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cursor</span></code></a> or <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a>.  You can easily <a class="reference external" href="http://en.wikipedia.org/wiki/Grep">filter</a> the log if you just want to
+<dt>id</dt><dd><p>This is the <a class="reference external" href="https://docs.python.org/library/functions.html#id">id</a> of the
+<a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cursor</span></code></a> or <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a>.  You can easily <a class="reference external" href="https://en.wikipedia.org/wiki/Grep">filter</a> the log if you just want to
 find out what happened on a specific cursor or connection.</p>
 </dd>
 <dt>timestamp</dt><dd><p>This is time since the program started in seconds</p>
 </dd>
-<dt>threadid</dt><dd><p>The unique <a class="reference external" href="http://docs.python.org/library/thread.html#thread.get_ident">thread identifier</a></p>
+<dt>threadid</dt><dd><p>The unique <a class="reference external" href="https://docs.python.org/library/thread.html#thread.get_ident">thread identifier</a></p>
 </dd>
 </dl>
 </div></blockquote>
@@ -470,7 +468,7 @@ illustrates how time spent busy waiting is included.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jul 25, 2023.
+      <span class="lastupdated">Last updated on Aug 25, 2023.
       </span></p>
   </div>
 

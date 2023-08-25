@@ -47,7 +47,7 @@ Connection class
 .. method:: Connection.__enter__() -> Connection
 
   You can use the database as a `context manager
-  <http://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
+  <https://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
   as defined in :pep:`0343`.  When you use *with* a transaction is
   started.  If the block finishes with an exception then the
   transaction is rolled back, otherwise it is committed.  For example::
@@ -224,6 +224,9 @@ If `entries` is present, then each list entry is a dict with the following infor
   * - prepare_flags
     - Flags passed to `sqlite3_prepare_v3 <https://sqlite.org/c3ref/prepare.html>`__
       for this query
+  * - explain
+    - The value passed to `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html>`__
+      if >= 0
   * - uses
     - How many times this entry has been (re)used
   * - has_more
@@ -280,14 +283,14 @@ If `entries` is present, then each list entry is a dict with the following infor
 .. method:: Connection.collationneeded(callable: Optional[Callable[[Connection, str], None]]) -> None
 
   *callable* will be called if a statement requires a `collation
-  <http://en.wikipedia.org/wiki/Collation>`_ that hasn't been
+  <https://en.wikipedia.org/wiki/Collation>`_ that hasn't been
   registered. Your callable will be passed two parameters. The first
   is the connection object. The second is the name of the
   collation. If you have the collation code available then call
   :meth:`Connection.createcollation`.
 
   This is useful for creating collations on demand.  For example you
-  may include the `locale <http://en.wikipedia.org/wiki/Locale>`_ in
+  may include the `locale <https://en.wikipedia.org/wiki/Locale>`_ in
   the collation name, but since there are thousands of locales in
   popular use it would not be useful to :meth:`prereigster
   <Connection.createcollation>` them all.  Using
@@ -415,7 +418,7 @@ If `entries` is present, then each list entry is a dict with the following infor
 .. method:: Connection.createcollation(name: str, callback: Optional[Callable[[str, str], int]]) -> None
 
   You can control how SQLite sorts (termed `collation
-  <http://en.wikipedia.org/wiki/Collation>`_) when giving the
+  <https://en.wikipedia.org/wiki/Collation>`_) when giving the
   ``COLLATE`` term to a `SELECT
   <https://sqlite.org/lang_select.html>`_.  For example your
   collation could take into account locale or do numeric sorting.
@@ -566,7 +569,7 @@ If `entries` is present, then each list entry is a dict with the following infor
 .. method:: Connection.enableloadextension(enable: bool) -> None
 
   Enables/disables `extension loading
-  <https://sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions>`_
+  <https://www.sqlite.org/loadext.html>`_
   which is disabled by default.
 
   :param enable: If True then extension loading is enabled, else it is disabled.
@@ -595,7 +598,7 @@ If `entries` is present, then each list entry is a dict with the following infor
     * :ref:`rowtracer`
     * :attr:`Cursor.exectrace`
 
-.. method:: Connection.execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor
+.. method:: Connection.execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor
 
     Executes the statements using the supplied bindings.  Execution
     returns when the first row is available or all statements have
@@ -603,7 +606,7 @@ If `entries` is present, then each list entry is a dict with the following infor
 
     See :meth:`Cursor.execute` for more details.
 
-.. method:: Connection.executemany(statements: str, sequenceofbindings:Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor
+.. method:: Connection.executemany(statements: str, sequenceofbindings:Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor
 
 This method is for when you want to execute the same statements over a
 sequence of bindings, such as inserting into a database.  (A cursor is
@@ -625,6 +628,10 @@ See :meth:`Cursor.executemany` for more details.
   :param pointer: A number which is treated as a ``void pointer`` at the C level.
 
   :returns: True or False indicating if the VFS understood the op.
+
+  The :ref:`example <example_filecontrol>` shows getting
+  `SQLITE_FCNTL_DATA_VERSION
+  <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntldataversion>`__.
 
   If you want data returned back then the *pointer* needs to point to
   something mutable.  Here is an example using `ctypes
@@ -651,7 +658,7 @@ See :meth:`Cursor.executemany` for more details.
             return True
         else:
             # pass to parent/superclass
-            return super(MyFile, self).xFileControl(op, pointer)
+            return super().xFileControl(op, pointer)
 
   This is how you set the chunk size by which the database grows.  Do
   not combine it into one line as the c_int would be garbage collected
@@ -767,9 +774,9 @@ See :meth:`Cursor.executemany` for more details.
 
 .. method:: Connection.loadextension(filename: str, entrypoint: Optional[str] = None) -> None
 
-  Loads *filename* as an `extension <https://sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions>`_
+  Loads *filename* as an `extension <https://www.sqlite.org/loadext.html>`_
 
-  :param filename: The file to load.  This must be Unicode or Unicode compatible
+  :param filename: The file to load.
 
   :param entrypoint: The initialization method to call.  If this
     parameter is not supplied then the SQLite default of
@@ -803,8 +810,6 @@ See :meth:`Cursor.executemany` for more details.
 
   :param name: Function name
   :param nargs: How many arguments the function takes
-
-  Due to cvstrac 3507 underlying errors will not be returned.
 
   Calls: `sqlite3_overload_function <https://sqlite.org/c3ref/overload_function.html>`__
 

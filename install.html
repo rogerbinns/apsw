@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Installation and customization &mdash; APSW 3.42.0.1 documentation</title>
+  <title>Installation and customization &mdash; APSW 3.43.0.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/favicon.ico"/>
@@ -12,11 +12,11 @@
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="_static/jquery.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=c3a517ee"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
@@ -39,7 +39,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.42.0.1
+                3.43.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -84,6 +84,7 @@
 <li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="types.html">Types</a></li>
@@ -125,9 +126,9 @@
            <div itemprop="articleBody">
              
   <section id="installation-and-customization">
-<h1>Installation and customization<a class="headerlink" href="#installation-and-customization" title="Permalink to this heading"></a></h1>
+<h1>Installation and customization<a class="headerlink" href="#installation-and-customization" title="Link to this heading"></a></h1>
 <section id="pypi-recommended">
-<h2>PyPI (recommended)<a class="headerlink" href="#pypi-recommended" title="Permalink to this heading"></a></h2>
+<h2>PyPI (recommended)<a class="headerlink" href="#pypi-recommended" title="Link to this heading"></a></h2>
 <p>APSW is on PyPI at <a class="reference external" href="https://pypi.org/project/apsw/">https://pypi.org/project/apsw/</a></p>
 <p>It can be installed in the same way as other packages:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">apsw</span>
@@ -152,14 +153,14 @@ pip will download the source release and automatically compile with the same set
 require a C compiler and the Python development header files.</p>
 </section>
 <section id="linux-bsd-provided">
-<h2>Linux/BSD provided<a class="headerlink" href="#linux-bsd-provided" title="Permalink to this heading"></a></h2>
+<h2>Linux/BSD provided<a class="headerlink" href="#linux-bsd-provided" title="Link to this heading"></a></h2>
 <p>Most Linux &amp; BSD distributions have packaged APSW which may trail the
 SQLite and APSW releases by a year, or more. The distribution provided
 APSW uses the system wide SQLite library.</p>
 <table class="docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p>Debian</p></td>
-<td><p>Install <a class="reference external" href="http://packages.debian.org/python3-apsw">python3-apsw</a></p></td>
+<td><p>Install <a class="reference external" href="https://packages.debian.org/python3-apsw">python3-apsw</a></p></td>
 </tr>
 <tr class="row-even"><td><p>Fedora</p></td>
 <td><p>Install <a class="reference external" href="https://packages.fedoraproject.org/pkgs/python-apsw/">python3-apsw</a></p></td>
@@ -168,7 +169,7 @@ APSW uses the system wide SQLite library.</p>
 <td><p>Install <a class="reference external" href="https://packages.ubuntu.com/search?suite=all&amp;searchon=names&amp;keywords=apsw">python3-apsw</a></p></td>
 </tr>
 <tr class="row-even"><td><p>Gentoo</p></td>
-<td><p>Install <a class="reference external" href="http://packages.gentoo.org/package/dev-python/apsw">dev-python/apsw</a></p></td>
+<td><p>Install <a class="reference external" href="https://packages.gentoo.org/package/dev-python/apsw">dev-python/apsw</a></p></td>
 </tr>
 <tr class="row-odd"><td><p>Arch</p></td>
 <td><p>Install <a class="reference external" href="https://www.archlinux.org/packages/?q=apsw">python-apsw</a></p></td>
@@ -180,11 +181,11 @@ distributions, the package name for APSW, and what APSW version they
 are currently on.</p>
 </section>
 <section id="building-and-customization">
-<span id="build"></span><h2>Building and customization<a class="headerlink" href="#building-and-customization" title="Permalink to this heading"></a></h2>
+<span id="build"></span><h2>Building and customization<a class="headerlink" href="#building-and-customization" title="Link to this heading"></a></h2>
 <p>There are currently several different ways (that all work) from the Python packaging
 solutions.</p>
 <section id="build-process">
-<span id="setup-py-flags"></span><h3>Build process<a class="headerlink" href="#build-process" title="Permalink to this heading"></a></h3>
+<span id="setup-py-flags"></span><h3>Build process<a class="headerlink" href="#build-process" title="Link to this heading"></a></h3>
 <p>No matter what tool is used, ultimately it invokes <code class="file docutils literal notranslate"><span class="pre">setup.py</span></code>.  This
 is a standard way of building C extensions originally provided by
 distutils, and now by setuptools.</p>
@@ -208,13 +209,15 @@ and dashes should become underscores.</p>
 <span class="na">fetch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
 <span class="c1"># all extensions included</span>
 <span class="na">enable_all_extensions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+<span class="c1"># ... except icu (not abi stable)</span>
+<span class="na">omit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">icu</span>
 <span class="c1"># for Cursor.description_full</span>
 <span class="na">enable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">COLUMN_METADATA</span>
 </pre></div>
 </div>
 </section>
 <section id="sqlite-options">
-<h3>SQLite options<a class="headerlink" href="#sqlite-options" title="Permalink to this heading"></a></h3>
+<h3>SQLite options<a class="headerlink" href="#sqlite-options" title="Link to this heading"></a></h3>
 <p>It is important to understand <a class="reference external" href="https://www.sqlite.org/compile.html">SQLite's compile time options</a>.  They provide control
 over functionality and APIs included or excluded from SQLite.</p>
 <p>APSW needs to know the options chosen so it can adapt.  For example if
@@ -222,7 +225,7 @@ extension loading is omitted from SQLite then APSW also needs to omit
 the same functionality, otherwise compilation or linking will fail.</p>
 </section>
 <section id="finding-sqlite">
-<h3>Finding SQLite<a class="headerlink" href="#finding-sqlite" title="Permalink to this heading"></a></h3>
+<h3>Finding SQLite<a class="headerlink" href="#finding-sqlite" title="Link to this heading"></a></h3>
 <p>APSW can fetch SQLite as detailed below, and places it in a
 <code class="file docutils literal notranslate"><span class="pre">sqlite3/</span></code> subdirectory.  You can place your own SQLite in that
 directory.  If there is a <code class="file docutils literal notranslate"><span class="pre">sqlite3.c</span></code> (ie the <a class="reference external" href="https://www.sqlite.org/amalgamation.html">amalgamation</a>) then it will be
@@ -235,29 +238,29 @@ configuration</a> which
 APSW's fetch does automatically by running <code class="file docutils literal notranslate"><span class="pre">configure</span></code>.</p>
 </section>
 <section id="source">
-<h3>Source<a class="headerlink" href="#source" title="Permalink to this heading"></a></h3>
+<h3>Source<a class="headerlink" href="#source" title="Link to this heading"></a></h3>
 <p>It is recommended you get the source from <a class="reference external" href="https://github.com/rogerbinns/apsw/releases">Github releases</a>.  If you get the
 source from <a class="reference external" href="https://pypi.org/project/apsw/">PyPi</a> then ensure you
 edit the <code class="file docutils literal notranslate"><span class="pre">setup.apsw</span></code> file inside.</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.42.0.1/apsw-3.42.0.1.zip">apsw-3.42.0.1.zip</a>
+<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.43.0.0/apsw-3.43.0.0.zip">apsw-3.43.0.0.zip</a>
 (Source, includes this HTML Help)</p></li>
-<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.42.0.1/apsw-3.42.0.1-sigs.zip">apsw-3.42.0.1-sigs.zip</a>
+<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.43.0.0/apsw-3.43.0.0-sigs.zip">apsw-3.43.0.0-sigs.zip</a>
 GPG signatures for all files</p></li>
 </ul>
 <section id="verifying-your-download">
-<span id="verifydownload"></span><h4>Verifying your download<a class="headerlink" href="#verifying-your-download" title="Permalink to this heading"></a></h4>
+<span id="verifydownload"></span><h4>Verifying your download<a class="headerlink" href="#verifying-your-download" title="Link to this heading"></a></h4>
 <p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases">Source releases</a> are
 digitally signed so you can verify they have not been tampered with.
 Download and extract the corresponding zip file of signatures.  These
-instructions are for <a class="reference external" href="http://www.gnupg.org/">GNU Privacy Guard</a>.
+instructions are for <a class="reference external" href="https://www.gnupg.org/">GNU Privacy Guard</a>.
 (GPG is installed as standard on most Unix/Linux platforms and can be
 downloaded for Windows.)</p>
 <p>Verify</p>
 <blockquote>
 <div><p>To verify a file use --verify specifying the corresponding
 <code class="docutils literal notranslate"><span class="pre">.asc</span></code> filename.  This example verifies the source:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ gpg --verify apsw-3.42.0.1.zip.asc
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ gpg --verify apsw-3.43.0.0.zip.asc
 gpg: Signature made ... date ... using DSA key ID 0DFBD904
 gpg: Good signature from &quot;Roger Binns &lt;rogerb@rogerbinns.com&gt;&quot;
 </pre></div>
@@ -286,10 +289,10 @@ gpg:               imported: 1
 </section>
 </section>
 <section id="commands-and-their-options">
-<span id="setup-build-flags"></span><h3>Commands and their options<a class="headerlink" href="#commands-and-their-options" title="Permalink to this heading"></a></h3>
+<span id="setup-build-flags"></span><h3>Commands and their options<a class="headerlink" href="#commands-and-their-options" title="Link to this heading"></a></h3>
 <p>These are the relevant <code class="file docutils literal notranslate"><span class="pre">setup.py</span></code> commands and their relevant options.</p>
 <section id="id1">
-<h4>build<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h4>
+<h4>build<a class="headerlink" href="#id1" title="Link to this heading"></a></h4>
 <p>Does the complete build.  This will invoke <cite>build_ext</cite> - use only one of
 <cite>build</cite> or <cite>build_ext</cite>.</p>
 <table class="docutils align-default">
@@ -316,7 +319,7 @@ uppercased.  eg <code class="code docutils literal notranslate"><span class="pre
 </table>
 </section>
 <section id="fetch">
-<span id="fetch-checksums"></span><h4>fetch<a class="headerlink" href="#fetch" title="Permalink to this heading"></a></h4>
+<span id="fetch-checksums"></span><h4>fetch<a class="headerlink" href="#fetch" title="Link to this heading"></a></h4>
 <p>This provides more fine grained control over what is fetched.</p>
 <table class="docutils align-default">
 <tbody>
@@ -340,7 +343,7 @@ This allows proceeding.</p></td>
 </table>
 </section>
 <section id="build-ext">
-<span id="matching-sqlite-options"></span><h4>build_ext<a class="headerlink" href="#build-ext" title="Permalink to this heading"></a></h4>
+<span id="matching-sqlite-options"></span><h4>build_ext<a class="headerlink" href="#build-ext" title="Link to this heading"></a></h4>
 <p>This performs the compilation of the C code.</p>
 <table class="docutils align-default">
 <tbody>
@@ -373,7 +376,7 @@ uppercased.  eg <code class="code docutils literal notranslate"><span class="pre
 </section>
 </section>
 <section id="testing">
-<span id="id2"></span><h2>Testing<a class="headerlink" href="#testing" title="Permalink to this heading"></a></h2>
+<span id="id2"></span><h2>Testing<a class="headerlink" href="#testing" title="Link to this heading"></a></h2>
 <p>SQLite itself is <a class="reference external" href="https://sqlite.org/testing.html">extensively tested</a>. It has considerably more code
 dedicated to testing than makes up the actual database functionality.</p>
 <p>APSW includes tests which use the standard Python testing modules to
@@ -401,7 +404,7 @@ script <a class="reference external" href="https://github.com/rogerbinns/apsw/bl
 deliberately induces extra conditions such as memory allocation
 failures, SQLite returning undocumented error codes etc. That brings
 coverage up to 99.6% of the code.</p>
-<p>A memory checker <a class="reference external" href="http://valgrind.org">Valgrind</a> is used while
+<p>A memory checker <a class="reference external" href="https://valgrind.org">Valgrind</a> is used while
 running the test suite. The test suite is run multiple times to make
 any memory leaks or similar issues stand out. A checking version of
 Python is also used.  See <a class="reference external" href="https://github.com/rogerbinns/apsw/blob/master/tools/valgrind.sh">tools/valgrind.sh</a> in the source.
@@ -427,7 +430,7 @@ in the source.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jul 25, 2023.
+      <span class="lastupdated">Last updated on Aug 25, 2023.
       </span></p>
   </div>
 

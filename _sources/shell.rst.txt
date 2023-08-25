@@ -29,7 +29,7 @@ Control-Break then the program will be instantly aborted.)
 
 For Windows users you won't have command line editing and completion
 unless you install a `readline module
-<http://docs.python.org/library/readline.html>`__. You can pip install
+<https://docs.python.org/library/readline.html>`__. You can pip install
 `pyreadline3 <https://pypi.org/project/pyreadline3/>`__ to get full
 functionality.
 
@@ -855,7 +855,7 @@ method.
 
 Note that in addition to extending the shell, you can also use the
 **.read** command supplying a filename with a **.py** extension.  You
-can then `monkey patch <http://en.wikipedia.org/wiki/Monkey_patch>`__
+can then `monkey patch <https://en.wikipedia.org/wiki/Monkey_patch>`__
 the shell as needed.
 
 .. automodule:: apsw.shell

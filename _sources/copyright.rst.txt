@@ -25,4 +25,4 @@ freely, subject to the following restrictions:
 
 Alternatively you may strike the license above and use it under any
 OSI approved open source license such as those listed at
-http://opensource.org/licenses/alphabetical
+https://opensource.org/licenses/alphabetical

@@ -37,7 +37,7 @@ ICU
 ===
 
 The ICU extension provides an `International Components for Unicode
-<http://en.wikipedia.org/wiki/International_Components_for_Unicode>`__
+<https://en.wikipedia.org/wiki/International_Components_for_Unicode>`__
 interface, in particular enabling you do sorting and regular
 expressions in a locale aware way.  The `documentation
 <https://sqlite.org/src/tree?name=ext/icu>`__
@@ -65,7 +65,7 @@ RTree
 =====
 
 The RTree extension provides a `spatial table
-<http://en.wikipedia.org/wiki/R-tree>`_ - see the `documentation
+<https://en.wikipedia.org/wiki/R-tree>`_ - see the `documentation
 <https://sqlite.org/rtree.html>`__.
 You must enable the extension via :ref:`setup.py build flags
 <setup_build_flags>` before it will work.  There are no additional

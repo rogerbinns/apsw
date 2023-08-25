@@ -96,7 +96,7 @@ None of the date or time methods are available since SQLite 3 does not
 have a native date or time type.  There are `functions
 <https://sqlite.org/lang_datefunc.html>`_ for
 manipulating dates and time which are represented as strings or
-`Julian days <http://en.wikipedia.org/wiki/Julian_day>`_ (floating
+`Julian days <https://en.wikipedia.org/wiki/Julian_day>`_ (floating
 point number).
 
 Use the standard bytes type for blobs.

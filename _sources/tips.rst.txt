@@ -6,53 +6,16 @@ Tips
 These tips are based on mailing list postings, issues, and emails.
 You are recommended to read all the documentation as well.
 
-.. _version_stuff:
-
-About Python, APSW, and SQLite versions
-=======================================
-
-SQLite has approximately quarterly releases.  These include tweaks,
-bug fixes, and new functionality based on the billions of SQLite
-databases in use, and the many many programs that use SQLite (eg
-almost every browser, mail client, photo library, mobile and desktop
-OS).  Despite these changes, SQLite retains backwards and forwards
-compatibility with the `file format
-<https://www.sqlite.org/onefile.html>`__ and APIs.
-
-APSW wraps the `SQLite C API
-<https://www.sqlite.org/c3ref/intro.html>`__.  That means when SQLite
-adds new constant or API, then so does APSW.  You can think of APSW as
-the Python expression of SQLite's C API.  You can `lookup
-<genindex.html#S>`__ SQLite APIs to find which APSW functions and
-attributes call them.
-
-Consequently the APSW version mirrors the SQLite version.  You can use
-APSW with the corresponding version of SQLite, or any newer version of
-SQLite.  You could use the original 2004 release of APSW with today's
-SQLite just fine, although it wouldn't know about the new APIs and
-constants.
-
-APSW has compatibility with a broad range of Python versions.  This is
-so that you can update the SQLite version you use, access new
-constants and APIs (if desired), all without having to change your
-Python version.
 
 SQLite is different
 ===================
 
 While SQLite provides a SQL database like many others out there, it is
 also unique in many ways.  Read about the unique features at the
-`SQLite website <https://sqlite.org/different.html>`__.
+`SQLite website <https://sqlite.org/different.html>`__ and `quirks
+<https://www.sqlite.org/quirks.html>`__.
 
-.. note::
-
-  SQLite 3 has been available for two decades, improving and adding
-  features over time.  Because of strong compatibility guarantees, you
-  may need to opt-in to some like `foreign key enforcement
-  <https://www.sqlite.org/foreignkeys.html>`__.  It is a good idea to
-  review the `pragmas <https://www.sqlite.org/pragma.html#toc>`__ and
-  consider using :attr:`apsw.connection_hooks` to configure each
-  :class:`Connection`.
+:doc:`Best practice <bestpractice>` is recommended.
 
 Transactions
 ============
@@ -129,13 +92,13 @@ Bindings
 ========
 
 When using a cursor, always use bindings.  `String interpolation
-<http://docs.python.org/library/stdtypes.html#string-formatting-operations>`_
+<https://docs.python.org/library/stdtypes.html#printf-style-string-formatting>`_
 may seem more convenient but you will encounter difficulties.  You may
 feel that you have complete control over all data accessed but if your
 code is at all useful then you will find it being used more and more
 widely.  The computer will always be better than you at parsing SQL
 and the bad guys have years of experience finding and using `SQL
-injection attacks <http://en.wikipedia.org/wiki/SQL_injection>`_ in
+injection attacks <https://en.wikipedia.org/wiki/SQL_injection>`_ in
 ways you never even thought possible.
 
 The :ref:`documentation <cursors>` gives many examples of how to use
@@ -154,7 +117,7 @@ APSW ensures you have :ref:`detailed information
 APSW/SQLite was operating on.
 
 SQLite has a `warning/error logging facility
-<http://www.sqlite.org/errlog.html>`__.  You can call
+<https://www.sqlite.org/errlog.html>`__.  You can call
 :meth:`apsw.ext.log_sqlite` which installs a handler that forwards
 SQLite messages to the :mod:`logging module <logging>`.`
 
@@ -316,7 +279,7 @@ Database schema
 When starting a new database, it can be quite difficult to decide what
 tables and fields to have and how to link them.  The technique used to
 design SQL schemas is called `normalization
-<http://en.wikipedia.org/wiki/Database_normalization>`_.  The page
+<https://en.wikipedia.org/wiki/Database_normalization>`_.  The page
 also shows common pitfalls if you don't normalize your schema.
 
 .. _sharedcache:

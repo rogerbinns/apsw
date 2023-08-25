@@ -139,7 +139,7 @@ The following exceptions happen when APSW detects various problems.
 .. exception:: ExtensionLoadingError
 
   An error happened loading an `extension
-  <https://sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions>`_.
+  <https://sqlite.org/loadext.html>`_.
 
 .. exception:: VFSNotImplementedError
 
@@ -288,7 +288,7 @@ Memory/Disk
 
   *SQLITE_NOLFS*.  SQLite has attempted to use a feature not
   supported by the operating system such as `large file support
-  <http://en.wikipedia.org/wiki/Large_file_support>`_.
+  <https://en.wikipedia.org/wiki/Large_file_support>`_.
 
 .. exception:: EmptyError
 

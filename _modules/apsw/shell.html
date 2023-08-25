@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>apsw.shell &mdash; APSW 3.42.0.1 documentation</title>
+  <title>apsw.shell &mdash; APSW 3.43.0.0 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
@@ -11,11 +11,11 @@
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/sphinx_highlight.js"></script>
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=c3a517ee"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="../../about.html" />
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -36,7 +36,7 @@
               <img src="../../_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.42.0.1
+                3.43.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -60,6 +60,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../vtable.html">Virtual Tables</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../vfs.html">Virtual File System (VFS)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../shell.html">Shell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../bestpractice.html">Best Practice</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../ext.html">Various interesting and useful bits of functionality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../exceptions.html">Exceptions and Errors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../types.html">Types</a></li>
@@ -127,7 +128,9 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TextIO</span><span class="p">,</span> <span class="n">Optional</span>
 
 
-<div class="viewcode-block" id="Shell"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell">[docs]</a><span class="k">class</span> <span class="nc">Shell</span><span class="p">:</span>
+<div class="viewcode-block" id="Shell">
+<a class="viewcode-back" href="../../shell.html#apsw.shell.Shell">[docs]</a>
+<span class="k">class</span> <span class="nc">Shell</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements a SQLite shell</span>
 
 <span class="sd">    :param stdin: Where to read input from (default sys.stdin)</span>
@@ -135,7 +138,7 @@
 <span class="sd">    :param stderr: Where to send errors (default sys.stderr)</span>
 <span class="sd">    :param encoding: Default encoding for files opened/created by the</span>
 <span class="sd">      Shell.  If you want stdin/out/err to use a particular encoding</span>
-<span class="sd">      then you need to provide them `already configured &lt;http://docs.python.org/library/codecs.html#codecs.open&gt;`__ that way.</span>
+<span class="sd">      then you need to provide them `already configured &lt;https://docs.python.org/library/codecs.html#codecs.open&gt;`__ that way.</span>
 <span class="sd">    :param args: This should be program arguments only (ie if</span>
 <span class="sd">      passing in sys.argv do not include sys.argv[0] which is the</span>
 <span class="sd">      program name.  You can also pass in None and then call</span>
@@ -174,12 +177,15 @@
 <span class="sd">    you don&#39;t call more than one concurrently.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Shell.Error"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.Error">[docs]</a>    <span class="k">class</span> <span class="nc">Error</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<div class="viewcode-block" id="Shell.Error">
+<a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.Error">[docs]</a>
+    <span class="k">class</span> <span class="nc">Error</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Class raised on errors.  The expectation is that the error</span>
 <span class="sd">        will be displayed by the shell as text so there are no</span>
 <span class="sd">        specific subclasses as the distinctions between different</span>
 <span class="sd">        types of errors doesn&#39;t matter.&quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
+
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">stdin</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TextIO</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -287,7 +293,9 @@
 
     <span class="n">db</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">_ensure_db</span><span class="p">,</span> <span class="n">_set_db</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;The current :class:`~apsw.Connection`&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Shell.process_args"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.process_args">[docs]</a>    <span class="k">def</span> <span class="nf">process_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+<div class="viewcode-block" id="Shell.process_args">
+<a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.process_args">[docs]</a>
+    <span class="k">def</span> <span class="nf">process_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Process command line options specified in args.  It is safe to</span>
 <span class="sd">        call this multiple times.  We try to be compatible with SQLite shell</span>
 <span class="sd">        argument parsing.</span>
@@ -404,7 +412,10 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbfilename</span><span class="p">,</span> <span class="n">inits</span><span class="p">,</span> <span class="n">sqls</span></div>
 
-<div class="viewcode-block" id="Shell.process_unknown_args"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.process_unknown_args">[docs]</a>    <span class="k">def</span> <span class="nf">process_unknown_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Shell.process_unknown_args">
+<a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.process_unknown_args">[docs]</a>
+    <span class="k">def</span> <span class="nf">process_unknown_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;This is called when :meth:`process_args` encounters an</span>
 <span class="sd">        argument it doesn&#39;t understand.  Override this method if you</span>
 <span class="sd">        want to be able to understand additional command line arguments.</span>
@@ -418,7 +429,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="Shell.usage"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.usage">[docs]</a>    <span class="k">def</span> <span class="nf">usage</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Shell.usage">
+<a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.usage">[docs]</a>
+    <span class="k">def</span> <span class="nf">usage</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s2">&quot;Returns the usage message.  Make sure it is newline terminated&quot;</span>
 
         <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
@@ -448,6 +462,7 @@
 <span class="s2">   -nocolour            disables interactive colour output</span>
 <span class="s2">&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">msg</span><span class="o">.</span><span class="n">lstrip</span><span class="p">()</span></div>
+
 
     <span class="c1">###</span>
     <span class="c1">### Value formatting routines.  They take a value and return a</span>
@@ -837,7 +852,9 @@
     <span class="c1">### Various routines</span>
     <span class="c1">###</span>
 
-<div class="viewcode-block" id="Shell.cmdloop"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.cmdloop">[docs]</a>    <span class="k">def</span> <span class="nf">cmdloop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intro</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">transient</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Shell.cmdloop">
+<a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.cmdloop">[docs]</a>
+    <span class="k">def</span> <span class="nf">cmdloop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intro</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">transient</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Runs the main interactive command loop.</span>
 
 <span class="sd">        :param intro: Initial text banner to display instead of the</span>
@@ -901,7 +918,10 @@
                 <span class="n">readline</span><span class="o">.</span><span class="n">set_history_length</span><span class="p">(</span><span class="mi">256</span><span class="p">)</span>
                 <span class="n">readline</span><span class="o">.</span><span class="n">write_history_file</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history_file</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="Shell.handle_exception"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.handle_exception">[docs]</a>    <span class="k">def</span> <span class="nf">handle_exception</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Shell.handle_exception">
+<a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.handle_exception">[docs]</a>
+    <span class="k">def</span> <span class="nf">handle_exception</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Handles the current exception, printing a message to stderr as appropriate.</span>
 <span class="sd">        It will reraise the exception if necessary (eg if bail is true)&quot;&quot;&quot;</span>
         <span class="n">eclass</span><span class="p">,</span> <span class="nb">eval</span><span class="p">,</span> <span class="n">etb</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()</span>
@@ -958,6 +978,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bail</span><span class="p">:</span>
             <span class="k">raise</span></div>
 
+
     <span class="k">def</span> <span class="nf">_query_details</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">bindings</span><span class="p">):</span>
         <span class="s2">&quot;Internal routine to iterate over statements&quot;</span>
         <span class="c1"># The return from this would be way better as a dataclass</span>
@@ -986,7 +1007,9 @@
                     <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">explain</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">sql</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">saved</span><span class="p">)],</span> <span class="n">sql</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">saved</span><span class="p">):],</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">explain</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Shell.process_sql"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.process_sql">[docs]</a>    <span class="k">def</span> <span class="nf">process_sql</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">bindings</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">internal</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">summary</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Shell.process_sql">
+<a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.process_sql">[docs]</a>
+    <span class="k">def</span> <span class="nf">process_sql</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">bindings</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">internal</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">summary</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Processes SQL text consisting of one or more statements</span>
 
 <span class="sd">        :param sql: SQL to execute</span>
@@ -1096,7 +1119,10 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">colour</span><span class="o">.</span><span class="n">colour_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">totalchanges</span><span class="p">(),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">totalchanges</span><span class="p">()))</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Shell.process_command"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.process_command">[docs]</a>    <span class="k">def</span> <span class="nf">process_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Shell.process_command">
+<a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.process_command">[docs]</a>
+    <span class="k">def</span> <span class="nf">process_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Processes a dot command.</span>
 
 <span class="sd">        It is split into parts using :func:`shlex.split`</span>
@@ -1122,6 +1148,7 @@
             <span class="k">if</span> <span class="n">rest</span><span class="p">:</span>
                 <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">rest</span><span class="p">]</span>
         <span class="n">res</span> <span class="o">=</span> <span class="n">fn</span><span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span></div>
+
 
     <span class="c1">###</span>
     <span class="c1">### Commands start here</span>
@@ -1616,8 +1643,7 @@
                 <span class="c1"># schema reread</span>
                 <span class="n">blank</span><span class="p">()</span>
                 <span class="n">comment</span><span class="p">(</span><span class="s2">&quot;We need to force SQLite to reread the schema because otherwise it doesn&#39;t know that &quot;</span>
-                        <span class="s2">&quot;the virtual tables we inserted directly into sqlite_schema exist.  See &quot;</span>
-                        <span class="s2">&quot;last comments of https://sqlite.org/cvstrac/tktview?tn=3425&quot;</span><span class="p">)</span>
+                        <span class="s2">&quot;the virtual tables we inserted directly into sqlite_schema exist.&quot;</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot;BEGIN;</span><span class="se">\n</span><span class="s2">CREATE TABLE no_such_table(x,y,z);</span><span class="se">\n</span><span class="s2">ROLLBACK;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">finally</span><span class="p">:</span>
@@ -1631,7 +1657,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">echo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_boolean_command</span><span class="p">(</span><span class="s2">&quot;echo&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Shell.set_encoding"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.set_encoding">[docs]</a>    <span class="k">def</span> <span class="nf">set_encoding</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enc</span><span class="p">):</span>
+<div class="viewcode-block" id="Shell.set_encoding">
+<a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.set_encoding">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_encoding</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enc</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Saves *enc* as the default encoding, after verifying that</span>
 <span class="sd">        it is valid.  You can also include :error to specify error</span>
 <span class="sd">        handling - eg &#39;cp437:replace&#39;</span>
@@ -1654,6 +1682,7 @@
         <span class="k">except</span> <span class="ne">LookupError</span><span class="p">:</span>
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;No known codec error handler &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">errors</span><span class="p">,</span> <span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">encoding</span> <span class="o">=</span> <span class="n">enc</span><span class="p">,</span> <span class="n">errors</span></div>
+
 
     <span class="k">def</span> <span class="nf">command_encoding</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;encoding ENCODING: Set the encoding used for new files opened via .output and imports</span>
@@ -2228,9 +2257,12 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">loadextension</span><span class="p">(</span><span class="o">*</span><span class="n">cmd</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Shell.log_handler"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.log_handler">[docs]</a>    <span class="k">def</span> <span class="nf">log_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+<div class="viewcode-block" id="Shell.log_handler">
+<a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.log_handler">[docs]</a>
+    <span class="k">def</span> <span class="nf">log_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
         <span class="n">code</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;( </span><span class="si">{</span><span class="w"> </span><span class="n">code</span><span class="w"> </span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="w"> </span><span class="n">apsw</span><span class="o">.</span><span class="n">mapping_result_codes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">code</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;unknown&#39;</span><span class="p">)</span><span class="w"> </span><span class="si">}</span><span class="s2"> ) &quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write_error</span><span class="p">(</span><span class="n">code</span> <span class="o">+</span> <span class="n">message</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
 
     <span class="k">def</span> <span class="nf">command_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
         <span class="s2">&quot;log ON|OFF: Shows SQLite log messages (default off)&quot;</span>
@@ -2897,7 +2929,9 @@
             <span class="k">pass</span>
         <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">minimum</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Shell.push_output"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.push_output">[docs]</a>    <span class="k">def</span> <span class="nf">push_output</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Shell.push_output">
+<a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.push_output">[docs]</a>
+    <span class="k">def</span> <span class="nf">push_output</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Saves the current output settings onto a stack.  See</span>
 <span class="sd">        :meth:`pop_output` for more details as to why you would use</span>
 <span class="sd">        this.&quot;&quot;&quot;</span>
@@ -2906,7 +2940,10 @@
             <span class="n">o</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_output_stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">o</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Shell.pop_output"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.pop_output">[docs]</a>    <span class="k">def</span> <span class="nf">pop_output</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Shell.pop_output">
+<a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.pop_output">[docs]</a>
+    <span class="k">def</span> <span class="nf">pop_output</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Restores most recently pushed output.  There are many</span>
 <span class="sd">        output parameters such as nullvalue, mode</span>
 <span class="sd">        (list/tcl/html/insert etc), column widths, header etc.  If you</span>
@@ -2929,6 +2966,7 @@
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">o</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span></div>
 
+
     <span class="k">def</span> <span class="nf">_append_input_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;When displaying an error in :meth:`handle_exception` we</span>
 <span class="sd">        want to give context such as when the commands being executed</span>
@@ -2942,7 +2980,9 @@
         <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;: &quot;</span> <span class="o">+</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdin</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;stdin&gt;&quot;</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_input_descriptions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">res</span><span class="p">))</span>
 
-<div class="viewcode-block" id="Shell.fixup_backslashes"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.fixup_backslashes">[docs]</a>    <span class="k">def</span> <span class="nf">fixup_backslashes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+<div class="viewcode-block" id="Shell.fixup_backslashes">
+<a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.fixup_backslashes">[docs]</a>
+    <span class="k">def</span> <span class="nf">fixup_backslashes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Implements the various backlash sequences in s such as</span>
 <span class="sd">        turning backslash t into a tab.</span>
 
@@ -2967,21 +3007,33 @@
                 <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;Unknown backslash sequence </span><span class="se">\\</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">c</span><span class="p">)</span>
         <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">res</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Shell.write"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dest</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Shell.write">
+<a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.write">[docs]</a>
+    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dest</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
         <span class="s2">&quot;Writes text to dest.  dest will typically be one of self.stdout or self.stderr.&quot;</span>
         <span class="n">dest</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Shell.write_error"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.write_error">[docs]</a>    <span class="k">def</span> <span class="nf">write_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Shell.write_error">
+<a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.write_error">[docs]</a>
+    <span class="k">def</span> <span class="nf">write_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
         <span class="s2">&quot;Writes text to self.stderr colouring it&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">colour</span><span class="o">.</span><span class="n">error</span> <span class="o">+</span> <span class="n">text</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">colour</span><span class="o">.</span><span class="n">error_</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Shell.write_value"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.write_value">[docs]</a>    <span class="k">def</span> <span class="nf">write_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">format_sql_value</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Shell.write_value">
+<a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.write_value">[docs]</a>
+    <span class="k">def</span> <span class="nf">write_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">format_sql_value</span><span class="p">):</span>
         <span class="s2">&quot;Writes colourized value to self.stdout converting to text with fmt&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">colour</span><span class="o">.</span><span class="n">colour_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">fmt</span><span class="p">(</span><span class="n">value</span><span class="p">)))</span></div>
 
+
     <span class="n">_raw_input</span> <span class="o">=</span> <span class="nb">input</span>
 
-<div class="viewcode-block" id="Shell.getline"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.getline">[docs]</a>    <span class="k">def</span> <span class="nf">getline</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+<div class="viewcode-block" id="Shell.getline">
+<a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.getline">[docs]</a>
+    <span class="k">def</span> <span class="nf">getline</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a single line of input (may be incomplete SQL) from self.stdin.</span>
 
 <span class="sd">        If EOF is reached then return None.  Do not include trailing</span>
@@ -3011,7 +3063,10 @@
             <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">line</span></div>
 
-<div class="viewcode-block" id="Shell.getcompleteline"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.getcompleteline">[docs]</a>    <span class="k">def</span> <span class="nf">getcompleteline</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Shell.getcompleteline">
+<a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.getcompleteline">[docs]</a>
+    <span class="k">def</span> <span class="nf">getcompleteline</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a complete input.</span>
 
 <span class="sd">        For dot commands it will be one line.  For SQL statements it</span>
@@ -3041,7 +3096,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">handle_interrupt</span><span class="p">()</span>
             <span class="k">return</span> <span class="s2">&quot;&quot;</span></div>
 
-<div class="viewcode-block" id="Shell.handle_interrupt"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.handle_interrupt">[docs]</a>    <span class="k">def</span> <span class="nf">handle_interrupt</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Shell.handle_interrupt">
+<a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.handle_interrupt">[docs]</a>
+    <span class="k">def</span> <span class="nf">handle_interrupt</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Deal with keyboard interrupt (typically Control-C).  It</span>
 <span class="sd">        will :meth:`~apsw.Connection.interrupt` the database and print&quot;^C&quot; if interactive.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">interrupt</span><span class="p">()</span>
@@ -3050,7 +3108,10 @@
             <span class="k">return</span>
         <span class="k">raise</span></div>
 
-<div class="viewcode-block" id="Shell.process_complete_line"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.process_complete_line">[docs]</a>    <span class="k">def</span> <span class="nf">process_complete_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Shell.process_complete_line">
+<a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.process_complete_line">[docs]</a>
+    <span class="k">def</span> <span class="nf">process_complete_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Given some text will call the appropriate method to process</span>
 <span class="sd">        it (eg :meth:`process_sql` or :meth:`process_command`)&quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
@@ -3063,14 +3124,20 @@
         <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">handle_interrupt</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="Shell.push_input"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.push_input">[docs]</a>    <span class="k">def</span> <span class="nf">push_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Shell.push_input">
+<a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.push_input">[docs]</a>
+    <span class="k">def</span> <span class="nf">push_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Saves the current input parameters to a stack.  See :meth:`pop_input`.&quot;&quot;&quot;</span>
         <span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="s2">&quot;interactive&quot;</span><span class="p">,</span> <span class="s2">&quot;stdin&quot;</span><span class="p">,</span> <span class="s2">&quot;input_line_number&quot;</span><span class="p">:</span>
             <span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_input_stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Shell.pop_input"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.pop_input">[docs]</a>    <span class="k">def</span> <span class="nf">pop_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Shell.pop_input">
+<a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.pop_input">[docs]</a>
+    <span class="k">def</span> <span class="nf">pop_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Restore most recently pushed input parameters (interactive,</span>
 <span class="sd">        self.stdin, linenumber etc).  Use this if implementing a</span>
 <span class="sd">        command like read.  Push the current input, read the file and</span>
@@ -3081,7 +3148,10 @@
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Shell.complete"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.complete">[docs]</a>    <span class="k">def</span> <span class="nf">complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Shell.complete">
+<a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.complete">[docs]</a>
+    <span class="k">def</span> <span class="nf">complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a possible completion for readline</span>
 
 <span class="sd">        This function is called with state starting at zero to get the</span>
@@ -3116,6 +3186,7 @@
         <span class="k">if</span> <span class="n">state</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">completions</span><span class="p">):</span>
             <span class="k">return</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">completions</span><span class="p">[</span><span class="n">state</span><span class="p">]</span></div>
+
 
     <span class="n">_sqlite_keywords</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">keywords</span>
     <span class="c1"># reserved words need to be quoted.  Only a subset of the keywords are reserved</span>
@@ -3195,7 +3266,9 @@
         <span class="s2">&quot;Returns the tokens prior to pos end in the line&quot;</span>
         <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;&quot;?\w+&quot;?&#39;</span><span class="p">,</span> <span class="n">line</span><span class="p">[:</span><span class="n">end</span><span class="p">])</span>
 
-<div class="viewcode-block" id="Shell.complete_sql"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.complete_sql">[docs]</a>    <span class="k">def</span> <span class="nf">complete_sql</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+<div class="viewcode-block" id="Shell.complete_sql">
+<a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.complete_sql">[docs]</a>
+    <span class="k">def</span> <span class="nf">complete_sql</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Provide some completions for SQL</span>
 
 <span class="sd">        :param line: The current complete input line</span>
@@ -3309,6 +3382,7 @@
                             <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">res</span></div>
 
+
     <span class="c1"># completion for the dot commands are messy because some take</span>
     <span class="c1"># variable numbers of parameters and the meanings of the</span>
     <span class="c1"># parameters differ depending on how many there are.  so</span>
@@ -3325,7 +3399,9 @@
 
     <span class="n">_builtin_commands</span> <span class="o">=</span> <span class="kc">None</span>
 
-<div class="viewcode-block" id="Shell.complete_command"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.complete_command">[docs]</a>    <span class="k">def</span> <span class="nf">complete_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+<div class="viewcode-block" id="Shell.complete_command">
+<a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.complete_command">[docs]</a>
+    <span class="k">def</span> <span class="nf">complete_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Provide some completions for dot commands</span>
 
 <span class="sd">        :param line: The current complete input line</span>
@@ -3368,7 +3444,10 @@
 
         <span class="k">return</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">completions</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">token</span><span class="p">)</span> <span class="ow">and</span> <span class="n">v</span> <span class="o">!=</span> <span class="n">token</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="Shell.get_resource_usage"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.get_resource_usage">[docs]</a>    <span class="k">def</span> <span class="nf">get_resource_usage</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Shell.get_resource_usage">
+<a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.get_resource_usage">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_resource_usage</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a dict of various numbers (ints or floats).  The</span>
 <span class="sd">        .timer command shows the difference between before and after</span>
 <span class="sd">        results of what this returns by calling :meth:`display_timing`&quot;&quot;&quot;</span>
@@ -3424,7 +3503,10 @@
                     <span class="n">res</span><span class="p">[</span><span class="n">desc</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">res</span></div>
 
-<div class="viewcode-block" id="Shell.display_timing"><a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.display_timing">[docs]</a>    <span class="k">def</span> <span class="nf">display_timing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">b4</span><span class="p">,</span> <span class="n">after</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Shell.display_timing">
+<a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.display_timing">[docs]</a>
+    <span class="k">def</span> <span class="nf">display_timing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">b4</span><span class="p">,</span> <span class="n">after</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Writes the difference between b4 and after to self.stderr.</span>
 <span class="sd">        The data is dictionaries returned from</span>
 <span class="sd">        :meth:`get_resource_usage`.&quot;&quot;&quot;</span>
@@ -3443,6 +3525,7 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s2">&quot;+ </span><span class="si">%s</span><span class="s2">: </span><span class="si">%.4f</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">val</span><span class="p">))</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s2">&quot;+ </span><span class="si">%s</span><span class="s2">: </span><span class="si">%d</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">val</span><span class="p">))</span></div>
+
 
     <span class="c1">### Colour support</span>
 
@@ -3548,6 +3631,7 @@
         <span class="k">pass</span></div>
 
 
+
 <span class="k">try</span><span class="p">:</span>
     <span class="c1"># uses dataclasses and annotations, only available in Python 3.7+</span>
     <span class="kn">import</span> <span class="nn">apsw.ext</span>
@@ -3558,7 +3642,9 @@
     <span class="nb">delattr</span><span class="p">(</span><span class="n">Shell</span><span class="p">,</span> <span class="s2">&quot;command_dbinfo&quot;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../shell.html#apsw.shell.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="main">
+<a class="viewcode-back" href="../../shell.html#apsw.shell.main">[docs]</a>
+<span class="k">def</span> <span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="c1"># Docstring must start on second line so dedenting works correctly</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Call this to run the :ref:`interactive shell &lt;shell&gt;`.  It</span>
@@ -3582,6 +3668,7 @@
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
 
 
+
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
     <span class="n">main</span><span class="p">()</span>
 </pre></div>
@@ -3594,7 +3681,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jul 25, 2023.
+      <span class="lastupdated">Last updated on Aug 25, 2023.
       </span></p>
   </div>
 

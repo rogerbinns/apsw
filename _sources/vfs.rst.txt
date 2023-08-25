@@ -114,6 +114,36 @@ across.
 | APSW returns :class:`apsw.FullError`         |                                |                                             |
 +----------------------------------------------+--------------------------------+---------------------------------------------+
 
+VFSFcntlPragma class
+====================
+
+.. class:: VFSFcntlPragma(pointer: int)
+
+A helper class to work with `SQLITE_FCNTL_PRAGMA
+<https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlpragma>`__
+in :meth:`VFSFile.xFileControl`. The :ref:`example <example_vfs>`
+shows usage of this class.
+
+It is only valid while in :meth:`VFSFile.xFileControl`, and using
+outside of that will result in memory corruption and crashes.
+
+The pointer must be what your xFileControl method received.
+
+.. attribute:: VFSFcntlPragma.name
+    :type: str
+
+    The name of the pragma
+
+.. attribute:: VFSFcntlPragma.result
+    :type: str | None
+
+    The first element which becomes the result or error message
+
+.. attribute:: VFSFcntlPragma.value
+    :type: str | None
+
+    The value for the pragma, if provided else None,
+
 VFS class
 =========
 
@@ -185,15 +215,15 @@ VFS class
 .. method:: VFS.xCurrentTime()  -> float
 
   Return the `Julian Day Number
-  <http://en.wikipedia.org/wiki/Julian_day>`_ as a floating point
+  <https://en.wikipedia.org/wiki/Julian_day>`_ as a floating point
   number where the integer portion is the day and the fractional part
   is the time. Do not adjust for timezone (ie use `UTC
-  <http://en.wikipedia.org/wiki/Universal_Time>`_).
+  <https://en.wikipedia.org/wiki/Universal_Time>`_).
 
 .. method:: VFS.xCurrentTimeInt64()  -> int
 
   Returns as an integer the `Julian Day Number
-  <http://en.wikipedia.org/wiki/Julian_day>`__ multiplied by 86400000
+  <https://en.wikipedia.org/wiki/Julian_day>`__ multiplied by 86400000
   (the number of milliseconds in a 24-hour day).
 
 .. method:: VFS.xDelete(filename: str, syncdir: bool) -> None
@@ -370,9 +400,10 @@ VFSFile class
 .. method:: VFSFile.excepthook(etype: type[BaseException], evalue: BaseException, etraceback: Optional[types.TracebackType]) ->None
 
     Called when there has been an exception in a :class:`VFSFile`
-    routine.  The default implementation calls ``sys.excepthook`` and
-    if that fails then ``PyErr_Display``.  The three arguments
-    correspond to what ``sys.exc_info()`` would return.
+    routine.  The default implementation passes the exception information
+    to sqlite3_log, and the first non-error of
+    :func:`sys.unraisablehook` and :func:`sys.excepthook`, falling back to
+    `PyErr_Display`.
 
     :param etype: The exception type
     :param evalue: The exception  value
@@ -423,7 +454,7 @@ VFSFile class
                     obj=ctypes.py_object.from_address(ptr).value
                 else:
                     # this ensures superclass implementation is called
-                    return super(MyFile, self).xFileControl(op, ptr)
+                    return super().xFileControl(op, ptr)
     # we understood the op
           return True
 

@@ -8,7 +8,7 @@
 Blob Input/Output
 *****************
 
-A `blob <http://en.wikipedia.org/wiki/Binary_large_object>`_ is a
+A `blob <https://en.wikipedia.org/wiki/Binary_large_object>`_ is a
 SQLite `datatype <https://sqlite.org/datatype3.html>`_ representing
 a sequence of bytes.  It can be zero or more bytes in size.
 
@@ -76,7 +76,7 @@ Blob class
 .. method:: Blob.__enter__() -> Blob
 
   You can use a blob as a `context manager
-  <http://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
+  <https://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
   as defined in :pep:`0343`.  When you use *with* statement,
   the blob is always :meth:`closed <Blob.close>` on exit from the block, even if an
   exception occurred in the block.

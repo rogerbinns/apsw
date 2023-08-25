@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Blob Input/Output &mdash; APSW 3.42.0.1 documentation</title>
+  <title>Blob Input/Output &mdash; APSW 3.43.0.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/favicon.ico"/>
@@ -12,11 +12,11 @@
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="_static/jquery.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=c3a517ee"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
@@ -39,7 +39,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.42.0.1
+                3.43.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -88,6 +88,7 @@
 <li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="types.html">Types</a></li>
@@ -129,8 +130,8 @@
            <div itemprop="articleBody">
              
   <section id="blob-input-output">
-<span id="blobio"></span><h1>Blob Input/Output<a class="headerlink" href="#blob-input-output" title="Permalink to this heading"></a></h1>
-<p>A <a class="reference external" href="http://en.wikipedia.org/wiki/Binary_large_object">blob</a> is a
+<span id="blobio"></span><h1>Blob Input/Output<a class="headerlink" href="#blob-input-output" title="Link to this heading"></a></h1>
+<p>A <a class="reference external" href="https://en.wikipedia.org/wiki/Binary_large_object">blob</a> is a
 SQLite <a class="reference external" href="https://sqlite.org/datatype3.html">datatype</a> representing
 a sequence of bytes.  It can be zero or more bytes in size.</p>
 <p>SQLite blobs have an absolute maximum size of 2GB and a <a class="reference external" href="https://sqlite.org/c3ref/c_limit_attached.html">default
@@ -139,10 +140,10 @@ maximum size</a> of
 <p>An alternate approach to using blobs is to store the data in files and
 store the filename in the database.  Doing so loses the <a class="reference external" href="https://sqlite.org/transactional.html">ACID</a> properties of SQLite.</p>
 <section id="zeroblob-class">
-<h2>zeroblob class<a class="headerlink" href="#zeroblob-class" title="Permalink to this heading"></a></h2>
+<h2>zeroblob class<a class="headerlink" href="#zeroblob-class" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="apsw.zeroblob">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">zeroblob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.zeroblob" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">zeroblob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.zeroblob" title="Link to this definition"></a></dt>
 <dd><p>If you want to insert a blob into a row, you previously needed to
 supply the entire blob in one go.  To read just one byte also
 required retrieving the blob in its entirety. For example to insert
@@ -174,16 +175,16 @@ contents.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.zeroblob.length">
-<span class="sig-prename descclassname"><span class="pre">zeroblob.</span></span><span class="sig-name descname"><span class="pre">length</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.zeroblob.length" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">zeroblob.</span></span><span class="sig-name descname"><span class="pre">length</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.zeroblob.length" title="Link to this definition"></a></dt>
 <dd><p>Size of zero blob in bytes.</p>
 </dd></dl>
 
 </section>
 <section id="blob-class">
-<h2>Blob class<a class="headerlink" href="#blob-class" title="Permalink to this heading"></a></h2>
+<h2>Blob class<a class="headerlink" href="#blob-class" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="apsw.Blob">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Blob</span></span><a class="headerlink" href="#apsw.Blob" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Blob</span></span><a class="headerlink" href="#apsw.Blob" title="Link to this definition"></a></dt>
 <dd><p>This object is created by <a class="reference internal" href="connection.html#apsw.Connection.blobopen" title="apsw.Connection.blobopen"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.blobopen()</span></code></a> and provides
 access to a blob in the database.  It behaves like a Python file.
 At the C level it wraps a <a class="reference external" href="https://sqlite.org/c3ref/blob.html">sqlite3_blob</a>.</p>
@@ -198,8 +199,8 @@ create it with the correct size in advance either by using
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.Blob.__enter__">
-<span class="sig-prename descclassname"><span class="pre">Blob.</span></span><span class="sig-name descname"><span class="pre">__enter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#apsw.Blob" title="apsw.Blob"><span class="pre">Blob</span></a></span></span><a class="headerlink" href="#apsw.Blob.__enter__" title="Permalink to this definition"></a></dt>
-<dd><p>You can use a blob as a <a class="reference external" href="http://docs.python.org/reference/datamodel.html#with-statement-context-managers">context manager</a>
+<span class="sig-prename descclassname"><span class="pre">Blob.</span></span><span class="sig-name descname"><span class="pre">__enter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#apsw.Blob" title="apsw.Blob"><span class="pre">Blob</span></a></span></span><a class="headerlink" href="#apsw.Blob.__enter__" title="Link to this definition"></a></dt>
+<dd><p>You can use a blob as a <a class="reference external" href="https://docs.python.org/reference/datamodel.html#with-statement-context-managers">context manager</a>
 as defined in <span class="target" id="index-0"></span><a class="pep reference external" href="https://peps.python.org/pep-0343/"><strong>PEP 0343</strong></a>.  When you use <em>with</em> statement,
 the blob is always <a class="reference internal" href="#apsw.Blob.close" title="apsw.Blob.close"><code class="xref py py-meth docutils literal notranslate"><span class="pre">closed</span></code></a> on exit from the block, even if an
 exception occurred in the block.</p>
@@ -213,15 +214,15 @@ exception occurred in the block.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.Blob.__exit__">
-<span class="sig-prename descclassname"><span class="pre">Blob.</span></span><span class="sig-name descname"><span class="pre">__exit__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">etype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.11)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#BaseException" title="(in Python v3.11)"><span class="pre">BaseException</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">evalue</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#BaseException" title="(in Python v3.11)"><span class="pre">BaseException</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">etraceback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/types.html#types.TracebackType" title="(in Python v3.11)"><span class="pre">types.TracebackType</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Blob.__exit__" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">Blob.</span></span><span class="sig-name descname"><span class="pre">__exit__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">etype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.11)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#BaseException" title="(in Python v3.11)"><span class="pre">BaseException</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">evalue</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#BaseException" title="(in Python v3.11)"><span class="pre">BaseException</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">etraceback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/types.html#types.TracebackType" title="(in Python v3.11)"><span class="pre">types.TracebackType</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Blob.__exit__" title="Link to this definition"></a></dt>
 <dd><p>Implements context manager in conjunction with
 <a class="reference internal" href="#apsw.Blob.__enter__" title="apsw.Blob.__enter__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__enter__()</span></code></a>.  Any exception that happened in the
 <em>with</em> block is raised after closing the blob.</p>
 </dd></dl>
 
-<span class="target" id="index-1"></span><dl class="py method">
+<dl class="py method" id="index-1">
 <dt class="sig sig-object py" id="apsw.Blob.close">
-<span class="sig-prename descclassname"><span class="pre">Blob.</span></span><span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Blob.close" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">Blob.</span></span><span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Blob.close" title="Link to this definition"></a></dt>
 <dd><p>Closes the blob.  Note that even if an error occurs the blob is
 still closed.</p>
 <div class="admonition note">
@@ -243,16 +244,16 @@ doing it.)</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/blob_close.html">sqlite3_blob_close</a></p>
 </dd></dl>
 
-<span class="target" id="index-2"></span><dl class="py method">
+<dl class="py method" id="index-2">
 <dt class="sig sig-object py" id="apsw.Blob.length">
-<span class="sig-prename descclassname"><span class="pre">Blob.</span></span><span class="sig-name descname"><span class="pre">length</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.Blob.length" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">Blob.</span></span><span class="sig-name descname"><span class="pre">length</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.Blob.length" title="Link to this definition"></a></dt>
 <dd><p>Returns the size of the blob in bytes.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/blob_bytes.html">sqlite3_blob_bytes</a></p>
 </dd></dl>
 
-<span class="target" id="index-3"></span><dl class="py method">
+<dl class="py method" id="index-3">
 <dt class="sig sig-object py" id="apsw.Blob.read">
-<span class="sig-prename descclassname"><span class="pre">Blob.</span></span><span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.11)"><span class="pre">bytes</span></a></span></span><a class="headerlink" href="#apsw.Blob.read" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">Blob.</span></span><span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.11)"><span class="pre">bytes</span></a></span></span><a class="headerlink" href="#apsw.Blob.read" title="Link to this definition"></a></dt>
 <dd><p>Reads amount of data requested, or till end of file, whichever is
 earlier. Attempting to read beyond the end of the blob returns an
 empty bytes in the same manner as end of file on normal file
@@ -260,9 +261,9 @@ objects.  Negative numbers read remaining data.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/blob_read.html">sqlite3_blob_read</a></p>
 </dd></dl>
 
-<span class="target" id="index-4"></span><dl class="py method">
+<dl class="py method" id="index-4">
 <dt class="sig sig-object py" id="apsw.Blob.readinto">
-<span class="sig-prename descclassname"><span class="pre">Blob.</span></span><span class="sig-name descname"><span class="pre">readinto</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytearray" title="(in Python v3.11)"><span class="pre">bytearray</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/array.html#array.array" title="(in Python v3.11)"><span class="pre">array.array</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#memoryview" title="(in Python v3.11)"><span class="pre">memoryview</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Blob.readinto" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">Blob.</span></span><span class="sig-name descname"><span class="pre">readinto</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytearray" title="(in Python v3.11)"><span class="pre">bytearray</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/array.html#array.array" title="(in Python v3.11)"><span class="pre">array.array</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#memoryview" title="(in Python v3.11)"><span class="pre">memoryview</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Blob.readinto" title="Link to this definition"></a></dt>
 <dd><p>Reads from the blob into a buffer you have supplied.  This method is
 useful if you already have a buffer like object that data is being
 assembled in, and avoids allocating results in <a class="reference internal" href="#apsw.Blob.read" title="apsw.Blob.read"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Blob.read()</span></code></a> and
@@ -285,9 +286,9 @@ will get a <em>ValueError</em> exception.</p></li>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/blob_read.html">sqlite3_blob_read</a></p>
 </dd></dl>
 
-<span class="target" id="index-5"></span><dl class="py method">
+<dl class="py method" id="index-5">
 <dt class="sig sig-object py" id="apsw.Blob.reopen">
-<span class="sig-prename descclassname"><span class="pre">Blob.</span></span><span class="sig-name descname"><span class="pre">reopen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rowid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Blob.reopen" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">Blob.</span></span><span class="sig-name descname"><span class="pre">reopen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rowid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Blob.reopen" title="Link to this definition"></a></dt>
 <dd><p>Change this blob object to point to a different row.  It can be
 faster than closing an existing blob an opening a new one.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/blob_reopen.html">sqlite3_blob_reopen</a></p>
@@ -295,7 +296,7 @@ faster than closing an existing blob an opening a new one.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.Blob.seek">
-<span class="sig-prename descclassname"><span class="pre">Blob.</span></span><span class="sig-name descname"><span class="pre">seek</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">whence</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Blob.seek" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">Blob.</span></span><span class="sig-name descname"><span class="pre">seek</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">whence</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Blob.seek" title="Link to this definition"></a></dt>
 <dd><p>Changes current position to <em>offset</em> biased by <em>whence</em>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -314,13 +315,13 @@ and 2 if <em>offset</em> is relative to the end of the blob.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.Blob.tell">
-<span class="sig-prename descclassname"><span class="pre">Blob.</span></span><span class="sig-name descname"><span class="pre">tell</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.Blob.tell" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">Blob.</span></span><span class="sig-name descname"><span class="pre">tell</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.Blob.tell" title="Link to this definition"></a></dt>
 <dd><p>Returns the current offset.</p>
 </dd></dl>
 
-<span class="target" id="index-6"></span><dl class="py method">
+<dl class="py method" id="index-6">
 <dt class="sig sig-object py" id="apsw.Blob.write">
-<span class="sig-prename descclassname"><span class="pre">Blob.</span></span><span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.11)"><span class="pre">bytes</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Blob.write" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">Blob.</span></span><span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.11)"><span class="pre">bytes</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Blob.write" title="Link to this definition"></a></dt>
 <dd><p>Writes the data to the blob.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -354,7 +355,7 @@ inserting the blob.</p></li>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jul 25, 2023.
+      <span class="lastupdated">Last updated on Aug 25, 2023.
       </span></p>
   </div>
 

@@ -59,11 +59,28 @@ Checking APSW and SQLite versions
 .. code-block:: output
 
           Using APSW file /space/apsw/apsw/__init__.cpython-311-x86_64-linux-gnu.so
-             APSW version 3.42.0.1
-    SQLite header version 3042000
-       SQLite lib version 3.42.0
+             APSW version 3.43.0.0
+    SQLite header version 3043000
+       SQLite lib version 3.43.0
        Using amalgamation True
 
+
+.. index:: Best Practice (example code)
+
+.. _example_bestpractice:
+
+Best Practice
+-------------
+
+Ensure SQLite usage prevents common mistakes, and best performance
+via :doc:`apsw.bestpractice <bestpractice>`
+
+.. code-block:: python
+
+   import apsw.bestpractice
+   
+   apsw.bestpractice.apply(apsw.bestpractice.recommended)
+   
 
 .. index:: Logging (example code)
 
@@ -74,7 +91,8 @@ Logging
 
 It is a good idea to get SQLite's logs as you will get more
 information about errors.  :meth:`apsw.ext.log_sqlite` forwards
-SQLite's log messages to the :mod:`logging` module.
+SQLite's log messages to the :mod:`logging` module.  The prior
+best practice also includes this.
 
 .. code-block:: python
 
@@ -1193,7 +1211,72 @@ feedback and allows cancelling.
     progress handler called
     progress handler called
     progress handler called
-    (9971236249,)
+    (9949457420,)
+
+
+.. index:: File Control (example code)
+
+.. _example_filecontrol:
+
+File Control
+------------
+
+We can get/set low level information using the
+:meth:`Connection.filecontrol` interface.  In this example we get
+the `data version
+<https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntldataversion>`__.
+There is a `pragma
+<https://sqlite.org/pragma.html#pragma_data_version>`__ but it
+doesn't change for commits on the same connection.
+
+.. code-block:: python
+
+   # We use ctypes to provide the correct C level data types and pointers
+   import ctypes
+   
+   
+   def get_data_version(db):
+       # unsigned 32 bit integer
+       data_version = ctypes.c_uint32(0)
+       ok = db.filecontrol(
+           "main",  # or an attached database name
+           apsw.SQLITE_FCNTL_DATA_VERSION,  # code
+           ctypes.addressof(data_version))  # pass C level pointer
+       assert ok, "SQLITE_FCNTL_DATA_VERSION was not understood!"
+       return data_version.value
+   
+   
+   # Show starting values
+   print("fcntl", get_data_version(connection), "pragma", connection.pragma("data_version"))
+   
+   # See the fcntl value versus pragma value
+   for sql in (
+           "create table fcntl_example(x)",
+           "begin ; insert into fcntl_example values(3)",
+           # we can see the version doesn't change inside a transaction
+           "insert into fcntl_example values(4)",
+           "commit",
+           "pragma user_version=1234",
+   ):
+       print(sql)
+       connection.execute(sql)
+       print("fcntl", get_data_version(connection), "pragma", connection.pragma("data_version"))
+   
+
+
+.. code-block:: output
+
+    fcntl 44 pragma 2
+    create table fcntl_example(x)
+    fcntl 45 pragma 2
+    begin ; insert into fcntl_example values(3)
+    fcntl 45 pragma 2
+    insert into fcntl_example values(4)
+    fcntl 45 pragma 2
+    commit
+    fcntl 46 pragma 2
+    pragma user_version=1234
+    fcntl 47 pragma 2
 
 
 .. index:: Commit hook (example code)
@@ -1233,7 +1316,8 @@ with  :meth:`Connection.setcommithook`.
 .. code-block:: output
 
     in commit hook
-    commits okay at this time
+    no commits out of hours
+    commit was not allowed
 
 
 .. index:: Update hook (example code)
@@ -1468,9 +1552,9 @@ useful instead.
     ┌─────────┬──────────────────────────────────────────┬─────────────────────────┐
     │ st_size │                directory                 │          name           │
     ├─────────┼──────────────────────────────────────────┼─────────────────────────┤
-    │ 756209  │ /usr/lib/python3.11/pydoc_data           │ topics.py               │
+    │ 758777  │ /usr/lib/python3.11/pydoc_data           │ topics.py               │
     ├─────────┼──────────────────────────────────────────┼─────────────────────────┤
-    │ 470013  │ /usr/lib/python3.11/pydoc_data/__pycache │ topics.cpython-311.pyc  │
+    │ 471229  │ /usr/lib/python3.11/pydoc_data/__pycache │ topics.cpython-311.pyc  │
     │         │ __                                       │                         │
     ├─────────┼──────────────────────────────────────────┼─────────────────────────┤
     │ 257926  │ /usr/lib/python3.11/tkinter/__pycache__  │ __init__.cpython-       │
@@ -1495,8 +1579,8 @@ useful instead.
 
     ┌────────────┬────────────────────────────────┬───────────────┐
     │    date    │           directory            │     name      │
-    │ 2023-06-06 │ /usr/lib/python3.11/pydoc_data │ topics.py     │
-    │ 2023-06-06 │ /usr/lib/python3.11            │ _pydecimal.py │
+    │ 2023-07-31 │ /usr/lib/python3.11/pydoc_data │ topics.py     │
+    │ 2023-07-31 │ /usr/lib/python3.11            │ _pydecimal.py │
     │ 2023-04-17 │ /usr/lib/python3.11/tkinter    │ __init__.py   │
     └────────────┴────────────────────────────────┴───────────────┘
     
@@ -1517,12 +1601,12 @@ useful instead.
 
     ┌────────────┬────────────┐
     │ extension  │ total_size │
-    │            │ 380625     │
-    │ .a         │ 113966532  │
+    │            │ 382419     │
+    │ .a         │ 113893958  │
     │ .allowlist │ 56         │
     │ .bootstrap │ 1756       │
     │ .c         │ 11116      │
-    │ .cfg       │ 296        │
+    │ .cfg       │ 341        │
     │ .csh       │ 935        │
     │ .css       │ 1325       │
     │ .fish      │ 2215       │
@@ -1530,11 +1614,11 @@ useful instead.
     │ .local     │ 1534       │
     │ .o         │ 20304      │
     │ .ps1       │ 9033       │
-    │ .py        │ 11740290   │
-    │ .pyc       │ 13228981   │
+    │ .py        │ 11771814   │
+    │ .pyc       │ 13245896   │
     │ .rst       │ 9561       │
     │ .sh        │ 3919       │
-    │ .so        │ 27565432   │
+    │ .so        │ 27584936   │
     │ .stdlib    │ 10752      │
     │ .supp      │ 70         │
     │ .txt       │ 23425      │
@@ -1578,7 +1662,7 @@ data as it flows through.  Read more about :ref:`VFS <vfs>`.
        def __init__(self, vfsname="obfuscated", basevfs=""):
            self.vfs_name = vfsname
            self.base_vfs = basevfs
-           apsw.VFS.__init__(self, self.vfs_name, self.base_vfs)
+           super().__init__(self.vfs_name, self.base_vfs)
    
        # We want to return our own file implementation, but also
        # want it to inherit
@@ -1600,13 +1684,23 @@ data as it flows through.  Read more about :ref:`VFS <vfs>`.
    class ObfuscatedVFSFile(apsw.VFSFile):
    
        def __init__(self, inheritfromvfsname, filename, flags):
-           apsw.VFSFile.__init__(self, inheritfromvfsname, filename, flags)
+           super().__init__(inheritfromvfsname, filename, flags)
    
        def xRead(self, amount, offset):
            return obfuscate(super().xRead(amount, offset))
    
        def xWrite(self, data, offset):
            super().xWrite(obfuscate(data), offset)
+   
+       def xFileControl(self, op: int, ptr: int) -> bool:
+           if op != apsw.SQLITE_FCNTL_PRAGMA:
+               return super().xFileControl(op, ptr)
+           # implement our own pragma
+           p = apsw.VFSFcntlPragma(ptr)
+           print(f"pragma received { p.name } = { p.value }")
+           p.result = "orange"
+           # return False if you don't understand
+           return True
    
    
    # To register the VFS we just instantiate it
@@ -1634,6 +1728,9 @@ data as it flows through.  Read more about :ref:`VFS <vfs>`.
    # And unobfuscating it
    print("Unobfuscated disk", repr(obfuscate(Path("myobfudb").read_bytes()[:20])))
    
+   # Custom pragma
+   print("pragma returned", obfudb.pragma("my_custom_pragma", "my value"))
+   
    # Tidy up
    obfudb.close()
    os.remove("myobfudb")
@@ -1648,10 +1745,14 @@ data as it flows through.  Read more about :ref:`VFS <vfs>`.
     level is 7
     warp is True
     notpresent is None
+    pragma received journal_mode = wal
+    pragma received foreign_keys = ON
     xOpen of /space/apsw/myobfudb-journal
     xOpen of /space/apsw/myobfudb-journal
     What is on disk b'\xf6\xf4\xe9\xcc\xd1\xc0\x85\xc3\xca\xd7\xc8\xc4\xd1\x85\x96\xa5\xb5\xa5\xa4\xa4'
     Unobfuscated disk b'SQLite format 3\x00\x10\x00\x01\x01'
+    pragma received my_custom_pragma = my value
+    pragma returned orange
 
 
 .. index:: Limits (example code)
@@ -1787,9 +1888,9 @@ Python.
     
     Dump output
     
-    -- SQLite dump (by APSW 3.42.0.1)
-    -- SQLite version 3.42.0
-    -- Date: Mon Jul 24 09:39:05 2023
+    -- SQLite dump (by APSW 3.43.0.0)
+    -- SQLite version 3.43.0
+    -- Date: Fri Aug 25 07:26:17 2023
     -- Tables like: csvtest%
     -- Database: /space/apsw/dbfile
     -- User: rogerb @ clamps
@@ -1810,6 +1911,9 @@ Python.
     -- Triggers and indices on  csvtest
     CREATE INDEX faster on csvtest(column1);
     
+    -- Your database may need this.  It is sometimes used to keep track of the
+    -- schema version (eg Firefox does this).
+    pragma user_version=1234;
     COMMIT TRANSACTION;
     
 
@@ -1832,7 +1936,7 @@ SQLite provides statistics by :meth:`status`
 
 .. code-block:: output
 
-    SQLite memory usage 423456 max 2336400
+    SQLite memory usage 434024 max 2341816
 
 
 .. index:: Tracing (example code)
@@ -1896,7 +2000,7 @@ This shows using :meth:`Connection.trace_v2`
     
     code is  SQLITE_TRACE_PROFILE
     {'code': 2,
-     'nanoseconds': 18000000,
+     'nanoseconds': 17000000,
      'stmt_status': {'SQLITE_STMTSTATUS_AUTOINDEX': 0,
                      'SQLITE_STMTSTATUS_FILTER_HIT': 0,
                      'SQLITE_STMTSTATUS_FILTER_MISS': 0,
