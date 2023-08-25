@@ -95,7 +95,7 @@ jobs:
     - name: Stage wheels
       uses: actions/download-artifact@v3
       with:
-        name: artifact
+        name: wheelhouse
         path: dist
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@release/v1
