@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Best Practice &mdash; APSW 3.43.0.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=c3a517ee"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="copyright" title="Copyright" href="copyright.html" />
+    <link rel="next" title="Various interesting and useful bits of functionality" href="ext.html" />
+    <link rel="prev" title="Shell" href="shell.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            APSW
+              <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                3.43.0.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation and customization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apsw.html">APSW Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="connection.html">Connections to a database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cursor.html">Cursors (executing SQL)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="blob.html">Blob Input/Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Best Practice</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#explanation">Explanation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#api">API</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.bestpractice.apply"><code class="docutils literal notranslate"><span class="pre">apply()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.bestpractice.connection_busy_timeout"><code class="docutils literal notranslate"><span class="pre">connection_busy_timeout()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.bestpractice.connection_dqs"><code class="docutils literal notranslate"><span class="pre">connection_dqs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.bestpractice.connection_enable_foreign_keys"><code class="docutils literal notranslate"><span class="pre">connection_enable_foreign_keys()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.bestpractice.connection_wal"><code class="docutils literal notranslate"><span class="pre">connection_wal()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.bestpractice.library_logging"><code class="docutils literal notranslate"><span class="pre">library_logging()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.bestpractice.recommended"><code class="docutils literal notranslate"><span class="pre">recommended</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="types.html">Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmarking.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="copyright.html">Copyright and License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changes.html">Change History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="py-modindex.html">Module Index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">APSW</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Best Practice</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/bestpractice.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul><div class="rst-breadcrumbs-buttons" role="navigation" aria-label="Sequential page navigation">
+        <a href="shell.html" class="btn btn-neutral float-left" title="Shell" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ext.html" class="btn btn-neutral float-right" title="Various interesting and useful bits of functionality" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+  </div>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="best-practice">
+<h1>Best Practice<a class="headerlink" href="#best-practice" title="Link to this heading"></a></h1>
+<section id="explanation">
+<h2>Explanation<a class="headerlink" href="#explanation" title="Link to this heading"></a></h2>
+<p>Because SQLite keeps very strong backwards compatibility, there are
+several quirks and settings improvements that are not automatically
+done.  This module does them for you, and keeps up to date with SQLite
+best practises.  Several are described in the <a class="reference external" href="https://www.sqlite.org/quirks.html">SQLite documentation</a>.</p>
+<p>Functions whose name begin with <code class="code docutils literal notranslate"><span class="pre">library</span></code> apply to the SQLite
+library as a whole, while those with <code class="code docutils literal notranslate"><span class="pre">connection</span></code> apply to
+individual connections.</p>
+<p>You can call the individual functions, or
+<a class="reference internal" href="#apsw.bestpractice.apply" title="apsw.bestpractice.apply"><code class="xref py py-func docutils literal notranslate"><span class="pre">apsw.bestpractice.apply()</span></code></a> to apply several.
+<a class="reference internal" href="#apsw.bestpractice.apply" title="apsw.bestpractice.apply"><code class="xref py py-func docutils literal notranslate"><span class="pre">apply()</span></code></a> will setup
+<a class="reference internal" href="apsw.html#apsw.connection_hooks" title="apsw.connection_hooks"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.connection_hooks</span></code></a> to affect future <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">connections</span></code></a> that are made.
+<a class="reference internal" href="#apsw.bestpractice.recommended" title="apsw.bestpractice.recommended"><code class="xref py py-attr docutils literal notranslate"><span class="pre">recommended</span></code></a> is recommended:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">apsw.bestpractice</span>
+
+<span class="n">apsw</span><span class="o">.</span><span class="n">bestpractise</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">bestpractice</span><span class="o">.</span><span class="n">recommended</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="api">
+<h2>API<a class="headerlink" href="#api" title="Link to this heading"></a></h2>
+<p id="module-apsw.bestpractice">Module to ensure SQLite usage prevents common mistakes, and best performance.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.bestpractice.apply">
+<span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.11)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.11)"><span class="pre">Callable</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/apsw/bestpractice.html#apply"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.bestpractice.apply" title="Link to this definition"></a></dt>
+<dd><p>Applies library immediately and connection to new connections</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.bestpractice.connection_busy_timeout">
+<span class="sig-name descname"><span class="pre">connection_busy_timeout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration_ms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/apsw/bestpractice.html#connection_busy_timeout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.bestpractice.connection_busy_timeout" title="Link to this definition"></a></dt>
+<dd><p>Sets a short busy timeout</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>duration_ms</strong> -- How many thousandths of a second to wait</p>
+</dd>
+</dl>
+<p>When another thread or process has locked the database, SQLite
+immediately raises <a class="reference internal" href="exceptions.html#apsw.BusyError" title="apsw.BusyError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">apsw.BusyError</span></code></a>.  Changing the <a class="reference external" href="https://www.sqlite.org/c3ref/busy_timeout.html">busy
+timeout</a> gives
+a grace period during which SQLite retries.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.bestpractice.connection_dqs">
+<span class="sig-name descname"><span class="pre">connection_dqs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/apsw/bestpractice.html#connection_dqs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.bestpractice.connection_dqs" title="Link to this definition"></a></dt>
+<dd><p>Double quotes are for identifiers only, not strings</p>
+<p>Turns off <a class="reference external" href="https://www.sqlite.org/quirks.html#dblquote">allowing double quoted strings</a> if they don't
+match any identifier (column/table names etc), making it an error
+to use double quotes around strings.  SQL strings use single
+quotes.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.bestpractice.connection_enable_foreign_keys">
+<span class="sig-name descname"><span class="pre">connection_enable_foreign_keys</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/apsw/bestpractice.html#connection_enable_foreign_keys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.bestpractice.connection_enable_foreign_keys" title="Link to this definition"></a></dt>
+<dd><p>Enables foreign key constraints</p>
+<p><a class="reference external" href="https://www.sqlite.org/foreignkeys.html">Foreign keys</a> need to
+<a class="reference external" href="https://www.sqlite.org/foreignkeys.html#fk_enable">be enabled</a>
+to have an effect.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.bestpractice.connection_wal">
+<span class="sig-name descname"><span class="pre">connection_wal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/apsw/bestpractice.html#connection_wal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.bestpractice.connection_wal" title="Link to this definition"></a></dt>
+<dd><p>Turns on write ahead logging</p>
+<p>Reduces contention and improves write performance.  WAL is
+<a class="reference external" href="https://www.sqlite.org/wal.html">described here</a>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.bestpractice.library_logging">
+<span class="sig-name descname"><span class="pre">library_logging</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/apsw/bestpractice.html#library_logging"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.bestpractice.library_logging" title="Link to this definition"></a></dt>
+<dd><p>Forwards SQLite logging to Python logging module</p>
+<p>See <a class="reference internal" href="ext.html#apsw.ext.log_sqlite" title="apsw.ext.log_sqlite"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.ext.log_sqlite()</span></code></a></p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="apsw.bestpractice.recommended">
+<span class="sig-name descname"><span class="pre">recommended</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.11)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.11)"><span class="pre">Callable</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">(&lt;function</span> <span class="pre">connection_wal&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">connection_busy_timeout&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">connection_enable_foreign_keys&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">connection_dqs&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">library_logging&gt;)</span></em><a class="headerlink" href="#apsw.bestpractice.recommended" title="Link to this definition"></a></dt>
+<dd><p>All of them</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="shell.html" class="btn btn-neutral float-left" title="Shell" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ext.html" class="btn btn-neutral float-right" title="Various interesting and useful bits of functionality" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      <span class="lastupdated">Last updated on Aug 25, 2023.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-2NR9GDCQLT', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>
