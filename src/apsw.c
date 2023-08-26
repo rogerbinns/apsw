@@ -173,6 +173,9 @@ typedef struct
 
 static void apsw_write_unraisable(PyObject *hookobject);
 
+/* string constants struct */
+#include "stringconstants.c"
+
 /* Augment tracebacks */
 #include "traceback.c"
 
@@ -959,6 +962,7 @@ apsw_fini(PyObject *Py_UNUSED(self))
 {
   Py_XDECREF(tls_errmsg);
   statementcache_fini();
+  fini_apsw_strings();
   Py_RETURN_NONE;
 }
 #endif
@@ -1878,6 +1882,9 @@ PyInit_apsw(void)
     goto fail;
 
   if (init_exceptions(m))
+    goto fail;
+
+  if (init_apsw_strings())
     goto fail;
 
 /* we can't avoid leaks with failures until multi-phase initialisation is done */

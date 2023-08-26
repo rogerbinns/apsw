@@ -27,7 +27,7 @@ help: ## Show this help
 	@egrep -h '\s##\s' $(MAKEFILE_LIST) | sort | \
 	awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-all: src/apswversion.h src/apsw.docstrings apsw/__init__.pyi src/constants.c test docs ## Update generated files, build, test, make doc
+all: src/apswversion.h src/apsw.docstrings apsw/__init__.pyi src/constants.c src/stringconstants.c test docs ## Update generated files, build, test, make doc
 
 tagpush: ## Tag with version and push
 	git tag -af $(SQLITEVERSION)$(APSWSUFFIX)
@@ -83,6 +83,10 @@ apsw/__init__.pyi src/apsw.docstrings: $(GENDOCS) tools/gendocstrings.py src/aps
 src/constants.c: Makefile tools/genconstants.py src/apswversion.h
 	-rm -f src/constants.c
 	env PYTHONPATH=. $(PYTHON) tools/genconstants.py > src/constants.c
+
+src/stringconstants.c: Makefile tools/genstrings.py src/apswversion.h
+	-rm -f src/stringconstants.c
+	$(PYTHON) tools/genstrings.py > src/stringconstants.c
 
 build_ext: src/apswversion.h  ## Fetches SQLite and builds the extension
 	env $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext -DSQLITE_ENABLE_COLUMN_METADATA --inplace --force --enable-all-extensions
