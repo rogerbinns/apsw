@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
-# This supports Python 3.6 onwards
-# Python 3.6 doesn't let us do from __future__ import annotations
-# so we can't do correct typing.
+from __future__ import annotations
 
 # mypy: ignore-errors
 
@@ -859,8 +857,7 @@ Enter ".help" for instructions
 
     def _query_details(self, sql, bindings):
         "Internal routine to iterate over statements"
-        # The return from this would be way better as a dataclass
-        # but Py 3.6 doesn't have them
+        # ::ToDO:: The return from this would be way better as a dataclass
         cur = self.db.cursor()
         saved = sql
         explain = None

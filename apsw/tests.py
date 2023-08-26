@@ -5,21 +5,38 @@
 # This testing code deliberately does nasty stuff so mypy isn't helpful
 # mypy: ignore-errors
 
-import sys
-import os
-import io
-import types
-from typing import Optional
-import warnings
-import platform
-import typing
-import itertools
-import inspect
-import struct
+import array
+import collections
+import collections.abc
 import contextlib
+import dataclasses
+import gc
+import getpass
+import glob
+import inspect
+import io
+import itertools
+import json
+import logging
+import math
+import mmap
+import os
+import pickle
+import platform
+import queue
+import random
+import re
+import shlex
+import shutil
+import struct
+import sys
 import tempfile
 import textwrap
-import shlex
+import threading
+import time
+import traceback
+import typing
+import warnings
 
 
 def ShouldFault(name, pending_exception):
@@ -42,6 +59,8 @@ It needs to be compiled and in-place first.
     """.strip()
     sys.exit(msg)
 
+import apsw.bestpractice
+import apsw.ext
 import apsw.shell
 
 
@@ -94,20 +113,10 @@ def write_whole_file(name, mode, data, *, encoding=None):
 # unittest stuff from here on
 
 import unittest
-import math
-import random
-import time
-import threading
-import glob
-import pickle
-import shutil
-import getpass
-import queue
-import traceback
-import re
-import gc
+
 try:
     import ctypes
+
     import _ctypes
 except:
     ctypes = None
@@ -568,10 +577,6 @@ class APSW(unittest.TestCase):
 
     def testBackwardsCompatibility(self):
         "Verifies changed names etc are still accessible through the old ones"
-        # depends on pep562 which is python 3.7 onwards
-        if sys.version_info >= (3, 7):
-            self.assertIs(apsw.main, apsw.shell.main)
-            self.assertIs(apsw.Shell, apsw.shell.Shell)
 
     def testModuleStringFunctions(self):
         "Tests various string comparison/matching functions"
@@ -1018,7 +1023,6 @@ class APSW(unittest.TestCase):
 
     def testIssue373(self):
         "issue 373: dict type checking in bindings"
-        import collections.abc
 
         class not_a_dict:
             pass
@@ -1265,11 +1269,6 @@ class APSW(unittest.TestCase):
 
     def testVTableStuff(self):
         "Test new stuff added for Virtual tables"
-        if sys.version_info < (3, 7):
-            # it works on 3.6 but apsw.ext doesn't because it uses dataclasses
-            return
-        # we also test apsw.ext
-        import apsw.ext
 
         columns = [f"c{ n }" for n in range(30)]
 
@@ -4060,7 +4059,7 @@ class APSW(unittest.TestCase):
         # findfunction
         # mess with overload function first
         self.assertRaises(TypeError, self.db.overloadfunction, 1, 1)
-        self.assertRaises(apsw.MisuseError, self.db.overloadfunction, "a"*1024, 1)
+        self.assertRaises(apsw.MisuseError, self.db.overloadfunction, "a" * 1024, 1)
         self.db.overloadfunction("xyz", 2)
         self.assertRaises(apsw.SQLError, cur.execute, "select xyz(item,description) from foo", can_cache=False)
         VTable.FindFunction = VTable.FindFunction1
@@ -4330,7 +4329,6 @@ class APSW(unittest.TestCase):
         "Verify handling of large strings/blobs (>2GB) [requires 64 bit platform]"
         assert is64bit
         # For binary/blobs I use an anonymous area slightly larger than 2GB chunk of memory, but don't touch any of it
-        import mmap
         f = mmap.mmap(-1, 2 * 1024 * 1024 * 1024 + 25000)
         c = self.db.cursor()
         c.execute("create table foo(theblob)")
@@ -4386,7 +4384,7 @@ class APSW(unittest.TestCase):
         self.db.limit(apsw.SQLITE_LIMIT_LENGTH, 1023)
         self.assertRaises(apsw.TooBigError, c.execute, "insert into foo values(?)", ("y" * 1024, ))
         self.assertEqual(1023, self.db.limit(apsw.SQLITE_LIMIT_LENGTH, 0))
-        self.assertRaises(apsw.TooBigError,  c.execute, "insert into foo values(?)", ("x" * 1024, ))
+        self.assertRaises(apsw.TooBigError, c.execute, "insert into foo values(?)", ("x" * 1024, ))
 
     def testConnectionHooks(self):
         "Verify connection hooks"
@@ -5124,11 +5122,11 @@ class APSW(unittest.TestCase):
 
         # sanity check
         for row in self.db.execute("explain select 3", explain=0):
-            self.assertEqual(row, (3,))
+            self.assertEqual(row, (3, ))
         for row in self.db.execute("explain query plan select 3", explain=0):
-            self.assertEqual(row, (3,))
+            self.assertEqual(row, (3, ))
         for row in self.db.execute("explain select 3", explain=1):
-            self.assertNotEqual(row, (3,))
+            self.assertNotEqual(row, (3, ))
 
         is_explain = -99
 
@@ -5519,7 +5517,6 @@ class APSW(unittest.TestCase):
 
     def testPickle(self):
         "Verify data etc can be pickled"
-        import pickle
         PicklingError = pickle.PicklingError
 
         # work out what protocol versions we can use
@@ -5804,7 +5801,6 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, blobro.readinto)
         self.assertRaises(TypeError, blobro.readinto, 3)
         buffers = []
-        import array
         buffers.append(array.array("b", b"\0\0\0\0"))
         buffers.append(bytearray(b"\0\0\0\0"))
 
@@ -8139,19 +8135,8 @@ class APSW(unittest.TestCase):
         isempty(fh[2])
         v = get(fh[1]).strip()
         v = v[:-1]  # remove trailing comma
-        havejson = False
-        try:
-            import json
-            havejson = True
-        except ImportError:
-            try:
-                import simplejson as json
-                havejson = True
-            except ImportError:
-                pass
-        if havejson:
-            out = json.loads(v)
-            self.assertEqual(out, {"3": 3, "2.2": 2.2, "'string'": "string", "null": None, "x'0311'": "AxE="})
+        out = json.loads(v)
+        self.assertEqual(out, {"3": 3, "2.2": 2.2, "'string'": "string", "null": None, "x'0311'": "AxE="})
         # a regular table
         reset()
         cmd("create table jsontest([int], [float], [string], [null], [blob]);insert into jsontest values(" + all +
@@ -8159,9 +8144,8 @@ class APSW(unittest.TestCase):
         s.cmdloop()
         isempty(fh[2])
         v = get(fh[1]).strip()[:-1]
-        if havejson:
-            out = json.loads(v)
-            self.assertEqual(out, {"int": 3, "float": 2.2, "string": "string", "null": None, "blob": "AxE="})
+        out = json.loads(v)
+        self.assertEqual(out, {"int": 3, "float": 2.2, "string": "string", "null": None, "blob": "AxE="})
         testnasty()
 
         ###
@@ -9776,8 +9760,6 @@ shell.write(shell.stdout, "hello world\\n")
 
     def testBestPractice(self) -> None:
         "apsw.bestpractice module"
-        import apsw.bestpractice
-        import logging
         out = io.StringIO()
         root = logging.getLogger()
         root.setLevel(logging.DEBUG)
@@ -9802,7 +9784,6 @@ shell.write(shell.stdout, "hello world\\n")
 
     def testExtDataClassRowFactory(self) -> None:
         "apsw.ext.DataClassRowFactory"
-        import apsw.ext
         dcrf = apsw.ext.DataClassRowFactory()
         self.db.setrowtrace(dcrf)
         # sanity check
@@ -9820,7 +9801,6 @@ shell.write(shell.stdout, "hello world\\n")
         self.assertRaises(TypeError, self.db.execute("select 4 as [4]").fetchall)
         for row in self.db.execute("select 3 as three"):
             try:
-                import dataclasses
                 row.three = 4
             except dataclasses.FrozenInstanceError:
                 pass
@@ -9846,8 +9826,6 @@ shell.write(shell.stdout, "hello world\\n")
 
     def testExtTypesConverter(self) -> None:
         "apsw.ext.TypesConverterCursorFactory"
-        import apsw.ext
-
         tccf = apsw.ext.TypesConverterCursorFactory()
 
         class Point(apsw.ext.SQLiteTypeAdapter):
@@ -9890,8 +9868,6 @@ shell.write(shell.stdout, "hello world\\n")
 
     def testExtStuff(self):
         "Various apsw.ext functions"
-        import apsw.ext
-
         apsw.ext.make_virtual_module(self.db, "g1", apsw.ext.generate_series)
         vals = {row[0] for row in self.db.execute("select value from g1 where start=1 and stop=10")}
         self.assertEqual(vals, {i for i in range(1, 10 + 1)})
@@ -9952,8 +9928,6 @@ shell.write(shell.stdout, "hello world\\n")
             for row in stuff_dict():
                 yield tuple(row.values())
 
-        import dataclasses
-
         @dataclasses.dataclass
         class xx:
             one: str
@@ -9974,7 +9948,6 @@ shell.write(shell.stdout, "hello world\\n")
             yield os.stat(".")
             yield os.stat("..")
 
-        import collections
         nt = collections.namedtuple("nt", next(stuff_dict()).keys(), rename=True)
 
         def stuff_namedtuple():
@@ -10117,8 +10090,6 @@ shell.write(shell.stdout, "hello world\\n")
 
     def testExtQueryInfo(self) -> None:
         "apsw.ext.query_info"
-        import apsw.ext
-
         qd = apsw.ext.query_info(self.db, "select 3; a syntax error")
         self.assertEqual(qd.query, "select 3; a syntax error")
         self.assertEqual(qd.bindings, None)
@@ -10476,13 +10447,6 @@ def setup():
     if not getattr(memdb, "enableloadextension", None):
         del APSW.testLoadExtension
 
-    # py 3.6 can't load apsw.ext or bestpractice
-    if sys.version_info < (3, 7):
-        for name in list(dir(APSW)):
-            if name.startswith("testExt"):
-                delattr(APSW, name)
-        del APSW.testBestPractice
-
     # earlier py versions make recursion error fatal
     if sys.version_info < (3, 10):
         del APSW.testIssue425
@@ -10592,20 +10556,10 @@ if __name__ == '__main__':
     if hasattr(apsw, "_fini"):
         apsw._fini()
         gc.collect()
+    del apsw.ext
+    del apsw.bestpractice
     del apsw
 
-    exit = sys.exit
-
-    # modules
-    del unittest
-    del os
-    del math
-    del random
-    del time
-    del threading
-    del queue
-    del traceback
-    del re
     gc.collect()
 
-    exit(exitcode)
+    sys.exit(exitcode)

@@ -36,8 +36,8 @@ module:
 
 * APSW stays up to date with Python, including releases under
   development as well as older still supported releases.  The current
-  APSW release brings the most recent SQLite to Python 3.6 all the way
-  through Python 3.12.
+  APSW release brings the most recent SQLite to Python 3.8 all the way
+  through Python 3.13.
 
 * APSW gives all functionality of SQLite including :ref:`virtual
   tables <virtualtables>`, :ref:`VFS`, :ref:`BLOB I/O <blobio>`,
