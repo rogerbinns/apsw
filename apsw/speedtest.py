@@ -25,6 +25,7 @@ def doit():
     print("         Python", sys.executable, sys.version_info)
     print("          Scale", options.scale)
     print("       Database", options.database)
+    print("            VFS", options.vfs if options.vfs else "(default)")
     print("          Tests", ", ".join(options.tests))
     print("     Iterations", options.iterations)
     print("Statement Cache", options.scsize)
@@ -39,7 +40,7 @@ def doit():
         print("   SQLite headers version ", apsw.SQLITE_VERSION_NUMBER, end="\n\n")
 
         def apsw_setup(dbfile):
-            con = apsw.Connection(dbfile, statementcachesize=options.scsize)
+            con = apsw.Connection(dbfile, statementcachesize=options.scsize, vfs=options.vfs)
             con.createscalarfunction("number_name", number_name, 1)
             return con
 
@@ -47,7 +48,7 @@ def doit():
         import sqlite3
 
         print("Testing with sqlite3 file ", sqlite3.__file__)
-        if sqlite3.version != "2.6.0": # stdlib version never changed this
+        if sqlite3.version != "2.6.0":  # stdlib version never changed this
             print("          sqlite3 version ", sqlite3.version)
         print("           SQLite version ", sqlite3.sqlite_version, end="\n\n")
 
@@ -124,10 +125,9 @@ def doit():
         # what we actually do
 
         # database schema
-        for i in """PRAGMA page_size=4096;
-      PRAGMA cache_size=8192;
+        for i in f"""PRAGMA page_size=4096;
+      PRAGMA cache_size=-{ options.sqlite_cache_mb * 1024 };
       PRAGMA locking_mode=EXCLUSIVE;
-      PRAGMA journal_mode = OFF;
       PRAGMA temp_store = MEMORY;
       CREATE TABLE t1(a INTEGER, b INTEGER, c TEXT);
       CREATE TABLE t2(a INTEGER, b INTEGER, c TEXT);
@@ -510,7 +510,17 @@ parser.add_argument("--hide-runs",
                     action="store_false",
                     default=True,
                     help="Don't show the individual iteration timings, only final summary")
-
+parser.add_argument(
+    "--vfs",
+    help=
+    "Use the named vfs.  'passthru' creates a dummy APSW vfs.  You need to provide a real database filename otherwise the memory vfs is used."
+)
+parser.add_argument(
+    "--sqlite-cache",
+    type=int,
+    default=2,
+    dest="sqlite_cache_mb",
+    help="Size of the SQLite in memory cache in megabytes.  Working data outside of this size causes disk I/O. [%(default)s]")
 tests_detail = """\
 bigstmt:
 
@@ -556,5 +566,21 @@ if __name__ == "__main__":
 
     if not options.apsw and not options.sqlite3 and not options.dump_filename:
         parser.error("You should select at least one of --apsw or --sqlite3 or --dump-sql")
+
+    if options.vfs == "passthru":
+        import apsw
+
+        class passthru(apsw.VFS):
+
+            def __init__(self):
+                super().__init__("passthru", "")
+
+            def xOpen(self, name, flags):
+                return passthrufile("", name, flags)
+
+        class passthrufile(apsw.VFSFile):
+            pass
+
+        passthru = passthru()
 
     doit()
