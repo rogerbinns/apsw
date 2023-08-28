@@ -360,8 +360,6 @@ class APSW(unittest.TestCase):
         if hasattr(__builtins__, name):
             warnings.simplefilter("ignore", getattr(__builtins__, name))
 
-    def assertRaisesRegexCompat(self, etype, pattern, func, *args):
-        self.assertRaises(etype, func)
 
     def assertTableExists(self, tablename):
         self.assertTrue(self.db.table_exists(None, tablename))
@@ -10476,10 +10474,6 @@ def setup():
         print("Not doing the optional LoadExtension test.  You need to compile the extension first\n")
         print("  python3 setup.py build_test_extension")
         del APSW.testLoadExtension
-
-    # python version compatibility
-    if not hasattr(APSW, "assertRaisesRegex"):
-        APSW.assertRaisesRegex = APSW.assertRaisesRegexCompat
 
     del memdb
 
