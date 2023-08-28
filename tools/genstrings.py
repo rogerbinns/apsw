@@ -17,7 +17,7 @@ names = ""
 # virtual table
 names += """
 Connect Create ShadowName Begin BestIndex BestIndexObject Close Column
-ColumnNoChange Commit Eof Filter FindFunction Next Release Rename
+ColumnNoChange Commit Eof Filter FindFunction Next Open Release Rename
 RollbackTo Rowid Savepoint
 """
 
