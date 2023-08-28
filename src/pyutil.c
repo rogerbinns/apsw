@@ -228,12 +228,13 @@ parameters for AddTraceBackHere to be provided.
 
 /* similar space to the above but if there was an
    exception coming in and the call to `x` results
-   in an exception, then the incoming exception
-   is chained to the `x` exception so you'd get
+   in an exception, then `x` exception is  chained \
+   to the incoming exception.  The type is that
+   from `x` though!
 
-   Exception in `x`
-     which happened while handling
-        incoming exception
+   Exception incoming exception
+   During the handling of the above, another occurred:
+      `x exception`
    */
 #if PY_VERSION_HEX < 0x030c0000
 #define _chainexcapi(a1,a2,a3) _PyErr_ChainExceptions(a1,a2,a3)
