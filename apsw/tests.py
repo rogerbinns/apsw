@@ -3930,11 +3930,7 @@ class APSW(unittest.TestCase):
         for i in range(6):
             VTable._bestindexreturn = i
             Cursor._bestindexreturn = i
-            try:
-                cur.execute(" " + allconstraints +
-                            " " * i)  # defeat statement cache - bestindex is called during prepare
-            except ZeroDivisionError:
-                pass
+            self.assertRaisesRoot(ZeroDivisionError, cur.execute, " " + allconstraints + " " * i)
 
         # error cases ok, return real values and move on to cursor methods
         del VTable.Open
@@ -3950,37 +3946,37 @@ class APSW(unittest.TestCase):
         self.assertRaises(AttributeError, cur.execute, allconstraints)
         # put in filter
         Cursor.Filter = Cursor.Filter1
-        self.assertRaises(TypeError, cur.execute, allconstraints)
+        self.assertRaisesRoot(TypeError, cur.execute, allconstraints)
         Cursor.Filter = Cursor.Filter2
-        self.assertRaises(ZeroDivisionError, cur.execute, allconstraints)
+        self.assertRaisesRoot(ZeroDivisionError, cur.execute, allconstraints)
         Cursor.Filter = Cursor.Filter99
-        self.assertRaises(AttributeError, cur.execute, allconstraints)
+        self.assertRaisesRoot(AttributeError, cur.execute, allconstraints)
         Cursor.Eof = Cursor.Eof1
-        self.assertRaises(TypeError, cur.execute, allconstraints)
+        self.assertRaisesRoot(TypeError, cur.execute, allconstraints)
         Cursor.Eof = Cursor.Eof2
-        self.assertRaises(ZeroDivisionError, cur.execute, allconstraints)
+        self.assertRaisesRoot(ZeroDivisionError, cur.execute, allconstraints)
         Cursor.Eof = Cursor.Eof3
-        self.assertRaises(ZeroDivisionError, cur.execute, allconstraints)
+        self.assertRaisesRoot(ZeroDivisionError, cur.execute, allconstraints)
         Cursor.Eof = Cursor.Eof99
-        self.assertRaises(AttributeError, cur.execute, allconstraints)
+        self.assertRaisesRoot(AttributeError, cur.execute, allconstraints)
         # now onto to rowid
         Cursor.Rowid = Cursor.Rowid1
-        self.assertRaises(TypeError, cur.execute, allconstraints)
+        self.assertRaisesRoot(TypeError, cur.execute, allconstraints)
         Cursor.Rowid = Cursor.Rowid2
-        self.assertRaises(ZeroDivisionError, cur.execute, allconstraints)
+        self.assertRaisesRoot(ZeroDivisionError, cur.execute, allconstraints)
         Cursor.Rowid = Cursor.Rowid3
-        self.assertRaises(ValueError, cur.execute, allconstraints)
+        self.assertRaisesRoot(ValueError, cur.execute, allconstraints)
         Cursor.Rowid = Cursor.Rowid99
-        self.assertRaises(AttributeError, cur.execute, allconstraints)
+        self.assertRaisesRoot(AttributeError, cur.execute, allconstraints)
         # column
         Cursor.Column = Cursor.Column1
-        self.assertRaises(TypeError, cur.execute, allconstraints)
+        self.assertRaisesRoot(TypeError, cur.execute, allconstraints)
         Cursor.Column = Cursor.Column2
-        self.assertRaises(TypeError, cur.execute, allconstraints)
+        self.assertRaisesRoot(TypeError, cur.execute, allconstraints)
         Cursor.Column = Cursor.Column3
-        self.assertRaises(ZeroDivisionError, cur.execute, allconstraints)
+        self.assertRaisesRoot(ZeroDivisionError, cur.execute, allconstraints)
         Cursor.Column = Cursor.Column4
-        self.assertRaises(TypeError, cur.execute, allconstraints)
+        self.assertRaisesRoot(TypeError, cur.execute, allconstraints)
         Cursor.Column = Cursor.Column99
         try:
             for row in cur.execute(allconstraints):
@@ -3989,23 +3985,17 @@ class APSW(unittest.TestCase):
             pass
         # next
         Cursor.Next = Cursor.Next1
-        try:
+        with self.assertRaisesRoot(TypeError):
             for row in cur.execute(allconstraints):
                 pass
-        except TypeError:
-            pass
         Cursor.Next = Cursor.Next2
-        try:
+        with self.assertRaisesRoot(ZeroDivisionError):
             for row in cur.execute(allconstraints):
                 pass
-        except ZeroDivisionError:
-            pass
         Cursor.Next = Cursor.Next99
-        try:
+        with self.assertRaisesRoot(AttributeError):
             for row in cur.execute(allconstraints):
                 pass
-        except AttributeError:
-            pass
         # close
         Cursor.Close = Cursor.Close1
         try:
