@@ -38,12 +38,12 @@ print(header)
 print("static struct _apsw_string_table\n{")
 for n in names:
     print(f"    PyObject *{ n };")
-print("""} apst = {};""")
+print("""} apst = {0};""")
 
 print("""
 static void
 fini_apsw_strings(void)
-{ """)
+{""")
 for n in names:
     print(f"    Py_CLEAR(apst.{ n });")
 print("}")

@@ -26,11 +26,11 @@ static struct _apsw_string_table
     PyObject *Rowid;
     PyObject *Savepoint;
     PyObject *ShadowName;
-} apst = {};
+} apst = {0};
 
 static void
 fini_apsw_strings(void)
-{ 
+{
     Py_CLEAR(apst.Begin);
     Py_CLEAR(apst.BestIndex);
     Py_CLEAR(apst.BestIndexObject);
