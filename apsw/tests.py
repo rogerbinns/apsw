@@ -383,8 +383,8 @@ class APSW(unittest.TestCase):
         l = dbl.cursor()
         r = dbr.cursor()
         # check same number of rows
-        lcount = l.execute("select count(*) from [" + left + "]").fetchall()[0][0]
-        rcount = r.execute("select count(*) from [" + right + "]").fetchall()[0][0]
+        lcount = l.execute("select count(*) from [" + left + "]").get
+        rcount = r.execute("select count(*) from [" + right + "]").get
         self.assertEqual(lcount, rcount)
         # check same number and names and order for columns
         lnames = [row[1] for row in l.execute("pragma table_info([" + left + "])")]
