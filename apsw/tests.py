@@ -360,6 +360,15 @@ class APSW(unittest.TestCase):
         if hasattr(__builtins__, name):
             warnings.simplefilter("ignore", getattr(__builtins__, name))
 
+    def assertRaisesRoot(self, exctype, func, *args, **kwargs):
+        # With chained exceptions verifies the first exception raised matches type
+        # assertRaises checks the last raised type not the root cause
+        try:
+            func(*args, **kwargs)
+        except BaseException as e:
+            while e.__context__:
+                e = e.__context__
+            self.assertIsInstance(e, exctype)
 
     def assertTableExists(self, tablename):
         self.assertTrue(self.db.table_exists(None, tablename))
