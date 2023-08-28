@@ -12,10 +12,13 @@
 # The output is intentionally formatted so that vscode autoformat
 # makes no changes
 
-names = """
-Connect Create ShadowName
-Begin BestIndex BestIndexObject Commit
+names = ""
 
+# virtual table
+names += """
+Connect Create ShadowName Begin BestIndex BestIndexObject Close Column
+ColumnNoChange Commit Eof Filter FindFunction Next Release Rename
+RollbackTo Rowid Savepoint
 """
 
 # tokenize names
@@ -30,20 +33,12 @@ header = """\
 */
 """
 
-decl = """
-static struct _apsw_string_table {
-
-} = {0};
-
-"""
-
 print(header)
 
 print("static struct _apsw_string_table\n{")
 for n in names:
     print(f"    PyObject *{ n };")
-print("""} apst = {0};""")
-
+print("""} apst = {};""")
 
 print("""
 static void
