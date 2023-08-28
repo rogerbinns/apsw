@@ -360,11 +360,27 @@ class APSW(unittest.TestCase):
         if hasattr(__builtins__, name):
             warnings.simplefilter("ignore", getattr(__builtins__, name))
 
-    def assertRaisesRoot(self, exctype, func, *args, **kwargs):
+    def assertRaisesRoot(self, exctype, *args, **kwargs):
         # With chained exceptions verifies the first exception raised matches type
         # assertRaises checks the last raised type not the root cause
+        if not args and not kwargs:  # context manager
+
+            class mgr:
+
+                def __enter__(self):
+                    return self
+
+                def __exit__(innerself, etype, e, etb):
+                    if not etype or not e:
+                        self.fail("Expected an exception in assertRaisesRoot context manager")
+                    while e.__context__:
+                        e = e.__context__
+                    self.assertIsInstance(e, exctype)
+                    return True
+
+            return mgr()
         try:
-            func(*args, **kwargs)
+            args[0](*args[1:], **kwargs)
         except BaseException as e:
             while e.__context__:
                 e = e.__context__
