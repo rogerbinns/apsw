@@ -1190,7 +1190,9 @@ apswvtabBestIndexObject(sqlite3_vtab *pVtab, sqlite3_index_info *in_index_info)
 
   index_info->index_info = in_index_info;
 
-  res = Call_PythonMethodV(vtable, "BestIndexObject", 1, "(O)", index_info);
+  PyObject *vargs[] = {NULL, vtable, (PyObject *)index_info};
+
+  res = PyObject_VectorcallMethod(apst.BestIndexObject, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (!res)
     goto finally;
 
@@ -1463,7 +1465,8 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
   }
 
   /* actually call the function */
-  res = Call_PythonMethodV(vtable, "BestIndex", 1, "(OO)", constraints, orderbys);
+  PyObject *vargs[] = {NULL, vtable, constraints, orderbys};
+  res = PyObject_VectorcallMethod(apst.BestIndex, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (!res)
     goto pyexception;
 
@@ -1802,8 +1805,8 @@ apswvtabOpen(sqlite3_vtab *pVtab, sqlite3_vtab_cursor **ppCursor)
     goto pyexception;
 
   vtable = ((apsw_vtable *)pVtab)->vtable;
-
-  res = Call_PythonMethod(vtable, "Open", 1, NULL);
+  PyObject *vargs[] = {NULL, vtable};
+  res = PyObject_VectorcallMethod(apst.Open, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (!res)
     goto pyexception;
   avc = PyMem_Calloc(1, sizeof(apsw_vtable_cursor));
@@ -2025,12 +2028,19 @@ apswvtabFindFunction(sqlite3_vtab *pVtab, int nArg, const char *zName,
   vtable = av->vtable;
 
   MakeExistingException();
+  if (PyErr_Occurred() || !PyObject_HasAttr(vtable, apst.FindFunction))
+    goto finally;
 
-  res = Call_PythonMethodV(vtable, "FindFunction", 0, "(si)", zName, nArg);
+  PyObject *vargs[] = {NULL, vtable, PyUnicode_FromString(zName), PyLong_FromLong(nArg)};
+  if (vargs[2] && vargs[3])
+    res = PyObject_VectorcallMethod(apst.FindFunction, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+
+  Py_XDECREF(vargs[2]);
+  Py_XDECREF(vargs[3]);
   if (!res)
   {
     AddTraceBackHere(__FILE__, __LINE__, "apswvtabFindFunction", "{s: s, s: i}", "zName", zName, "nArg", nArg);
-    goto error;
+    goto finally;
   }
 
   if (!Py_IsNone(res))
@@ -2040,11 +2050,11 @@ apswvtabFindFunction(sqlite3_vtab *pVtab, int nArg, const char *zName,
     if (!av->functions)
     {
       assert(PyErr_Occurred());
-      goto error;
+      goto finally;
     }
     cbinfo = allocfunccbinfo(zName);
     if (!cbinfo)
-      goto error;
+      goto finally;
     if (!PyCallable_Check(res))
     {
       if (!PySequence_Check(res) || PySequence_Size(res) != 2)
@@ -2052,7 +2062,7 @@ apswvtabFindFunction(sqlite3_vtab *pVtab, int nArg, const char *zName,
         PyErr_Format(PyExc_TypeError, "Expected FindFunction to return None, a Callable, or Sequence[int, Callable]");
         AddTraceBackHere(__FILE__, __LINE__, "apswvtabFindFunction", "{s: s, s: i, s: O}", "zName", zName, "nArg", nArg,
                          "result", res);
-        goto error;
+        goto finally;
       }
 
       item_0 = PySequence_GetItem(res, 0);
@@ -2064,7 +2074,7 @@ apswvtabFindFunction(sqlite3_vtab *pVtab, int nArg, const char *zName,
         PyErr_Format(PyExc_TypeError, "Expected FindFunction sequence to be [int, Callable]");
         AddTraceBackHere(__FILE__, __LINE__, "apswvtabFindFunction", "{s: s, s: i, s: O, s: O, s: O}", "zName", zName, "nArg", nArg,
                          "result", res, "item_0", OBJ(item_0), "item_1", OBJ(item_1));
-        goto error;
+        goto finally;
       }
       cbinfo->scalarfunc = item_1;
       item_1 = NULL;
@@ -2073,7 +2083,7 @@ apswvtabFindFunction(sqlite3_vtab *pVtab, int nArg, const char *zName,
       {
         PyErr_Format(PyExc_ValueError, "Expected FindFunction sequence [int, Callable] to have int between SQLITE_INDEX_CONSTRAINT_FUNCTION and 255, not %i", sqliteres);
         sqliteres = 0;
-        goto error;
+        goto finally;
       }
     }
     else
@@ -2090,7 +2100,7 @@ apswvtabFindFunction(sqlite3_vtab *pVtab, int nArg, const char *zName,
     else
       sqliteres = 0;
   }
-error:
+finally:
   Py_XDECREF(item_0);
   Py_XDECREF(item_1);
   Py_XDECREF(res);
@@ -2120,16 +2130,21 @@ apswvtabRename(sqlite3_vtab *pVtab, const char *zNew)
   vtable = ((apsw_vtable *)pVtab)->vtable;
 
   MakeExistingException();
-
-  /* Marked as optional since sqlite does the actual renaming */
-  res = Call_PythonMethodV(vtable, "Rename", 0, "(s)", zNew);
-  if (!res)
+  if (!PyErr_Occurred() && PyObject_HasAttr(vtable, apst.Rename))
   {
-    sqliteres = MakeSqliteMsgFromPyException(NULL);
-    AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xRename", "{s: O, s: s}", "self", vtable, "newname", zNew);
+    PyObject *vargs[] = {NULL, vtable, convertutf8string(zNew)};
+    if (vargs[2])
+    {
+      res = PyObject_VectorcallMethod(apst.Rename, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+      Py_DECREF(vargs[2]);
+      Py_XDECREF(res);
+    }
+    if (!res)
+      AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xRename", "{s: O, s: s}", "self", vtable, "newname", zNew);
   }
 
-  Py_XDECREF(res);
+  if (PyErr_Occurred())
+    sqliteres = MakeSqliteMsgFromPyException(NULL);
   PyGILState_Release(gilstate);
   return sqliteres;
 }
@@ -2153,13 +2168,20 @@ apswvtabSavepoint(sqlite3_vtab *pVtab, int level)
 
   MakeExistingException();
 
-  res = Call_PythonMethodV(vtable, "Savepoint", 0, "(i)", level);
-  if (!res)
+  if (!PyErr_Occurred() && PyObject_HasAttr(vtable, apst.Savepoint))
   {
-    sqliteres = MakeSqliteMsgFromPyException(NULL);
-    AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xSavepoint", "{s: O, s: i}", "self", vtable, "level", level);
+    PyObject *vargs[] = {NULL, vtable, PyLong_FromLong(level)};
+    if (vargs[2])
+    {
+      res = PyObject_VectorcallMethod(apst.Savepoint, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+      Py_DECREF(vargs[2]);
+      if (!res)
+      {
+        sqliteres = MakeSqliteMsgFromPyException(NULL);
+        AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xSavepoint", "{s: O, s: i}", "self", vtable, "level", level);
+      }
+    }
   }
-
   Py_XDECREF(res);
   PyGILState_Release(gilstate);
   return sqliteres;
@@ -2184,11 +2206,19 @@ apswvtabRelease(sqlite3_vtab *pVtab, int level)
 
   MakeExistingException();
 
-  res = Call_PythonMethodV(vtable, "Release", 0, "(i)", level);
-  if (!res)
+  if (!PyErr_Occurred() && PyObject_HasAttr(vtable, apst.Release))
   {
-    sqliteres = MakeSqliteMsgFromPyException(NULL);
-    AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xRelease", "{s: O, s: i}", "self", vtable, "level", level);
+    PyObject *vargs[] = {NULL, vtable, PyLong_FromLong(level)};
+    if (vargs[2])
+    {
+      res = PyObject_VectorcallMethod(apst.Release, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+      Py_DECREF(vargs[2]);
+      if (!res)
+      {
+        sqliteres = MakeSqliteMsgFromPyException(NULL);
+        AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xRelease", "{s: O, s: i}", "self", vtable, "level", level);
+      }
+    }
   }
 
   Py_XDECREF(res);
@@ -2215,13 +2245,20 @@ apswvtabRollbackTo(sqlite3_vtab *pVtab, int level)
 
   MakeExistingException();
 
-  res = Call_PythonMethodV(vtable, "RollbackTo", 0, "(i)", level);
-  if (!res)
+  if (!PyErr_Occurred() && PyObject_HasAttr(vtable, apst.RollbackTo))
   {
-    sqliteres = MakeSqliteMsgFromPyException(NULL);
-    AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xRollbackTo", "{s: O, s: i}", "self", vtable, "level", level);
+    PyObject *vargs[] = {NULL, vtable, PyLong_FromLong(level)};
+    if (vargs[2])
+    {
+      res = PyObject_VectorcallMethod(apst.RollbackTo, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+      Py_DECREF(vargs[2]);
+    }
+    if (!res)
+    {
+      sqliteres = MakeSqliteMsgFromPyException(NULL);
+      AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xRollbackTo", "{s: O, s: i}", "self", vtable, "level", level);
+    }
   }
-
   Py_XDECREF(res);
   PyGILState_Release(gilstate);
   return sqliteres;
@@ -2291,7 +2328,11 @@ apswvtabFilter(sqlite3_vtab_cursor *pCursor, int idxNum, const char *idxStr,
     PyTuple_SET_ITEM(argv, i, value);
   }
 
-  res = Call_PythonMethodV(cursor, "Filter", 1, "(isO)", idxNum, idxStr, argv);
+  PyObject *vargs[] = {NULL, cursor, PyLong_FromLong(idxNum), convertutf8string(idxStr), argv};
+  if (vargs[2] && vargs[3])
+    res = PyObject_VectorcallMethod(apst.Filter, vargs + 1, 4 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  Py_XDECREF(vargs[2]);
+  Py_XDECREF(vargs[3]);
   if (res)
     goto finally; /* result is ignored */
 
@@ -2337,7 +2378,8 @@ apswvtabEof(sqlite3_vtab_cursor *pCursor)
   if (PyErr_Occurred())
     goto pyexception;
 
-  res = Call_PythonMethod(cursor, "Eof", 1, NULL);
+  PyObject *vargs[] = {NULL, cursor};
+  res = PyObject_VectorcallMethod(apst.Eof, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (!res)
     goto pyexception;
 
@@ -2403,15 +2445,15 @@ apswvtabColumn(sqlite3_vtab_cursor *pCursor, sqlite3_context *result, int ncolum
   cursor = ((apsw_vtable_cursor *)pCursor)->cursor;
   nc = ((apsw_vtable_cursor *)pCursor)->use_no_change && sqlite3_vtab_nochange(result);
 
-  MakeExistingException();
+  assert(!PyErr_Occurred());
 
-  if (PyErr_Occurred())
-    goto pyexception;
+  PyObject *vargs[] = {NULL, cursor, PyLong_FromLong(ncolumn)};
+  if (vargs[2])
+  {
+    res = PyObject_VectorcallMethod(nc ? apst.ColumnNoChange : apst.Column, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+    Py_DECREF(vargs[2]);
+  }
 
-  if (nc)
-    res = Call_PythonMethodV(cursor, "ColumnNoChange", 1, "(i)", ncolumn);
-  else
-    res = Call_PythonMethodV(cursor, "Column", 1, "(i)", ncolumn);
   if (!res)
     goto pyexception;
 
@@ -2457,11 +2499,9 @@ apswvtabNext(sqlite3_vtab_cursor *pCursor)
 
   gilstate = PyGILState_Ensure();
 
-  MakeExistingException();
-
   cursor = ((apsw_vtable_cursor *)pCursor)->cursor;
-
-  res = Call_PythonMethod(cursor, "Next", 1, NULL);
+  PyObject *vargs[] = {NULL, cursor};
+  res = PyObject_VectorcallMethod(apst.Next, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (res)
     goto finally;
 
@@ -2495,9 +2535,10 @@ apswvtabClose(sqlite3_vtab_cursor *pCursor)
   MakeExistingException();
 
   cursor = ((apsw_vtable_cursor *)pCursor)->cursor;
-
-  res = Call_PythonMethod(cursor, "Close", 1, NULL);
-  PyMem_Free(pCursor); /* always free */
+  PyObject *vargs[] = {NULL, cursor};
+  CHAIN_EXC(
+      res = PyObject_VectorcallMethod(apst.Close, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL));
+  PyMem_Free(pCursor);
   if (res)
     goto finally;
 
@@ -2531,7 +2572,8 @@ apswvtabRowid(sqlite3_vtab_cursor *pCursor, sqlite3_int64 *pRowid)
 
   cursor = ((apsw_vtable_cursor *)pCursor)->cursor;
 
-  res = Call_PythonMethod(cursor, "Rowid", 1, NULL);
+  PyObject *vargs[] = {NULL, cursor};
+  res = PyObject_VectorcallMethod(apst.Rowid, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (!res)
     goto pyexception;
 
@@ -2714,24 +2756,32 @@ apswvtabShadowName(int which, const char *table_suffix)
   int sqliteres = 0;
 
   gilstate = PyGILState_Ensure();
+  SN_CHECK(which);
 
   MakeExistingException();
 
-  SN_CHECK(which);
-  res = Call_PythonMethodV(shadowname_allocation[which].source, "ShadowName", 0, "(s)", table_suffix);
-  if (!res)
-    sqliteres = 0;
-  else if (Py_IsNone(res) || Py_IsFalse(res))
-    sqliteres = 0;
-  else if (Py_IsTrue(res))
-    sqliteres = 1;
-  else
-    PyErr_Format(PyExc_TypeError, "Expected a bool from ShadowName not %s", Py_TypeName(res));
-
-  if (PyErr_Occurred())
+  if (PyObject_HasAttr(shadowname_allocation[which].source, apst.ShadowName))
   {
-    AddTraceBackHere(__FILE__, __LINE__, "VTModule.ShadowName", "{s: s, s: O}", "table_suffix", table_suffix, "res", OBJ(res));
-    apsw_write_unraisable(NULL);
+    PyObject *vargs[] = {NULL, shadowname_allocation[which].source, PyUnicode_FromString(table_suffix)};
+    if (vargs[2])
+    {
+      res = PyObject_VectorcallMethod(apst.ShadowName, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+      Py_DECREF(vargs[2]);
+    }
+    if (!res)
+      sqliteres = 0;
+    else if (Py_IsNone(res) || Py_IsFalse(res))
+      sqliteres = 0;
+    else if (Py_IsTrue(res))
+      sqliteres = 1;
+    else
+      PyErr_Format(PyExc_TypeError, "Expected a bool from ShadowName not %s", Py_TypeName(res));
+
+    if (PyErr_Occurred())
+    {
+      AddTraceBackHere(__FILE__, __LINE__, "VTModule.ShadowName", "{s: s, s: O}", "table_suffix", table_suffix, "res", OBJ(res));
+      apsw_write_unraisable(NULL);
+    }
   }
   Py_XDECREF(res);
   PyGILState_Release(gilstate);
