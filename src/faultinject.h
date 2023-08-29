@@ -58,6 +58,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef PyObject_IsTrueStrict
 #undef PyObject_SetAttrString
 #undef PyObject_Str
+#undef PyObject_VectorcallMethod
 #undef PySequence_Fast
 #undef PySequence_GetItem
 #undef PySequence_GetSlice
@@ -826,6 +827,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res = (typeof (_res))18;                                                                              \
     }                                                                                                          \
     _res;                                                                                                      \
+})
+#define PyObject_VectorcallMethod(...) \
+({                                                                                                                          \
+    __auto_type _res = 0 ? PyObject_VectorcallMethod(__VA_ARGS__) : 0;                                                      \
+                                                                                                                            \
+    _res = (typeof (_res))APSW_FaultInjectControl("PyObject_VectorcallMethod", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                            \
+    if ((typeof (_res))0x1FACADE == _res)                                                                                   \
+       _res = PyObject_VectorcallMethod(__VA_ARGS__);                                                                       \
+    else if ((typeof(_res))0x2FACADE == _res)                                                                               \
+    {                                                                                                                       \
+        PyObject_VectorcallMethod(__VA_ARGS__);                                                                             \
+        _res = (typeof (_res))18;                                                                                           \
+    }                                                                                                                       \
+    _res;                                                                                                                   \
 })
 #define PySequence_Fast(...) \
 ({                                                                                                                \

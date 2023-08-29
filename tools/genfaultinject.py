@@ -86,6 +86,7 @@ returns = {
             PyNumber_Long PySequence_Fast PySequence_List PySequence_SetItem PyObject_CallFunction
             PyObject_CallMethod PyFrame_New PyStructSequence_NewType PyStructSequence_New
             PyMem_Realloc PyUnicode_FromFormat
+            PyObject_VectorcallMethod
             """.split(),
     # numeric return
     "sqlite":
