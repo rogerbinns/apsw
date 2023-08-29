@@ -1708,25 +1708,8 @@ finally:
   provide the method.
 */
 
-static struct
-{
-  const char *methodname;
-  const char *pyexceptionname;
-} transaction_strings[] =
-    {
-        {"Begin",
-         "VirtualTable.Begin"},
-        {"Sync",
-         "VirtualTable.Sync"},
-        {"Commit",
-         "VirtualTable.Commit"},
-        {"Rollback",
-         "VirtualTable.Rollback"},
-
-};
-
 static int
-apswvtabTransactionMethod(sqlite3_vtab *pVtab, int stringindex)
+apswvtabTransactionMethod(sqlite3_vtab *pVtab, PyObject *name, const char *exception_name)
 {
   PyObject *vtable, *res = NULL;
   PyGILState_STATE gilstate;
@@ -1737,18 +1720,20 @@ apswvtabTransactionMethod(sqlite3_vtab *pVtab, int stringindex)
   MakeExistingException();
 
   vtable = ((apsw_vtable *)pVtab)->vtable;
-
-  res = Call_PythonMethod(vtable, transaction_strings[stringindex].methodname, 0, NULL);
-  if (res)
-    goto finally;
-
-  /*  pyexception: we had an exception in python code */
-  sqliteres = MakeSqliteMsgFromPyException(&(pVtab->zErrMsg));
-  AddTraceBackHere(__FILE__, __LINE__, transaction_strings[stringindex].pyexceptionname, "{s: O}", "self", vtable);
-
-finally:
-  Py_XDECREF(res);
-
+  CHAIN_EXC_BEGIN
+  if (PyObject_HasAttr(vtable, name))
+  {
+    PyObject *vargs[] = {NULL, vtable};
+    res = PyObject_VectorcallMethod(name, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+    if (res)
+      Py_DECREF(res);
+    else
+    {
+      sqliteres = MakeSqliteMsgFromPyException(&(pVtab->zErrMsg));
+      AddTraceBackHere(__FILE__, __LINE__, exception_name, "{s: O}", "self", vtable);
+    }
+  };
+  CHAIN_EXC_END;
   PyGILState_Release(gilstate);
   return sqliteres;
 }
@@ -1756,25 +1741,25 @@ finally:
 static int
 apswvtabBegin(sqlite3_vtab *pVtab)
 {
-  return apswvtabTransactionMethod(pVtab, 0);
+  return apswvtabTransactionMethod(pVtab, apst.Begin, "VirtualTable.Begin");
 }
 
 static int
 apswvtabSync(sqlite3_vtab *pVtab)
 {
-  return apswvtabTransactionMethod(pVtab, 1);
+  return apswvtabTransactionMethod(pVtab, apst.Sync, "VirtualTable.Sync");
 }
 
 static int
 apswvtabCommit(sqlite3_vtab *pVtab)
 {
-  return apswvtabTransactionMethod(pVtab, 2);
+  return apswvtabTransactionMethod(pVtab, apst.Commit, "VirtualTable.Commit");
 }
 
 static int
 apswvtabRollback(sqlite3_vtab *pVtab)
 {
-  return apswvtabTransactionMethod(pVtab, 3);
+  return apswvtabTransactionMethod(pVtab, apst.Rollback, "VirtualTable.Rollback");
 }
 
 /** .. method:: Open() -> VTCursor
