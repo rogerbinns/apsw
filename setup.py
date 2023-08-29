@@ -563,7 +563,6 @@ class apsw_build_ext(beparent):
         path = findamalgamation()
         if path:
             ext.define_macros.append(('APSW_USE_SQLITE_AMALGAMATION', '1'))
-            ext.depends.append(path)
             # we also add the directory to include path since icu tries to use it
             ext.include_dirs.insert(0, os.path.dirname(path))
             write("SQLite: Using amalgamation", path)
@@ -691,35 +690,6 @@ class apsw_sdist(sparent):
         # Make sure the manifest is regenerated
         self.force_manifest = True
 
-        # Now do some chicanery.  If a source distribution is requested and
-        # fetch --sqlite was requested then make sure the sqlite amalgamation
-        # ends up as part of the source distribution.
-        if fetch_parts:
-            # Use a temporary file for the manifest
-            tmpmanifest = "MANIFEST.in.tmp"
-            self.template = tmpmanifest
-            try:
-                os.remove(tmpmanifest)
-            except:
-                pass
-            min = open("MANIFEST.in", "rU")
-            mout = open(tmpmanifest, "wt")
-            for line in min:
-                mout.write(line)
-            min.close()
-            # os.path.relpath emulation
-            if "sqlite" in fetch_parts:
-                amalgamationpath = findamalgamation()
-                amalrelpath = amalgamationpath[len(os.path.dirname(os.path.abspath(__file__))) + 1:]
-                mout.write("include " + amalrelpath + "\n")
-                # also include headers and extension headers
-                mout.write("include " + amalrelpath.replace("sqlite3.c", "sqlite3.h") + "\n")
-                mout.write("include " + amalrelpath.replace("sqlite3.c", "sqlite3ext.h") + "\n")
-                if os.path.exists("sqlite3/sqlite3config.h"):
-                    mout.write("include sqlite3/sqlite3config.h\n")
-
-            mout.close()
-
     def run(self):
         cfg = "pypi" if self.for_pypi else "default"
         shutil.copy2(f"tools/setup-{ cfg }.cfg", "setup.apsw")
@@ -836,9 +806,6 @@ def add_doc(archive, topdir):
 
 # We depend on every .[ch] file in src
 depends = [f for f in glob.glob("src/*.[ch]") if f != "src/apsw.c"]
-for f in (findamalgamation(), ):
-    if f:
-        depends.append(f)
 
 if __name__ == '__main__':
     setup(name="apsw",
