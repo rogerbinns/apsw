@@ -47,3 +47,4 @@ setup.cfg
 work/
 .venv/
 compile_commands.json
+.vscode/
