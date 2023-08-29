@@ -237,28 +237,34 @@ parameters for AddTraceBackHere to be provided.
       `x exception`
    */
 #if PY_VERSION_HEX < 0x030c0000
-#define _chainexcapi(a1,a2,a3) _PyErr_ChainExceptions(a1,a2,a3)
+#define _chainexcapi(a1, a2, a3) _PyErr_ChainExceptions(a1, a2, a3)
 #else
-#define _chainexcapi(a1,a2,a3) _PyErr_ChainExceptions1(a2)
+#define _chainexcapi(a1, a2, a3) _PyErr_ChainExceptions1(a2)
 #endif
-#define CHAIN_EXC(x)                           \
-  do                                           \
-  {                                            \
-    PyObject *_exc = PyErr_Occurred();         \
-    PyObject *_e1, *_e2, *_e3;                 \
-    if (_exc)                                  \
-      PyErr_Fetch(&_e1, &_e2, &_e3);           \
-    {                                          \
-      x;                                       \
-    }                                          \
-    if (_exc)                                  \
-    {                                          \
-      if (PyErr_Occurred())                    \
-        _chainexcapi(_e1, _e2, _e3);           \
-      else                                     \
-        PyErr_Restore(_e1, _e2, _e3);          \
-    }                                          \
-  } while (0)
+#define CHAIN_EXC_BEGIN                \
+  do                                   \
+  {                                    \
+    PyObject *_exc = PyErr_Occurred(); \
+    PyObject *_e1, *_e2, *_e3;         \
+    if (_exc)                          \
+      PyErr_Fetch(&_e1, &_e2, &_e3);   \
+    {
+
+#define CHAIN_EXC_END               \
+  }                                 \
+  if (_exc)                         \
+  {                                 \
+    if (PyErr_Occurred())           \
+      _chainexcapi(_e1, _e2, _e3);  \
+    else                            \
+      PyErr_Restore(_e1, _e2, _e3); \
+  }                                 \
+  }                                 \
+  while (0)
+
+#define CHAIN_EXC(x) \
+  CHAIN_EXC_BEGIN x; \
+  CHAIN_EXC_END
 
 /* Some functions can clear the error indicator
    so this keeps it */
