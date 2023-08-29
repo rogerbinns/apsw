@@ -21,7 +21,7 @@ GENDOCS = \
 
 .PHONY : help all tagpush clean doc docs build_ext build_ext_debug coverage pycoverage test test_debug fulltest linkcheck unwrapped \
 		 publish stubtest showsymbols compile-win setup-wheel source_nocheck source release pydebug pyvalgrind valgrind valgrind1 \
-		 fossil doc-depends dev-depends docs-no-fetch compile-win-one
+		 fossil doc-depends dev-depends docs-no-fetch compile-win-one langserver
 
 help: ## Show this help
 	@egrep -h '\s##\s' $(MAKEFILE_LIST) | sort | \
@@ -248,3 +248,6 @@ valgrind1: $(PYVALGRIND_DIR)/bin/python3 src/faultinject.h ## valgrind check (on
 
 valgrind_no_fetch: $(PYVALGRIND_DIR)/bin/python3 src/faultinject.h ## valgrind check (one iteration) - does not fetch SQLite, using existing directory
 	  env APSWTESTPREFIX=$(PYDEBUG_WORKDIR) PATH=$(PYVALGRIND_DIR)/bin:$$PATH APSW_TEST_ITERATIONS=1 tools/valgrind.sh
+
+langserver:  ## Language server integration json
+	$(PYTHON) tools/gencompilecommands.py > compile_commands.json

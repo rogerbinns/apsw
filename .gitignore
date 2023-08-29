@@ -46,3 +46,4 @@ __pycache__/
 setup.cfg
 work/
 .venv/
+compile_commands.json
