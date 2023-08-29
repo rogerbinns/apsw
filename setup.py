@@ -682,9 +682,6 @@ class apsw_sdist(sparent):
         sparent.initialize_options(self)
         self.add_doc = False
         self.for_pypi = False
-        # Were we made from a source archive?  If so include the help again
-        if os.path.isfile("doc/index.html") and os.path.isfile("doc/_sources/pysqlite.txt"):
-            self.add_doc = True
         self.use_defaults = False  # they are useless
 
         # Make sure the manifest is regenerated
@@ -696,7 +693,7 @@ class apsw_sdist(sparent):
         v = sparent.run(self)
 
         if self.add_doc:
-            if len(list(help_walker(''))) == 0:
+            if len(list(help_walker(''))) < 20:
                 raise Exception("The help is not built")
             for archive in self.get_archive_files():
                 add_doc(archive, self.distribution.get_fullname())
@@ -766,10 +763,8 @@ def set_config_from_system(outputfilename: str):
 
 def help_walker(arcdir):
     # Provides a list of (archive name, disk name) for all the help files
-    if os.path.isfile("doc/index.html") and os.path.isfile("doc/_sources/pysqlite.txt"):
-        topdir = "doc/"
-    else:
-        topdir = "doc/build/html/"
+    assert os.path.isfile("doc/build/html/_sources/about.rst.txt")
+    topdir = "doc/build/html/"
     for dirpath, _, filenames in os.walk(topdir):
         prefix = dirpath[len(topdir):]
         for f in filenames:
@@ -779,8 +774,6 @@ def help_walker(arcdir):
 def add_doc(archive, topdir):
     write("Add help files to", archive)
     if archive.endswith(".tar") or ".tar." in archive:
-        if archive.endswith(".Z"):
-            raise Exception("tarfile module doesn't support old school compress so we can't add doc " + archive)
         fmt = ""
         if archive.endswith(".gz") or archive.endswith(".tgz"):
             fmt = ":gz"
