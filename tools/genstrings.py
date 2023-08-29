@@ -18,7 +18,7 @@ names = ""
 names += """
 Connect Create ShadowName Begin BestIndex BestIndexObject Close Column
 ColumnNoChange Commit Eof Filter FindFunction Next Open Release Rename
-RollbackTo Rowid Savepoint
+Rollback RollbackTo Rowid Savepoint Sync
 """
 
 # tokenize names
