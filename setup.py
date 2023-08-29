@@ -563,7 +563,6 @@ class apsw_build_ext(beparent):
         path = findamalgamation()
         if path:
             ext.define_macros.append(('APSW_USE_SQLITE_AMALGAMATION', '1'))
-            ext.depends.append(path)
             # we also add the directory to include path since icu tries to use it
             ext.include_dirs.insert(0, os.path.dirname(path))
             write("SQLite: Using amalgamation", path)
@@ -683,42 +682,10 @@ class apsw_sdist(sparent):
         sparent.initialize_options(self)
         self.add_doc = False
         self.for_pypi = False
-        # Were we made from a source archive?  If so include the help again
-        if os.path.isfile("doc/index.html") and os.path.isfile("doc/_sources/pysqlite.txt"):
-            self.add_doc = True
         self.use_defaults = False  # they are useless
 
         # Make sure the manifest is regenerated
         self.force_manifest = True
-
-        # Now do some chicanery.  If a source distribution is requested and
-        # fetch --sqlite was requested then make sure the sqlite amalgamation
-        # ends up as part of the source distribution.
-        if fetch_parts:
-            # Use a temporary file for the manifest
-            tmpmanifest = "MANIFEST.in.tmp"
-            self.template = tmpmanifest
-            try:
-                os.remove(tmpmanifest)
-            except:
-                pass
-            min = open("MANIFEST.in", "rU")
-            mout = open(tmpmanifest, "wt")
-            for line in min:
-                mout.write(line)
-            min.close()
-            # os.path.relpath emulation
-            if "sqlite" in fetch_parts:
-                amalgamationpath = findamalgamation()
-                amalrelpath = amalgamationpath[len(os.path.dirname(os.path.abspath(__file__))) + 1:]
-                mout.write("include " + amalrelpath + "\n")
-                # also include headers and extension headers
-                mout.write("include " + amalrelpath.replace("sqlite3.c", "sqlite3.h") + "\n")
-                mout.write("include " + amalrelpath.replace("sqlite3.c", "sqlite3ext.h") + "\n")
-                if os.path.exists("sqlite3/sqlite3config.h"):
-                    mout.write("include sqlite3/sqlite3config.h\n")
-
-            mout.close()
 
     def run(self):
         cfg = "pypi" if self.for_pypi else "default"
@@ -726,7 +693,7 @@ class apsw_sdist(sparent):
         v = sparent.run(self)
 
         if self.add_doc:
-            if len(list(help_walker(''))) == 0:
+            if len(list(help_walker(''))) < 20:
                 raise Exception("The help is not built")
             for archive in self.get_archive_files():
                 add_doc(archive, self.distribution.get_fullname())
@@ -796,10 +763,8 @@ def set_config_from_system(outputfilename: str):
 
 def help_walker(arcdir):
     # Provides a list of (archive name, disk name) for all the help files
-    if os.path.isfile("doc/index.html") and os.path.isfile("doc/_sources/pysqlite.txt"):
-        topdir = "doc/"
-    else:
-        topdir = "doc/build/html/"
+    assert os.path.isfile("doc/build/html/_sources/about.rst.txt")
+    topdir = "doc/build/html/"
     for dirpath, _, filenames in os.walk(topdir):
         prefix = dirpath[len(topdir):]
         for f in filenames:
@@ -809,8 +774,6 @@ def help_walker(arcdir):
 def add_doc(archive, topdir):
     write("Add help files to", archive)
     if archive.endswith(".tar") or ".tar." in archive:
-        if archive.endswith(".Z"):
-            raise Exception("tarfile module doesn't support old school compress so we can't add doc " + archive)
         fmt = ""
         if archive.endswith(".gz") or archive.endswith(".tgz"):
             fmt = ":gz"
@@ -836,9 +799,6 @@ def add_doc(archive, topdir):
 
 # We depend on every .[ch] file in src
 depends = [f for f in glob.glob("src/*.[ch]") if f != "src/apsw.c"]
-for f in (findamalgamation(), ):
-    if f:
-        depends.append(f)
 
 if __name__ == '__main__':
     setup(name="apsw",
