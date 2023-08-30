@@ -23,7 +23,7 @@ You can call the individual functions, or
 
     import apsw.bestpractice
 
-    apsw.bestpractise.apply(apsw.bestpractice.recommended)
+    apsw.bestpractice.apply(apsw.bestpractice.recommended)
 
 API
 ---
