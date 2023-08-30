@@ -16,9 +16,9 @@ names = ""
 
 # virtual table
 names += """
-Connect Create ShadowName Begin BestIndex BestIndexObject Close Column
-ColumnNoChange Commit Eof Filter FindFunction Next Open Release Rename
-Rollback RollbackTo Rowid Savepoint Sync
+Begin BestIndex BestIndexObject Close Column ColumnNoChange Commit
+Connect Create Destroy Disconnect Eof Filter FindFunction Next Open
+Release Rename Rollback RollbackTo Rowid Savepoint ShadowName Sync
 """
 
 # tokenize names

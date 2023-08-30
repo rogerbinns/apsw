@@ -1076,19 +1076,8 @@ apswvtabFree(void *context)
   PyGILState_Release(gilstate);
 }
 
-static struct
-{
-  const char *methodname;
-  const char *pyexceptionname;
-} destroy_disconnect_strings[] =
-    {
-        {"Destroy",
-         "VirtualTable.xDestroy"},
-        {"Disconnect",
-         "VirtualTable.xDisconnect"}};
-
 static int
-apswvtabDestroyOrDisconnect(sqlite3_vtab *pVtab, int stringindex)
+apswvtabDestroyOrDisconnect(sqlite3_vtab *pVtab, PyObject *methodname, const char *exception_name)
 {
   PyObject *vtable, *res = NULL;
   PyGILState_STATE gilstate;
@@ -1099,24 +1088,29 @@ apswvtabDestroyOrDisconnect(sqlite3_vtab *pVtab, int stringindex)
 
   MakeExistingException();
 
-  CHAIN_EXC(
-      /* mandatory for Destroy, optional for Disconnect */
-      res = Call_PythonMethod(vtable, destroy_disconnect_strings[stringindex].methodname, (stringindex == 0), NULL););
-
-  if (!res)
+  CHAIN_EXC_BEGIN
+  /* mandatory for Destroy, optional for Disconnect */
+  if (methodname == apst.Destroy || PyObject_HasAttr(vtable, methodname))
   {
-    sqliteres = MakeSqliteMsgFromPyException(NULL);
-    AddTraceBackHere(__FILE__, __LINE__, destroy_disconnect_strings[stringindex].pyexceptionname, "{s: O}", "self", OBJ(vtable));
-  }
+    PyObject *vargs[] = {NULL, vtable};
+    res = PyObject_VectorcallMethod(methodname, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
 
-  if (stringindex == 1)
+    if (!res)
+    {
+      sqliteres = MakeSqliteMsgFromPyException(NULL);
+      AddTraceBackHere(__FILE__, __LINE__, exception_name, "{s: O}", "self", OBJ(vtable));
+    }
+    else
+      Py_DECREF(res);
+  }
+  CHAIN_EXC_END;
+
+  if (methodname == apst.Disconnect)
   {
     Py_DECREF(vtable);
     Py_XDECREF(((apsw_vtable *)pVtab)->functions);
     PyMem_Free(pVtab);
   }
-
-  Py_XDECREF(res);
 
   if (PyErr_Occurred())
     apsw_write_unraisable(NULL);
@@ -1137,7 +1131,7 @@ apswvtabDestroyOrDisconnect(sqlite3_vtab *pVtab, int stringindex)
 static int
 apswvtabDestroy(sqlite3_vtab *pVTab)
 {
-  return apswvtabDestroyOrDisconnect(pVTab, 0);
+  return apswvtabDestroyOrDisconnect(pVTab, apst.Destroy, "VirtualTable.xDestroy");
 }
 
 /** .. method:: Disconnect() -> None
@@ -1150,7 +1144,7 @@ apswvtabDestroy(sqlite3_vtab *pVTab)
 static int
 apswvtabDisconnect(sqlite3_vtab *pVTab)
 {
-  return apswvtabDestroyOrDisconnect(pVTab, 1);
+  return apswvtabDestroyOrDisconnect(pVTab, apst.Disconnect, "VirtualTable.xDisconnect");
 }
 
 /** .. method:: BestIndexObject(index_info: IndexInfo) -> bool
