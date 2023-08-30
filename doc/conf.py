@@ -3,12 +3,6 @@
 
 import os
 
-import sphinx
-if sphinx.version_info < (5, 2):
-    import warnings
-    warnings.warn("You should use sphinx 5.2+")
-
-
 # monkey patch https://github.com/sphinx-doc/sphinx/issues/11253
 def split(self, input):
     res = []
@@ -28,17 +22,9 @@ extensions = [
     'sphinx.ext.intersphinx',
     "sphinx.ext.viewcode",
     "sphinx.ext.autosummary",
-    # this is needed by read the docs theme
-    "sphinxcontrib.jquery",
 ]
 
 autodoc_preserve_defaults = True
-
-try:
-    import rst2pdf.pdfbuilder
-    extensions.append("rst2pdf.pdfbuilder")
-except Exception:
-    pass
 
 extlinks = {
     'issue': ('https://github.com/rogerbinns/apsw/issues/%s', 'APSW issue %s'),
