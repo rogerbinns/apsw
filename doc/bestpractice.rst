@@ -7,7 +7,7 @@ Explanation
 Because SQLite keeps very strong backwards compatibility, there are
 several quirks and settings improvements that are not automatically
 done.  This module does them for you, and keeps up to date with SQLite
-best practises.  Several are described in the `SQLite documentation
+best practices.  Several are described in the `SQLite documentation
 <https://www.sqlite.org/quirks.html>`__.
 
 Functions whose name begin with :code:`library` apply to the SQLite
@@ -23,7 +23,7 @@ You can call the individual functions, or
 
     import apsw.bestpractice
 
-    apsw.bestpractise.apply(apsw.bestpractice.recommended)
+    apsw.bestpractice.apply(apsw.bestpractice.recommended)
 
 API
 ---

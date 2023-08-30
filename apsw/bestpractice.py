@@ -83,8 +83,8 @@ def apply(which: tuple[Callable, ...]) -> None:
         else:
             func()
 
-    def best_practise_connection_apply(connection: apsw.Connection):
+    def best_practice_connection_apply(connection: apsw.Connection):
         for func in hooks:
             func(connection)
 
-    apsw.connection_hooks.append(best_practise_connection_apply)
+    apsw.connection_hooks.append(best_practice_connection_apply)

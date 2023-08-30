@@ -554,7 +554,7 @@ statements_nobindings:
 
   In theory all the tests above should run in almost identical time
   as well as when using the SQLite command line shell.  This tool
-  shows you what happens in practise.
+  shows you what happens in practice.
     \n"""
 
 if __name__ == "__main__":

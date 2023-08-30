@@ -81,7 +81,7 @@ to all other Cursors on the same connection.  This still applies if
 you start transactions.  Connections are isolated from each other.
 
 Cursor objects are obtained by :meth:`Connection.cursor` and are very
-cheap.  It is best practise to not re-use them, and instead get a new one
+cheap.  It is best practice to not re-use them, and instead get a new one
 each time.  If you don't, code refactoring and nested loops can unintentionally
 use the same cursor object which will not crash but will cause hard to
 diagnose behaviour in your program.
