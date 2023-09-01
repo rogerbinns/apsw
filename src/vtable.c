@@ -876,14 +876,6 @@ apswvtabCreateOrConnect(sqlite3 *db,
   if (!vtable)
     goto pyexception;
 
-  avi = PyMem_Calloc(1, sizeof(apsw_vtable));
-  if (!avi)
-    goto pyexception;
-  assert((void *)avi == (void *)&(avi->used_by_sqlite)); /* detect if weird padding happens */
-  avi->bestindex_object = vti->bestindex_object;
-  avi->use_no_change = vti->use_no_change;
-  avi->connection = self;
-
   schema = PySequence_GetItem(pyres, 0);
   if (!schema)
     goto pyexception;
@@ -906,9 +898,16 @@ apswvtabCreateOrConnect(sqlite3 *db,
   }
 
   assert(res == SQLITE_OK);
+  avi = PyMem_Calloc(1, sizeof(apsw_vtable));
+  if (!avi)
+    goto pyexception;
+  assert((void *)avi == (void *)&(avi->used_by_sqlite)); /* detect if weird padding happens */
+  avi->bestindex_object = vti->bestindex_object;
+  avi->use_no_change = vti->use_no_change;
+  avi->connection = self;
+
   *pVTab = (sqlite3_vtab *)avi;
   avi->vtable = Py_NewRef(vtable);
-  avi = NULL;
   goto finally;
 
 pyexception: /* we had an exception in python code */
@@ -922,8 +921,6 @@ finally: /* cleanup */
   Py_XDECREF(pyres);
   Py_XDECREF(schema);
   Py_XDECREF(vtable);
-  if (avi)
-    PyMem_Free(avi);
   CALL_LEAVE(xConnect);
   PyGILState_Release(gilstate);
   assert((*pVTab != 0 && res == SQLITE_OK) || (*pVTab == 0 && res != SQLITE_OK));
