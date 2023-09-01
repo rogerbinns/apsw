@@ -813,20 +813,6 @@ typedef struct
   Connection *connection;
 } apsw_vtable;
 
-static struct
-{
-  const char *methodname;
-  const char *declarevtabtracebackname;
-  const char *pyexceptionname;
-} create_or_connect_strings[] =
-    {
-        {"Create",
-         "VirtualTable.xCreate.sqlite3_declare_vtab",
-         "VirtualTable.xCreate"},
-        {"Connect",
-         "VirtualTable.xConnect.sqlite3_declare_vtab",
-         "VirtualTable.xConnect"}};
-
 static int
 apswvtabCreateOrConnect(sqlite3 *db,
                         void *pAux,
@@ -835,11 +821,13 @@ apswvtabCreateOrConnect(sqlite3 *db,
                         sqlite3_vtab **pVTab,
                         char **errmsg,
                         /* args above are to Create/Connect method */
-                        int stringindex)
+                        PyObject *methodname,
+                        const char *declarevtabtracebackname,
+                        const char *pyexceptionname)
 {
   PyGILState_STATE gilstate;
   vtableinfo *vti;
-  PyObject *args = NULL, *pyres = NULL, *schema = NULL, *vtable = NULL;
+  PyObject *pyres = NULL, *schema = NULL, *vtable = NULL;
   apsw_vtable *avi = NULL;
   int res = SQLITE_OK;
   int i;
@@ -857,22 +845,21 @@ apswvtabCreateOrConnect(sqlite3 *db,
   if (PyErr_Occurred())
     goto pyexception;
 
-  args = PyTuple_New(1 + argc);
-  if (!args)
-    goto pyexception;
+  /* msvc doesn't support variable sized array */
+  PyObject **vargs = alloca(sizeof(PyObject *) * (3 + argc));
+  vargs[0] = NULL;
+  vargs[1] = vti->datasource;
+  vargs[2] = (PyObject *)self;
 
-  PyTuple_SET_ITEM(args, 0, Py_NewRef((PyObject *)(vti->connection)));
   for (i = 0; i < argc; i++)
-  {
-    PyObject *str;
+    vargs[3 + i] = convertutf8string(argv[i]);
 
-    str = convertutf8string(argv[i]);
-    if (!str)
+  for (i = 0; i < argc; i++)
+    if (!vargs[3 + i])
       goto pyexception;
-    PyTuple_SET_ITEM(args, 1 + i, str);
-  }
 
-  pyres = Call_PythonMethod(vti->datasource, create_or_connect_strings[stringindex].methodname, 1, args);
+  pyres = PyObject_VectorcallMethod(methodname, vargs + 1, (2 + argc) | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+
   if (!pyres)
     goto pyexception;
 
@@ -913,7 +900,7 @@ apswvtabCreateOrConnect(sqlite3 *db,
     if (res != SQLITE_OK)
     {
       SET_EXC(res, db);
-      AddTraceBackHere(__FILE__, __LINE__, create_or_connect_strings[stringindex].declarevtabtracebackname, "{s: O}", "schema", OBJ(schema));
+      AddTraceBackHere(__FILE__, __LINE__, declarevtabtracebackname, "{s: O}", "schema", OBJ(schema));
       goto finally;
     }
   }
@@ -926,11 +913,12 @@ apswvtabCreateOrConnect(sqlite3 *db,
 
 pyexception: /* we had an exception in python code */
   res = MakeSqliteMsgFromPyException(errmsg);
-  AddTraceBackHere(__FILE__, __LINE__, create_or_connect_strings[stringindex].pyexceptionname,
+  AddTraceBackHere(__FILE__, __LINE__, pyexceptionname,
                    "{s: s, s: s, s: s, s: O}", "modulename", argv[0], "database", argv[1], "tablename", argv[2], "schema", OBJ(schema));
 
 finally: /* cleanup */
-  Py_XDECREF(args);
+  for (i = 0; i < argc; i++)
+    Py_XDECREF(vargs[3 + i]);
   Py_XDECREF(pyres);
   Py_XDECREF(schema);
   Py_XDECREF(vtable);
@@ -974,7 +962,8 @@ apswvtabCreate(sqlite3 *db,
                sqlite3_vtab **pVTab,
                char **errmsg)
 {
-  return apswvtabCreateOrConnect(db, pAux, argc, argv, pVTab, errmsg, 0);
+  return apswvtabCreateOrConnect(db, pAux, argc, argv, pVTab, errmsg, apst.Create, "VirtualTable.xCreate.sqlite3_declare_vtab",
+                                 "VirtualTable.xCreate");
 }
 
 /** .. method:: Create(connection: Connection, modulename: str, databasename: str, tablename: str, *args: tuple[SQLiteValue, ...])  -> tuple[str, VTTable]
@@ -1004,7 +993,8 @@ apswvtabConnect(sqlite3 *db,
                 sqlite3_vtab **pVTab,
                 char **errmsg)
 {
-  return apswvtabCreateOrConnect(db, pAux, argc, argv, pVTab, errmsg, 1);
+  return apswvtabCreateOrConnect(db, pAux, argc, argv, pVTab, errmsg, apst.Connect, "VirtualTable.xConnect.sqlite3_declare_vtab",
+                                 "VirtualTable.xConnect");
 }
 
 /** .. method:: ShadowName(table_suffix: str) -> bool
