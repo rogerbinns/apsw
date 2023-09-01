@@ -126,7 +126,7 @@ def doit():
 
         # database schema
         for i in f"""PRAGMA page_size=4096;
-      PRAGMA cache_size=-{ options.sqlite_cache_mb * 1024 };
+      PRAGMA cache_size=-{ int(options.sqlite_cache_mb * 1024) };
       PRAGMA locking_mode=EXCLUSIVE;
       PRAGMA temp_store = MEMORY;
       CREATE TABLE t1(a INTEGER, b INTEGER, c TEXT);
@@ -517,7 +517,7 @@ parser.add_argument(
 )
 parser.add_argument(
     "--sqlite-cache",
-    type=int,
+    type=float,
     default=2,
     dest="sqlite_cache_mb",
     help="Size of the SQLite in memory cache in megabytes.  Working data outside of this size causes disk I/O. [%(default)s]")
@@ -582,5 +582,8 @@ if __name__ == "__main__":
             pass
 
         passthru = passthru()
+
+    if options.vfs and options.database in (":memory:", ""):
+        parser.error("For vfs to take effect you need a non-memory database filename")
 
     doit()
