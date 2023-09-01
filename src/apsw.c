@@ -99,6 +99,7 @@ API Reference
 /* system headers */
 #include <assert.h>
 #include <stdarg.h>
+#include <alloca.h>
 
 /* Get the version number */
 #include "apswversion.h"
