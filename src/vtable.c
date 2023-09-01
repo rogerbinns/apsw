@@ -1838,7 +1838,7 @@ finally:
 static int
 apswvtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite3_int64 *pRowid)
 {
-  PyObject *vtable, *args = NULL, *res = NULL;
+  PyObject *vtable, *columns = NULL, *res = NULL;
   PyGILState_STATE gilstate;
   int sqliteres = SQLITE_OK;
   int i;
@@ -1855,107 +1855,92 @@ apswvtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite3_int6
 
   CALL_ENTER(xUpdate);
 
-  /* case 1 - argc=1 means delete row */
+  if (PyErr_Occurred())
+  {
+    sqliteres = SQLITE_ERROR;
+    goto finally;
+  }
+
+  /* argc=1 means delete row */
   if (argc == 1)
   {
-    methodname = "UpdateDeleteRow";
-    args = Py_BuildValue("(O&)", convert_value_to_pyobject_not_in, argv[0]);
-    if (!args)
+    PyObject *vargs[] = {NULL, vtable, convert_value_to_pyobject_not_in(argv[0])};
+    if (vargs[2])
+    {
+      res = PyObject_VectorcallMethod(apst.UpdateDeleteRow, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+      Py_DECREF(vargs[2]);
+    }
+    if (!res)
+    {
+      methodname = "UpdateDeleteRow";
       goto pyexception;
+    }
+    goto finally;
   }
-  /* case 2 - insert a row */
-  else if (sqlite3_value_type(argv[0]) == SQLITE_NULL)
+
+  /* new row values */
+  columns = PyTuple_New(argc - 2);
+  if (!columns)
+    goto pyexception;
+
+  for (i = 0; i + 2 < argc; i++)
   {
-    PyObject *newrowid;
-    methodname = "UpdateInsertRow";
-    args = PyTuple_New(2);
-    if (!args)
+    PyObject *value;
+    value = convert_value_to_pyobject(argv[i + 2], 0, ((apsw_vtable *)pVtab)->use_no_change);
+    if (!value)
       goto pyexception;
-    if (sqlite3_value_type(argv[1]) == SQLITE_NULL)
+    PyTuple_SET_ITEM(columns, i, value);
+  }
+
+  /* insert a row */
+  if (sqlite3_value_type(argv[0]) == SQLITE_NULL)
+  {
+    PyObject *vargs[] = {NULL, vtable, convert_value_to_pyobject_not_in(argv[1]), columns};
+    if (vargs[2])
     {
-      newrowid = Py_NewRef(Py_None);
+      res = PyObject_VectorcallMethod(apst.UpdateInsertRow, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+      Py_DECREF(vargs[2]);
+      if (res && sqlite3_value_type(argv[1]) == SQLITE_NULL)
+      {
+        *pRowid = PyLong_AsLongLong(res);
+        if (PyErr_Occurred())
+        {
+          AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xUpdateInsertRow.ReturnedValue", "{s: O}", "result", res);
+          methodname = "UpdateInsertRow";
+          goto pyexception;
+        }
+      }
     }
-    else
+    if (PyErr_Occurred())
     {
-      newrowid = convert_value_to_pyobject(argv[1], 0, 0);
-      if (!newrowid)
-        goto pyexception;
+      methodname = "UpdateInsertRow";
+      goto pyexception;
     }
-    PyTuple_SET_ITEM(args, 0, newrowid);
   }
   /* otherwise changing a row */
   else
   {
-    PyObject *oldrowid = NULL, *newrowid = NULL;
-    methodname = "UpdateChangeRow";
-    args = PyTuple_New(3);
-    oldrowid = convert_value_to_pyobject(argv[0], 0, 0);
-    if (oldrowid)
-      newrowid = convert_value_to_pyobject(argv[1], 0, 0);
-    if (!args || !oldrowid || !newrowid)
-    {
-      Py_XDECREF(oldrowid);
-      Py_XDECREF(newrowid);
-      goto pyexception;
-    }
-    PyTuple_SET_ITEM(args, 0, oldrowid);
-    PyTuple_SET_ITEM(args, 1, newrowid);
-  }
+    PyObject *vargs[] = {NULL, vtable, convert_value_to_pyobject(argv[0], 0, 0), convert_value_to_pyobject(argv[1], 0, 0), columns};
+    if (vargs[2] && vargs[3])
+      res = PyObject_VectorcallMethod(apst.UpdateChangeRow, vargs + 1, 4 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+    Py_XDECREF(vargs[2]);
+    Py_XDECREF(vargs[3]);
 
-  /* new row values */
-  if (argc != 1)
-  {
-    PyObject *fields = NULL;
-    fields = PyTuple_New(argc - 2);
-    if (!fields)
-      goto pyexception;
-    for (i = 0; i + 2 < argc; i++)
-    {
-      PyObject *field;
-      field = convert_value_to_pyobject(argv[i + 2], 0, ((apsw_vtable *)pVtab)->use_no_change);
-      if (!field)
-      {
-        Py_DECREF(fields);
-        goto pyexception;
-      }
-      PyTuple_SET_ITEM(fields, i, field);
-    }
-    PyTuple_SET_ITEM(args, PyTuple_GET_SIZE(args) - 1, fields);
-  }
-
-  res = Call_PythonMethod(vtable, methodname, 1, args);
-  if (!res)
-    goto pyexception;
-
-  /* if row deleted then we don't care about return */
-  if (argc == 1)
-    goto finally;
-
-  if (sqlite3_value_type(argv[0]) == SQLITE_NULL && sqlite3_value_type(argv[1]) == SQLITE_NULL)
-  {
-    /* did an insert and must provide a row id */
-    PyObject *rowid = PyNumber_Long(res);
-    if (!rowid)
-      goto pyexception;
-
-    *pRowid = PyLong_AsLongLong(rowid);
-    Py_DECREF(rowid);
     if (PyErr_Occurred())
     {
-      AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xUpdateInsertRow.ReturnedValue", "{s: O}", "result", OBJ(rowid));
+      methodname = "UpdateChangeRow";
       goto pyexception;
     }
   }
-
   goto finally;
 
 pyexception: /* we had an exception in python code */
   assert(PyErr_Occurred());
   sqliteres = MakeSqliteMsgFromPyException(&pVtab->zErrMsg);
-  AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xUpdate", "{s: O, s: i, s: s, s: O}", "self", vtable, "argc", argc, "methodname", methodname, "args", OBJ(args));
+  AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xUpdate", "{s: O, s: i, s: s, s: O}", "self", vtable, "argc", argc, "methodname", methodname, "columns", OBJ(columns));
 
 finally:
-  Py_XDECREF(args);
+  Py_XDECREF(columns);
   Py_XDECREF(res);
   CALL_LEAVE(xUpdate);
   PyGILState_Release(gilstate);
