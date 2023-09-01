@@ -4331,7 +4331,7 @@ Connection_pragma(Connection *self, PyObject *args, PyObject *kwds)
   PyObject *query = NULL, *value_str = NULL, *exec_args = NULL, *cursor = NULL, *res = NULL;
   if (value)
   {
-    PyObject *value_str = formatsqlvalue(NULL, value);
+    value_str = formatsqlvalue(NULL, value);
     if (!value_str)
       goto error;
     const char *utf8 = PyUnicode_AsUTF8(value_str);
