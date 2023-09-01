@@ -24,7 +24,11 @@ UpdateChangeRow UpdateDeleteRow UpdateInsertRow
 
 # vfs
 names += """
-xAccess xDelete xFullPathname xOpen
+xAccess xCheckReservedLock xClose xCurrentTime xCurrentTimeInt64
+xDeviceCharacteristics xFileControl xFileSize xGetLastError
+xGetSystemCall xDelete xDlClose xDlError xDlOpen xDlSym xFullPathname
+xLock xNextSystemCall xOpen xRandomness xRead xSectorSize
+xSetSystemCall xSleep xSync xTruncate xUnlock xWrite
 """
 
 # tokenize names
