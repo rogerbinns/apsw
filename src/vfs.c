@@ -841,7 +841,10 @@ apswvfs_xDlOpen(sqlite3_vfs *vfs, const char *zName)
 
   VFSPREAMBLE;
 
-  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xDlOpen", 1, "(s)", zName);
+  PyObject *vargs[] = {NULL, (PyObject *)(vfs->pAppData), PyUnicode_FromString(zName)};
+  if (vargs[2])
+    pyresult = PyObject_VectorcallMethod(apst.xDlOpen, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  Py_XDECREF(vargs[2]);
   if (pyresult)
   {
     if (PyLong_Check(pyresult))
@@ -899,13 +902,17 @@ static void (*apswvfs_xDlSym(sqlite3_vfs *vfs, void *handle, const char *zName))
 
   VFSPREAMBLE;
 
-  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xDlSym", 1, "(Ns)", PyLong_FromVoidPtr(handle), zName);
+  PyObject *vargs[] = {NULL, (PyObject *)(vfs->pAppData), PyLong_FromVoidPtr(handle), PyUnicode_FromString(zName)};
+  if (vargs[2] && vargs[3])
+    pyresult = PyObject_VectorcallMethod(apst.xDlSym, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  Py_XDECREF(vargs[2]);
+  Py_XDECREF(vargs[3]);
   if (pyresult)
   {
     if (PyLong_Check(pyresult))
       result = PyLong_AsVoidPtr(pyresult);
     else
-      PyErr_Format(PyExc_TypeError, "Pointer returned must be int/long");
+      PyErr_Format(PyExc_TypeError, "Pointer returned must be int");
   }
   if (PyErr_Occurred())
   {
@@ -966,11 +973,13 @@ apswvfs_xDlClose(sqlite3_vfs *vfs, void *handle)
   PyObject *pyresult = NULL;
   VFSPREAMBLE;
 
-  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xDlClose", 1, "(N)", PyLong_FromVoidPtr(handle));
+  PyObject *vargs[] = {NULL, (PyObject *)(vfs->pAppData), PyLong_FromVoidPtr(handle)};
+  if (vargs[2])
+    pyresult = PyObject_VectorcallMethod(apst.xDlClose, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
 
   if (PyErr_Occurred())
-    AddTraceBackHere(__FILE__, __LINE__, "vfs.xDlClose", "{s: N}", "ptr", PyLong_FromVoidPtr(handle));
-
+    AddTraceBackHere(__FILE__, __LINE__, "vfs.xDlClose", "{s: O}", "ptr", OBJ(vargs[2]));
+  Py_XDECREF(vargs[2]);
   Py_XDECREF(pyresult);
   VFSPOSTAMBLE;
 }
@@ -1020,7 +1029,9 @@ apswvfs_xDlError(sqlite3_vfs *vfs, int nByte, char *zErrMsg)
   PyObject *pyresult = NULL;
   VFSPREAMBLE;
 
-  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xDlError", 0, "()");
+  PyObject *vargs[] = {NULL, (PyObject *)(vfs->pAppData)};
+  if (PyObject_HasAttr(vargs[1], apst.xDlError))
+    pyresult = PyObject_VectorcallMethod(apst.xDlError, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
 
   if (pyresult && !Py_IsNone(pyresult))
   {
@@ -1110,7 +1121,10 @@ apswvfs_xRandomness(sqlite3_vfs *vfs, int nByte, char *zOut)
   int result = 0;
   VFSPREAMBLE;
 
-  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xRandomness", 1, "(i)", nByte);
+  PyObject *vargs[] = {NULL, (PyObject *)(vfs->pAppData), PyLong_FromLong(nByte)};
+  if (vargs[2])
+    pyresult = PyObject_VectorcallMethod(apst.xRandomness, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  Py_XDECREF(vargs[2]);
 
   if (pyresult && !Py_IsNone(pyresult))
   {
@@ -1194,9 +1208,10 @@ apswvfs_xSleep(sqlite3_vfs *vfs, int microseconds)
   int result = 0;
 
   VFSPREAMBLE;
-
-  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xSleep", 1, "(i)", microseconds);
-
+  PyObject *vargs[] = {NULL, (PyObject *)(vfs->pAppData), PyLong_FromLong(microseconds)};
+  if (vargs[2])
+    pyresult = PyObject_VectorcallMethod(apst.xSleep, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  Py_XDECREF(vargs[2]);
   if (pyresult)
   {
     if (PyLong_Check(pyresult))
@@ -1248,7 +1263,8 @@ apswvfs_xCurrentTime(sqlite3_vfs *vfs, double *julian)
   int result = 0;
   VFSPREAMBLE;
 
-  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xCurrentTime", 1, "()");
+  PyObject *vargs[] = {NULL, (PyObject *)(vfs->pAppData)};
+  pyresult = PyObject_VectorcallMethod(apst.xCurrentTime, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
 
   if (pyresult)
     *julian = PyFloat_AsDouble(pyresult);
@@ -1300,7 +1316,8 @@ apswvfs_xCurrentTimeInt64(sqlite3_vfs *vfs, sqlite3_int64 *time)
   int result = 0;
   VFSPREAMBLE;
 
-  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xCurrentTimeInt64", 1, "()");
+  PyObject *vargs[] = {NULL, (PyObject *)(vfs->pAppData)};
+  pyresult = PyObject_VectorcallMethod(apst.xCurrentTimeInt64, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
 
   if (pyresult)
     *time = PyLong_AsLongLong(pyresult);
@@ -1355,7 +1372,9 @@ apswvfs_xGetLastError(sqlite3_vfs *vfs, int nByte, char *zErrMsg)
   if (nByte > 0 && zErrMsg)
     *zErrMsg = 0;
 
-  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xGetLastError", 0, "()");
+  PyObject *vargs[] = {NULL, (PyObject *)(vfs->pAppData)};
+  if (PyObject_HasAttr(vargs[1], apst.xGetLastError))
+    pyresult = PyObject_VectorcallMethod(apst.xGetLastError, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
 
   if (!pyresult || !PySequence_Check(pyresult) || 2 != PySequence_Length(pyresult))
   {
@@ -1486,9 +1505,12 @@ apswvfs_xSetSystemCall(sqlite3_vfs *vfs, const char *zName, sqlite3_syscall_ptr 
   PyObject *pyresult = NULL;
 
   VFSPREAMBLE;
-  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xSetSystemCall", 1, "(sN)",
-                                zName,
-                                PyLong_FromVoidPtr(call));
+
+  PyObject *vargs[] = {NULL, (PyObject *)(vfs->pAppData), PyUnicode_FromString(zName), PyLong_FromVoidPtr(call)};
+  if (vargs[2] && vargs[3])
+    pyresult = PyObject_VectorcallMethod(apst.xSetSystemCall, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  Py_XDECREF(vargs[2]);
+  Py_XDECREF(vargs[3]);
   if (!pyresult)
     res = MakeSqliteMsgFromPyException(NULL);
 
@@ -1566,8 +1588,10 @@ apswvfs_xGetSystemCall(sqlite3_vfs *vfs, const char *zName)
   PyObject *pyresult = NULL;
 
   VFSPREAMBLE;
-  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xGetSystemCall", 1, "(s)",
-                                zName);
+  PyObject *vargs[] = {NULL, (PyObject *)(vfs->pAppData), PyUnicode_FromString(zName)};
+  if (vargs[2])
+    pyresult = PyObject_VectorcallMethod(apst.xGetSystemCall, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  Py_DECREF(vargs[2]);
   if (!pyresult)
     goto finally;
 
@@ -1619,9 +1643,10 @@ apswvfs_xNextSystemCall(sqlite3_vfs *vfs, const char *zName)
   const char *res = NULL;
 
   VFSPREAMBLE;
-  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xNextSystemCall", 1, "(s)",
-                                zName);
-
+  PyObject *vargs[] = {NULL, (PyObject *)(vfs->pAppData), PyUnicode_FromString(zName)};
+  if (vargs[2])
+    pyresult = PyObject_VectorcallMethod(apst.xNextSystemCall, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  Py_XDECREF(vargs[2]);
   if (pyresult && !Py_IsNone(pyresult))
   {
     if (PyUnicode_Check(pyresult))
@@ -2147,7 +2172,11 @@ apswvfsfile_xRead(sqlite3_file *file, void *bufout, int amount, sqlite3_int64 of
 
   FILEPREAMBLE;
 
-  pybuf = Call_PythonMethodV(apswfile->file, "xRead", 1, "(iL)", amount, offset);
+  PyObject *vargs[] = {NULL, apswfile->file, PyLong_FromLong(amount), PyLong_FromLongLong(offset)};
+  if (vargs[2] && vargs[3])
+    pybuf = PyObject_VectorcallMethod(apst.xRead, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  Py_XDECREF(vargs[2]);
+  Py_XDECREF(vargs[3]);
   if (!pybuf)
   {
     assert(PyErr_Occurred());
@@ -2259,19 +2288,18 @@ apswvfsfile_xWrite(sqlite3_file *file, const void *buffer, int amount, sqlite3_i
      instead but the underlying buffer passed by SQLite goes out of scope
      after this function returns.  Sp we'd have to detect the callee
      hanging on to the memoryview. */
-  pybuf = PyBytes_FromStringAndSize(buffer, amount);
-  if (!pybuf)
-    goto finally;
+  PyObject *vargs[] = {NULL, apswfile->file, PyBytes_FromStringAndSize(buffer, amount), PyLong_FromLongLong(offset)};
+  if (vargs[2] && vargs[3])
+    pyresult = PyObject_VectorcallMethod(apst.xWrite, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  Py_XDECREF(vargs[2]);
+  Py_XDECREF(vargs[3]);
 
-  pyresult = Call_PythonMethodV(apswfile->file, "xWrite", 1, "(OL)", pybuf, offset);
-
-finally:
-  if (PyErr_Occurred())
+  if (!pyresult)
   {
+    assert(PyErr_Occurred());
     result = MakeSqliteMsgFromPyException(NULL);
     AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xWrite", "{s: i, s: L, s: O}", "amount", amount, "offset", offset, "data", OBJ(pybuf));
   }
-  Py_XDECREF(pybuf);
   Py_XDECREF(pyresult);
   FILEPOSTAMBLE;
   return result;
@@ -2323,14 +2351,18 @@ apswvfsfile_xUnlock(sqlite3_file *file, int flag)
   PyObject *pyresult = NULL;
   FILEPREAMBLE;
 
-  pyresult = Call_PythonMethodV(apswfile->file, "xUnlock", 1, "(i)", flag);
+  PyObject *vargs[] = {NULL, apswfile->file, PyLong_FromLong(flag)};
+  if (vargs[2])
+    pyresult = PyObject_VectorcallMethod(apst.xUnlock, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  Py_XDECREF(vargs[2]);
   if (!pyresult)
+  {
     result = MakeSqliteMsgFromPyException(NULL);
+    AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile.xUnlock", "{s: i}", "flag", flag);
+  }
   else
     result = SQLITE_OK;
 
-  if (PyErr_Occurred())
-    AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile.xUnlock", "{s: i}", "flag", flag);
   Py_XDECREF(pyresult);
   FILEPOSTAMBLE;
   return result;
@@ -2374,21 +2406,23 @@ apswvfsfile_xLock(sqlite3_file *file, int flag)
   PyObject *pyresult = NULL;
   FILEPREAMBLE;
 
-  pyresult = Call_PythonMethodV(apswfile->file, "xLock", 1, "(i)", flag);
+  PyObject *vargs[] = {NULL, apswfile->file, PyLong_FromLong(flag)};
+  if (vargs[2])
+    pyresult = PyObject_VectorcallMethod(apst.xLock, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  Py_XDECREF(vargs[2]);
   if (!pyresult)
   {
     result = MakeSqliteMsgFromPyException(NULL);
     /* a busy exception is normal so we clear it */
     if (SQLITE_BUSY == (result & 0xff))
       PyErr_Clear();
+    else
+      AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile.xLock", "{s: i}", "level", flag);
   }
   else
     result = SQLITE_OK;
 
   Py_XDECREF(pyresult);
-  if (PyErr_Occurred())
-    AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile.xLock", "{s: i}", "level", flag);
-
   FILEPOSTAMBLE;
   return result;
 }
@@ -2430,16 +2464,19 @@ apswvfsfile_xTruncate(sqlite3_file *file, sqlite3_int64 size)
   int result = SQLITE_ERROR;
   PyObject *pyresult = NULL;
   FILEPREAMBLE;
-
-  pyresult = Call_PythonMethodV(apswfile->file, "xTruncate", 1, "(L)", size);
+  PyObject *vargs[] = {NULL, apswfile->file, PyLong_FromLongLong(size)};
+  if (vargs[2])
+    pyresult = PyObject_VectorcallMethod(apst.xTruncate, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  Py_XDECREF(vargs[2]);
   if (!pyresult)
+  {
     result = MakeSqliteMsgFromPyException(NULL);
+    AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile.xTruncate", "{s: L}", "size", size);
+  }
   else
     result = SQLITE_OK;
 
   Py_XDECREF(pyresult);
-  if (PyErr_Occurred())
-    AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile.xTruncate", "{s: L}", "size", size);
   FILEPOSTAMBLE;
   return result;
 }
@@ -2480,15 +2517,18 @@ apswvfsfile_xSync(sqlite3_file *file, int flags)
   PyObject *pyresult = NULL;
   FILEPREAMBLE;
 
-  pyresult = Call_PythonMethodV(apswfile->file, "xSync", 1, "(i)", flags);
+  PyObject *vargs[] = {NULL, apswfile->file, PyLong_FromLong(flags)};
+  if (vargs[2])
+    pyresult = PyObject_VectorcallMethod(apst.xSync, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (!pyresult)
+  {
     result = MakeSqliteMsgFromPyException(NULL);
+    AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile.xSync", "{s: i}", "flags", flags);
+  }
   else
     result = SQLITE_OK;
 
   Py_XDECREF(pyresult);
-  if (PyErr_Occurred())
-    AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile.xSync", "{s: i}", "flags", flags);
   FILEPOSTAMBLE;
   return result;
 }
@@ -2531,7 +2571,8 @@ apswvfsfile_xSectorSize(sqlite3_file *file)
   PyObject *pyresult = NULL;
   FILEPREAMBLE;
 
-  pyresult = Call_PythonMethodV(apswfile->file, "xSectorSize", 0, "()");
+  PyObject *vargs[] = {NULL, apswfile->file};
+  pyresult = PyObject_VectorcallMethod(apst.xSectorSize, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (!pyresult)
     result = MakeSqliteMsgFromPyException(NULL);
   else if (!Py_IsNone(pyresult))
@@ -2580,8 +2621,8 @@ apswvfsfile_xDeviceCharacteristics(sqlite3_file *file)
   int result = 0;
   PyObject *pyresult = NULL;
   FILEPREAMBLE;
-
-  pyresult = Call_PythonMethodV(apswfile->file, "xDeviceCharacteristics", 0, "()");
+  PyObject *vargs[] = {NULL, apswfile->file};
+  pyresult = PyObject_VectorcallMethod(apst.xDeviceCharacteristics, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (!pyresult)
     result = MakeSqliteMsgFromPyException(NULL);
   else if (!Py_IsNone(pyresult))
@@ -2596,6 +2637,7 @@ apswvfsfile_xDeviceCharacteristics(sqlite3_file *file)
   if (PyErr_Occurred())
   {
     AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xDeviceCharacteristics", "{s: O}", "result", OBJ(pyresult));
+    apsw_write_unraisable(apswfile->file);
     result = 0; /* harmless value for error cases */
   }
 
@@ -2631,7 +2673,9 @@ apswvfsfile_xFileSize(sqlite3_file *file, sqlite3_int64 *pSize)
   PyObject *pyresult = NULL;
   FILEPREAMBLE;
 
-  pyresult = Call_PythonMethodV(apswfile->file, "xFileSize", 1, "()");
+  PyObject *vargs[] = {NULL, apswfile->file};
+  pyresult = PyObject_VectorcallMethod(apst.xFileSize, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+
   if (!pyresult)
     result = MakeSqliteMsgFromPyException(NULL);
   else if (PyLong_Check(pyresult))
@@ -2682,7 +2726,8 @@ apswvfsfile_xCheckReservedLock(sqlite3_file *file, int *pResOut)
   PyObject *pyresult = NULL;
   FILEPREAMBLE;
 
-  pyresult = Call_PythonMethodV(apswfile->file, "xCheckReservedLock", 1, "()");
+  PyObject *vargs[] = {NULL, apswfile->file};
+  pyresult = PyObject_VectorcallMethod(apst.xCheckReservedLock, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (!pyresult)
     result = MakeSqliteMsgFromPyException(NULL);
   else if (PyLong_Check(pyresult))
@@ -2740,7 +2785,11 @@ apswvfsfile_xFileControl(sqlite3_file *file, int op, void *pArg)
   PyObject *pyresult = NULL;
   FILEPREAMBLE;
 
-  pyresult = Call_PythonMethodV(apswfile->file, "xFileControl", 1, "(iN)", op, PyLong_FromVoidPtr(pArg));
+  PyObject *vargs[] = {NULL, apswfile->file, PyLong_FromLong(op), PyLong_FromVoidPtr(pArg)};
+  if (vargs[2] && vargs[3])
+    pyresult = PyObject_VectorcallMethod(apst.xFileControl, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  Py_XDECREF(vargs[2]);
+  Py_XDECREF(vargs[3]);
   if (!pyresult)
     result = MakeSqliteMsgFromPyException(NULL);
   else
@@ -2822,14 +2871,16 @@ apswvfsfile_xClose(sqlite3_file *file)
   PyObject *pyresult = NULL;
   FILEPREAMBLE;
 
-  pyresult = Call_PythonMethodV(apswfile->file, "xClose", 1, "()");
-  if (!pyresult)
+  PyObject *vargs[] = {NULL, apswfile->file};
+  pyresult = PyObject_VectorcallMethod(apst.xClose, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+
+  if (!pyresult || PyErr_Occurred())
+  {
     result = MakeSqliteMsgFromPyException(NULL);
+    AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile.xClose", NULL);
+  }
   else
     result = SQLITE_OK;
-
-  if (PyErr_Occurred())
-    AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile.xClose", NULL);
 
   Py_XDECREF(apswfile->file);
   apswfile->file = NULL;
