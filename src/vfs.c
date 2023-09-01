@@ -2246,7 +2246,7 @@ apswvfsfile_xWrite(sqlite3_file *file, const void *buffer, int amount, sqlite3_i
      all hell would break lose on next access.  It is very unlikely
      someone would hang on to them but I'd rather there not be any
      possibility of problems.  In any event the data sizes are usually
-     very small - typically the SQLite default page size of 1kb */
+     very small - typically the SQLite default page size of 4kb */
   pybuf = PyBytes_FromStringAndSize(buffer, amount);
   if (!pybuf)
     goto finally;
