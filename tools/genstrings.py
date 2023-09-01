@@ -22,6 +22,11 @@ Release Rename Rollback RollbackTo Rowid Savepoint ShadowName Sync
 UpdateChangeRow UpdateDeleteRow UpdateInsertRow
 """
 
+# vfs
+names += """
+xAccess xDelete xFullPathname xOpen
+"""
+
 # tokenize names
 
 names = sorted(set(names.split()))

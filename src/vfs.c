@@ -422,7 +422,11 @@ apswvfs_xDelete(sqlite3_vfs *vfs, const char *zName, int syncDir)
 
   VFSPREAMBLE;
 
-  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xDelete", 1, "(si)", zName, syncDir);
+  PyObject *vargs[] = {NULL, (PyObject *)(vfs->pAppData), PyUnicode_FromString(zName), PyBool_FromLong(syncDir)};
+  if (vargs[2] && vargs[3])
+    pyresult = PyObject_VectorcallMethod(apst.xDelete, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  Py_XDECREF(vargs[2]);
+  Py_XDECREF(vargs[3]);
   if (!pyresult)
   {
     result = MakeSqliteMsgFromPyException(NULL);
@@ -482,7 +486,11 @@ apswvfs_xAccess(sqlite3_vfs *vfs, const char *zName, int flags, int *pResOut)
 
   VFSPREAMBLE;
 
-  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xAccess", 1, "(si)", zName, flags);
+  PyObject *vargs[] = {NULL, (PyObject *)(vfs->pAppData), PyUnicode_FromString(zName), PyLong_FromLong(flags)};
+  if (vargs[2] && vargs[3])
+    pyresult = PyObject_VectorcallMethod(apst.xAccess, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  Py_XDECREF(vargs[2]);
+  Py_XDECREF(vargs[3]);
   if (!pyresult)
     goto finally;
 
@@ -548,7 +556,11 @@ apswvfs_xFullPathname(sqlite3_vfs *vfs, const char *zName, int nOut, char *zOut)
 
   VFSPREAMBLE;
 
-  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xFullPathname", 1, "(s)", zName);
+  PyObject *vargs[] = {NULL, (PyObject *)(vfs->pAppData), PyUnicode_FromString(zName)};
+  if (vargs[2])
+    pyresult = PyObject_VectorcallMethod(apst.xFullPathname, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  Py_XDECREF(vargs[2]);
+
   if (!pyresult || !PyUnicode_Check(pyresult))
   {
     if (pyresult)
@@ -639,7 +651,7 @@ apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int infla
   PyObject *pyresult = NULL;
   APSWSQLite3File *apswfile = (APSWSQLite3File *)(void *)file;
   /* how we pass the name */
-  PyObject *nameobject;
+  PyObject *nameobject = NULL;
 
   VFSPREAMBLE;
 
@@ -661,7 +673,9 @@ apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int infla
   else
     nameobject = convertutf8string(zName);
 
-  pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xOpen", 1, "(NO)", nameobject, flags);
+  PyObject *vargs[] = {NULL, (PyObject *)(vfs->pAppData), nameobject, flags};
+  if (vargs[2] && vargs[3])
+    pyresult = PyObject_VectorcallMethod(apst.xOpen, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (!pyresult)
   {
     result = MakeSqliteMsgFromPyException(NULL);
@@ -697,14 +711,14 @@ apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int infla
     apswfile->pMethods = &apsw_io_methods_v1;
   }
 
-  apswfile->file = pyresult;
-  pyresult = NULL;
+  apswfile->file = Py_NewRef(pyresult);
   result = SQLITE_OK;
 
 finally:
-  assert(PyErr_Occurred() ? result != SQLITE_OK : 1);
+  assert(PyErr_Occurred() ? (result != SQLITE_OK) : 1);
   Py_XDECREF(pyresult);
   Py_XDECREF(flags);
+  Py_XDECREF(nameobject);
 
   VFSPOSTAMBLE;
 
@@ -2240,13 +2254,11 @@ apswvfsfile_xWrite(sqlite3_file *file, const void *buffer, int amount, sqlite3_i
   int result = SQLITE_OK;
   FILEPREAMBLE;
 
-  /* I could instead use PyBuffer_New here which avoids duplicating
-     the memory.  But if the developer keeps a reference on it then
-     the underlying memory goes away on return of this function and
-     all hell would break lose on next access.  It is very unlikely
-     someone would hang on to them but I'd rather there not be any
-     possibility of problems.  In any event the data sizes are usually
-     very small - typically the SQLite default page size of 4kb */
+  /* Performance opportunity: We currently duplicate the buffer passed
+     by SQLite which involvces a memory copy.  A memoryview could be used
+     instead but the underlying buffer passed by SQLite goes out of scope
+     after this function returns.  Sp we'd have to detect the callee
+     hanging on to the memoryview. */
   pybuf = PyBytes_FromStringAndSize(buffer, amount);
   if (!pybuf)
     goto finally;
