@@ -4023,7 +4023,7 @@ class APSW(unittest.TestCase):
         VTable.UpdateInsertRow = VTable.UpdateInsertRow4
         self.assertRaises(TypeError, cur.execute, sql)
         VTable.UpdateInsertRow = VTable.UpdateInsertRow5
-        self.assertRaises(ValueError, cur.execute, sql)
+        self.assertRaises(TypeError, cur.execute, sql)
         VTable.UpdateInsertRow = VTable.UpdateInsertRow6
         self.assertRaises(OverflowError, cur.execute, sql)
         VTable.UpdateInsertRow = VTable.UpdateInsertRow7
