@@ -319,6 +319,13 @@ def print_augmented_traceback(exc_type: type[BaseException],
     :param exc_value: The exception value
     :param exc_traceback: Traceback for the exception
     :param file: (default ``sys.stderr``) Where the print goes
+
+    .. code::
+
+        try:
+            ....
+        except Exception as exc:
+            apsw.ext.print_augmented_traceback(*sys.exc_info())
     """
 
     file = file or sys.stderr
