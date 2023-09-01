@@ -6321,8 +6321,8 @@ class APSW(unittest.TestCase):
                 super().xDelete("bad", "arguments")
 
             def xDelete99(self, name, syncdir):
-                assert (type(name) == type(""))
-                assert (type(syncdir) == type(1))
+                assert isinstance(name, str)
+                assert isinstance(syncdir, bool)
                 return super().xDelete(name, syncdir)
 
             def xAccess1(self, bad, number, of, args):
