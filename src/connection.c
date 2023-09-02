@@ -2822,7 +2822,7 @@ get_window_function_context(sqlite3_context *context)
 #include "faultinject.h"
   windowfunctioncontext *res;
 
-  PY_EXC_HANDLE(res = get_window_function_context_wrapped(context), "get_window_function_context", NULL, NULL);
+  CHAIN_EXC(res = get_window_function_context_wrapped(context));
 
   return res;
 }
