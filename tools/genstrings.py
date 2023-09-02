@@ -33,7 +33,7 @@ xSetSystemCall xSleep xSync xTruncate xUnlock xWrite
 
 # other
 names +="""
-close
+close connection_hooks cursor
 """
 
 # tokenize names

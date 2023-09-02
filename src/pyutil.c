@@ -123,9 +123,8 @@ PyObject_IsTrueStrict(PyObject *o)
 /*
 
 This is necessary for calling into CPython for methods that cannot
-handle an existing exception, such as PyObject_Call*.  If those
-methods are called with an existing exception then when they return
-CPython will raise:
+handle an existing exception.  If those methods are called with an
+ existing exception then when they return CPython will raise:
 
 SystemError: _PyEval_EvalFrameDefault returned a result with an
 exception set

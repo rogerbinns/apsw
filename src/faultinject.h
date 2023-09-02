@@ -46,8 +46,6 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef PyModule_Create2
 #undef PyNumber_Float
 #undef PyNumber_Long
-#undef PyObject_CallFunction
-#undef PyObject_CallMethod
 #undef PyObject_CallObject
 #undef PyObject_GetAttrString
 #undef PyObject_GetBuffer
@@ -56,6 +54,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef PyObject_IsTrueStrict
 #undef PyObject_SetAttrString
 #undef PyObject_Str
+#undef PyObject_Vectorcall
 #undef PyObject_VectorcallMethod
 #undef PySequence_Fast
 #undef PySequence_GetItem
@@ -644,38 +643,6 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
     }                                                                                                           \
     _res;                                                                                                       \
 })
-#undef PyObject_CallFunction
-#define PyObject_CallFunction(...) \
-({                                                                                                                      \
-    __auto_type _res = 0 ? _PyObject_CallFunction_SizeT(__VA_ARGS__) : 0;                                               \
-                                                                                                                        \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyObject_CallFunction", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                        \
-    if ((typeof (_res))0x1FACADE == _res)                                                                               \
-       _res = _PyObject_CallFunction_SizeT(__VA_ARGS__);                                                                \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                           \
-    {                                                                                                                   \
-        _PyObject_CallFunction_SizeT(__VA_ARGS__);                                                                      \
-        _res = (typeof (_res))18;                                                                                       \
-    }                                                                                                                   \
-    _res;                                                                                                               \
-})
-#undef PyObject_CallMethod
-#define PyObject_CallMethod(...) \
-({                                                                                                                    \
-    __auto_type _res = 0 ? _PyObject_CallMethod_SizeT(__VA_ARGS__) : 0;                                               \
-                                                                                                                      \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyObject_CallMethod", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                      \
-    if ((typeof (_res))0x1FACADE == _res)                                                                             \
-       _res = _PyObject_CallMethod_SizeT(__VA_ARGS__);                                                                \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                         \
-    {                                                                                                                 \
-        _PyObject_CallMethod_SizeT(__VA_ARGS__);                                                                      \
-        _res = (typeof (_res))18;                                                                                     \
-    }                                                                                                                 \
-    _res;                                                                                                             \
-})
 #define PyObject_CallObject(...) \
 ({                                                                                                                    \
     __auto_type _res = 0 ? PyObject_CallObject(__VA_ARGS__) : 0;                                                      \
@@ -795,6 +762,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res = (typeof (_res))18;                                                                              \
     }                                                                                                          \
     _res;                                                                                                      \
+})
+#define PyObject_Vectorcall(...) \
+({                                                                                                                    \
+    __auto_type _res = 0 ? PyObject_Vectorcall(__VA_ARGS__) : 0;                                                      \
+                                                                                                                      \
+    _res = (typeof (_res))APSW_FaultInjectControl("PyObject_Vectorcall", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                      \
+    if ((typeof (_res))0x1FACADE == _res)                                                                             \
+       _res = PyObject_Vectorcall(__VA_ARGS__);                                                                       \
+    else if ((typeof(_res))0x2FACADE == _res)                                                                         \
+    {                                                                                                                 \
+        PyObject_Vectorcall(__VA_ARGS__);                                                                             \
+        _res = (typeof (_res))18;                                                                                     \
+    }                                                                                                                 \
+    _res;                                                                                                             \
 })
 #define PyObject_VectorcallMethod(...) \
 ({                                                                                                                          \

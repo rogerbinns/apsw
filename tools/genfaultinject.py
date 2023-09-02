@@ -81,10 +81,10 @@ returns = {
             PySequence_GetItem PyLong_FromLongLong PySequence_GetSlice PyBytes_FromStringAndSize
             PyFloat_FromDouble  PyBool_FromLong PyCode_NewEmpty PyFloat_AsDouble
             PyIter_Next PyList_GetItem PyList_SetItem PyLong_FromVoidPtr PyMapping_GetItemString PyNumber_Float
-            PyNumber_Long PySequence_Fast PySequence_List PySequence_SetItem PyObject_CallFunction
-            PyObject_CallMethod PyFrame_New PyStructSequence_NewType PyStructSequence_New
+            PyNumber_Long PySequence_Fast PySequence_List PySequence_SetItem
+            PyFrame_New PyStructSequence_NewType PyStructSequence_New
             PyMem_Realloc PyUnicode_FromFormat
-            PyObject_VectorcallMethod
+            PyObject_VectorcallMethod PyObject_Vectorcall
             """.split(),
     # numeric return
     "sqlite":
@@ -140,8 +140,6 @@ returns = {
 call_map = {
     "Py_BuildValue": "_Py_BuildValue_SizeT",
     "PyArg_ParseTuple": "_PyArg_ParseTuple_SizeT",
-    "PyObject_CallFunction": "_PyObject_CallFunction_SizeT",
-    "PyObject_CallMethod": "_PyObject_CallMethod_SizeT",
     "Py_VaBuildValue": "_Py_VaBuildValue_SizeT",
 }
 
@@ -172,7 +170,7 @@ no_error = set("""PyBuffer_Release PyDict_GetItem PyMem_Free PyDict_GetItemStrin
 # errors are already dealt with
 no_error.update("""PyArg_ParseTuple PyBytes_AsString PyErr_GivenExceptionMatches PyFrame_GetBack
     PyImport_ImportModule PyLong_AsLongAndOverflow PyLong_AsVoidPtr PyObject_Call
-    PyObject_CallFunctionObjArgs PyObject_IsInstance PySys_GetObject PyErr_ExceptionMatches
+    PyObject_IsInstance PySys_GetObject PyErr_ExceptionMatches
     PyErr_SetString PyStructSequence_SetItem PyObject_Print Py_EnterRecursiveCall
     Py_GetRecursionLimit Py_LeaveRecursiveCall Py_SetRecursionLimit _PyErr_ChainExceptions
 

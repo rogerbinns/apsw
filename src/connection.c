@@ -410,7 +410,7 @@ static int apswvfs_xAccess(sqlite3_vfs *vfs, const char *zName, int flags, int *
 static int
 Connection_init(Connection *self, PyObject *args, PyObject *kwds)
 {
-  PyObject *hooks = NULL, *hook = NULL, *iterator = NULL, *hookargs = NULL, *hookresult = NULL;
+  PyObject *hooks = NULL, *hook = NULL, *iterator = NULL, *hookresult = NULL;
   const char *filename = NULL;
   int res = 0;
   int flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
@@ -463,12 +463,8 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
   PYSQLITE_VOID_CALL(sqlite3_extended_result_codes(self->db, 1));
 
   /* call connection hooks */
-  hooks = PyObject_GetAttrString(apswmodule, "connection_hooks");
+  hooks = PyObject_GetAttr(apswmodule, apst.connection_hooks);
   if (!hooks)
-    goto pyexception;
-
-  hookargs = Py_BuildValue("(O)", self);
-  if (!hookargs)
     goto pyexception;
 
   iterator = PyObject_GetIter(hooks);
@@ -484,7 +480,8 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
 
   while ((hook = PyIter_Next(iterator)))
   {
-    hookresult = PyObject_CallObject(hook, hookargs);
+    PyObject *vargs[] = {NULL, (PyObject *)self};
+    hookresult = PyObject_Vectorcall(hook, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
     if (!hookresult)
       goto pyexception;
     Py_DECREF(hook);
@@ -506,7 +503,6 @@ pyexception:
   assert(PyErr_Occurred());
 
 finally:
-  Py_XDECREF(hookargs);
   Py_XDECREF(iterator);
   Py_XDECREF(hooks);
   Py_XDECREF(hook);
@@ -747,7 +743,8 @@ Connection_cursor(Connection *self)
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  cursor = PyObject_CallFunction(self->cursor_factory, "O", self);
+  PyObject *vargs[] = {NULL, (PyObject *)self};
+  cursor = PyObject_Vectorcall(self->cursor_factory, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (!cursor)
   {
     AddTraceBackHere(__FILE__, __LINE__, "Connection.cursor", "{s: O}", "cursor_factory", OBJ(self->cursor_factory));
@@ -1030,8 +1027,13 @@ updatecb(void *context, int updatetype, char const *databasename, char const *ta
   if (PyErr_Occurred())
     goto finally; /* abort hook due to outstanding exception */
 
-  retval = PyObject_CallFunction(self->updatehook, "(issL)", updatetype, databasename, tablename, rowid);
-
+  PyObject *vargs[] = {NULL, PyLong_FromLong(updatetype), PyUnicode_FromString(databasename), PyUnicode_FromString(tablename), PyLong_FromLongLong(rowid)};
+  if (vargs[1] && vargs[2] && vargs[3] && vargs[4])
+    retval = PyObject_Vectorcall(self->updatehook, vargs + 1, 4 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  Py_XDECREF(vargs[1]);
+  Py_XDECREF(vargs[2]);
+  Py_XDECREF(vargs[3]);
+  Py_XDECREF(vargs[4]);
 finally:
   Py_XDECREF(retval);
   PyGILState_Release(gilstate);
@@ -1115,7 +1117,10 @@ rollbackhookcb(void *context)
   if (PyErr_Occurred())
     apsw_write_unraisable(NULL);
   else
-    retval = PyObject_CallObject(self->rollbackhook, NULL);
+  {
+    PyObject *vargs[] = {NULL};
+    retval = PyObject_Vectorcall(self->rollbackhook, vargs + 1, 0 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  }
 
   Py_XDECREF(retval);
   PyGILState_Release(gilstate);
@@ -1181,8 +1186,11 @@ profilecb(unsigned event, void *context, void *stmt, void *elapsed)
 
   if (PyErr_Occurred())
     goto finally; /* abort hook due to outstanding exception */
-
-  retval = PyObject_CallFunction(self->profile, "(sK)", statement, runtime);
+  PyObject *vargs[] = {NULL, PyUnicode_FromString(statement), PyLong_FromLongLong(runtime)};
+  if (vargs[1] && vargs[2])
+    retval = PyObject_Vectorcall(self->profile, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  Py_XDECREF(vargs[1]);
+  Py_XDECREF(vargs[2]);
 
 finally:
   Py_XDECREF(retval);
@@ -1316,7 +1324,8 @@ tracehook_cb(unsigned code, void *vconnection, void *one, void *two)
 
   if (param)
   {
-    res = PyObject_CallFunctionObjArgs(connection->tracehook, param, NULL);
+    PyObject *vargs[] = {NULL, param};
+    res = PyObject_Vectorcall(connection->tracehook, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
     if (!res)
       apsw_write_unraisable(NULL);
   }
@@ -1519,7 +1528,11 @@ walhookcb(void *context, sqlite3 *db, const char *dbname, int npages)
 
   MakeExistingException();
 
-  retval = PyObject_CallFunction(self->walhook, "(Osi)", self, dbname, npages);
+  PyObject *vargs[] = {NULL, (PyObject *)self, PyUnicode_FromString(dbname), PyLong_FromLong(npages)};
+  if (vargs[2] && vargs[3])
+    retval = PyObject_Vectorcall(self->walhook, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  Py_XDECREF(vargs[2]);
+  Py_XDECREF(vargs[3]);
   if (!retval)
   {
     assert(PyErr_Occurred());
@@ -1705,10 +1718,17 @@ authorizercb(void *context, int operation, const char *paramone, const char *par
   if (PyErr_Occurred())
     goto finally; /* abort due to earlier exception */
 
-  retval = PyObject_CallFunction(self->authorizer, "(issss)", operation, paramone,
-                                 paramtwo, databasename,
-                                 triggerview);
+  PyObject *vargs[] = {NULL, PyLong_FromLong(operation), convertutf8string(paramone),
+                       convertutf8string(paramtwo), convertutf8string(databasename),
+                       convertutf8string(triggerview)};
 
+  if (vargs[1] && vargs[2] && vargs[3] && vargs[4] && vargs[5])
+    retval = PyObject_Vectorcall(self->authorizer, vargs + 1, 5 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  Py_XDECREF(vargs[1]);
+  Py_XDECREF(vargs[2]);
+  Py_XDECREF(vargs[3]);
+  Py_XDECREF(vargs[4]);
+  Py_XDECREF(vargs[5]);
   if (!retval)
     goto finally; /* abort due to exception */
 
@@ -1793,7 +1813,6 @@ autovacuum_pages_cleanup(void *callable)
   PyGILState_Release(gilstate);
 }
 
-#define AVPCB_CALL "(sIII)"
 #define AVPCB_TB "{s: O, s: s:, s: I, s: I, s: I, s: O}"
 
 static unsigned int
@@ -1806,8 +1825,15 @@ autovacuum_pages_cb(void *callable, const char *schema, unsigned int nPages, uns
 
   MakeExistingException();
 
-  CHAIN_EXC(
-      retval = PyObject_CallFunction((PyObject *)callable, AVPCB_CALL, schema, nPages, nFreePages, nBytesPerPage));
+  CHAIN_EXC_BEGIN
+  PyObject *vargs[] = {NULL, PyUnicode_FromString(schema), PyLong_FromUnsignedLong(nPages), PyLong_FromUnsignedLong(nFreePages), PyLong_FromUnsignedLong(nBytesPerPage)};
+  if (vargs[1] && vargs[2] && vargs[3] && vargs[4])
+    retval = PyObject_Vectorcall((PyObject *)callable, vargs + 1, 4 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  Py_XDECREF(vargs[1]);
+  Py_XDECREF(vargs[2]);
+  Py_XDECREF(vargs[3]);
+  Py_XDECREF(vargs[4]);
+  CHAIN_EXC_END;
 
   if (retval && PyLong_Check(retval))
   {
@@ -1897,7 +1923,10 @@ collationneeded_cb(void *pAux, sqlite3 *Py_UNUSED(db), int eTextRep, const char 
 
   if (PyErr_Occurred())
     apsw_write_unraisable(NULL);
-  res = PyObject_CallFunction(self->collationneeded, "(Os)", self, name);
+  PyObject *vargs[] = {NULL, (PyObject *)self, PyUnicode_FromString(name)};
+  if (vargs[2])
+    res = PyObject_Vectorcall(self->collationneeded, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  Py_XDECREF(vargs[2]);
   if (!res)
     AddTraceBackHere(__FILE__, __LINE__, "collationneeded callback", "{s: O, s: i, s: s}",
                      "Connection", self, "eTextRep", eTextRep, "name", name);
@@ -1981,7 +2010,7 @@ busyhandlercb(void *context, int ncall)
      zero in case of error. */
 
   PyGILState_STATE gilstate;
-  PyObject *retval;
+  PyObject *retval = NULL;
   int result = 0; /* default to fail with SQLITE_BUSY */
   Connection *self = (Connection *)context;
 
@@ -1991,9 +2020,10 @@ busyhandlercb(void *context, int ncall)
   gilstate = PyGILState_Ensure();
 
   MakeExistingException();
-
-  retval = PyObject_CallFunction(self->busyhandler, "i", ncall);
-
+  PyObject *vargs[] = {NULL, PyLong_FromLong(ncall)};
+  if (vargs[1])
+    retval = PyObject_Vectorcall(self->busyhandler, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  Py_XDECREF(vargs[1]);
   if (!retval)
     goto finally; /* abort due to exception */
 
@@ -2633,7 +2663,8 @@ cbdispatch_final(sqlite3_context *context)
     goto finally;
   }
 
-  retval = PyObject_CallFunctionObjArgs(aggfc->finalfunc, aggfc->aggvalue, NULL);
+  PyObject *vargs[] = {NULL, aggfc->aggvalue};
+  retval = PyObject_Vectorcall(aggfc->finalfunc, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (retval)
   {
     int ok = set_context_result(context, retval);
@@ -3295,7 +3326,8 @@ collation_cb(void *context,
   if (!pys1 || !pys2)
     goto finally; /* failed to allocate strings */
 
-  retval = PyObject_CallFunction(cbinfo, "(OO)", pys1, pys2);
+  PyObject *vargs[] = {NULL, pys1, pys2};
+  retval = PyObject_Vectorcall(cbinfo, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
 
   if (!retval)
   {
@@ -3889,7 +3921,11 @@ Connection_enter(Connection *self)
   if (self->exectrace && !Py_IsNone(self->exectrace))
   {
     int result;
-    PyObject *retval = PyObject_CallFunction(self->exectrace, "OsO", self, sql, Py_None);
+    PyObject *retval = NULL;
+    PyObject *vargs[] = {NULL, (PyObject *)self, PyUnicode_FromString(sql), Py_None};
+    if (vargs[2])
+      retval = PyObject_Vectorcall(self->exectrace, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+    Py_XDECREF(vargs[2]);
     if (!retval)
       goto error;
     result = PyObject_IsTrueStrict(retval);
@@ -3949,13 +3985,14 @@ static int connection_trace_and_exec(Connection *self, int release, int sp, int 
 
   if (self->exectrace && !Py_IsNone(self->exectrace))
   {
-    PyObject *result;
+    PyObject *result = NULL;
     PyObject *etype = NULL, *eval = NULL, *etb = NULL;
 
     if (PyErr_Occurred())
       PyErr_Fetch(&etype, &eval, &etb);
-
-    result = PyObject_CallFunction(self->exectrace, "OsO", self, sql, Py_None);
+    PyObject *vargs[] = {NULL, (PyObject *)self, PyUnicode_FromString(sql), Py_None};
+    if (vargs[2])
+      result = PyObject_Vectorcall(self->exectrace, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
     Py_XDECREF(result);
 
     if (etype || eval || etb)
@@ -4250,7 +4287,8 @@ Connection_execute(Connection *self, PyObject *args, PyObject *kwds)
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  cursor = PyObject_CallMethod((PyObject *)self, "cursor", NULL);
+  PyObject *vargs[] = {NULL, (PyObject *)self};
+  cursor = PyObject_VectorcallMethod(apst.cursor, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (!cursor)
   {
     AddTraceBackHere(__FILE__, __LINE__, "Connection.execute", "{s: O}", "cursor_factory", OBJ(self->cursor_factory));
@@ -4286,7 +4324,8 @@ Connection_executemany(Connection *self, PyObject *args, PyObject *kwds)
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  cursor = PyObject_CallMethod((PyObject *)self, "cursor", NULL);
+  PyObject *vargs[] = {NULL, (PyObject *)self};
+  cursor = PyObject_VectorcallMethod(apst.cursor, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (!cursor)
   {
     AddTraceBackHere(__FILE__, __LINE__, "Connection.executemany", "{s: O}", "cursor_factory", OBJ(self->cursor_factory));

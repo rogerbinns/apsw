@@ -177,7 +177,8 @@ apsw_write_unraisable(PyObject *hookobject)
     PyErr_Clear();
     if (excepthook)
     {
-      result = PyObject_CallFunction(excepthook, "(OOO)", OBJ(err_type), OBJ(err_value), OBJ(err_traceback));
+      PyObject *vargs[] = {NULL, OBJ(err_type), OBJ(err_value), OBJ(err_traceback)};
+      result = PyObject_Vectorcall(excepthook, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
       if (result)
         goto finally;
     }
@@ -195,7 +196,9 @@ apsw_write_unraisable(PyObject *hookobject)
       PyStructSequence_SetItem(arg, 0, Py_NewRef(OBJ(err_type)));
       PyStructSequence_SetItem(arg, 1, Py_NewRef(OBJ(err_value)));
       PyStructSequence_SetItem(arg, 2, Py_NewRef(OBJ(err_traceback)));
-      result = PyObject_CallFunction(excepthook, "(N)", arg);
+      PyObject *vargs[] = {NULL, arg};
+      result = PyObject_Vectorcall(excepthook, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+      Py_DECREF(arg);
       if (result)
         goto finally;
     }
@@ -207,7 +210,8 @@ apsw_write_unraisable(PyObject *hookobject)
   {
     Py_INCREF(excepthook); /* borrowed reference from PySys_GetObject so we increment */
     PyErr_Clear();
-    result = PyObject_CallFunction(excepthook, "(OOO)", OBJ(err_type), OBJ(err_value), OBJ(err_traceback));
+    PyObject *vargs[] = {NULL, OBJ(err_type), OBJ(err_value), OBJ(err_traceback)};
+    result = PyObject_Vectorcall(excepthook, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
     if (result)
       goto finally;
   }

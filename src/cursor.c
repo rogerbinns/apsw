@@ -791,7 +791,10 @@ APSWCursor_doexectrace(APSWCursor *self, Py_ssize_t savedbindingsoffset)
     bindings = Py_NewRef(Py_None);
   }
 
-  retval = PyObject_CallFunction(exectrace, "ONN", self, sqlcmd, bindings);
+  PyObject *vargs[] = {NULL, (PyObject *)self, sqlcmd, bindings};
+  retval = PyObject_Vectorcall(exectrace, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  Py_DECREF(sqlcmd);
+  Py_DECREF(bindings);
 
   if (!retval)
   {
@@ -821,7 +824,8 @@ APSWCursor_dorowtrace(APSWCursor *self, PyObject *retval)
 
   assert(rowtrace);
 
-  return PyObject_CallFunction(rowtrace, "OO", self, retval);
+  PyObject *vargs[] = {NULL, (PyObject *)self, retval};
+  return PyObject_Vectorcall(rowtrace, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
 }
 
 /* Returns a borrowed reference to self if all is ok, else NULL on error */

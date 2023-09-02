@@ -432,7 +432,11 @@ apsw_logger(void *arg, int errcode, const char *message)
   assert(arg);
   PyErr_Fetch(&etype, &evalue, &etraceback);
 
-  res = PyObject_CallFunction(arg, "is", errcode, message);
+  PyObject *vargs[] = {NULL, PyLong_FromLong(errcode), PyUnicode_FromString(message)};
+  if (vargs[1] && vargs[2])
+    res = PyObject_Vectorcall(arg, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  Py_XDECREF(vargs[1]);
+  Py_XDECREF(vargs[2]);
   if (!res)
   {
     /* apsw_write_unraisable writes to sqlite3_log so if we are in too
@@ -898,7 +902,8 @@ getapswexceptionfor(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
   for (i = 0; exc_descriptors[i].name; i++)
     if (exc_descriptors[i].code == (code & 0xff))
     {
-      result = PyObject_CallObject(exc_descriptors[i].cls, NULL);
+      PyObject *vargs[] = {NULL};
+      result = PyObject_Vectorcall(exc_descriptors[i].cls, vargs + 1, 0 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
       if (!result)
         return result;
       break;
@@ -2052,7 +2057,6 @@ PyInit___init__(void)
 
 #define APSW_FAULT_CLEAR
 #include "faultinject.h"
-#define PyObject_CallFunction _PyObject_CallFunction_SizeT
 
 static long long
 APSW_FaultInjectControl(const char *faultfunction, const char *filename, const char *funcname, int linenum, const char *args)
