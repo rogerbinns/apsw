@@ -71,9 +71,7 @@ returns = {
     "pointer":
     """
             convert_value_to_pyobject convert_column_to_pyobject getfunctionargs allocfunccbinfo
-            Call_PythonMethodV apsw_strdup convertutf8string
-            Call_PythonMethod MakeExistingException
-            get_window_function_context
+            apsw_strdup convertutf8string MakeExistingException get_window_function_context
 
             PyModule_Create2 PyErr_NewExceptionWithDoc PySet_New
             PyUnicode_New  PyUnicode_AsUTF8 PyObject_GetAttrString _PyObject_New PyUnicode_FromString

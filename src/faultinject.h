@@ -14,8 +14,6 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 
 #ifdef APSW_FAULT_CLEAR
 
-#undef Call_PythonMethod
-#undef Call_PythonMethodV
 #undef MakeExistingException
 #undef PyBool_FromLong
 #undef PyBytes_FromStringAndSize
@@ -166,36 +164,6 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 
 #else
 
-#define Call_PythonMethod(...) \
-({                                                                                                                  \
-    __auto_type _res = 0 ? Call_PythonMethod(__VA_ARGS__) : 0;                                                      \
-                                                                                                                    \
-    _res = (typeof (_res))APSW_FaultInjectControl("Call_PythonMethod", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                    \
-    if ((typeof (_res))0x1FACADE == _res)                                                                           \
-       _res = Call_PythonMethod(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                       \
-    {                                                                                                               \
-        Call_PythonMethod(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                   \
-    }                                                                                                               \
-    _res;                                                                                                           \
-})
-#define Call_PythonMethodV(...) \
-({                                                                                                                   \
-    __auto_type _res = 0 ? Call_PythonMethodV(__VA_ARGS__) : 0;                                                      \
-                                                                                                                     \
-    _res = (typeof (_res))APSW_FaultInjectControl("Call_PythonMethodV", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                     \
-    if ((typeof (_res))0x1FACADE == _res)                                                                            \
-       _res = Call_PythonMethodV(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                        \
-    {                                                                                                                \
-        Call_PythonMethodV(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                    \
-    }                                                                                                                \
-    _res;                                                                                                            \
-})
 #define MakeExistingException(...) \
 ({                                                                                                                      \
     __auto_type _res = 0 ? MakeExistingException(__VA_ARGS__) : 0;                                                      \
