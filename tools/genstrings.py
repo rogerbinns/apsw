@@ -31,6 +31,11 @@ xLock xNextSystemCall xOpen xRandomness xRead xSectorSize
 xSetSystemCall xSleep xSync xTruncate xUnlock xWrite
 """
 
+# other
+names +="""
+close
+"""
+
 # tokenize names
 
 names = sorted(set(names.split()))

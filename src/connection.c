@@ -213,7 +213,7 @@ Connection_close_internal(Connection *self, int force)
      be perturbed as a side effect */
   while (self->dependents && PyList_GET_SIZE(self->dependents))
   {
-    PyObject *closeres, *item, *wr = PyList_GET_ITEM(self->dependents, 0);
+    PyObject *closeres = NULL, *item, *wr = PyList_GET_ITEM(self->dependents, 0);
     item = PyWeakref_GetObject(wr);
     if (Py_IsNone(item))
     {
@@ -221,7 +221,14 @@ Connection_close_internal(Connection *self, int force)
       continue;
     }
 
-    closeres = Call_PythonMethodV(item, "close", 1, "(i)", !!force);
+    /* we have to hold a reference to item while close is called
+       otherwise gc can happen during the call which perturbs dependents and
+       can lead to double freeing */
+    PyObject *vargs[] = {NULL, Py_NewRef(item), PyBool_FromLong(force)};
+    if (vargs[2])
+      closeres = PyObject_VectorcallMethod(apst.close, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+    Py_XDECREF(vargs[2]);
+    Py_XDECREF(vargs[1]);
     Py_XDECREF(closeres);
     if (!closeres)
     {
