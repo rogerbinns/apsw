@@ -74,7 +74,7 @@ returns = {
             apsw_strdup convertutf8string MakeExistingException get_window_function_context
 
             PyModule_Create2 PyErr_NewExceptionWithDoc PySet_New
-            PyUnicode_New  PyUnicode_AsUTF8 PyObject_GetAttrString _PyObject_New PyUnicode_FromString
+            PyUnicode_New  PyUnicode_AsUTF8 PyObject_GetAttr _PyObject_New PyUnicode_FromString
             PyObject_Str PyUnicode_AsUTF8AndSize PyTuple_New PyDict_New Py_BuildValue PyList_New
             PyWeakref_NewRef PyMem_Calloc PyLong_FromLong PyObject_GetIter
             PyObject_CallObject PyLong_AsInt PyUnicode_FromStringAndSize
@@ -127,7 +127,7 @@ returns = {
     """
         PyType_Ready PyModule_AddObject PyModule_AddIntConstant PyLong_AsLong
         PyLong_AsLongLong PyObject_GetBuffer PyList_Append PyDict_SetItemString
-        PyObject_SetAttrString _PyBytes_Resize PyDict_SetItem PyList_SetSlice
+        PyObject_SetAttr _PyBytes_Resize PyDict_SetItem PyList_SetSlice
         PyObject_IsTrue PySequence_Size PySet_Add PyObject_IsTrueStrict
         PyStructSequence_InitType2 PyList_Size
 
@@ -159,7 +159,7 @@ no_error = set("""PyBuffer_Release PyDict_GetItem PyMem_Free PyDict_GetItemStrin
     PyErr_Display PyErr_Fetch PyErr_Format PyErr_NoMemory PyErr_NormalizeException
     PyErr_Occurred PyErr_Print PyErr_Restore PyErr_SetObject PyEval_RestoreThread
     PyEval_SaveThread PyGILState_Ensure PyGILState_Release PyOS_snprintf
-    PyObject_CheckBuffer PyObject_ClearWeakRefs PyObject_GC_UnTrack PyObject_HasAttrString
+    PyObject_CheckBuffer PyObject_ClearWeakRefs PyObject_GC_UnTrack PyObject_HasAttr
     PyThreadState_Get PyThread_get_thread_ident PyTraceBack_Here
     PyType_IsSubtype PyUnicode_CopyCharacters PyWeakref_GetObject _Py_Dealloc
     _Py_HashBytes _Py_NegativeRefcount _Py_RefTotal PyThreadState_GetFrame

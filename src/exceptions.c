@@ -237,7 +237,7 @@ static void make_exception(int res, sqlite3 *db)
       if (!tmp)
         goto error;
 
-      if (PyObject_SetAttrString(eval, "result", tmp))
+      if (PyObject_SetAttr(eval, apst.result, tmp))
         goto error;
 
       Py_DECREF(tmp);
@@ -245,7 +245,7 @@ static void make_exception(int res, sqlite3 *db)
       if (!tmp)
         goto error;
 
-      if (PyObject_SetAttrString(eval, "extendedresult", tmp))
+      if (PyObject_SetAttr(eval, apst.extendedresult, tmp))
         goto error;
       Py_DECREF(tmp);
 
@@ -253,7 +253,7 @@ static void make_exception(int res, sqlite3 *db)
       if (!tmp)
         goto error;
 
-      PyObject_SetAttrString(eval, "error_offset", tmp);
+      PyObject_SetAttr(eval, apst.error_offset, tmp);
     error:
       Py_XDECREF(tmp);
       if (PyErr_Occurred())
@@ -291,10 +291,10 @@ MakeSqliteMsgFromPyException(char **errmsg)
     {
       res = exc_descriptors[i].code;
       /* do we have extended information available? */
-      if (PyObject_HasAttrString(evalue, "extendedresult"))
+      if (PyObject_HasAttr(evalue, apst.extendedresult))
       {
         /* extract it */
-        PyObject *extended = PyObject_GetAttrString(evalue, "extendedresult");
+        PyObject *extended = PyObject_GetAttr(evalue, apst.extendedresult);
         if (extended && PyLong_Check(extended))
           res = PyLong_AsInt(extended);
         Py_XDECREF(extended);

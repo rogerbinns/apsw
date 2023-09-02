@@ -914,13 +914,13 @@ getapswexceptionfor(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
   tmp = PyLong_FromLong(code);
   if (!tmp)
     goto error;
-  if (0 != PyObject_SetAttrString(result, "extendedresult", tmp))
+  if (0 != PyObject_SetAttr(result, apst.extendedresult, tmp))
     goto error;
   Py_DECREF(tmp);
   tmp = PyLong_FromLong(code & 0xff);
   if (!tmp)
     goto error;
-  if (0 != PyObject_SetAttrString(result, "result", tmp))
+  if (0 != PyObject_SetAttr(result, apst.result, tmp))
     goto error;
   Py_DECREF(tmp);
   return result;
@@ -1771,7 +1771,7 @@ apsw_getattr(PyObject *Py_UNUSED(module), PyObject *name)
 
   shellmodule = PyImport_ImportModule("apsw.shell");
   if (shellmodule)
-    res = PyObject_GetAttrString(shellmodule, cname);
+    res = PyObject_GetAttr(shellmodule, name);
   Py_XDECREF(shellmodule);
   return res;
 }
@@ -2027,7 +2027,7 @@ modules etc. For example::
     PyObject *mod = PyImport_ImportModule("collections.abc");
     if (mod)
     {
-      collections_abc_Mapping = PyObject_GetAttrString(mod, "Mapping");
+      collections_abc_Mapping = PyObject_GetAttr(mod, apst.Mapping);
       Py_DECREF(mod);
     }
   }

@@ -173,7 +173,7 @@ apsw_write_unraisable(PyObject *hookobject)
 
   if (hookobject)
   {
-    excepthook = PyObject_GetAttrString(hookobject, "excepthook");
+    excepthook = PyObject_GetAttr(hookobject, apst.excepthook);
     PyErr_Clear();
     if (excepthook)
     {

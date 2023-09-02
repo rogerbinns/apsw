@@ -33,7 +33,10 @@ xSetSystemCall xSleep xSync xTruncate xUnlock xWrite
 
 # other
 names +="""
-close connection_hooks cursor
+close connection_hooks cursor error_offset excepthook execute
+executemany extendedresult get Mapping result
+
+step final value inverse
 """
 
 # tokenize names

@@ -47,12 +47,12 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef PyNumber_Float
 #undef PyNumber_Long
 #undef PyObject_CallObject
-#undef PyObject_GetAttrString
+#undef PyObject_GetAttr
 #undef PyObject_GetBuffer
 #undef PyObject_GetIter
 #undef PyObject_IsTrue
 #undef PyObject_IsTrueStrict
-#undef PyObject_SetAttrString
+#undef PyObject_SetAttr
 #undef PyObject_Str
 #undef PyObject_Vectorcall
 #undef PyObject_VectorcallMethod
@@ -658,20 +658,20 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
     }                                                                                                                 \
     _res;                                                                                                             \
 })
-#define PyObject_GetAttrString(...) \
-({                                                                                                                       \
-    __auto_type _res = 0 ? PyObject_GetAttrString(__VA_ARGS__) : 0;                                                      \
-                                                                                                                         \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyObject_GetAttrString", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                         \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                \
-       _res = PyObject_GetAttrString(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                            \
-    {                                                                                                                    \
-        PyObject_GetAttrString(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                        \
-    }                                                                                                                    \
-    _res;                                                                                                                \
+#define PyObject_GetAttr(...) \
+({                                                                                                                 \
+    __auto_type _res = 0 ? PyObject_GetAttr(__VA_ARGS__) : 0;                                                      \
+                                                                                                                   \
+    _res = (typeof (_res))APSW_FaultInjectControl("PyObject_GetAttr", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                   \
+    if ((typeof (_res))0x1FACADE == _res)                                                                          \
+       _res = PyObject_GetAttr(__VA_ARGS__);                                                                       \
+    else if ((typeof(_res))0x2FACADE == _res)                                                                      \
+    {                                                                                                              \
+        PyObject_GetAttr(__VA_ARGS__);                                                                             \
+        _res = (typeof (_res))18;                                                                                  \
+    }                                                                                                              \
+    _res;                                                                                                          \
 })
 #define PyObject_GetBuffer(...) \
 ({                                                                                                                   \
@@ -733,20 +733,20 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
     }                                                                                                                   \
     _res;                                                                                                               \
 })
-#define PyObject_SetAttrString(...) \
-({                                                                                                                       \
-    __auto_type _res = 0 ? PyObject_SetAttrString(__VA_ARGS__) : 0;                                                      \
-                                                                                                                         \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyObject_SetAttrString", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                         \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                \
-       _res = PyObject_SetAttrString(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                            \
-    {                                                                                                                    \
-        PyObject_SetAttrString(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                        \
-    }                                                                                                                    \
-    _res;                                                                                                                \
+#define PyObject_SetAttr(...) \
+({                                                                                                                 \
+    __auto_type _res = 0 ? PyObject_SetAttr(__VA_ARGS__) : 0;                                                      \
+                                                                                                                   \
+    _res = (typeof (_res))APSW_FaultInjectControl("PyObject_SetAttr", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                   \
+    if ((typeof (_res))0x1FACADE == _res)                                                                          \
+       _res = PyObject_SetAttr(__VA_ARGS__);                                                                       \
+    else if ((typeof(_res))0x2FACADE == _res)                                                                      \
+    {                                                                                                              \
+        PyObject_SetAttr(__VA_ARGS__);                                                                             \
+        _res = (typeof (_res))18;                                                                                  \
+    }                                                                                                              \
+    _res;                                                                                                          \
 })
 #define PyObject_Str(...) \
 ({                                                                                                             \

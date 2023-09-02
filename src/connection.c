@@ -2782,7 +2782,7 @@ get_window_function_context_wrapped(sqlite3_context *context)
   else
   {
 #define METH(n)                                                                                                      \
-  winfc->n##func = PyObject_GetAttrString(retval, #n);                                                               \
+  winfc->n##func = PyObject_GetAttr(retval, apst.n);                                                               \
   if (!winfc->n##func)                                                                                               \
     goto finally;                                                                                                    \
   if (!PyCallable_Check(winfc->n##func))                                                                             \
@@ -4298,7 +4298,7 @@ Connection_execute(Connection *self, PyObject *const *args, Py_ssize_t nargs, Py
     AddTraceBackHere(__FILE__, __LINE__, "Connection.execute", "{s: O}", "cursor_factory", OBJ(self->cursor_factory));
     goto fail;
   }
-  method = PyObject_GetAttrString(cursor, "execute");
+  method = PyObject_GetAttr(cursor, apst.execute);
   if (!method)
   {
     assert(PyErr_Occurred());
@@ -4335,7 +4335,7 @@ Connection_executemany(Connection *self, PyObject *const *args, Py_ssize_t nargs
     AddTraceBackHere(__FILE__, __LINE__, "Connection.executemany", "{s: O}", "cursor_factory", OBJ(self->cursor_factory));
     goto fail;
   }
-  method = PyObject_GetAttrString(cursor, "executemany");
+  method = PyObject_GetAttr(cursor, apst.executemany);
   if (!method)
   {
     assert(PyErr_Occurred());
@@ -4403,7 +4403,7 @@ Connection_pragma(Connection *self, PyObject *args, PyObject *kwds)
   if (!cursor)
     goto error;
 
-  res = PyObject_GetAttrString(cursor, "get");
+  res = PyObject_GetAttr(cursor, apst.get);
 
 error:
   Py_XDECREF(query);
