@@ -2904,32 +2904,9 @@ cbw_final(sqlite3_context *context)
   if (!pyargs)
     goto error;
 
-#if 1
-  PY_EXC_HANDLE(retval = PyObject_CallObject(winfc->finalfunc, pyargs), "window-function-final",
-                "{s:O,s:O,s:s}", "callable", winfc->finalfunc, "args", OBJ(pyargs), "name", funcname);
-#else
-  do
-  {
-    PyObject *e_type = NULL, *e_value = NULL, *e_traceback = NULL;
-    PyErr_Fetch(&e_type, &e_value, &e_traceback);
-
-    retval = PyObject_CallObject(winfc->finalfunc, pyargs);
-    assert(retval || PyErr_Occurred());
-
-    if ((e_type || e_value || e_traceback))
-    {
-      if (PyErr_Occurred())
-      {
-        /* report the new error as unraisable because of the existing error */
-        AddTraceBackHere(__FILE__, __LINE__, "window-function-final",
-                         "{s:O,s:O,s:s}", "callable", winfc->finalfunc, "args", OBJ(pyargs), "name", funcname);
-        apsw_write_unraisable(NULL);
-      }
-      /* put the old error back */
-      PyErr_Restore(e_type, e_value, e_traceback);
-    }
-  } while (0);
-#endif
+  if (PyErr_Occurred())
+    goto error;
+  retval = PyObject_CallObject(winfc->finalfunc, pyargs);
   if (!retval)
     goto error;
 
