@@ -169,7 +169,7 @@ no_error = set("""PyBuffer_Release PyDict_GetItem PyMem_Free PyDict_GetItemStrin
 # these could error but are only used in a small number of places where
 # errors are already dealt with
 no_error.update("""PyArg_ParseTuple PyBytes_AsString PyErr_GivenExceptionMatches PyFrame_GetBack
-    PyImport_ImportModule PyLong_AsLongAndOverflow PyLong_AsVoidPtr PyObject_Call
+    PyImport_ImportModule PyLong_AsLongAndOverflow PyLong_AsVoidPtr
     PyObject_IsInstance PySys_GetObject PyErr_ExceptionMatches
     PyErr_SetString PyStructSequence_SetItem PyObject_Print Py_EnterRecursiveCall
     Py_GetRecursionLimit Py_LeaveRecursiveCall Py_SetRecursionLimit _PyErr_ChainExceptions
