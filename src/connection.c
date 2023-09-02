@@ -2782,7 +2782,7 @@ get_window_function_context_wrapped(sqlite3_context *context)
   else
   {
 #define METH(n)                                                                                                      \
-  winfc->n##func = PyObject_GetAttr(retval, apst.n);                                                               \
+  winfc->n##func = PyObject_GetAttr(retval, apst.n);                                                                 \
   if (!winfc->n##func)                                                                                               \
     goto finally;                                                                                                    \
   if (!PyCallable_Check(winfc->n##func))                                                                             \
