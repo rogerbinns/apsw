@@ -4285,7 +4285,7 @@ Connection_txn_state(Connection *self, PyObject *args, PyObject *kwds)
     See :meth:`Cursor.execute` for more details.
 */
 static PyObject *
-Connection_execute(Connection *self, PyObject *args, PyObject *kwds)
+Connection_execute(Connection *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwnames)
 {
   PyObject *cursor = NULL, *method = NULL, *res = NULL;
   CHECK_USE(NULL);
@@ -4305,7 +4305,7 @@ Connection_execute(Connection *self, PyObject *args, PyObject *kwds)
     AddTraceBackHere(__FILE__, __LINE__, "Connection.execute", "{s: O}", "cursor", OBJ(cursor));
     goto fail;
   }
-  res = PyObject_Call(method, args, kwds);
+  res = PyObject_Vectorcall(method, args, nargs, kwnames);
 
 fail:
   Py_XDECREF(cursor);
@@ -4322,7 +4322,7 @@ automatically obtained).
 See :meth:`Cursor.executemany` for more details.
 */
 static PyObject *
-Connection_executemany(Connection *self, PyObject *args, PyObject *kwds)
+Connection_executemany(Connection *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwnames)
 {
   PyObject *cursor = NULL, *method = NULL, *res = NULL;
   CHECK_USE(NULL);
@@ -4342,7 +4342,7 @@ Connection_executemany(Connection *self, PyObject *args, PyObject *kwds)
     AddTraceBackHere(__FILE__, __LINE__, "Connection.executemany ", "{s: O}", "cursor", OBJ(cursor));
     goto fail;
   }
-  res = PyObject_Call(method, args, kwds);
+  res = PyObject_Vectorcall(method, args, nargs, kwnames);
 
 fail:
   Py_XDECREF(cursor);
@@ -4378,7 +4378,7 @@ Connection_pragma(Connection *self, PyObject *args, PyObject *kwds)
       return NULL;
   }
 
-  PyObject *query = NULL, *value_str = NULL, *exec_args = NULL, *cursor = NULL, *res = NULL;
+  PyObject *query = NULL, *value_str = NULL, *cursor = NULL, *res = NULL;
   if (value)
   {
     value_str = formatsqlvalue(NULL, value);
@@ -4398,11 +4398,8 @@ Connection_pragma(Connection *self, PyObject *args, PyObject *kwds)
   if (!query)
     goto error;
 
-  exec_args = Py_BuildValue("(O)", query);
-  if (!exec_args)
-    goto error;
-
-  cursor = Connection_execute(self, exec_args, NULL);
+  PyObject *vargs[] = {NULL, query};
+  cursor = Connection_execute(self, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (!cursor)
     goto error;
 
@@ -4411,7 +4408,6 @@ Connection_pragma(Connection *self, PyObject *args, PyObject *kwds)
 error:
   Py_XDECREF(query);
   Py_XDECREF(value_str);
-  Py_XDECREF(exec_args);
   Py_XDECREF(cursor);
 
   return res;
@@ -5230,9 +5226,9 @@ static PyMethodDef Connection_methods[] = {
      Connection_autovacuum_pages_DOC},
     {"db_names", (PyCFunction)Connection_db_names, METH_NOARGS,
      Connection_db_names_DOC},
-    {"execute", (PyCFunction)Connection_execute, METH_VARARGS | METH_KEYWORDS,
+    {"execute", (PyCFunction)Connection_execute, METH_FASTCALL | METH_KEYWORDS,
      Connection_execute_DOC},
-    {"executemany", (PyCFunction)Connection_executemany, METH_VARARGS | METH_KEYWORDS,
+    {"executemany", (PyCFunction)Connection_executemany, METH_FASTCALL | METH_KEYWORDS,
      Connection_executemany_DOC},
     {"cache_stats", (PyCFunction)Connection_cache_stats, METH_VARARGS | METH_KEYWORDS, Connection_cache_stats_DOC},
     {"table_exists", (PyCFunction)Connection_table_exists, METH_VARARGS | METH_KEYWORDS, Connection_table_exists_DOC},
