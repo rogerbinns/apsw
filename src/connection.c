@@ -1443,7 +1443,8 @@ commithookcb(void *context)
   if (PyErr_Occurred())
     goto finally; /* abort hook due to outstanding exception */
 
-  retval = PyObject_CallObject(self->commithook, NULL);
+  PyObject *vargs[] = {NULL};
+  retval = PyObject_Vectorcall(self->commithook, vargs + 1, 0 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
 
   if (!retval)
     goto finally; /* abort hook due to exception */
@@ -1628,7 +1629,8 @@ progresshandlercb(void *context)
   if (PyErr_Occurred())
     goto finally;
 
-  retval = PyObject_CallObject(self->progresshandler, NULL);
+  PyObject *vargs[] = {NULL};
+  retval = PyObject_Vectorcall(self->progresshandler, vargs + 1, 0 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
 
   if (!retval)
     goto finally; /* abort due to exception */
@@ -2530,7 +2532,8 @@ getaggregatefunctioncontext(sqlite3_context *context)
   assert(cbinfo->aggregatefactory);
 
   /* call the aggregatefactory to get our working objects */
-  retval = PyObject_CallObject(cbinfo->aggregatefactory, NULL);
+  PyObject *vargs[] = {NULL};
+  retval = PyObject_Vectorcall(cbinfo->aggregatefactory, vargs + 1, 0 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
 
   if (!retval)
     return aggfc;
@@ -2742,7 +2745,8 @@ get_window_function_context_wrapped(sqlite3_context *context)
   assert(cbinfo->windowfactory);
 
   /* call the windowfactory to get our working object(s) */
-  retval = PyObject_CallObject(cbinfo->windowfactory, NULL);
+  PyObject *vargs[] = {NULL};
+  retval = PyObject_Vectorcall(cbinfo->windowfactory, vargs + 1, 0 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
 
   if (!retval)
     goto finally;
