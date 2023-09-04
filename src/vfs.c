@@ -193,7 +193,14 @@ apswfcntl_pragma_set_result(apswfcntl_pragma *self, PyObject *value)
     self->strings[0] = NULL;
   }
   if (!Py_IsNone(value))
-    self->strings[0] = sqlite3_mprintf("%s", PyUnicode_AsUTF8(value));
+  {
+    const char *cstr = PyUnicode_AsUTF8(value);
+    if (!cstr)
+      return -1;
+    self->strings[0] = sqlite3_mprintf("%s", cstr);
+    if (!self->strings[0])
+      return -1;
+  }
   return 0;
 }
 
