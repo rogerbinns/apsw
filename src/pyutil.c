@@ -62,6 +62,14 @@ OBJ(PyObject *v)
 
 /* CONVENIENCE FUNCTIONS */
 
+/* decref an array of PyObjects */
+static void Py_DECREF_ARRAY(PyObject *array[], int argc)
+{
+  int i;
+  for (i = 0; i < argc;i++)
+    Py_DECREF(array[i]);
+}
+
 #undef convertutf8string
 /* Convert a NULL terminated UTF-8 string into a Python object.  None
    is returned if NULL is passed in. */
@@ -142,6 +150,7 @@ PyObject_IsTrueStrict(PyObject *o)
     PyObject *_e1, *_e2, *_e3;         \
     if (_exc)                          \
       PyErr_Fetch(&_e1, &_e2, &_e3);   \
+    do                                 \
     {
 
 /* the seemingly spurious first do-while0 is because immediately
