@@ -144,8 +144,18 @@ PyObject_IsTrueStrict(PyObject *o)
       PyErr_Fetch(&_e1, &_e2, &_e3);   \
     {
 
+/* the seemingly spurious first do-while0 is because immediately
+   preceding this can be a label in which case the compiler would
+   complain that the block didn't end in a statement, so we put a
+   pointless one there;
+*/
 #define CHAIN_EXC_END               \
+  do                                \
+  {                                 \
+  } while (0);                      \
   }                                 \
+  while (0)                         \
+    ;                               \
   if (_exc)                         \
   {                                 \
     if (PyErr_Occurred())           \
