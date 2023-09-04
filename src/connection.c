@@ -3954,7 +3954,10 @@ static int connection_trace_and_exec(Connection *self, int release, int sp, int 
       PyErr_Fetch(&etype, &eval, &etb);
     PyObject *vargs[] = {NULL, (PyObject *)self, PyUnicode_FromString(sql), Py_None};
     if (vargs[2])
+    {
       result = PyObject_Vectorcall(self->exectrace, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+      Py_DECREF(vargs[2]);
+    }
     Py_XDECREF(result);
 
     if (etype || eval || etb)
