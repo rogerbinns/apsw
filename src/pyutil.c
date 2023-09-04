@@ -66,7 +66,7 @@ OBJ(PyObject *v)
 static void Py_DECREF_ARRAY(PyObject *array[], int argc)
 {
   int i;
-  for (i = 0; i < argc;i++)
+  for (i = 0; i < argc; i++)
     Py_DECREF(array[i]);
 }
 
