@@ -2087,8 +2087,18 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
     goto errorexit;
   }
 
-  res = PyObject_CallFunction(callable, "((sssis))", faultfunction,
-                              filename, funcname, linenum, args);
+  PyObject *key = PyTuple_New(5);
+  if (!key)
+    goto errorexit;
+  PyTuple_SET_ITEM(key, 0, PyUnicode_FromString(faultfunction));
+  PyTuple_SET_ITEM(key, 1, PyUnicode_FromString(filename));
+  PyTuple_SET_ITEM(key, 2, PyUnicode_FromString(funcname));
+  PyTuple_SET_ITEM(key, 3, PyLong_FromLong(linenum));
+  PyTuple_SET_ITEM(key, 4, PyUnicode_FromString(args));
+
+  PyObject *vargs[] = {NULL, key};
+  res = PyObject_Vectorcall(callable, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  Py_DECREF(vargs[1]);
   if (!res)
   {
     err_details = "Calling sys.apsw_fault_inject_control";
@@ -2190,7 +2200,11 @@ APSW_Should_Fault(const char *name)
     }
     goto end;
   }
-  res = PyObject_CallFunction(callable, "s(OOO)", name, OBJ(errsave1), OBJ(errsave2), OBJ(errsave3));
+
+  PyObject *vargs[] = {NULL, PyUnicode_FromString(name), PyTuple_Pack(3, OBJ(errsave1), OBJ(errsave2), OBJ(errsave3))};
+  res = PyObject_Vectorcall(callable, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  Py_DECREF(vargs[1]);
+  Py_DECREF(vargs[2]);
   if (!res)
     abort();
 
