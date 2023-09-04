@@ -3,6 +3,12 @@ Change History
 
 .. currentmodule:: apsw
 
+next
+====
+
+All C code calling into Python uses vectorcall (:pep:`590`) which
+reduces the overhead of the calling.  (:issue:`477`)
+
 3.43.0.0
 ========
 
