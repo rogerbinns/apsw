@@ -70,7 +70,7 @@ returns = {
     # return a pointer, NULL on failure
     "pointer":
     """
-            convert_value_to_pyobject convert_column_to_pyobject getfunctionargs allocfunccbinfo
+            convert_value_to_pyobject convert_column_to_pyobject  allocfunccbinfo
             apsw_strdup convertutf8string MakeExistingException get_window_function_context
 
             PyModule_Create2 PyErr_NewExceptionWithDoc PySet_New
@@ -131,7 +131,7 @@ returns = {
         PyObject_IsTrue PySequence_Size PySet_Add PyObject_IsTrueStrict
         PyStructSequence_InitType2 PyList_Size
 
-        connection_trace_and_exec
+        connection_trace_and_exec getfunctionargs
         """.split(),
 }
 
