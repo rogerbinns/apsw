@@ -1,3 +1,117 @@
+
+/* to speed this up gendocstrings can generate something like this
+   that uses the string length as a hash
+
+    switch(strlen(kwname))
+    {
+        case 7:
+          if(0==strcmp(kwname, "hkjdshfkjd")) return 4;
+          if(0==strcmp(kwname, "sdsdshfkjd")) return 2;
+          return -1;
+
+        case 2:
+          if(0==strcmp(kwname, "ab")) return 1;
+          return -1;
+
+        default: return -1;
+    }
+*/
+static int
+ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const char **kwname)
+{
+    *kwname = PyUnicode_AsUTF8(item);
+    int cmp;
+    for (cmp = 0; cmp < n_kwlist; cmp++)
+    {
+        if (0 == strcmp(*kwname, kwlist[cmp]))
+            return cmp;
+    }
+    return -1;
+}
+
+void ARG_PROLOG(maxpos, kwname_list)
+{
+    static const char *kwlist = {kwname_list};
+    const char *unknown_keyword = NULL;
+    const int maxargs = Py_ARRAY_LENGTH(kwlist);
+    PyObject *myargs[maxargs];
+    PyObject **useargs = args;
+    nargs = PyVectorcall_NARGS(nargs);
+    if (nargs > maxpos)
+        goto too_many_args;
+    if (kwnames)
+    {
+        useargs = myargs;
+        memcpy(useargs, args, sizeof(PyObject *) * nargs);
+        memset(useargs + nargs, 0, sizeof(PyObject *) * (maxargs - nargs));
+        for (int i = 0; i < PyTuple_GET_SIZE(kwnames); i++)
+        {
+            PyObject *item = PyTuple_GET_ITEM(kwnames, i);
+            int which = ARG_WHICH_KEYWORD(item, kwlist, maxargs, &unknown_keyword);
+            if (which == -1)
+                goto unknown_keyword_arg;
+            if(useargs[which])
+                goto pos_and_keyword;
+        }
+    }
+    int optind = 0;
+}
+
+#define ARG_MANDATORY                        \
+    if (optind >= nargs || !useargs[optind]) \
+        goto missing_required;
+
+#define ARG_OPTIONAL      \
+    if (!useargs[optind]) \
+        optind++;         \
+    else
+
+void ARG_str(varname)
+{
+    varname = PyUnicode_AsUTF8(useargs[optind]);
+    if (!varname)
+        goto param_error;
+    optind++;
+}
+
+void ARG_optional_str(varname)
+{
+    if (Py_IsNone(useargs[optind]))
+    {
+        varname = NULL;
+        optind++;
+    }
+    else
+        ARG_STR(varname);
+}
+
+void ARG_EPILOG(retval, usage)
+{
+    if (optind == nargs)
+        goto success;
+    /* unreachable exceeding nargs here? */
+    /* ::TODO:: cleanup of Py_buffer? */
+too_many_args:
+    PyExc_Format(PyExc_TypeError, "Too many arguments %d (min %d max %d) provided to %s", nargs, maxpos, maxargs, usage);
+    goto error_return;
+missing_required:
+    PyExc_Format(PyExc_TypeError, "Parameter #%d %s of %s expected", optind + 1, usage);
+    goto error_return;
+unknown_keyword_arg:
+    PyExc_Format(PyExc_TypeError, "'%s' is an invalid keyword argument for %s", unknown_keyword, usage);
+    goto error_return;
+pos_and_keyword:
+    PyExc_Format(PyExc_TypeError, "argument '%s' given by name and position for %s", unknown_keyword, usage);
+    goto error_return;
+param_error:
+    /* ::TODO:: add note about kwlist[optind] */
+    goto error_return;
+error_return:
+    assert(PyErr_Occurred());
+    return retval;
+success:
+}
+
 typedef struct
 {
     PyObject **result;
