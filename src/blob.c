@@ -387,7 +387,7 @@ APSWBlob_readinto(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_na
 
   MakeExistingException(); /* vfs errors could cause this */
 
-  if(PyErr_Occurred())
+  if (PyErr_Occurred())
     ERREXIT(NULL);
 
   if (res != SQLITE_OK)
@@ -488,7 +488,8 @@ static PyObject *
 APSWBlob_write(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int ok = 0, res = SQLITE_OK;
-  Py_buffer data;
+  Py_buffer data_buffer;
+  PyObject *data;
 
   CHECK_USE(NULL);
   CHECK_BLOB_CLOSED;
@@ -500,7 +501,18 @@ APSWBlob_write(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_nargs
     ARG_EPILOG(NULL, Blob_write_USAGE);
   }
 
-  Py_ssize_t calc_end = data.len + self->curoffset;
+  if (0 != PyObject_GetBuffer(data, &data_buffer, PyBUF_SIMPLE))
+  {
+    assert(PyErr_Occurred());
+    return NULL;
+  }
+  if (!PyBuffer_IsContiguous(&data_buffer, 'C'))
+  {
+    PyBuffer_Release(&data_buffer);
+    return PyErr_Format(PyExc_TypeError, "Expected a contiguous buffer");
+  }
+
+  Py_ssize_t calc_end = data_buffer.len + self->curoffset;
 
   APSW_FAULT_INJECT(BlobWriteTooBig, , calc_end = (Py_ssize_t)0x7FFFFFFF * (Py_ssize_t)0x1000);
 
@@ -516,7 +528,7 @@ APSWBlob_write(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_nargs
     goto finally;
   }
 
-  PYSQLITE_BLOB_CALL(res = sqlite3_blob_write(self->pBlob, data.buf, data.len, self->curoffset));
+  PYSQLITE_BLOB_CALL(res = sqlite3_blob_write(self->pBlob, data_buffer.buf, data_buffer.len, self->curoffset));
   assert(!PyErr_Occurred());
 
   if (res != SQLITE_OK)
@@ -524,12 +536,12 @@ APSWBlob_write(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_nargs
     SET_EXC(res, self->connection->db);
     goto finally;
   }
-  self->curoffset += data.len;
+  self->curoffset += data_buffer.len;
   assert(self->curoffset <= sqlite3_blob_bytes(self->pBlob));
   ok = 1;
 
 finally:
-  PyBuffer_Release(&data);
+  PyBuffer_Release(&data_buffer);
   if (ok)
     Py_RETURN_NONE;
   else

@@ -2331,7 +2331,8 @@ apswvfsfilepy_xWrite(APSWVFSFile *self, PyObject *const *fast_args, Py_ssize_t f
 {
   sqlite3_int64 offset;
   int res;
-  Py_buffer data;
+  Py_buffer data_buffer;
+  PyObject *data;
 
   CHECKVFSFILEPY;
   VFSFILENOTIMPLEMENTED(xWrite, 1);
@@ -2344,9 +2345,20 @@ apswvfsfilepy_xWrite(APSWVFSFile *self, PyObject *const *fast_args, Py_ssize_t f
     ARG_EPILOG(NULL, VFSFile_xWrite_USAGE);
   }
 
-  res = self->base->pMethods->xWrite(self->base, data.buf, data.len, offset);
+  if (0 != PyObject_GetBuffer(data, &data_buffer, PyBUF_SIMPLE))
+  {
+    assert(PyErr_Occurred());
+    return NULL;
+  }
+  if (!PyBuffer_IsContiguous(&data_buffer, 'C'))
+  {
+    PyBuffer_Release(&data_buffer);
+    return PyErr_Format(PyExc_TypeError, "Expected a contiguous buffer");
+  }
 
-  PyBuffer_Release(&data);
+  res = self->base->pMethods->xWrite(self->base, data_buffer.buf, data_buffer.len, offset);
+
+  PyBuffer_Release(&data_buffer);
 
   if (res == SQLITE_OK)
     Py_RETURN_NONE;

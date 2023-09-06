@@ -2185,7 +2185,8 @@ static PyObject *
 Connection_deserialize(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   const char *name = NULL;
-  Py_buffer contents;
+  PyObject *contents;
+  Py_buffer contents_buffer;
 
   char *newcontents = NULL;
   int res = SQLITE_OK;
@@ -2201,11 +2202,23 @@ Connection_deserialize(Connection *self, PyObject *const *fast_args, Py_ssize_t 
     ARG_EPILOG(NULL, Connection_deserialize_USAGE);
   }
 
-  newcontents = sqlite3_malloc64(contents.len);
-  if (newcontents)
-    memcpy(newcontents, contents.buf, contents.len);
+  if (0 != PyObject_GetBuffer(contents, &contents_buffer, PyBUF_SIMPLE))
+  {
+    assert(PyErr_Occurred());
+    return NULL;
+  }
+  if (!PyBuffer_IsContiguous(&contents_buffer, 'C'))
+  {
+    PyBuffer_Release(&contents_buffer);
+    return PyErr_Format(PyExc_TypeError, "Expected a contiguous buffer");
+  }
 
-  PyBuffer_Release(&contents);
+  size_t len = contents_buffer.len;
+  newcontents = sqlite3_malloc64(contents_buffer.len);
+  if (newcontents)
+    memcpy(newcontents, contents_buffer.buf, len);
+
+  PyBuffer_Release(&contents_buffer);
 
   if (!newcontents)
   {
@@ -2214,7 +2227,7 @@ Connection_deserialize(Connection *self, PyObject *const *fast_args, Py_ssize_t 
   }
 
   if (res == SQLITE_OK)
-    PYSQLITE_CON_CALL(res = sqlite3_deserialize(self->db, name, (unsigned char *)newcontents, contents.len, contents.len, SQLITE_DESERIALIZE_RESIZEABLE | SQLITE_DESERIALIZE_FREEONCLOSE));
+    PYSQLITE_CON_CALL(res = sqlite3_deserialize(self->db, name, (unsigned char *)newcontents, len, len, SQLITE_DESERIALIZE_RESIZEABLE | SQLITE_DESERIALIZE_FREEONCLOSE));
   SET_EXC(res, self->db);
 
   if (res != SQLITE_OK)
