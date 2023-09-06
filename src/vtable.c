@@ -126,17 +126,17 @@ SqliteIndexInfo_get_nOrderBy(SqliteIndexInfo *self)
 
 */
 static PyObject *
-SqliteIndexInfo_get_aConstraint_iColumn(SqliteIndexInfo *self, PyObject *args, PyObject *kwds)
+SqliteIndexInfo_get_aConstraint_iColumn(SqliteIndexInfo *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int which;
 
   CHECK_INDEX(NULL);
 
   {
-    static char *kwlist[] = {"which", NULL};
     IndexInfo_get_aConstraint_iColumn_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" IndexInfo_get_aConstraint_iColumn_USAGE, kwlist, &which))
-      return NULL;
+    ARG_PROLOG(1, IndexInfo_get_aConstraint_iColumn_KWNAMES);
+    ARG_MANDATORY ARG_int(which);
+    ARG_EPILOG(NULL, IndexInfo_get_aConstraint_iColumn_USAGE);
   }
 
   CHECK_RANGE(nConstraint);
@@ -150,17 +150,17 @@ SqliteIndexInfo_get_aConstraint_iColumn(SqliteIndexInfo *self, PyObject *args, P
 
 */
 static PyObject *
-SqliteIndexInfo_get_aConstraint_op(SqliteIndexInfo *self, PyObject *args, PyObject *kwds)
+SqliteIndexInfo_get_aConstraint_op(SqliteIndexInfo *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int which;
 
   CHECK_INDEX(NULL);
 
   {
-    static char *kwlist[] = {"which", NULL};
     IndexInfo_get_aConstraint_op_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" IndexInfo_get_aConstraint_op_USAGE, kwlist, &which))
-      return NULL;
+    ARG_PROLOG(1, IndexInfo_get_aConstraint_op_KWNAMES);
+    ARG_MANDATORY ARG_int(which);
+    ARG_EPILOG(NULL, IndexInfo_get_aConstraint_op_USAGE);
   }
 
   CHECK_RANGE(nConstraint);
@@ -174,17 +174,17 @@ SqliteIndexInfo_get_aConstraint_op(SqliteIndexInfo *self, PyObject *args, PyObje
 
 */
 static PyObject *
-SqliteIndexInfo_get_aConstraint_usable(SqliteIndexInfo *self, PyObject *args, PyObject *kwds)
+SqliteIndexInfo_get_aConstraint_usable(SqliteIndexInfo *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int which;
 
   CHECK_INDEX(NULL);
 
   {
-    static char *kwlist[] = {"which", NULL};
     IndexInfo_get_aConstraint_usable_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" IndexInfo_get_aConstraint_usable_USAGE, kwlist, &which))
-      return NULL;
+    ARG_PROLOG(1, IndexInfo_get_aConstraint_usable_KWNAMES);
+    ARG_MANDATORY ARG_int(which);
+    ARG_EPILOG(NULL, IndexInfo_get_aConstraint_usable_USAGE);
   }
   CHECK_RANGE(nConstraint);
 
@@ -201,17 +201,17 @@ SqliteIndexInfo_get_aConstraint_usable(SqliteIndexInfo *self, PyObject *args, Py
 
 */
 static PyObject *
-SqliteIndexInfo_get_aConstraint_collation(SqliteIndexInfo *self, PyObject *args, PyObject *kwds)
+SqliteIndexInfo_get_aConstraint_collation(SqliteIndexInfo *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int which;
 
   CHECK_INDEX(NULL);
 
   {
-    static char *kwlist[] = {"which", NULL};
     IndexInfo_get_aConstraint_collation_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" IndexInfo_get_aConstraint_collation_USAGE, kwlist, &which))
-      return NULL;
+    ARG_PROLOG(1, IndexInfo_get_aConstraint_collation_KWNAMES);
+    ARG_MANDATORY ARG_int(which);
+    ARG_EPILOG(NULL, IndexInfo_get_aConstraint_collation_USAGE);
   }
   CHECK_RANGE(nConstraint);
 
@@ -226,17 +226,17 @@ SqliteIndexInfo_get_aConstraint_collation(SqliteIndexInfo *self, PyObject *args,
 
 */
 static PyObject *
-SqliteIndexInfo_get_aConstraint_rhs(SqliteIndexInfo *self, PyObject *args, PyObject *kwds)
+SqliteIndexInfo_get_aConstraint_rhs(SqliteIndexInfo *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int which, res;
   sqlite3_value *pval = NULL;
   CHECK_INDEX(NULL);
 
   {
-    static char *kwlist[] = {"which", NULL};
     IndexInfo_get_aConstraint_rhs_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" IndexInfo_get_aConstraint_rhs_USAGE, kwlist, &which))
-      return NULL;
+    ARG_PROLOG(1, IndexInfo_get_aConstraint_rhs_KWNAMES);
+    ARG_MANDATORY ARG_int(which);
+    ARG_EPILOG(NULL, IndexInfo_get_aConstraint_rhs_USAGE);
   }
   CHECK_RANGE(nConstraint);
 
@@ -259,17 +259,17 @@ SqliteIndexInfo_get_aConstraint_rhs(SqliteIndexInfo *self, PyObject *args, PyObj
 
 */
 static PyObject *
-SqliteIndexInfo_get_aOrderBy_iColumn(SqliteIndexInfo *self, PyObject *args, PyObject *kwds)
+SqliteIndexInfo_get_aOrderBy_iColumn(SqliteIndexInfo *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int which;
 
   CHECK_INDEX(NULL);
 
   {
-    static char *kwlist[] = {"which", NULL};
     IndexInfo_get_aOrderBy_iColumn_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" IndexInfo_get_aOrderBy_iColumn_USAGE, kwlist, &which))
-      return NULL;
+    ARG_PROLOG(1, IndexInfo_get_aOrderBy_iColumn_KWNAMES);
+    ARG_MANDATORY ARG_int(which);
+    ARG_EPILOG(NULL, IndexInfo_get_aOrderBy_iColumn_USAGE);
   }
   CHECK_RANGE(nOrderBy);
 
@@ -282,17 +282,17 @@ SqliteIndexInfo_get_aOrderBy_iColumn(SqliteIndexInfo *self, PyObject *args, PyOb
 
 */
 static PyObject *
-SqliteIndexInfo_get_aOrderBy_desc(SqliteIndexInfo *self, PyObject *args, PyObject *kwds)
+SqliteIndexInfo_get_aOrderBy_desc(SqliteIndexInfo *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int which;
 
   CHECK_INDEX(NULL);
 
   {
-    static char *kwlist[] = {"which", NULL};
     IndexInfo_get_aOrderBy_desc_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" IndexInfo_get_aOrderBy_desc_USAGE, kwlist, &which))
-      return NULL;
+    ARG_PROLOG(1, IndexInfo_get_aOrderBy_desc_KWNAMES);
+    ARG_MANDATORY ARG_int(which);
+    ARG_EPILOG(NULL, IndexInfo_get_aOrderBy_desc_USAGE);
   }
   CHECK_RANGE(nOrderBy);
 
@@ -305,17 +305,17 @@ SqliteIndexInfo_get_aOrderBy_desc(SqliteIndexInfo *self, PyObject *args, PyObjec
 
 */
 static PyObject *
-SqliteIndexInfo_get_aConstraintUsage_argvIndex(SqliteIndexInfo *self, PyObject *args, PyObject *kwds)
+SqliteIndexInfo_get_aConstraintUsage_argvIndex(SqliteIndexInfo *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int which;
 
   CHECK_INDEX(NULL);
 
   {
-    static char *kwlist[] = {"which", NULL};
     IndexInfo_get_aConstraintUsage_argvIndex_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" IndexInfo_get_aConstraintUsage_argvIndex_USAGE, kwlist, &which))
-      return NULL;
+    ARG_PROLOG(1, IndexInfo_get_aConstraintUsage_argvIndex_KWNAMES);
+    ARG_MANDATORY ARG_int(which);
+    ARG_EPILOG(NULL, IndexInfo_get_aConstraintUsage_argvIndex_USAGE);
   }
   CHECK_RANGE(nConstraint);
 
@@ -328,17 +328,18 @@ SqliteIndexInfo_get_aConstraintUsage_argvIndex(SqliteIndexInfo *self, PyObject *
 
 */
 static PyObject *
-SqliteIndexInfo_set_aConstraintUsage_argvIndex(SqliteIndexInfo *self, PyObject *args, PyObject *kwds)
+SqliteIndexInfo_set_aConstraintUsage_argvIndex(SqliteIndexInfo *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int which, argvIndex;
 
   CHECK_INDEX(NULL);
 
   {
-    static char *kwlist[] = {"which", "argvIndex", NULL};
     IndexInfo_set_aConstraintUsage_argvIndex_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ii:" IndexInfo_set_aConstraintUsage_argvIndex_USAGE, kwlist, &which, &argvIndex))
-      return NULL;
+    ARG_PROLOG(2, IndexInfo_set_aConstraintUsage_argvIndex_KWNAMES);
+    ARG_MANDATORY ARG_int(which);
+    ARG_MANDATORY ARG_int(argvIndex);
+    ARG_EPILOG(NULL, IndexInfo_set_aConstraintUsage_argvIndex_USAGE);
   }
   CHECK_RANGE(nConstraint);
 
@@ -352,17 +353,17 @@ SqliteIndexInfo_set_aConstraintUsage_argvIndex(SqliteIndexInfo *self, PyObject *
 
 */
 static PyObject *
-SqliteIndexInfo_get_aConstraintUsage_omit(SqliteIndexInfo *self, PyObject *args, PyObject *kwds)
+SqliteIndexInfo_get_aConstraintUsage_omit(SqliteIndexInfo *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int which;
 
   CHECK_INDEX(NULL);
 
   {
-    static char *kwlist[] = {"which", NULL};
     IndexInfo_get_aConstraintUsage_omit_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" IndexInfo_get_aConstraintUsage_omit_USAGE, kwlist, &which))
-      return NULL;
+    ARG_PROLOG(1, IndexInfo_get_aConstraintUsage_omit_KWNAMES);
+    ARG_MANDATORY ARG_int(which);
+    ARG_EPILOG(NULL, IndexInfo_get_aConstraintUsage_omit_USAGE);
   }
   CHECK_RANGE(nConstraint);
 
@@ -377,18 +378,18 @@ SqliteIndexInfo_get_aConstraintUsage_omit(SqliteIndexInfo *self, PyObject *args,
 
 */
 static PyObject *
-SqliteIndexInfo_set_aConstraintUsage_omit(SqliteIndexInfo *self, PyObject *args, PyObject *kwds)
+SqliteIndexInfo_set_aConstraintUsage_omit(SqliteIndexInfo *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int which, omit;
 
   CHECK_INDEX(NULL);
 
   {
-    static char *kwlist[] = {"which", "omit", NULL};
     IndexInfo_set_aConstraintUsage_omit_CHECK;
-    argcheck_bool_param omit_param = {&omit, IndexInfo_set_aConstraintUsage_omit_omit_MSG};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "iO&:" IndexInfo_set_aConstraintUsage_omit_USAGE, kwlist, &which, argcheck_bool, &omit_param))
-      return NULL;
+    ARG_PROLOG(2, IndexInfo_set_aConstraintUsage_omit_KWNAMES);
+    ARG_MANDATORY ARG_int(which);
+    ARG_MANDATORY ARG_bool(omit);
+    ARG_EPILOG(NULL, IndexInfo_set_aConstraintUsage_omit_USAGE);
   }
   CHECK_RANGE(nConstraint);
 
@@ -403,17 +404,17 @@ SqliteIndexInfo_set_aConstraintUsage_omit(SqliteIndexInfo *self, PyObject *args,
  -* sqlite3_vtab_in
 */
 static PyObject *
-SqliteIndexInfo_get_aConstraintUsage_in(SqliteIndexInfo *self, PyObject *args, PyObject *kwds)
+SqliteIndexInfo_get_aConstraintUsage_in(SqliteIndexInfo *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int which;
 
   CHECK_INDEX(NULL);
 
   {
-    static char *kwlist[] = {"which", NULL};
     IndexInfo_get_aConstraintUsage_in_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" IndexInfo_get_aConstraintUsage_in_USAGE, kwlist, &which))
-      return NULL;
+    ARG_PROLOG(1, IndexInfo_get_aConstraintUsage_in_KWNAMES);
+    ARG_MANDATORY ARG_int(which);
+    ARG_EPILOG(NULL, IndexInfo_get_aConstraintUsage_in_USAGE);
   }
   CHECK_RANGE(nConstraint);
 
@@ -430,18 +431,18 @@ SqliteIndexInfo_get_aConstraintUsage_in(SqliteIndexInfo *self, PyObject *args, P
  -* sqlite3_vtab_in
 */
 static PyObject *
-SqliteIndexInfo_set_aConstraintUsage_in(SqliteIndexInfo *self, PyObject *args, PyObject *kwds)
+SqliteIndexInfo_set_aConstraintUsage_in(SqliteIndexInfo *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int which, filter_all;
 
   CHECK_INDEX(NULL);
 
   {
-    static char *kwlist[] = {"which", "filter_all", NULL};
     IndexInfo_set_aConstraintUsage_in_CHECK;
-    argcheck_bool_param filter_all_param = {&filter_all, IndexInfo_set_aConstraintUsage_in_filter_all_MSG};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "iO&:" IndexInfo_set_aConstraintUsage_in_USAGE, kwlist, &which, argcheck_bool, &filter_all_param))
-      return NULL;
+    ARG_PROLOG(2, IndexInfo_set_aConstraintUsage_in_KWNAMES);
+    ARG_MANDATORY ARG_int(which);
+    ARG_MANDATORY ARG_bool(filter_all);
+    ARG_EPILOG(NULL, IndexInfo_set_aConstraintUsage_in_USAGE);
   }
   CHECK_RANGE(nConstraint);
 
@@ -732,31 +733,31 @@ static PyGetSetDef SqliteIndexInfo_getsetters[] = {
     {NULL, NULL, NULL, NULL}};
 
 static PyMethodDef SqliteIndexInfo_methods[] = {
-    {"get_aConstraint_iColumn", (PyCFunction)SqliteIndexInfo_get_aConstraint_iColumn, METH_VARARGS | METH_KEYWORDS,
+    {"get_aConstraint_iColumn", (PyCFunction)SqliteIndexInfo_get_aConstraint_iColumn, METH_FASTCALL | METH_KEYWORDS,
      IndexInfo_get_aConstraint_iColumn_DOC},
-    {"get_aConstraint_op", (PyCFunction)SqliteIndexInfo_get_aConstraint_op, METH_VARARGS | METH_KEYWORDS,
+    {"get_aConstraint_op", (PyCFunction)SqliteIndexInfo_get_aConstraint_op, METH_FASTCALL | METH_KEYWORDS,
      IndexInfo_get_aConstraint_op_DOC},
-    {"get_aConstraint_usable", (PyCFunction)SqliteIndexInfo_get_aConstraint_usable, METH_VARARGS | METH_KEYWORDS,
+    {"get_aConstraint_usable", (PyCFunction)SqliteIndexInfo_get_aConstraint_usable, METH_FASTCALL | METH_KEYWORDS,
      IndexInfo_get_aConstraint_usable_DOC},
-    {"get_aConstraint_collation", (PyCFunction)SqliteIndexInfo_get_aConstraint_collation, METH_VARARGS | METH_KEYWORDS,
+    {"get_aConstraint_collation", (PyCFunction)SqliteIndexInfo_get_aConstraint_collation, METH_FASTCALL | METH_KEYWORDS,
      IndexInfo_get_aConstraint_collation_DOC},
-    {"get_aConstraint_rhs", (PyCFunction)SqliteIndexInfo_get_aConstraint_rhs, METH_VARARGS | METH_KEYWORDS,
+    {"get_aConstraint_rhs", (PyCFunction)SqliteIndexInfo_get_aConstraint_rhs, METH_FASTCALL | METH_KEYWORDS,
      IndexInfo_get_aConstraint_rhs_DOC},
-    {"get_aOrderBy_iColumn", (PyCFunction)SqliteIndexInfo_get_aOrderBy_iColumn, METH_VARARGS | METH_KEYWORDS,
+    {"get_aOrderBy_iColumn", (PyCFunction)SqliteIndexInfo_get_aOrderBy_iColumn, METH_FASTCALL | METH_KEYWORDS,
      IndexInfo_get_aOrderBy_iColumn_DOC},
-    {"get_aOrderBy_desc", (PyCFunction)SqliteIndexInfo_get_aOrderBy_desc, METH_VARARGS | METH_KEYWORDS,
+    {"get_aOrderBy_desc", (PyCFunction)SqliteIndexInfo_get_aOrderBy_desc, METH_FASTCALL | METH_KEYWORDS,
      IndexInfo_get_aOrderBy_desc_DOC},
-    {"get_aConstraintUsage_argvIndex", (PyCFunction)SqliteIndexInfo_get_aConstraintUsage_argvIndex, METH_VARARGS | METH_KEYWORDS,
+    {"get_aConstraintUsage_argvIndex", (PyCFunction)SqliteIndexInfo_get_aConstraintUsage_argvIndex, METH_FASTCALL | METH_KEYWORDS,
      IndexInfo_get_aConstraintUsage_argvIndex_DOC},
-    {"set_aConstraintUsage_argvIndex", (PyCFunction)SqliteIndexInfo_set_aConstraintUsage_argvIndex, METH_VARARGS | METH_KEYWORDS,
+    {"set_aConstraintUsage_argvIndex", (PyCFunction)SqliteIndexInfo_set_aConstraintUsage_argvIndex, METH_FASTCALL | METH_KEYWORDS,
      IndexInfo_set_aConstraintUsage_argvIndex_DOC},
-    {"get_aConstraintUsage_omit", (PyCFunction)SqliteIndexInfo_get_aConstraintUsage_omit, METH_VARARGS | METH_KEYWORDS,
+    {"get_aConstraintUsage_omit", (PyCFunction)SqliteIndexInfo_get_aConstraintUsage_omit, METH_FASTCALL | METH_KEYWORDS,
      IndexInfo_get_aConstraintUsage_omit_DOC},
-    {"set_aConstraintUsage_omit", (PyCFunction)SqliteIndexInfo_set_aConstraintUsage_omit, METH_VARARGS | METH_KEYWORDS,
+    {"set_aConstraintUsage_omit", (PyCFunction)SqliteIndexInfo_set_aConstraintUsage_omit, METH_FASTCALL | METH_KEYWORDS,
      IndexInfo_set_aConstraintUsage_omit_DOC},
-    {"get_aConstraintUsage_in", (PyCFunction)SqliteIndexInfo_get_aConstraintUsage_in, METH_VARARGS | METH_KEYWORDS,
+    {"get_aConstraintUsage_in", (PyCFunction)SqliteIndexInfo_get_aConstraintUsage_in, METH_FASTCALL | METH_KEYWORDS,
      IndexInfo_get_aConstraintUsage_in_DOC},
-    {"set_aConstraintUsage_in", (PyCFunction)SqliteIndexInfo_set_aConstraintUsage_in, METH_VARARGS | METH_KEYWORDS,
+    {"set_aConstraintUsage_in", (PyCFunction)SqliteIndexInfo_set_aConstraintUsage_in, METH_FASTCALL | METH_KEYWORDS,
      IndexInfo_set_aConstraintUsage_in_DOC},
 
     /* sentinel */
