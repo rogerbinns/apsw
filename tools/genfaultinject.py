@@ -131,8 +131,12 @@ returns = {
         PyObject_IsTrue PySequence_Size PySet_Add PyObject_IsTrueStrict
         PyStructSequence_InitType2 PyList_Size
 
+        PyBuffer_IsContiguous
+
         connection_trace_and_exec getfunctionargs
         """.split(),
+        # PyBuffer_IsContiguous is on an error path although the
+        # function itself can't error
 }
 
 # some calls like Py_BuildValue are #defined to _Py_BuildValue_SizeT
@@ -163,7 +167,6 @@ no_error = set("""PyBuffer_Release PyDict_GetItem PyMem_Free PyDict_GetItemStrin
     PyThreadState_Get PyThread_get_thread_ident PyTraceBack_Here
     PyType_IsSubtype PyUnicode_CopyCharacters PyWeakref_GetObject _Py_Dealloc
     _Py_HashBytes _Py_NegativeRefcount _Py_RefTotal PyThreadState_GetFrame
-    _PyArg_ParseTupleAndKeywords_SizeT
 """.split())
 
 # these could error but are only used in a small number of places where
