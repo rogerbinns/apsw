@@ -617,7 +617,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
     int asrb;
     Py_buffer py3buffer;
 
-    asrb = PyObject_GetBuffer(obj, &py3buffer, PyBUF_SIMPLE);
+    asrb = PyObject_GetBufferContiguous(obj, &py3buffer, PyBUF_SIMPLE);
     if (asrb != 0)
       return -1;
 

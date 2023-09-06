@@ -1137,7 +1137,7 @@ apswvfs_xRandomness(sqlite3_vfs *vfs, int nByte, char *zOut)
     Py_buffer py3buffer;
     Py_ssize_t len;
 
-    asrb = PyObject_GetBuffer(pyresult, &py3buffer, PyBUF_SIMPLE);
+    asrb = PyObject_GetBufferContiguous(pyresult, &py3buffer, PyBUF_SIMPLE);
     if (asrb == 0)
     {
       len = py3buffer.len;
@@ -2198,7 +2198,7 @@ apswvfsfile_xRead(sqlite3_file *file, void *bufout, int amount, sqlite3_int64 of
     goto finally;
   }
 
-  asrb = PyObject_GetBuffer(pybuf, &py3buffer, PyBUF_SIMPLE);
+  asrb = PyObject_GetBufferContiguous(pybuf, &py3buffer, PyBUF_SIMPLE);
   if (asrb != 0)
   {
     assert(PyErr_Occurred());
@@ -2345,15 +2345,10 @@ apswvfsfilepy_xWrite(APSWVFSFile *self, PyObject *const *fast_args, Py_ssize_t f
     ARG_EPILOG(NULL, VFSFile_xWrite_USAGE);
   }
 
-  if (0 != PyObject_GetBuffer(data, &data_buffer, PyBUF_SIMPLE))
+  if (0 != PyObject_GetBufferContiguous(data, &data_buffer, PyBUF_SIMPLE))
   {
     assert(PyErr_Occurred());
     return NULL;
-  }
-  if (!PyBuffer_IsContiguous(&data_buffer, 'C'))
-  {
-    PyBuffer_Release(&data_buffer);
-    return PyErr_Format(PyExc_TypeError, "Expected a contiguous buffer");
   }
 
   res = self->base->pMethods->xWrite(self->base, data_buffer.buf, data_buffer.len, offset);

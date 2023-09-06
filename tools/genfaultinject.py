@@ -126,12 +126,12 @@ returns = {
     "number":
     """
         PyType_Ready PyModule_AddObject PyModule_AddIntConstant PyLong_AsLong
-        PyLong_AsLongLong PyObject_GetBuffer PyList_Append PyDict_SetItemString
+        PyLong_AsLongLong PyList_Append PyDict_SetItemString
         PyObject_SetAttr _PyBytes_Resize PyDict_SetItem PyList_SetSlice
         PyObject_IsTrue PySequence_Size PySet_Add PyObject_IsTrueStrict
         PyStructSequence_InitType2 PyList_Size
 
-        PyBuffer_IsContiguous
+        PyObject_GetBufferContiguous PyObject_GetBuffer
 
         connection_trace_and_exec getfunctionargs
         """.split(),

@@ -2202,15 +2202,10 @@ Connection_deserialize(Connection *self, PyObject *const *fast_args, Py_ssize_t 
     ARG_EPILOG(NULL, Connection_deserialize_USAGE);
   }
 
-  if (0 != PyObject_GetBuffer(contents, &contents_buffer, PyBUF_SIMPLE))
+  if (0 != PyObject_GetBufferContiguous(contents, &contents_buffer, PyBUF_SIMPLE))
   {
     assert(PyErr_Occurred());
     return NULL;
-  }
-  if (!PyBuffer_IsContiguous(&contents_buffer, 'C'))
-  {
-    PyBuffer_Release(&contents_buffer);
-    return PyErr_Format(PyExc_TypeError, "Expected a contiguous buffer");
   }
 
   size_t len = contents_buffer.len;
@@ -2410,7 +2405,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
     int asrb;
     Py_buffer py3buffer;
 
-    asrb = PyObject_GetBuffer(obj, &py3buffer, PyBUF_SIMPLE);
+    asrb = PyObject_GetBufferContiguous(obj, &py3buffer, PyBUF_SIMPLE);
 
     if (asrb != 0)
     {

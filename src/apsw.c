@@ -1471,7 +1471,7 @@ formatsqlvalue(PyObject *Py_UNUSED(self), PyObject *value)
     Py_ssize_t buflen;
     const unsigned char *bufferc;
 
-    asrb = PyObject_GetBuffer(value, &buffer, PyBUF_SIMPLE);
+    asrb = PyObject_GetBufferContiguous(value, &buffer, PyBUF_SIMPLE);
     if (asrb == -1)
       return NULL;
 

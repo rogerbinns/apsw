@@ -93,6 +93,21 @@ static void Py_DECREF_ARRAY(PyObject *array[], int argc)
     Py_DECREF(array[i]);
 }
 
+/* get buffer and check it is contiguous */
+#undef PyObject_GetBufferContiguous
+static int PyObject_GetBufferContiguous(PyObject *source, Py_buffer *buffer, int flags)
+{
+#include "faultinject.h"
+  int res = PyObject_GetBuffer(source, buffer, flags);
+  if(res==0 && !PyBuffer_IsContiguous(buffer, 'C'))
+  {
+    PyBuffer_Release(buffer);
+    PyErr_Format(PyExc_TypeError, "Expected a contiguous buffer");
+    res = -1;
+  }
+  return res;
+}
+
 #undef convertutf8string
 /* Convert a NULL terminated UTF-8 string into a Python object.  None
    is returned if NULL is passed in. */

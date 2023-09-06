@@ -365,7 +365,7 @@ APSWBlob_readinto(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_na
   } while (0)
 
   memset(&py3buffer, 0, sizeof(py3buffer));
-  aswb = PyObject_GetBuffer(buffer, &py3buffer, PyBUF_WRITABLE | PyBUF_SIMPLE);
+  aswb = PyObject_GetBufferContiguous(buffer, &py3buffer, PyBUF_WRITABLE | PyBUF_SIMPLE);
   if (aswb)
     return NULL;
 
@@ -501,15 +501,10 @@ APSWBlob_write(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_nargs
     ARG_EPILOG(NULL, Blob_write_USAGE);
   }
 
-  if (0 != PyObject_GetBuffer(data, &data_buffer, PyBUF_SIMPLE))
+  if (0 != PyObject_GetBufferContiguous(data, &data_buffer, PyBUF_SIMPLE))
   {
     assert(PyErr_Occurred());
     return NULL;
-  }
-  if (!PyBuffer_IsContiguous(&data_buffer, 'C'))
-  {
-    PyBuffer_Release(&data_buffer);
-    return PyErr_Format(PyExc_TypeError, "Expected a contiguous buffer");
   }
 
   Py_ssize_t calc_end = data_buffer.len + self->curoffset;
