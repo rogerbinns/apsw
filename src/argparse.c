@@ -29,35 +29,36 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
     return -1;
 }
 
-#define ARG_PROLOG(maxpos, kwname_list)                                             \
-    static const char *kwlist[] = {kwname_list};                                    \
-    const char *unknown_keyword = NULL;                                             \
-    const int maxargs = Py_ARRAY_LENGTH(kwlist);                                    \
-    PyObject *myargs[maxargs];                                                      \
-    PyObject **useargs = fast_args;                                                 \
-    size_t nargs = PyVectorcall_NARGS(fast_nargs);                                  \
-    if (nargs > maxpos)                                                             \
-        goto too_many_args;                                                         \
-    if (fast_kwnames)                                                               \
-    {                                                                               \
-        useargs = myargs;                                                           \
-        memcpy(useargs, args, sizeof(PyObject *) * nargs);                          \
-        memset(useargs + nargs, 0, sizeof(PyObject *) * (maxargs - nargs));         \
-        for (int i = 0; i < PyTuple_GET_SIZE(fast_kwnames); i++)                    \
-        {                                                                           \
-            PyObject *item = PyTuple_GET_ITEM(fast_kwnames, i);                     \
-            int which = ARG_WHICH_KEYWORD(item, kwlist, maxargs, &unknown_keyword); \
-            if (which == -1)                                                        \
-                goto unknown_keyword_arg;                                           \
-            if (useargs[which])                                                     \
-                goto pos_and_keyword;                                               \
-            useargs[which] = args[nargs + i];                                       \
-        }                                                                           \
-    }                                                                               \
+#define ARG_PROLOG(maxpos_args, kwname_list)                                              \
+    static const char *kwlist[] = {kwname_list};                                          \
+    const int maxpos = maxpos_args;                                                       \
+    const char *unknown_keyword = NULL;                                                   \
+    const int maxargs = Py_ARRAY_LENGTH(kwlist);                                          \
+    PyObject *myargs[maxargs];                                                            \
+    PyObject **useargs = (PyObject **)fast_args;                                          \
+    size_t actual_nargs = PyVectorcall_NARGS(fast_nargs);                                 \
+    if (actual_nargs > maxpos)                                                            \
+        goto too_many_args;                                                               \
+    if (fast_kwnames)                                                                     \
+    {                                                                                     \
+        useargs = myargs;                                                                 \
+        memcpy(useargs, fast_args, sizeof(PyObject *) * actual_nargs);                    \
+        memset(useargs + actual_nargs, 0, sizeof(PyObject *) * (maxargs - actual_nargs)); \
+        for (int i = 0; i < PyTuple_GET_SIZE(fast_kwnames); i++)                          \
+        {                                                                                 \
+            PyObject *item = PyTuple_GET_ITEM(fast_kwnames, i);                           \
+            int which = ARG_WHICH_KEYWORD(item, kwlist, maxargs, &unknown_keyword);       \
+            if (which == -1)                                                              \
+                goto unknown_keyword_arg;                                                 \
+            if (useargs[which])                                                           \
+                goto pos_and_keyword;                                                     \
+            useargs[which] = fast_args[actual_nargs + i];                                 \
+        }                                                                                 \
+    }                                                                                     \
     int optind = 0;
 
-#define ARG_MANDATORY                        \
-    if (optind >= nargs || !useargs[optind]) \
+#define ARG_MANDATORY                                       \
+    if ((size_t)optind >= actual_nargs || !useargs[optind]) \
         goto missing_required;
 
 #define ARG_OPTIONAL      \
@@ -65,11 +66,65 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
         optind++;         \
     else
 
+#define ARG_EPILOG(retval, usage)                                                                                                \
+    if ((size_t)optind == actual_nargs)                                                                                          \
+        goto success;                                                                                                            \
+    /* unreachable exceeding actual_nargs here? */                                                                               \
+    assert(0);                                                                                                                   \
+    /* this wont be hit but is here to stop warnings about unused label */                                                       \
+    goto missing_required;                                                                                                       \
+    too_many_args:                                                                                                               \
+    PyErr_Format(PyExc_TypeError, "Too many arguments %d (min %d max %d) provided to %s", actual_nargs, maxpos, maxargs, usage); \
+    goto error_return;                                                                                                           \
+    missing_required:                                                                                                            \
+    PyErr_Format(PyExc_TypeError, "Parameter #%d %s of %s expected", optind + 1, kwlist[optind], usage);                         \
+    goto error_return;                                                                                                           \
+    unknown_keyword_arg:                                                                                                         \
+    PyErr_Format(PyExc_TypeError, "'%s' is an invalid keyword argument for %s", unknown_keyword, usage);                         \
+    goto error_return;                                                                                                           \
+    pos_and_keyword:                                                                                                             \
+    PyErr_Format(PyExc_TypeError, "argument '%s' given by name and position for %s", unknown_keyword, usage);                    \
+    goto error_return;                                                                                                           \
+    param_error:                                                                                                                 \
+    /* ::TODO:: add note about kwlist[optind] */                                                                                 \
+    goto error_return;                                                                                                           \
+    error_return:                                                                                                                \
+    assert(PyErr_Occurred());                                                                                                    \
+    return retval;                                                                                                               \
+    success:
+
+#define ARG_pyobject(varname)                                                                \
+    if (useargs[optind])                                                                     \
+    {                                                                                        \
+        varname = useargs[optind];                                                           \
+        optind++;                                                                            \
+    }                                                                                        \
+    else /* this won't be hit, and is here to ensure the label is used to avoid a warning */ \
+        goto param_error;
+
+#define ARG_pointer(varname)                     \
+    varname = PyLong_AsVoidPtr(useargs[optind]); \
+    if (PyErr_Occurred())                        \
+        goto param_error;                        \
+    optind++;
+
 #define ARG_str(varname)                         \
     varname = PyUnicode_AsUTF8(useargs[optind]); \
     if (!varname)                                \
         goto param_error;                        \
     optind++;
+
+#define ARG_PyUnicode(varname)                                                                \
+    if (PyUnicode_Check(useargs[optind]))                                                     \
+    {                                                                                         \
+        varname = useargs[optind];                                                            \
+        optind++;                                                                             \
+    }                                                                                         \
+    else                                                                                      \
+    {                                                                                         \
+        PyErr_Format(PyExc_TypeError, "Expected a str not %s", Py_TypeName(useargs[optind])); \
+        goto param_error;                                                                     \
+    }
 
 #define ARG_optional_str(varname)   \
     if (Py_IsNone(useargs[optind])) \
@@ -78,33 +133,125 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
         optind++;                   \
     }                               \
     else                            \
-        ARG_STR(varname);
+        ARG_str(varname);
 
-#define ARG_EPILOG(retval, usage)                                                                                         \
-    if (optind == nargs)                                                                                                  \
-        goto success;                                                                                                     \
-    /* unreachable exceeding nargs here? */                                                                               \
-    assert(0);                                                                                                            \
-    /* ::TODO:: cleanup of Py_buffer? */                                                                                  \
-    too_many_args:                                                                                                        \
-    PyErr_Format(PyExc_TypeError, "Too many arguments %d (min %d max %d) provided to %s", nargs, maxpos, maxargs, usage); \
-    goto error_return;                                                                                                    \
-    missing_required:                                                                                                     \
-    PyErr_Format(PyExc_TypeError, "Parameter #%d %s of %s expected", optind + 1, kwlist[optind], usage);                  \
-    goto error_return;                                                                                                    \
-    unknown_keyword_arg:                                                                                                  \
-    PyErr_Format(PyExc_TypeError, "'%s' is an invalid keyword argument for %s", unknown_keyword, usage);                  \
-    goto error_return;                                                                                                    \
-    pos_and_keyword:                                                                                                      \
-    PyErr_Format(PyExc_TypeError, "argument '%s' given by name and position for %s", unknown_keyword, usage);             \
-    goto error_return;                                                                                                    \
-    param_error:                                                                                                          \
-    /* ::TODO:: add note about kwlist[optind] */                                                                          \
-    goto error_return;                                                                                                    \
-    error_return:                                                                                                         \
-    assert(PyErr_Occurred());                                                                                             \
-    return retval;                                                                                                        \
-    success:
+#define ARG_Callable(varname)                                                                      \
+    if (PyCallable_Check(useargs[optind]))                                                         \
+    {                                                                                              \
+        varname = useargs[optind];                                                                 \
+        optind++;                                                                                  \
+    }                                                                                              \
+    else                                                                                           \
+    {                                                                                              \
+        PyErr_Format(PyExc_TypeError, "Expected a callable not %s", Py_TypeName(useargs[optind])); \
+        goto param_error;                                                                          \
+    }
+
+#define ARG_optional_Callable(varname) \
+    if (Py_IsNone(useargs[optind]))    \
+    {                                  \
+        varname = NULL;                \
+        optind++;                      \
+    }                                  \
+    else                               \
+        ARG_Callable(varname);
+
+#define ARG_bool(varname)                             \
+    varname = PyObject_IsTrueStrict(useargs[optind]); \
+    if (varname == -1)                                \
+        goto param_error;                             \
+    optind++;
+
+#define ARG_int(varname)                     \
+    varname = PyLong_AsInt(useargs[optind]); \
+    if (varname == -1 && PyErr_Occurred())   \
+        goto param_error;                    \
+    optind++;
+
+#define ARG_int64(varname)                        \
+    varname = PyLong_AsLongLong(useargs[optind]); \
+    if (varname == -1 && PyErr_Occurred())        \
+        goto param_error;                         \
+    optind++;
+
+#define ARG_TYPE_CHECK(varname, type, cast)                                                                   \
+    switch (PyObject_IsInstance(useargs[optind], type))                                                       \
+    {                                                                                                         \
+    case 1:                                                                                                   \
+        varname = (cast)useargs[optind];                                                                      \
+        optind++;                                                                                             \
+        break;                                                                                                \
+    case 0:                                                                                                   \
+        PyErr_Format(PyExc_TypeError, "Expected %s not %s", Py_TypeName(type), Py_TypeName(useargs[optind])); \
+        /* fallthru */                                                                                        \
+    case -1:                                                                                                  \
+        goto param_error;                                                                                     \
+    }
+
+#define ARG_Connection(varname) ARG_TYPE_CHECK(varname, (PyObject *)&ConnectionType, Connection *)
+
+/* PySequence_Check is too strict and rejects things that are
+    accepted by PySequence_Fast like sets and generators,
+    so everything is accepted */
+#define ARG_optional_Bindings(varname) \
+    if (Py_IsNone(useargs[optind]))    \
+        varname = NULL;                \
+    else                               \
+        varname = useargs[optind];     \
+    optind++;
+
+#define ARG_optional_str_URIFilename(varname)                                                                                                     \
+    if (Py_IsNone(useargs[optind]) || PyUnicode_Check(useargs[optind]) || PyObject_IsInstance(useargs[optind], (PyObject *)&APSWURIFilenameType)) \
+    {                                                                                                                                             \
+        varname = useargs[optind];                                                                                                                \
+        optind++;                                                                                                                                 \
+    }                                                                                                                                             \
+    else                                                                                                                                          \
+    {                                                                                                                                             \
+        PyErr_Format(PyExc_TypeError, "Expected None | str | apsw.URIFilename, not %s", Py_TypeName(useargs[optind]));                            \
+        goto param_error;                                                                                                                         \
+    }
+
+#define ARG_List_int_int(varname)                                                                                                        \
+    if (!PyList_Check(useargs[optind]) || PyList_Size(useargs[optind]) != 2)                                                             \
+    {                                                                                                                                    \
+        PyErr_Format(PyExc_TypeError, "Expected a two item list of int");                                                                \
+        goto param_error;                                                                                                                \
+    }                                                                                                                                    \
+    for (int i = 0; i < 2; i++)                                                                                                          \
+    {                                                                                                                                    \
+        PyObject *list_item = PyList_GetItem(useargs[optind], i);                                                                        \
+        if (!list_item)                                                                                                                  \
+            goto param_error;                                                                                                            \
+        if (!PyLong_Check(list_item))                                                                                                    \
+        {                                                                                                                                \
+            PyErr_Format(PyExc_TypeError, "Function argument list[int,int] expected int for item %d not %s", i, Py_TypeName(list_item)); \
+            goto param_error;                                                                                                            \
+        }                                                                                                                                \
+    }                                                                                                                                    \
+    varname = useargs[optind];                                                                                                           \
+    optind++;
+
+#define ARG_optional_set(varname)                                                                    \
+    if (Py_IsNone(useargs[optind]))                                                                  \
+        varname = NULL;                                                                              \
+    else if (PySet_Check(useargs[optind]))                                                           \
+        varname = useargs[optind];                                                                   \
+    else                                                                                             \
+    {                                                                                                \
+        PyErr_Format(PyExc_TypeError, "Expected None or set, not %s", Py_TypeName(useargs[optind])); \
+        goto param_error;                                                                            \
+    }                                                                                                \
+    optind++;
+
+#define ARG_py_buffer(varname)                                                                                                               \
+    if (!PyObject_CheckBuffer(useargs[optind]))                                                                                              \
+    {                                                                                                                                        \
+        PyErr_Format(PyExc_TypeError, "Expected bytes or similar type that supports buffer protocol, not %s", Py_TypeName(useargs[optind])); \
+        goto param_error;                                                                                                                    \
+    }                                                                                                                                        \
+    varname = useargs[optind];                                                                                                               \
+    optind++;
 
 typedef struct
 {

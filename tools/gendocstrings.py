@@ -553,7 +553,7 @@ def do_argparse(item):
                     breakpoint()
                 default_check = f"{ pname } == NULL"
         elif param["type"] == "bytes":
-            type = "Py_buffer"
+            type = "PyObject *"
             kind = "py_buffer"
             if param["default"]:
                 breakpoint()
