@@ -966,7 +966,7 @@ apswvfspy_xDlSym(APSWVFS *self, PyObject *const *fast_args, Py_ssize_t fast_narg
 
   if (PyErr_Occurred())
   {
-    AddTraceBackHere(__FILE__, __LINE__, "vfspy.xDlSym", "{s: O}", "args", OBJ(args));
+    AddTraceBackHere(__FILE__, __LINE__, "vfspy.xDlSym", "{s: s}", "symbol", symbol);
     return NULL;
   }
 
@@ -1575,7 +1575,7 @@ apswvfspy_xSetSystemCall(APSWVFS *self, PyObject *const *fast_args, Py_ssize_t f
 
   if (PyErr_Occurred())
   {
-    AddTraceBackHere(__FILE__, __LINE__, "vfspy.xSetSystemCall", "{s: O, s: i}", "args", OBJ(args), "res", res);
+    AddTraceBackHere(__FILE__, __LINE__, "vfspy.xSetSystemCall", "{s: s, s: i}", "name", name, "res", res);
     return NULL;
   }
 
@@ -2157,7 +2157,7 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *const *fast_args, Py_ssize_t fast_
 
 finally:
   if (PyErr_Occurred())
-    AddTraceBackHere(__FILE__, __LINE__, "vfsfile.init", "{s: O, s: O}", "args", OBJ(args), "kwargs", OBJ(kwds));
+    AddTraceBackHere(__FILE__, __LINE__, "vfsfile.init", "{s: s, s: O, s: O}", "vfs", vfs, "filename", filename, "flags", flags);
 
   if (res != 0 && file)
   {
