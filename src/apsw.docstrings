@@ -20,8 +20,7 @@
 "\n" \
 "The previous value is returned.\n" 
 
-#define Apsw_allow_missing_dict_bindings_value_MSG  "argument 'value' of apsw.allow_missing_dict_bindings(value: bool) -> bool" 
-
+#define Apsw_allow_missing_dict_bindings_KWNAMES "value"
 #define Apsw_allow_missing_dict_bindings_USAGE "apsw.allow_missing_dict_bindings(value: bool) -> bool"
 
 #define Apsw_allow_missing_dict_bindings_CHECK do { \
@@ -47,6 +46,7 @@
 "\n" \
 "Calls: `sqlite3_complete <https://sqlite.org/c3ref/complete.html>`__\n" 
 
+#define Apsw_complete_KWNAMES "statement"
 #define Apsw_complete_USAGE "apsw.complete(statement: str) -> bool"
 
 #define Apsw_complete_CHECK do { \
@@ -78,8 +78,7 @@
 "\n" \
 "Calls: `sqlite3_enable_shared_cache <https://sqlite.org/c3ref/enable_shared_cache.html>`__\n" 
 
-#define Apsw_enablesharedcache_enable_MSG  "argument 'enable' of apsw.enablesharedcache(enable: bool) -> None" 
-
+#define Apsw_enablesharedcache_KWNAMES "enable"
 #define Apsw_enablesharedcache_USAGE "apsw.enablesharedcache(enable: bool) -> None"
 
 #define Apsw_enablesharedcache_CHECK do { \
@@ -98,6 +97,7 @@
 "\n" \
 "  raise apsw.exceptionfor(apsw.SQLITE_IOERR_ACCESS)\n" 
 
+#define Apsw_exceptionfor_KWNAMES "code"
 #define Apsw_exceptionfor_USAGE "apsw.exceptionfor(code: int) -> Exception"
 
 #define Apsw_exceptionfor_CHECK do { \
@@ -168,6 +168,7 @@
 "\n" \
 "Calls: `sqlite3_hard_heap_limit64 <https://sqlite.org/c3ref/hard_heap_limit64.html>`__\n" 
 
+#define Apsw_hard_heap_limit_KWNAMES "limit"
 #define Apsw_hard_heap_limit_USAGE "apsw.hard_heap_limit(limit: int) -> int"
 
 #define Apsw_hard_heap_limit_CHECK do { \
@@ -191,6 +192,7 @@
 "\n" \
 "Calls: `sqlite3_log <https://sqlite.org/c3ref/log.html>`__\n" 
 
+#define Apsw_log_KWNAMES "errorcode", "message"
 #define Apsw_log_USAGE "apsw.log(errorcode: int, message: str) -> None"
 
 #define Apsw_log_CHECK do { \
@@ -209,8 +211,7 @@
 "\n" \
 "Calls: `sqlite3_memory_highwater <https://sqlite.org/c3ref/memory_highwater.html>`__\n" 
 
-#define Apsw_memoryhighwater_reset_MSG  "argument 'reset' of apsw.memoryhighwater(reset: bool = False) -> int" 
-
+#define Apsw_memoryhighwater_KWNAMES "reset"
 #define Apsw_memoryhighwater_USAGE "apsw.memoryhighwater(reset: bool = False) -> int"
 
 #define Apsw_memoryhighwater_CHECK do { \
@@ -241,6 +242,7 @@
 "\n" \
 "Calls: `sqlite3_randomness <https://sqlite.org/c3ref/randomness.html>`__\n" 
 
+#define Apsw_randomness_KWNAMES "amount"
 #define Apsw_randomness_USAGE "apsw.randomness(amount: int)  -> bytes"
 
 #define Apsw_randomness_CHECK do { \
@@ -254,6 +256,7 @@
 "\n" \
 "Calls: `sqlite3_release_memory <https://sqlite.org/c3ref/release_memory.html>`__\n" 
 
+#define Apsw_releasememory_KWNAMES "amount"
 #define Apsw_releasememory_USAGE "apsw.releasememory(amount: int) -> int"
 
 #define Apsw_releasememory_CHECK do { \
@@ -269,6 +272,7 @@
 "  * `sqlite3_vfs_register <https://sqlite.org/c3ref/vfs_find.html>`__\n" \
 "  * `sqlite3_vfs_find <https://sqlite.org/c3ref/vfs_find.html>`__\n" 
 
+#define Apsw_set_default_vfs_KWNAMES "name"
 #define Apsw_set_default_vfs_USAGE "apsw.set_default_vfs(name: str) -> None"
 
 #define Apsw_set_default_vfs_CHECK do { \
@@ -291,6 +295,7 @@
 "\n" \
 "Calls: `sqlite3_sleep <https://sqlite.org/c3ref/sleep.html>`__\n" 
 
+#define Apsw_sleep_KWNAMES "milliseconds"
 #define Apsw_sleep_USAGE "apsw.sleep(milliseconds: int) -> int"
 
 #define Apsw_sleep_CHECK do { \
@@ -308,6 +313,7 @@
 "\n" \
 "Calls: `sqlite3_soft_heap_limit64 <https://sqlite.org/c3ref/hard_heap_limit64.html>`__\n" 
 
+#define Apsw_softheaplimit_KWNAMES "limit"
 #define Apsw_softheaplimit_USAGE "apsw.softheaplimit(limit: int) -> int"
 
 #define Apsw_softheaplimit_CHECK do { \
@@ -341,8 +347,7 @@
 "\n" \
 "Calls: `sqlite3_status64 <https://sqlite.org/c3ref/status.html>`__\n" 
 
-#define Apsw_status_reset_MSG  "argument 'reset' of apsw.status(op: int, reset: bool = False) -> tuple[int, int]" 
-
+#define Apsw_status_KWNAMES "op", "reset"
 #define Apsw_status_USAGE "apsw.status(op: int, reset: bool = False) -> tuple[int, int]"
 
 #define Apsw_status_CHECK do { \
@@ -357,6 +362,7 @@
 "\n" \
 "Calls: `sqlite3_strglob <https://sqlite.org/c3ref/strglob.html>`__\n" 
 
+#define Apsw_strglob_KWNAMES "glob", "string"
 #define Apsw_strglob_USAGE "apsw.strglob(glob: str, string: str) -> int"
 
 #define Apsw_strglob_CHECK do { \
@@ -371,6 +377,7 @@
 "\n" \
 "Calls: `sqlite3_stricmp <https://sqlite.org/c3ref/stricmp.html>`__\n" 
 
+#define Apsw_stricmp_KWNAMES "string1", "string2"
 #define Apsw_stricmp_USAGE "apsw.stricmp(string1: str, string2: str) -> int"
 
 #define Apsw_stricmp_CHECK do { \
@@ -384,6 +391,7 @@
 "\n" \
 "Calls: `sqlite3_strlike <https://sqlite.org/c3ref/strlike.html>`__\n" 
 
+#define Apsw_strlike_KWNAMES "glob", "string", "escape"
 #define Apsw_strlike_USAGE "apsw.strlike(glob: str, string: str, escape: int = 0) -> int"
 
 #define Apsw_strlike_CHECK do { \
@@ -400,6 +408,7 @@
 "\n" \
 "Calls: `sqlite3_strnicmp <https://sqlite.org/c3ref/stricmp.html>`__\n" 
 
+#define Apsw_strnicmp_KWNAMES "string1", "string2", "count"
 #define Apsw_strnicmp_USAGE "apsw.strnicmp(string1: str, string2: str, count: int) -> int"
 
 #define Apsw_strnicmp_CHECK do { \
@@ -416,6 +425,7 @@
 "  * `sqlite3_vfs_unregister <https://sqlite.org/c3ref/vfs_find.html>`__\n" \
 "  * `sqlite3_vfs_find <https://sqlite.org/c3ref/vfs_find.html>`__\n" 
 
+#define Apsw_unregister_vfs_KWNAMES "name"
 #define Apsw_unregister_vfs_USAGE "apsw.unregister_vfs(name: str) -> None"
 
 #define Apsw_unregister_vfs_CHECK do { \
@@ -451,8 +461,7 @@
 "\n" \
 ":param force: If true then any exceptions are ignored.\n" 
 
-#define Backup_close_force_MSG  "argument 'force' of Backup.close(force: bool = False) -> None" 
-
+#define Backup_close_KWNAMES "force"
 #define Backup_close_USAGE "Backup.close(force: bool = False) -> None"
 
 #define Backup_close_CHECK do { \
@@ -475,6 +484,7 @@
 "Implements context manager in conjunction with :meth:`~Backup.__enter__` ensuring\n" \
 "that the copy is :meth:`finished <Backup.finish>`.\n" 
 
+#define Backup_exit_KWNAMES "etype", "evalue", "etraceback"
 #define Backup_exit_USAGE "Backup.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[types.TracebackType]) -> Optional[bool]"
 
 #define Backup_exit_CHECK do { \
@@ -530,6 +540,7 @@
 "\n" \
 "Calls: `sqlite3_backup_step <https://sqlite.org/c3ref/backup_finish.html#sqlite3backupstep>`__\n" 
 
+#define Backup_step_KWNAMES "npages"
 #define Backup_step_USAGE "Backup.step(npages: int = -1) -> bool"
 
 #define Backup_step_CHECK do { \
@@ -572,8 +583,7 @@
 "\n" \
 "Calls: `sqlite3_blob_close <https://sqlite.org/c3ref/blob_close.html>`__\n" 
 
-#define Blob_close_force_MSG  "argument 'force' of Blob.close(force: bool = False) -> None" 
-
+#define Blob_close_KWNAMES "force"
 #define Blob_close_USAGE "Blob.close(force: bool = False) -> None"
 
 #define Blob_close_CHECK do { \
@@ -613,6 +623,7 @@
 "\n" \
 "Calls: `sqlite3_blob_read <https://sqlite.org/c3ref/blob_read.html>`__\n" 
 
+#define Blob_read_KWNAMES "length"
 #define Blob_read_USAGE "Blob.read(length: int = -1) -> bytes"
 
 #define Blob_read_CHECK do { \
@@ -641,6 +652,7 @@
 "\n" \
 "Calls: `sqlite3_blob_read <https://sqlite.org/c3ref/blob_read.html>`__\n" 
 
+#define Blob_readinto_KWNAMES "buffer", "offset", "length"
 #define Blob_readinto_USAGE "Blob.readinto(buffer: bytearray |  array.array[Any] | memoryview, offset: int = 0, length: int = -1) -> None"
 
 #define Blob_readinto_CHECK do { \
@@ -658,6 +670,7 @@
 "\n" \
 "Calls: `sqlite3_blob_reopen <https://sqlite.org/c3ref/blob_reopen.html>`__\n" 
 
+#define Blob_reopen_KWNAMES "rowid"
 #define Blob_reopen_USAGE "Blob.reopen(rowid: int) -> None"
 
 #define Blob_reopen_CHECK do { \
@@ -674,6 +687,7 @@
 "               and 2 if *offset* is relative to the end of the blob.\n" \
 ":raises ValueError: If the resulting offset is before the beginning (less than zero) or beyond the end of the blob.\n" 
 
+#define Blob_seek_KWNAMES "offset", "whence"
 #define Blob_seek_USAGE "Blob.seek(offset: int, whence: int = 0) -> None"
 
 #define Blob_seek_CHECK do { \
@@ -700,10 +714,11 @@
 "\n" \
 "Calls: `sqlite3_blob_write <https://sqlite.org/c3ref/blob_write.html>`__\n" 
 
+#define Blob_write_KWNAMES "data"
 #define Blob_write_USAGE "Blob.write(data: bytes) -> None"
 
 #define Blob_write_CHECK do { \
-  assert(__builtin_types_compatible_p(typeof(data), Py_buffer)); \
+  assert(__builtin_types_compatible_p(typeof(data), PyObject *)); \
 } while(0)
 
 
@@ -753,8 +768,7 @@
 "\n" \
 "Calls: `sqlite3_autovacuum_pages <https://sqlite.org/c3ref/autovacuum_pages.html>`__\n" 
 
-#define Connection_autovacuum_pages_callable_MSG  "argument 'callable' of Connection.autovacuum_pages(callable: Optional[Callable[[str, int, int, int], int]]) -> None" 
-
+#define Connection_autovacuum_pages_KWNAMES "callable"
 #define Connection_autovacuum_pages_USAGE "Connection.autovacuum_pages(callable: Optional[Callable[[str, int, int, int], int]]) -> None"
 
 #define Connection_autovacuum_pages_CHECK do { \
@@ -780,6 +794,7 @@
 "\n" \
 "Calls: `sqlite3_backup_init <https://sqlite.org/c3ref/backup_finish.html#sqlite3backupinit>`__\n" 
 
+#define Connection_backup_KWNAMES "databasename", "sourceconnection", "sourcedatabasename"
 #define Connection_backup_USAGE "Connection.backup(databasename: str, sourceconnection: Connection, sourcedatabasename: str)  -> Backup"
 
 #define Connection_backup_CHECK do { \
@@ -809,8 +824,7 @@
 "\n" \
 "Calls: `sqlite3_blob_open <https://sqlite.org/c3ref/blob_open.html>`__\n" 
 
-#define Connection_blobopen_writeable_MSG  "argument 'writeable' of Connection.blobopen(database: str, table: str, column: str, rowid: int, writeable: bool)  -> Blob" 
-
+#define Connection_blobopen_KWNAMES "database", "table", "column", "rowid", "writeable"
 #define Connection_blobopen_USAGE "Connection.blobopen(database: str, table: str, column: str, rowid: int, writeable: bool)  -> Blob"
 
 #define Connection_blobopen_CHECK do { \
@@ -884,8 +898,7 @@
 "    - Boolean indicating if there was more query text than\n" \
 "      the first statement\n" 
 
-#define Connection_cache_stats_include_entries_MSG  "argument 'include_entries' of Connection.cache_stats(include_entries: bool = False) -> dict[str, int]" 
-
+#define Connection_cache_stats_KWNAMES "include_entries"
 #define Connection_cache_stats_USAGE "Connection.cache_stats(include_entries: bool = False) -> dict[str, int]"
 
 #define Connection_cache_stats_CHECK do { \
@@ -933,8 +946,7 @@
 "\n" \
 "Calls: `sqlite3_close <https://sqlite.org/c3ref/close.html>`__\n" 
 
-#define Connection_close_force_MSG  "argument 'force' of Connection.close(force: bool = False) -> None" 
-
+#define Connection_close_KWNAMES "force"
 #define Connection_close_USAGE "Connection.close(force: bool = False) -> None"
 
 #define Connection_close_CHECK do { \
@@ -965,8 +977,7 @@
 "\n" \
 "Calls: `sqlite3_collation_needed <https://sqlite.org/c3ref/collation_needed.html>`__\n" 
 
-#define Connection_collationneeded_callable_MSG  "argument 'callable' of Connection.collationneeded(callable: Optional[Callable[[Connection, str], None]]) -> None" 
-
+#define Connection_collationneeded_KWNAMES "callable"
 #define Connection_collationneeded_USAGE "Connection.collationneeded(callable: Optional[Callable[[Connection, str], None]]) -> None"
 
 #define Connection_collationneeded_CHECK do { \
@@ -992,6 +1003,7 @@
 "\n" \
 "Calls: `sqlite3_table_column_metadata <https://sqlite.org/c3ref/table_column_metadata.html>`__\n" 
 
+#define Connection_column_metadata_KWNAMES "dbname", "table_name", "column_name"
 #define Connection_column_metadata_USAGE "Connection.column_metadata(dbname: Optional[str], table_name: str, column_name: str) -> tuple[str, str, bool, bool, bool]"
 
 #define Connection_column_metadata_CHECK do { \
@@ -1042,8 +1054,7 @@
 "\n" \
 "Calls: `sqlite3_create_window_function <https://sqlite.org/c3ref/create_function.html>`__\n" 
 
-#define Connection_create_window_function_factory_MSG  "argument 'factory' of Connection.create_window_function(name:str, factory: Optional[WindowFactory], numargs: int =-1, *, flags: int = 0) -> None" 
-
+#define Connection_create_window_function_KWNAMES "name", "factory", "numargs", "flags"
 #define Connection_create_window_function_USAGE "Connection.create_window_function(name:str, factory: Optional[WindowFactory], numargs: int =-1, *, flags: int = 0) -> None"
 
 #define Connection_create_window_function_CHECK do { \
@@ -1095,8 +1106,7 @@
 "\n" \
 "Calls: `sqlite3_create_function_v2 <https://sqlite.org/c3ref/create_function.html>`__\n" 
 
-#define Connection_createaggregatefunction_factory_MSG  "argument 'factory' of Connection.createaggregatefunction(name: str, factory: Optional[AggregateFactory], numargs: int = -1, *, flags: int = 0) -> None" 
-
+#define Connection_createaggregatefunction_KWNAMES "name", "factory", "numargs", "flags"
 #define Connection_createaggregatefunction_USAGE "Connection.createaggregatefunction(name: str, factory: Optional[AggregateFactory], numargs: int = -1, *, flags: int = 0) -> None"
 
 #define Connection_createaggregatefunction_CHECK do { \
@@ -1136,8 +1146,7 @@
 "\n" \
 "Calls: `sqlite3_create_collation_v2 <https://sqlite.org/c3ref/create_collation.html>`__\n" 
 
-#define Connection_createcollation_callback_MSG  "argument 'callback' of Connection.createcollation(name: str, callback: Optional[Callable[[str, str], int]]) -> None" 
-
+#define Connection_createcollation_KWNAMES "name", "callback"
 #define Connection_createcollation_USAGE "Connection.createcollation(name: str, callback: Optional[Callable[[str, str], int]]) -> None"
 
 #define Connection_createcollation_CHECK do { \
@@ -1165,12 +1174,7 @@
 "\n" \
 "Calls: `sqlite3_create_module_v2 <https://sqlite.org/c3ref/create_module.html>`__\n" 
 
-#define Connection_createmodule_use_bestindex_object_MSG  "argument 'use_bestindex_object' of Connection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 1, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None" 
-#define Connection_createmodule_use_no_change_MSG  "argument 'use_no_change' of Connection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 1, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None" 
-#define Connection_createmodule_eponymous_MSG  "argument 'eponymous' of Connection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 1, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None" 
-#define Connection_createmodule_eponymous_only_MSG  "argument 'eponymous_only' of Connection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 1, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None" 
-#define Connection_createmodule_read_only_MSG  "argument 'read_only' of Connection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 1, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None" 
-
+#define Connection_createmodule_KWNAMES "name", "datasource", "use_bestindex_object", "use_no_change", "iVersion", "eponymous", "eponymous_only", "read_only"
 #define Connection_createmodule_USAGE "Connection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 1, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None"
 
 #define Connection_createmodule_CHECK do { \
@@ -1224,9 +1228,7 @@
 "\n" \
 "Calls: `sqlite3_create_function_v2 <https://sqlite.org/c3ref/create_function.html>`__\n" 
 
-#define Connection_createscalarfunction_callable_MSG  "argument 'callable' of Connection.createscalarfunction(name: str, callable: Optional[ScalarProtocol], numargs: int = -1, *, deterministic: bool = False, flags: int = 0) -> None" 
-#define Connection_createscalarfunction_deterministic_MSG  "argument 'deterministic' of Connection.createscalarfunction(name: str, callable: Optional[ScalarProtocol], numargs: int = -1, *, deterministic: bool = False, flags: int = 0) -> None" 
-
+#define Connection_createscalarfunction_KWNAMES "name", "callable", "numargs", "deterministic", "flags"
 #define Connection_createscalarfunction_USAGE "Connection.createscalarfunction(name: str, callable: Optional[ScalarProtocol], numargs: int = -1, *, deterministic: bool = False, flags: int = 0) -> None"
 
 #define Connection_createscalarfunction_CHECK do { \
@@ -1265,6 +1267,7 @@
 "\n" \
 "Calls: `sqlite3_db_filename <https://sqlite.org/c3ref/db_filename.html>`__\n" 
 
+#define Connection_db_filename_KWNAMES "name"
 #define Connection_db_filename_USAGE "Connection.db_filename(name: str) -> str"
 
 #define Connection_db_filename_CHECK do { \
@@ -1293,11 +1296,12 @@
 "\n" \
 "Calls: `sqlite3_deserialize <https://sqlite.org/c3ref/deserialize.html>`__\n" 
 
+#define Connection_deserialize_KWNAMES "name", "contents"
 #define Connection_deserialize_USAGE "Connection.deserialize(name: str, contents: bytes) -> None"
 
 #define Connection_deserialize_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
-  assert(__builtin_types_compatible_p(typeof(contents), Py_buffer)); \
+  assert(__builtin_types_compatible_p(typeof(contents), PyObject *)); \
 } while(0)
 
 
@@ -1307,6 +1311,7 @@
 "Otherwise *keep* is a sequence of strings, naming the virtual tables that\n" \
 "are kept, dropping all others.\n" 
 
+#define Connection_drop_modules_KWNAMES "keep"
 #define Connection_drop_modules_USAGE "Connection.drop_modules(keep: Optional[Sequence[str]]) -> None"
 
 #define Connection_drop_modules_CHECK do { \
@@ -1327,8 +1332,7 @@
 "\n" \
 "  * :meth:`~Connection.loadextension`\n" 
 
-#define Connection_enableloadextension_enable_MSG  "argument 'enable' of Connection.enableloadextension(enable: bool) -> None" 
-
+#define Connection_enableloadextension_KWNAMES "enable"
 #define Connection_enableloadextension_USAGE "Connection.enableloadextension(enable: bool) -> None"
 
 #define Connection_enableloadextension_CHECK do { \
@@ -1395,6 +1399,7 @@
 "*with* block is raised after committing or rolling back the\n" \
 "savepoint.\n" 
 
+#define Connection_exit_KWNAMES "etype", "evalue", "etraceback"
 #define Connection_exit_USAGE "Connection.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[types.TracebackType]) -> Optional[bool]"
 
 #define Connection_exit_CHECK do { \
@@ -1456,8 +1461,7 @@
 "\n" \
 "Calls: `sqlite3_file_control <https://sqlite.org/c3ref/file_control.html>`__\n" 
 
-#define Connection_filecontrol_pointer_MSG  "argument 'pointer' of Connection.filecontrol(dbname: str, op: int, pointer: int) -> bool" 
-
+#define Connection_filecontrol_KWNAMES "dbname", "op", "pointer"
 #define Connection_filecontrol_USAGE "Connection.filecontrol(dbname: str, op: int, pointer: int) -> bool"
 
 #define Connection_filecontrol_CHECK do { \
@@ -1524,6 +1528,7 @@
 "  * :ref:`statementcache`\n" \
 "  * :ref:`vfs`\n" 
 
+#define Connection_init_KWNAMES "filename", "flags", "vfs", "statementcachesize"
 #define Connection_init_USAGE "Connection.__init__(filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: Optional[str] = None, statementcachesize: int = 100)"
 
 #define Connection_init_CHECK do { \
@@ -1573,6 +1578,7 @@
 "\n" \
 "  * :ref:`Example <example_limits>`\n" 
 
+#define Connection_limit_KWNAMES "id", "newval"
 #define Connection_limit_USAGE "Connection.limit(id: int, newval: int = -1) -> int"
 
 #define Connection_limit_CHECK do { \
@@ -1600,6 +1606,7 @@
 "\n" \
 "  * :meth:`~Connection.enableloadextension`\n" 
 
+#define Connection_loadextension_KWNAMES "filename", "entrypoint"
 #define Connection_loadextension_USAGE "Connection.loadextension(filename: str, entrypoint: Optional[str] = None) -> None"
 
 #define Connection_loadextension_CHECK do { \
@@ -1626,6 +1633,7 @@
 "\n" \
 "  Calls: `sqlite3_overload_function <https://sqlite.org/c3ref/overload_function.html>`__\n" 
 
+#define Connection_overloadfunction_KWNAMES "name", "nargs"
 #define Connection_overloadfunction_USAGE "Connection.overloadfunction(name: str, nargs: int) -> None"
 
 #define Connection_overloadfunction_CHECK do { \
@@ -1644,6 +1652,7 @@
 "\n" \
 "* :ref:`Example <example_pragma>`\n" 
 
+#define Connection_pragma_KWNAMES "name", "value"
 #define Connection_pragma_USAGE "Connection.pragma(name: str, value: Optional[SQLiteValue] = None) -> Any"
 
 #define Connection_pragma_CHECK do { \
@@ -1674,6 +1683,7 @@
 "\n" \
 "Calls: `sqlite3_file_control <https://sqlite.org/c3ref/file_control.html>`__\n" 
 
+#define Connection_read_KWNAMES "schema", "which", "offset", "amount"
 #define Connection_read_USAGE "Connection.read(schema: str, which: int, offset: int, amount: int) -> tuple[bool, bytes]"
 
 #define Connection_read_CHECK do { \
@@ -1692,6 +1702,7 @@
 "\n" \
 "Calls: `sqlite3_db_readonly <https://sqlite.org/c3ref/db_readonly.html>`__\n" 
 
+#define Connection_readonly_KWNAMES "name"
 #define Connection_readonly_USAGE "Connection.readonly(name: str) -> bool"
 
 #define Connection_readonly_CHECK do { \
@@ -1736,6 +1747,7 @@
 "\n" \
 " Calls: `sqlite3_serialize <https://sqlite.org/c3ref/serialize.html>`__\n" 
 
+#define Connection_serialize_KWNAMES "name"
 #define Connection_serialize_USAGE "Connection.serialize(name: str) -> bytes"
 
 #define Connection_serialize_CHECK do { \
@@ -1748,6 +1760,7 @@
 "\n" \
 "Calls: `sqlite3_set_last_insert_rowid <https://sqlite.org/c3ref/set_last_insert_rowid.html>`__\n" 
 
+#define Connection_set_last_insert_rowid_KWNAMES "rowid"
 #define Connection_set_last_insert_rowid_USAGE "Connection.set_last_insert_rowid(rowid: int) -> None"
 
 #define Connection_set_last_insert_rowid_CHECK do { \
@@ -1758,8 +1771,7 @@
 #define  Connection_setauthorizer_DOC "setauthorizer($self,callable)\n--\n\nConnection.setauthorizer(callable: Optional[Authorizer]) -> None\n\n" \
 "Sets the :attr:`authorizer`\n" 
 
-#define Connection_setauthorizer_callable_MSG  "argument 'callable' of Connection.setauthorizer(callable: Optional[Authorizer]) -> None" 
-
+#define Connection_setauthorizer_KWNAMES "callable"
 #define Connection_setauthorizer_USAGE "Connection.setauthorizer(callable: Optional[Authorizer]) -> None"
 
 #define Connection_setauthorizer_CHECK do { \
@@ -1787,8 +1799,7 @@
 "\n" \
 "Calls: `sqlite3_busy_handler <https://sqlite.org/c3ref/busy_handler.html>`__\n" 
 
-#define Connection_setbusyhandler_callable_MSG  "argument 'callable' of Connection.setbusyhandler(callable: Optional[Callable[[int], bool]]) -> None" 
-
+#define Connection_setbusyhandler_KWNAMES "callable"
 #define Connection_setbusyhandler_USAGE "Connection.setbusyhandler(callable: Optional[Callable[[int], bool]]) -> None"
 
 #define Connection_setbusyhandler_CHECK do { \
@@ -1814,6 +1825,7 @@
 "\n" \
 "Calls: `sqlite3_busy_timeout <https://sqlite.org/c3ref/busy_timeout.html>`__\n" 
 
+#define Connection_setbusytimeout_KWNAMES "milliseconds"
 #define Connection_setbusytimeout_USAGE "Connection.setbusytimeout(milliseconds: int) -> None"
 
 #define Connection_setbusytimeout_CHECK do { \
@@ -1834,8 +1846,7 @@
 "\n" \
 "Calls: `sqlite3_commit_hook <https://sqlite.org/c3ref/commit_hook.html>`__\n" 
 
-#define Connection_setcommithook_callable_MSG  "argument 'callable' of Connection.setcommithook(callable: Optional[CommitHook]) -> None" 
-
+#define Connection_setcommithook_KWNAMES "callable"
 #define Connection_setcommithook_USAGE "Connection.setcommithook(callable: Optional[CommitHook]) -> None"
 
 #define Connection_setcommithook_CHECK do { \
@@ -1846,8 +1857,7 @@
 #define  Connection_setexectrace_DOC "setexectrace($self,callable)\n--\n\nConnection.setexectrace(callable: Optional[ExecTracer]) -> None\n\n" \
 "Method to set :attr:`Connection.exectrace`\n" 
 
-#define Connection_setexectrace_callable_MSG  "argument 'callable' of Connection.setexectrace(callable: Optional[ExecTracer]) -> None" 
-
+#define Connection_setexectrace_KWNAMES "callable"
 #define Connection_setexectrace_USAGE "Connection.setexectrace(callable: Optional[ExecTracer]) -> None"
 
 #define Connection_setexectrace_CHECK do { \
@@ -1868,8 +1878,7 @@
 "\n" \
 "Calls: `sqlite3_trace_v2 <https://sqlite.org/c3ref/trace_v2.html>`__\n" 
 
-#define Connection_setprofile_callable_MSG  "argument 'callable' of Connection.setprofile(callable: Optional[Callable[[str, int], None]]) -> None" 
-
+#define Connection_setprofile_KWNAMES "callable"
 #define Connection_setprofile_USAGE "Connection.setprofile(callable: Optional[Callable[[str, int], None]]) -> None"
 
 #define Connection_setprofile_CHECK do { \
@@ -1889,8 +1898,7 @@
 "\n" \
 "Calls: `sqlite3_progress_handler <https://sqlite.org/c3ref/progress_handler.html>`__\n" 
 
-#define Connection_setprogresshandler_callable_MSG  "argument 'callable' of Connection.setprogresshandler(callable: Optional[Callable[[], bool]], nsteps: int = 20) -> None" 
-
+#define Connection_setprogresshandler_KWNAMES "callable", "nsteps"
 #define Connection_setprogresshandler_USAGE "Connection.setprogresshandler(callable: Optional[Callable[[], bool]], nsteps: int = 20) -> None"
 
 #define Connection_setprogresshandler_CHECK do { \
@@ -1908,8 +1916,7 @@
 "\n" \
 "Calls: `sqlite3_rollback_hook <https://sqlite.org/c3ref/commit_hook.html>`__\n" 
 
-#define Connection_setrollbackhook_callable_MSG  "argument 'callable' of Connection.setrollbackhook(callable: Optional[Callable[[], None]]) -> None" 
-
+#define Connection_setrollbackhook_KWNAMES "callable"
 #define Connection_setrollbackhook_USAGE "Connection.setrollbackhook(callable: Optional[Callable[[], None]]) -> None"
 
 #define Connection_setrollbackhook_CHECK do { \
@@ -1920,8 +1927,7 @@
 #define  Connection_setrowtrace_DOC "setrowtrace($self,callable)\n--\n\nConnection.setrowtrace(callable: Optional[RowTracer]) -> None\n\n" \
 "Method to set :attr:`Connection.rowtrace`\n" 
 
-#define Connection_setrowtrace_callable_MSG  "argument 'callable' of Connection.setrowtrace(callable: Optional[RowTracer]) -> None" 
-
+#define Connection_setrowtrace_KWNAMES "callable"
 #define Connection_setrowtrace_USAGE "Connection.setrowtrace(callable: Optional[RowTracer]) -> None"
 
 #define Connection_setrowtrace_CHECK do { \
@@ -1954,8 +1960,7 @@
 "\n" \
 "Calls: `sqlite3_update_hook <https://sqlite.org/c3ref/update_hook.html>`__\n" 
 
-#define Connection_setupdatehook_callable_MSG  "argument 'callable' of Connection.setupdatehook(callable: Optional[Callable[[int, str, str, int], None]]) -> None" 
-
+#define Connection_setupdatehook_KWNAMES "callable"
 #define Connection_setupdatehook_USAGE "Connection.setupdatehook(callable: Optional[Callable[[int, str, str, int], None]]) -> None"
 
 #define Connection_setupdatehook_CHECK do { \
@@ -1976,8 +1981,7 @@
 "\n" \
 "Calls: `sqlite3_wal_hook <https://sqlite.org/c3ref/wal_hook.html>`__\n" 
 
-#define Connection_setwalhook_callable_MSG  "argument 'callable' of Connection.setwalhook(callable: Optional[Callable[[Connection, str, int], int]]) -> None" 
-
+#define Connection_setwalhook_KWNAMES "callable"
 #define Connection_setwalhook_USAGE "Connection.setwalhook(callable: Optional[Callable[[Connection, str, int], int]]) -> None"
 
 #define Connection_setwalhook_CHECK do { \
@@ -2013,8 +2017,7 @@
 "\n" \
 "Calls: `sqlite3_db_status <https://sqlite.org/c3ref/db_status.html>`__\n" 
 
-#define Connection_status_reset_MSG  "argument 'reset' of Connection.status(op: int, reset: bool = False) -> tuple[int, int]" 
-
+#define Connection_status_KWNAMES "op", "reset"
 #define Connection_status_USAGE "Connection.status(op: int, reset: bool = False) -> tuple[int, int]"
 
 #define Connection_status_CHECK do { \
@@ -2038,6 +2041,7 @@
 "\n" \
 "Calls: `sqlite3_table_column_metadata <https://sqlite.org/c3ref/table_column_metadata.html>`__\n" 
 
+#define Connection_table_exists_KWNAMES "dbname", "table_name"
 #define Connection_table_exists_USAGE "Connection.table_exists(dbname: Optional[str], table_name: str) -> bool"
 
 #define Connection_table_exists_CHECK do { \
@@ -2091,8 +2095,7 @@
 "  * `sqlite3_trace_v2 <https://sqlite.org/c3ref/trace_v2.html>`__\n" \
 "  * `sqlite3_stmt_status <https://sqlite.org/c3ref/stmt_status.html>`__\n" 
 
-#define Connection_trace_v2_callback_MSG  "argument 'callback' of Connection.trace_v2(mask: int, callback: Optional[Callable[[dict], None]] = None) -> None" 
-
+#define Connection_trace_v2_KWNAMES "mask", "callback"
 #define Connection_trace_v2_USAGE "Connection.trace_v2(mask: int, callback: Optional[Callable[[dict], None]] = None) -> None"
 
 #define Connection_trace_v2_CHECK do { \
@@ -2109,6 +2112,7 @@
 "\n" \
 "Calls: `sqlite3_txn_state <https://sqlite.org/c3ref/txn_state.html>`__\n" 
 
+#define Connection_txn_state_KWNAMES "schema"
 #define Connection_txn_state_USAGE "Connection.txn_state(schema: Optional[str] = None) -> int"
 
 #define Connection_txn_state_CHECK do { \
@@ -2122,6 +2126,7 @@
 "\n" \
 "Calls: `sqlite3_vtab_config <https://sqlite.org/c3ref/vtab_config.html>`__\n" 
 
+#define Connection_vtab_config_KWNAMES "op", "val"
 #define Connection_vtab_config_USAGE "Connection.vtab_config(op: int, val: int = 0) -> None"
 
 #define Connection_vtab_config_CHECK do { \
@@ -2144,6 +2149,7 @@
 "\n" \
 "Calls: `sqlite3_wal_autocheckpoint <https://sqlite.org/c3ref/wal_autocheckpoint.html>`__\n" 
 
+#define Connection_wal_autocheckpoint_KWNAMES "n"
 #define Connection_wal_autocheckpoint_USAGE "Connection.wal_autocheckpoint(n: int) -> None"
 
 #define Connection_wal_autocheckpoint_CHECK do { \
@@ -2165,6 +2171,7 @@
 "\n" \
 "Calls: `sqlite3_wal_checkpoint_v2 <https://sqlite.org/c3ref/wal_checkpoint_v2.html>`__\n" 
 
+#define Connection_wal_checkpoint_KWNAMES "dbname", "mode"
 #define Connection_wal_checkpoint_USAGE "Connection.wal_checkpoint(dbname: Optional[str] = None, mode: int = apsw.SQLITE_CHECKPOINT_PASSIVE) -> tuple[int, int]"
 
 #define Connection_wal_checkpoint_CHECK do { \
@@ -2196,8 +2203,7 @@
 " force is True then all remaining work and state information will be\n" \
 " silently discarded.\n" 
 
-#define Cursor_close_force_MSG  "argument 'force' of Cursor.close(force: bool = False) -> None" 
-
+#define Cursor_close_KWNAMES "force"
 #define Cursor_close_USAGE "Cursor.close(force: bool = False) -> None"
 
 #define Cursor_close_CHECK do { \
@@ -2309,9 +2315,7 @@
 "  * `sqlite3_bind_blob64 <https://sqlite.org/c3ref/bind_blob.html>`__\n" \
 "  * `sqlite3_bind_zeroblob <https://sqlite.org/c3ref/bind_blob.html>`__\n" 
 
-#define Cursor_execute_bindings_MSG  "argument 'bindings' of Cursor.execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor" 
-#define Cursor_execute_can_cache_MSG  "argument 'can_cache' of Cursor.execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor" 
-
+#define Cursor_execute_KWNAMES "statements", "bindings", "can_cache", "prepare_flags", "explain"
 #define Cursor_execute_USAGE "Cursor.execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor"
 
 #define Cursor_execute_CHECK do { \
@@ -2347,8 +2351,7 @@
 "statements can return data.  See :meth:`~Cursor.execute` for more\n" \
 "information.\n" 
 
-#define Cursor_executemany_can_cache_MSG  "argument 'can_cache' of Cursor.executemany(statements: str, sequenceofbindings: Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor" 
-
+#define Cursor_executemany_KWNAMES "statements", "sequenceofbindings", "can_cache", "prepare_flags", "explain"
 #define Cursor_executemany_USAGE "Cursor.executemany(statements: str, sequenceofbindings: Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor"
 
 #define Cursor_executemany_CHECK do { \
@@ -2493,6 +2496,7 @@
 #define  Cursor_init_DOC "__init__($self,connection)\n--\n\nCursor.__init__(connection: Connection)\n\n" \
 "Use :meth:`Connection.cursor` to make a new cursor.\n" 
 
+#define Cursor_init_KWNAMES "connection"
 #define Cursor_init_USAGE "Cursor.__init__(connection: Connection)"
 
 #define Cursor_init_CHECK do { \
@@ -2539,8 +2543,7 @@
 #define  Cursor_setexectrace_DOC "setexectrace($self,callable)\n--\n\nCursor.setexectrace(callable: Optional[ExecTracer]) -> None\n\n" \
 "Sets the :attr:`execution tracer <Cursor.exectrace>`\n" 
 
-#define Cursor_setexectrace_callable_MSG  "argument 'callable' of Cursor.setexectrace(callable: Optional[ExecTracer]) -> None" 
-
+#define Cursor_setexectrace_KWNAMES "callable"
 #define Cursor_setexectrace_USAGE "Cursor.setexectrace(callable: Optional[ExecTracer]) -> None"
 
 #define Cursor_setexectrace_CHECK do { \
@@ -2551,8 +2554,7 @@
 #define  Cursor_setrowtrace_DOC "setrowtrace($self,callable)\n--\n\nCursor.setrowtrace(callable: Optional[RowTracer]) -> None\n\n" \
 "Sets the :attr:`row tracer <Cursor.rowtrace>`\n" 
 
-#define Cursor_setrowtrace_callable_MSG  "argument 'callable' of Cursor.setrowtrace(callable: Optional[RowTracer]) -> None" 
-
+#define Cursor_setrowtrace_KWNAMES "callable"
 #define Cursor_setrowtrace_USAGE "Cursor.setrowtrace(callable: Optional[RowTracer]) -> None"
 
 #define Cursor_setrowtrace_CHECK do { \
@@ -2597,6 +2599,7 @@
 #define  IndexInfo_get_aConstraintUsage_argvIndex_DOC "get_aConstraintUsage_argvIndex($self,which)\n--\n\nIndexInfo.get_aConstraintUsage_argvIndex(which: int) -> int\n\n" \
 "Returns *argvIndex* for *aConstraintUsage[which]*\n" 
 
+#define IndexInfo_get_aConstraintUsage_argvIndex_KWNAMES "which"
 #define IndexInfo_get_aConstraintUsage_argvIndex_USAGE "IndexInfo.get_aConstraintUsage_argvIndex(which: int) -> int"
 
 #define IndexInfo_get_aConstraintUsage_argvIndex_CHECK do { \
@@ -2609,6 +2612,7 @@
 "\n" \
 "Calls: `sqlite3_vtab_in <https://sqlite.org/c3ref/vtab_in.html>`__\n" 
 
+#define IndexInfo_get_aConstraintUsage_in_KWNAMES "which"
 #define IndexInfo_get_aConstraintUsage_in_USAGE "IndexInfo.get_aConstraintUsage_in(which: int) -> bool"
 
 #define IndexInfo_get_aConstraintUsage_in_CHECK do { \
@@ -2619,6 +2623,7 @@
 #define  IndexInfo_get_aConstraintUsage_omit_DOC "get_aConstraintUsage_omit($self,which)\n--\n\nIndexInfo.get_aConstraintUsage_omit(which: int) -> bool\n\n" \
 "Returns *omit* for *aConstraintUsage[which]*\n" 
 
+#define IndexInfo_get_aConstraintUsage_omit_KWNAMES "which"
 #define IndexInfo_get_aConstraintUsage_omit_USAGE "IndexInfo.get_aConstraintUsage_omit(which: int) -> bool"
 
 #define IndexInfo_get_aConstraintUsage_omit_CHECK do { \
@@ -2631,6 +2636,7 @@
 "\n" \
 "Calls: `sqlite3_vtab_collation <https://sqlite.org/c3ref/vtab_collation.html>`__\n" 
 
+#define IndexInfo_get_aConstraint_collation_KWNAMES "which"
 #define IndexInfo_get_aConstraint_collation_USAGE "IndexInfo.get_aConstraint_collation(which: int) -> str"
 
 #define IndexInfo_get_aConstraint_collation_CHECK do { \
@@ -2641,6 +2647,7 @@
 #define  IndexInfo_get_aConstraint_iColumn_DOC "get_aConstraint_iColumn($self,which)\n--\n\nIndexInfo.get_aConstraint_iColumn(which: int) -> int\n\n" \
 "Returns *iColumn* for *aConstraint[which]*\n" 
 
+#define IndexInfo_get_aConstraint_iColumn_KWNAMES "which"
 #define IndexInfo_get_aConstraint_iColumn_USAGE "IndexInfo.get_aConstraint_iColumn(which: int) -> int"
 
 #define IndexInfo_get_aConstraint_iColumn_CHECK do { \
@@ -2651,6 +2658,7 @@
 #define  IndexInfo_get_aConstraint_op_DOC "get_aConstraint_op($self,which)\n--\n\nIndexInfo.get_aConstraint_op(which: int) -> int\n\n" \
 "Returns *op* for *aConstraint[which]*\n" 
 
+#define IndexInfo_get_aConstraint_op_KWNAMES "which"
 #define IndexInfo_get_aConstraint_op_USAGE "IndexInfo.get_aConstraint_op(which: int) -> int"
 
 #define IndexInfo_get_aConstraint_op_CHECK do { \
@@ -2663,6 +2671,7 @@
 "\n" \
 "Calls: `sqlite3_vtab_rhs_value <https://sqlite.org/c3ref/vtab_rhs_value.html>`__\n" 
 
+#define IndexInfo_get_aConstraint_rhs_KWNAMES "which"
 #define IndexInfo_get_aConstraint_rhs_USAGE "IndexInfo.get_aConstraint_rhs(which: int) -> SQLiteValue"
 
 #define IndexInfo_get_aConstraint_rhs_CHECK do { \
@@ -2673,6 +2682,7 @@
 #define  IndexInfo_get_aConstraint_usable_DOC "get_aConstraint_usable($self,which)\n--\n\nIndexInfo.get_aConstraint_usable(which: int) -> bool\n\n" \
 "Returns *usable* for *aConstraint[which]*\n" 
 
+#define IndexInfo_get_aConstraint_usable_KWNAMES "which"
 #define IndexInfo_get_aConstraint_usable_USAGE "IndexInfo.get_aConstraint_usable(which: int) -> bool"
 
 #define IndexInfo_get_aConstraint_usable_CHECK do { \
@@ -2683,6 +2693,7 @@
 #define  IndexInfo_get_aOrderBy_desc_DOC "get_aOrderBy_desc($self,which)\n--\n\nIndexInfo.get_aOrderBy_desc(which: int) -> bool\n\n" \
 "Returns *desc* for *aOrderBy[which]*\n" 
 
+#define IndexInfo_get_aOrderBy_desc_KWNAMES "which"
 #define IndexInfo_get_aOrderBy_desc_USAGE "IndexInfo.get_aOrderBy_desc(which: int) -> bool"
 
 #define IndexInfo_get_aOrderBy_desc_CHECK do { \
@@ -2693,6 +2704,7 @@
 #define  IndexInfo_get_aOrderBy_iColumn_DOC "get_aOrderBy_iColumn($self,which)\n--\n\nIndexInfo.get_aOrderBy_iColumn(which: int) -> int\n\n" \
 "Returns *iColumn* for *aOrderBy[which]*\n" 
 
+#define IndexInfo_get_aOrderBy_iColumn_KWNAMES "which"
 #define IndexInfo_get_aOrderBy_iColumn_USAGE "IndexInfo.get_aOrderBy_iColumn(which: int) -> int"
 
 #define IndexInfo_get_aOrderBy_iColumn_CHECK do { \
@@ -2727,6 +2739,7 @@
 #define  IndexInfo_set_aConstraintUsage_argvIndex_DOC "set_aConstraintUsage_argvIndex($self,which,argvIndex)\n--\n\nIndexInfo.set_aConstraintUsage_argvIndex(which: int, argvIndex: int) -> None\n\n" \
 "Sets *argvIndex* for *aConstraintUsage[which]*\n" 
 
+#define IndexInfo_set_aConstraintUsage_argvIndex_KWNAMES "which", "argvIndex"
 #define IndexInfo_set_aConstraintUsage_argvIndex_USAGE "IndexInfo.set_aConstraintUsage_argvIndex(which: int, argvIndex: int) -> None"
 
 #define IndexInfo_set_aConstraintUsage_argvIndex_CHECK do { \
@@ -2741,8 +2754,7 @@
 "\n" \
 "Calls: `sqlite3_vtab_in <https://sqlite.org/c3ref/vtab_in.html>`__\n" 
 
-#define IndexInfo_set_aConstraintUsage_in_filter_all_MSG  "argument 'filter_all' of IndexInfo.set_aConstraintUsage_in(which: int, filter_all: bool) -> None" 
-
+#define IndexInfo_set_aConstraintUsage_in_KWNAMES "which", "filter_all"
 #define IndexInfo_set_aConstraintUsage_in_USAGE "IndexInfo.set_aConstraintUsage_in(which: int, filter_all: bool) -> None"
 
 #define IndexInfo_set_aConstraintUsage_in_CHECK do { \
@@ -2754,8 +2766,7 @@
 #define  IndexInfo_set_aConstraintUsage_omit_DOC "set_aConstraintUsage_omit($self,which,omit)\n--\n\nIndexInfo.set_aConstraintUsage_omit(which: int, omit: bool) -> None\n\n" \
 "Sets *omit* for *aConstraintUsage[which]*\n" 
 
-#define IndexInfo_set_aConstraintUsage_omit_omit_MSG  "argument 'omit' of IndexInfo.set_aConstraintUsage_omit(which: int, omit: bool) -> None" 
-
+#define IndexInfo_set_aConstraintUsage_omit_KWNAMES "which", "omit"
 #define IndexInfo_set_aConstraintUsage_omit_USAGE "IndexInfo.set_aConstraintUsage_omit(which: int, omit: bool) -> None"
 
 #define IndexInfo_set_aConstraintUsage_omit_CHECK do { \
@@ -2786,8 +2797,7 @@
 "\n" \
 "Calls: `sqlite3_uri_boolean <https://sqlite.org/c3ref/uri_boolean.html>`__\n" 
 
-#define URIFilename_uri_boolean_default__MSG  "argument 'default_' of URIFilename.uri_boolean(name: str, default: bool) -> bool" 
-
+#define URIFilename_uri_boolean_KWNAMES "name", "default_"
 #define URIFilename_uri_boolean_USAGE "URIFilename.uri_boolean(name: str, default: bool) -> bool"
 
 #define URIFilename_uri_boolean_CHECK do { \
@@ -2802,6 +2812,7 @@
 "\n" \
 "Calls: `sqlite3_uri_int64 <https://sqlite.org/c3ref/uri_boolean.html>`__\n" 
 
+#define URIFilename_uri_int_KWNAMES "name", "default_"
 #define URIFilename_uri_int_USAGE "URIFilename.uri_int(name: str, default: int) -> int"
 
 #define URIFilename_uri_int_CHECK do { \
@@ -2815,6 +2826,7 @@
 "\n" \
 "Calls: `sqlite3_uri_parameter <https://sqlite.org/c3ref/uri_boolean.html>`__\n" 
 
+#define URIFilename_uri_parameter_KWNAMES "name"
 #define URIFilename_uri_parameter_USAGE "URIFilename.uri_parameter(name: str) -> Optional[str]"
 
 #define URIFilename_uri_parameter_CHECK do { \
@@ -2833,8 +2845,7 @@
 #define  VFSFcntlPragma_init_DOC "__init__($self,pointer)\n--\n\nVFSFcntlPragma.__init__(pointer: int)\n\n" \
 "The pointer must be what your xFileControl method received.\n" 
 
-#define VFSFcntlPragma_init_pointer_MSG  "argument 'pointer' of VFSFcntlPragma.__init__(pointer: int)" 
-
+#define VFSFcntlPragma_init_KWNAMES "pointer"
 #define VFSFcntlPragma_init_USAGE "VFSFcntlPragma.__init__(pointer: int)"
 
 #define VFSFcntlPragma_init_CHECK do { \
@@ -2893,8 +2904,7 @@
 "\n" \
 "  :meth:`VFS.xOpen`\n" 
 
-#define VFSFile_init_flags_MSG  "argument 'flags' of VFSFile.__init__(vfs: str, filename: str | URIFilename, flags: list[int])" 
-
+#define VFSFile_init_KWNAMES "vfs", "filename", "flags"
 #define VFSFile_init_USAGE "VFSFile.__init__(vfs: str, filename: str | URIFilename, flags: list[int])"
 
 #define VFSFile_init_CHECK do { \
@@ -2948,8 +2958,7 @@
 " # we understood the op\n" \
 "       return True\n" 
 
-#define VFSFile_xFileControl_ptr_MSG  "argument 'ptr' of VFSFile.xFileControl(op: int, ptr: int) -> bool" 
-
+#define VFSFile_xFileControl_KWNAMES "op", "ptr"
 #define VFSFile_xFileControl_USAGE "VFSFile.xFileControl(op: int, ptr: int) -> bool"
 
 #define VFSFile_xFileControl_CHECK do { \
@@ -2968,6 +2977,7 @@
 "family of constants. If you can't increase the lock level because\n" \
 "someone else has locked it, then raise :exc:`BusyError`.\n" 
 
+#define VFSFile_xLock_KWNAMES "level"
 #define VFSFile_xLock_USAGE "VFSFile.xLock(level: int) -> None"
 
 #define VFSFile_xLock_CHECK do { \
@@ -2987,6 +2997,7 @@
 ":param amount: Number of bytes to read\n" \
 ":param offset: Where to start reading. This number may be 64 bit once the database is larger than 2GB.\n" 
 
+#define VFSFile_xRead_KWNAMES "amount", "offset"
 #define VFSFile_xRead_USAGE "VFSFile.xRead(amount: int, offset: int) -> bytes"
 
 #define VFSFile_xRead_CHECK do { \
@@ -3007,6 +3018,7 @@
 "<https://sqlite.org/c3ref/c_sync_dataonly.html>`_ detailing what\n" \
 "needs to be synced.  You can sync more than what is requested.\n" 
 
+#define VFSFile_xSync_KWNAMES "flags"
 #define VFSFile_xSync_USAGE "VFSFile.xSync(flags: int) -> None"
 
 #define VFSFile_xSync_CHECK do { \
@@ -3018,6 +3030,7 @@
 "Set the file length to *newsize* (which may be more or less than the\n" \
 "current length).\n" 
 
+#define VFSFile_xTruncate_KWNAMES "newsize"
 #define VFSFile_xTruncate_USAGE "VFSFile.xTruncate(newsize: int) -> None"
 
 #define VFSFile_xTruncate_CHECK do { \
@@ -3030,6 +3043,7 @@
 "`SQLITE_LOCK <https://sqlite.org/c3ref/c_lock_exclusive.html>`_\n" \
 "family of constants.\n" 
 
+#define VFSFile_xUnlock_KWNAMES "level"
 #define VFSFile_xUnlock_USAGE "VFSFile.xUnlock(level: int) -> None"
 
 #define VFSFile_xUnlock_CHECK do { \
@@ -3046,10 +3060,11 @@
 "\n" \
 ":param offset: Where to start writing. This number may be 64 bit once the database is larger than 2GB.\n" 
 
+#define VFSFile_xWrite_KWNAMES "data", "offset"
 #define VFSFile_xWrite_USAGE "VFSFile.xWrite(data: bytes, offset: int) -> None"
 
 #define VFSFile_xWrite_CHECK do { \
-  assert(__builtin_types_compatible_p(typeof(data), Py_buffer)); \
+  assert(__builtin_types_compatible_p(typeof(data), PyObject *)); \
   assert(__builtin_types_compatible_p(typeof(offset), long long)); \
 } while(0)
 
@@ -3094,9 +3109,7 @@
 "  * `sqlite3_vfs_register <https://sqlite.org/c3ref/vfs_find.html>`__\n" \
 "  * `sqlite3_vfs_find <https://sqlite.org/c3ref/vfs_find.html>`__\n" 
 
-#define VFS_init_makedefault_MSG  "argument 'makedefault' of VFS.__init__(name: str, base: Optional[str] = None, makedefault: bool = False, maxpathname: int = 1024, *, iVersion: int = 3, exclude: Optional[set[str]] = None)" 
-#define VFS_init_exclude_MSG  "argument 'exclude' of VFS.__init__(name: str, base: Optional[str] = None, makedefault: bool = False, maxpathname: int = 1024, *, iVersion: int = 3, exclude: Optional[set[str]] = None)" 
-
+#define VFS_init_KWNAMES "name", "base", "makedefault", "maxpathname", "iVersion", "exclude"
 #define VFS_init_USAGE "VFS.__init__(name: str, base: Optional[str] = None, makedefault: bool = False, maxpathname: int = 1024, *, iVersion: int = 3, exclude: Optional[set[str]] = None)"
 
 #define VFS_init_CHECK do { \
@@ -3131,6 +3144,7 @@
 ":param pathname: File or directory to check\n" \
 ":param flags: One of the `access flags <https://sqlite.org/c3ref/c_access_exists.html>`_\n" 
 
+#define VFS_xAccess_KWNAMES "pathname", "flags"
 #define VFS_xAccess_USAGE "VFS.xAccess(pathname: str, flags: int) -> bool"
 
 #define VFS_xAccess_CHECK do { \
@@ -3163,8 +3177,7 @@
 "  platters.  ie if there was an immediate power failure after this\n" \
 "  call returns, on a reboot the file would still be deleted.\n" 
 
-#define VFS_xDelete_syncdir_MSG  "argument 'syncdir' of VFS.xDelete(filename: str, syncdir: bool) -> None" 
-
+#define VFS_xDelete_KWNAMES "filename", "syncdir"
 #define VFS_xDelete_USAGE "VFS.xDelete(filename: str, syncdir: bool) -> None"
 
 #define VFS_xDelete_CHECK do { \
@@ -3183,8 +3196,7 @@
 "     _ctypes.dlclose(handle)       # Linux/Mac/Unix\n" \
 "     _ctypes.FreeLibrary(handle)   # Windows\n" 
 
-#define VFS_xDlClose_handle_MSG  "argument 'handle' of VFS.xDlClose(handle: int) -> None" 
-
+#define VFS_xDlClose_KWNAMES "handle"
 #define VFS_xDlClose_USAGE "VFS.xDlClose(handle: int) -> None"
 
 #define VFS_xDlClose_CHECK do { \
@@ -3213,6 +3225,7 @@
 "  def xDlOpen(name):\n" \
 "     return ctypes.cdll.LoadLibrary(name)._handle\n" 
 
+#define VFS_xDlOpen_KWNAMES "filename"
 #define VFS_xDlOpen_USAGE "VFS.xDlOpen(filename: str) -> int"
 
 #define VFS_xDlOpen_CHECK do { \
@@ -3231,8 +3244,7 @@
 ":param handle: The value returned from an earlier :meth:`~VFS.xDlOpen` call\n" \
 ":param symbol: A string\n" 
 
-#define VFS_xDlSym_handle_MSG  "argument 'handle' of VFS.xDlSym(handle: int, symbol: str) -> int" 
-
+#define VFS_xDlSym_KWNAMES "handle", "symbol"
 #define VFS_xDlSym_USAGE "VFS.xDlSym(handle: int, symbol: str) -> int"
 
 #define VFS_xDlSym_CHECK do { \
@@ -3244,6 +3256,7 @@
 #define  VFS_xFullPathname_DOC "xFullPathname($self,name)\n--\n\nVFS.xFullPathname(name: str) -> str\n\n" \
 "Return the absolute pathname for name.  You can use ``os.path.abspath`` to do this.\n" 
 
+#define VFS_xFullPathname_KWNAMES "name"
 #define VFS_xFullPathname_USAGE "VFS.xFullPathname(name: str) -> str"
 
 #define VFS_xFullPathname_CHECK do { \
@@ -3259,6 +3272,7 @@
 "Returns a pointer for the current method implementing the named\n" \
 "system call.  Return None if the call does not exist.\n" 
 
+#define VFS_xGetSystemCall_KWNAMES "name"
 #define VFS_xGetSystemCall_USAGE "VFS.xGetSystemCall(name: str) -> Optional[int]"
 
 #define VFS_xGetSystemCall_CHECK do { \
@@ -3273,6 +3287,7 @@
 "name after the one passed in.  If name is the last system call\n" \
 "then return None.\n" 
 
+#define VFS_xNextSystemCall_KWNAMES "name"
 #define VFS_xNextSystemCall_USAGE "VFS.xNextSystemCall(name: Optional[str]) -> Optional[str]"
 
 #define VFS_xNextSystemCall_CHECK do { \
@@ -3298,9 +3313,7 @@
 "  opened it read only then *SQLITE_OPEN_READONLY* should be\n" \
 "  set.\n" 
 
-#define VFS_xOpen_name_MSG  "argument 'name' of VFS.xOpen(name: Optional[str | URIFilename], flags: list[int,int]) -> VFSFile" 
-#define VFS_xOpen_flags_MSG  "argument 'flags' of VFS.xOpen(name: Optional[str | URIFilename], flags: list[int,int]) -> VFSFile" 
-
+#define VFS_xOpen_KWNAMES "name", "flags"
 #define VFS_xOpen_USAGE "VFS.xOpen(name: Optional[str | URIFilename], flags: list[int,int]) -> VFSFile"
 
 #define VFS_xOpen_CHECK do { \
@@ -3316,6 +3329,7 @@
 "return less than the number of bytes requested including None. If\n" \
 "you return more then the surplus is ignored.\n" 
 
+#define VFS_xRandomness_KWNAMES "numbytes"
 #define VFS_xRandomness_USAGE "VFS.xRandomness(numbytes: int) -> bytes"
 
 #define VFS_xRandomness_CHECK do { \
@@ -3343,8 +3357,7 @@
 ":returns: True if the system call was set.  False if the system\n" \
 "  call is not known.\n" 
 
-#define VFS_xSetSystemCall_pointer_MSG  "argument 'pointer' of VFS.xSetSystemCall(name: Optional[str], pointer: int) -> bool" 
-
+#define VFS_xSetSystemCall_KWNAMES "name", "pointer"
 #define VFS_xSetSystemCall_USAGE "VFS.xSetSystemCall(name: Optional[str], pointer: int) -> bool"
 
 #define VFS_xSetSystemCall_CHECK do { \
@@ -3363,6 +3376,7 @@
 "  rounded the microseconds number up to the nearest second and\n" \
 "  should return that rounded up value.\n" 
 
+#define VFS_xSleep_KWNAMES "microseconds"
 #define VFS_xSleep_USAGE "VFS.xSleep(microseconds: int) -> int"
 
 #define VFS_xSleep_CHECK do { \
@@ -3396,6 +3410,7 @@
 #define  Zeroblob_init_DOC "__init__($self,size)\n--\n\nzeroblob.__init__(size: int)\n\n" \
 ":param size: Number of zeroed bytes to create\n" 
 
+#define Zeroblob_init_KWNAMES "size"
 #define Zeroblob_init_USAGE "zeroblob.__init__(size: int)"
 
 #define Zeroblob_init_CHECK do { \

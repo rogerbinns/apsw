@@ -49,6 +49,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef PyObject_CallObject
 #undef PyObject_GetAttr
 #undef PyObject_GetBuffer
+#undef PyObject_GetBufferContiguous
 #undef PyObject_GetIter
 #undef PyObject_IsTrue
 #undef PyObject_IsTrueStrict
@@ -687,6 +688,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res = (typeof (_res))18;                                                                                    \
     }                                                                                                                \
     _res;                                                                                                            \
+})
+#define PyObject_GetBufferContiguous(...) \
+({                                                                                                                             \
+    __auto_type _res = 0 ? PyObject_GetBufferContiguous(__VA_ARGS__) : 0;                                                      \
+                                                                                                                               \
+    _res = (typeof (_res))APSW_FaultInjectControl("PyObject_GetBufferContiguous", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                               \
+    if ((typeof (_res))0x1FACADE == _res)                                                                                      \
+       _res = PyObject_GetBufferContiguous(__VA_ARGS__);                                                                       \
+    else if ((typeof(_res))0x2FACADE == _res)                                                                                  \
+    {                                                                                                                          \
+        PyObject_GetBufferContiguous(__VA_ARGS__);                                                                             \
+        _res = (typeof (_res))18;                                                                                              \
+    }                                                                                                                          \
+    _res;                                                                                                                      \
 })
 #define PyObject_GetIter(...) \
 ({                                                                                                                 \
