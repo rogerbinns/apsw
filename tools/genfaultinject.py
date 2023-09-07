@@ -11,18 +11,18 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 
 call_pattern = """
 ({
-    __auto_type _res = 0 ? PySet_New(__VA_ARGS__) : 0;
+    __auto_type _res_PySet_New = 0 ? PySet_New(__VA_ARGS__) : 0;
 
-    _res = (typeof (_res))APSW_FaultInjectControl("PySet_New", __FILE__, __func__, __LINE__, #__VA_ARGS__);
+    _res_PySet_New = (typeof (_res_PySet_New))APSW_FaultInjectControl("PySet_New", __FILE__, __func__, __LINE__, #__VA_ARGS__);
 
-    if ((typeof (_res))0x1FACADE == _res)
-       _res = PySet_New(__VA_ARGS__);
-    else if ((typeof(_res))0x2FACADE == _res)
+    if ((typeof (_res_PySet_New))0x1FACADE == _res_PySet_New)
+       _res_PySet_New = PySet_New(__VA_ARGS__);
+    else if ((typeof(_res_PySet_New))0x2FACADE == _res_PySet_New)
     {
         PySet_New(__VA_ARGS__);
-        _res = (typeof (_res))18;
+        _res_PySet_New = (typeof (_res_PySet_New))18;
     }
-    _res;
+    _res_PySet_New;
 })
 """
 
