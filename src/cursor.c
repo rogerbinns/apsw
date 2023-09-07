@@ -345,12 +345,13 @@ APSWCursor_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSE
 */
 
 static int
-APSWCursor_init(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+APSWCursor_init(APSWCursor *self, PyObject *args, PyObject *kwargs)
 {
   Connection *connection = NULL;
 
   {
     Cursor_init_CHECK;
+    ARG_CONVERT_VARARGS_TO_FASTCALL;
     ARG_PROLOG(1, Cursor_init_KWNAMES);
     ARG_MANDATORY ARG_Connection(connection);
     ARG_EPILOG(-1, Cursor_init_USAGE);

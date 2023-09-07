@@ -154,11 +154,12 @@ The pointer must be what your xFileControl method received.
 
 */
 static int
-apswfcntl_pragma_init(apswfcntl_pragma *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+apswfcntl_pragma_init(apswfcntl_pragma *self, PyObject *args, PyObject *kwargs)
 {
   void *pointer = NULL;
   {
     VFSFcntlPragma_init_CHECK;
+    ARG_CONVERT_VARARGS_TO_FASTCALL;
     ARG_PROLOG(1, VFSFcntlPragma_init_KWNAMES);
     ARG_MANDATORY ARG_pointer(pointer);
     ARG_EPILOG(-1, VFSFcntlPragma_init_USAGE);
@@ -1823,7 +1824,7 @@ APSWVFS_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSED(k
     -* sqlite3_vfs_register sqlite3_vfs_find
 */
 static int
-APSWVFS_init(APSWVFS *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+APSWVFS_init(APSWVFS *self, PyObject *args, PyObject *kwargs)
 {
   const char *base = NULL, *name = NULL;
   int makedefault = 0, maxpathname = 1024, res, iVersion = 3;
@@ -1831,6 +1832,7 @@ APSWVFS_init(APSWVFS *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, P
 
   {
     VFS_init_CHECK;
+    ARG_CONVERT_VARARGS_TO_FASTCALL;
     ARG_PROLOG(1, VFS_init_KWNAMES);
     ARG_MANDATORY ARG_str(name);
     ARG_OPTIONAL ARG_optional_str(base);
@@ -2063,7 +2065,7 @@ APSWVFSFile_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUS
       :meth:`VFS.xOpen`
 */
 static int
-APSWVFSFile_init(APSWVFSFile *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwargs)
 {
   const char *vfs = NULL;
   PyObject *flags = NULL, *pyflagsin = NULL, *pyflagsout = NULL, *filename = NULL;
@@ -2077,6 +2079,7 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *const *fast_args, Py_ssize_t fast_
 
   {
     VFSFile_init_CHECK;
+    ARG_CONVERT_VARARGS_TO_FASTCALL;
     ARG_PROLOG(3, VFSFile_init_KWNAMES);
     ARG_MANDATORY ARG_str(vfs);
     ARG_MANDATORY ARG_pyobject(filename);

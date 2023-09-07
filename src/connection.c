@@ -407,7 +407,7 @@ Connection_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSE
 static int apswvfs_xAccess(sqlite3_vfs *vfs, const char *zName, int flags, int *pResOut);
 
 static int
-Connection_init(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+Connection_init(Connection *self, PyObject *args, PyObject *kwargs)
 {
   PyObject *hooks = NULL, *hook = NULL, *iterator = NULL, *hookresult = NULL;
   const char *filename = NULL;
@@ -419,6 +419,7 @@ Connection_init(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_na
 
   {
     Connection_init_CHECK;
+    ARG_CONVERT_VARARGS_TO_FASTCALL;
     ARG_PROLOG(1, Connection_init_KWNAMES);
     ARG_MANDATORY ARG_str(filename);
     ARG_OPTIONAL ARG_int(flags);

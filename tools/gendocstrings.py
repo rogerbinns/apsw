@@ -644,12 +644,14 @@ def do_argparse(item):
     res.append("} while(0)\n")
     if max_pos is None:
         max_pos = len(kwlist)
+    is_init = item["symbol"].endswith("_init")
     code = f"""\
   {{
     { item['symbol'] }_CHECK;
+    { "ARG_CONVERT_VARARGS_TO_FASTCALL;" if is_init else "" }
     ARG_PROLOG({ max_pos}, { item['symbol'] }_KWNAMES);
 """ + code + f"""
-    ARG_EPILOG({ "NULL" if not item["symbol"].endswith("_init") else -1 }, { item['symbol'] }_USAGE);
+    ARG_EPILOG({ "NULL" if not is_init else -1 }, { item['symbol'] }_USAGE);
   }}"""
 
     code = "\n".join(line for line in code.split("\n") if line.strip())

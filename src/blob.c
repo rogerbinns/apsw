@@ -69,12 +69,13 @@ ZeroBlobBind_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNU
   :param size: Number of zeroed bytes to create
 */
 static int
-ZeroBlobBind_init(ZeroBlobBind *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+ZeroBlobBind_init(ZeroBlobBind *self, PyObject *args, PyObject *kwargs)
 {
   long long size;
 
   {
     Zeroblob_init_CHECK;
+    ARG_CONVERT_VARARGS_TO_FASTCALL;
     ARG_PROLOG(1, Zeroblob_init_KWNAMES);
     ARG_MANDATORY ARG_int64(size);
     ARG_EPILOG(-1, Zeroblob_init_USAGE);
