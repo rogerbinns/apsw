@@ -118,13 +118,19 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
         argp_optindex++;                                    \
     } while (0)
 
-#define ARG_str(varname)                                    \
-    do                                                      \
-    {                                                       \
-        varname = PyUnicode_AsUTF8(useargs[argp_optindex]); \
-        if (!varname)                                       \
-            goto param_error;                               \
-        argp_optindex++;                                    \
+#define ARG_str(varname)                                                      \
+    do                                                                        \
+    {                                                                         \
+        Py_ssize_t sz;                                                        \
+        varname = PyUnicode_AsUTF8AndSize(useargs[argp_optindex], &sz);       \
+        if (!varname)                                                         \
+            goto param_error;                                                 \
+        if ((Py_ssize_t)strlen(varname) != sz)                                \
+        {                                                                     \
+            PyErr_Format(PyExc_ValueError, "String has embedded null bytes"); \
+            goto param_error;                                                 \
+        }                                                                     \
+        argp_optindex++;                                                      \
     } while (0)
 
 #define ARG_PyUnicode(varname)                                                                           \
