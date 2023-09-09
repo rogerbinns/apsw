@@ -24,7 +24,7 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
     for (cmp = 0; cmp < n_kwlist; cmp++)
     {
         if (0 == strcmp(*kwname, kwlist[cmp]))
-            return cmp;
+            return (int)cmp;
     }
     return -1;
 }
@@ -34,7 +34,7 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
     const char *unknown_keyword = NULL;                                                           \
     const Py_ssize_t maxpos_args_ = maxpos_args;                                                  \
     const int maxargs = Py_ARRAY_LENGTH(kwlist);                                                  \
-    PyObject *myargs[maxargs];                                                                    \
+    PyObject *myargs[Py_ARRAY_LENGTH(kwlist)];                                                                    \
     PyObject **useargs = (PyObject **)fast_args;                                                  \
     Py_ssize_t actual_nargs = PyVectorcall_NARGS(fast_nargs);                                     \
     if (actual_nargs > maxpos_args)                                                               \
