@@ -162,7 +162,7 @@ apswfcntl_pragma_init(apswfcntl_pragma *self, PyObject *args, PyObject *kwargs)
     ARG_CONVERT_VARARGS_TO_FASTCALL;
     ARG_PROLOG(1, VFSFcntlPragma_init_KWNAMES);
     ARG_MANDATORY ARG_pointer(pointer);
-    ARG_EPILOG(-1, VFSFcntlPragma_init_USAGE);
+    ARG_EPILOG(-1, VFSFcntlPragma_init_USAGE, Py_XDECREF(fast_kwnames));
   }
   self->strings = pointer;
   return 0;
@@ -474,7 +474,7 @@ apswvfspy_xDelete(APSWVFS *self, PyObject *const *fast_args, Py_ssize_t fast_nar
     ARG_PROLOG(2, VFS_xDelete_KWNAMES);
     ARG_MANDATORY ARG_str(filename);
     ARG_MANDATORY ARG_bool(syncdir);
-    ARG_EPILOG(NULL, VFS_xDelete_USAGE);
+    ARG_EPILOG(NULL, VFS_xDelete_USAGE,);
   }
   res = self->basevfs->xDelete(self->basevfs, filename, syncdir);
 
@@ -540,7 +540,7 @@ apswvfspy_xAccess(APSWVFS *self, PyObject *const *fast_args, Py_ssize_t fast_nar
     ARG_PROLOG(2, VFS_xAccess_KWNAMES);
     ARG_MANDATORY ARG_str(pathname);
     ARG_MANDATORY ARG_int(flags);
-    ARG_EPILOG(NULL, VFS_xAccess_USAGE);
+    ARG_EPILOG(NULL, VFS_xAccess_USAGE,);
   }
 
   res = self->basevfs->xAccess(self->basevfs, pathname, flags, &resout);
@@ -626,7 +626,7 @@ apswvfspy_xFullPathname(APSWVFS *self, PyObject *const *fast_args, Py_ssize_t fa
     VFS_xFullPathname_CHECK;
     ARG_PROLOG(1, VFS_xFullPathname_KWNAMES);
     ARG_MANDATORY ARG_str(name);
-    ARG_EPILOG(NULL, VFS_xFullPathname_USAGE);
+    ARG_EPILOG(NULL, VFS_xFullPathname_USAGE,);
   }
 
   resbuf = PyMem_Calloc(1, self->basevfs->mxPathname + 1);
@@ -775,7 +775,7 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *const *fast_args, Py_ssize_t fast_nargs
     ARG_PROLOG(2, VFS_xOpen_KWNAMES);
     ARG_MANDATORY ARG_optional_str_URIFilename(name);
     ARG_MANDATORY ARG_List_int_int(flags);
-    ARG_EPILOG(NULL, VFS_xOpen_USAGE);
+    ARG_EPILOG(NULL, VFS_xOpen_USAGE,);
   }
 
   if (Py_IsNone(name))
@@ -895,7 +895,7 @@ apswvfspy_xDlOpen(APSWVFS *self, PyObject *const *fast_args, Py_ssize_t fast_nar
     VFS_xDlOpen_CHECK;
     ARG_PROLOG(1, VFS_xDlOpen_KWNAMES);
     ARG_MANDATORY ARG_str(filename);
-    ARG_EPILOG(NULL, VFS_xDlOpen_USAGE);
+    ARG_EPILOG(NULL, VFS_xDlOpen_USAGE,);
   }
   res = self->basevfs->xDlOpen(self->basevfs, filename);
 
@@ -959,7 +959,7 @@ apswvfspy_xDlSym(APSWVFS *self, PyObject *const *fast_args, Py_ssize_t fast_narg
     ARG_PROLOG(2, VFS_xDlSym_KWNAMES);
     ARG_MANDATORY ARG_pointer(handle);
     ARG_MANDATORY ARG_str(symbol);
-    ARG_EPILOG(NULL, VFS_xDlSym_USAGE);
+    ARG_EPILOG(NULL, VFS_xDlSym_USAGE,);
   }
   res = self->basevfs->xDlSym(self->basevfs, handle, symbol);
 
@@ -1014,7 +1014,7 @@ apswvfspy_xDlClose(APSWVFS *self, PyObject *const *fast_args, Py_ssize_t fast_na
     VFS_xDlClose_CHECK;
     ARG_PROLOG(1, VFS_xDlClose_KWNAMES);
     ARG_MANDATORY ARG_pointer(handle);
-    ARG_EPILOG(NULL, VFS_xDlClose_USAGE);
+    ARG_EPILOG(NULL, VFS_xDlClose_USAGE,);
   }
   self->basevfs->xDlClose(self->basevfs, handle);
 
@@ -1182,7 +1182,7 @@ apswvfspy_xRandomness(APSWVFS *self, PyObject *const *fast_args, Py_ssize_t fast
     VFS_xRandomness_CHECK;
     ARG_PROLOG(1, VFS_xRandomness_KWNAMES);
     ARG_MANDATORY ARG_int(numbytes);
-    ARG_EPILOG(NULL, VFS_xRandomness_USAGE);
+    ARG_EPILOG(NULL, VFS_xRandomness_USAGE,);
   }
   if (numbytes < 0)
     return PyErr_Format(PyExc_ValueError, "You can't have negative amounts of randomness!");
@@ -1257,7 +1257,7 @@ apswvfspy_xSleep(APSWVFS *self, PyObject *const *fast_args, Py_ssize_t fast_narg
     VFS_xSleep_CHECK;
     ARG_PROLOG(1, VFS_xSleep_KWNAMES);
     ARG_MANDATORY ARG_int(microseconds);
-    ARG_EPILOG(NULL, VFS_xSleep_USAGE);
+    ARG_EPILOG(NULL, VFS_xSleep_USAGE,);
   }
   return PyLong_FromLong(self->basevfs->xSleep(self->basevfs, microseconds));
 }
@@ -1567,7 +1567,7 @@ apswvfspy_xSetSystemCall(APSWVFS *self, PyObject *const *fast_args, Py_ssize_t f
     ARG_PROLOG(2, VFS_xSetSystemCall_KWNAMES);
     ARG_MANDATORY ARG_optional_str(name);
     ARG_MANDATORY ARG_pointer(pointer);
-    ARG_EPILOG(NULL, VFS_xSetSystemCall_USAGE);
+    ARG_EPILOG(NULL, VFS_xSetSystemCall_USAGE,);
   }
 
   res = self->basevfs->xSetSystemCall(self->basevfs, name, pointer);
@@ -1633,7 +1633,7 @@ apswvfspy_xGetSystemCall(APSWVFS *self, PyObject *const *fast_args, Py_ssize_t f
     VFS_xGetSystemCall_CHECK;
     ARG_PROLOG(1, VFS_xGetSystemCall_KWNAMES);
     ARG_MANDATORY ARG_str(name);
-    ARG_EPILOG(NULL, VFS_xGetSystemCall_USAGE);
+    ARG_EPILOG(NULL, VFS_xGetSystemCall_USAGE,);
   }
   ptr = self->basevfs->xGetSystemCall(self->basevfs, name);
 
@@ -1694,7 +1694,7 @@ apswvfspy_xNextSystemCall(APSWVFS *self, PyObject *const *fast_args, Py_ssize_t 
     VFS_xNextSystemCall_CHECK;
     ARG_PROLOG(1, VFS_xNextSystemCall_KWNAMES);
     ARG_MANDATORY ARG_optional_str(name);
-    ARG_EPILOG(NULL, VFS_xNextSystemCall_USAGE);
+    ARG_EPILOG(NULL, VFS_xNextSystemCall_USAGE,);
   }
 
   zName = self->basevfs->xNextSystemCall(self->basevfs, name);
@@ -1833,14 +1833,14 @@ APSWVFS_init(APSWVFS *self, PyObject *args, PyObject *kwargs)
   {
     VFS_init_CHECK;
     ARG_CONVERT_VARARGS_TO_FASTCALL;
-    ARG_PROLOG(1, VFS_init_KWNAMES);
+    ARG_PROLOG(4, VFS_init_KWNAMES);
     ARG_MANDATORY ARG_str(name);
     ARG_OPTIONAL ARG_optional_str(base);
     ARG_OPTIONAL ARG_bool(makedefault);
     ARG_OPTIONAL ARG_int(maxpathname);
     ARG_OPTIONAL ARG_int(iVersion);
     ARG_OPTIONAL ARG_optional_set(exclude);
-    ARG_EPILOG(-1, VFS_init_USAGE);
+    ARG_EPILOG(-1, VFS_init_USAGE, Py_XDECREF(fast_kwnames));
   }
 
   if (iVersion < 1 || iVersion > 3)
@@ -2084,7 +2084,7 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwargs)
     ARG_MANDATORY ARG_str(vfs);
     ARG_MANDATORY ARG_pyobject(filename);
     ARG_MANDATORY ARG_List_int_int(flags);
-    ARG_EPILOG(-1, VFSFile_init_USAGE);
+    ARG_EPILOG(-1, VFSFile_init_USAGE, Py_XDECREF(fast_kwnames));
   }
 
   if (Py_TYPE(filename) == &APSWURIFilenameType)
@@ -2259,7 +2259,7 @@ apswvfsfilepy_xRead(APSWVFSFile *self, PyObject *const *fast_args, Py_ssize_t fa
     ARG_PROLOG(2, VFSFile_xRead_KWNAMES);
     ARG_MANDATORY ARG_int(amount);
     ARG_MANDATORY ARG_int64(offset);
-    ARG_EPILOG(NULL, VFSFile_xRead_USAGE);
+    ARG_EPILOG(NULL, VFSFile_xRead_USAGE,);
   }
 
   buffy = PyBytes_FromStringAndSize(NULL, amount);
@@ -2345,7 +2345,7 @@ apswvfsfilepy_xWrite(APSWVFSFile *self, PyObject *const *fast_args, Py_ssize_t f
     ARG_PROLOG(2, VFSFile_xWrite_KWNAMES);
     ARG_MANDATORY ARG_py_buffer(data);
     ARG_MANDATORY ARG_int64(offset);
-    ARG_EPILOG(NULL, VFSFile_xWrite_USAGE);
+    ARG_EPILOG(NULL, VFSFile_xWrite_USAGE,);
   }
 
   if (0 != PyObject_GetBufferContiguous(data, &data_buffer, PyBUF_SIMPLE))
@@ -2407,7 +2407,7 @@ apswvfsfilepy_xUnlock(APSWVFSFile *self, PyObject *const *fast_args, Py_ssize_t 
     VFSFile_xUnlock_CHECK;
     ARG_PROLOG(1, VFSFile_xUnlock_KWNAMES);
     ARG_MANDATORY ARG_int(level);
-    ARG_EPILOG(NULL, VFSFile_xUnlock_USAGE);
+    ARG_EPILOG(NULL, VFSFile_xUnlock_USAGE,);
   }
   res = self->base->pMethods->xUnlock(self->base, level);
 
@@ -2467,7 +2467,7 @@ apswvfsfilepy_xLock(APSWVFSFile *self, PyObject *const *fast_args, Py_ssize_t fa
     VFSFile_xLock_CHECK;
     ARG_PROLOG(1, VFSFile_xLock_KWNAMES);
     ARG_MANDATORY ARG_int(level);
-    ARG_EPILOG(NULL, VFSFile_xLock_USAGE);
+    ARG_EPILOG(NULL, VFSFile_xLock_USAGE,);
   }
 
   res = self->base->pMethods->xLock(self->base, level);
@@ -2520,7 +2520,7 @@ apswvfsfilepy_xTruncate(APSWVFSFile *self, PyObject *const *fast_args, Py_ssize_
     VFSFile_xTruncate_CHECK;
     ARG_PROLOG(1, VFSFile_xTruncate_KWNAMES);
     ARG_MANDATORY ARG_int64(newsize);
-    ARG_EPILOG(NULL, VFSFile_xTruncate_USAGE);
+    ARG_EPILOG(NULL, VFSFile_xTruncate_USAGE,);
   }
   res = self->base->pMethods->xTruncate(self->base, newsize);
 
@@ -2572,7 +2572,7 @@ apswvfsfilepy_xSync(APSWVFSFile *self, PyObject *const *fast_args, Py_ssize_t fa
     VFSFile_xSync_CHECK;
     ARG_PROLOG(1, VFSFile_xSync_KWNAMES);
     ARG_MANDATORY ARG_int(flags);
-    ARG_EPILOG(NULL, VFSFile_xSync_USAGE);
+    ARG_EPILOG(NULL, VFSFile_xSync_USAGE,);
   }
   res = self->base->pMethods->xSync(self->base, flags);
 
@@ -2872,7 +2872,7 @@ apswvfsfilepy_xFileControl(APSWVFSFile *self, PyObject *const *fast_args, Py_ssi
     ARG_PROLOG(2, VFSFile_xFileControl_KWNAMES);
     ARG_MANDATORY ARG_int(op);
     ARG_MANDATORY ARG_pointer(ptr);
-    ARG_EPILOG(NULL, VFSFile_xFileControl_USAGE);
+    ARG_EPILOG(NULL, VFSFile_xFileControl_USAGE,);
   }
   res = self->base->pMethods->xFileControl(self->base, op, ptr);
 
@@ -3087,7 +3087,7 @@ apswurifilename_uri_parameter(APSWURIFilename *self, PyObject *const *fast_args,
     URIFilename_uri_parameter_CHECK;
     ARG_PROLOG(1, URIFilename_uri_parameter_KWNAMES);
     ARG_MANDATORY ARG_str(name);
-    ARG_EPILOG(NULL, URIFilename_uri_parameter_USAGE);
+    ARG_EPILOG(NULL, URIFilename_uri_parameter_USAGE,);
   }
   res = sqlite3_uri_parameter(self->filename, name);
   return convertutf8string(res);
@@ -3111,7 +3111,7 @@ apswurifilename_uri_int(APSWURIFilename *self, PyObject *const *fast_args, Py_ss
     ARG_PROLOG(2, URIFilename_uri_int_KWNAMES);
     ARG_MANDATORY ARG_str(name);
     ARG_MANDATORY ARG_int64(default_);
-    ARG_EPILOG(NULL, URIFilename_uri_int_USAGE);
+    ARG_EPILOG(NULL, URIFilename_uri_int_USAGE,);
   }
   res = sqlite3_uri_int64(self->filename, name, default_);
 
@@ -3136,7 +3136,7 @@ apswurifilename_uri_boolean(APSWURIFilename *self, PyObject *const *fast_args, P
     ARG_PROLOG(2, URIFilename_uri_boolean_KWNAMES);
     ARG_MANDATORY ARG_str(name);
     ARG_MANDATORY ARG_bool(default_);
-    ARG_EPILOG(NULL, URIFilename_uri_boolean_USAGE);
+    ARG_EPILOG(NULL, URIFilename_uri_boolean_USAGE,);
   }
 
   res = sqlite3_uri_boolean(self->filename, name, default_);

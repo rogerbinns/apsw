@@ -281,7 +281,7 @@ enablesharedcache(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssiz
     Apsw_enablesharedcache_CHECK;
     ARG_PROLOG(1, Apsw_enablesharedcache_KWNAMES);
     ARG_MANDATORY ARG_bool(enable);
-    ARG_EPILOG(NULL, Apsw_enablesharedcache_USAGE);
+    ARG_EPILOG(NULL, Apsw_enablesharedcache_USAGE,);
   }
   res = sqlite3_enable_shared_cache(enable);
   SET_EXC(res, NULL);
@@ -610,9 +610,9 @@ memoryhighwater(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
 
   {
     Apsw_memoryhighwater_CHECK;
-    ARG_PROLOG(0, Apsw_memoryhighwater_KWNAMES);
+    ARG_PROLOG(1, Apsw_memoryhighwater_KWNAMES);
     ARG_OPTIONAL ARG_bool(reset);
-    ARG_EPILOG(NULL, Apsw_memoryhighwater_USAGE);
+    ARG_EPILOG(NULL, Apsw_memoryhighwater_USAGE,);
   }
   return PyLong_FromLongLong(sqlite3_memory_highwater(reset));
 }
@@ -636,7 +636,7 @@ softheaplimit(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t 
     Apsw_softheaplimit_CHECK;
     ARG_PROLOG(1, Apsw_softheaplimit_KWNAMES);
     ARG_MANDATORY ARG_int64(limit);
-    ARG_EPILOG(NULL, Apsw_softheaplimit_USAGE);
+    ARG_EPILOG(NULL, Apsw_softheaplimit_USAGE,);
   }
   oldlimit = sqlite3_soft_heap_limit64(limit);
 
@@ -662,7 +662,7 @@ apsw_hard_heap_limit(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_s
     Apsw_hard_heap_limit_CHECK;
     ARG_PROLOG(1, Apsw_hard_heap_limit_KWNAMES);
     ARG_MANDATORY ARG_int64(limit);
-    ARG_EPILOG(NULL, Apsw_hard_heap_limit_USAGE);
+    ARG_EPILOG(NULL, Apsw_hard_heap_limit_USAGE,);
   }
   oldlimit = sqlite3_hard_heap_limit64(limit);
 
@@ -687,7 +687,7 @@ randomness(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fas
     Apsw_randomness_CHECK;
     ARG_PROLOG(1, Apsw_randomness_KWNAMES);
     ARG_MANDATORY ARG_int(amount);
-    ARG_EPILOG(NULL, Apsw_randomness_USAGE);
+    ARG_EPILOG(NULL, Apsw_randomness_USAGE,);
   }
   if (amount < 0)
     return PyErr_Format(PyExc_ValueError, "Can't have negative number of bytes");
@@ -716,7 +716,7 @@ releasememory(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t 
     Apsw_releasememory_CHECK;
     ARG_PROLOG(1, Apsw_releasememory_KWNAMES);
     ARG_MANDATORY ARG_int(amount);
-    ARG_EPILOG(NULL, Apsw_releasememory_USAGE);
+    ARG_EPILOG(NULL, Apsw_releasememory_USAGE,);
   }
   return PyLong_FromLong(sqlite3_release_memory(amount));
 }
@@ -744,10 +744,10 @@ status(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_na
 
   {
     Apsw_status_CHECK;
-    ARG_PROLOG(1, Apsw_status_KWNAMES);
+    ARG_PROLOG(2, Apsw_status_KWNAMES);
     ARG_MANDATORY ARG_int(op);
     ARG_OPTIONAL ARG_bool(reset);
-    ARG_EPILOG(NULL, Apsw_status_USAGE);
+    ARG_EPILOG(NULL, Apsw_status_USAGE,);
   }
 
   res = sqlite3_status64(op, &current, &highwater, reset);
@@ -894,7 +894,7 @@ getapswexceptionfor(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ss
     Apsw_exceptionfor_CHECK;
     ARG_PROLOG(1, Apsw_exceptionfor_KWNAMES);
     ARG_MANDATORY ARG_int(code);
-    ARG_EPILOG(NULL, Apsw_exceptionfor_USAGE);
+    ARG_EPILOG(NULL, Apsw_exceptionfor_USAGE,);
   }
 
   for (i = 0; exc_descriptors[i].name; i++)
@@ -954,7 +954,7 @@ apswcomplete(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t f
     Apsw_complete_CHECK;
     ARG_PROLOG(1, Apsw_complete_KWNAMES);
     ARG_MANDATORY ARG_str(statement);
-    ARG_EPILOG(NULL, Apsw_complete_USAGE);
+    ARG_EPILOG(NULL, Apsw_complete_USAGE,);
   }
 
   res = sqlite3_complete(statement);
@@ -1522,7 +1522,7 @@ apsw_log(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_
     ARG_PROLOG(2, Apsw_log_KWNAMES);
     ARG_MANDATORY ARG_int(errorcode);
     ARG_MANDATORY ARG_str(message);
-    ARG_EPILOG(NULL, Apsw_log_USAGE);
+    ARG_EPILOG(NULL, Apsw_log_USAGE,);
   }
   sqlite3_log(errorcode, "%s", message); /* PYSQLITE_CALL not needed */
 
@@ -1547,11 +1547,11 @@ apsw_strlike(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t f
 
   {
     Apsw_strlike_CHECK;
-    ARG_PROLOG(2, Apsw_strlike_KWNAMES);
+    ARG_PROLOG(3, Apsw_strlike_KWNAMES);
     ARG_MANDATORY ARG_str(glob);
     ARG_MANDATORY ARG_str(string);
     ARG_OPTIONAL ARG_int(escape);
-    ARG_EPILOG(NULL, Apsw_strlike_USAGE);
+    ARG_EPILOG(NULL, Apsw_strlike_USAGE,);
   }
 
   res = sqlite3_strlike(glob, string, escape); /* PYSQLITE_CALL not needed */
@@ -1576,7 +1576,7 @@ apsw_strglob(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t f
     ARG_PROLOG(2, Apsw_strglob_KWNAMES);
     ARG_MANDATORY ARG_str(glob);
     ARG_MANDATORY ARG_str(string);
-    ARG_EPILOG(NULL, Apsw_strglob_USAGE);
+    ARG_EPILOG(NULL, Apsw_strglob_USAGE,);
   }
 
   res = sqlite3_strglob(glob, string); /* PYSQLITE_CALL not needed */
@@ -1602,7 +1602,7 @@ apsw_stricmp(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t f
     ARG_PROLOG(2, Apsw_stricmp_KWNAMES);
     ARG_MANDATORY ARG_str(string1);
     ARG_MANDATORY ARG_str(string2);
-    ARG_EPILOG(NULL, Apsw_stricmp_USAGE);
+    ARG_EPILOG(NULL, Apsw_stricmp_USAGE,);
   }
 
   res = sqlite3_stricmp(string1, string2); /* PYSQLITE_CALL not needed */
@@ -1629,7 +1629,7 @@ apsw_strnicmp(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t 
     ARG_MANDATORY ARG_str(string1);
     ARG_MANDATORY ARG_str(string2);
     ARG_MANDATORY ARG_int(count);
-    ARG_EPILOG(NULL, Apsw_strnicmp_USAGE);
+    ARG_EPILOG(NULL, Apsw_strnicmp_USAGE,);
   }
 
   res = sqlite3_strnicmp(string1, string2, count); /* PYSQLITE_CALL not needed */
@@ -1655,7 +1655,7 @@ apsw_set_default_vfs(PyObject *Py_UNUSED(module), PyObject *const *fast_args, Py
     Apsw_set_default_vfs_CHECK;
     ARG_PROLOG(1, Apsw_set_default_vfs_KWNAMES);
     ARG_MANDATORY ARG_str(name);
-    ARG_EPILOG(NULL, Apsw_set_default_vfs_USAGE);
+    ARG_EPILOG(NULL, Apsw_set_default_vfs_USAGE,);
   }
 
   vfs = sqlite3_vfs_find(name);
@@ -1685,7 +1685,7 @@ apsw_unregister_vfs(PyObject *Py_UNUSED(module), PyObject *const *fast_args, Py_
     Apsw_unregister_vfs_CHECK;
     ARG_PROLOG(1, Apsw_unregister_vfs_KWNAMES);
     ARG_MANDATORY ARG_str(name);
-    ARG_EPILOG(NULL, Apsw_unregister_vfs_USAGE);
+    ARG_EPILOG(NULL, Apsw_unregister_vfs_USAGE,);
   }
 
   vfs = sqlite3_vfs_find(name);
@@ -1713,7 +1713,7 @@ apsw_sleep(PyObject *Py_UNUSED(module), PyObject *const *fast_args, Py_ssize_t f
     Apsw_sleep_CHECK;
     ARG_PROLOG(1, Apsw_sleep_KWNAMES);
     ARG_MANDATORY ARG_int(milliseconds);
-    ARG_EPILOG(NULL, Apsw_sleep_USAGE);
+    ARG_EPILOG(NULL, Apsw_sleep_USAGE,);
   }
 
   /* https://sqlite.org/forum/forumpost/5a95013827 */
@@ -1750,7 +1750,7 @@ apsw_allow_missing_dict_bindings(PyObject *Py_UNUSED(module), PyObject *const *f
     Apsw_allow_missing_dict_bindings_CHECK;
     ARG_PROLOG(1, Apsw_allow_missing_dict_bindings_KWNAMES);
     ARG_MANDATORY ARG_bool(value);
-    ARG_EPILOG(NULL, Apsw_allow_missing_dict_bindings_USAGE);
+    ARG_EPILOG(NULL, Apsw_allow_missing_dict_bindings_USAGE,);
   }
   allow_missing_dict_bindings = value;
   if (curval)

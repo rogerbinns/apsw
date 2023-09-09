@@ -187,9 +187,9 @@ APSWBackup_step(APSWBackup *self, PyObject *const *fast_args, Py_ssize_t fast_na
 
   {
     Backup_step_CHECK;
-    ARG_PROLOG(0, Backup_step_KWNAMES);
+    ARG_PROLOG(1, Backup_step_KWNAMES);
     ARG_OPTIONAL ARG_int(npages);
-    ARG_EPILOG(NULL, Backup_step_USAGE);
+    ARG_EPILOG(NULL, Backup_step_USAGE,);
   }
   PYSQLITE_BACKUP_CALL(res = sqlite3_backup_step(self->backup, npages));
 
@@ -268,9 +268,9 @@ APSWBackup_close(APSWBackup *self, PyObject *const *fast_args, Py_ssize_t fast_n
 
   {
     Backup_close_CHECK;
-    ARG_PROLOG(0, Backup_close_KWNAMES);
+    ARG_PROLOG(1, Backup_close_KWNAMES);
     ARG_OPTIONAL ARG_bool(force);
-    ARG_EPILOG(NULL, Backup_close_USAGE);
+    ARG_EPILOG(NULL, Backup_close_USAGE,);
   }
   setexc = APSWBackup_close_internal(self, force);
   if (setexc)
@@ -346,7 +346,7 @@ APSWBackup_exit(APSWBackup *self, PyObject *const *fast_args, Py_ssize_t fast_na
     ARG_MANDATORY ARG_pyobject(etype);
     ARG_MANDATORY ARG_pyobject(evalue);
     ARG_MANDATORY ARG_pyobject(etraceback);
-    ARG_EPILOG(NULL, Backup_exit_USAGE);
+    ARG_EPILOG(NULL, Backup_exit_USAGE,);
   }
   /* If already closed then we are fine - CHECK_BACKUP_CLOSED not needed*/
   if (!self->backup)
