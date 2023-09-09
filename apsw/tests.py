@@ -7164,7 +7164,7 @@ class APSW(unittest.TestCase):
         TestFile.__init__ = TestFile.init3
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestFile.__init__ = TestFile.init4
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ValueError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestFile.__init__ = TestFile.init5
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, OverflowError, testdb)
         TestFile.__init__ = TestFile.init6
