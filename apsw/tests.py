@@ -2580,6 +2580,28 @@ class APSW(unittest.TestCase):
         self.db.execute(query, can_cache=True)
         self.db.close()
 
+    def testFastcall(self):
+        "fastcall argument processing"
+        # function that takes one argument
+        self.assertRaisesRegex(TypeError, "Missing required parameter", apsw.sleep)
+        self.assertRaisesRegex(TypeError, "'fred' is an invalid keyword argument", apsw.sleep, fred=3)
+        self.assertRaisesRegex(TypeError, "argument 'milliseconds' given by name and position", apsw.sleep, 10, milliseconds=20)
+        self.assertRaisesRegex(TypeError, "Too many positional arguments", apsw.sleep, 10, 20)
+
+        # many args where varargs had to be converted to fastcall
+        self.assertRaisesRegex(TypeError, "Missing required parameter", apsw.Connection)
+        apsw.Connection("")
+        apsw.Connection("", vfs=None)
+        self.assertRaisesRegex(apsw.SQLError, "no such vfs", apsw.Connection, "", vfs="fred")
+        c = apsw.Connection(statementcachesize=22, flags=apsw.SQLITE_OPEN_READONLY, vfs=None, filename="")
+        self.assertEqual(22, c.cache_stats()["size"])
+        self.assertRaisesRegex(TypeError, "Missing required parameter", apsw.Connection, statementcachesize=22, flags=apsw.SQLITE_OPEN_READONLY, vfs=None)
+
+        # keyword only args
+        self.assertRaisesRegex(TypeError, "Too many positional arguments", c.execute, "select 3", None, False)
+        self.assertEqual(3, c.execute(explain=0, prepare_flags=1, can_cache=1, bindings=None, statements="select 3").get)
+        self.assertRaisesRegex(TypeError, "argument 'statements' given by name and position", c.execute, "select 4", explain=0, prepare_flags=1, can_cache=1, bindings=None, statements="select 3")
+
     def testCollation(self):
         "Verify collations"
         # create a whole bunch to check they are freed
@@ -3430,7 +3452,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.ExtensionLoadingError, self.db.loadextension, LOADEXTENSIONFILENAME)
         self.assertEqual(self.db.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, -1), 0)
         self.db.enableloadextension(False)
-        self.assertRaises(TypeError, self.db.enableloadextension, BadIsTrue())
+        self.assertRaises(ZeroDivisionError, self.db.enableloadextension, BadIsTrue())
         # should still be disabled
         self.assertEqual(self.db.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, 0), 0)
         self.assertRaises(apsw.ExtensionLoadingError, self.db.loadextension, LOADEXTENSIONFILENAME)
@@ -6902,7 +6924,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, vfs.xOpen, 3)
         self.assertRaises(TypeError, vfs.xOpen, 3, 3)
         self.assertRaises(TypeError, vfs.xOpen, None, (1, 2))
-        self.assertRaises(ValueError, vfs.xOpen, None, [1, 2, 3])
+        self.assertRaises(TypeError, vfs.xOpen, None, [1, 2, 3])
         self.assertRaises(TypeError, vfs.xOpen, None, ["1", 2])
         self.assertRaises(TypeError, vfs.xOpen, None, [1, "2"])
         self.assertRaises(OverflowError, vfs.xOpen, None, [0xffffffffeeeeeeee0, 2])
