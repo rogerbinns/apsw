@@ -31,65 +31,71 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
 
 #define ARG_PROLOG(maxpos_args, kwname_list)                                                      \
     static const char *kwlist[] = {kwname_list};                                                  \
-    const int maxpos = maxpos_args;                                                               \
     const char *unknown_keyword = NULL;                                                           \
+    const Py_ssize_t maxpos_args_ = maxpos_args;                                                  \
     const int maxargs = Py_ARRAY_LENGTH(kwlist);                                                  \
     PyObject *myargs[maxargs];                                                                    \
     PyObject **useargs = (PyObject **)fast_args;                                                  \
-    size_t actual_nargs = PyVectorcall_NARGS(fast_nargs);                                         \
-    if (actual_nargs > maxpos)                                                                    \
+    Py_ssize_t actual_nargs = PyVectorcall_NARGS(fast_nargs);                                     \
+    if (actual_nargs > maxpos_args)                                                               \
         goto too_many_args;                                                                       \
     if (fast_kwnames)                                                                             \
     {                                                                                             \
         useargs = myargs;                                                                         \
         memcpy(useargs, fast_args, sizeof(PyObject *) * actual_nargs);                            \
         memset(useargs + actual_nargs, 0, sizeof(PyObject *) * (maxargs - actual_nargs));         \
+        const Py_ssize_t n_fast_args = actual_nargs;                                              \
         for (int i_arg_prolog = 0; i_arg_prolog < PyTuple_GET_SIZE(fast_kwnames); i_arg_prolog++) \
         {                                                                                         \
             PyObject *item = PyTuple_GET_ITEM(fast_kwnames, i_arg_prolog);                        \
-            int which_kw = ARG_WHICH_KEYWORD(item, kwlist, maxargs, &unknown_keyword);            \
+            Py_ssize_t which_kw = ARG_WHICH_KEYWORD(item, kwlist, maxargs, &unknown_keyword);     \
             if (which_kw == -1)                                                                   \
                 goto unknown_keyword_arg;                                                         \
             if (useargs[which_kw])                                                                \
                 goto pos_and_keyword;                                                             \
-            useargs[which_kw] = fast_args[actual_nargs + i_arg_prolog];                           \
+            useargs[which_kw] = fast_args[n_fast_args + i_arg_prolog];                            \
+            actual_nargs = Py_MAX(actual_nargs, which_kw + 1);                                    \
         }                                                                                         \
     }                                                                                             \
-    int argp_optindex = 0;
+    Py_ssize_t argp_optindex = 0;
 
-#define ARG_MANDATORY                                                     \
-    if ((size_t)argp_optindex >= actual_nargs || !useargs[argp_optindex]) \
+#define ARG_MANDATORY                                             \
+    if (argp_optindex >= actual_nargs || !useargs[argp_optindex]) \
         goto missing_required;
 
-#define ARG_OPTIONAL             \
-    if (!useargs[argp_optindex]) \
-        argp_optindex++;         \
+#define ARG_OPTIONAL                   \
+    if (argp_optindex == actual_nargs) \
+        goto success;                  \
+    if (!useargs[argp_optindex])       \
+        argp_optindex++;               \
     else
 
-#define ARG_EPILOG(retval, usage)                                                                                                     \
-    assert((size_t)argp_optindex == actual_nargs);                                                                                    \
-    goto success;                                                                                                                     \
-    /* this wont be hit but is here to stop warnings about unused label */                                                            \
-    goto missing_required;                                                                                                            \
-    too_many_args:                                                                                                                    \
-    PyErr_Format(PyExc_TypeError, "Too many arguments %d (min %d max %d) provided to %s", (int)actual_nargs, maxpos, maxargs, usage); \
-    goto error_return;                                                                                                                \
-    missing_required:                                                                                                                 \
-    PyErr_Format(PyExc_TypeError, "Missing required parameter #%d '%s' of %s", argp_optindex + 1, kwlist[argp_optindex], usage);      \
-    goto error_return;                                                                                                                \
-    unknown_keyword_arg:                                                                                                              \
-    PyErr_Format(PyExc_TypeError, "'%s' is an invalid keyword argument for %s", unknown_keyword, usage);                              \
-    goto error_return;                                                                                                                \
-    pos_and_keyword:                                                                                                                  \
-    PyErr_Format(PyExc_TypeError, "argument '%s' given by name and position for %s", unknown_keyword, usage);                         \
-    goto error_return;                                                                                                                \
-    param_error:                                                                                                                      \
-    /* ::TODO:: add note about kwlist[argp_optindex] */                                                                               \
-    goto error_return;                                                                                                                \
-    error_return:                                                                                                                     \
-    assert(PyErr_Occurred());                                                                                                         \
-    return retval;                                                                                                                    \
-    success:
+#define ARG_EPILOG(retval, usage, cleanup)                                                                                                  \
+    assert(argp_optindex == actual_nargs);                                                                                                  \
+    goto success;                                                                                                                           \
+    /* this wont be hit but is here to stop warnings about unused label */                                                                  \
+    goto missing_required;                                                                                                                  \
+    too_many_args:                                                                                                                          \
+    PyErr_Format(PyExc_TypeError, "Too many positional arguments %d (max %d) provided to %s", (int)actual_nargs, (int)maxpos_args_, usage); \
+    goto error_return;                                                                                                                      \
+    missing_required:                                                                                                                       \
+    PyErr_Format(PyExc_TypeError, "Missing required parameter #%d '%s' of %s", argp_optindex + 1, kwlist[argp_optindex], usage);            \
+    goto error_return;                                                                                                                      \
+    unknown_keyword_arg:                                                                                                                    \
+    PyErr_Format(PyExc_TypeError, "'%s' is an invalid keyword argument for %s", unknown_keyword, usage);                                    \
+    goto error_return;                                                                                                                      \
+    pos_and_keyword:                                                                                                                        \
+    PyErr_Format(PyExc_TypeError, "argument '%s' given by name and position for %s", unknown_keyword, usage);                               \
+    goto error_return;                                                                                                                      \
+    param_error:                                                                                                                            \
+    /* ::TODO:: add note about kwlist[argp_optindex] */                                                                                     \
+    goto error_return;                                                                                                                      \
+    error_return:                                                                                                                           \
+    assert(PyErr_Occurred());                                                                                                               \
+    cleanup;                                                                                                                                \
+    return retval;                                                                                                                          \
+    success:                                                                                                                                \
+    cleanup;
 
 #define ARG_pyobject(varname)                                                                    \
     do                                                                                           \
@@ -318,6 +324,6 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
         {                                                                                                      \
             fast_args[fa_pos] = pvalue; /* borrowing reference */                                              \
             PyTuple_SET_ITEM(fast_kwnames, fa_pos - fast_nargs, Py_NewRef(pkey));                              \
+            fa_pos++;                                                                                          \
         }                                                                                                      \
     }
-// ::TODO:: Py_DECREF(fast_kwnames)
