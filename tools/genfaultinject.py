@@ -11,18 +11,18 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 
 call_pattern = """
 ({
-    __auto_type _res = 0 ? PySet_New(__VA_ARGS__) : 0;
+    __auto_type _res_PySet_New = 0 ? PySet_New(__VA_ARGS__) : 0;
 
-    _res = (typeof (_res))APSW_FaultInjectControl("PySet_New", __FILE__, __func__, __LINE__, #__VA_ARGS__);
+    _res_PySet_New = (typeof (_res_PySet_New))APSW_FaultInjectControl("PySet_New", __FILE__, __func__, __LINE__, #__VA_ARGS__);
 
-    if ((typeof (_res))0x1FACADE == _res)
-       _res = PySet_New(__VA_ARGS__);
-    else if ((typeof(_res))0x2FACADE == _res)
+    if ((typeof (_res_PySet_New))0x1FACADE == _res_PySet_New)
+       _res_PySet_New = PySet_New(__VA_ARGS__);
+    else if ((typeof(_res_PySet_New))0x2FACADE == _res_PySet_New)
     {
         PySet_New(__VA_ARGS__);
-        _res = (typeof (_res))18;
+        _res_PySet_New = (typeof (_res_PySet_New))18;
     }
-    _res;
+    _res_PySet_New;
 })
 """
 
@@ -126,13 +126,17 @@ returns = {
     "number":
     """
         PyType_Ready PyModule_AddObject PyModule_AddIntConstant PyLong_AsLong
-        PyLong_AsLongLong PyObject_GetBuffer PyList_Append PyDict_SetItemString
+        PyLong_AsLongLong PyList_Append PyDict_SetItemString
         PyObject_SetAttr _PyBytes_Resize PyDict_SetItem PyList_SetSlice
         PyObject_IsTrue PySequence_Size PySet_Add PyObject_IsTrueStrict
         PyStructSequence_InitType2 PyList_Size
 
+        PyObject_GetBufferContiguous PyObject_GetBuffer
+
         connection_trace_and_exec getfunctionargs
         """.split(),
+        # PyBuffer_IsContiguous is on an error path although the
+        # function itself can't error
 }
 
 # some calls like Py_BuildValue are #defined to _Py_BuildValue_SizeT
@@ -163,7 +167,6 @@ no_error = set("""PyBuffer_Release PyDict_GetItem PyMem_Free PyDict_GetItemStrin
     PyThreadState_Get PyThread_get_thread_ident PyTraceBack_Here
     PyType_IsSubtype PyUnicode_CopyCharacters PyWeakref_GetObject _Py_Dealloc
     _Py_HashBytes _Py_NegativeRefcount _Py_RefTotal PyThreadState_GetFrame
-    _PyArg_ParseTupleAndKeywords_SizeT
 """.split())
 
 # these could error but are only used in a small number of places where

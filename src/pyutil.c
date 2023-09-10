@@ -93,6 +93,21 @@ static void Py_DECREF_ARRAY(PyObject *array[], int argc)
     Py_DECREF(array[i]);
 }
 
+/* get buffer and check it is contiguous */
+#undef PyObject_GetBufferContiguous
+static int PyObject_GetBufferContiguous(PyObject *source, Py_buffer *buffer, int flags)
+{
+#include "faultinject.h"
+  int res = PyObject_GetBuffer(source, buffer, flags);
+  if (res == 0 && !PyBuffer_IsContiguous(buffer, 'C'))
+  {
+    PyBuffer_Release(buffer);
+    PyErr_Format(PyExc_TypeError, "Expected a contiguous buffer");
+    res = -1;
+  }
+  return res;
+}
+
 #undef convertutf8string
 /* Convert a NULL terminated UTF-8 string into a Python object.  None
    is returned if NULL is passed in. */
@@ -214,3 +229,32 @@ PyObject_IsTrueStrict(PyObject *o)
                                    \
     PyErr_Restore(_e1, _e2, _e3);  \
   } while (0)
+
+/* See PEP 678 */
+static void PyErr_AddExceptionNoteV(const char *format, ...)
+{
+  (void)format;
+#if PY_VERSION_HEX >= 0x030b0000
+  va_list fmt_args;
+  va_start(fmt_args, format);
+
+  PyObject *message;
+  message = PyUnicode_FromFormatV(format, fmt_args);
+
+  if (message)
+  {
+    PyObject *n0, *n1, *n2, *nres;
+    PyErr_Fetch(&n0, &n1, &n2);
+    PyErr_NormalizeException(&n0, &n1, &n2);
+    PyErr_Restore(n0, n1, n2);
+
+    PyObject *vargs[] = {NULL, n1, message};
+    CHAIN_EXC(nres = PyObject_VectorcallMethod(apst.add_note, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL));
+    Py_XDECREF(nres);
+
+    Py_DECREF(message);
+  }
+
+  va_end(fmt_args);
+#endif
+}

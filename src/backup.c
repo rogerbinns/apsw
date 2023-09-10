@@ -178,7 +178,7 @@ APSWBackup_dealloc(APSWBackup *self)
   -* sqlite3_backup_step
 */
 static PyObject *
-APSWBackup_step(APSWBackup *self, PyObject *args, PyObject *kwds)
+APSWBackup_step(APSWBackup *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int npages = -1, res;
 
@@ -186,10 +186,10 @@ APSWBackup_step(APSWBackup *self, PyObject *args, PyObject *kwds)
   CHECK_BACKUP_CLOSED(NULL);
 
   {
-    static char *kwlist[] = {"npages", NULL};
     Backup_step_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|i:" Backup_step_USAGE, kwlist, &npages))
-      return NULL;
+    ARG_PROLOG(1, Backup_step_KWNAMES);
+    ARG_OPTIONAL ARG_int(npages);
+    ARG_EPILOG(NULL, Backup_step_USAGE,);
   }
   PYSQLITE_BACKUP_CALL(res = sqlite3_backup_step(self->backup, npages));
 
@@ -256,7 +256,7 @@ APSWBackup_finish(APSWBackup *self)
   :param force: If true then any exceptions are ignored.
 */
 static PyObject *
-APSWBackup_close(APSWBackup *self, PyObject *args, PyObject *kwds)
+APSWBackup_close(APSWBackup *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int force = 0, setexc;
 
@@ -267,11 +267,10 @@ APSWBackup_close(APSWBackup *self, PyObject *args, PyObject *kwds)
     Py_RETURN_NONE; /* already closed */
 
   {
-    static char *kwlist[] = {"force", NULL};
     Backup_close_CHECK;
-    argcheck_bool_param force_param = {&force, Backup_close_force_MSG};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&:" Backup_close_USAGE, kwlist, argcheck_bool, &force_param))
-      return NULL;
+    ARG_PROLOG(1, Backup_close_KWNAMES);
+    ARG_OPTIONAL ARG_bool(force);
+    ARG_EPILOG(NULL, Backup_close_USAGE,);
   }
   setexc = APSWBackup_close_internal(self, force);
   if (setexc)
@@ -335,17 +334,19 @@ APSWBackup_enter(APSWBackup *self)
   that the copy is :meth:`finished <Backup.finish>`.
 */
 static PyObject *
-APSWBackup_exit(APSWBackup *self, PyObject *args, PyObject *kwds)
+APSWBackup_exit(APSWBackup *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   PyObject *etype, *evalue, *etraceback;
   int setexc;
 
   CHECK_USE(NULL);
   {
-    static char *kwlist[] = {"etype", "evalue", "etraceback", NULL};
     Backup_exit_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OOO:" Backup_exit_USAGE, kwlist, &etype, &evalue, &etraceback))
-      return NULL;
+    ARG_PROLOG(3, Backup_exit_KWNAMES);
+    ARG_MANDATORY ARG_pyobject(etype);
+    ARG_MANDATORY ARG_pyobject(evalue);
+    ARG_MANDATORY ARG_pyobject(etraceback);
+    ARG_EPILOG(NULL, Backup_exit_USAGE,);
   }
   /* If already closed then we are fine - CHECK_BACKUP_CLOSED not needed*/
   if (!self->backup)
@@ -386,13 +387,13 @@ static PyGetSetDef backup_getset[] = {
 static PyMethodDef backup_methods[] = {
     {"__enter__", (PyCFunction)APSWBackup_enter, METH_NOARGS,
      Backup_enter_DOC},
-    {"__exit__", (PyCFunction)APSWBackup_exit, METH_VARARGS | METH_KEYWORDS,
+    {"__exit__", (PyCFunction)APSWBackup_exit, METH_FASTCALL | METH_KEYWORDS,
      Backup_exit_DOC},
-    {"step", (PyCFunction)APSWBackup_step, METH_VARARGS | METH_KEYWORDS,
+    {"step", (PyCFunction)APSWBackup_step, METH_FASTCALL | METH_KEYWORDS,
      Backup_step_DOC},
     {"finish", (PyCFunction)APSWBackup_finish, METH_NOARGS,
      Backup_finish_DOC},
-    {"close", (PyCFunction)APSWBackup_close, METH_VARARGS | METH_KEYWORDS,
+    {"close", (PyCFunction)APSWBackup_close, METH_FASTCALL | METH_KEYWORDS,
      Backup_close_DOC},
     {0, 0, 0, 0}};
 

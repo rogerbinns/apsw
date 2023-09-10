@@ -473,38 +473,33 @@ def do_argparse(item):
         if param["name"] != "*" and not param["type"]:
             sys.exit(f"{ item['name'] } param { param } has no type from { item['signature_original'] }")
     res = [f"#define { item['symbol'] }_CHECK do {{ \\"]
-    param_structs = []
-    param_usages = []
-    fstr = ""
-    optional = False
     # names of python level keywords
     kwlist = []
-    # what is passed at C level
-    parse_args = []
+
+    code = ""
 
     seen_star = False
+    max_pos= None
     for param in item["signature"]:
         if param["name"] == "return":
             continue
-        if param["name"] == "*":
-            seen_star = True
-            optional = True
-            if "|" not in fstr:
-                fstr += "|"
-            fstr += "$"
-            continue
+        if param["name"] == "*" or param["default"]:
+            if not seen_star:
+                seen_star = True
+            if param["name"] == "*":
+                max_pos = len(kwlist)
+                continue
         pname = param["name"]
         if pname in {"default"}:
             pname += "_"
-        args = ["&" + pname]
         default_check = None
         if seen_star and not param["default"]:
             sys.exit(
-                f'param { param } comes after * and must have default value in { item["name"] } { item["signature_original"] }'
+                f'param { param } comes after * or args with defaults and must have default value in { item["name"] } { item["signature_original"] }'
             )
         if param["type"] == "str":
             type = "const char *"
-            kind = "s"
+            kind = "str"
             if param["default"]:
                 if param["default"] == "None":
                     default_check = f"{ pname } == 0"
@@ -513,7 +508,7 @@ def do_argparse(item):
                     pass
         elif param["type"] == "Optional[str]":
             type = "const char *"
-            kind = "z"
+            kind = "optional_str"
             if param["default"]:
                 if param["default"] == "None":
                     default_check = f"{ pname } == 0"
@@ -522,15 +517,14 @@ def do_argparse(item):
                     pass
         elif param["type"] == "bool":
             type = "int"
-            kind = "O&"
-            args = ["argcheck_bool"] + args
+            kind = "bool"
             if param["default"]:
                 assert param["default"] in {"True", "False"}
                 dval = int(param["default"] == "True")
                 default_check = f"{ pname } == { dval }"
         elif param["type"] == "int":
             type = "int"
-            kind = "i"
+            kind = "int"
             if param["default"]:
                 try:
                     val = int(param['default'])
@@ -539,13 +533,12 @@ def do_argparse(item):
                 default_check = f"{ pname } == ({ val })"
         elif param["type"] == "int64":
             type = "long long"
-            kind = "L"
+            kind = "int64"
             if param["default"]:
                 default_check = f"{ pname } == { int(param['default']) }L"
         elif param["type"] == "pointer":
             type = "void *"
-            kind = "O&"
-            args = ["argcheck_pointer"] + args
+            kind = "pointer"
             if param["default"]:
                 breakpoint()
                 pass
@@ -554,14 +547,14 @@ def do_argparse(item):
                 "Optional[types.TracebackType]", "Optional[VTModule]", "Optional[SQLiteValue]"
         }:
             type = "PyObject *"
-            kind = "O"
+            kind = "pyobject"
             if param["default"]:
                 if param["default"] != "None":
                     breakpoint()
                 default_check = f"{ pname } == NULL"
         elif param["type"] == "bytes":
-            type = "Py_buffer"
-            kind = "y*"
+            type = "PyObject *"
+            kind = "py_buffer"
             if param["default"]:
                 breakpoint()
                 pass
@@ -577,8 +570,7 @@ def do_argparse(item):
         }:
             # the above are all callables and we don't check beyond that
             type = "PyObject *"
-            kind = "O&"
-            args = ["argcheck_Optional_Callable"] + args
+            kind = "optional_Callable"
             if param["default"]:
                 if param["default"] == "None":
                     default_check = f"{ pname } == NULL"
@@ -586,15 +578,13 @@ def do_argparse(item):
                     breakpoint()
         elif param["type"] == "Optional[str | URIFilename]":
             type = "PyObject *"
-            kind = "O&"
-            args = ["argcheck_Optional_str_URIFilename"] + args
+            kind = "optional_str_URIFilename"
             if param["default"]:
                 breakpoint()
                 pass
         elif param["type"] == "Optional[Bindings]":
             type = "PyObject *"
-            kind = "O&"
-            args = ["argcheck_Optional_Bindings"] + args
+            kind = "optional_Bindings"
             if param["default"]:
                 if param["default"] == "None":
                     default_check = f"{ pname } == NULL"
@@ -603,8 +593,7 @@ def do_argparse(item):
                 pass
         elif callable_erasure(param["type"]) == "Callable":
             type = "PyObject *"
-            kind = "O&"
-            args = ["argcheck_Callable"] + args
+            kind = "Callable"
             if param["default"]:
                 breakpoint()
                 pass
@@ -614,35 +603,31 @@ def do_argparse(item):
             # iterators, generators etc and I can't test for all of
             # them
             type = "PyObject *"
-            kind = "O"
+            kind = "pyobject"
             if param["default"]:
                 breakpoint()
                 pass
         elif param["type"] == "Connection":
             type = "Connection *"
-            kind = "O!"
-            args = ["&ConnectionType"] + args
+            kind = "Connection"
             if param["default"]:
                 breakpoint()
                 pass
         elif param["type"] == "strtype":
             type = "PyObject *"
-            kind = "O!"
-            args = ["&PyUnicode_Type"] + args
+            kind = "PyUnicode"
             if param["default"]:
                 breakpoint()
                 pass
         elif param["type"] == "list[int,int]":
             type = "PyObject *"
-            kind = "O&"
-            args = ["argcheck_List_int_int"] + args
+            kind = "List_int_int"
             if param["default"]:
                 breakpoint()
                 pass
         elif param["type"] == "Optional[set[str]]":
             type = "PyObject *"
-            kind = "O&"
-            args = ["argcheck_Optional_set"] + args
+            kind = "optional_set"
             assert param["default"] == "None"
             default_check = f"{ pname } == NULL"
         else:
@@ -653,43 +638,29 @@ def do_argparse(item):
         if default_check:
             res.append(f"  assert({ default_check }); \\")
 
-        if not optional and param["default"]:
-            fstr += "|"
-            optional = True
-
-        fstr += kind
-        assert len(args) in {1, 2}
-        if len(args) == 2 and args[0].startswith("argcheck_"):
-            param_usages.append(pname)
-            param_structs.append(
-                f"{ args[0] }_param { pname }_param = {{{ args[1] }, { item['symbol'] }_{ pname }_MSG}};")
-            args[1] += "_param"
-
-        parse_args.extend(args)
+        mandatory = "ARG_MANDATORY " if not seen_star else "ARG_OPTIONAL "
+        code+=(f"    { mandatory }ARG_{ kind }({ pname });\n")
 
     res.append("} while(0)\n")
-
-    param_structs = "\n    ".join(param_structs)
-
+    if max_pos is None:
+        max_pos = len(kwlist)
+    is_init = item["symbol"].endswith("_init")
     code = f"""\
   {{
-    static char *kwlist[] = {{{ ", ".join(f'"{ a }"' for a in kwlist) }, NULL}};
     { item['symbol'] }_CHECK;
-    { param_structs }
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "{ fstr }:" { item['symbol'] }_USAGE, kwlist, { ", ".join(parse_args) }))
-      return { "NULL" if not item['symbol'].endswith("_init") else -1 };
+    { "ARG_CONVERT_VARARGS_TO_FASTCALL;" if is_init else "" }
+    ARG_PROLOG({ max_pos}, { item['symbol'] }_KWNAMES);
+""" + code + f"""
+    ARG_EPILOG({ "NULL" if not is_init else -1 }, { item['symbol'] }_USAGE,{ " Py_XDECREF(fast_kwnames)" if is_init else "" });
   }}"""
 
     code = "\n".join(line for line in code.split("\n") if line.strip())
 
     usage = f"{ item['name'] }{ item['signature_original'] }".replace('"', '\\"')
     res.insert(0, f"""#define { item['symbol'] }_USAGE "{ usage }"\n""")
+    n = ", ".join(f'"{ a }"' for a in kwlist)
+    res.insert(0, f"""#define { item['symbol'] }_KWNAMES { n }""")
 
-    if param_usages:
-        u = []
-        for p in param_usages:
-            u.append(f"""#define { item['symbol'] }_{ p }_MSG  "argument '{ p }' of { usage }" """)
-        res.insert(0, "\n".join(u) + "\n")
 
     check_and_update(f"{ item['symbol'] }_CHECK", code)
 

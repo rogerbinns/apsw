@@ -69,15 +69,16 @@ ZeroBlobBind_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNU
   :param size: Number of zeroed bytes to create
 */
 static int
-ZeroBlobBind_init(ZeroBlobBind *self, PyObject *args, PyObject *kwds)
+ZeroBlobBind_init(ZeroBlobBind *self, PyObject *args, PyObject *kwargs)
 {
   long long size;
 
   {
-    static char *kwlist[] = {"size", NULL};
     Zeroblob_init_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "L:" Zeroblob_init_USAGE, kwlist, &size))
-      return -1;
+    ARG_CONVERT_VARARGS_TO_FASTCALL;
+    ARG_PROLOG(1, Zeroblob_init_KWNAMES);
+    ARG_MANDATORY ARG_int64(size);
+    ARG_EPILOG(-1, Zeroblob_init_USAGE, Py_XDECREF(fast_kwnames));
   }
   if (size < 0)
   {
@@ -251,7 +252,7 @@ APSWBlob_length(APSWBlob *self)
 */
 
 static PyObject *
-APSWBlob_read(APSWBlob *self, PyObject *args, PyObject *kwds)
+APSWBlob_read(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int length = -1;
   int res;
@@ -267,10 +268,10 @@ APSWBlob_read(APSWBlob *self, PyObject *args, PyObject *kwds)
      why).  In any event we remain consistent with Python file
      objects */
   {
-    static char *kwlist[] = {"length", NULL};
     Blob_read_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|i:" Blob_read_USAGE, kwlist, &length))
-      return NULL;
+    ARG_PROLOG(1, Blob_read_KWNAMES);
+    ARG_OPTIONAL ARG_int(length);
+    ARG_EPILOG(NULL, Blob_read_USAGE,);
   }
 
   if (
@@ -335,7 +336,7 @@ APSWBlob_read(APSWBlob *self, PyObject *args, PyObject *kwds)
 */
 
 static PyObject *
-APSWBlob_readinto(APSWBlob *self, PyObject *args, PyObject *kwds)
+APSWBlob_readinto(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int res = SQLITE_OK;
   long long offset = 0, length = -1;
@@ -349,10 +350,12 @@ APSWBlob_readinto(APSWBlob *self, PyObject *args, PyObject *kwds)
   CHECK_USE(NULL);
   CHECK_BLOB_CLOSED;
   {
-    static char *kwlist[] = {"buffer", "offset", "length", NULL};
     Blob_readinto_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|LL:" Blob_readinto_USAGE, kwlist, &buffer, &offset, &length))
-      return NULL;
+    ARG_PROLOG(3, Blob_readinto_KWNAMES);
+    ARG_MANDATORY ARG_pyobject(buffer);
+    ARG_OPTIONAL ARG_int64(offset);
+    ARG_OPTIONAL ARG_int64(length);
+    ARG_EPILOG(NULL, Blob_readinto_USAGE,);
   }
 
 #define ERREXIT(x)  \
@@ -363,7 +366,7 @@ APSWBlob_readinto(APSWBlob *self, PyObject *args, PyObject *kwds)
   } while (0)
 
   memset(&py3buffer, 0, sizeof(py3buffer));
-  aswb = PyObject_GetBuffer(buffer, &py3buffer, PyBUF_WRITABLE | PyBUF_SIMPLE);
+  aswb = PyObject_GetBufferContiguous(buffer, &py3buffer, PyBUF_WRITABLE | PyBUF_SIMPLE);
   if (aswb)
     return NULL;
 
@@ -385,7 +388,7 @@ APSWBlob_readinto(APSWBlob *self, PyObject *args, PyObject *kwds)
 
   MakeExistingException(); /* vfs errors could cause this */
 
-  if(PyErr_Occurred())
+  if (PyErr_Occurred())
     ERREXIT(NULL);
 
   if (res != SQLITE_OK)
@@ -416,17 +419,18 @@ errorexit:
 */
 
 static PyObject *
-APSWBlob_seek(APSWBlob *self, PyObject *args, PyObject *kwds)
+APSWBlob_seek(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int offset, whence = 0;
   CHECK_USE(NULL);
   CHECK_BLOB_CLOSED;
 
   {
-    static char *kwlist[] = {"offset", "whence", NULL};
     Blob_seek_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i|i:" Blob_seek_USAGE, kwlist, &offset, &whence))
-      return NULL;
+    ARG_PROLOG(2, Blob_seek_KWNAMES);
+    ARG_MANDATORY ARG_int(offset);
+    ARG_OPTIONAL ARG_int(whence);
+    ARG_EPILOG(NULL, Blob_seek_USAGE,);
   }
   switch (whence)
   {
@@ -482,22 +486,29 @@ APSWBlob_tell(APSWBlob *self)
   -* sqlite3_blob_write
 */
 static PyObject *
-APSWBlob_write(APSWBlob *self, PyObject *args, PyObject *kwds)
+APSWBlob_write(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int ok = 0, res = SQLITE_OK;
-  Py_buffer data;
+  Py_buffer data_buffer;
+  PyObject *data;
 
   CHECK_USE(NULL);
   CHECK_BLOB_CLOSED;
 
   {
-    static char *kwlist[] = {"data", NULL};
     Blob_write_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y*:" Blob_write_USAGE, kwlist, &data))
-      return NULL;
+    ARG_PROLOG(1, Blob_write_KWNAMES);
+    ARG_MANDATORY ARG_py_buffer(data);
+    ARG_EPILOG(NULL, Blob_write_USAGE,);
   }
 
-  Py_ssize_t calc_end = data.len + self->curoffset;
+  if (0 != PyObject_GetBufferContiguous(data, &data_buffer, PyBUF_SIMPLE))
+  {
+    assert(PyErr_Occurred());
+    return NULL;
+  }
+
+  Py_ssize_t calc_end = data_buffer.len + self->curoffset;
 
   APSW_FAULT_INJECT(BlobWriteTooBig, , calc_end = (Py_ssize_t)0x7FFFFFFF * (Py_ssize_t)0x1000);
 
@@ -513,7 +524,7 @@ APSWBlob_write(APSWBlob *self, PyObject *args, PyObject *kwds)
     goto finally;
   }
 
-  PYSQLITE_BLOB_CALL(res = sqlite3_blob_write(self->pBlob, data.buf, data.len, self->curoffset));
+  PYSQLITE_BLOB_CALL(res = sqlite3_blob_write(self->pBlob, data_buffer.buf, data_buffer.len, self->curoffset));
   assert(!PyErr_Occurred());
 
   if (res != SQLITE_OK)
@@ -521,12 +532,12 @@ APSWBlob_write(APSWBlob *self, PyObject *args, PyObject *kwds)
     SET_EXC(res, self->connection->db);
     goto finally;
   }
-  self->curoffset += data.len;
+  self->curoffset += data_buffer.len;
   assert(self->curoffset <= sqlite3_blob_bytes(self->pBlob));
   ok = 1;
 
 finally:
-  PyBuffer_Release(&data);
+  PyBuffer_Release(&data_buffer);
   if (ok)
     Py_RETURN_NONE;
   else
@@ -556,7 +567,7 @@ finally:
 */
 
 static PyObject *
-APSWBlob_close(APSWBlob *self, PyObject *args, PyObject *kwds)
+APSWBlob_close(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int setexc;
   int force = 0;
@@ -564,11 +575,10 @@ APSWBlob_close(APSWBlob *self, PyObject *args, PyObject *kwds)
   CHECK_USE(NULL);
 
   {
-    static char *kwlist[] = {"force", NULL};
     Blob_close_CHECK;
-    argcheck_bool_param force_param = {&force, Blob_close_force_MSG};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&:" Blob_close_USAGE, kwlist, argcheck_bool, &force_param))
-      return NULL;
+    ARG_PROLOG(1, Blob_close_KWNAMES);
+    ARG_OPTIONAL ARG_bool(force);
+    ARG_EPILOG(NULL, Blob_close_USAGE,);
   }
   setexc = APSWBlob_close_internal(self, !!force);
 
@@ -633,7 +643,7 @@ APSWBlob_exit(APSWBlob *self, PyObject *Py_UNUSED(args))
 */
 
 static PyObject *
-APSWBlob_reopen(APSWBlob *self, PyObject *args, PyObject *kwds)
+APSWBlob_reopen(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int res;
   long long rowid;
@@ -642,10 +652,10 @@ APSWBlob_reopen(APSWBlob *self, PyObject *args, PyObject *kwds)
   CHECK_BLOB_CLOSED;
 
   {
-    static char *kwlist[] = {"rowid", NULL};
     Blob_reopen_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "L:" Blob_reopen_USAGE, kwlist, &rowid))
-      return NULL;
+    ARG_PROLOG(1, Blob_reopen_KWNAMES);
+    ARG_MANDATORY ARG_int64(rowid);
+    ARG_EPILOG(NULL, Blob_reopen_USAGE,);
   }
   /* no matter what happens we always reset current offset */
   self->curoffset = 0;
@@ -668,19 +678,19 @@ APSWBlob_reopen(APSWBlob *self, PyObject *args, PyObject *kwds)
 static PyMethodDef APSWBlob_methods[] = {
     {"length", (PyCFunction)APSWBlob_length, METH_NOARGS,
      Blob_length_DOC},
-    {"read", (PyCFunction)APSWBlob_read, METH_VARARGS | METH_KEYWORDS,
+    {"read", (PyCFunction)APSWBlob_read, METH_FASTCALL | METH_KEYWORDS,
      Blob_read_DOC},
-    {"readinto", (PyCFunction)APSWBlob_readinto, METH_VARARGS | METH_KEYWORDS,
+    {"readinto", (PyCFunction)APSWBlob_readinto, METH_FASTCALL | METH_KEYWORDS,
      Blob_readinto_DOC},
-    {"seek", (PyCFunction)APSWBlob_seek, METH_VARARGS | METH_KEYWORDS,
+    {"seek", (PyCFunction)APSWBlob_seek, METH_FASTCALL | METH_KEYWORDS,
      Blob_seek_DOC},
     {"tell", (PyCFunction)APSWBlob_tell, METH_NOARGS,
      Blob_tell_DOC},
-    {"write", (PyCFunction)APSWBlob_write, METH_VARARGS | METH_KEYWORDS,
+    {"write", (PyCFunction)APSWBlob_write, METH_FASTCALL | METH_KEYWORDS,
      Blob_write_DOC},
-    {"reopen", (PyCFunction)APSWBlob_reopen, METH_VARARGS | METH_KEYWORDS,
+    {"reopen", (PyCFunction)APSWBlob_reopen, METH_FASTCALL | METH_KEYWORDS,
      Blob_reopen_DOC},
-    {"close", (PyCFunction)APSWBlob_close, METH_VARARGS | METH_KEYWORDS,
+    {"close", (PyCFunction)APSWBlob_close, METH_FASTCALL | METH_KEYWORDS,
      Blob_close_DOC},
     {"__enter__", (PyCFunction)APSWBlob_enter, METH_NOARGS,
      Blob_enter_DOC},

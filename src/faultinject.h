@@ -49,6 +49,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef PyObject_CallObject
 #undef PyObject_GetAttr
 #undef PyObject_GetBuffer
+#undef PyObject_GetBufferContiguous
 #undef PyObject_GetIter
 #undef PyObject_IsTrue
 #undef PyObject_IsTrueStrict
@@ -164,2195 +165,2210 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #else
 
 #define MakeExistingException(...) \
-({                                                                                                                      \
-    __auto_type _res = 0 ? MakeExistingException(__VA_ARGS__) : 0;                                                      \
-                                                                                                                        \
-    _res = (typeof (_res))APSW_FaultInjectControl("MakeExistingException", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                        \
-    if ((typeof (_res))0x1FACADE == _res)                                                                               \
-       _res = MakeExistingException(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                           \
-    {                                                                                                                   \
-        MakeExistingException(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                       \
-    }                                                                                                                   \
-    _res;                                                                                                               \
+({                                                                                                                                                                  \
+    __auto_type _res_MakeExistingException = 0 ? MakeExistingException(__VA_ARGS__) : 0;                                                                            \
+                                                                                                                                                                    \
+    _res_MakeExistingException = (typeof (_res_MakeExistingException))APSW_FaultInjectControl("MakeExistingException", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                    \
+    if ((typeof (_res_MakeExistingException))0x1FACADE == _res_MakeExistingException)                                                                               \
+       _res_MakeExistingException = MakeExistingException(__VA_ARGS__);                                                                                             \
+    else if ((typeof(_res_MakeExistingException))0x2FACADE == _res_MakeExistingException)                                                                           \
+    {                                                                                                                                                               \
+        MakeExistingException(__VA_ARGS__);                                                                                                                         \
+        _res_MakeExistingException = (typeof (_res_MakeExistingException))18;                                                                                       \
+    }                                                                                                                                                               \
+    _res_MakeExistingException;                                                                                                                                     \
 })
 #define PyBool_FromLong(...) \
-({                                                                                                                \
-    __auto_type _res = 0 ? PyBool_FromLong(__VA_ARGS__) : 0;                                                      \
-                                                                                                                  \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyBool_FromLong", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                  \
-    if ((typeof (_res))0x1FACADE == _res)                                                                         \
-       _res = PyBool_FromLong(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                     \
-    {                                                                                                             \
-        PyBool_FromLong(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                 \
-    }                                                                                                             \
-    _res;                                                                                                         \
+({                                                                                                                                                \
+    __auto_type _res_PyBool_FromLong = 0 ? PyBool_FromLong(__VA_ARGS__) : 0;                                                                      \
+                                                                                                                                                  \
+    _res_PyBool_FromLong = (typeof (_res_PyBool_FromLong))APSW_FaultInjectControl("PyBool_FromLong", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                  \
+    if ((typeof (_res_PyBool_FromLong))0x1FACADE == _res_PyBool_FromLong)                                                                         \
+       _res_PyBool_FromLong = PyBool_FromLong(__VA_ARGS__);                                                                                       \
+    else if ((typeof(_res_PyBool_FromLong))0x2FACADE == _res_PyBool_FromLong)                                                                     \
+    {                                                                                                                                             \
+        PyBool_FromLong(__VA_ARGS__);                                                                                                             \
+        _res_PyBool_FromLong = (typeof (_res_PyBool_FromLong))18;                                                                                 \
+    }                                                                                                                                             \
+    _res_PyBool_FromLong;                                                                                                                         \
 })
 #define PyBytes_FromStringAndSize(...) \
-({                                                                                                                          \
-    __auto_type _res = 0 ? PyBytes_FromStringAndSize(__VA_ARGS__) : 0;                                                      \
-                                                                                                                            \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyBytes_FromStringAndSize", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                            \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                   \
-       _res = PyBytes_FromStringAndSize(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                               \
-    {                                                                                                                       \
-        PyBytes_FromStringAndSize(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                           \
-    }                                                                                                                       \
-    _res;                                                                                                                   \
+({                                                                                                                                                                              \
+    __auto_type _res_PyBytes_FromStringAndSize = 0 ? PyBytes_FromStringAndSize(__VA_ARGS__) : 0;                                                                                \
+                                                                                                                                                                                \
+    _res_PyBytes_FromStringAndSize = (typeof (_res_PyBytes_FromStringAndSize))APSW_FaultInjectControl("PyBytes_FromStringAndSize", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                \
+    if ((typeof (_res_PyBytes_FromStringAndSize))0x1FACADE == _res_PyBytes_FromStringAndSize)                                                                                   \
+       _res_PyBytes_FromStringAndSize = PyBytes_FromStringAndSize(__VA_ARGS__);                                                                                                 \
+    else if ((typeof(_res_PyBytes_FromStringAndSize))0x2FACADE == _res_PyBytes_FromStringAndSize)                                                                               \
+    {                                                                                                                                                                           \
+        PyBytes_FromStringAndSize(__VA_ARGS__);                                                                                                                                 \
+        _res_PyBytes_FromStringAndSize = (typeof (_res_PyBytes_FromStringAndSize))18;                                                                                           \
+    }                                                                                                                                                                           \
+    _res_PyBytes_FromStringAndSize;                                                                                                                                             \
 })
 #define PyCode_NewEmpty(...) \
-({                                                                                                                \
-    __auto_type _res = 0 ? PyCode_NewEmpty(__VA_ARGS__) : 0;                                                      \
-                                                                                                                  \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyCode_NewEmpty", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                  \
-    if ((typeof (_res))0x1FACADE == _res)                                                                         \
-       _res = PyCode_NewEmpty(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                     \
-    {                                                                                                             \
-        PyCode_NewEmpty(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                 \
-    }                                                                                                             \
-    _res;                                                                                                         \
+({                                                                                                                                                \
+    __auto_type _res_PyCode_NewEmpty = 0 ? PyCode_NewEmpty(__VA_ARGS__) : 0;                                                                      \
+                                                                                                                                                  \
+    _res_PyCode_NewEmpty = (typeof (_res_PyCode_NewEmpty))APSW_FaultInjectControl("PyCode_NewEmpty", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                  \
+    if ((typeof (_res_PyCode_NewEmpty))0x1FACADE == _res_PyCode_NewEmpty)                                                                         \
+       _res_PyCode_NewEmpty = PyCode_NewEmpty(__VA_ARGS__);                                                                                       \
+    else if ((typeof(_res_PyCode_NewEmpty))0x2FACADE == _res_PyCode_NewEmpty)                                                                     \
+    {                                                                                                                                             \
+        PyCode_NewEmpty(__VA_ARGS__);                                                                                                             \
+        _res_PyCode_NewEmpty = (typeof (_res_PyCode_NewEmpty))18;                                                                                 \
+    }                                                                                                                                             \
+    _res_PyCode_NewEmpty;                                                                                                                         \
 })
 #define PyDict_New(...) \
-({                                                                                                           \
-    __auto_type _res = 0 ? PyDict_New(__VA_ARGS__) : 0;                                                      \
-                                                                                                             \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyDict_New", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                             \
-    if ((typeof (_res))0x1FACADE == _res)                                                                    \
-       _res = PyDict_New(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                \
-    {                                                                                                        \
-        PyDict_New(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                            \
-    }                                                                                                        \
-    _res;                                                                                                    \
+({                                                                                                                                 \
+    __auto_type _res_PyDict_New = 0 ? PyDict_New(__VA_ARGS__) : 0;                                                                 \
+                                                                                                                                   \
+    _res_PyDict_New = (typeof (_res_PyDict_New))APSW_FaultInjectControl("PyDict_New", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                   \
+    if ((typeof (_res_PyDict_New))0x1FACADE == _res_PyDict_New)                                                                    \
+       _res_PyDict_New = PyDict_New(__VA_ARGS__);                                                                                  \
+    else if ((typeof(_res_PyDict_New))0x2FACADE == _res_PyDict_New)                                                                \
+    {                                                                                                                              \
+        PyDict_New(__VA_ARGS__);                                                                                                   \
+        _res_PyDict_New = (typeof (_res_PyDict_New))18;                                                                            \
+    }                                                                                                                              \
+    _res_PyDict_New;                                                                                                               \
 })
 #define PyDict_SetItem(...) \
-({                                                                                                               \
-    __auto_type _res = 0 ? PyDict_SetItem(__VA_ARGS__) : 0;                                                      \
-                                                                                                                 \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyDict_SetItem", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                 \
-    if ((typeof (_res))0x1FACADE == _res)                                                                        \
-       _res = PyDict_SetItem(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                    \
-    {                                                                                                            \
-        PyDict_SetItem(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                \
-    }                                                                                                            \
-    _res;                                                                                                        \
+({                                                                                                                                             \
+    __auto_type _res_PyDict_SetItem = 0 ? PyDict_SetItem(__VA_ARGS__) : 0;                                                                     \
+                                                                                                                                               \
+    _res_PyDict_SetItem = (typeof (_res_PyDict_SetItem))APSW_FaultInjectControl("PyDict_SetItem", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                               \
+    if ((typeof (_res_PyDict_SetItem))0x1FACADE == _res_PyDict_SetItem)                                                                        \
+       _res_PyDict_SetItem = PyDict_SetItem(__VA_ARGS__);                                                                                      \
+    else if ((typeof(_res_PyDict_SetItem))0x2FACADE == _res_PyDict_SetItem)                                                                    \
+    {                                                                                                                                          \
+        PyDict_SetItem(__VA_ARGS__);                                                                                                           \
+        _res_PyDict_SetItem = (typeof (_res_PyDict_SetItem))18;                                                                                \
+    }                                                                                                                                          \
+    _res_PyDict_SetItem;                                                                                                                       \
 })
 #define PyDict_SetItemString(...) \
-({                                                                                                                     \
-    __auto_type _res = 0 ? PyDict_SetItemString(__VA_ARGS__) : 0;                                                      \
-                                                                                                                       \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyDict_SetItemString", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                       \
-    if ((typeof (_res))0x1FACADE == _res)                                                                              \
-       _res = PyDict_SetItemString(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                          \
-    {                                                                                                                  \
-        PyDict_SetItemString(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                      \
-    }                                                                                                                  \
-    _res;                                                                                                              \
+({                                                                                                                                                               \
+    __auto_type _res_PyDict_SetItemString = 0 ? PyDict_SetItemString(__VA_ARGS__) : 0;                                                                           \
+                                                                                                                                                                 \
+    _res_PyDict_SetItemString = (typeof (_res_PyDict_SetItemString))APSW_FaultInjectControl("PyDict_SetItemString", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                 \
+    if ((typeof (_res_PyDict_SetItemString))0x1FACADE == _res_PyDict_SetItemString)                                                                              \
+       _res_PyDict_SetItemString = PyDict_SetItemString(__VA_ARGS__);                                                                                            \
+    else if ((typeof(_res_PyDict_SetItemString))0x2FACADE == _res_PyDict_SetItemString)                                                                          \
+    {                                                                                                                                                            \
+        PyDict_SetItemString(__VA_ARGS__);                                                                                                                       \
+        _res_PyDict_SetItemString = (typeof (_res_PyDict_SetItemString))18;                                                                                      \
+    }                                                                                                                                                            \
+    _res_PyDict_SetItemString;                                                                                                                                   \
 })
 #define PyErr_NewExceptionWithDoc(...) \
-({                                                                                                                          \
-    __auto_type _res = 0 ? PyErr_NewExceptionWithDoc(__VA_ARGS__) : 0;                                                      \
-                                                                                                                            \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyErr_NewExceptionWithDoc", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                            \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                   \
-       _res = PyErr_NewExceptionWithDoc(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                               \
-    {                                                                                                                       \
-        PyErr_NewExceptionWithDoc(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                           \
-    }                                                                                                                       \
-    _res;                                                                                                                   \
+({                                                                                                                                                                              \
+    __auto_type _res_PyErr_NewExceptionWithDoc = 0 ? PyErr_NewExceptionWithDoc(__VA_ARGS__) : 0;                                                                                \
+                                                                                                                                                                                \
+    _res_PyErr_NewExceptionWithDoc = (typeof (_res_PyErr_NewExceptionWithDoc))APSW_FaultInjectControl("PyErr_NewExceptionWithDoc", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                \
+    if ((typeof (_res_PyErr_NewExceptionWithDoc))0x1FACADE == _res_PyErr_NewExceptionWithDoc)                                                                                   \
+       _res_PyErr_NewExceptionWithDoc = PyErr_NewExceptionWithDoc(__VA_ARGS__);                                                                                                 \
+    else if ((typeof(_res_PyErr_NewExceptionWithDoc))0x2FACADE == _res_PyErr_NewExceptionWithDoc)                                                                               \
+    {                                                                                                                                                                           \
+        PyErr_NewExceptionWithDoc(__VA_ARGS__);                                                                                                                                 \
+        _res_PyErr_NewExceptionWithDoc = (typeof (_res_PyErr_NewExceptionWithDoc))18;                                                                                           \
+    }                                                                                                                                                                           \
+    _res_PyErr_NewExceptionWithDoc;                                                                                                                                             \
 })
 #define PyFloat_AsDouble(...) \
-({                                                                                                                 \
-    __auto_type _res = 0 ? PyFloat_AsDouble(__VA_ARGS__) : 0;                                                      \
-                                                                                                                   \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyFloat_AsDouble", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                   \
-    if ((typeof (_res))0x1FACADE == _res)                                                                          \
-       _res = PyFloat_AsDouble(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                      \
-    {                                                                                                              \
-        PyFloat_AsDouble(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                  \
-    }                                                                                                              \
-    _res;                                                                                                          \
+({                                                                                                                                                   \
+    __auto_type _res_PyFloat_AsDouble = 0 ? PyFloat_AsDouble(__VA_ARGS__) : 0;                                                                       \
+                                                                                                                                                     \
+    _res_PyFloat_AsDouble = (typeof (_res_PyFloat_AsDouble))APSW_FaultInjectControl("PyFloat_AsDouble", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                     \
+    if ((typeof (_res_PyFloat_AsDouble))0x1FACADE == _res_PyFloat_AsDouble)                                                                          \
+       _res_PyFloat_AsDouble = PyFloat_AsDouble(__VA_ARGS__);                                                                                        \
+    else if ((typeof(_res_PyFloat_AsDouble))0x2FACADE == _res_PyFloat_AsDouble)                                                                      \
+    {                                                                                                                                                \
+        PyFloat_AsDouble(__VA_ARGS__);                                                                                                               \
+        _res_PyFloat_AsDouble = (typeof (_res_PyFloat_AsDouble))18;                                                                                  \
+    }                                                                                                                                                \
+    _res_PyFloat_AsDouble;                                                                                                                           \
 })
 #define PyFloat_FromDouble(...) \
-({                                                                                                                   \
-    __auto_type _res = 0 ? PyFloat_FromDouble(__VA_ARGS__) : 0;                                                      \
-                                                                                                                     \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyFloat_FromDouble", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                     \
-    if ((typeof (_res))0x1FACADE == _res)                                                                            \
-       _res = PyFloat_FromDouble(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                        \
-    {                                                                                                                \
-        PyFloat_FromDouble(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                    \
-    }                                                                                                                \
-    _res;                                                                                                            \
+({                                                                                                                                                         \
+    __auto_type _res_PyFloat_FromDouble = 0 ? PyFloat_FromDouble(__VA_ARGS__) : 0;                                                                         \
+                                                                                                                                                           \
+    _res_PyFloat_FromDouble = (typeof (_res_PyFloat_FromDouble))APSW_FaultInjectControl("PyFloat_FromDouble", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                           \
+    if ((typeof (_res_PyFloat_FromDouble))0x1FACADE == _res_PyFloat_FromDouble)                                                                            \
+       _res_PyFloat_FromDouble = PyFloat_FromDouble(__VA_ARGS__);                                                                                          \
+    else if ((typeof(_res_PyFloat_FromDouble))0x2FACADE == _res_PyFloat_FromDouble)                                                                        \
+    {                                                                                                                                                      \
+        PyFloat_FromDouble(__VA_ARGS__);                                                                                                                   \
+        _res_PyFloat_FromDouble = (typeof (_res_PyFloat_FromDouble))18;                                                                                    \
+    }                                                                                                                                                      \
+    _res_PyFloat_FromDouble;                                                                                                                               \
 })
 #define PyFrame_New(...) \
-({                                                                                                            \
-    __auto_type _res = 0 ? PyFrame_New(__VA_ARGS__) : 0;                                                      \
-                                                                                                              \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyFrame_New", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                              \
-    if ((typeof (_res))0x1FACADE == _res)                                                                     \
-       _res = PyFrame_New(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                 \
-    {                                                                                                         \
-        PyFrame_New(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                             \
-    }                                                                                                         \
-    _res;                                                                                                     \
+({                                                                                                                                    \
+    __auto_type _res_PyFrame_New = 0 ? PyFrame_New(__VA_ARGS__) : 0;                                                                  \
+                                                                                                                                      \
+    _res_PyFrame_New = (typeof (_res_PyFrame_New))APSW_FaultInjectControl("PyFrame_New", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                      \
+    if ((typeof (_res_PyFrame_New))0x1FACADE == _res_PyFrame_New)                                                                     \
+       _res_PyFrame_New = PyFrame_New(__VA_ARGS__);                                                                                   \
+    else if ((typeof(_res_PyFrame_New))0x2FACADE == _res_PyFrame_New)                                                                 \
+    {                                                                                                                                 \
+        PyFrame_New(__VA_ARGS__);                                                                                                     \
+        _res_PyFrame_New = (typeof (_res_PyFrame_New))18;                                                                             \
+    }                                                                                                                                 \
+    _res_PyFrame_New;                                                                                                                 \
 })
 #define PyIter_Next(...) \
-({                                                                                                            \
-    __auto_type _res = 0 ? PyIter_Next(__VA_ARGS__) : 0;                                                      \
-                                                                                                              \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyIter_Next", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                              \
-    if ((typeof (_res))0x1FACADE == _res)                                                                     \
-       _res = PyIter_Next(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                 \
-    {                                                                                                         \
-        PyIter_Next(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                             \
-    }                                                                                                         \
-    _res;                                                                                                     \
+({                                                                                                                                    \
+    __auto_type _res_PyIter_Next = 0 ? PyIter_Next(__VA_ARGS__) : 0;                                                                  \
+                                                                                                                                      \
+    _res_PyIter_Next = (typeof (_res_PyIter_Next))APSW_FaultInjectControl("PyIter_Next", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                      \
+    if ((typeof (_res_PyIter_Next))0x1FACADE == _res_PyIter_Next)                                                                     \
+       _res_PyIter_Next = PyIter_Next(__VA_ARGS__);                                                                                   \
+    else if ((typeof(_res_PyIter_Next))0x2FACADE == _res_PyIter_Next)                                                                 \
+    {                                                                                                                                 \
+        PyIter_Next(__VA_ARGS__);                                                                                                     \
+        _res_PyIter_Next = (typeof (_res_PyIter_Next))18;                                                                             \
+    }                                                                                                                                 \
+    _res_PyIter_Next;                                                                                                                 \
 })
 #define PyList_Append(...) \
-({                                                                                                              \
-    __auto_type _res = 0 ? PyList_Append(__VA_ARGS__) : 0;                                                      \
-                                                                                                                \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyList_Append", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                \
-    if ((typeof (_res))0x1FACADE == _res)                                                                       \
-       _res = PyList_Append(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                   \
-    {                                                                                                           \
-        PyList_Append(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                               \
-    }                                                                                                           \
-    _res;                                                                                                       \
+({                                                                                                                                          \
+    __auto_type _res_PyList_Append = 0 ? PyList_Append(__VA_ARGS__) : 0;                                                                    \
+                                                                                                                                            \
+    _res_PyList_Append = (typeof (_res_PyList_Append))APSW_FaultInjectControl("PyList_Append", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                            \
+    if ((typeof (_res_PyList_Append))0x1FACADE == _res_PyList_Append)                                                                       \
+       _res_PyList_Append = PyList_Append(__VA_ARGS__);                                                                                     \
+    else if ((typeof(_res_PyList_Append))0x2FACADE == _res_PyList_Append)                                                                   \
+    {                                                                                                                                       \
+        PyList_Append(__VA_ARGS__);                                                                                                         \
+        _res_PyList_Append = (typeof (_res_PyList_Append))18;                                                                               \
+    }                                                                                                                                       \
+    _res_PyList_Append;                                                                                                                     \
 })
 #define PyList_GetItem(...) \
-({                                                                                                               \
-    __auto_type _res = 0 ? PyList_GetItem(__VA_ARGS__) : 0;                                                      \
-                                                                                                                 \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyList_GetItem", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                 \
-    if ((typeof (_res))0x1FACADE == _res)                                                                        \
-       _res = PyList_GetItem(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                    \
-    {                                                                                                            \
-        PyList_GetItem(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                \
-    }                                                                                                            \
-    _res;                                                                                                        \
+({                                                                                                                                             \
+    __auto_type _res_PyList_GetItem = 0 ? PyList_GetItem(__VA_ARGS__) : 0;                                                                     \
+                                                                                                                                               \
+    _res_PyList_GetItem = (typeof (_res_PyList_GetItem))APSW_FaultInjectControl("PyList_GetItem", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                               \
+    if ((typeof (_res_PyList_GetItem))0x1FACADE == _res_PyList_GetItem)                                                                        \
+       _res_PyList_GetItem = PyList_GetItem(__VA_ARGS__);                                                                                      \
+    else if ((typeof(_res_PyList_GetItem))0x2FACADE == _res_PyList_GetItem)                                                                    \
+    {                                                                                                                                          \
+        PyList_GetItem(__VA_ARGS__);                                                                                                           \
+        _res_PyList_GetItem = (typeof (_res_PyList_GetItem))18;                                                                                \
+    }                                                                                                                                          \
+    _res_PyList_GetItem;                                                                                                                       \
 })
 #define PyList_New(...) \
-({                                                                                                           \
-    __auto_type _res = 0 ? PyList_New(__VA_ARGS__) : 0;                                                      \
-                                                                                                             \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyList_New", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                             \
-    if ((typeof (_res))0x1FACADE == _res)                                                                    \
-       _res = PyList_New(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                \
-    {                                                                                                        \
-        PyList_New(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                            \
-    }                                                                                                        \
-    _res;                                                                                                    \
+({                                                                                                                                 \
+    __auto_type _res_PyList_New = 0 ? PyList_New(__VA_ARGS__) : 0;                                                                 \
+                                                                                                                                   \
+    _res_PyList_New = (typeof (_res_PyList_New))APSW_FaultInjectControl("PyList_New", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                   \
+    if ((typeof (_res_PyList_New))0x1FACADE == _res_PyList_New)                                                                    \
+       _res_PyList_New = PyList_New(__VA_ARGS__);                                                                                  \
+    else if ((typeof(_res_PyList_New))0x2FACADE == _res_PyList_New)                                                                \
+    {                                                                                                                              \
+        PyList_New(__VA_ARGS__);                                                                                                   \
+        _res_PyList_New = (typeof (_res_PyList_New))18;                                                                            \
+    }                                                                                                                              \
+    _res_PyList_New;                                                                                                               \
 })
 #define PyList_SetItem(...) \
-({                                                                                                               \
-    __auto_type _res = 0 ? PyList_SetItem(__VA_ARGS__) : 0;                                                      \
-                                                                                                                 \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyList_SetItem", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                 \
-    if ((typeof (_res))0x1FACADE == _res)                                                                        \
-       _res = PyList_SetItem(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                    \
-    {                                                                                                            \
-        PyList_SetItem(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                \
-    }                                                                                                            \
-    _res;                                                                                                        \
+({                                                                                                                                             \
+    __auto_type _res_PyList_SetItem = 0 ? PyList_SetItem(__VA_ARGS__) : 0;                                                                     \
+                                                                                                                                               \
+    _res_PyList_SetItem = (typeof (_res_PyList_SetItem))APSW_FaultInjectControl("PyList_SetItem", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                               \
+    if ((typeof (_res_PyList_SetItem))0x1FACADE == _res_PyList_SetItem)                                                                        \
+       _res_PyList_SetItem = PyList_SetItem(__VA_ARGS__);                                                                                      \
+    else if ((typeof(_res_PyList_SetItem))0x2FACADE == _res_PyList_SetItem)                                                                    \
+    {                                                                                                                                          \
+        PyList_SetItem(__VA_ARGS__);                                                                                                           \
+        _res_PyList_SetItem = (typeof (_res_PyList_SetItem))18;                                                                                \
+    }                                                                                                                                          \
+    _res_PyList_SetItem;                                                                                                                       \
 })
 #define PyList_SetSlice(...) \
-({                                                                                                                \
-    __auto_type _res = 0 ? PyList_SetSlice(__VA_ARGS__) : 0;                                                      \
-                                                                                                                  \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyList_SetSlice", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                  \
-    if ((typeof (_res))0x1FACADE == _res)                                                                         \
-       _res = PyList_SetSlice(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                     \
-    {                                                                                                             \
-        PyList_SetSlice(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                 \
-    }                                                                                                             \
-    _res;                                                                                                         \
+({                                                                                                                                                \
+    __auto_type _res_PyList_SetSlice = 0 ? PyList_SetSlice(__VA_ARGS__) : 0;                                                                      \
+                                                                                                                                                  \
+    _res_PyList_SetSlice = (typeof (_res_PyList_SetSlice))APSW_FaultInjectControl("PyList_SetSlice", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                  \
+    if ((typeof (_res_PyList_SetSlice))0x1FACADE == _res_PyList_SetSlice)                                                                         \
+       _res_PyList_SetSlice = PyList_SetSlice(__VA_ARGS__);                                                                                       \
+    else if ((typeof(_res_PyList_SetSlice))0x2FACADE == _res_PyList_SetSlice)                                                                     \
+    {                                                                                                                                             \
+        PyList_SetSlice(__VA_ARGS__);                                                                                                             \
+        _res_PyList_SetSlice = (typeof (_res_PyList_SetSlice))18;                                                                                 \
+    }                                                                                                                                             \
+    _res_PyList_SetSlice;                                                                                                                         \
 })
 #define PyList_Size(...) \
-({                                                                                                            \
-    __auto_type _res = 0 ? PyList_Size(__VA_ARGS__) : 0;                                                      \
-                                                                                                              \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyList_Size", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                              \
-    if ((typeof (_res))0x1FACADE == _res)                                                                     \
-       _res = PyList_Size(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                 \
-    {                                                                                                         \
-        PyList_Size(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                             \
-    }                                                                                                         \
-    _res;                                                                                                     \
+({                                                                                                                                    \
+    __auto_type _res_PyList_Size = 0 ? PyList_Size(__VA_ARGS__) : 0;                                                                  \
+                                                                                                                                      \
+    _res_PyList_Size = (typeof (_res_PyList_Size))APSW_FaultInjectControl("PyList_Size", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                      \
+    if ((typeof (_res_PyList_Size))0x1FACADE == _res_PyList_Size)                                                                     \
+       _res_PyList_Size = PyList_Size(__VA_ARGS__);                                                                                   \
+    else if ((typeof(_res_PyList_Size))0x2FACADE == _res_PyList_Size)                                                                 \
+    {                                                                                                                                 \
+        PyList_Size(__VA_ARGS__);                                                                                                     \
+        _res_PyList_Size = (typeof (_res_PyList_Size))18;                                                                             \
+    }                                                                                                                                 \
+    _res_PyList_Size;                                                                                                                 \
 })
 #define PyLong_AsInt(...) \
-({                                                                                                             \
-    __auto_type _res = 0 ? PyLong_AsInt(__VA_ARGS__) : 0;                                                      \
-                                                                                                               \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyLong_AsInt", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                               \
-    if ((typeof (_res))0x1FACADE == _res)                                                                      \
-       _res = PyLong_AsInt(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                  \
-    {                                                                                                          \
-        PyLong_AsInt(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                              \
-    }                                                                                                          \
-    _res;                                                                                                      \
+({                                                                                                                                       \
+    __auto_type _res_PyLong_AsInt = 0 ? PyLong_AsInt(__VA_ARGS__) : 0;                                                                   \
+                                                                                                                                         \
+    _res_PyLong_AsInt = (typeof (_res_PyLong_AsInt))APSW_FaultInjectControl("PyLong_AsInt", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                         \
+    if ((typeof (_res_PyLong_AsInt))0x1FACADE == _res_PyLong_AsInt)                                                                      \
+       _res_PyLong_AsInt = PyLong_AsInt(__VA_ARGS__);                                                                                    \
+    else if ((typeof(_res_PyLong_AsInt))0x2FACADE == _res_PyLong_AsInt)                                                                  \
+    {                                                                                                                                    \
+        PyLong_AsInt(__VA_ARGS__);                                                                                                       \
+        _res_PyLong_AsInt = (typeof (_res_PyLong_AsInt))18;                                                                              \
+    }                                                                                                                                    \
+    _res_PyLong_AsInt;                                                                                                                   \
 })
 #define PyLong_AsLong(...) \
-({                                                                                                              \
-    __auto_type _res = 0 ? PyLong_AsLong(__VA_ARGS__) : 0;                                                      \
-                                                                                                                \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyLong_AsLong", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                \
-    if ((typeof (_res))0x1FACADE == _res)                                                                       \
-       _res = PyLong_AsLong(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                   \
-    {                                                                                                           \
-        PyLong_AsLong(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                               \
-    }                                                                                                           \
-    _res;                                                                                                       \
+({                                                                                                                                          \
+    __auto_type _res_PyLong_AsLong = 0 ? PyLong_AsLong(__VA_ARGS__) : 0;                                                                    \
+                                                                                                                                            \
+    _res_PyLong_AsLong = (typeof (_res_PyLong_AsLong))APSW_FaultInjectControl("PyLong_AsLong", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                            \
+    if ((typeof (_res_PyLong_AsLong))0x1FACADE == _res_PyLong_AsLong)                                                                       \
+       _res_PyLong_AsLong = PyLong_AsLong(__VA_ARGS__);                                                                                     \
+    else if ((typeof(_res_PyLong_AsLong))0x2FACADE == _res_PyLong_AsLong)                                                                   \
+    {                                                                                                                                       \
+        PyLong_AsLong(__VA_ARGS__);                                                                                                         \
+        _res_PyLong_AsLong = (typeof (_res_PyLong_AsLong))18;                                                                               \
+    }                                                                                                                                       \
+    _res_PyLong_AsLong;                                                                                                                     \
 })
 #define PyLong_AsLongLong(...) \
-({                                                                                                                  \
-    __auto_type _res = 0 ? PyLong_AsLongLong(__VA_ARGS__) : 0;                                                      \
-                                                                                                                    \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyLong_AsLongLong", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                    \
-    if ((typeof (_res))0x1FACADE == _res)                                                                           \
-       _res = PyLong_AsLongLong(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                       \
-    {                                                                                                               \
-        PyLong_AsLongLong(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                   \
-    }                                                                                                               \
-    _res;                                                                                                           \
+({                                                                                                                                                      \
+    __auto_type _res_PyLong_AsLongLong = 0 ? PyLong_AsLongLong(__VA_ARGS__) : 0;                                                                        \
+                                                                                                                                                        \
+    _res_PyLong_AsLongLong = (typeof (_res_PyLong_AsLongLong))APSW_FaultInjectControl("PyLong_AsLongLong", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                        \
+    if ((typeof (_res_PyLong_AsLongLong))0x1FACADE == _res_PyLong_AsLongLong)                                                                           \
+       _res_PyLong_AsLongLong = PyLong_AsLongLong(__VA_ARGS__);                                                                                         \
+    else if ((typeof(_res_PyLong_AsLongLong))0x2FACADE == _res_PyLong_AsLongLong)                                                                       \
+    {                                                                                                                                                   \
+        PyLong_AsLongLong(__VA_ARGS__);                                                                                                                 \
+        _res_PyLong_AsLongLong = (typeof (_res_PyLong_AsLongLong))18;                                                                                   \
+    }                                                                                                                                                   \
+    _res_PyLong_AsLongLong;                                                                                                                             \
 })
 #define PyLong_FromLong(...) \
-({                                                                                                                \
-    __auto_type _res = 0 ? PyLong_FromLong(__VA_ARGS__) : 0;                                                      \
-                                                                                                                  \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyLong_FromLong", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                  \
-    if ((typeof (_res))0x1FACADE == _res)                                                                         \
-       _res = PyLong_FromLong(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                     \
-    {                                                                                                             \
-        PyLong_FromLong(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                 \
-    }                                                                                                             \
-    _res;                                                                                                         \
+({                                                                                                                                                \
+    __auto_type _res_PyLong_FromLong = 0 ? PyLong_FromLong(__VA_ARGS__) : 0;                                                                      \
+                                                                                                                                                  \
+    _res_PyLong_FromLong = (typeof (_res_PyLong_FromLong))APSW_FaultInjectControl("PyLong_FromLong", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                  \
+    if ((typeof (_res_PyLong_FromLong))0x1FACADE == _res_PyLong_FromLong)                                                                         \
+       _res_PyLong_FromLong = PyLong_FromLong(__VA_ARGS__);                                                                                       \
+    else if ((typeof(_res_PyLong_FromLong))0x2FACADE == _res_PyLong_FromLong)                                                                     \
+    {                                                                                                                                             \
+        PyLong_FromLong(__VA_ARGS__);                                                                                                             \
+        _res_PyLong_FromLong = (typeof (_res_PyLong_FromLong))18;                                                                                 \
+    }                                                                                                                                             \
+    _res_PyLong_FromLong;                                                                                                                         \
 })
 #define PyLong_FromLongLong(...) \
-({                                                                                                                    \
-    __auto_type _res = 0 ? PyLong_FromLongLong(__VA_ARGS__) : 0;                                                      \
-                                                                                                                      \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyLong_FromLongLong", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                      \
-    if ((typeof (_res))0x1FACADE == _res)                                                                             \
-       _res = PyLong_FromLongLong(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                         \
-    {                                                                                                                 \
-        PyLong_FromLongLong(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                     \
-    }                                                                                                                 \
-    _res;                                                                                                             \
+({                                                                                                                                                            \
+    __auto_type _res_PyLong_FromLongLong = 0 ? PyLong_FromLongLong(__VA_ARGS__) : 0;                                                                          \
+                                                                                                                                                              \
+    _res_PyLong_FromLongLong = (typeof (_res_PyLong_FromLongLong))APSW_FaultInjectControl("PyLong_FromLongLong", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                              \
+    if ((typeof (_res_PyLong_FromLongLong))0x1FACADE == _res_PyLong_FromLongLong)                                                                             \
+       _res_PyLong_FromLongLong = PyLong_FromLongLong(__VA_ARGS__);                                                                                           \
+    else if ((typeof(_res_PyLong_FromLongLong))0x2FACADE == _res_PyLong_FromLongLong)                                                                         \
+    {                                                                                                                                                         \
+        PyLong_FromLongLong(__VA_ARGS__);                                                                                                                     \
+        _res_PyLong_FromLongLong = (typeof (_res_PyLong_FromLongLong))18;                                                                                     \
+    }                                                                                                                                                         \
+    _res_PyLong_FromLongLong;                                                                                                                                 \
 })
 #define PyLong_FromVoidPtr(...) \
-({                                                                                                                   \
-    __auto_type _res = 0 ? PyLong_FromVoidPtr(__VA_ARGS__) : 0;                                                      \
-                                                                                                                     \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyLong_FromVoidPtr", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                     \
-    if ((typeof (_res))0x1FACADE == _res)                                                                            \
-       _res = PyLong_FromVoidPtr(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                        \
-    {                                                                                                                \
-        PyLong_FromVoidPtr(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                    \
-    }                                                                                                                \
-    _res;                                                                                                            \
+({                                                                                                                                                         \
+    __auto_type _res_PyLong_FromVoidPtr = 0 ? PyLong_FromVoidPtr(__VA_ARGS__) : 0;                                                                         \
+                                                                                                                                                           \
+    _res_PyLong_FromVoidPtr = (typeof (_res_PyLong_FromVoidPtr))APSW_FaultInjectControl("PyLong_FromVoidPtr", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                           \
+    if ((typeof (_res_PyLong_FromVoidPtr))0x1FACADE == _res_PyLong_FromVoidPtr)                                                                            \
+       _res_PyLong_FromVoidPtr = PyLong_FromVoidPtr(__VA_ARGS__);                                                                                          \
+    else if ((typeof(_res_PyLong_FromVoidPtr))0x2FACADE == _res_PyLong_FromVoidPtr)                                                                        \
+    {                                                                                                                                                      \
+        PyLong_FromVoidPtr(__VA_ARGS__);                                                                                                                   \
+        _res_PyLong_FromVoidPtr = (typeof (_res_PyLong_FromVoidPtr))18;                                                                                    \
+    }                                                                                                                                                      \
+    _res_PyLong_FromVoidPtr;                                                                                                                               \
 })
 #define PyMapping_GetItemString(...) \
-({                                                                                                                        \
-    __auto_type _res = 0 ? PyMapping_GetItemString(__VA_ARGS__) : 0;                                                      \
-                                                                                                                          \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyMapping_GetItemString", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                          \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                 \
-       _res = PyMapping_GetItemString(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                             \
-    {                                                                                                                     \
-        PyMapping_GetItemString(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                         \
-    }                                                                                                                     \
-    _res;                                                                                                                 \
+({                                                                                                                                                                        \
+    __auto_type _res_PyMapping_GetItemString = 0 ? PyMapping_GetItemString(__VA_ARGS__) : 0;                                                                              \
+                                                                                                                                                                          \
+    _res_PyMapping_GetItemString = (typeof (_res_PyMapping_GetItemString))APSW_FaultInjectControl("PyMapping_GetItemString", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                          \
+    if ((typeof (_res_PyMapping_GetItemString))0x1FACADE == _res_PyMapping_GetItemString)                                                                                 \
+       _res_PyMapping_GetItemString = PyMapping_GetItemString(__VA_ARGS__);                                                                                               \
+    else if ((typeof(_res_PyMapping_GetItemString))0x2FACADE == _res_PyMapping_GetItemString)                                                                             \
+    {                                                                                                                                                                     \
+        PyMapping_GetItemString(__VA_ARGS__);                                                                                                                             \
+        _res_PyMapping_GetItemString = (typeof (_res_PyMapping_GetItemString))18;                                                                                         \
+    }                                                                                                                                                                     \
+    _res_PyMapping_GetItemString;                                                                                                                                         \
 })
 #define PyMem_Calloc(...) \
-({                                                                                                             \
-    __auto_type _res = 0 ? PyMem_Calloc(__VA_ARGS__) : 0;                                                      \
-                                                                                                               \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyMem_Calloc", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                               \
-    if ((typeof (_res))0x1FACADE == _res)                                                                      \
-       _res = PyMem_Calloc(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                  \
-    {                                                                                                          \
-        PyMem_Calloc(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                              \
-    }                                                                                                          \
-    _res;                                                                                                      \
+({                                                                                                                                       \
+    __auto_type _res_PyMem_Calloc = 0 ? PyMem_Calloc(__VA_ARGS__) : 0;                                                                   \
+                                                                                                                                         \
+    _res_PyMem_Calloc = (typeof (_res_PyMem_Calloc))APSW_FaultInjectControl("PyMem_Calloc", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                         \
+    if ((typeof (_res_PyMem_Calloc))0x1FACADE == _res_PyMem_Calloc)                                                                      \
+       _res_PyMem_Calloc = PyMem_Calloc(__VA_ARGS__);                                                                                    \
+    else if ((typeof(_res_PyMem_Calloc))0x2FACADE == _res_PyMem_Calloc)                                                                  \
+    {                                                                                                                                    \
+        PyMem_Calloc(__VA_ARGS__);                                                                                                       \
+        _res_PyMem_Calloc = (typeof (_res_PyMem_Calloc))18;                                                                              \
+    }                                                                                                                                    \
+    _res_PyMem_Calloc;                                                                                                                   \
 })
 #define PyMem_Realloc(...) \
-({                                                                                                              \
-    __auto_type _res = 0 ? PyMem_Realloc(__VA_ARGS__) : 0;                                                      \
-                                                                                                                \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyMem_Realloc", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                \
-    if ((typeof (_res))0x1FACADE == _res)                                                                       \
-       _res = PyMem_Realloc(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                   \
-    {                                                                                                           \
-        PyMem_Realloc(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                               \
-    }                                                                                                           \
-    _res;                                                                                                       \
+({                                                                                                                                          \
+    __auto_type _res_PyMem_Realloc = 0 ? PyMem_Realloc(__VA_ARGS__) : 0;                                                                    \
+                                                                                                                                            \
+    _res_PyMem_Realloc = (typeof (_res_PyMem_Realloc))APSW_FaultInjectControl("PyMem_Realloc", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                            \
+    if ((typeof (_res_PyMem_Realloc))0x1FACADE == _res_PyMem_Realloc)                                                                       \
+       _res_PyMem_Realloc = PyMem_Realloc(__VA_ARGS__);                                                                                     \
+    else if ((typeof(_res_PyMem_Realloc))0x2FACADE == _res_PyMem_Realloc)                                                                   \
+    {                                                                                                                                       \
+        PyMem_Realloc(__VA_ARGS__);                                                                                                         \
+        _res_PyMem_Realloc = (typeof (_res_PyMem_Realloc))18;                                                                               \
+    }                                                                                                                                       \
+    _res_PyMem_Realloc;                                                                                                                     \
 })
 #define PyModule_AddIntConstant(...) \
-({                                                                                                                        \
-    __auto_type _res = 0 ? PyModule_AddIntConstant(__VA_ARGS__) : 0;                                                      \
-                                                                                                                          \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyModule_AddIntConstant", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                          \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                 \
-       _res = PyModule_AddIntConstant(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                             \
-    {                                                                                                                     \
-        PyModule_AddIntConstant(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                         \
-    }                                                                                                                     \
-    _res;                                                                                                                 \
+({                                                                                                                                                                        \
+    __auto_type _res_PyModule_AddIntConstant = 0 ? PyModule_AddIntConstant(__VA_ARGS__) : 0;                                                                              \
+                                                                                                                                                                          \
+    _res_PyModule_AddIntConstant = (typeof (_res_PyModule_AddIntConstant))APSW_FaultInjectControl("PyModule_AddIntConstant", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                          \
+    if ((typeof (_res_PyModule_AddIntConstant))0x1FACADE == _res_PyModule_AddIntConstant)                                                                                 \
+       _res_PyModule_AddIntConstant = PyModule_AddIntConstant(__VA_ARGS__);                                                                                               \
+    else if ((typeof(_res_PyModule_AddIntConstant))0x2FACADE == _res_PyModule_AddIntConstant)                                                                             \
+    {                                                                                                                                                                     \
+        PyModule_AddIntConstant(__VA_ARGS__);                                                                                                                             \
+        _res_PyModule_AddIntConstant = (typeof (_res_PyModule_AddIntConstant))18;                                                                                         \
+    }                                                                                                                                                                     \
+    _res_PyModule_AddIntConstant;                                                                                                                                         \
 })
 #define PyModule_AddObject(...) \
-({                                                                                                                   \
-    __auto_type _res = 0 ? PyModule_AddObject(__VA_ARGS__) : 0;                                                      \
-                                                                                                                     \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyModule_AddObject", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                     \
-    if ((typeof (_res))0x1FACADE == _res)                                                                            \
-       _res = PyModule_AddObject(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                        \
-    {                                                                                                                \
-        PyModule_AddObject(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                    \
-    }                                                                                                                \
-    _res;                                                                                                            \
+({                                                                                                                                                         \
+    __auto_type _res_PyModule_AddObject = 0 ? PyModule_AddObject(__VA_ARGS__) : 0;                                                                         \
+                                                                                                                                                           \
+    _res_PyModule_AddObject = (typeof (_res_PyModule_AddObject))APSW_FaultInjectControl("PyModule_AddObject", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                           \
+    if ((typeof (_res_PyModule_AddObject))0x1FACADE == _res_PyModule_AddObject)                                                                            \
+       _res_PyModule_AddObject = PyModule_AddObject(__VA_ARGS__);                                                                                          \
+    else if ((typeof(_res_PyModule_AddObject))0x2FACADE == _res_PyModule_AddObject)                                                                        \
+    {                                                                                                                                                      \
+        PyModule_AddObject(__VA_ARGS__);                                                                                                                   \
+        _res_PyModule_AddObject = (typeof (_res_PyModule_AddObject))18;                                                                                    \
+    }                                                                                                                                                      \
+    _res_PyModule_AddObject;                                                                                                                               \
 })
 #define PyModule_Create2(...) \
-({                                                                                                                 \
-    __auto_type _res = 0 ? PyModule_Create2(__VA_ARGS__) : 0;                                                      \
-                                                                                                                   \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyModule_Create2", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                   \
-    if ((typeof (_res))0x1FACADE == _res)                                                                          \
-       _res = PyModule_Create2(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                      \
-    {                                                                                                              \
-        PyModule_Create2(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                  \
-    }                                                                                                              \
-    _res;                                                                                                          \
+({                                                                                                                                                   \
+    __auto_type _res_PyModule_Create2 = 0 ? PyModule_Create2(__VA_ARGS__) : 0;                                                                       \
+                                                                                                                                                     \
+    _res_PyModule_Create2 = (typeof (_res_PyModule_Create2))APSW_FaultInjectControl("PyModule_Create2", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                     \
+    if ((typeof (_res_PyModule_Create2))0x1FACADE == _res_PyModule_Create2)                                                                          \
+       _res_PyModule_Create2 = PyModule_Create2(__VA_ARGS__);                                                                                        \
+    else if ((typeof(_res_PyModule_Create2))0x2FACADE == _res_PyModule_Create2)                                                                      \
+    {                                                                                                                                                \
+        PyModule_Create2(__VA_ARGS__);                                                                                                               \
+        _res_PyModule_Create2 = (typeof (_res_PyModule_Create2))18;                                                                                  \
+    }                                                                                                                                                \
+    _res_PyModule_Create2;                                                                                                                           \
 })
 #define PyNumber_Float(...) \
-({                                                                                                               \
-    __auto_type _res = 0 ? PyNumber_Float(__VA_ARGS__) : 0;                                                      \
-                                                                                                                 \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyNumber_Float", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                 \
-    if ((typeof (_res))0x1FACADE == _res)                                                                        \
-       _res = PyNumber_Float(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                    \
-    {                                                                                                            \
-        PyNumber_Float(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                \
-    }                                                                                                            \
-    _res;                                                                                                        \
+({                                                                                                                                             \
+    __auto_type _res_PyNumber_Float = 0 ? PyNumber_Float(__VA_ARGS__) : 0;                                                                     \
+                                                                                                                                               \
+    _res_PyNumber_Float = (typeof (_res_PyNumber_Float))APSW_FaultInjectControl("PyNumber_Float", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                               \
+    if ((typeof (_res_PyNumber_Float))0x1FACADE == _res_PyNumber_Float)                                                                        \
+       _res_PyNumber_Float = PyNumber_Float(__VA_ARGS__);                                                                                      \
+    else if ((typeof(_res_PyNumber_Float))0x2FACADE == _res_PyNumber_Float)                                                                    \
+    {                                                                                                                                          \
+        PyNumber_Float(__VA_ARGS__);                                                                                                           \
+        _res_PyNumber_Float = (typeof (_res_PyNumber_Float))18;                                                                                \
+    }                                                                                                                                          \
+    _res_PyNumber_Float;                                                                                                                       \
 })
 #define PyNumber_Long(...) \
-({                                                                                                              \
-    __auto_type _res = 0 ? PyNumber_Long(__VA_ARGS__) : 0;                                                      \
-                                                                                                                \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyNumber_Long", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                \
-    if ((typeof (_res))0x1FACADE == _res)                                                                       \
-       _res = PyNumber_Long(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                   \
-    {                                                                                                           \
-        PyNumber_Long(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                               \
-    }                                                                                                           \
-    _res;                                                                                                       \
+({                                                                                                                                          \
+    __auto_type _res_PyNumber_Long = 0 ? PyNumber_Long(__VA_ARGS__) : 0;                                                                    \
+                                                                                                                                            \
+    _res_PyNumber_Long = (typeof (_res_PyNumber_Long))APSW_FaultInjectControl("PyNumber_Long", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                            \
+    if ((typeof (_res_PyNumber_Long))0x1FACADE == _res_PyNumber_Long)                                                                       \
+       _res_PyNumber_Long = PyNumber_Long(__VA_ARGS__);                                                                                     \
+    else if ((typeof(_res_PyNumber_Long))0x2FACADE == _res_PyNumber_Long)                                                                   \
+    {                                                                                                                                       \
+        PyNumber_Long(__VA_ARGS__);                                                                                                         \
+        _res_PyNumber_Long = (typeof (_res_PyNumber_Long))18;                                                                               \
+    }                                                                                                                                       \
+    _res_PyNumber_Long;                                                                                                                     \
 })
 #define PyObject_CallObject(...) \
-({                                                                                                                    \
-    __auto_type _res = 0 ? PyObject_CallObject(__VA_ARGS__) : 0;                                                      \
-                                                                                                                      \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyObject_CallObject", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                      \
-    if ((typeof (_res))0x1FACADE == _res)                                                                             \
-       _res = PyObject_CallObject(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                         \
-    {                                                                                                                 \
-        PyObject_CallObject(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                     \
-    }                                                                                                                 \
-    _res;                                                                                                             \
+({                                                                                                                                                            \
+    __auto_type _res_PyObject_CallObject = 0 ? PyObject_CallObject(__VA_ARGS__) : 0;                                                                          \
+                                                                                                                                                              \
+    _res_PyObject_CallObject = (typeof (_res_PyObject_CallObject))APSW_FaultInjectControl("PyObject_CallObject", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                              \
+    if ((typeof (_res_PyObject_CallObject))0x1FACADE == _res_PyObject_CallObject)                                                                             \
+       _res_PyObject_CallObject = PyObject_CallObject(__VA_ARGS__);                                                                                           \
+    else if ((typeof(_res_PyObject_CallObject))0x2FACADE == _res_PyObject_CallObject)                                                                         \
+    {                                                                                                                                                         \
+        PyObject_CallObject(__VA_ARGS__);                                                                                                                     \
+        _res_PyObject_CallObject = (typeof (_res_PyObject_CallObject))18;                                                                                     \
+    }                                                                                                                                                         \
+    _res_PyObject_CallObject;                                                                                                                                 \
 })
 #define PyObject_GetAttr(...) \
-({                                                                                                                 \
-    __auto_type _res = 0 ? PyObject_GetAttr(__VA_ARGS__) : 0;                                                      \
-                                                                                                                   \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyObject_GetAttr", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                   \
-    if ((typeof (_res))0x1FACADE == _res)                                                                          \
-       _res = PyObject_GetAttr(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                      \
-    {                                                                                                              \
-        PyObject_GetAttr(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                  \
-    }                                                                                                              \
-    _res;                                                                                                          \
+({                                                                                                                                                   \
+    __auto_type _res_PyObject_GetAttr = 0 ? PyObject_GetAttr(__VA_ARGS__) : 0;                                                                       \
+                                                                                                                                                     \
+    _res_PyObject_GetAttr = (typeof (_res_PyObject_GetAttr))APSW_FaultInjectControl("PyObject_GetAttr", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                     \
+    if ((typeof (_res_PyObject_GetAttr))0x1FACADE == _res_PyObject_GetAttr)                                                                          \
+       _res_PyObject_GetAttr = PyObject_GetAttr(__VA_ARGS__);                                                                                        \
+    else if ((typeof(_res_PyObject_GetAttr))0x2FACADE == _res_PyObject_GetAttr)                                                                      \
+    {                                                                                                                                                \
+        PyObject_GetAttr(__VA_ARGS__);                                                                                                               \
+        _res_PyObject_GetAttr = (typeof (_res_PyObject_GetAttr))18;                                                                                  \
+    }                                                                                                                                                \
+    _res_PyObject_GetAttr;                                                                                                                           \
 })
 #define PyObject_GetBuffer(...) \
-({                                                                                                                   \
-    __auto_type _res = 0 ? PyObject_GetBuffer(__VA_ARGS__) : 0;                                                      \
-                                                                                                                     \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyObject_GetBuffer", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                     \
-    if ((typeof (_res))0x1FACADE == _res)                                                                            \
-       _res = PyObject_GetBuffer(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                        \
-    {                                                                                                                \
-        PyObject_GetBuffer(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                    \
-    }                                                                                                                \
-    _res;                                                                                                            \
+({                                                                                                                                                         \
+    __auto_type _res_PyObject_GetBuffer = 0 ? PyObject_GetBuffer(__VA_ARGS__) : 0;                                                                         \
+                                                                                                                                                           \
+    _res_PyObject_GetBuffer = (typeof (_res_PyObject_GetBuffer))APSW_FaultInjectControl("PyObject_GetBuffer", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                           \
+    if ((typeof (_res_PyObject_GetBuffer))0x1FACADE == _res_PyObject_GetBuffer)                                                                            \
+       _res_PyObject_GetBuffer = PyObject_GetBuffer(__VA_ARGS__);                                                                                          \
+    else if ((typeof(_res_PyObject_GetBuffer))0x2FACADE == _res_PyObject_GetBuffer)                                                                        \
+    {                                                                                                                                                      \
+        PyObject_GetBuffer(__VA_ARGS__);                                                                                                                   \
+        _res_PyObject_GetBuffer = (typeof (_res_PyObject_GetBuffer))18;                                                                                    \
+    }                                                                                                                                                      \
+    _res_PyObject_GetBuffer;                                                                                                                               \
+})
+#define PyObject_GetBufferContiguous(...) \
+({                                                                                                                                                                                       \
+    __auto_type _res_PyObject_GetBufferContiguous = 0 ? PyObject_GetBufferContiguous(__VA_ARGS__) : 0;                                                                                   \
+                                                                                                                                                                                         \
+    _res_PyObject_GetBufferContiguous = (typeof (_res_PyObject_GetBufferContiguous))APSW_FaultInjectControl("PyObject_GetBufferContiguous", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                         \
+    if ((typeof (_res_PyObject_GetBufferContiguous))0x1FACADE == _res_PyObject_GetBufferContiguous)                                                                                      \
+       _res_PyObject_GetBufferContiguous = PyObject_GetBufferContiguous(__VA_ARGS__);                                                                                                    \
+    else if ((typeof(_res_PyObject_GetBufferContiguous))0x2FACADE == _res_PyObject_GetBufferContiguous)                                                                                  \
+    {                                                                                                                                                                                    \
+        PyObject_GetBufferContiguous(__VA_ARGS__);                                                                                                                                       \
+        _res_PyObject_GetBufferContiguous = (typeof (_res_PyObject_GetBufferContiguous))18;                                                                                              \
+    }                                                                                                                                                                                    \
+    _res_PyObject_GetBufferContiguous;                                                                                                                                                   \
 })
 #define PyObject_GetIter(...) \
-({                                                                                                                 \
-    __auto_type _res = 0 ? PyObject_GetIter(__VA_ARGS__) : 0;                                                      \
-                                                                                                                   \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyObject_GetIter", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                   \
-    if ((typeof (_res))0x1FACADE == _res)                                                                          \
-       _res = PyObject_GetIter(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                      \
-    {                                                                                                              \
-        PyObject_GetIter(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                  \
-    }                                                                                                              \
-    _res;                                                                                                          \
+({                                                                                                                                                   \
+    __auto_type _res_PyObject_GetIter = 0 ? PyObject_GetIter(__VA_ARGS__) : 0;                                                                       \
+                                                                                                                                                     \
+    _res_PyObject_GetIter = (typeof (_res_PyObject_GetIter))APSW_FaultInjectControl("PyObject_GetIter", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                     \
+    if ((typeof (_res_PyObject_GetIter))0x1FACADE == _res_PyObject_GetIter)                                                                          \
+       _res_PyObject_GetIter = PyObject_GetIter(__VA_ARGS__);                                                                                        \
+    else if ((typeof(_res_PyObject_GetIter))0x2FACADE == _res_PyObject_GetIter)                                                                      \
+    {                                                                                                                                                \
+        PyObject_GetIter(__VA_ARGS__);                                                                                                               \
+        _res_PyObject_GetIter = (typeof (_res_PyObject_GetIter))18;                                                                                  \
+    }                                                                                                                                                \
+    _res_PyObject_GetIter;                                                                                                                           \
 })
 #define PyObject_IsTrue(...) \
-({                                                                                                                \
-    __auto_type _res = 0 ? PyObject_IsTrue(__VA_ARGS__) : 0;                                                      \
-                                                                                                                  \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyObject_IsTrue", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                  \
-    if ((typeof (_res))0x1FACADE == _res)                                                                         \
-       _res = PyObject_IsTrue(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                     \
-    {                                                                                                             \
-        PyObject_IsTrue(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                 \
-    }                                                                                                             \
-    _res;                                                                                                         \
+({                                                                                                                                                \
+    __auto_type _res_PyObject_IsTrue = 0 ? PyObject_IsTrue(__VA_ARGS__) : 0;                                                                      \
+                                                                                                                                                  \
+    _res_PyObject_IsTrue = (typeof (_res_PyObject_IsTrue))APSW_FaultInjectControl("PyObject_IsTrue", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                  \
+    if ((typeof (_res_PyObject_IsTrue))0x1FACADE == _res_PyObject_IsTrue)                                                                         \
+       _res_PyObject_IsTrue = PyObject_IsTrue(__VA_ARGS__);                                                                                       \
+    else if ((typeof(_res_PyObject_IsTrue))0x2FACADE == _res_PyObject_IsTrue)                                                                     \
+    {                                                                                                                                             \
+        PyObject_IsTrue(__VA_ARGS__);                                                                                                             \
+        _res_PyObject_IsTrue = (typeof (_res_PyObject_IsTrue))18;                                                                                 \
+    }                                                                                                                                             \
+    _res_PyObject_IsTrue;                                                                                                                         \
 })
 #define PyObject_IsTrueStrict(...) \
-({                                                                                                                      \
-    __auto_type _res = 0 ? PyObject_IsTrueStrict(__VA_ARGS__) : 0;                                                      \
-                                                                                                                        \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyObject_IsTrueStrict", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                        \
-    if ((typeof (_res))0x1FACADE == _res)                                                                               \
-       _res = PyObject_IsTrueStrict(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                           \
-    {                                                                                                                   \
-        PyObject_IsTrueStrict(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                       \
-    }                                                                                                                   \
-    _res;                                                                                                               \
+({                                                                                                                                                                  \
+    __auto_type _res_PyObject_IsTrueStrict = 0 ? PyObject_IsTrueStrict(__VA_ARGS__) : 0;                                                                            \
+                                                                                                                                                                    \
+    _res_PyObject_IsTrueStrict = (typeof (_res_PyObject_IsTrueStrict))APSW_FaultInjectControl("PyObject_IsTrueStrict", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                    \
+    if ((typeof (_res_PyObject_IsTrueStrict))0x1FACADE == _res_PyObject_IsTrueStrict)                                                                               \
+       _res_PyObject_IsTrueStrict = PyObject_IsTrueStrict(__VA_ARGS__);                                                                                             \
+    else if ((typeof(_res_PyObject_IsTrueStrict))0x2FACADE == _res_PyObject_IsTrueStrict)                                                                           \
+    {                                                                                                                                                               \
+        PyObject_IsTrueStrict(__VA_ARGS__);                                                                                                                         \
+        _res_PyObject_IsTrueStrict = (typeof (_res_PyObject_IsTrueStrict))18;                                                                                       \
+    }                                                                                                                                                               \
+    _res_PyObject_IsTrueStrict;                                                                                                                                     \
 })
 #define PyObject_SetAttr(...) \
-({                                                                                                                 \
-    __auto_type _res = 0 ? PyObject_SetAttr(__VA_ARGS__) : 0;                                                      \
-                                                                                                                   \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyObject_SetAttr", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                   \
-    if ((typeof (_res))0x1FACADE == _res)                                                                          \
-       _res = PyObject_SetAttr(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                      \
-    {                                                                                                              \
-        PyObject_SetAttr(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                  \
-    }                                                                                                              \
-    _res;                                                                                                          \
+({                                                                                                                                                   \
+    __auto_type _res_PyObject_SetAttr = 0 ? PyObject_SetAttr(__VA_ARGS__) : 0;                                                                       \
+                                                                                                                                                     \
+    _res_PyObject_SetAttr = (typeof (_res_PyObject_SetAttr))APSW_FaultInjectControl("PyObject_SetAttr", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                     \
+    if ((typeof (_res_PyObject_SetAttr))0x1FACADE == _res_PyObject_SetAttr)                                                                          \
+       _res_PyObject_SetAttr = PyObject_SetAttr(__VA_ARGS__);                                                                                        \
+    else if ((typeof(_res_PyObject_SetAttr))0x2FACADE == _res_PyObject_SetAttr)                                                                      \
+    {                                                                                                                                                \
+        PyObject_SetAttr(__VA_ARGS__);                                                                                                               \
+        _res_PyObject_SetAttr = (typeof (_res_PyObject_SetAttr))18;                                                                                  \
+    }                                                                                                                                                \
+    _res_PyObject_SetAttr;                                                                                                                           \
 })
 #define PyObject_Str(...) \
-({                                                                                                             \
-    __auto_type _res = 0 ? PyObject_Str(__VA_ARGS__) : 0;                                                      \
-                                                                                                               \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyObject_Str", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                               \
-    if ((typeof (_res))0x1FACADE == _res)                                                                      \
-       _res = PyObject_Str(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                  \
-    {                                                                                                          \
-        PyObject_Str(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                              \
-    }                                                                                                          \
-    _res;                                                                                                      \
+({                                                                                                                                       \
+    __auto_type _res_PyObject_Str = 0 ? PyObject_Str(__VA_ARGS__) : 0;                                                                   \
+                                                                                                                                         \
+    _res_PyObject_Str = (typeof (_res_PyObject_Str))APSW_FaultInjectControl("PyObject_Str", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                         \
+    if ((typeof (_res_PyObject_Str))0x1FACADE == _res_PyObject_Str)                                                                      \
+       _res_PyObject_Str = PyObject_Str(__VA_ARGS__);                                                                                    \
+    else if ((typeof(_res_PyObject_Str))0x2FACADE == _res_PyObject_Str)                                                                  \
+    {                                                                                                                                    \
+        PyObject_Str(__VA_ARGS__);                                                                                                       \
+        _res_PyObject_Str = (typeof (_res_PyObject_Str))18;                                                                              \
+    }                                                                                                                                    \
+    _res_PyObject_Str;                                                                                                                   \
 })
 #define PyObject_Vectorcall(...) \
-({                                                                                                                    \
-    __auto_type _res = 0 ? PyObject_Vectorcall(__VA_ARGS__) : 0;                                                      \
-                                                                                                                      \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyObject_Vectorcall", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                      \
-    if ((typeof (_res))0x1FACADE == _res)                                                                             \
-       _res = PyObject_Vectorcall(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                         \
-    {                                                                                                                 \
-        PyObject_Vectorcall(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                     \
-    }                                                                                                                 \
-    _res;                                                                                                             \
+({                                                                                                                                                            \
+    __auto_type _res_PyObject_Vectorcall = 0 ? PyObject_Vectorcall(__VA_ARGS__) : 0;                                                                          \
+                                                                                                                                                              \
+    _res_PyObject_Vectorcall = (typeof (_res_PyObject_Vectorcall))APSW_FaultInjectControl("PyObject_Vectorcall", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                              \
+    if ((typeof (_res_PyObject_Vectorcall))0x1FACADE == _res_PyObject_Vectorcall)                                                                             \
+       _res_PyObject_Vectorcall = PyObject_Vectorcall(__VA_ARGS__);                                                                                           \
+    else if ((typeof(_res_PyObject_Vectorcall))0x2FACADE == _res_PyObject_Vectorcall)                                                                         \
+    {                                                                                                                                                         \
+        PyObject_Vectorcall(__VA_ARGS__);                                                                                                                     \
+        _res_PyObject_Vectorcall = (typeof (_res_PyObject_Vectorcall))18;                                                                                     \
+    }                                                                                                                                                         \
+    _res_PyObject_Vectorcall;                                                                                                                                 \
 })
 #define PyObject_VectorcallMethod(...) \
-({                                                                                                                          \
-    __auto_type _res = 0 ? PyObject_VectorcallMethod(__VA_ARGS__) : 0;                                                      \
-                                                                                                                            \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyObject_VectorcallMethod", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                            \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                   \
-       _res = PyObject_VectorcallMethod(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                               \
-    {                                                                                                                       \
-        PyObject_VectorcallMethod(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                           \
-    }                                                                                                                       \
-    _res;                                                                                                                   \
+({                                                                                                                                                                              \
+    __auto_type _res_PyObject_VectorcallMethod = 0 ? PyObject_VectorcallMethod(__VA_ARGS__) : 0;                                                                                \
+                                                                                                                                                                                \
+    _res_PyObject_VectorcallMethod = (typeof (_res_PyObject_VectorcallMethod))APSW_FaultInjectControl("PyObject_VectorcallMethod", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                \
+    if ((typeof (_res_PyObject_VectorcallMethod))0x1FACADE == _res_PyObject_VectorcallMethod)                                                                                   \
+       _res_PyObject_VectorcallMethod = PyObject_VectorcallMethod(__VA_ARGS__);                                                                                                 \
+    else if ((typeof(_res_PyObject_VectorcallMethod))0x2FACADE == _res_PyObject_VectorcallMethod)                                                                               \
+    {                                                                                                                                                                           \
+        PyObject_VectorcallMethod(__VA_ARGS__);                                                                                                                                 \
+        _res_PyObject_VectorcallMethod = (typeof (_res_PyObject_VectorcallMethod))18;                                                                                           \
+    }                                                                                                                                                                           \
+    _res_PyObject_VectorcallMethod;                                                                                                                                             \
 })
 #define PySequence_Fast(...) \
-({                                                                                                                \
-    __auto_type _res = 0 ? PySequence_Fast(__VA_ARGS__) : 0;                                                      \
-                                                                                                                  \
-    _res = (typeof (_res))APSW_FaultInjectControl("PySequence_Fast", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                  \
-    if ((typeof (_res))0x1FACADE == _res)                                                                         \
-       _res = PySequence_Fast(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                     \
-    {                                                                                                             \
-        PySequence_Fast(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                 \
-    }                                                                                                             \
-    _res;                                                                                                         \
+({                                                                                                                                                \
+    __auto_type _res_PySequence_Fast = 0 ? PySequence_Fast(__VA_ARGS__) : 0;                                                                      \
+                                                                                                                                                  \
+    _res_PySequence_Fast = (typeof (_res_PySequence_Fast))APSW_FaultInjectControl("PySequence_Fast", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                  \
+    if ((typeof (_res_PySequence_Fast))0x1FACADE == _res_PySequence_Fast)                                                                         \
+       _res_PySequence_Fast = PySequence_Fast(__VA_ARGS__);                                                                                       \
+    else if ((typeof(_res_PySequence_Fast))0x2FACADE == _res_PySequence_Fast)                                                                     \
+    {                                                                                                                                             \
+        PySequence_Fast(__VA_ARGS__);                                                                                                             \
+        _res_PySequence_Fast = (typeof (_res_PySequence_Fast))18;                                                                                 \
+    }                                                                                                                                             \
+    _res_PySequence_Fast;                                                                                                                         \
 })
 #define PySequence_GetItem(...) \
-({                                                                                                                   \
-    __auto_type _res = 0 ? PySequence_GetItem(__VA_ARGS__) : 0;                                                      \
-                                                                                                                     \
-    _res = (typeof (_res))APSW_FaultInjectControl("PySequence_GetItem", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                     \
-    if ((typeof (_res))0x1FACADE == _res)                                                                            \
-       _res = PySequence_GetItem(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                        \
-    {                                                                                                                \
-        PySequence_GetItem(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                    \
-    }                                                                                                                \
-    _res;                                                                                                            \
+({                                                                                                                                                         \
+    __auto_type _res_PySequence_GetItem = 0 ? PySequence_GetItem(__VA_ARGS__) : 0;                                                                         \
+                                                                                                                                                           \
+    _res_PySequence_GetItem = (typeof (_res_PySequence_GetItem))APSW_FaultInjectControl("PySequence_GetItem", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                           \
+    if ((typeof (_res_PySequence_GetItem))0x1FACADE == _res_PySequence_GetItem)                                                                            \
+       _res_PySequence_GetItem = PySequence_GetItem(__VA_ARGS__);                                                                                          \
+    else if ((typeof(_res_PySequence_GetItem))0x2FACADE == _res_PySequence_GetItem)                                                                        \
+    {                                                                                                                                                      \
+        PySequence_GetItem(__VA_ARGS__);                                                                                                                   \
+        _res_PySequence_GetItem = (typeof (_res_PySequence_GetItem))18;                                                                                    \
+    }                                                                                                                                                      \
+    _res_PySequence_GetItem;                                                                                                                               \
 })
 #define PySequence_GetSlice(...) \
-({                                                                                                                    \
-    __auto_type _res = 0 ? PySequence_GetSlice(__VA_ARGS__) : 0;                                                      \
-                                                                                                                      \
-    _res = (typeof (_res))APSW_FaultInjectControl("PySequence_GetSlice", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                      \
-    if ((typeof (_res))0x1FACADE == _res)                                                                             \
-       _res = PySequence_GetSlice(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                         \
-    {                                                                                                                 \
-        PySequence_GetSlice(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                     \
-    }                                                                                                                 \
-    _res;                                                                                                             \
+({                                                                                                                                                            \
+    __auto_type _res_PySequence_GetSlice = 0 ? PySequence_GetSlice(__VA_ARGS__) : 0;                                                                          \
+                                                                                                                                                              \
+    _res_PySequence_GetSlice = (typeof (_res_PySequence_GetSlice))APSW_FaultInjectControl("PySequence_GetSlice", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                              \
+    if ((typeof (_res_PySequence_GetSlice))0x1FACADE == _res_PySequence_GetSlice)                                                                             \
+       _res_PySequence_GetSlice = PySequence_GetSlice(__VA_ARGS__);                                                                                           \
+    else if ((typeof(_res_PySequence_GetSlice))0x2FACADE == _res_PySequence_GetSlice)                                                                         \
+    {                                                                                                                                                         \
+        PySequence_GetSlice(__VA_ARGS__);                                                                                                                     \
+        _res_PySequence_GetSlice = (typeof (_res_PySequence_GetSlice))18;                                                                                     \
+    }                                                                                                                                                         \
+    _res_PySequence_GetSlice;                                                                                                                                 \
 })
 #define PySequence_List(...) \
-({                                                                                                                \
-    __auto_type _res = 0 ? PySequence_List(__VA_ARGS__) : 0;                                                      \
-                                                                                                                  \
-    _res = (typeof (_res))APSW_FaultInjectControl("PySequence_List", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                  \
-    if ((typeof (_res))0x1FACADE == _res)                                                                         \
-       _res = PySequence_List(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                     \
-    {                                                                                                             \
-        PySequence_List(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                 \
-    }                                                                                                             \
-    _res;                                                                                                         \
+({                                                                                                                                                \
+    __auto_type _res_PySequence_List = 0 ? PySequence_List(__VA_ARGS__) : 0;                                                                      \
+                                                                                                                                                  \
+    _res_PySequence_List = (typeof (_res_PySequence_List))APSW_FaultInjectControl("PySequence_List", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                  \
+    if ((typeof (_res_PySequence_List))0x1FACADE == _res_PySequence_List)                                                                         \
+       _res_PySequence_List = PySequence_List(__VA_ARGS__);                                                                                       \
+    else if ((typeof(_res_PySequence_List))0x2FACADE == _res_PySequence_List)                                                                     \
+    {                                                                                                                                             \
+        PySequence_List(__VA_ARGS__);                                                                                                             \
+        _res_PySequence_List = (typeof (_res_PySequence_List))18;                                                                                 \
+    }                                                                                                                                             \
+    _res_PySequence_List;                                                                                                                         \
 })
 #define PySequence_SetItem(...) \
-({                                                                                                                   \
-    __auto_type _res = 0 ? PySequence_SetItem(__VA_ARGS__) : 0;                                                      \
-                                                                                                                     \
-    _res = (typeof (_res))APSW_FaultInjectControl("PySequence_SetItem", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                     \
-    if ((typeof (_res))0x1FACADE == _res)                                                                            \
-       _res = PySequence_SetItem(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                        \
-    {                                                                                                                \
-        PySequence_SetItem(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                    \
-    }                                                                                                                \
-    _res;                                                                                                            \
+({                                                                                                                                                         \
+    __auto_type _res_PySequence_SetItem = 0 ? PySequence_SetItem(__VA_ARGS__) : 0;                                                                         \
+                                                                                                                                                           \
+    _res_PySequence_SetItem = (typeof (_res_PySequence_SetItem))APSW_FaultInjectControl("PySequence_SetItem", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                           \
+    if ((typeof (_res_PySequence_SetItem))0x1FACADE == _res_PySequence_SetItem)                                                                            \
+       _res_PySequence_SetItem = PySequence_SetItem(__VA_ARGS__);                                                                                          \
+    else if ((typeof(_res_PySequence_SetItem))0x2FACADE == _res_PySequence_SetItem)                                                                        \
+    {                                                                                                                                                      \
+        PySequence_SetItem(__VA_ARGS__);                                                                                                                   \
+        _res_PySequence_SetItem = (typeof (_res_PySequence_SetItem))18;                                                                                    \
+    }                                                                                                                                                      \
+    _res_PySequence_SetItem;                                                                                                                               \
 })
 #define PySequence_Size(...) \
-({                                                                                                                \
-    __auto_type _res = 0 ? PySequence_Size(__VA_ARGS__) : 0;                                                      \
-                                                                                                                  \
-    _res = (typeof (_res))APSW_FaultInjectControl("PySequence_Size", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                  \
-    if ((typeof (_res))0x1FACADE == _res)                                                                         \
-       _res = PySequence_Size(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                     \
-    {                                                                                                             \
-        PySequence_Size(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                 \
-    }                                                                                                             \
-    _res;                                                                                                         \
+({                                                                                                                                                \
+    __auto_type _res_PySequence_Size = 0 ? PySequence_Size(__VA_ARGS__) : 0;                                                                      \
+                                                                                                                                                  \
+    _res_PySequence_Size = (typeof (_res_PySequence_Size))APSW_FaultInjectControl("PySequence_Size", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                  \
+    if ((typeof (_res_PySequence_Size))0x1FACADE == _res_PySequence_Size)                                                                         \
+       _res_PySequence_Size = PySequence_Size(__VA_ARGS__);                                                                                       \
+    else if ((typeof(_res_PySequence_Size))0x2FACADE == _res_PySequence_Size)                                                                     \
+    {                                                                                                                                             \
+        PySequence_Size(__VA_ARGS__);                                                                                                             \
+        _res_PySequence_Size = (typeof (_res_PySequence_Size))18;                                                                                 \
+    }                                                                                                                                             \
+    _res_PySequence_Size;                                                                                                                         \
 })
 #define PySet_Add(...) \
-({                                                                                                          \
-    __auto_type _res = 0 ? PySet_Add(__VA_ARGS__) : 0;                                                      \
-                                                                                                            \
-    _res = (typeof (_res))APSW_FaultInjectControl("PySet_Add", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                            \
-    if ((typeof (_res))0x1FACADE == _res)                                                                   \
-       _res = PySet_Add(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                               \
-    {                                                                                                       \
-        PySet_Add(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                           \
-    }                                                                                                       \
-    _res;                                                                                                   \
+({                                                                                                                              \
+    __auto_type _res_PySet_Add = 0 ? PySet_Add(__VA_ARGS__) : 0;                                                                \
+                                                                                                                                \
+    _res_PySet_Add = (typeof (_res_PySet_Add))APSW_FaultInjectControl("PySet_Add", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                \
+    if ((typeof (_res_PySet_Add))0x1FACADE == _res_PySet_Add)                                                                   \
+       _res_PySet_Add = PySet_Add(__VA_ARGS__);                                                                                 \
+    else if ((typeof(_res_PySet_Add))0x2FACADE == _res_PySet_Add)                                                               \
+    {                                                                                                                           \
+        PySet_Add(__VA_ARGS__);                                                                                                 \
+        _res_PySet_Add = (typeof (_res_PySet_Add))18;                                                                           \
+    }                                                                                                                           \
+    _res_PySet_Add;                                                                                                             \
 })
 #define PySet_New(...) \
-({                                                                                                          \
-    __auto_type _res = 0 ? PySet_New(__VA_ARGS__) : 0;                                                      \
-                                                                                                            \
-    _res = (typeof (_res))APSW_FaultInjectControl("PySet_New", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                            \
-    if ((typeof (_res))0x1FACADE == _res)                                                                   \
-       _res = PySet_New(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                               \
-    {                                                                                                       \
-        PySet_New(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                           \
-    }                                                                                                       \
-    _res;                                                                                                   \
+({                                                                                                                              \
+    __auto_type _res_PySet_New = 0 ? PySet_New(__VA_ARGS__) : 0;                                                                \
+                                                                                                                                \
+    _res_PySet_New = (typeof (_res_PySet_New))APSW_FaultInjectControl("PySet_New", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                \
+    if ((typeof (_res_PySet_New))0x1FACADE == _res_PySet_New)                                                                   \
+       _res_PySet_New = PySet_New(__VA_ARGS__);                                                                                 \
+    else if ((typeof(_res_PySet_New))0x2FACADE == _res_PySet_New)                                                               \
+    {                                                                                                                           \
+        PySet_New(__VA_ARGS__);                                                                                                 \
+        _res_PySet_New = (typeof (_res_PySet_New))18;                                                                           \
+    }                                                                                                                           \
+    _res_PySet_New;                                                                                                             \
 })
 #define PyStructSequence_InitType2(...) \
-({                                                                                                                           \
-    __auto_type _res = 0 ? PyStructSequence_InitType2(__VA_ARGS__) : 0;                                                      \
-                                                                                                                             \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyStructSequence_InitType2", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                             \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                    \
-       _res = PyStructSequence_InitType2(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                                \
-    {                                                                                                                        \
-        PyStructSequence_InitType2(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                            \
-    }                                                                                                                        \
-    _res;                                                                                                                    \
+({                                                                                                                                                                                 \
+    __auto_type _res_PyStructSequence_InitType2 = 0 ? PyStructSequence_InitType2(__VA_ARGS__) : 0;                                                                                 \
+                                                                                                                                                                                   \
+    _res_PyStructSequence_InitType2 = (typeof (_res_PyStructSequence_InitType2))APSW_FaultInjectControl("PyStructSequence_InitType2", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                   \
+    if ((typeof (_res_PyStructSequence_InitType2))0x1FACADE == _res_PyStructSequence_InitType2)                                                                                    \
+       _res_PyStructSequence_InitType2 = PyStructSequence_InitType2(__VA_ARGS__);                                                                                                  \
+    else if ((typeof(_res_PyStructSequence_InitType2))0x2FACADE == _res_PyStructSequence_InitType2)                                                                                \
+    {                                                                                                                                                                              \
+        PyStructSequence_InitType2(__VA_ARGS__);                                                                                                                                   \
+        _res_PyStructSequence_InitType2 = (typeof (_res_PyStructSequence_InitType2))18;                                                                                            \
+    }                                                                                                                                                                              \
+    _res_PyStructSequence_InitType2;                                                                                                                                               \
 })
 #define PyStructSequence_New(...) \
-({                                                                                                                     \
-    __auto_type _res = 0 ? PyStructSequence_New(__VA_ARGS__) : 0;                                                      \
-                                                                                                                       \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyStructSequence_New", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                       \
-    if ((typeof (_res))0x1FACADE == _res)                                                                              \
-       _res = PyStructSequence_New(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                          \
-    {                                                                                                                  \
-        PyStructSequence_New(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                      \
-    }                                                                                                                  \
-    _res;                                                                                                              \
+({                                                                                                                                                               \
+    __auto_type _res_PyStructSequence_New = 0 ? PyStructSequence_New(__VA_ARGS__) : 0;                                                                           \
+                                                                                                                                                                 \
+    _res_PyStructSequence_New = (typeof (_res_PyStructSequence_New))APSW_FaultInjectControl("PyStructSequence_New", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                 \
+    if ((typeof (_res_PyStructSequence_New))0x1FACADE == _res_PyStructSequence_New)                                                                              \
+       _res_PyStructSequence_New = PyStructSequence_New(__VA_ARGS__);                                                                                            \
+    else if ((typeof(_res_PyStructSequence_New))0x2FACADE == _res_PyStructSequence_New)                                                                          \
+    {                                                                                                                                                            \
+        PyStructSequence_New(__VA_ARGS__);                                                                                                                       \
+        _res_PyStructSequence_New = (typeof (_res_PyStructSequence_New))18;                                                                                      \
+    }                                                                                                                                                            \
+    _res_PyStructSequence_New;                                                                                                                                   \
 })
 #define PyStructSequence_NewType(...) \
-({                                                                                                                         \
-    __auto_type _res = 0 ? PyStructSequence_NewType(__VA_ARGS__) : 0;                                                      \
-                                                                                                                           \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyStructSequence_NewType", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                           \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                  \
-       _res = PyStructSequence_NewType(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                              \
-    {                                                                                                                      \
-        PyStructSequence_NewType(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                          \
-    }                                                                                                                      \
-    _res;                                                                                                                  \
+({                                                                                                                                                                           \
+    __auto_type _res_PyStructSequence_NewType = 0 ? PyStructSequence_NewType(__VA_ARGS__) : 0;                                                                               \
+                                                                                                                                                                             \
+    _res_PyStructSequence_NewType = (typeof (_res_PyStructSequence_NewType))APSW_FaultInjectControl("PyStructSequence_NewType", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                             \
+    if ((typeof (_res_PyStructSequence_NewType))0x1FACADE == _res_PyStructSequence_NewType)                                                                                  \
+       _res_PyStructSequence_NewType = PyStructSequence_NewType(__VA_ARGS__);                                                                                                \
+    else if ((typeof(_res_PyStructSequence_NewType))0x2FACADE == _res_PyStructSequence_NewType)                                                                              \
+    {                                                                                                                                                                        \
+        PyStructSequence_NewType(__VA_ARGS__);                                                                                                                               \
+        _res_PyStructSequence_NewType = (typeof (_res_PyStructSequence_NewType))18;                                                                                          \
+    }                                                                                                                                                                        \
+    _res_PyStructSequence_NewType;                                                                                                                                           \
 })
 #define PyTuple_New(...) \
-({                                                                                                            \
-    __auto_type _res = 0 ? PyTuple_New(__VA_ARGS__) : 0;                                                      \
-                                                                                                              \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyTuple_New", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                              \
-    if ((typeof (_res))0x1FACADE == _res)                                                                     \
-       _res = PyTuple_New(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                 \
-    {                                                                                                         \
-        PyTuple_New(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                             \
-    }                                                                                                         \
-    _res;                                                                                                     \
+({                                                                                                                                    \
+    __auto_type _res_PyTuple_New = 0 ? PyTuple_New(__VA_ARGS__) : 0;                                                                  \
+                                                                                                                                      \
+    _res_PyTuple_New = (typeof (_res_PyTuple_New))APSW_FaultInjectControl("PyTuple_New", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                      \
+    if ((typeof (_res_PyTuple_New))0x1FACADE == _res_PyTuple_New)                                                                     \
+       _res_PyTuple_New = PyTuple_New(__VA_ARGS__);                                                                                   \
+    else if ((typeof(_res_PyTuple_New))0x2FACADE == _res_PyTuple_New)                                                                 \
+    {                                                                                                                                 \
+        PyTuple_New(__VA_ARGS__);                                                                                                     \
+        _res_PyTuple_New = (typeof (_res_PyTuple_New))18;                                                                             \
+    }                                                                                                                                 \
+    _res_PyTuple_New;                                                                                                                 \
 })
 #define PyType_Ready(...) \
-({                                                                                                             \
-    __auto_type _res = 0 ? PyType_Ready(__VA_ARGS__) : 0;                                                      \
-                                                                                                               \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyType_Ready", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                               \
-    if ((typeof (_res))0x1FACADE == _res)                                                                      \
-       _res = PyType_Ready(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                  \
-    {                                                                                                          \
-        PyType_Ready(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                              \
-    }                                                                                                          \
-    _res;                                                                                                      \
+({                                                                                                                                       \
+    __auto_type _res_PyType_Ready = 0 ? PyType_Ready(__VA_ARGS__) : 0;                                                                   \
+                                                                                                                                         \
+    _res_PyType_Ready = (typeof (_res_PyType_Ready))APSW_FaultInjectControl("PyType_Ready", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                         \
+    if ((typeof (_res_PyType_Ready))0x1FACADE == _res_PyType_Ready)                                                                      \
+       _res_PyType_Ready = PyType_Ready(__VA_ARGS__);                                                                                    \
+    else if ((typeof(_res_PyType_Ready))0x2FACADE == _res_PyType_Ready)                                                                  \
+    {                                                                                                                                    \
+        PyType_Ready(__VA_ARGS__);                                                                                                       \
+        _res_PyType_Ready = (typeof (_res_PyType_Ready))18;                                                                              \
+    }                                                                                                                                    \
+    _res_PyType_Ready;                                                                                                                   \
 })
 #define PyUnicode_AsUTF8(...) \
-({                                                                                                                 \
-    __auto_type _res = 0 ? PyUnicode_AsUTF8(__VA_ARGS__) : 0;                                                      \
-                                                                                                                   \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyUnicode_AsUTF8", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                   \
-    if ((typeof (_res))0x1FACADE == _res)                                                                          \
-       _res = PyUnicode_AsUTF8(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                      \
-    {                                                                                                              \
-        PyUnicode_AsUTF8(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                  \
-    }                                                                                                              \
-    _res;                                                                                                          \
+({                                                                                                                                                   \
+    __auto_type _res_PyUnicode_AsUTF8 = 0 ? PyUnicode_AsUTF8(__VA_ARGS__) : 0;                                                                       \
+                                                                                                                                                     \
+    _res_PyUnicode_AsUTF8 = (typeof (_res_PyUnicode_AsUTF8))APSW_FaultInjectControl("PyUnicode_AsUTF8", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                     \
+    if ((typeof (_res_PyUnicode_AsUTF8))0x1FACADE == _res_PyUnicode_AsUTF8)                                                                          \
+       _res_PyUnicode_AsUTF8 = PyUnicode_AsUTF8(__VA_ARGS__);                                                                                        \
+    else if ((typeof(_res_PyUnicode_AsUTF8))0x2FACADE == _res_PyUnicode_AsUTF8)                                                                      \
+    {                                                                                                                                                \
+        PyUnicode_AsUTF8(__VA_ARGS__);                                                                                                               \
+        _res_PyUnicode_AsUTF8 = (typeof (_res_PyUnicode_AsUTF8))18;                                                                                  \
+    }                                                                                                                                                \
+    _res_PyUnicode_AsUTF8;                                                                                                                           \
 })
 #define PyUnicode_AsUTF8AndSize(...) \
-({                                                                                                                        \
-    __auto_type _res = 0 ? PyUnicode_AsUTF8AndSize(__VA_ARGS__) : 0;                                                      \
-                                                                                                                          \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyUnicode_AsUTF8AndSize", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                          \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                 \
-       _res = PyUnicode_AsUTF8AndSize(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                             \
-    {                                                                                                                     \
-        PyUnicode_AsUTF8AndSize(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                         \
-    }                                                                                                                     \
-    _res;                                                                                                                 \
+({                                                                                                                                                                        \
+    __auto_type _res_PyUnicode_AsUTF8AndSize = 0 ? PyUnicode_AsUTF8AndSize(__VA_ARGS__) : 0;                                                                              \
+                                                                                                                                                                          \
+    _res_PyUnicode_AsUTF8AndSize = (typeof (_res_PyUnicode_AsUTF8AndSize))APSW_FaultInjectControl("PyUnicode_AsUTF8AndSize", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                          \
+    if ((typeof (_res_PyUnicode_AsUTF8AndSize))0x1FACADE == _res_PyUnicode_AsUTF8AndSize)                                                                                 \
+       _res_PyUnicode_AsUTF8AndSize = PyUnicode_AsUTF8AndSize(__VA_ARGS__);                                                                                               \
+    else if ((typeof(_res_PyUnicode_AsUTF8AndSize))0x2FACADE == _res_PyUnicode_AsUTF8AndSize)                                                                             \
+    {                                                                                                                                                                     \
+        PyUnicode_AsUTF8AndSize(__VA_ARGS__);                                                                                                                             \
+        _res_PyUnicode_AsUTF8AndSize = (typeof (_res_PyUnicode_AsUTF8AndSize))18;                                                                                         \
+    }                                                                                                                                                                     \
+    _res_PyUnicode_AsUTF8AndSize;                                                                                                                                         \
 })
 #define PyUnicode_FromFormat(...) \
-({                                                                                                                     \
-    __auto_type _res = 0 ? PyUnicode_FromFormat(__VA_ARGS__) : 0;                                                      \
-                                                                                                                       \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyUnicode_FromFormat", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                       \
-    if ((typeof (_res))0x1FACADE == _res)                                                                              \
-       _res = PyUnicode_FromFormat(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                          \
-    {                                                                                                                  \
-        PyUnicode_FromFormat(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                      \
-    }                                                                                                                  \
-    _res;                                                                                                              \
+({                                                                                                                                                               \
+    __auto_type _res_PyUnicode_FromFormat = 0 ? PyUnicode_FromFormat(__VA_ARGS__) : 0;                                                                           \
+                                                                                                                                                                 \
+    _res_PyUnicode_FromFormat = (typeof (_res_PyUnicode_FromFormat))APSW_FaultInjectControl("PyUnicode_FromFormat", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                 \
+    if ((typeof (_res_PyUnicode_FromFormat))0x1FACADE == _res_PyUnicode_FromFormat)                                                                              \
+       _res_PyUnicode_FromFormat = PyUnicode_FromFormat(__VA_ARGS__);                                                                                            \
+    else if ((typeof(_res_PyUnicode_FromFormat))0x2FACADE == _res_PyUnicode_FromFormat)                                                                          \
+    {                                                                                                                                                            \
+        PyUnicode_FromFormat(__VA_ARGS__);                                                                                                                       \
+        _res_PyUnicode_FromFormat = (typeof (_res_PyUnicode_FromFormat))18;                                                                                      \
+    }                                                                                                                                                            \
+    _res_PyUnicode_FromFormat;                                                                                                                                   \
 })
 #define PyUnicode_FromString(...) \
-({                                                                                                                     \
-    __auto_type _res = 0 ? PyUnicode_FromString(__VA_ARGS__) : 0;                                                      \
-                                                                                                                       \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyUnicode_FromString", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                       \
-    if ((typeof (_res))0x1FACADE == _res)                                                                              \
-       _res = PyUnicode_FromString(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                          \
-    {                                                                                                                  \
-        PyUnicode_FromString(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                      \
-    }                                                                                                                  \
-    _res;                                                                                                              \
+({                                                                                                                                                               \
+    __auto_type _res_PyUnicode_FromString = 0 ? PyUnicode_FromString(__VA_ARGS__) : 0;                                                                           \
+                                                                                                                                                                 \
+    _res_PyUnicode_FromString = (typeof (_res_PyUnicode_FromString))APSW_FaultInjectControl("PyUnicode_FromString", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                 \
+    if ((typeof (_res_PyUnicode_FromString))0x1FACADE == _res_PyUnicode_FromString)                                                                              \
+       _res_PyUnicode_FromString = PyUnicode_FromString(__VA_ARGS__);                                                                                            \
+    else if ((typeof(_res_PyUnicode_FromString))0x2FACADE == _res_PyUnicode_FromString)                                                                          \
+    {                                                                                                                                                            \
+        PyUnicode_FromString(__VA_ARGS__);                                                                                                                       \
+        _res_PyUnicode_FromString = (typeof (_res_PyUnicode_FromString))18;                                                                                      \
+    }                                                                                                                                                            \
+    _res_PyUnicode_FromString;                                                                                                                                   \
 })
 #define PyUnicode_FromStringAndSize(...) \
-({                                                                                                                            \
-    __auto_type _res = 0 ? PyUnicode_FromStringAndSize(__VA_ARGS__) : 0;                                                      \
-                                                                                                                              \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyUnicode_FromStringAndSize", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                              \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                     \
-       _res = PyUnicode_FromStringAndSize(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                                 \
-    {                                                                                                                         \
-        PyUnicode_FromStringAndSize(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                             \
-    }                                                                                                                         \
-    _res;                                                                                                                     \
+({                                                                                                                                                                                    \
+    __auto_type _res_PyUnicode_FromStringAndSize = 0 ? PyUnicode_FromStringAndSize(__VA_ARGS__) : 0;                                                                                  \
+                                                                                                                                                                                      \
+    _res_PyUnicode_FromStringAndSize = (typeof (_res_PyUnicode_FromStringAndSize))APSW_FaultInjectControl("PyUnicode_FromStringAndSize", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                      \
+    if ((typeof (_res_PyUnicode_FromStringAndSize))0x1FACADE == _res_PyUnicode_FromStringAndSize)                                                                                     \
+       _res_PyUnicode_FromStringAndSize = PyUnicode_FromStringAndSize(__VA_ARGS__);                                                                                                   \
+    else if ((typeof(_res_PyUnicode_FromStringAndSize))0x2FACADE == _res_PyUnicode_FromStringAndSize)                                                                                 \
+    {                                                                                                                                                                                 \
+        PyUnicode_FromStringAndSize(__VA_ARGS__);                                                                                                                                     \
+        _res_PyUnicode_FromStringAndSize = (typeof (_res_PyUnicode_FromStringAndSize))18;                                                                                             \
+    }                                                                                                                                                                                 \
+    _res_PyUnicode_FromStringAndSize;                                                                                                                                                 \
 })
 #define PyUnicode_New(...) \
-({                                                                                                              \
-    __auto_type _res = 0 ? PyUnicode_New(__VA_ARGS__) : 0;                                                      \
-                                                                                                                \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyUnicode_New", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                \
-    if ((typeof (_res))0x1FACADE == _res)                                                                       \
-       _res = PyUnicode_New(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                   \
-    {                                                                                                           \
-        PyUnicode_New(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                               \
-    }                                                                                                           \
-    _res;                                                                                                       \
+({                                                                                                                                          \
+    __auto_type _res_PyUnicode_New = 0 ? PyUnicode_New(__VA_ARGS__) : 0;                                                                    \
+                                                                                                                                            \
+    _res_PyUnicode_New = (typeof (_res_PyUnicode_New))APSW_FaultInjectControl("PyUnicode_New", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                            \
+    if ((typeof (_res_PyUnicode_New))0x1FACADE == _res_PyUnicode_New)                                                                       \
+       _res_PyUnicode_New = PyUnicode_New(__VA_ARGS__);                                                                                     \
+    else if ((typeof(_res_PyUnicode_New))0x2FACADE == _res_PyUnicode_New)                                                                   \
+    {                                                                                                                                       \
+        PyUnicode_New(__VA_ARGS__);                                                                                                         \
+        _res_PyUnicode_New = (typeof (_res_PyUnicode_New))18;                                                                               \
+    }                                                                                                                                       \
+    _res_PyUnicode_New;                                                                                                                     \
 })
 #define PyWeakref_NewRef(...) \
-({                                                                                                                 \
-    __auto_type _res = 0 ? PyWeakref_NewRef(__VA_ARGS__) : 0;                                                      \
-                                                                                                                   \
-    _res = (typeof (_res))APSW_FaultInjectControl("PyWeakref_NewRef", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                   \
-    if ((typeof (_res))0x1FACADE == _res)                                                                          \
-       _res = PyWeakref_NewRef(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                      \
-    {                                                                                                              \
-        PyWeakref_NewRef(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                  \
-    }                                                                                                              \
-    _res;                                                                                                          \
+({                                                                                                                                                   \
+    __auto_type _res_PyWeakref_NewRef = 0 ? PyWeakref_NewRef(__VA_ARGS__) : 0;                                                                       \
+                                                                                                                                                     \
+    _res_PyWeakref_NewRef = (typeof (_res_PyWeakref_NewRef))APSW_FaultInjectControl("PyWeakref_NewRef", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                     \
+    if ((typeof (_res_PyWeakref_NewRef))0x1FACADE == _res_PyWeakref_NewRef)                                                                          \
+       _res_PyWeakref_NewRef = PyWeakref_NewRef(__VA_ARGS__);                                                                                        \
+    else if ((typeof(_res_PyWeakref_NewRef))0x2FACADE == _res_PyWeakref_NewRef)                                                                      \
+    {                                                                                                                                                \
+        PyWeakref_NewRef(__VA_ARGS__);                                                                                                               \
+        _res_PyWeakref_NewRef = (typeof (_res_PyWeakref_NewRef))18;                                                                                  \
+    }                                                                                                                                                \
+    _res_PyWeakref_NewRef;                                                                                                                           \
 })
 #undef Py_BuildValue
 #define Py_BuildValue(...) \
-({                                                                                                              \
-    __auto_type _res = 0 ? _Py_BuildValue_SizeT(__VA_ARGS__) : 0;                                               \
-                                                                                                                \
-    _res = (typeof (_res))APSW_FaultInjectControl("Py_BuildValue", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                \
-    if ((typeof (_res))0x1FACADE == _res)                                                                       \
-       _res = _Py_BuildValue_SizeT(__VA_ARGS__);                                                                \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                   \
-    {                                                                                                           \
-        _Py_BuildValue_SizeT(__VA_ARGS__);                                                                      \
-        _res = (typeof (_res))18;                                                                               \
-    }                                                                                                           \
-    _res;                                                                                                       \
+({                                                                                                                                                        \
+    __auto_type _res__Py_BuildValue_SizeT = 0 ? _Py_BuildValue_SizeT(__VA_ARGS__) : 0;                                                                    \
+                                                                                                                                                          \
+    _res__Py_BuildValue_SizeT = (typeof (_res__Py_BuildValue_SizeT))APSW_FaultInjectControl("Py_BuildValue", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                          \
+    if ((typeof (_res__Py_BuildValue_SizeT))0x1FACADE == _res__Py_BuildValue_SizeT)                                                                       \
+       _res__Py_BuildValue_SizeT = _Py_BuildValue_SizeT(__VA_ARGS__);                                                                                     \
+    else if ((typeof(_res__Py_BuildValue_SizeT))0x2FACADE == _res__Py_BuildValue_SizeT)                                                                   \
+    {                                                                                                                                                     \
+        _Py_BuildValue_SizeT(__VA_ARGS__);                                                                                                                \
+        _res__Py_BuildValue_SizeT = (typeof (_res__Py_BuildValue_SizeT))18;                                                                               \
+    }                                                                                                                                                     \
+    _res__Py_BuildValue_SizeT;                                                                                                                            \
 })
 #define _PyBytes_Resize(...) \
-({                                                                                                                \
-    __auto_type _res = 0 ? _PyBytes_Resize(__VA_ARGS__) : 0;                                                      \
-                                                                                                                  \
-    _res = (typeof (_res))APSW_FaultInjectControl("_PyBytes_Resize", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                  \
-    if ((typeof (_res))0x1FACADE == _res)                                                                         \
-       _res = _PyBytes_Resize(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                     \
-    {                                                                                                             \
-        _PyBytes_Resize(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                 \
-    }                                                                                                             \
-    _res;                                                                                                         \
+({                                                                                                                                                \
+    __auto_type _res__PyBytes_Resize = 0 ? _PyBytes_Resize(__VA_ARGS__) : 0;                                                                      \
+                                                                                                                                                  \
+    _res__PyBytes_Resize = (typeof (_res__PyBytes_Resize))APSW_FaultInjectControl("_PyBytes_Resize", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                  \
+    if ((typeof (_res__PyBytes_Resize))0x1FACADE == _res__PyBytes_Resize)                                                                         \
+       _res__PyBytes_Resize = _PyBytes_Resize(__VA_ARGS__);                                                                                       \
+    else if ((typeof(_res__PyBytes_Resize))0x2FACADE == _res__PyBytes_Resize)                                                                     \
+    {                                                                                                                                             \
+        _PyBytes_Resize(__VA_ARGS__);                                                                                                             \
+        _res__PyBytes_Resize = (typeof (_res__PyBytes_Resize))18;                                                                                 \
+    }                                                                                                                                             \
+    _res__PyBytes_Resize;                                                                                                                         \
 })
 #define _PyObject_New(...) \
-({                                                                                                              \
-    __auto_type _res = 0 ? _PyObject_New(__VA_ARGS__) : 0;                                                      \
-                                                                                                                \
-    _res = (typeof (_res))APSW_FaultInjectControl("_PyObject_New", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                \
-    if ((typeof (_res))0x1FACADE == _res)                                                                       \
-       _res = _PyObject_New(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                   \
-    {                                                                                                           \
-        _PyObject_New(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                               \
-    }                                                                                                           \
-    _res;                                                                                                       \
+({                                                                                                                                          \
+    __auto_type _res__PyObject_New = 0 ? _PyObject_New(__VA_ARGS__) : 0;                                                                    \
+                                                                                                                                            \
+    _res__PyObject_New = (typeof (_res__PyObject_New))APSW_FaultInjectControl("_PyObject_New", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                            \
+    if ((typeof (_res__PyObject_New))0x1FACADE == _res__PyObject_New)                                                                       \
+       _res__PyObject_New = _PyObject_New(__VA_ARGS__);                                                                                     \
+    else if ((typeof(_res__PyObject_New))0x2FACADE == _res__PyObject_New)                                                                   \
+    {                                                                                                                                       \
+        _PyObject_New(__VA_ARGS__);                                                                                                         \
+        _res__PyObject_New = (typeof (_res__PyObject_New))18;                                                                               \
+    }                                                                                                                                       \
+    _res__PyObject_New;                                                                                                                     \
 })
 #define allocfunccbinfo(...) \
-({                                                                                                                \
-    __auto_type _res = 0 ? allocfunccbinfo(__VA_ARGS__) : 0;                                                      \
-                                                                                                                  \
-    _res = (typeof (_res))APSW_FaultInjectControl("allocfunccbinfo", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                  \
-    if ((typeof (_res))0x1FACADE == _res)                                                                         \
-       _res = allocfunccbinfo(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                     \
-    {                                                                                                             \
-        allocfunccbinfo(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                 \
-    }                                                                                                             \
-    _res;                                                                                                         \
+({                                                                                                                                                \
+    __auto_type _res_allocfunccbinfo = 0 ? allocfunccbinfo(__VA_ARGS__) : 0;                                                                      \
+                                                                                                                                                  \
+    _res_allocfunccbinfo = (typeof (_res_allocfunccbinfo))APSW_FaultInjectControl("allocfunccbinfo", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                  \
+    if ((typeof (_res_allocfunccbinfo))0x1FACADE == _res_allocfunccbinfo)                                                                         \
+       _res_allocfunccbinfo = allocfunccbinfo(__VA_ARGS__);                                                                                       \
+    else if ((typeof(_res_allocfunccbinfo))0x2FACADE == _res_allocfunccbinfo)                                                                     \
+    {                                                                                                                                             \
+        allocfunccbinfo(__VA_ARGS__);                                                                                                             \
+        _res_allocfunccbinfo = (typeof (_res_allocfunccbinfo))18;                                                                                 \
+    }                                                                                                                                             \
+    _res_allocfunccbinfo;                                                                                                                         \
 })
 #define apsw_strdup(...) \
-({                                                                                                            \
-    __auto_type _res = 0 ? apsw_strdup(__VA_ARGS__) : 0;                                                      \
-                                                                                                              \
-    _res = (typeof (_res))APSW_FaultInjectControl("apsw_strdup", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                              \
-    if ((typeof (_res))0x1FACADE == _res)                                                                     \
-       _res = apsw_strdup(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                 \
-    {                                                                                                         \
-        apsw_strdup(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                             \
-    }                                                                                                         \
-    _res;                                                                                                     \
+({                                                                                                                                    \
+    __auto_type _res_apsw_strdup = 0 ? apsw_strdup(__VA_ARGS__) : 0;                                                                  \
+                                                                                                                                      \
+    _res_apsw_strdup = (typeof (_res_apsw_strdup))APSW_FaultInjectControl("apsw_strdup", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                      \
+    if ((typeof (_res_apsw_strdup))0x1FACADE == _res_apsw_strdup)                                                                     \
+       _res_apsw_strdup = apsw_strdup(__VA_ARGS__);                                                                                   \
+    else if ((typeof(_res_apsw_strdup))0x2FACADE == _res_apsw_strdup)                                                                 \
+    {                                                                                                                                 \
+        apsw_strdup(__VA_ARGS__);                                                                                                     \
+        _res_apsw_strdup = (typeof (_res_apsw_strdup))18;                                                                             \
+    }                                                                                                                                 \
+    _res_apsw_strdup;                                                                                                                 \
 })
 #define connection_trace_and_exec(...) \
-({                                                                                                                          \
-    __auto_type _res = 0 ? connection_trace_and_exec(__VA_ARGS__) : 0;                                                      \
-                                                                                                                            \
-    _res = (typeof (_res))APSW_FaultInjectControl("connection_trace_and_exec", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                            \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                   \
-       _res = connection_trace_and_exec(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                               \
-    {                                                                                                                       \
-        connection_trace_and_exec(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                           \
-    }                                                                                                                       \
-    _res;                                                                                                                   \
+({                                                                                                                                                                              \
+    __auto_type _res_connection_trace_and_exec = 0 ? connection_trace_and_exec(__VA_ARGS__) : 0;                                                                                \
+                                                                                                                                                                                \
+    _res_connection_trace_and_exec = (typeof (_res_connection_trace_and_exec))APSW_FaultInjectControl("connection_trace_and_exec", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                \
+    if ((typeof (_res_connection_trace_and_exec))0x1FACADE == _res_connection_trace_and_exec)                                                                                   \
+       _res_connection_trace_and_exec = connection_trace_and_exec(__VA_ARGS__);                                                                                                 \
+    else if ((typeof(_res_connection_trace_and_exec))0x2FACADE == _res_connection_trace_and_exec)                                                                               \
+    {                                                                                                                                                                           \
+        connection_trace_and_exec(__VA_ARGS__);                                                                                                                                 \
+        _res_connection_trace_and_exec = (typeof (_res_connection_trace_and_exec))18;                                                                                           \
+    }                                                                                                                                                                           \
+    _res_connection_trace_and_exec;                                                                                                                                             \
 })
 #define convert_column_to_pyobject(...) \
-({                                                                                                                           \
-    __auto_type _res = 0 ? convert_column_to_pyobject(__VA_ARGS__) : 0;                                                      \
-                                                                                                                             \
-    _res = (typeof (_res))APSW_FaultInjectControl("convert_column_to_pyobject", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                             \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                    \
-       _res = convert_column_to_pyobject(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                                \
-    {                                                                                                                        \
-        convert_column_to_pyobject(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                            \
-    }                                                                                                                        \
-    _res;                                                                                                                    \
+({                                                                                                                                                                                 \
+    __auto_type _res_convert_column_to_pyobject = 0 ? convert_column_to_pyobject(__VA_ARGS__) : 0;                                                                                 \
+                                                                                                                                                                                   \
+    _res_convert_column_to_pyobject = (typeof (_res_convert_column_to_pyobject))APSW_FaultInjectControl("convert_column_to_pyobject", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                   \
+    if ((typeof (_res_convert_column_to_pyobject))0x1FACADE == _res_convert_column_to_pyobject)                                                                                    \
+       _res_convert_column_to_pyobject = convert_column_to_pyobject(__VA_ARGS__);                                                                                                  \
+    else if ((typeof(_res_convert_column_to_pyobject))0x2FACADE == _res_convert_column_to_pyobject)                                                                                \
+    {                                                                                                                                                                              \
+        convert_column_to_pyobject(__VA_ARGS__);                                                                                                                                   \
+        _res_convert_column_to_pyobject = (typeof (_res_convert_column_to_pyobject))18;                                                                                            \
+    }                                                                                                                                                                              \
+    _res_convert_column_to_pyobject;                                                                                                                                               \
 })
 #define convert_value_to_pyobject(...) \
-({                                                                                                                          \
-    __auto_type _res = 0 ? convert_value_to_pyobject(__VA_ARGS__) : 0;                                                      \
-                                                                                                                            \
-    _res = (typeof (_res))APSW_FaultInjectControl("convert_value_to_pyobject", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                            \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                   \
-       _res = convert_value_to_pyobject(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                               \
-    {                                                                                                                       \
-        convert_value_to_pyobject(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                           \
-    }                                                                                                                       \
-    _res;                                                                                                                   \
+({                                                                                                                                                                              \
+    __auto_type _res_convert_value_to_pyobject = 0 ? convert_value_to_pyobject(__VA_ARGS__) : 0;                                                                                \
+                                                                                                                                                                                \
+    _res_convert_value_to_pyobject = (typeof (_res_convert_value_to_pyobject))APSW_FaultInjectControl("convert_value_to_pyobject", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                \
+    if ((typeof (_res_convert_value_to_pyobject))0x1FACADE == _res_convert_value_to_pyobject)                                                                                   \
+       _res_convert_value_to_pyobject = convert_value_to_pyobject(__VA_ARGS__);                                                                                                 \
+    else if ((typeof(_res_convert_value_to_pyobject))0x2FACADE == _res_convert_value_to_pyobject)                                                                               \
+    {                                                                                                                                                                           \
+        convert_value_to_pyobject(__VA_ARGS__);                                                                                                                                 \
+        _res_convert_value_to_pyobject = (typeof (_res_convert_value_to_pyobject))18;                                                                                           \
+    }                                                                                                                                                                           \
+    _res_convert_value_to_pyobject;                                                                                                                                             \
 })
 #define convertutf8string(...) \
-({                                                                                                                  \
-    __auto_type _res = 0 ? convertutf8string(__VA_ARGS__) : 0;                                                      \
-                                                                                                                    \
-    _res = (typeof (_res))APSW_FaultInjectControl("convertutf8string", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                    \
-    if ((typeof (_res))0x1FACADE == _res)                                                                           \
-       _res = convertutf8string(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                       \
-    {                                                                                                               \
-        convertutf8string(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                   \
-    }                                                                                                               \
-    _res;                                                                                                           \
+({                                                                                                                                                      \
+    __auto_type _res_convertutf8string = 0 ? convertutf8string(__VA_ARGS__) : 0;                                                                        \
+                                                                                                                                                        \
+    _res_convertutf8string = (typeof (_res_convertutf8string))APSW_FaultInjectControl("convertutf8string", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                        \
+    if ((typeof (_res_convertutf8string))0x1FACADE == _res_convertutf8string)                                                                           \
+       _res_convertutf8string = convertutf8string(__VA_ARGS__);                                                                                         \
+    else if ((typeof(_res_convertutf8string))0x2FACADE == _res_convertutf8string)                                                                       \
+    {                                                                                                                                                   \
+        convertutf8string(__VA_ARGS__);                                                                                                                 \
+        _res_convertutf8string = (typeof (_res_convertutf8string))18;                                                                                   \
+    }                                                                                                                                                   \
+    _res_convertutf8string;                                                                                                                             \
 })
 #define get_window_function_context(...) \
-({                                                                                                                            \
-    __auto_type _res = 0 ? get_window_function_context(__VA_ARGS__) : 0;                                                      \
-                                                                                                                              \
-    _res = (typeof (_res))APSW_FaultInjectControl("get_window_function_context", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                              \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                     \
-       _res = get_window_function_context(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                                 \
-    {                                                                                                                         \
-        get_window_function_context(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                             \
-    }                                                                                                                         \
-    _res;                                                                                                                     \
+({                                                                                                                                                                                    \
+    __auto_type _res_get_window_function_context = 0 ? get_window_function_context(__VA_ARGS__) : 0;                                                                                  \
+                                                                                                                                                                                      \
+    _res_get_window_function_context = (typeof (_res_get_window_function_context))APSW_FaultInjectControl("get_window_function_context", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                      \
+    if ((typeof (_res_get_window_function_context))0x1FACADE == _res_get_window_function_context)                                                                                     \
+       _res_get_window_function_context = get_window_function_context(__VA_ARGS__);                                                                                                   \
+    else if ((typeof(_res_get_window_function_context))0x2FACADE == _res_get_window_function_context)                                                                                 \
+    {                                                                                                                                                                                 \
+        get_window_function_context(__VA_ARGS__);                                                                                                                                     \
+        _res_get_window_function_context = (typeof (_res_get_window_function_context))18;                                                                                             \
+    }                                                                                                                                                                                 \
+    _res_get_window_function_context;                                                                                                                                                 \
 })
 #define getfunctionargs(...) \
-({                                                                                                                \
-    __auto_type _res = 0 ? getfunctionargs(__VA_ARGS__) : 0;                                                      \
-                                                                                                                  \
-    _res = (typeof (_res))APSW_FaultInjectControl("getfunctionargs", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                  \
-    if ((typeof (_res))0x1FACADE == _res)                                                                         \
-       _res = getfunctionargs(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                     \
-    {                                                                                                             \
-        getfunctionargs(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                 \
-    }                                                                                                             \
-    _res;                                                                                                         \
+({                                                                                                                                                \
+    __auto_type _res_getfunctionargs = 0 ? getfunctionargs(__VA_ARGS__) : 0;                                                                      \
+                                                                                                                                                  \
+    _res_getfunctionargs = (typeof (_res_getfunctionargs))APSW_FaultInjectControl("getfunctionargs", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                  \
+    if ((typeof (_res_getfunctionargs))0x1FACADE == _res_getfunctionargs)                                                                         \
+       _res_getfunctionargs = getfunctionargs(__VA_ARGS__);                                                                                       \
+    else if ((typeof(_res_getfunctionargs))0x2FACADE == _res_getfunctionargs)                                                                     \
+    {                                                                                                                                             \
+        getfunctionargs(__VA_ARGS__);                                                                                                             \
+        _res_getfunctionargs = (typeof (_res_getfunctionargs))18;                                                                                 \
+    }                                                                                                                                             \
+    _res_getfunctionargs;                                                                                                                         \
 })
 #define sqlite3_aggregate_context(...) \
-({                                                                                                                          \
-    __auto_type _res = 0 ? sqlite3_aggregate_context(__VA_ARGS__) : 0;                                                      \
-                                                                                                                            \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_aggregate_context", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                            \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                   \
-       _res = sqlite3_aggregate_context(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                               \
-    {                                                                                                                       \
-        sqlite3_aggregate_context(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                           \
-    }                                                                                                                       \
-    _res;                                                                                                                   \
+({                                                                                                                                                                              \
+    __auto_type _res_sqlite3_aggregate_context = 0 ? sqlite3_aggregate_context(__VA_ARGS__) : 0;                                                                                \
+                                                                                                                                                                                \
+    _res_sqlite3_aggregate_context = (typeof (_res_sqlite3_aggregate_context))APSW_FaultInjectControl("sqlite3_aggregate_context", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                \
+    if ((typeof (_res_sqlite3_aggregate_context))0x1FACADE == _res_sqlite3_aggregate_context)                                                                                   \
+       _res_sqlite3_aggregate_context = sqlite3_aggregate_context(__VA_ARGS__);                                                                                                 \
+    else if ((typeof(_res_sqlite3_aggregate_context))0x2FACADE == _res_sqlite3_aggregate_context)                                                                               \
+    {                                                                                                                                                                           \
+        sqlite3_aggregate_context(__VA_ARGS__);                                                                                                                                 \
+        _res_sqlite3_aggregate_context = (typeof (_res_sqlite3_aggregate_context))18;                                                                                           \
+    }                                                                                                                                                                           \
+    _res_sqlite3_aggregate_context;                                                                                                                                             \
 })
 #define sqlite3_autovacuum_pages(...) \
-({                                                                                                                         \
-    __auto_type _res = 0 ? sqlite3_autovacuum_pages(__VA_ARGS__) : 0;                                                      \
-                                                                                                                           \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_autovacuum_pages", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                           \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                  \
-       _res = sqlite3_autovacuum_pages(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                              \
-    {                                                                                                                      \
-        sqlite3_autovacuum_pages(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                          \
-    }                                                                                                                      \
-    _res;                                                                                                                  \
+({                                                                                                                                                                           \
+    __auto_type _res_sqlite3_autovacuum_pages = 0 ? sqlite3_autovacuum_pages(__VA_ARGS__) : 0;                                                                               \
+                                                                                                                                                                             \
+    _res_sqlite3_autovacuum_pages = (typeof (_res_sqlite3_autovacuum_pages))APSW_FaultInjectControl("sqlite3_autovacuum_pages", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                             \
+    if ((typeof (_res_sqlite3_autovacuum_pages))0x1FACADE == _res_sqlite3_autovacuum_pages)                                                                                  \
+       _res_sqlite3_autovacuum_pages = sqlite3_autovacuum_pages(__VA_ARGS__);                                                                                                \
+    else if ((typeof(_res_sqlite3_autovacuum_pages))0x2FACADE == _res_sqlite3_autovacuum_pages)                                                                              \
+    {                                                                                                                                                                        \
+        sqlite3_autovacuum_pages(__VA_ARGS__);                                                                                                                               \
+        _res_sqlite3_autovacuum_pages = (typeof (_res_sqlite3_autovacuum_pages))18;                                                                                          \
+    }                                                                                                                                                                        \
+    _res_sqlite3_autovacuum_pages;                                                                                                                                           \
 })
 #define sqlite3_backup_finish(...) \
-({                                                                                                                      \
-    __auto_type _res = 0 ? sqlite3_backup_finish(__VA_ARGS__) : 0;                                                      \
-                                                                                                                        \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_backup_finish", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                        \
-    if ((typeof (_res))0x1FACADE == _res)                                                                               \
-       _res = sqlite3_backup_finish(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                           \
-    {                                                                                                                   \
-        sqlite3_backup_finish(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                       \
-    }                                                                                                                   \
-    _res;                                                                                                               \
+({                                                                                                                                                                  \
+    __auto_type _res_sqlite3_backup_finish = 0 ? sqlite3_backup_finish(__VA_ARGS__) : 0;                                                                            \
+                                                                                                                                                                    \
+    _res_sqlite3_backup_finish = (typeof (_res_sqlite3_backup_finish))APSW_FaultInjectControl("sqlite3_backup_finish", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                    \
+    if ((typeof (_res_sqlite3_backup_finish))0x1FACADE == _res_sqlite3_backup_finish)                                                                               \
+       _res_sqlite3_backup_finish = sqlite3_backup_finish(__VA_ARGS__);                                                                                             \
+    else if ((typeof(_res_sqlite3_backup_finish))0x2FACADE == _res_sqlite3_backup_finish)                                                                           \
+    {                                                                                                                                                               \
+        sqlite3_backup_finish(__VA_ARGS__);                                                                                                                         \
+        _res_sqlite3_backup_finish = (typeof (_res_sqlite3_backup_finish))18;                                                                                       \
+    }                                                                                                                                                               \
+    _res_sqlite3_backup_finish;                                                                                                                                     \
 })
 #define sqlite3_backup_init(...) \
-({                                                                                                                    \
-    __auto_type _res = 0 ? sqlite3_backup_init(__VA_ARGS__) : 0;                                                      \
-                                                                                                                      \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_backup_init", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                      \
-    if ((typeof (_res))0x1FACADE == _res)                                                                             \
-       _res = sqlite3_backup_init(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                         \
-    {                                                                                                                 \
-        sqlite3_backup_init(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                     \
-    }                                                                                                                 \
-    _res;                                                                                                             \
+({                                                                                                                                                            \
+    __auto_type _res_sqlite3_backup_init = 0 ? sqlite3_backup_init(__VA_ARGS__) : 0;                                                                          \
+                                                                                                                                                              \
+    _res_sqlite3_backup_init = (typeof (_res_sqlite3_backup_init))APSW_FaultInjectControl("sqlite3_backup_init", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                              \
+    if ((typeof (_res_sqlite3_backup_init))0x1FACADE == _res_sqlite3_backup_init)                                                                             \
+       _res_sqlite3_backup_init = sqlite3_backup_init(__VA_ARGS__);                                                                                           \
+    else if ((typeof(_res_sqlite3_backup_init))0x2FACADE == _res_sqlite3_backup_init)                                                                         \
+    {                                                                                                                                                         \
+        sqlite3_backup_init(__VA_ARGS__);                                                                                                                     \
+        _res_sqlite3_backup_init = (typeof (_res_sqlite3_backup_init))18;                                                                                     \
+    }                                                                                                                                                         \
+    _res_sqlite3_backup_init;                                                                                                                                 \
 })
 #define sqlite3_backup_step(...) \
-({                                                                                                                    \
-    __auto_type _res = 0 ? sqlite3_backup_step(__VA_ARGS__) : 0;                                                      \
-                                                                                                                      \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_backup_step", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                      \
-    if ((typeof (_res))0x1FACADE == _res)                                                                             \
-       _res = sqlite3_backup_step(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                         \
-    {                                                                                                                 \
-        sqlite3_backup_step(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                     \
-    }                                                                                                                 \
-    _res;                                                                                                             \
+({                                                                                                                                                            \
+    __auto_type _res_sqlite3_backup_step = 0 ? sqlite3_backup_step(__VA_ARGS__) : 0;                                                                          \
+                                                                                                                                                              \
+    _res_sqlite3_backup_step = (typeof (_res_sqlite3_backup_step))APSW_FaultInjectControl("sqlite3_backup_step", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                              \
+    if ((typeof (_res_sqlite3_backup_step))0x1FACADE == _res_sqlite3_backup_step)                                                                             \
+       _res_sqlite3_backup_step = sqlite3_backup_step(__VA_ARGS__);                                                                                           \
+    else if ((typeof(_res_sqlite3_backup_step))0x2FACADE == _res_sqlite3_backup_step)                                                                         \
+    {                                                                                                                                                         \
+        sqlite3_backup_step(__VA_ARGS__);                                                                                                                     \
+        _res_sqlite3_backup_step = (typeof (_res_sqlite3_backup_step))18;                                                                                     \
+    }                                                                                                                                                         \
+    _res_sqlite3_backup_step;                                                                                                                                 \
 })
 #define sqlite3_bind_blob(...) \
-({                                                                                                                  \
-    __auto_type _res = 0 ? sqlite3_bind_blob(__VA_ARGS__) : 0;                                                      \
-                                                                                                                    \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_bind_blob", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                    \
-    if ((typeof (_res))0x1FACADE == _res)                                                                           \
-       _res = sqlite3_bind_blob(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                       \
-    {                                                                                                               \
-        sqlite3_bind_blob(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                   \
-    }                                                                                                               \
-    _res;                                                                                                           \
+({                                                                                                                                                      \
+    __auto_type _res_sqlite3_bind_blob = 0 ? sqlite3_bind_blob(__VA_ARGS__) : 0;                                                                        \
+                                                                                                                                                        \
+    _res_sqlite3_bind_blob = (typeof (_res_sqlite3_bind_blob))APSW_FaultInjectControl("sqlite3_bind_blob", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                        \
+    if ((typeof (_res_sqlite3_bind_blob))0x1FACADE == _res_sqlite3_bind_blob)                                                                           \
+       _res_sqlite3_bind_blob = sqlite3_bind_blob(__VA_ARGS__);                                                                                         \
+    else if ((typeof(_res_sqlite3_bind_blob))0x2FACADE == _res_sqlite3_bind_blob)                                                                       \
+    {                                                                                                                                                   \
+        sqlite3_bind_blob(__VA_ARGS__);                                                                                                                 \
+        _res_sqlite3_bind_blob = (typeof (_res_sqlite3_bind_blob))18;                                                                                   \
+    }                                                                                                                                                   \
+    _res_sqlite3_bind_blob;                                                                                                                             \
 })
 #define sqlite3_bind_blob64(...) \
-({                                                                                                                    \
-    __auto_type _res = 0 ? sqlite3_bind_blob64(__VA_ARGS__) : 0;                                                      \
-                                                                                                                      \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_bind_blob64", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                      \
-    if ((typeof (_res))0x1FACADE == _res)                                                                             \
-       _res = sqlite3_bind_blob64(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                         \
-    {                                                                                                                 \
-        sqlite3_bind_blob64(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                     \
-    }                                                                                                                 \
-    _res;                                                                                                             \
+({                                                                                                                                                            \
+    __auto_type _res_sqlite3_bind_blob64 = 0 ? sqlite3_bind_blob64(__VA_ARGS__) : 0;                                                                          \
+                                                                                                                                                              \
+    _res_sqlite3_bind_blob64 = (typeof (_res_sqlite3_bind_blob64))APSW_FaultInjectControl("sqlite3_bind_blob64", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                              \
+    if ((typeof (_res_sqlite3_bind_blob64))0x1FACADE == _res_sqlite3_bind_blob64)                                                                             \
+       _res_sqlite3_bind_blob64 = sqlite3_bind_blob64(__VA_ARGS__);                                                                                           \
+    else if ((typeof(_res_sqlite3_bind_blob64))0x2FACADE == _res_sqlite3_bind_blob64)                                                                         \
+    {                                                                                                                                                         \
+        sqlite3_bind_blob64(__VA_ARGS__);                                                                                                                     \
+        _res_sqlite3_bind_blob64 = (typeof (_res_sqlite3_bind_blob64))18;                                                                                     \
+    }                                                                                                                                                         \
+    _res_sqlite3_bind_blob64;                                                                                                                                 \
 })
 #define sqlite3_bind_double(...) \
-({                                                                                                                    \
-    __auto_type _res = 0 ? sqlite3_bind_double(__VA_ARGS__) : 0;                                                      \
-                                                                                                                      \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_bind_double", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                      \
-    if ((typeof (_res))0x1FACADE == _res)                                                                             \
-       _res = sqlite3_bind_double(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                         \
-    {                                                                                                                 \
-        sqlite3_bind_double(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                     \
-    }                                                                                                                 \
-    _res;                                                                                                             \
+({                                                                                                                                                            \
+    __auto_type _res_sqlite3_bind_double = 0 ? sqlite3_bind_double(__VA_ARGS__) : 0;                                                                          \
+                                                                                                                                                              \
+    _res_sqlite3_bind_double = (typeof (_res_sqlite3_bind_double))APSW_FaultInjectControl("sqlite3_bind_double", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                              \
+    if ((typeof (_res_sqlite3_bind_double))0x1FACADE == _res_sqlite3_bind_double)                                                                             \
+       _res_sqlite3_bind_double = sqlite3_bind_double(__VA_ARGS__);                                                                                           \
+    else if ((typeof(_res_sqlite3_bind_double))0x2FACADE == _res_sqlite3_bind_double)                                                                         \
+    {                                                                                                                                                         \
+        sqlite3_bind_double(__VA_ARGS__);                                                                                                                     \
+        _res_sqlite3_bind_double = (typeof (_res_sqlite3_bind_double))18;                                                                                     \
+    }                                                                                                                                                         \
+    _res_sqlite3_bind_double;                                                                                                                                 \
 })
 #define sqlite3_bind_int(...) \
-({                                                                                                                 \
-    __auto_type _res = 0 ? sqlite3_bind_int(__VA_ARGS__) : 0;                                                      \
-                                                                                                                   \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_bind_int", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                   \
-    if ((typeof (_res))0x1FACADE == _res)                                                                          \
-       _res = sqlite3_bind_int(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                      \
-    {                                                                                                              \
-        sqlite3_bind_int(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                  \
-    }                                                                                                              \
-    _res;                                                                                                          \
+({                                                                                                                                                   \
+    __auto_type _res_sqlite3_bind_int = 0 ? sqlite3_bind_int(__VA_ARGS__) : 0;                                                                       \
+                                                                                                                                                     \
+    _res_sqlite3_bind_int = (typeof (_res_sqlite3_bind_int))APSW_FaultInjectControl("sqlite3_bind_int", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                     \
+    if ((typeof (_res_sqlite3_bind_int))0x1FACADE == _res_sqlite3_bind_int)                                                                          \
+       _res_sqlite3_bind_int = sqlite3_bind_int(__VA_ARGS__);                                                                                        \
+    else if ((typeof(_res_sqlite3_bind_int))0x2FACADE == _res_sqlite3_bind_int)                                                                      \
+    {                                                                                                                                                \
+        sqlite3_bind_int(__VA_ARGS__);                                                                                                               \
+        _res_sqlite3_bind_int = (typeof (_res_sqlite3_bind_int))18;                                                                                  \
+    }                                                                                                                                                \
+    _res_sqlite3_bind_int;                                                                                                                           \
 })
 #define sqlite3_bind_int64(...) \
-({                                                                                                                   \
-    __auto_type _res = 0 ? sqlite3_bind_int64(__VA_ARGS__) : 0;                                                      \
-                                                                                                                     \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_bind_int64", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                     \
-    if ((typeof (_res))0x1FACADE == _res)                                                                            \
-       _res = sqlite3_bind_int64(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                        \
-    {                                                                                                                \
-        sqlite3_bind_int64(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                    \
-    }                                                                                                                \
-    _res;                                                                                                            \
+({                                                                                                                                                         \
+    __auto_type _res_sqlite3_bind_int64 = 0 ? sqlite3_bind_int64(__VA_ARGS__) : 0;                                                                         \
+                                                                                                                                                           \
+    _res_sqlite3_bind_int64 = (typeof (_res_sqlite3_bind_int64))APSW_FaultInjectControl("sqlite3_bind_int64", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                           \
+    if ((typeof (_res_sqlite3_bind_int64))0x1FACADE == _res_sqlite3_bind_int64)                                                                            \
+       _res_sqlite3_bind_int64 = sqlite3_bind_int64(__VA_ARGS__);                                                                                          \
+    else if ((typeof(_res_sqlite3_bind_int64))0x2FACADE == _res_sqlite3_bind_int64)                                                                        \
+    {                                                                                                                                                      \
+        sqlite3_bind_int64(__VA_ARGS__);                                                                                                                   \
+        _res_sqlite3_bind_int64 = (typeof (_res_sqlite3_bind_int64))18;                                                                                    \
+    }                                                                                                                                                      \
+    _res_sqlite3_bind_int64;                                                                                                                               \
 })
 #define sqlite3_bind_null(...) \
-({                                                                                                                  \
-    __auto_type _res = 0 ? sqlite3_bind_null(__VA_ARGS__) : 0;                                                      \
-                                                                                                                    \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_bind_null", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                    \
-    if ((typeof (_res))0x1FACADE == _res)                                                                           \
-       _res = sqlite3_bind_null(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                       \
-    {                                                                                                               \
-        sqlite3_bind_null(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                   \
-    }                                                                                                               \
-    _res;                                                                                                           \
+({                                                                                                                                                      \
+    __auto_type _res_sqlite3_bind_null = 0 ? sqlite3_bind_null(__VA_ARGS__) : 0;                                                                        \
+                                                                                                                                                        \
+    _res_sqlite3_bind_null = (typeof (_res_sqlite3_bind_null))APSW_FaultInjectControl("sqlite3_bind_null", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                        \
+    if ((typeof (_res_sqlite3_bind_null))0x1FACADE == _res_sqlite3_bind_null)                                                                           \
+       _res_sqlite3_bind_null = sqlite3_bind_null(__VA_ARGS__);                                                                                         \
+    else if ((typeof(_res_sqlite3_bind_null))0x2FACADE == _res_sqlite3_bind_null)                                                                       \
+    {                                                                                                                                                   \
+        sqlite3_bind_null(__VA_ARGS__);                                                                                                                 \
+        _res_sqlite3_bind_null = (typeof (_res_sqlite3_bind_null))18;                                                                                   \
+    }                                                                                                                                                   \
+    _res_sqlite3_bind_null;                                                                                                                             \
 })
 #define sqlite3_bind_pointer(...) \
-({                                                                                                                     \
-    __auto_type _res = 0 ? sqlite3_bind_pointer(__VA_ARGS__) : 0;                                                      \
-                                                                                                                       \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_bind_pointer", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                       \
-    if ((typeof (_res))0x1FACADE == _res)                                                                              \
-       _res = sqlite3_bind_pointer(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                          \
-    {                                                                                                                  \
-        sqlite3_bind_pointer(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                      \
-    }                                                                                                                  \
-    _res;                                                                                                              \
+({                                                                                                                                                               \
+    __auto_type _res_sqlite3_bind_pointer = 0 ? sqlite3_bind_pointer(__VA_ARGS__) : 0;                                                                           \
+                                                                                                                                                                 \
+    _res_sqlite3_bind_pointer = (typeof (_res_sqlite3_bind_pointer))APSW_FaultInjectControl("sqlite3_bind_pointer", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                 \
+    if ((typeof (_res_sqlite3_bind_pointer))0x1FACADE == _res_sqlite3_bind_pointer)                                                                              \
+       _res_sqlite3_bind_pointer = sqlite3_bind_pointer(__VA_ARGS__);                                                                                            \
+    else if ((typeof(_res_sqlite3_bind_pointer))0x2FACADE == _res_sqlite3_bind_pointer)                                                                          \
+    {                                                                                                                                                            \
+        sqlite3_bind_pointer(__VA_ARGS__);                                                                                                                       \
+        _res_sqlite3_bind_pointer = (typeof (_res_sqlite3_bind_pointer))18;                                                                                      \
+    }                                                                                                                                                            \
+    _res_sqlite3_bind_pointer;                                                                                                                                   \
 })
 #define sqlite3_bind_text(...) \
-({                                                                                                                  \
-    __auto_type _res = 0 ? sqlite3_bind_text(__VA_ARGS__) : 0;                                                      \
-                                                                                                                    \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_bind_text", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                    \
-    if ((typeof (_res))0x1FACADE == _res)                                                                           \
-       _res = sqlite3_bind_text(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                       \
-    {                                                                                                               \
-        sqlite3_bind_text(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                   \
-    }                                                                                                               \
-    _res;                                                                                                           \
+({                                                                                                                                                      \
+    __auto_type _res_sqlite3_bind_text = 0 ? sqlite3_bind_text(__VA_ARGS__) : 0;                                                                        \
+                                                                                                                                                        \
+    _res_sqlite3_bind_text = (typeof (_res_sqlite3_bind_text))APSW_FaultInjectControl("sqlite3_bind_text", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                        \
+    if ((typeof (_res_sqlite3_bind_text))0x1FACADE == _res_sqlite3_bind_text)                                                                           \
+       _res_sqlite3_bind_text = sqlite3_bind_text(__VA_ARGS__);                                                                                         \
+    else if ((typeof(_res_sqlite3_bind_text))0x2FACADE == _res_sqlite3_bind_text)                                                                       \
+    {                                                                                                                                                   \
+        sqlite3_bind_text(__VA_ARGS__);                                                                                                                 \
+        _res_sqlite3_bind_text = (typeof (_res_sqlite3_bind_text))18;                                                                                   \
+    }                                                                                                                                                   \
+    _res_sqlite3_bind_text;                                                                                                                             \
 })
 #define sqlite3_bind_text64(...) \
-({                                                                                                                    \
-    __auto_type _res = 0 ? sqlite3_bind_text64(__VA_ARGS__) : 0;                                                      \
-                                                                                                                      \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_bind_text64", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                      \
-    if ((typeof (_res))0x1FACADE == _res)                                                                             \
-       _res = sqlite3_bind_text64(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                         \
-    {                                                                                                                 \
-        sqlite3_bind_text64(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                     \
-    }                                                                                                                 \
-    _res;                                                                                                             \
+({                                                                                                                                                            \
+    __auto_type _res_sqlite3_bind_text64 = 0 ? sqlite3_bind_text64(__VA_ARGS__) : 0;                                                                          \
+                                                                                                                                                              \
+    _res_sqlite3_bind_text64 = (typeof (_res_sqlite3_bind_text64))APSW_FaultInjectControl("sqlite3_bind_text64", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                              \
+    if ((typeof (_res_sqlite3_bind_text64))0x1FACADE == _res_sqlite3_bind_text64)                                                                             \
+       _res_sqlite3_bind_text64 = sqlite3_bind_text64(__VA_ARGS__);                                                                                           \
+    else if ((typeof(_res_sqlite3_bind_text64))0x2FACADE == _res_sqlite3_bind_text64)                                                                         \
+    {                                                                                                                                                         \
+        sqlite3_bind_text64(__VA_ARGS__);                                                                                                                     \
+        _res_sqlite3_bind_text64 = (typeof (_res_sqlite3_bind_text64))18;                                                                                     \
+    }                                                                                                                                                         \
+    _res_sqlite3_bind_text64;                                                                                                                                 \
 })
 #define sqlite3_bind_value(...) \
-({                                                                                                                   \
-    __auto_type _res = 0 ? sqlite3_bind_value(__VA_ARGS__) : 0;                                                      \
-                                                                                                                     \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_bind_value", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                     \
-    if ((typeof (_res))0x1FACADE == _res)                                                                            \
-       _res = sqlite3_bind_value(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                        \
-    {                                                                                                                \
-        sqlite3_bind_value(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                    \
-    }                                                                                                                \
-    _res;                                                                                                            \
+({                                                                                                                                                         \
+    __auto_type _res_sqlite3_bind_value = 0 ? sqlite3_bind_value(__VA_ARGS__) : 0;                                                                         \
+                                                                                                                                                           \
+    _res_sqlite3_bind_value = (typeof (_res_sqlite3_bind_value))APSW_FaultInjectControl("sqlite3_bind_value", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                           \
+    if ((typeof (_res_sqlite3_bind_value))0x1FACADE == _res_sqlite3_bind_value)                                                                            \
+       _res_sqlite3_bind_value = sqlite3_bind_value(__VA_ARGS__);                                                                                          \
+    else if ((typeof(_res_sqlite3_bind_value))0x2FACADE == _res_sqlite3_bind_value)                                                                        \
+    {                                                                                                                                                      \
+        sqlite3_bind_value(__VA_ARGS__);                                                                                                                   \
+        _res_sqlite3_bind_value = (typeof (_res_sqlite3_bind_value))18;                                                                                    \
+    }                                                                                                                                                      \
+    _res_sqlite3_bind_value;                                                                                                                               \
 })
 #define sqlite3_bind_zeroblob(...) \
-({                                                                                                                      \
-    __auto_type _res = 0 ? sqlite3_bind_zeroblob(__VA_ARGS__) : 0;                                                      \
-                                                                                                                        \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_bind_zeroblob", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                        \
-    if ((typeof (_res))0x1FACADE == _res)                                                                               \
-       _res = sqlite3_bind_zeroblob(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                           \
-    {                                                                                                                   \
-        sqlite3_bind_zeroblob(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                       \
-    }                                                                                                                   \
-    _res;                                                                                                               \
+({                                                                                                                                                                  \
+    __auto_type _res_sqlite3_bind_zeroblob = 0 ? sqlite3_bind_zeroblob(__VA_ARGS__) : 0;                                                                            \
+                                                                                                                                                                    \
+    _res_sqlite3_bind_zeroblob = (typeof (_res_sqlite3_bind_zeroblob))APSW_FaultInjectControl("sqlite3_bind_zeroblob", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                    \
+    if ((typeof (_res_sqlite3_bind_zeroblob))0x1FACADE == _res_sqlite3_bind_zeroblob)                                                                               \
+       _res_sqlite3_bind_zeroblob = sqlite3_bind_zeroblob(__VA_ARGS__);                                                                                             \
+    else if ((typeof(_res_sqlite3_bind_zeroblob))0x2FACADE == _res_sqlite3_bind_zeroblob)                                                                           \
+    {                                                                                                                                                               \
+        sqlite3_bind_zeroblob(__VA_ARGS__);                                                                                                                         \
+        _res_sqlite3_bind_zeroblob = (typeof (_res_sqlite3_bind_zeroblob))18;                                                                                       \
+    }                                                                                                                                                               \
+    _res_sqlite3_bind_zeroblob;                                                                                                                                     \
 })
 #define sqlite3_bind_zeroblob64(...) \
-({                                                                                                                        \
-    __auto_type _res = 0 ? sqlite3_bind_zeroblob64(__VA_ARGS__) : 0;                                                      \
-                                                                                                                          \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_bind_zeroblob64", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                          \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                 \
-       _res = sqlite3_bind_zeroblob64(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                             \
-    {                                                                                                                     \
-        sqlite3_bind_zeroblob64(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                         \
-    }                                                                                                                     \
-    _res;                                                                                                                 \
+({                                                                                                                                                                        \
+    __auto_type _res_sqlite3_bind_zeroblob64 = 0 ? sqlite3_bind_zeroblob64(__VA_ARGS__) : 0;                                                                              \
+                                                                                                                                                                          \
+    _res_sqlite3_bind_zeroblob64 = (typeof (_res_sqlite3_bind_zeroblob64))APSW_FaultInjectControl("sqlite3_bind_zeroblob64", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                          \
+    if ((typeof (_res_sqlite3_bind_zeroblob64))0x1FACADE == _res_sqlite3_bind_zeroblob64)                                                                                 \
+       _res_sqlite3_bind_zeroblob64 = sqlite3_bind_zeroblob64(__VA_ARGS__);                                                                                               \
+    else if ((typeof(_res_sqlite3_bind_zeroblob64))0x2FACADE == _res_sqlite3_bind_zeroblob64)                                                                             \
+    {                                                                                                                                                                     \
+        sqlite3_bind_zeroblob64(__VA_ARGS__);                                                                                                                             \
+        _res_sqlite3_bind_zeroblob64 = (typeof (_res_sqlite3_bind_zeroblob64))18;                                                                                         \
+    }                                                                                                                                                                     \
+    _res_sqlite3_bind_zeroblob64;                                                                                                                                         \
 })
 #define sqlite3_blob_open(...) \
-({                                                                                                                  \
-    __auto_type _res = 0 ? sqlite3_blob_open(__VA_ARGS__) : 0;                                                      \
-                                                                                                                    \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_blob_open", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                    \
-    if ((typeof (_res))0x1FACADE == _res)                                                                           \
-       _res = sqlite3_blob_open(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                       \
-    {                                                                                                               \
-        sqlite3_blob_open(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                   \
-    }                                                                                                               \
-    _res;                                                                                                           \
+({                                                                                                                                                      \
+    __auto_type _res_sqlite3_blob_open = 0 ? sqlite3_blob_open(__VA_ARGS__) : 0;                                                                        \
+                                                                                                                                                        \
+    _res_sqlite3_blob_open = (typeof (_res_sqlite3_blob_open))APSW_FaultInjectControl("sqlite3_blob_open", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                        \
+    if ((typeof (_res_sqlite3_blob_open))0x1FACADE == _res_sqlite3_blob_open)                                                                           \
+       _res_sqlite3_blob_open = sqlite3_blob_open(__VA_ARGS__);                                                                                         \
+    else if ((typeof(_res_sqlite3_blob_open))0x2FACADE == _res_sqlite3_blob_open)                                                                       \
+    {                                                                                                                                                   \
+        sqlite3_blob_open(__VA_ARGS__);                                                                                                                 \
+        _res_sqlite3_blob_open = (typeof (_res_sqlite3_blob_open))18;                                                                                   \
+    }                                                                                                                                                   \
+    _res_sqlite3_blob_open;                                                                                                                             \
 })
 #define sqlite3_blob_read(...) \
-({                                                                                                                  \
-    __auto_type _res = 0 ? sqlite3_blob_read(__VA_ARGS__) : 0;                                                      \
-                                                                                                                    \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_blob_read", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                    \
-    if ((typeof (_res))0x1FACADE == _res)                                                                           \
-       _res = sqlite3_blob_read(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                       \
-    {                                                                                                               \
-        sqlite3_blob_read(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                   \
-    }                                                                                                               \
-    _res;                                                                                                           \
+({                                                                                                                                                      \
+    __auto_type _res_sqlite3_blob_read = 0 ? sqlite3_blob_read(__VA_ARGS__) : 0;                                                                        \
+                                                                                                                                                        \
+    _res_sqlite3_blob_read = (typeof (_res_sqlite3_blob_read))APSW_FaultInjectControl("sqlite3_blob_read", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                        \
+    if ((typeof (_res_sqlite3_blob_read))0x1FACADE == _res_sqlite3_blob_read)                                                                           \
+       _res_sqlite3_blob_read = sqlite3_blob_read(__VA_ARGS__);                                                                                         \
+    else if ((typeof(_res_sqlite3_blob_read))0x2FACADE == _res_sqlite3_blob_read)                                                                       \
+    {                                                                                                                                                   \
+        sqlite3_blob_read(__VA_ARGS__);                                                                                                                 \
+        _res_sqlite3_blob_read = (typeof (_res_sqlite3_blob_read))18;                                                                                   \
+    }                                                                                                                                                   \
+    _res_sqlite3_blob_read;                                                                                                                             \
 })
 #define sqlite3_blob_reopen(...) \
-({                                                                                                                    \
-    __auto_type _res = 0 ? sqlite3_blob_reopen(__VA_ARGS__) : 0;                                                      \
-                                                                                                                      \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_blob_reopen", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                      \
-    if ((typeof (_res))0x1FACADE == _res)                                                                             \
-       _res = sqlite3_blob_reopen(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                         \
-    {                                                                                                                 \
-        sqlite3_blob_reopen(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                     \
-    }                                                                                                                 \
-    _res;                                                                                                             \
+({                                                                                                                                                            \
+    __auto_type _res_sqlite3_blob_reopen = 0 ? sqlite3_blob_reopen(__VA_ARGS__) : 0;                                                                          \
+                                                                                                                                                              \
+    _res_sqlite3_blob_reopen = (typeof (_res_sqlite3_blob_reopen))APSW_FaultInjectControl("sqlite3_blob_reopen", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                              \
+    if ((typeof (_res_sqlite3_blob_reopen))0x1FACADE == _res_sqlite3_blob_reopen)                                                                             \
+       _res_sqlite3_blob_reopen = sqlite3_blob_reopen(__VA_ARGS__);                                                                                           \
+    else if ((typeof(_res_sqlite3_blob_reopen))0x2FACADE == _res_sqlite3_blob_reopen)                                                                         \
+    {                                                                                                                                                         \
+        sqlite3_blob_reopen(__VA_ARGS__);                                                                                                                     \
+        _res_sqlite3_blob_reopen = (typeof (_res_sqlite3_blob_reopen))18;                                                                                     \
+    }                                                                                                                                                         \
+    _res_sqlite3_blob_reopen;                                                                                                                                 \
 })
 #define sqlite3_blob_write(...) \
-({                                                                                                                   \
-    __auto_type _res = 0 ? sqlite3_blob_write(__VA_ARGS__) : 0;                                                      \
-                                                                                                                     \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_blob_write", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                     \
-    if ((typeof (_res))0x1FACADE == _res)                                                                            \
-       _res = sqlite3_blob_write(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                        \
-    {                                                                                                                \
-        sqlite3_blob_write(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                    \
-    }                                                                                                                \
-    _res;                                                                                                            \
+({                                                                                                                                                         \
+    __auto_type _res_sqlite3_blob_write = 0 ? sqlite3_blob_write(__VA_ARGS__) : 0;                                                                         \
+                                                                                                                                                           \
+    _res_sqlite3_blob_write = (typeof (_res_sqlite3_blob_write))APSW_FaultInjectControl("sqlite3_blob_write", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                           \
+    if ((typeof (_res_sqlite3_blob_write))0x1FACADE == _res_sqlite3_blob_write)                                                                            \
+       _res_sqlite3_blob_write = sqlite3_blob_write(__VA_ARGS__);                                                                                          \
+    else if ((typeof(_res_sqlite3_blob_write))0x2FACADE == _res_sqlite3_blob_write)                                                                        \
+    {                                                                                                                                                      \
+        sqlite3_blob_write(__VA_ARGS__);                                                                                                                   \
+        _res_sqlite3_blob_write = (typeof (_res_sqlite3_blob_write))18;                                                                                    \
+    }                                                                                                                                                      \
+    _res_sqlite3_blob_write;                                                                                                                               \
 })
 #define sqlite3_busy_handler(...) \
-({                                                                                                                     \
-    __auto_type _res = 0 ? sqlite3_busy_handler(__VA_ARGS__) : 0;                                                      \
-                                                                                                                       \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_busy_handler", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                       \
-    if ((typeof (_res))0x1FACADE == _res)                                                                              \
-       _res = sqlite3_busy_handler(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                          \
-    {                                                                                                                  \
-        sqlite3_busy_handler(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                      \
-    }                                                                                                                  \
-    _res;                                                                                                              \
+({                                                                                                                                                               \
+    __auto_type _res_sqlite3_busy_handler = 0 ? sqlite3_busy_handler(__VA_ARGS__) : 0;                                                                           \
+                                                                                                                                                                 \
+    _res_sqlite3_busy_handler = (typeof (_res_sqlite3_busy_handler))APSW_FaultInjectControl("sqlite3_busy_handler", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                 \
+    if ((typeof (_res_sqlite3_busy_handler))0x1FACADE == _res_sqlite3_busy_handler)                                                                              \
+       _res_sqlite3_busy_handler = sqlite3_busy_handler(__VA_ARGS__);                                                                                            \
+    else if ((typeof(_res_sqlite3_busy_handler))0x2FACADE == _res_sqlite3_busy_handler)                                                                          \
+    {                                                                                                                                                            \
+        sqlite3_busy_handler(__VA_ARGS__);                                                                                                                       \
+        _res_sqlite3_busy_handler = (typeof (_res_sqlite3_busy_handler))18;                                                                                      \
+    }                                                                                                                                                            \
+    _res_sqlite3_busy_handler;                                                                                                                                   \
 })
 #define sqlite3_busy_timeout(...) \
-({                                                                                                                     \
-    __auto_type _res = 0 ? sqlite3_busy_timeout(__VA_ARGS__) : 0;                                                      \
-                                                                                                                       \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_busy_timeout", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                       \
-    if ((typeof (_res))0x1FACADE == _res)                                                                              \
-       _res = sqlite3_busy_timeout(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                          \
-    {                                                                                                                  \
-        sqlite3_busy_timeout(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                      \
-    }                                                                                                                  \
-    _res;                                                                                                              \
+({                                                                                                                                                               \
+    __auto_type _res_sqlite3_busy_timeout = 0 ? sqlite3_busy_timeout(__VA_ARGS__) : 0;                                                                           \
+                                                                                                                                                                 \
+    _res_sqlite3_busy_timeout = (typeof (_res_sqlite3_busy_timeout))APSW_FaultInjectControl("sqlite3_busy_timeout", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                 \
+    if ((typeof (_res_sqlite3_busy_timeout))0x1FACADE == _res_sqlite3_busy_timeout)                                                                              \
+       _res_sqlite3_busy_timeout = sqlite3_busy_timeout(__VA_ARGS__);                                                                                            \
+    else if ((typeof(_res_sqlite3_busy_timeout))0x2FACADE == _res_sqlite3_busy_timeout)                                                                          \
+    {                                                                                                                                                            \
+        sqlite3_busy_timeout(__VA_ARGS__);                                                                                                                       \
+        _res_sqlite3_busy_timeout = (typeof (_res_sqlite3_busy_timeout))18;                                                                                      \
+    }                                                                                                                                                            \
+    _res_sqlite3_busy_timeout;                                                                                                                                   \
 })
 #define sqlite3_clear_bindings(...) \
-({                                                                                                                       \
-    __auto_type _res = 0 ? sqlite3_clear_bindings(__VA_ARGS__) : 0;                                                      \
-                                                                                                                         \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_clear_bindings", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                         \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                \
-       _res = sqlite3_clear_bindings(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                            \
-    {                                                                                                                    \
-        sqlite3_clear_bindings(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                        \
-    }                                                                                                                    \
-    _res;                                                                                                                \
+({                                                                                                                                                                     \
+    __auto_type _res_sqlite3_clear_bindings = 0 ? sqlite3_clear_bindings(__VA_ARGS__) : 0;                                                                             \
+                                                                                                                                                                       \
+    _res_sqlite3_clear_bindings = (typeof (_res_sqlite3_clear_bindings))APSW_FaultInjectControl("sqlite3_clear_bindings", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                       \
+    if ((typeof (_res_sqlite3_clear_bindings))0x1FACADE == _res_sqlite3_clear_bindings)                                                                                \
+       _res_sqlite3_clear_bindings = sqlite3_clear_bindings(__VA_ARGS__);                                                                                              \
+    else if ((typeof(_res_sqlite3_clear_bindings))0x2FACADE == _res_sqlite3_clear_bindings)                                                                            \
+    {                                                                                                                                                                  \
+        sqlite3_clear_bindings(__VA_ARGS__);                                                                                                                           \
+        _res_sqlite3_clear_bindings = (typeof (_res_sqlite3_clear_bindings))18;                                                                                        \
+    }                                                                                                                                                                  \
+    _res_sqlite3_clear_bindings;                                                                                                                                       \
 })
 #define sqlite3_close(...) \
-({                                                                                                              \
-    __auto_type _res = 0 ? sqlite3_close(__VA_ARGS__) : 0;                                                      \
-                                                                                                                \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_close", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                \
-    if ((typeof (_res))0x1FACADE == _res)                                                                       \
-       _res = sqlite3_close(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                   \
-    {                                                                                                           \
-        sqlite3_close(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                               \
-    }                                                                                                           \
-    _res;                                                                                                       \
+({                                                                                                                                          \
+    __auto_type _res_sqlite3_close = 0 ? sqlite3_close(__VA_ARGS__) : 0;                                                                    \
+                                                                                                                                            \
+    _res_sqlite3_close = (typeof (_res_sqlite3_close))APSW_FaultInjectControl("sqlite3_close", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                            \
+    if ((typeof (_res_sqlite3_close))0x1FACADE == _res_sqlite3_close)                                                                       \
+       _res_sqlite3_close = sqlite3_close(__VA_ARGS__);                                                                                     \
+    else if ((typeof(_res_sqlite3_close))0x2FACADE == _res_sqlite3_close)                                                                   \
+    {                                                                                                                                       \
+        sqlite3_close(__VA_ARGS__);                                                                                                         \
+        _res_sqlite3_close = (typeof (_res_sqlite3_close))18;                                                                               \
+    }                                                                                                                                       \
+    _res_sqlite3_close;                                                                                                                     \
 })
 #define sqlite3_close_v2(...) \
-({                                                                                                                 \
-    __auto_type _res = 0 ? sqlite3_close_v2(__VA_ARGS__) : 0;                                                      \
-                                                                                                                   \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_close_v2", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                   \
-    if ((typeof (_res))0x1FACADE == _res)                                                                          \
-       _res = sqlite3_close_v2(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                      \
-    {                                                                                                              \
-        sqlite3_close_v2(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                  \
-    }                                                                                                              \
-    _res;                                                                                                          \
+({                                                                                                                                                   \
+    __auto_type _res_sqlite3_close_v2 = 0 ? sqlite3_close_v2(__VA_ARGS__) : 0;                                                                       \
+                                                                                                                                                     \
+    _res_sqlite3_close_v2 = (typeof (_res_sqlite3_close_v2))APSW_FaultInjectControl("sqlite3_close_v2", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                     \
+    if ((typeof (_res_sqlite3_close_v2))0x1FACADE == _res_sqlite3_close_v2)                                                                          \
+       _res_sqlite3_close_v2 = sqlite3_close_v2(__VA_ARGS__);                                                                                        \
+    else if ((typeof(_res_sqlite3_close_v2))0x2FACADE == _res_sqlite3_close_v2)                                                                      \
+    {                                                                                                                                                \
+        sqlite3_close_v2(__VA_ARGS__);                                                                                                               \
+        _res_sqlite3_close_v2 = (typeof (_res_sqlite3_close_v2))18;                                                                                  \
+    }                                                                                                                                                \
+    _res_sqlite3_close_v2;                                                                                                                           \
 })
 #define sqlite3_collation_needed(...) \
-({                                                                                                                         \
-    __auto_type _res = 0 ? sqlite3_collation_needed(__VA_ARGS__) : 0;                                                      \
-                                                                                                                           \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_collation_needed", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                           \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                  \
-       _res = sqlite3_collation_needed(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                              \
-    {                                                                                                                      \
-        sqlite3_collation_needed(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                          \
-    }                                                                                                                      \
-    _res;                                                                                                                  \
+({                                                                                                                                                                           \
+    __auto_type _res_sqlite3_collation_needed = 0 ? sqlite3_collation_needed(__VA_ARGS__) : 0;                                                                               \
+                                                                                                                                                                             \
+    _res_sqlite3_collation_needed = (typeof (_res_sqlite3_collation_needed))APSW_FaultInjectControl("sqlite3_collation_needed", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                             \
+    if ((typeof (_res_sqlite3_collation_needed))0x1FACADE == _res_sqlite3_collation_needed)                                                                                  \
+       _res_sqlite3_collation_needed = sqlite3_collation_needed(__VA_ARGS__);                                                                                                \
+    else if ((typeof(_res_sqlite3_collation_needed))0x2FACADE == _res_sqlite3_collation_needed)                                                                              \
+    {                                                                                                                                                                        \
+        sqlite3_collation_needed(__VA_ARGS__);                                                                                                                               \
+        _res_sqlite3_collation_needed = (typeof (_res_sqlite3_collation_needed))18;                                                                                          \
+    }                                                                                                                                                                        \
+    _res_sqlite3_collation_needed;                                                                                                                                           \
 })
 #define sqlite3_column_name(...) \
-({                                                                                                                    \
-    __auto_type _res = 0 ? sqlite3_column_name(__VA_ARGS__) : 0;                                                      \
-                                                                                                                      \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_column_name", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                      \
-    if ((typeof (_res))0x1FACADE == _res)                                                                             \
-       _res = sqlite3_column_name(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                         \
-    {                                                                                                                 \
-        sqlite3_column_name(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                     \
-    }                                                                                                                 \
-    _res;                                                                                                             \
+({                                                                                                                                                            \
+    __auto_type _res_sqlite3_column_name = 0 ? sqlite3_column_name(__VA_ARGS__) : 0;                                                                          \
+                                                                                                                                                              \
+    _res_sqlite3_column_name = (typeof (_res_sqlite3_column_name))APSW_FaultInjectControl("sqlite3_column_name", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                              \
+    if ((typeof (_res_sqlite3_column_name))0x1FACADE == _res_sqlite3_column_name)                                                                             \
+       _res_sqlite3_column_name = sqlite3_column_name(__VA_ARGS__);                                                                                           \
+    else if ((typeof(_res_sqlite3_column_name))0x2FACADE == _res_sqlite3_column_name)                                                                         \
+    {                                                                                                                                                         \
+        sqlite3_column_name(__VA_ARGS__);                                                                                                                     \
+        _res_sqlite3_column_name = (typeof (_res_sqlite3_column_name))18;                                                                                     \
+    }                                                                                                                                                         \
+    _res_sqlite3_column_name;                                                                                                                                 \
 })
 #define sqlite3_complete(...) \
-({                                                                                                                 \
-    __auto_type _res = 0 ? sqlite3_complete(__VA_ARGS__) : 0;                                                      \
-                                                                                                                   \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_complete", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                   \
-    if ((typeof (_res))0x1FACADE == _res)                                                                          \
-       _res = sqlite3_complete(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                      \
-    {                                                                                                              \
-        sqlite3_complete(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                  \
-    }                                                                                                              \
-    _res;                                                                                                          \
+({                                                                                                                                                   \
+    __auto_type _res_sqlite3_complete = 0 ? sqlite3_complete(__VA_ARGS__) : 0;                                                                       \
+                                                                                                                                                     \
+    _res_sqlite3_complete = (typeof (_res_sqlite3_complete))APSW_FaultInjectControl("sqlite3_complete", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                     \
+    if ((typeof (_res_sqlite3_complete))0x1FACADE == _res_sqlite3_complete)                                                                          \
+       _res_sqlite3_complete = sqlite3_complete(__VA_ARGS__);                                                                                        \
+    else if ((typeof(_res_sqlite3_complete))0x2FACADE == _res_sqlite3_complete)                                                                      \
+    {                                                                                                                                                \
+        sqlite3_complete(__VA_ARGS__);                                                                                                               \
+        _res_sqlite3_complete = (typeof (_res_sqlite3_complete))18;                                                                                  \
+    }                                                                                                                                                \
+    _res_sqlite3_complete;                                                                                                                           \
 })
 #define sqlite3_config(...) \
-({                                                                                                               \
-    __auto_type _res = 0 ? sqlite3_config(__VA_ARGS__) : 0;                                                      \
-                                                                                                                 \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_config", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                 \
-    if ((typeof (_res))0x1FACADE == _res)                                                                        \
-       _res = sqlite3_config(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                    \
-    {                                                                                                            \
-        sqlite3_config(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                \
-    }                                                                                                            \
-    _res;                                                                                                        \
+({                                                                                                                                             \
+    __auto_type _res_sqlite3_config = 0 ? sqlite3_config(__VA_ARGS__) : 0;                                                                     \
+                                                                                                                                               \
+    _res_sqlite3_config = (typeof (_res_sqlite3_config))APSW_FaultInjectControl("sqlite3_config", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                               \
+    if ((typeof (_res_sqlite3_config))0x1FACADE == _res_sqlite3_config)                                                                        \
+       _res_sqlite3_config = sqlite3_config(__VA_ARGS__);                                                                                      \
+    else if ((typeof(_res_sqlite3_config))0x2FACADE == _res_sqlite3_config)                                                                    \
+    {                                                                                                                                          \
+        sqlite3_config(__VA_ARGS__);                                                                                                           \
+        _res_sqlite3_config = (typeof (_res_sqlite3_config))18;                                                                                \
+    }                                                                                                                                          \
+    _res_sqlite3_config;                                                                                                                       \
 })
 #define sqlite3_create_collation(...) \
-({                                                                                                                         \
-    __auto_type _res = 0 ? sqlite3_create_collation(__VA_ARGS__) : 0;                                                      \
-                                                                                                                           \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_create_collation", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                           \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                  \
-       _res = sqlite3_create_collation(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                              \
-    {                                                                                                                      \
-        sqlite3_create_collation(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                          \
-    }                                                                                                                      \
-    _res;                                                                                                                  \
+({                                                                                                                                                                           \
+    __auto_type _res_sqlite3_create_collation = 0 ? sqlite3_create_collation(__VA_ARGS__) : 0;                                                                               \
+                                                                                                                                                                             \
+    _res_sqlite3_create_collation = (typeof (_res_sqlite3_create_collation))APSW_FaultInjectControl("sqlite3_create_collation", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                             \
+    if ((typeof (_res_sqlite3_create_collation))0x1FACADE == _res_sqlite3_create_collation)                                                                                  \
+       _res_sqlite3_create_collation = sqlite3_create_collation(__VA_ARGS__);                                                                                                \
+    else if ((typeof(_res_sqlite3_create_collation))0x2FACADE == _res_sqlite3_create_collation)                                                                              \
+    {                                                                                                                                                                        \
+        sqlite3_create_collation(__VA_ARGS__);                                                                                                                               \
+        _res_sqlite3_create_collation = (typeof (_res_sqlite3_create_collation))18;                                                                                          \
+    }                                                                                                                                                                        \
+    _res_sqlite3_create_collation;                                                                                                                                           \
 })
 #define sqlite3_create_collation_v2(...) \
-({                                                                                                                            \
-    __auto_type _res = 0 ? sqlite3_create_collation_v2(__VA_ARGS__) : 0;                                                      \
-                                                                                                                              \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_create_collation_v2", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                              \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                     \
-       _res = sqlite3_create_collation_v2(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                                 \
-    {                                                                                                                         \
-        sqlite3_create_collation_v2(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                             \
-    }                                                                                                                         \
-    _res;                                                                                                                     \
+({                                                                                                                                                                                    \
+    __auto_type _res_sqlite3_create_collation_v2 = 0 ? sqlite3_create_collation_v2(__VA_ARGS__) : 0;                                                                                  \
+                                                                                                                                                                                      \
+    _res_sqlite3_create_collation_v2 = (typeof (_res_sqlite3_create_collation_v2))APSW_FaultInjectControl("sqlite3_create_collation_v2", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                      \
+    if ((typeof (_res_sqlite3_create_collation_v2))0x1FACADE == _res_sqlite3_create_collation_v2)                                                                                     \
+       _res_sqlite3_create_collation_v2 = sqlite3_create_collation_v2(__VA_ARGS__);                                                                                                   \
+    else if ((typeof(_res_sqlite3_create_collation_v2))0x2FACADE == _res_sqlite3_create_collation_v2)                                                                                 \
+    {                                                                                                                                                                                 \
+        sqlite3_create_collation_v2(__VA_ARGS__);                                                                                                                                     \
+        _res_sqlite3_create_collation_v2 = (typeof (_res_sqlite3_create_collation_v2))18;                                                                                             \
+    }                                                                                                                                                                                 \
+    _res_sqlite3_create_collation_v2;                                                                                                                                                 \
 })
 #define sqlite3_create_function(...) \
-({                                                                                                                        \
-    __auto_type _res = 0 ? sqlite3_create_function(__VA_ARGS__) : 0;                                                      \
-                                                                                                                          \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_create_function", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                          \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                 \
-       _res = sqlite3_create_function(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                             \
-    {                                                                                                                     \
-        sqlite3_create_function(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                         \
-    }                                                                                                                     \
-    _res;                                                                                                                 \
+({                                                                                                                                                                        \
+    __auto_type _res_sqlite3_create_function = 0 ? sqlite3_create_function(__VA_ARGS__) : 0;                                                                              \
+                                                                                                                                                                          \
+    _res_sqlite3_create_function = (typeof (_res_sqlite3_create_function))APSW_FaultInjectControl("sqlite3_create_function", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                          \
+    if ((typeof (_res_sqlite3_create_function))0x1FACADE == _res_sqlite3_create_function)                                                                                 \
+       _res_sqlite3_create_function = sqlite3_create_function(__VA_ARGS__);                                                                                               \
+    else if ((typeof(_res_sqlite3_create_function))0x2FACADE == _res_sqlite3_create_function)                                                                             \
+    {                                                                                                                                                                     \
+        sqlite3_create_function(__VA_ARGS__);                                                                                                                             \
+        _res_sqlite3_create_function = (typeof (_res_sqlite3_create_function))18;                                                                                         \
+    }                                                                                                                                                                     \
+    _res_sqlite3_create_function;                                                                                                                                         \
 })
 #define sqlite3_create_function_v2(...) \
-({                                                                                                                           \
-    __auto_type _res = 0 ? sqlite3_create_function_v2(__VA_ARGS__) : 0;                                                      \
-                                                                                                                             \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_create_function_v2", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                             \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                    \
-       _res = sqlite3_create_function_v2(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                                \
-    {                                                                                                                        \
-        sqlite3_create_function_v2(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                            \
-    }                                                                                                                        \
-    _res;                                                                                                                    \
+({                                                                                                                                                                                 \
+    __auto_type _res_sqlite3_create_function_v2 = 0 ? sqlite3_create_function_v2(__VA_ARGS__) : 0;                                                                                 \
+                                                                                                                                                                                   \
+    _res_sqlite3_create_function_v2 = (typeof (_res_sqlite3_create_function_v2))APSW_FaultInjectControl("sqlite3_create_function_v2", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                   \
+    if ((typeof (_res_sqlite3_create_function_v2))0x1FACADE == _res_sqlite3_create_function_v2)                                                                                    \
+       _res_sqlite3_create_function_v2 = sqlite3_create_function_v2(__VA_ARGS__);                                                                                                  \
+    else if ((typeof(_res_sqlite3_create_function_v2))0x2FACADE == _res_sqlite3_create_function_v2)                                                                                \
+    {                                                                                                                                                                              \
+        sqlite3_create_function_v2(__VA_ARGS__);                                                                                                                                   \
+        _res_sqlite3_create_function_v2 = (typeof (_res_sqlite3_create_function_v2))18;                                                                                            \
+    }                                                                                                                                                                              \
+    _res_sqlite3_create_function_v2;                                                                                                                                               \
 })
 #define sqlite3_create_module(...) \
-({                                                                                                                      \
-    __auto_type _res = 0 ? sqlite3_create_module(__VA_ARGS__) : 0;                                                      \
-                                                                                                                        \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_create_module", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                        \
-    if ((typeof (_res))0x1FACADE == _res)                                                                               \
-       _res = sqlite3_create_module(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                           \
-    {                                                                                                                   \
-        sqlite3_create_module(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                       \
-    }                                                                                                                   \
-    _res;                                                                                                               \
+({                                                                                                                                                                  \
+    __auto_type _res_sqlite3_create_module = 0 ? sqlite3_create_module(__VA_ARGS__) : 0;                                                                            \
+                                                                                                                                                                    \
+    _res_sqlite3_create_module = (typeof (_res_sqlite3_create_module))APSW_FaultInjectControl("sqlite3_create_module", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                    \
+    if ((typeof (_res_sqlite3_create_module))0x1FACADE == _res_sqlite3_create_module)                                                                               \
+       _res_sqlite3_create_module = sqlite3_create_module(__VA_ARGS__);                                                                                             \
+    else if ((typeof(_res_sqlite3_create_module))0x2FACADE == _res_sqlite3_create_module)                                                                           \
+    {                                                                                                                                                               \
+        sqlite3_create_module(__VA_ARGS__);                                                                                                                         \
+        _res_sqlite3_create_module = (typeof (_res_sqlite3_create_module))18;                                                                                       \
+    }                                                                                                                                                               \
+    _res_sqlite3_create_module;                                                                                                                                     \
 })
 #define sqlite3_create_module_v2(...) \
-({                                                                                                                         \
-    __auto_type _res = 0 ? sqlite3_create_module_v2(__VA_ARGS__) : 0;                                                      \
-                                                                                                                           \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_create_module_v2", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                           \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                  \
-       _res = sqlite3_create_module_v2(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                              \
-    {                                                                                                                      \
-        sqlite3_create_module_v2(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                          \
-    }                                                                                                                      \
-    _res;                                                                                                                  \
+({                                                                                                                                                                           \
+    __auto_type _res_sqlite3_create_module_v2 = 0 ? sqlite3_create_module_v2(__VA_ARGS__) : 0;                                                                               \
+                                                                                                                                                                             \
+    _res_sqlite3_create_module_v2 = (typeof (_res_sqlite3_create_module_v2))APSW_FaultInjectControl("sqlite3_create_module_v2", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                             \
+    if ((typeof (_res_sqlite3_create_module_v2))0x1FACADE == _res_sqlite3_create_module_v2)                                                                                  \
+       _res_sqlite3_create_module_v2 = sqlite3_create_module_v2(__VA_ARGS__);                                                                                                \
+    else if ((typeof(_res_sqlite3_create_module_v2))0x2FACADE == _res_sqlite3_create_module_v2)                                                                              \
+    {                                                                                                                                                                        \
+        sqlite3_create_module_v2(__VA_ARGS__);                                                                                                                               \
+        _res_sqlite3_create_module_v2 = (typeof (_res_sqlite3_create_module_v2))18;                                                                                          \
+    }                                                                                                                                                                        \
+    _res_sqlite3_create_module_v2;                                                                                                                                           \
 })
 #define sqlite3_create_window_function(...) \
-({                                                                                                                               \
-    __auto_type _res = 0 ? sqlite3_create_window_function(__VA_ARGS__) : 0;                                                      \
-                                                                                                                                 \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_create_window_function", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                                 \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                        \
-       _res = sqlite3_create_window_function(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                                    \
-    {                                                                                                                            \
-        sqlite3_create_window_function(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                                \
-    }                                                                                                                            \
-    _res;                                                                                                                        \
+({                                                                                                                                                                                             \
+    __auto_type _res_sqlite3_create_window_function = 0 ? sqlite3_create_window_function(__VA_ARGS__) : 0;                                                                                     \
+                                                                                                                                                                                               \
+    _res_sqlite3_create_window_function = (typeof (_res_sqlite3_create_window_function))APSW_FaultInjectControl("sqlite3_create_window_function", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                               \
+    if ((typeof (_res_sqlite3_create_window_function))0x1FACADE == _res_sqlite3_create_window_function)                                                                                        \
+       _res_sqlite3_create_window_function = sqlite3_create_window_function(__VA_ARGS__);                                                                                                      \
+    else if ((typeof(_res_sqlite3_create_window_function))0x2FACADE == _res_sqlite3_create_window_function)                                                                                    \
+    {                                                                                                                                                                                          \
+        sqlite3_create_window_function(__VA_ARGS__);                                                                                                                                           \
+        _res_sqlite3_create_window_function = (typeof (_res_sqlite3_create_window_function))18;                                                                                                \
+    }                                                                                                                                                                                          \
+    _res_sqlite3_create_window_function;                                                                                                                                                       \
 })
 #define sqlite3_db_cacheflush(...) \
-({                                                                                                                      \
-    __auto_type _res = 0 ? sqlite3_db_cacheflush(__VA_ARGS__) : 0;                                                      \
-                                                                                                                        \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_db_cacheflush", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                        \
-    if ((typeof (_res))0x1FACADE == _res)                                                                               \
-       _res = sqlite3_db_cacheflush(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                           \
-    {                                                                                                                   \
-        sqlite3_db_cacheflush(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                       \
-    }                                                                                                                   \
-    _res;                                                                                                               \
+({                                                                                                                                                                  \
+    __auto_type _res_sqlite3_db_cacheflush = 0 ? sqlite3_db_cacheflush(__VA_ARGS__) : 0;                                                                            \
+                                                                                                                                                                    \
+    _res_sqlite3_db_cacheflush = (typeof (_res_sqlite3_db_cacheflush))APSW_FaultInjectControl("sqlite3_db_cacheflush", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                    \
+    if ((typeof (_res_sqlite3_db_cacheflush))0x1FACADE == _res_sqlite3_db_cacheflush)                                                                               \
+       _res_sqlite3_db_cacheflush = sqlite3_db_cacheflush(__VA_ARGS__);                                                                                             \
+    else if ((typeof(_res_sqlite3_db_cacheflush))0x2FACADE == _res_sqlite3_db_cacheflush)                                                                           \
+    {                                                                                                                                                               \
+        sqlite3_db_cacheflush(__VA_ARGS__);                                                                                                                         \
+        _res_sqlite3_db_cacheflush = (typeof (_res_sqlite3_db_cacheflush))18;                                                                                       \
+    }                                                                                                                                                               \
+    _res_sqlite3_db_cacheflush;                                                                                                                                     \
 })
 #define sqlite3_db_config(...) \
-({                                                                                                                  \
-    __auto_type _res = 0 ? sqlite3_db_config(__VA_ARGS__) : 0;                                                      \
-                                                                                                                    \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_db_config", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                    \
-    if ((typeof (_res))0x1FACADE == _res)                                                                           \
-       _res = sqlite3_db_config(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                       \
-    {                                                                                                               \
-        sqlite3_db_config(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                   \
-    }                                                                                                               \
-    _res;                                                                                                           \
+({                                                                                                                                                      \
+    __auto_type _res_sqlite3_db_config = 0 ? sqlite3_db_config(__VA_ARGS__) : 0;                                                                        \
+                                                                                                                                                        \
+    _res_sqlite3_db_config = (typeof (_res_sqlite3_db_config))APSW_FaultInjectControl("sqlite3_db_config", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                        \
+    if ((typeof (_res_sqlite3_db_config))0x1FACADE == _res_sqlite3_db_config)                                                                           \
+       _res_sqlite3_db_config = sqlite3_db_config(__VA_ARGS__);                                                                                         \
+    else if ((typeof(_res_sqlite3_db_config))0x2FACADE == _res_sqlite3_db_config)                                                                       \
+    {                                                                                                                                                   \
+        sqlite3_db_config(__VA_ARGS__);                                                                                                                 \
+        _res_sqlite3_db_config = (typeof (_res_sqlite3_db_config))18;                                                                                   \
+    }                                                                                                                                                   \
+    _res_sqlite3_db_config;                                                                                                                             \
 })
 #define sqlite3_db_status(...) \
-({                                                                                                                  \
-    __auto_type _res = 0 ? sqlite3_db_status(__VA_ARGS__) : 0;                                                      \
-                                                                                                                    \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_db_status", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                    \
-    if ((typeof (_res))0x1FACADE == _res)                                                                           \
-       _res = sqlite3_db_status(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                       \
-    {                                                                                                               \
-        sqlite3_db_status(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                   \
-    }                                                                                                               \
-    _res;                                                                                                           \
+({                                                                                                                                                      \
+    __auto_type _res_sqlite3_db_status = 0 ? sqlite3_db_status(__VA_ARGS__) : 0;                                                                        \
+                                                                                                                                                        \
+    _res_sqlite3_db_status = (typeof (_res_sqlite3_db_status))APSW_FaultInjectControl("sqlite3_db_status", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                        \
+    if ((typeof (_res_sqlite3_db_status))0x1FACADE == _res_sqlite3_db_status)                                                                           \
+       _res_sqlite3_db_status = sqlite3_db_status(__VA_ARGS__);                                                                                         \
+    else if ((typeof(_res_sqlite3_db_status))0x2FACADE == _res_sqlite3_db_status)                                                                       \
+    {                                                                                                                                                   \
+        sqlite3_db_status(__VA_ARGS__);                                                                                                                 \
+        _res_sqlite3_db_status = (typeof (_res_sqlite3_db_status))18;                                                                                   \
+    }                                                                                                                                                   \
+    _res_sqlite3_db_status;                                                                                                                             \
 })
 #define sqlite3_declare_vtab(...) \
-({                                                                                                                     \
-    __auto_type _res = 0 ? sqlite3_declare_vtab(__VA_ARGS__) : 0;                                                      \
-                                                                                                                       \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_declare_vtab", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                       \
-    if ((typeof (_res))0x1FACADE == _res)                                                                              \
-       _res = sqlite3_declare_vtab(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                          \
-    {                                                                                                                  \
-        sqlite3_declare_vtab(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                      \
-    }                                                                                                                  \
-    _res;                                                                                                              \
+({                                                                                                                                                               \
+    __auto_type _res_sqlite3_declare_vtab = 0 ? sqlite3_declare_vtab(__VA_ARGS__) : 0;                                                                           \
+                                                                                                                                                                 \
+    _res_sqlite3_declare_vtab = (typeof (_res_sqlite3_declare_vtab))APSW_FaultInjectControl("sqlite3_declare_vtab", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                 \
+    if ((typeof (_res_sqlite3_declare_vtab))0x1FACADE == _res_sqlite3_declare_vtab)                                                                              \
+       _res_sqlite3_declare_vtab = sqlite3_declare_vtab(__VA_ARGS__);                                                                                            \
+    else if ((typeof(_res_sqlite3_declare_vtab))0x2FACADE == _res_sqlite3_declare_vtab)                                                                          \
+    {                                                                                                                                                            \
+        sqlite3_declare_vtab(__VA_ARGS__);                                                                                                                       \
+        _res_sqlite3_declare_vtab = (typeof (_res_sqlite3_declare_vtab))18;                                                                                      \
+    }                                                                                                                                                            \
+    _res_sqlite3_declare_vtab;                                                                                                                                   \
 })
 #define sqlite3_deserialize(...) \
-({                                                                                                                    \
-    __auto_type _res = 0 ? sqlite3_deserialize(__VA_ARGS__) : 0;                                                      \
-                                                                                                                      \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_deserialize", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                      \
-    if ((typeof (_res))0x1FACADE == _res)                                                                             \
-       _res = sqlite3_deserialize(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                         \
-    {                                                                                                                 \
-        sqlite3_deserialize(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                     \
-    }                                                                                                                 \
-    _res;                                                                                                             \
+({                                                                                                                                                            \
+    __auto_type _res_sqlite3_deserialize = 0 ? sqlite3_deserialize(__VA_ARGS__) : 0;                                                                          \
+                                                                                                                                                              \
+    _res_sqlite3_deserialize = (typeof (_res_sqlite3_deserialize))APSW_FaultInjectControl("sqlite3_deserialize", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                              \
+    if ((typeof (_res_sqlite3_deserialize))0x1FACADE == _res_sqlite3_deserialize)                                                                             \
+       _res_sqlite3_deserialize = sqlite3_deserialize(__VA_ARGS__);                                                                                           \
+    else if ((typeof(_res_sqlite3_deserialize))0x2FACADE == _res_sqlite3_deserialize)                                                                         \
+    {                                                                                                                                                         \
+        sqlite3_deserialize(__VA_ARGS__);                                                                                                                     \
+        _res_sqlite3_deserialize = (typeof (_res_sqlite3_deserialize))18;                                                                                     \
+    }                                                                                                                                                         \
+    _res_sqlite3_deserialize;                                                                                                                                 \
 })
 #define sqlite3_drop_modules(...) \
-({                                                                                                                     \
-    __auto_type _res = 0 ? sqlite3_drop_modules(__VA_ARGS__) : 0;                                                      \
-                                                                                                                       \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_drop_modules", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                       \
-    if ((typeof (_res))0x1FACADE == _res)                                                                              \
-       _res = sqlite3_drop_modules(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                          \
-    {                                                                                                                  \
-        sqlite3_drop_modules(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                      \
-    }                                                                                                                  \
-    _res;                                                                                                              \
+({                                                                                                                                                               \
+    __auto_type _res_sqlite3_drop_modules = 0 ? sqlite3_drop_modules(__VA_ARGS__) : 0;                                                                           \
+                                                                                                                                                                 \
+    _res_sqlite3_drop_modules = (typeof (_res_sqlite3_drop_modules))APSW_FaultInjectControl("sqlite3_drop_modules", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                 \
+    if ((typeof (_res_sqlite3_drop_modules))0x1FACADE == _res_sqlite3_drop_modules)                                                                              \
+       _res_sqlite3_drop_modules = sqlite3_drop_modules(__VA_ARGS__);                                                                                            \
+    else if ((typeof(_res_sqlite3_drop_modules))0x2FACADE == _res_sqlite3_drop_modules)                                                                          \
+    {                                                                                                                                                            \
+        sqlite3_drop_modules(__VA_ARGS__);                                                                                                                       \
+        _res_sqlite3_drop_modules = (typeof (_res_sqlite3_drop_modules))18;                                                                                      \
+    }                                                                                                                                                            \
+    _res_sqlite3_drop_modules;                                                                                                                                   \
 })
 #define sqlite3_enable_load_extension(...) \
-({                                                                                                                              \
-    __auto_type _res = 0 ? sqlite3_enable_load_extension(__VA_ARGS__) : 0;                                                      \
-                                                                                                                                \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_enable_load_extension", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                                \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                       \
-       _res = sqlite3_enable_load_extension(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                                   \
-    {                                                                                                                           \
-        sqlite3_enable_load_extension(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                               \
-    }                                                                                                                           \
-    _res;                                                                                                                       \
+({                                                                                                                                                                                          \
+    __auto_type _res_sqlite3_enable_load_extension = 0 ? sqlite3_enable_load_extension(__VA_ARGS__) : 0;                                                                                    \
+                                                                                                                                                                                            \
+    _res_sqlite3_enable_load_extension = (typeof (_res_sqlite3_enable_load_extension))APSW_FaultInjectControl("sqlite3_enable_load_extension", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                            \
+    if ((typeof (_res_sqlite3_enable_load_extension))0x1FACADE == _res_sqlite3_enable_load_extension)                                                                                       \
+       _res_sqlite3_enable_load_extension = sqlite3_enable_load_extension(__VA_ARGS__);                                                                                                     \
+    else if ((typeof(_res_sqlite3_enable_load_extension))0x2FACADE == _res_sqlite3_enable_load_extension)                                                                                   \
+    {                                                                                                                                                                                       \
+        sqlite3_enable_load_extension(__VA_ARGS__);                                                                                                                                         \
+        _res_sqlite3_enable_load_extension = (typeof (_res_sqlite3_enable_load_extension))18;                                                                                               \
+    }                                                                                                                                                                                       \
+    _res_sqlite3_enable_load_extension;                                                                                                                                                     \
 })
 #define sqlite3_enable_shared_cache(...) \
-({                                                                                                                            \
-    __auto_type _res = 0 ? sqlite3_enable_shared_cache(__VA_ARGS__) : 0;                                                      \
-                                                                                                                              \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_enable_shared_cache", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                              \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                     \
-       _res = sqlite3_enable_shared_cache(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                                 \
-    {                                                                                                                         \
-        sqlite3_enable_shared_cache(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                             \
-    }                                                                                                                         \
-    _res;                                                                                                                     \
+({                                                                                                                                                                                    \
+    __auto_type _res_sqlite3_enable_shared_cache = 0 ? sqlite3_enable_shared_cache(__VA_ARGS__) : 0;                                                                                  \
+                                                                                                                                                                                      \
+    _res_sqlite3_enable_shared_cache = (typeof (_res_sqlite3_enable_shared_cache))APSW_FaultInjectControl("sqlite3_enable_shared_cache", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                      \
+    if ((typeof (_res_sqlite3_enable_shared_cache))0x1FACADE == _res_sqlite3_enable_shared_cache)                                                                                     \
+       _res_sqlite3_enable_shared_cache = sqlite3_enable_shared_cache(__VA_ARGS__);                                                                                                   \
+    else if ((typeof(_res_sqlite3_enable_shared_cache))0x2FACADE == _res_sqlite3_enable_shared_cache)                                                                                 \
+    {                                                                                                                                                                                 \
+        sqlite3_enable_shared_cache(__VA_ARGS__);                                                                                                                                     \
+        _res_sqlite3_enable_shared_cache = (typeof (_res_sqlite3_enable_shared_cache))18;                                                                                             \
+    }                                                                                                                                                                                 \
+    _res_sqlite3_enable_shared_cache;                                                                                                                                                 \
 })
 #define sqlite3_exec(...) \
-({                                                                                                             \
-    __auto_type _res = 0 ? sqlite3_exec(__VA_ARGS__) : 0;                                                      \
-                                                                                                               \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_exec", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                               \
-    if ((typeof (_res))0x1FACADE == _res)                                                                      \
-       _res = sqlite3_exec(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                  \
-    {                                                                                                          \
-        sqlite3_exec(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                              \
-    }                                                                                                          \
-    _res;                                                                                                      \
+({                                                                                                                                       \
+    __auto_type _res_sqlite3_exec = 0 ? sqlite3_exec(__VA_ARGS__) : 0;                                                                   \
+                                                                                                                                         \
+    _res_sqlite3_exec = (typeof (_res_sqlite3_exec))APSW_FaultInjectControl("sqlite3_exec", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                         \
+    if ((typeof (_res_sqlite3_exec))0x1FACADE == _res_sqlite3_exec)                                                                      \
+       _res_sqlite3_exec = sqlite3_exec(__VA_ARGS__);                                                                                    \
+    else if ((typeof(_res_sqlite3_exec))0x2FACADE == _res_sqlite3_exec)                                                                  \
+    {                                                                                                                                    \
+        sqlite3_exec(__VA_ARGS__);                                                                                                       \
+        _res_sqlite3_exec = (typeof (_res_sqlite3_exec))18;                                                                              \
+    }                                                                                                                                    \
+    _res_sqlite3_exec;                                                                                                                   \
 })
 #define sqlite3_expanded_sql(...) \
-({                                                                                                                     \
-    __auto_type _res = 0 ? sqlite3_expanded_sql(__VA_ARGS__) : 0;                                                      \
-                                                                                                                       \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_expanded_sql", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                       \
-    if ((typeof (_res))0x1FACADE == _res)                                                                              \
-       _res = sqlite3_expanded_sql(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                          \
-    {                                                                                                                  \
-        sqlite3_expanded_sql(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                      \
-    }                                                                                                                  \
-    _res;                                                                                                              \
+({                                                                                                                                                               \
+    __auto_type _res_sqlite3_expanded_sql = 0 ? sqlite3_expanded_sql(__VA_ARGS__) : 0;                                                                           \
+                                                                                                                                                                 \
+    _res_sqlite3_expanded_sql = (typeof (_res_sqlite3_expanded_sql))APSW_FaultInjectControl("sqlite3_expanded_sql", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                 \
+    if ((typeof (_res_sqlite3_expanded_sql))0x1FACADE == _res_sqlite3_expanded_sql)                                                                              \
+       _res_sqlite3_expanded_sql = sqlite3_expanded_sql(__VA_ARGS__);                                                                                            \
+    else if ((typeof(_res_sqlite3_expanded_sql))0x2FACADE == _res_sqlite3_expanded_sql)                                                                          \
+    {                                                                                                                                                            \
+        sqlite3_expanded_sql(__VA_ARGS__);                                                                                                                       \
+        _res_sqlite3_expanded_sql = (typeof (_res_sqlite3_expanded_sql))18;                                                                                      \
+    }                                                                                                                                                            \
+    _res_sqlite3_expanded_sql;                                                                                                                                   \
 })
 #define sqlite3_initialize(...) \
-({                                                                                                                   \
-    __auto_type _res = 0 ? sqlite3_initialize(__VA_ARGS__) : 0;                                                      \
-                                                                                                                     \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_initialize", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                     \
-    if ((typeof (_res))0x1FACADE == _res)                                                                            \
-       _res = sqlite3_initialize(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                        \
-    {                                                                                                                \
-        sqlite3_initialize(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                    \
-    }                                                                                                                \
-    _res;                                                                                                            \
+({                                                                                                                                                         \
+    __auto_type _res_sqlite3_initialize = 0 ? sqlite3_initialize(__VA_ARGS__) : 0;                                                                         \
+                                                                                                                                                           \
+    _res_sqlite3_initialize = (typeof (_res_sqlite3_initialize))APSW_FaultInjectControl("sqlite3_initialize", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                           \
+    if ((typeof (_res_sqlite3_initialize))0x1FACADE == _res_sqlite3_initialize)                                                                            \
+       _res_sqlite3_initialize = sqlite3_initialize(__VA_ARGS__);                                                                                          \
+    else if ((typeof(_res_sqlite3_initialize))0x2FACADE == _res_sqlite3_initialize)                                                                        \
+    {                                                                                                                                                      \
+        sqlite3_initialize(__VA_ARGS__);                                                                                                                   \
+        _res_sqlite3_initialize = (typeof (_res_sqlite3_initialize))18;                                                                                    \
+    }                                                                                                                                                      \
+    _res_sqlite3_initialize;                                                                                                                               \
 })
 #define sqlite3_load_extension(...) \
-({                                                                                                                       \
-    __auto_type _res = 0 ? sqlite3_load_extension(__VA_ARGS__) : 0;                                                      \
-                                                                                                                         \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_load_extension", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                         \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                \
-       _res = sqlite3_load_extension(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                            \
-    {                                                                                                                    \
-        sqlite3_load_extension(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                        \
-    }                                                                                                                    \
-    _res;                                                                                                                \
+({                                                                                                                                                                     \
+    __auto_type _res_sqlite3_load_extension = 0 ? sqlite3_load_extension(__VA_ARGS__) : 0;                                                                             \
+                                                                                                                                                                       \
+    _res_sqlite3_load_extension = (typeof (_res_sqlite3_load_extension))APSW_FaultInjectControl("sqlite3_load_extension", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                       \
+    if ((typeof (_res_sqlite3_load_extension))0x1FACADE == _res_sqlite3_load_extension)                                                                                \
+       _res_sqlite3_load_extension = sqlite3_load_extension(__VA_ARGS__);                                                                                              \
+    else if ((typeof(_res_sqlite3_load_extension))0x2FACADE == _res_sqlite3_load_extension)                                                                            \
+    {                                                                                                                                                                  \
+        sqlite3_load_extension(__VA_ARGS__);                                                                                                                           \
+        _res_sqlite3_load_extension = (typeof (_res_sqlite3_load_extension))18;                                                                                        \
+    }                                                                                                                                                                  \
+    _res_sqlite3_load_extension;                                                                                                                                       \
 })
 #define sqlite3_malloc(...) \
-({                                                                                                               \
-    __auto_type _res = 0 ? sqlite3_malloc(__VA_ARGS__) : 0;                                                      \
-                                                                                                                 \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_malloc", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                 \
-    if ((typeof (_res))0x1FACADE == _res)                                                                        \
-       _res = sqlite3_malloc(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                    \
-    {                                                                                                            \
-        sqlite3_malloc(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                \
-    }                                                                                                            \
-    _res;                                                                                                        \
+({                                                                                                                                             \
+    __auto_type _res_sqlite3_malloc = 0 ? sqlite3_malloc(__VA_ARGS__) : 0;                                                                     \
+                                                                                                                                               \
+    _res_sqlite3_malloc = (typeof (_res_sqlite3_malloc))APSW_FaultInjectControl("sqlite3_malloc", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                               \
+    if ((typeof (_res_sqlite3_malloc))0x1FACADE == _res_sqlite3_malloc)                                                                        \
+       _res_sqlite3_malloc = sqlite3_malloc(__VA_ARGS__);                                                                                      \
+    else if ((typeof(_res_sqlite3_malloc))0x2FACADE == _res_sqlite3_malloc)                                                                    \
+    {                                                                                                                                          \
+        sqlite3_malloc(__VA_ARGS__);                                                                                                           \
+        _res_sqlite3_malloc = (typeof (_res_sqlite3_malloc))18;                                                                                \
+    }                                                                                                                                          \
+    _res_sqlite3_malloc;                                                                                                                       \
 })
 #define sqlite3_malloc64(...) \
-({                                                                                                                 \
-    __auto_type _res = 0 ? sqlite3_malloc64(__VA_ARGS__) : 0;                                                      \
-                                                                                                                   \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_malloc64", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                   \
-    if ((typeof (_res))0x1FACADE == _res)                                                                          \
-       _res = sqlite3_malloc64(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                      \
-    {                                                                                                              \
-        sqlite3_malloc64(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                  \
-    }                                                                                                              \
-    _res;                                                                                                          \
+({                                                                                                                                                   \
+    __auto_type _res_sqlite3_malloc64 = 0 ? sqlite3_malloc64(__VA_ARGS__) : 0;                                                                       \
+                                                                                                                                                     \
+    _res_sqlite3_malloc64 = (typeof (_res_sqlite3_malloc64))APSW_FaultInjectControl("sqlite3_malloc64", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                     \
+    if ((typeof (_res_sqlite3_malloc64))0x1FACADE == _res_sqlite3_malloc64)                                                                          \
+       _res_sqlite3_malloc64 = sqlite3_malloc64(__VA_ARGS__);                                                                                        \
+    else if ((typeof(_res_sqlite3_malloc64))0x2FACADE == _res_sqlite3_malloc64)                                                                      \
+    {                                                                                                                                                \
+        sqlite3_malloc64(__VA_ARGS__);                                                                                                               \
+        _res_sqlite3_malloc64 = (typeof (_res_sqlite3_malloc64))18;                                                                                  \
+    }                                                                                                                                                \
+    _res_sqlite3_malloc64;                                                                                                                           \
 })
 #define sqlite3_mprintf(...) \
-({                                                                                                                \
-    __auto_type _res = 0 ? sqlite3_mprintf(__VA_ARGS__) : 0;                                                      \
-                                                                                                                  \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_mprintf", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                  \
-    if ((typeof (_res))0x1FACADE == _res)                                                                         \
-       _res = sqlite3_mprintf(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                     \
-    {                                                                                                             \
-        sqlite3_mprintf(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                 \
-    }                                                                                                             \
-    _res;                                                                                                         \
+({                                                                                                                                                \
+    __auto_type _res_sqlite3_mprintf = 0 ? sqlite3_mprintf(__VA_ARGS__) : 0;                                                                      \
+                                                                                                                                                  \
+    _res_sqlite3_mprintf = (typeof (_res_sqlite3_mprintf))APSW_FaultInjectControl("sqlite3_mprintf", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                  \
+    if ((typeof (_res_sqlite3_mprintf))0x1FACADE == _res_sqlite3_mprintf)                                                                         \
+       _res_sqlite3_mprintf = sqlite3_mprintf(__VA_ARGS__);                                                                                       \
+    else if ((typeof(_res_sqlite3_mprintf))0x2FACADE == _res_sqlite3_mprintf)                                                                     \
+    {                                                                                                                                             \
+        sqlite3_mprintf(__VA_ARGS__);                                                                                                             \
+        _res_sqlite3_mprintf = (typeof (_res_sqlite3_mprintf))18;                                                                                 \
+    }                                                                                                                                             \
+    _res_sqlite3_mprintf;                                                                                                                         \
 })
 #define sqlite3_normalized_sql(...) \
-({                                                                                                                       \
-    __auto_type _res = 0 ? sqlite3_normalized_sql(__VA_ARGS__) : 0;                                                      \
-                                                                                                                         \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_normalized_sql", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                         \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                \
-       _res = sqlite3_normalized_sql(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                            \
-    {                                                                                                                    \
-        sqlite3_normalized_sql(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                        \
-    }                                                                                                                    \
-    _res;                                                                                                                \
+({                                                                                                                                                                     \
+    __auto_type _res_sqlite3_normalized_sql = 0 ? sqlite3_normalized_sql(__VA_ARGS__) : 0;                                                                             \
+                                                                                                                                                                       \
+    _res_sqlite3_normalized_sql = (typeof (_res_sqlite3_normalized_sql))APSW_FaultInjectControl("sqlite3_normalized_sql", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                       \
+    if ((typeof (_res_sqlite3_normalized_sql))0x1FACADE == _res_sqlite3_normalized_sql)                                                                                \
+       _res_sqlite3_normalized_sql = sqlite3_normalized_sql(__VA_ARGS__);                                                                                              \
+    else if ((typeof(_res_sqlite3_normalized_sql))0x2FACADE == _res_sqlite3_normalized_sql)                                                                            \
+    {                                                                                                                                                                  \
+        sqlite3_normalized_sql(__VA_ARGS__);                                                                                                                           \
+        _res_sqlite3_normalized_sql = (typeof (_res_sqlite3_normalized_sql))18;                                                                                        \
+    }                                                                                                                                                                  \
+    _res_sqlite3_normalized_sql;                                                                                                                                       \
 })
 #define sqlite3_open(...) \
-({                                                                                                             \
-    __auto_type _res = 0 ? sqlite3_open(__VA_ARGS__) : 0;                                                      \
-                                                                                                               \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_open", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                               \
-    if ((typeof (_res))0x1FACADE == _res)                                                                      \
-       _res = sqlite3_open(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                  \
-    {                                                                                                          \
-        sqlite3_open(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                              \
-    }                                                                                                          \
-    _res;                                                                                                      \
+({                                                                                                                                       \
+    __auto_type _res_sqlite3_open = 0 ? sqlite3_open(__VA_ARGS__) : 0;                                                                   \
+                                                                                                                                         \
+    _res_sqlite3_open = (typeof (_res_sqlite3_open))APSW_FaultInjectControl("sqlite3_open", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                         \
+    if ((typeof (_res_sqlite3_open))0x1FACADE == _res_sqlite3_open)                                                                      \
+       _res_sqlite3_open = sqlite3_open(__VA_ARGS__);                                                                                    \
+    else if ((typeof(_res_sqlite3_open))0x2FACADE == _res_sqlite3_open)                                                                  \
+    {                                                                                                                                    \
+        sqlite3_open(__VA_ARGS__);                                                                                                       \
+        _res_sqlite3_open = (typeof (_res_sqlite3_open))18;                                                                              \
+    }                                                                                                                                    \
+    _res_sqlite3_open;                                                                                                                   \
 })
 #define sqlite3_open_v2(...) \
-({                                                                                                                \
-    __auto_type _res = 0 ? sqlite3_open_v2(__VA_ARGS__) : 0;                                                      \
-                                                                                                                  \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_open_v2", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                  \
-    if ((typeof (_res))0x1FACADE == _res)                                                                         \
-       _res = sqlite3_open_v2(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                     \
-    {                                                                                                             \
-        sqlite3_open_v2(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                 \
-    }                                                                                                             \
-    _res;                                                                                                         \
+({                                                                                                                                                \
+    __auto_type _res_sqlite3_open_v2 = 0 ? sqlite3_open_v2(__VA_ARGS__) : 0;                                                                      \
+                                                                                                                                                  \
+    _res_sqlite3_open_v2 = (typeof (_res_sqlite3_open_v2))APSW_FaultInjectControl("sqlite3_open_v2", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                  \
+    if ((typeof (_res_sqlite3_open_v2))0x1FACADE == _res_sqlite3_open_v2)                                                                         \
+       _res_sqlite3_open_v2 = sqlite3_open_v2(__VA_ARGS__);                                                                                       \
+    else if ((typeof(_res_sqlite3_open_v2))0x2FACADE == _res_sqlite3_open_v2)                                                                     \
+    {                                                                                                                                             \
+        sqlite3_open_v2(__VA_ARGS__);                                                                                                             \
+        _res_sqlite3_open_v2 = (typeof (_res_sqlite3_open_v2))18;                                                                                 \
+    }                                                                                                                                             \
+    _res_sqlite3_open_v2;                                                                                                                         \
 })
 #define sqlite3_overload_function(...) \
-({                                                                                                                          \
-    __auto_type _res = 0 ? sqlite3_overload_function(__VA_ARGS__) : 0;                                                      \
-                                                                                                                            \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_overload_function", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                            \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                   \
-       _res = sqlite3_overload_function(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                               \
-    {                                                                                                                       \
-        sqlite3_overload_function(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                           \
-    }                                                                                                                       \
-    _res;                                                                                                                   \
+({                                                                                                                                                                              \
+    __auto_type _res_sqlite3_overload_function = 0 ? sqlite3_overload_function(__VA_ARGS__) : 0;                                                                                \
+                                                                                                                                                                                \
+    _res_sqlite3_overload_function = (typeof (_res_sqlite3_overload_function))APSW_FaultInjectControl("sqlite3_overload_function", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                \
+    if ((typeof (_res_sqlite3_overload_function))0x1FACADE == _res_sqlite3_overload_function)                                                                                   \
+       _res_sqlite3_overload_function = sqlite3_overload_function(__VA_ARGS__);                                                                                                 \
+    else if ((typeof(_res_sqlite3_overload_function))0x2FACADE == _res_sqlite3_overload_function)                                                                               \
+    {                                                                                                                                                                           \
+        sqlite3_overload_function(__VA_ARGS__);                                                                                                                                 \
+        _res_sqlite3_overload_function = (typeof (_res_sqlite3_overload_function))18;                                                                                           \
+    }                                                                                                                                                                           \
+    _res_sqlite3_overload_function;                                                                                                                                             \
 })
 #define sqlite3_prepare_v3(...) \
-({                                                                                                                   \
-    __auto_type _res = 0 ? sqlite3_prepare_v3(__VA_ARGS__) : 0;                                                      \
-                                                                                                                     \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_prepare_v3", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                     \
-    if ((typeof (_res))0x1FACADE == _res)                                                                            \
-       _res = sqlite3_prepare_v3(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                        \
-    {                                                                                                                \
-        sqlite3_prepare_v3(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                    \
-    }                                                                                                                \
-    _res;                                                                                                            \
+({                                                                                                                                                         \
+    __auto_type _res_sqlite3_prepare_v3 = 0 ? sqlite3_prepare_v3(__VA_ARGS__) : 0;                                                                         \
+                                                                                                                                                           \
+    _res_sqlite3_prepare_v3 = (typeof (_res_sqlite3_prepare_v3))APSW_FaultInjectControl("sqlite3_prepare_v3", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                           \
+    if ((typeof (_res_sqlite3_prepare_v3))0x1FACADE == _res_sqlite3_prepare_v3)                                                                            \
+       _res_sqlite3_prepare_v3 = sqlite3_prepare_v3(__VA_ARGS__);                                                                                          \
+    else if ((typeof(_res_sqlite3_prepare_v3))0x2FACADE == _res_sqlite3_prepare_v3)                                                                        \
+    {                                                                                                                                                      \
+        sqlite3_prepare_v3(__VA_ARGS__);                                                                                                                   \
+        _res_sqlite3_prepare_v3 = (typeof (_res_sqlite3_prepare_v3))18;                                                                                    \
+    }                                                                                                                                                      \
+    _res_sqlite3_prepare_v3;                                                                                                                               \
 })
 #define sqlite3_realloc(...) \
-({                                                                                                                \
-    __auto_type _res = 0 ? sqlite3_realloc(__VA_ARGS__) : 0;                                                      \
-                                                                                                                  \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_realloc", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                  \
-    if ((typeof (_res))0x1FACADE == _res)                                                                         \
-       _res = sqlite3_realloc(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                     \
-    {                                                                                                             \
-        sqlite3_realloc(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                 \
-    }                                                                                                             \
-    _res;                                                                                                         \
+({                                                                                                                                                \
+    __auto_type _res_sqlite3_realloc = 0 ? sqlite3_realloc(__VA_ARGS__) : 0;                                                                      \
+                                                                                                                                                  \
+    _res_sqlite3_realloc = (typeof (_res_sqlite3_realloc))APSW_FaultInjectControl("sqlite3_realloc", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                  \
+    if ((typeof (_res_sqlite3_realloc))0x1FACADE == _res_sqlite3_realloc)                                                                         \
+       _res_sqlite3_realloc = sqlite3_realloc(__VA_ARGS__);                                                                                       \
+    else if ((typeof(_res_sqlite3_realloc))0x2FACADE == _res_sqlite3_realloc)                                                                     \
+    {                                                                                                                                             \
+        sqlite3_realloc(__VA_ARGS__);                                                                                                             \
+        _res_sqlite3_realloc = (typeof (_res_sqlite3_realloc))18;                                                                                 \
+    }                                                                                                                                             \
+    _res_sqlite3_realloc;                                                                                                                         \
 })
 #define sqlite3_realloc64(...) \
-({                                                                                                                  \
-    __auto_type _res = 0 ? sqlite3_realloc64(__VA_ARGS__) : 0;                                                      \
-                                                                                                                    \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_realloc64", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                    \
-    if ((typeof (_res))0x1FACADE == _res)                                                                           \
-       _res = sqlite3_realloc64(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                       \
-    {                                                                                                               \
-        sqlite3_realloc64(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                   \
-    }                                                                                                               \
-    _res;                                                                                                           \
+({                                                                                                                                                      \
+    __auto_type _res_sqlite3_realloc64 = 0 ? sqlite3_realloc64(__VA_ARGS__) : 0;                                                                        \
+                                                                                                                                                        \
+    _res_sqlite3_realloc64 = (typeof (_res_sqlite3_realloc64))APSW_FaultInjectControl("sqlite3_realloc64", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                        \
+    if ((typeof (_res_sqlite3_realloc64))0x1FACADE == _res_sqlite3_realloc64)                                                                           \
+       _res_sqlite3_realloc64 = sqlite3_realloc64(__VA_ARGS__);                                                                                         \
+    else if ((typeof(_res_sqlite3_realloc64))0x2FACADE == _res_sqlite3_realloc64)                                                                       \
+    {                                                                                                                                                   \
+        sqlite3_realloc64(__VA_ARGS__);                                                                                                                 \
+        _res_sqlite3_realloc64 = (typeof (_res_sqlite3_realloc64))18;                                                                                   \
+    }                                                                                                                                                   \
+    _res_sqlite3_realloc64;                                                                                                                             \
 })
 #define sqlite3_result_zeroblob64(...) \
-({                                                                                                                          \
-    __auto_type _res = 0 ? sqlite3_result_zeroblob64(__VA_ARGS__) : 0;                                                      \
-                                                                                                                            \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_result_zeroblob64", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                            \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                   \
-       _res = sqlite3_result_zeroblob64(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                               \
-    {                                                                                                                       \
-        sqlite3_result_zeroblob64(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                           \
-    }                                                                                                                       \
-    _res;                                                                                                                   \
+({                                                                                                                                                                              \
+    __auto_type _res_sqlite3_result_zeroblob64 = 0 ? sqlite3_result_zeroblob64(__VA_ARGS__) : 0;                                                                                \
+                                                                                                                                                                                \
+    _res_sqlite3_result_zeroblob64 = (typeof (_res_sqlite3_result_zeroblob64))APSW_FaultInjectControl("sqlite3_result_zeroblob64", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                \
+    if ((typeof (_res_sqlite3_result_zeroblob64))0x1FACADE == _res_sqlite3_result_zeroblob64)                                                                                   \
+       _res_sqlite3_result_zeroblob64 = sqlite3_result_zeroblob64(__VA_ARGS__);                                                                                                 \
+    else if ((typeof(_res_sqlite3_result_zeroblob64))0x2FACADE == _res_sqlite3_result_zeroblob64)                                                                               \
+    {                                                                                                                                                                           \
+        sqlite3_result_zeroblob64(__VA_ARGS__);                                                                                                                                 \
+        _res_sqlite3_result_zeroblob64 = (typeof (_res_sqlite3_result_zeroblob64))18;                                                                                           \
+    }                                                                                                                                                                           \
+    _res_sqlite3_result_zeroblob64;                                                                                                                                             \
 })
 #define sqlite3_set_authorizer(...) \
-({                                                                                                                       \
-    __auto_type _res = 0 ? sqlite3_set_authorizer(__VA_ARGS__) : 0;                                                      \
-                                                                                                                         \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_set_authorizer", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                         \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                \
-       _res = sqlite3_set_authorizer(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                            \
-    {                                                                                                                    \
-        sqlite3_set_authorizer(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                        \
-    }                                                                                                                    \
-    _res;                                                                                                                \
+({                                                                                                                                                                     \
+    __auto_type _res_sqlite3_set_authorizer = 0 ? sqlite3_set_authorizer(__VA_ARGS__) : 0;                                                                             \
+                                                                                                                                                                       \
+    _res_sqlite3_set_authorizer = (typeof (_res_sqlite3_set_authorizer))APSW_FaultInjectControl("sqlite3_set_authorizer", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                       \
+    if ((typeof (_res_sqlite3_set_authorizer))0x1FACADE == _res_sqlite3_set_authorizer)                                                                                \
+       _res_sqlite3_set_authorizer = sqlite3_set_authorizer(__VA_ARGS__);                                                                                              \
+    else if ((typeof(_res_sqlite3_set_authorizer))0x2FACADE == _res_sqlite3_set_authorizer)                                                                            \
+    {                                                                                                                                                                  \
+        sqlite3_set_authorizer(__VA_ARGS__);                                                                                                                           \
+        _res_sqlite3_set_authorizer = (typeof (_res_sqlite3_set_authorizer))18;                                                                                        \
+    }                                                                                                                                                                  \
+    _res_sqlite3_set_authorizer;                                                                                                                                       \
 })
 #define sqlite3_shutdown(...) \
-({                                                                                                                 \
-    __auto_type _res = 0 ? sqlite3_shutdown(__VA_ARGS__) : 0;                                                      \
-                                                                                                                   \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_shutdown", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                   \
-    if ((typeof (_res))0x1FACADE == _res)                                                                          \
-       _res = sqlite3_shutdown(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                      \
-    {                                                                                                              \
-        sqlite3_shutdown(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                  \
-    }                                                                                                              \
-    _res;                                                                                                          \
+({                                                                                                                                                   \
+    __auto_type _res_sqlite3_shutdown = 0 ? sqlite3_shutdown(__VA_ARGS__) : 0;                                                                       \
+                                                                                                                                                     \
+    _res_sqlite3_shutdown = (typeof (_res_sqlite3_shutdown))APSW_FaultInjectControl("sqlite3_shutdown", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                     \
+    if ((typeof (_res_sqlite3_shutdown))0x1FACADE == _res_sqlite3_shutdown)                                                                          \
+       _res_sqlite3_shutdown = sqlite3_shutdown(__VA_ARGS__);                                                                                        \
+    else if ((typeof(_res_sqlite3_shutdown))0x2FACADE == _res_sqlite3_shutdown)                                                                      \
+    {                                                                                                                                                \
+        sqlite3_shutdown(__VA_ARGS__);                                                                                                               \
+        _res_sqlite3_shutdown = (typeof (_res_sqlite3_shutdown))18;                                                                                  \
+    }                                                                                                                                                \
+    _res_sqlite3_shutdown;                                                                                                                           \
 })
 #define sqlite3_status64(...) \
-({                                                                                                                 \
-    __auto_type _res = 0 ? sqlite3_status64(__VA_ARGS__) : 0;                                                      \
-                                                                                                                   \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_status64", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                   \
-    if ((typeof (_res))0x1FACADE == _res)                                                                          \
-       _res = sqlite3_status64(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                      \
-    {                                                                                                              \
-        sqlite3_status64(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                  \
-    }                                                                                                              \
-    _res;                                                                                                          \
+({                                                                                                                                                   \
+    __auto_type _res_sqlite3_status64 = 0 ? sqlite3_status64(__VA_ARGS__) : 0;                                                                       \
+                                                                                                                                                     \
+    _res_sqlite3_status64 = (typeof (_res_sqlite3_status64))APSW_FaultInjectControl("sqlite3_status64", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                     \
+    if ((typeof (_res_sqlite3_status64))0x1FACADE == _res_sqlite3_status64)                                                                          \
+       _res_sqlite3_status64 = sqlite3_status64(__VA_ARGS__);                                                                                        \
+    else if ((typeof(_res_sqlite3_status64))0x2FACADE == _res_sqlite3_status64)                                                                      \
+    {                                                                                                                                                \
+        sqlite3_status64(__VA_ARGS__);                                                                                                               \
+        _res_sqlite3_status64 = (typeof (_res_sqlite3_status64))18;                                                                                  \
+    }                                                                                                                                                \
+    _res_sqlite3_status64;                                                                                                                           \
 })
 #define sqlite3_table_column_metadata(...) \
-({                                                                                                                              \
-    __auto_type _res = 0 ? sqlite3_table_column_metadata(__VA_ARGS__) : 0;                                                      \
-                                                                                                                                \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_table_column_metadata", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                                \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                       \
-       _res = sqlite3_table_column_metadata(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                                   \
-    {                                                                                                                           \
-        sqlite3_table_column_metadata(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                               \
-    }                                                                                                                           \
-    _res;                                                                                                                       \
+({                                                                                                                                                                                          \
+    __auto_type _res_sqlite3_table_column_metadata = 0 ? sqlite3_table_column_metadata(__VA_ARGS__) : 0;                                                                                    \
+                                                                                                                                                                                            \
+    _res_sqlite3_table_column_metadata = (typeof (_res_sqlite3_table_column_metadata))APSW_FaultInjectControl("sqlite3_table_column_metadata", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                            \
+    if ((typeof (_res_sqlite3_table_column_metadata))0x1FACADE == _res_sqlite3_table_column_metadata)                                                                                       \
+       _res_sqlite3_table_column_metadata = sqlite3_table_column_metadata(__VA_ARGS__);                                                                                                     \
+    else if ((typeof(_res_sqlite3_table_column_metadata))0x2FACADE == _res_sqlite3_table_column_metadata)                                                                                   \
+    {                                                                                                                                                                                       \
+        sqlite3_table_column_metadata(__VA_ARGS__);                                                                                                                                         \
+        _res_sqlite3_table_column_metadata = (typeof (_res_sqlite3_table_column_metadata))18;                                                                                               \
+    }                                                                                                                                                                                       \
+    _res_sqlite3_table_column_metadata;                                                                                                                                                     \
 })
 #define sqlite3_threadsafe(...) \
-({                                                                                                                   \
-    __auto_type _res = 0 ? sqlite3_threadsafe(__VA_ARGS__) : 0;                                                      \
-                                                                                                                     \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_threadsafe", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                     \
-    if ((typeof (_res))0x1FACADE == _res)                                                                            \
-       _res = sqlite3_threadsafe(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                        \
-    {                                                                                                                \
-        sqlite3_threadsafe(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                    \
-    }                                                                                                                \
-    _res;                                                                                                            \
+({                                                                                                                                                         \
+    __auto_type _res_sqlite3_threadsafe = 0 ? sqlite3_threadsafe(__VA_ARGS__) : 0;                                                                         \
+                                                                                                                                                           \
+    _res_sqlite3_threadsafe = (typeof (_res_sqlite3_threadsafe))APSW_FaultInjectControl("sqlite3_threadsafe", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                           \
+    if ((typeof (_res_sqlite3_threadsafe))0x1FACADE == _res_sqlite3_threadsafe)                                                                            \
+       _res_sqlite3_threadsafe = sqlite3_threadsafe(__VA_ARGS__);                                                                                          \
+    else if ((typeof(_res_sqlite3_threadsafe))0x2FACADE == _res_sqlite3_threadsafe)                                                                        \
+    {                                                                                                                                                      \
+        sqlite3_threadsafe(__VA_ARGS__);                                                                                                                   \
+        _res_sqlite3_threadsafe = (typeof (_res_sqlite3_threadsafe))18;                                                                                    \
+    }                                                                                                                                                      \
+    _res_sqlite3_threadsafe;                                                                                                                               \
 })
 #define sqlite3_trace_v2(...) \
-({                                                                                                                 \
-    __auto_type _res = 0 ? sqlite3_trace_v2(__VA_ARGS__) : 0;                                                      \
-                                                                                                                   \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_trace_v2", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                   \
-    if ((typeof (_res))0x1FACADE == _res)                                                                          \
-       _res = sqlite3_trace_v2(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                      \
-    {                                                                                                              \
-        sqlite3_trace_v2(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                  \
-    }                                                                                                              \
-    _res;                                                                                                          \
+({                                                                                                                                                   \
+    __auto_type _res_sqlite3_trace_v2 = 0 ? sqlite3_trace_v2(__VA_ARGS__) : 0;                                                                       \
+                                                                                                                                                     \
+    _res_sqlite3_trace_v2 = (typeof (_res_sqlite3_trace_v2))APSW_FaultInjectControl("sqlite3_trace_v2", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                     \
+    if ((typeof (_res_sqlite3_trace_v2))0x1FACADE == _res_sqlite3_trace_v2)                                                                          \
+       _res_sqlite3_trace_v2 = sqlite3_trace_v2(__VA_ARGS__);                                                                                        \
+    else if ((typeof(_res_sqlite3_trace_v2))0x2FACADE == _res_sqlite3_trace_v2)                                                                      \
+    {                                                                                                                                                \
+        sqlite3_trace_v2(__VA_ARGS__);                                                                                                               \
+        _res_sqlite3_trace_v2 = (typeof (_res_sqlite3_trace_v2))18;                                                                                  \
+    }                                                                                                                                                \
+    _res_sqlite3_trace_v2;                                                                                                                           \
 })
 #define sqlite3_vfs_register(...) \
-({                                                                                                                     \
-    __auto_type _res = 0 ? sqlite3_vfs_register(__VA_ARGS__) : 0;                                                      \
-                                                                                                                       \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_vfs_register", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                       \
-    if ((typeof (_res))0x1FACADE == _res)                                                                              \
-       _res = sqlite3_vfs_register(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                          \
-    {                                                                                                                  \
-        sqlite3_vfs_register(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                      \
-    }                                                                                                                  \
-    _res;                                                                                                              \
+({                                                                                                                                                               \
+    __auto_type _res_sqlite3_vfs_register = 0 ? sqlite3_vfs_register(__VA_ARGS__) : 0;                                                                           \
+                                                                                                                                                                 \
+    _res_sqlite3_vfs_register = (typeof (_res_sqlite3_vfs_register))APSW_FaultInjectControl("sqlite3_vfs_register", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                 \
+    if ((typeof (_res_sqlite3_vfs_register))0x1FACADE == _res_sqlite3_vfs_register)                                                                              \
+       _res_sqlite3_vfs_register = sqlite3_vfs_register(__VA_ARGS__);                                                                                            \
+    else if ((typeof(_res_sqlite3_vfs_register))0x2FACADE == _res_sqlite3_vfs_register)                                                                          \
+    {                                                                                                                                                            \
+        sqlite3_vfs_register(__VA_ARGS__);                                                                                                                       \
+        _res_sqlite3_vfs_register = (typeof (_res_sqlite3_vfs_register))18;                                                                                      \
+    }                                                                                                                                                            \
+    _res_sqlite3_vfs_register;                                                                                                                                   \
 })
 #define sqlite3_vfs_unregister(...) \
-({                                                                                                                       \
-    __auto_type _res = 0 ? sqlite3_vfs_unregister(__VA_ARGS__) : 0;                                                      \
-                                                                                                                         \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_vfs_unregister", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                         \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                \
-       _res = sqlite3_vfs_unregister(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                            \
-    {                                                                                                                    \
-        sqlite3_vfs_unregister(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                        \
-    }                                                                                                                    \
-    _res;                                                                                                                \
+({                                                                                                                                                                     \
+    __auto_type _res_sqlite3_vfs_unregister = 0 ? sqlite3_vfs_unregister(__VA_ARGS__) : 0;                                                                             \
+                                                                                                                                                                       \
+    _res_sqlite3_vfs_unregister = (typeof (_res_sqlite3_vfs_unregister))APSW_FaultInjectControl("sqlite3_vfs_unregister", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                       \
+    if ((typeof (_res_sqlite3_vfs_unregister))0x1FACADE == _res_sqlite3_vfs_unregister)                                                                                \
+       _res_sqlite3_vfs_unregister = sqlite3_vfs_unregister(__VA_ARGS__);                                                                                              \
+    else if ((typeof(_res_sqlite3_vfs_unregister))0x2FACADE == _res_sqlite3_vfs_unregister)                                                                            \
+    {                                                                                                                                                                  \
+        sqlite3_vfs_unregister(__VA_ARGS__);                                                                                                                           \
+        _res_sqlite3_vfs_unregister = (typeof (_res_sqlite3_vfs_unregister))18;                                                                                        \
+    }                                                                                                                                                                  \
+    _res_sqlite3_vfs_unregister;                                                                                                                                       \
 })
 #define sqlite3_vtab_config(...) \
-({                                                                                                                    \
-    __auto_type _res = 0 ? sqlite3_vtab_config(__VA_ARGS__) : 0;                                                      \
-                                                                                                                      \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_vtab_config", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                      \
-    if ((typeof (_res))0x1FACADE == _res)                                                                             \
-       _res = sqlite3_vtab_config(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                         \
-    {                                                                                                                 \
-        sqlite3_vtab_config(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                     \
-    }                                                                                                                 \
-    _res;                                                                                                             \
+({                                                                                                                                                            \
+    __auto_type _res_sqlite3_vtab_config = 0 ? sqlite3_vtab_config(__VA_ARGS__) : 0;                                                                          \
+                                                                                                                                                              \
+    _res_sqlite3_vtab_config = (typeof (_res_sqlite3_vtab_config))APSW_FaultInjectControl("sqlite3_vtab_config", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                              \
+    if ((typeof (_res_sqlite3_vtab_config))0x1FACADE == _res_sqlite3_vtab_config)                                                                             \
+       _res_sqlite3_vtab_config = sqlite3_vtab_config(__VA_ARGS__);                                                                                           \
+    else if ((typeof(_res_sqlite3_vtab_config))0x2FACADE == _res_sqlite3_vtab_config)                                                                         \
+    {                                                                                                                                                         \
+        sqlite3_vtab_config(__VA_ARGS__);                                                                                                                     \
+        _res_sqlite3_vtab_config = (typeof (_res_sqlite3_vtab_config))18;                                                                                     \
+    }                                                                                                                                                         \
+    _res_sqlite3_vtab_config;                                                                                                                                 \
 })
 #define sqlite3_vtab_in_next(...) \
-({                                                                                                                     \
-    __auto_type _res = 0 ? sqlite3_vtab_in_next(__VA_ARGS__) : 0;                                                      \
-                                                                                                                       \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_vtab_in_next", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                       \
-    if ((typeof (_res))0x1FACADE == _res)                                                                              \
-       _res = sqlite3_vtab_in_next(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                          \
-    {                                                                                                                  \
-        sqlite3_vtab_in_next(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                      \
-    }                                                                                                                  \
-    _res;                                                                                                              \
+({                                                                                                                                                               \
+    __auto_type _res_sqlite3_vtab_in_next = 0 ? sqlite3_vtab_in_next(__VA_ARGS__) : 0;                                                                           \
+                                                                                                                                                                 \
+    _res_sqlite3_vtab_in_next = (typeof (_res_sqlite3_vtab_in_next))APSW_FaultInjectControl("sqlite3_vtab_in_next", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                 \
+    if ((typeof (_res_sqlite3_vtab_in_next))0x1FACADE == _res_sqlite3_vtab_in_next)                                                                              \
+       _res_sqlite3_vtab_in_next = sqlite3_vtab_in_next(__VA_ARGS__);                                                                                            \
+    else if ((typeof(_res_sqlite3_vtab_in_next))0x2FACADE == _res_sqlite3_vtab_in_next)                                                                          \
+    {                                                                                                                                                            \
+        sqlite3_vtab_in_next(__VA_ARGS__);                                                                                                                       \
+        _res_sqlite3_vtab_in_next = (typeof (_res_sqlite3_vtab_in_next))18;                                                                                      \
+    }                                                                                                                                                            \
+    _res_sqlite3_vtab_in_next;                                                                                                                                   \
 })
 #define sqlite3_vtab_rhs_value(...) \
-({                                                                                                                       \
-    __auto_type _res = 0 ? sqlite3_vtab_rhs_value(__VA_ARGS__) : 0;                                                      \
-                                                                                                                         \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_vtab_rhs_value", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                         \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                \
-       _res = sqlite3_vtab_rhs_value(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                            \
-    {                                                                                                                    \
-        sqlite3_vtab_rhs_value(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                        \
-    }                                                                                                                    \
-    _res;                                                                                                                \
+({                                                                                                                                                                     \
+    __auto_type _res_sqlite3_vtab_rhs_value = 0 ? sqlite3_vtab_rhs_value(__VA_ARGS__) : 0;                                                                             \
+                                                                                                                                                                       \
+    _res_sqlite3_vtab_rhs_value = (typeof (_res_sqlite3_vtab_rhs_value))APSW_FaultInjectControl("sqlite3_vtab_rhs_value", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                       \
+    if ((typeof (_res_sqlite3_vtab_rhs_value))0x1FACADE == _res_sqlite3_vtab_rhs_value)                                                                                \
+       _res_sqlite3_vtab_rhs_value = sqlite3_vtab_rhs_value(__VA_ARGS__);                                                                                              \
+    else if ((typeof(_res_sqlite3_vtab_rhs_value))0x2FACADE == _res_sqlite3_vtab_rhs_value)                                                                            \
+    {                                                                                                                                                                  \
+        sqlite3_vtab_rhs_value(__VA_ARGS__);                                                                                                                           \
+        _res_sqlite3_vtab_rhs_value = (typeof (_res_sqlite3_vtab_rhs_value))18;                                                                                        \
+    }                                                                                                                                                                  \
+    _res_sqlite3_vtab_rhs_value;                                                                                                                                       \
 })
 #define sqlite3_wal_autocheckpoint(...) \
-({                                                                                                                           \
-    __auto_type _res = 0 ? sqlite3_wal_autocheckpoint(__VA_ARGS__) : 0;                                                      \
-                                                                                                                             \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_wal_autocheckpoint", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                             \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                    \
-       _res = sqlite3_wal_autocheckpoint(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                                \
-    {                                                                                                                        \
-        sqlite3_wal_autocheckpoint(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                            \
-    }                                                                                                                        \
-    _res;                                                                                                                    \
+({                                                                                                                                                                                 \
+    __auto_type _res_sqlite3_wal_autocheckpoint = 0 ? sqlite3_wal_autocheckpoint(__VA_ARGS__) : 0;                                                                                 \
+                                                                                                                                                                                   \
+    _res_sqlite3_wal_autocheckpoint = (typeof (_res_sqlite3_wal_autocheckpoint))APSW_FaultInjectControl("sqlite3_wal_autocheckpoint", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                   \
+    if ((typeof (_res_sqlite3_wal_autocheckpoint))0x1FACADE == _res_sqlite3_wal_autocheckpoint)                                                                                    \
+       _res_sqlite3_wal_autocheckpoint = sqlite3_wal_autocheckpoint(__VA_ARGS__);                                                                                                  \
+    else if ((typeof(_res_sqlite3_wal_autocheckpoint))0x2FACADE == _res_sqlite3_wal_autocheckpoint)                                                                                \
+    {                                                                                                                                                                              \
+        sqlite3_wal_autocheckpoint(__VA_ARGS__);                                                                                                                                   \
+        _res_sqlite3_wal_autocheckpoint = (typeof (_res_sqlite3_wal_autocheckpoint))18;                                                                                            \
+    }                                                                                                                                                                              \
+    _res_sqlite3_wal_autocheckpoint;                                                                                                                                               \
 })
 #define sqlite3_wal_checkpoint_v2(...) \
-({                                                                                                                          \
-    __auto_type _res = 0 ? sqlite3_wal_checkpoint_v2(__VA_ARGS__) : 0;                                                      \
-                                                                                                                            \
-    _res = (typeof (_res))APSW_FaultInjectControl("sqlite3_wal_checkpoint_v2", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                            \
-    if ((typeof (_res))0x1FACADE == _res)                                                                                   \
-       _res = sqlite3_wal_checkpoint_v2(__VA_ARGS__);                                                                       \
-    else if ((typeof(_res))0x2FACADE == _res)                                                                               \
-    {                                                                                                                       \
-        sqlite3_wal_checkpoint_v2(__VA_ARGS__);                                                                             \
-        _res = (typeof (_res))18;                                                                                           \
-    }                                                                                                                       \
-    _res;                                                                                                                   \
+({                                                                                                                                                                              \
+    __auto_type _res_sqlite3_wal_checkpoint_v2 = 0 ? sqlite3_wal_checkpoint_v2(__VA_ARGS__) : 0;                                                                                \
+                                                                                                                                                                                \
+    _res_sqlite3_wal_checkpoint_v2 = (typeof (_res_sqlite3_wal_checkpoint_v2))APSW_FaultInjectControl("sqlite3_wal_checkpoint_v2", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                \
+    if ((typeof (_res_sqlite3_wal_checkpoint_v2))0x1FACADE == _res_sqlite3_wal_checkpoint_v2)                                                                                   \
+       _res_sqlite3_wal_checkpoint_v2 = sqlite3_wal_checkpoint_v2(__VA_ARGS__);                                                                                                 \
+    else if ((typeof(_res_sqlite3_wal_checkpoint_v2))0x2FACADE == _res_sqlite3_wal_checkpoint_v2)                                                                               \
+    {                                                                                                                                                                           \
+        sqlite3_wal_checkpoint_v2(__VA_ARGS__);                                                                                                                                 \
+        _res_sqlite3_wal_checkpoint_v2 = (typeof (_res_sqlite3_wal_checkpoint_v2))18;                                                                                           \
+    }                                                                                                                                                                           \
+    _res_sqlite3_wal_checkpoint_v2;                                                                                                                                             \
 })
 #endif
 #endif

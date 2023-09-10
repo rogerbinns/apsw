@@ -274,15 +274,14 @@ getapswversion(void)
   -* sqlite3_enable_shared_cache
 */
 static PyObject *
-enablesharedcache(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
+enablesharedcache(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int enable = 0, res;
   {
-    static char *kwlist[] = {"enable", NULL};
     Apsw_enablesharedcache_CHECK;
-    argcheck_bool_param enable_param = {&enable, Apsw_enablesharedcache_enable_MSG};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Apsw_enablesharedcache_USAGE, kwlist, argcheck_bool, &enable_param))
-      return NULL;
+    ARG_PROLOG(1, Apsw_enablesharedcache_KWNAMES);
+    ARG_MANDATORY ARG_bool(enable);
+    ARG_EPILOG(NULL, Apsw_enablesharedcache_USAGE,);
   }
   res = sqlite3_enable_shared_cache(enable);
   SET_EXC(res, NULL);
@@ -605,16 +604,15 @@ memoryused(void)
   -* sqlite3_memory_highwater
 */
 static PyObject *
-memoryhighwater(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
+memoryhighwater(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int reset = 0;
 
   {
-    static char *kwlist[] = {"reset", NULL};
     Apsw_memoryhighwater_CHECK;
-    argcheck_bool_param reset_param = {&reset, Apsw_memoryhighwater_reset_MSG};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&:" Apsw_memoryhighwater_USAGE, kwlist, argcheck_bool, &reset_param))
-      return NULL;
+    ARG_PROLOG(1, Apsw_memoryhighwater_KWNAMES);
+    ARG_OPTIONAL ARG_bool(reset);
+    ARG_EPILOG(NULL, Apsw_memoryhighwater_USAGE,);
   }
   return PyLong_FromLongLong(sqlite3_memory_highwater(reset));
 }
@@ -631,14 +629,14 @@ memoryhighwater(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
   -* sqlite3_soft_heap_limit64
 */
 static PyObject *
-softheaplimit(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
+softheaplimit(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   sqlite3_int64 limit, oldlimit;
   {
-    static char *kwlist[] = {"limit", NULL};
     Apsw_softheaplimit_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "L:" Apsw_softheaplimit_USAGE, kwlist, &limit))
-      return NULL;
+    ARG_PROLOG(1, Apsw_softheaplimit_KWNAMES);
+    ARG_MANDATORY ARG_int64(limit);
+    ARG_EPILOG(NULL, Apsw_softheaplimit_USAGE,);
   }
   oldlimit = sqlite3_soft_heap_limit64(limit);
 
@@ -657,14 +655,14 @@ softheaplimit(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
   -* sqlite3_hard_heap_limit64
 */
 static PyObject *
-apsw_hard_heap_limit(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
+apsw_hard_heap_limit(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   sqlite3_int64 limit, oldlimit;
   {
-    static char *kwlist[] = {"limit", NULL};
     Apsw_hard_heap_limit_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "L:" Apsw_hard_heap_limit_USAGE, kwlist, &limit))
-      return NULL;
+    ARG_PROLOG(1, Apsw_hard_heap_limit_KWNAMES);
+    ARG_MANDATORY ARG_int64(limit);
+    ARG_EPILOG(NULL, Apsw_hard_heap_limit_USAGE,);
   }
   oldlimit = sqlite3_hard_heap_limit64(limit);
 
@@ -680,16 +678,16 @@ apsw_hard_heap_limit(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
   -* sqlite3_randomness
 */
 static PyObject *
-randomness(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
+randomness(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int amount;
   PyObject *bytes;
 
   {
-    static char *kwlist[] = {"amount", NULL};
     Apsw_randomness_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" Apsw_randomness_USAGE, kwlist, &amount))
-      return NULL;
+    ARG_PROLOG(1, Apsw_randomness_KWNAMES);
+    ARG_MANDATORY ARG_int(amount);
+    ARG_EPILOG(NULL, Apsw_randomness_USAGE,);
   }
   if (amount < 0)
     return PyErr_Format(PyExc_ValueError, "Can't have negative number of bytes");
@@ -710,15 +708,15 @@ randomness(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
 */
 
 static PyObject *
-releasememory(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
+releasememory(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int amount;
 
   {
-    static char *kwlist[] = {"amount", NULL};
     Apsw_releasememory_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" Apsw_releasememory_USAGE, kwlist, &amount))
-      return NULL;
+    ARG_PROLOG(1, Apsw_releasememory_KWNAMES);
+    ARG_MANDATORY ARG_int(amount);
+    ARG_EPILOG(NULL, Apsw_releasememory_USAGE,);
   }
   return PyLong_FromLong(sqlite3_release_memory(amount));
 }
@@ -739,17 +737,17 @@ releasememory(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
 
 */
 static PyObject *
-status(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
+status(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int res, op, reset = 0;
   sqlite3_int64 current = 0, highwater = 0;
 
   {
-    static char *kwlist[] = {"op", "reset", NULL};
     Apsw_status_CHECK;
-    argcheck_bool_param reset_param = {&reset, Apsw_status_reset_MSG};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i|O&:" Apsw_status_USAGE, kwlist, &op, argcheck_bool, &reset_param))
-      return NULL;
+    ARG_PROLOG(2, Apsw_status_KWNAMES);
+    ARG_MANDATORY ARG_int(op);
+    ARG_OPTIONAL ARG_bool(reset);
+    ARG_EPILOG(NULL, Apsw_status_USAGE,);
   }
 
   res = sqlite3_status64(op, &current, &highwater, reset);
@@ -887,16 +885,16 @@ vfs_details(PyObject *Py_UNUSED(self))
 
 */
 static PyObject *
-getapswexceptionfor(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
+getapswexceptionfor(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int code = 0, i;
   PyObject *result = NULL, *tmp = NULL;
 
   {
-    static char *kwlist[] = {"code", NULL};
     Apsw_exceptionfor_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" Apsw_exceptionfor_USAGE, kwlist, &code))
-      return NULL;
+    ARG_PROLOG(1, Apsw_exceptionfor_KWNAMES);
+    ARG_MANDATORY ARG_int(code);
+    ARG_EPILOG(NULL, Apsw_exceptionfor_USAGE,);
   }
 
   for (i = 0; exc_descriptors[i].name; i++)
@@ -947,16 +945,16 @@ error:
   -* sqlite3_complete
 */
 static PyObject *
-apswcomplete(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
+apswcomplete(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   const char *statement = NULL;
   int res;
 
   {
-    static char *kwlist[] = {"statement", NULL};
     Apsw_complete_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:" Apsw_complete_USAGE, kwlist, &statement))
-      return NULL;
+    ARG_PROLOG(1, Apsw_complete_KWNAMES);
+    ARG_MANDATORY ARG_str(statement);
+    ARG_EPILOG(NULL, Apsw_complete_USAGE,);
   }
 
   res = sqlite3_complete(statement);
@@ -1473,7 +1471,7 @@ formatsqlvalue(PyObject *Py_UNUSED(self), PyObject *value)
     Py_ssize_t buflen;
     const unsigned char *bufferc;
 
-    asrb = PyObject_GetBuffer(value, &buffer, PyBUF_SIMPLE);
+    asrb = PyObject_GetBufferContiguous(value, &buffer, PyBUF_SIMPLE);
     if (asrb == -1)
       return NULL;
 
@@ -1515,15 +1513,16 @@ formatsqlvalue(PyObject *Py_UNUSED(self), PyObject *value)
     -* sqlite3_log
  */
 static PyObject *
-apsw_log(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
+apsw_log(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int errorcode;
   const char *message;
   {
-    static char *kwlist[] = {"errorcode", "message", NULL};
     Apsw_log_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "is:" Apsw_log_USAGE, kwlist, &errorcode, &message))
-      return NULL;
+    ARG_PROLOG(2, Apsw_log_KWNAMES);
+    ARG_MANDATORY ARG_int(errorcode);
+    ARG_MANDATORY ARG_str(message);
+    ARG_EPILOG(NULL, Apsw_log_USAGE,);
   }
   sqlite3_log(errorcode, "%s", message); /* PYSQLITE_CALL not needed */
 
@@ -1540,17 +1539,19 @@ apsw_log(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
   -* sqlite3_strlike
 */
 static PyObject *
-apsw_strlike(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
+apsw_strlike(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   const char *glob = NULL, *string = NULL;
   int escape = 0;
   int res;
 
   {
-    static char *kwlist[] = {"glob", "string", "escape", NULL};
     Apsw_strlike_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss|i:" Apsw_strlike_USAGE, kwlist, &glob, &string, &escape))
-      return NULL;
+    ARG_PROLOG(3, Apsw_strlike_KWNAMES);
+    ARG_MANDATORY ARG_str(glob);
+    ARG_MANDATORY ARG_str(string);
+    ARG_OPTIONAL ARG_int(escape);
+    ARG_EPILOG(NULL, Apsw_strlike_USAGE,);
   }
 
   res = sqlite3_strlike(glob, string, escape); /* PYSQLITE_CALL not needed */
@@ -1565,16 +1566,17 @@ apsw_strlike(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
   -* sqlite3_strglob
 */
 static PyObject *
-apsw_strglob(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
+apsw_strglob(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   const char *glob = NULL, *string = NULL;
   int res;
 
   {
-    static char *kwlist[] = {"glob", "string", NULL};
     Apsw_strglob_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss:" Apsw_strglob_USAGE, kwlist, &glob, &string))
-      return NULL;
+    ARG_PROLOG(2, Apsw_strglob_KWNAMES);
+    ARG_MANDATORY ARG_str(glob);
+    ARG_MANDATORY ARG_str(string);
+    ARG_EPILOG(NULL, Apsw_strglob_USAGE,);
   }
 
   res = sqlite3_strglob(glob, string); /* PYSQLITE_CALL not needed */
@@ -1590,16 +1592,17 @@ apsw_strglob(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
   -* sqlite3_stricmp
 */
 static PyObject *
-apsw_stricmp(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
+apsw_stricmp(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   const char *string1 = NULL, *string2 = NULL;
   int res;
 
   {
-    static char *kwlist[] = {"string1", "string2", NULL};
     Apsw_stricmp_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss:" Apsw_stricmp_USAGE, kwlist, &string1, &string2))
-      return NULL;
+    ARG_PROLOG(2, Apsw_stricmp_KWNAMES);
+    ARG_MANDATORY ARG_str(string1);
+    ARG_MANDATORY ARG_str(string2);
+    ARG_EPILOG(NULL, Apsw_stricmp_USAGE,);
   }
 
   res = sqlite3_stricmp(string1, string2); /* PYSQLITE_CALL not needed */
@@ -1615,16 +1618,18 @@ apsw_stricmp(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
   -* sqlite3_strnicmp
 */
 static PyObject *
-apsw_strnicmp(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
+apsw_strnicmp(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   const char *string1 = NULL, *string2 = NULL;
   int count, res;
 
   {
-    static char *kwlist[] = {"string1", "string2", "count", NULL};
     Apsw_strnicmp_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ssi:" Apsw_strnicmp_USAGE, kwlist, &string1, &string2, &count))
-      return NULL;
+    ARG_PROLOG(3, Apsw_strnicmp_KWNAMES);
+    ARG_MANDATORY ARG_str(string1);
+    ARG_MANDATORY ARG_str(string2);
+    ARG_MANDATORY ARG_int(count);
+    ARG_EPILOG(NULL, Apsw_strnicmp_USAGE,);
   }
 
   res = sqlite3_strnicmp(string1, string2, count); /* PYSQLITE_CALL not needed */
@@ -1640,17 +1645,17 @@ apsw_strnicmp(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
  -* sqlite3_vfs_register sqlite3_vfs_find
 */
 static PyObject *
-apsw_set_default_vfs(PyObject *Py_UNUSED(module), PyObject *args, PyObject *kwds)
+apsw_set_default_vfs(PyObject *Py_UNUSED(module), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   const char *name;
   sqlite3_vfs *vfs;
   int res;
 
   {
-    static char *kwlist[] = {"name", NULL};
     Apsw_set_default_vfs_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:" Apsw_set_default_vfs_USAGE, kwlist, &name))
-      return NULL;
+    ARG_PROLOG(1, Apsw_set_default_vfs_KWNAMES);
+    ARG_MANDATORY ARG_str(name);
+    ARG_EPILOG(NULL, Apsw_set_default_vfs_USAGE,);
   }
 
   vfs = sqlite3_vfs_find(name);
@@ -1670,17 +1675,17 @@ apsw_set_default_vfs(PyObject *Py_UNUSED(module), PyObject *args, PyObject *kwds
  -* sqlite3_vfs_unregister sqlite3_vfs_find
 */
 static PyObject *
-apsw_unregister_vfs(PyObject *Py_UNUSED(module), PyObject *args, PyObject *kwds)
+apsw_unregister_vfs(PyObject *Py_UNUSED(module), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   const char *name;
   sqlite3_vfs *vfs;
   int res;
 
   {
-    static char *kwlist[] = {"name", NULL};
     Apsw_unregister_vfs_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:" Apsw_unregister_vfs_USAGE, kwlist, &name))
-      return NULL;
+    ARG_PROLOG(1, Apsw_unregister_vfs_KWNAMES);
+    ARG_MANDATORY ARG_str(name);
+    ARG_EPILOG(NULL, Apsw_unregister_vfs_USAGE,);
   }
 
   vfs = sqlite3_vfs_find(name);
@@ -1701,14 +1706,14 @@ apsw_unregister_vfs(PyObject *Py_UNUSED(module), PyObject *args, PyObject *kwds)
  -* sqlite3_sleep
 */
 static PyObject *
-apsw_sleep(PyObject *Py_UNUSED(module), PyObject *args, PyObject *kwds)
+apsw_sleep(PyObject *Py_UNUSED(module), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int milliseconds, res;
   {
-    static char *kwlist[] = {"milliseconds", NULL};
     Apsw_sleep_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" Apsw_sleep_USAGE, kwlist, &milliseconds))
-      return NULL;
+    ARG_PROLOG(1, Apsw_sleep_KWNAMES);
+    ARG_MANDATORY ARG_int(milliseconds);
+    ARG_EPILOG(NULL, Apsw_sleep_USAGE,);
   }
 
   /* https://sqlite.org/forum/forumpost/5a95013827 */
@@ -1737,16 +1742,15 @@ apsw_sleep(PyObject *Py_UNUSED(module), PyObject *args, PyObject *kwds)
   The previous value is returned.
 */
 static PyObject *
-apsw_allow_missing_dict_bindings(PyObject *Py_UNUSED(module), PyObject *args, PyObject *kwds)
+apsw_allow_missing_dict_bindings(PyObject *Py_UNUSED(module), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int curval = allow_missing_dict_bindings;
   int value;
   {
-    static char *kwlist[] = {"value", NULL};
     Apsw_allow_missing_dict_bindings_CHECK;
-    argcheck_bool_param value_param = {&value, Apsw_allow_missing_dict_bindings_value_MSG};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Apsw_allow_missing_dict_bindings_USAGE, kwlist, argcheck_bool, &value_param))
-      return NULL;
+    ARG_PROLOG(1, Apsw_allow_missing_dict_bindings_KWNAMES);
+    ARG_MANDATORY ARG_bool(value);
+    ARG_EPILOG(NULL, Apsw_allow_missing_dict_bindings_USAGE,);
   }
   allow_missing_dict_bindings = value;
   if (curval)
@@ -1787,7 +1791,7 @@ static PyMethodDef module_methods[] = {
      Apsw_vfsnames_DOC},
     {"vfs_details", (PyCFunction)vfs_details, METH_NOARGS,
      Apsw_vfs_details_DOC},
-    {"enablesharedcache", (PyCFunction)enablesharedcache, METH_VARARGS | METH_KEYWORDS,
+    {"enablesharedcache", (PyCFunction)enablesharedcache, METH_FASTCALL | METH_KEYWORDS,
      Apsw_enablesharedcache_DOC},
     {"initialize", (PyCFunction)initialize, METH_NOARGS,
      Apsw_initialize_DOC},
@@ -1797,33 +1801,33 @@ static PyMethodDef module_methods[] = {
      Apsw_format_sql_value_DOC},
     {"config", (PyCFunction)config, METH_VARARGS,
      Apsw_config_DOC},
-    {"log", (PyCFunction)apsw_log, METH_VARARGS | METH_KEYWORDS,
+    {"log", (PyCFunction)apsw_log, METH_FASTCALL | METH_KEYWORDS,
      Apsw_log_DOC},
     {"memoryused", (PyCFunction)memoryused, METH_NOARGS,
      Apsw_memoryused_DOC},
-    {"memoryhighwater", (PyCFunction)memoryhighwater, METH_VARARGS | METH_KEYWORDS,
+    {"memoryhighwater", (PyCFunction)memoryhighwater, METH_FASTCALL | METH_KEYWORDS,
      Apsw_memoryhighwater_DOC},
-    {"status", (PyCFunction)status, METH_VARARGS | METH_KEYWORDS,
+    {"status", (PyCFunction)status, METH_FASTCALL | METH_KEYWORDS,
      Apsw_status_DOC},
-    {"softheaplimit", (PyCFunction)softheaplimit, METH_VARARGS | METH_KEYWORDS,
+    {"softheaplimit", (PyCFunction)softheaplimit, METH_FASTCALL | METH_KEYWORDS,
      Apsw_softheaplimit_DOC},
-    {"hard_heap_limit", (PyCFunction)apsw_hard_heap_limit, METH_VARARGS | METH_KEYWORDS,
+    {"hard_heap_limit", (PyCFunction)apsw_hard_heap_limit, METH_FASTCALL | METH_KEYWORDS,
      Apsw_hard_heap_limit_DOC},
-    {"releasememory", (PyCFunction)releasememory, METH_VARARGS | METH_KEYWORDS,
+    {"releasememory", (PyCFunction)releasememory, METH_FASTCALL | METH_KEYWORDS,
      Apsw_releasememory_DOC},
-    {"randomness", (PyCFunction)randomness, METH_VARARGS | METH_KEYWORDS,
+    {"randomness", (PyCFunction)randomness, METH_FASTCALL | METH_KEYWORDS,
      Apsw_randomness_DOC},
-    {"exceptionfor", (PyCFunction)getapswexceptionfor, METH_VARARGS | METH_KEYWORDS,
+    {"exceptionfor", (PyCFunction)getapswexceptionfor, METH_FASTCALL | METH_KEYWORDS,
      Apsw_exceptionfor_DOC},
-    {"complete", (PyCFunction)apswcomplete, METH_VARARGS | METH_KEYWORDS,
+    {"complete", (PyCFunction)apswcomplete, METH_FASTCALL | METH_KEYWORDS,
      Apsw_complete_DOC},
-    {"strlike", (PyCFunction)apsw_strlike, METH_VARARGS | METH_KEYWORDS, Apsw_strlike_DOC},
-    {"strglob", (PyCFunction)apsw_strglob, METH_VARARGS | METH_KEYWORDS, Apsw_strglob_DOC},
-    {"stricmp", (PyCFunction)apsw_stricmp, METH_VARARGS | METH_KEYWORDS, Apsw_stricmp_DOC},
-    {"strnicmp", (PyCFunction)apsw_strnicmp, METH_VARARGS | METH_KEYWORDS, Apsw_strnicmp_DOC},
-    {"set_default_vfs", (PyCFunction)apsw_set_default_vfs, METH_VARARGS | METH_KEYWORDS, Apsw_set_default_vfs_DOC},
-    {"unregister_vfs", (PyCFunction)apsw_unregister_vfs, METH_VARARGS | METH_KEYWORDS, Apsw_unregister_vfs_DOC},
-    {"allow_missing_dict_bindings", (PyCFunction)apsw_allow_missing_dict_bindings, METH_VARARGS | METH_KEYWORDS, Apsw_allow_missing_dict_bindings_DOC},
+    {"strlike", (PyCFunction)apsw_strlike, METH_FASTCALL | METH_KEYWORDS, Apsw_strlike_DOC},
+    {"strglob", (PyCFunction)apsw_strglob, METH_FASTCALL | METH_KEYWORDS, Apsw_strglob_DOC},
+    {"stricmp", (PyCFunction)apsw_stricmp, METH_FASTCALL | METH_KEYWORDS, Apsw_stricmp_DOC},
+    {"strnicmp", (PyCFunction)apsw_strnicmp, METH_FASTCALL | METH_KEYWORDS, Apsw_strnicmp_DOC},
+    {"set_default_vfs", (PyCFunction)apsw_set_default_vfs, METH_FASTCALL | METH_KEYWORDS, Apsw_set_default_vfs_DOC},
+    {"unregister_vfs", (PyCFunction)apsw_unregister_vfs, METH_FASTCALL | METH_KEYWORDS, Apsw_unregister_vfs_DOC},
+    {"allow_missing_dict_bindings", (PyCFunction)apsw_allow_missing_dict_bindings, METH_FASTCALL | METH_KEYWORDS, Apsw_allow_missing_dict_bindings_DOC},
 #ifdef APSW_TESTFIXTURES
     {"_fini", (PyCFunction)apsw_fini, METH_NOARGS,
      "Frees all caches and recycle lists"},
@@ -1834,7 +1838,7 @@ static PyMethodDef module_methods[] = {
 #endif
     {"__getattr__", (PyCFunction)apsw_getattr, METH_O, "module getattr"},
     {"connections", (PyCFunction)apsw_connections, METH_NOARGS, Apsw_connections_DOC},
-    {"sleep", (PyCFunction)apsw_sleep, METH_VARARGS | METH_KEYWORDS, Apsw_sleep_DOC},
+    {"sleep", (PyCFunction)apsw_sleep, METH_FASTCALL | METH_KEYWORDS, Apsw_sleep_DOC},
     {0, 0, 0, 0} /* Sentinel */
 };
 
