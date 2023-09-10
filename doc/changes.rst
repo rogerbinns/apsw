@@ -6,8 +6,11 @@ Change History
 next
 ====
 
-All C code calling into Python uses vectorcall (:pep:`590`) which
-reduces the overhead of the calling.  (:issue:`477`)
+All C code calling into Python and all C code called by Python uses
+vectorcall / fastcall (see :pep:`590`) which reduces the overhead of
+passing and receiving positional and keyword arguments. (:issue:`477`
+:issue:`446`).
+
 
 3.43.0.0
 ========
