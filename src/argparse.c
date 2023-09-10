@@ -34,7 +34,7 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
     const char *unknown_keyword = NULL;                                                           \
     const Py_ssize_t maxpos_args_ = maxpos_args;                                                  \
     const int maxargs = Py_ARRAY_LENGTH(kwlist);                                                  \
-    PyObject *myargs[Py_ARRAY_LENGTH(kwlist)];                                                                    \
+    PyObject *myargs[Py_ARRAY_LENGTH(kwlist)];                                                    \
     PyObject **useargs = (PyObject **)fast_args;                                                  \
     Py_ssize_t actual_nargs = PyVectorcall_NARGS(fast_nargs);                                     \
     if (actual_nargs > maxpos_args)                                                               \
@@ -79,7 +79,7 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
     PyErr_Format(PyExc_TypeError, "Too many positional arguments %d (max %d) provided to %s", (int)actual_nargs, (int)maxpos_args_, usage); \
     goto error_return;                                                                                                                      \
     missing_required:                                                                                                                       \
-    PyErr_Format(PyExc_TypeError, "Missing required parameter #%d '%s' of %s", argp_optindex + 1, kwlist[argp_optindex], usage);            \
+    PyErr_Format(PyExc_TypeError, "Missing required parameter #%d '%s' of %s", (int)argp_optindex + 1, kwlist[argp_optindex], usage);       \
     goto error_return;                                                                                                                      \
     unknown_keyword_arg:                                                                                                                    \
     PyErr_Format(PyExc_TypeError, "'%s' is an invalid keyword argument for %s", unknown_keyword, usage);                                    \
@@ -88,7 +88,7 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
     PyErr_Format(PyExc_TypeError, "argument '%s' given by name and position for %s", unknown_keyword, usage);                               \
     goto error_return;                                                                                                                      \
     param_error:                                                                                                                            \
-    /* ::TODO:: add note about kwlist[argp_optindex] */                                                                                     \
+    PyErr_AddExceptionNoteV("Processing parameter #%d '%s' of %s", (int)argp_optindex + 1, kwlist[argp_optindex], usage);                   \
     goto error_return;                                                                                                                      \
     error_return:                                                                                                                           \
     assert(PyErr_Occurred());                                                                                                               \
