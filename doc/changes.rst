@@ -15,7 +15,7 @@ passing and receiving positional and keyword arguments. (:issue:`477`
   `PyArg_ParseTupleAndKeywords
   <https://docs.python.org/3/c-api/arg.html#c.PyArg_ParseTupleAndKeywords>`__
   in favour of direct processing which is more efficient and allows
-  better error messages.
+  better exception messages.
 
 * Running :ref:`speedtest` with a VFS that inherits all methods went
   from being 17% slower than pure SQLite to 2% slower.
