@@ -34,7 +34,7 @@ xSetSystemCall xSleep xSync xTruncate xUnlock xWrite
 # other
 names +="""
 close connection_hooks cursor error_offset excepthook execute
-executemany extendedresult get Mapping result
+executemany extendedresult get Mapping result add_note
 
 step final value inverse
 """
