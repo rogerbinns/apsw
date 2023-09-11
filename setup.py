@@ -2,6 +2,8 @@
 
 # See the accompanying LICENSE file.
 
+from __future__ import annotations
+
 import os
 import sys
 import shlex
@@ -14,6 +16,9 @@ import subprocess
 import sysconfig
 import shutil
 import pathlib
+import subprocess
+import contextlib
+from dataclasses import dataclass
 
 from setuptools import setup, Extension, Command
 from setuptools.command import build_ext, sdist
@@ -479,14 +484,6 @@ def findamalgamation():
     return None
 
 
-def find_in_path(name):
-    for loc in os.getenv("PATH").split(os.pathsep):
-        f = os.path.abspath(os.path.join(loc, name))
-        if os.path.exists(f) or os.path.exists(f.lower()) or os.path.exists(f.lower() + ".exe"):
-            return f
-    return None
-
-
 beparent = build_ext.build_ext
 
 
@@ -519,11 +516,8 @@ class apsw_build_ext(beparent):
                 "math_functions"
             ]
             if not self.omit or "icu" not in self.omit.split(","):
-                if find_in_path("icu-config"):
+                if get_icu_config():
                     exts.append("icu")
-                elif find_in_path("pkg-config"):
-                    if len(os.popen("pkg-config --silence-errors --cflags --libs icu-uc icu-i18n", "r").read().strip()):
-                        exts.append("icu")
             if not self.enable:
                 self.enable = ",".join(exts)
             else:
@@ -617,46 +611,31 @@ class apsw_build_ext(beparent):
 
         # icu
         if addicuinclib:
-            foundicu = False
-            method = "pkg-config"
-            kwargs = {}
-            cmds = {
-                "icu-config": ["icu-config --cppflags", "icu-config --ldflags"],
-                "pkg-config": ["pkg-config --cflags icu-uc icu-i18n", "pkg-config --libs icu-uc icu-i18n"],
-            }
+            icc = get_icu_config()
+            if icc:
+                # if posix is true then quotes get stripped such as from -Dfoo="bar"
+                kwargs = {"posix": False}
+                for part in shlex.split(icc.cflags, **kwargs):
+                    if part.startswith("-I"):
+                        ext.include_dirs.append(part[2:])
+                    elif part.startswith("-D"):
+                        part = part[2:]
+                        if '=' in part:
+                            part = tuple(part.split('=', 1))
+                        else:
+                            part = (part, '1')
+                        ext.define_macros.append(part)
 
-            if find_in_path("icu-config"):
-                method = "icu-config"
+                for part in shlex.split(icc.ldflags, **kwargs):
+                    if part.startswith("-L"):
+                        ext.library_dirs.append(part[2:])
+                    elif part.startswith("-l"):
+                        ext.libraries.append(part[2:])
 
-            # if posix is true then quotes get stripped such as from -Dfoo="bar"
-            kwargs["posix"] = False
-            for part in shlex.split(os.popen(cmds[method][0], "r").read(), **kwargs):
-                if part.startswith("-I"):
-                    ext.include_dirs.append(part[2:])
-                    foundicu = True
-                elif part.startswith("-D"):
-                    part = part[2:]
-                    if '=' in part:
-                        part = tuple(part.split('=', 1))
-                    else:
-                        part = (part, '1')
-                    ext.define_macros.append(part)
-                    foundicu = True
-
-            for part in shlex.split(os.popen(cmds[method][1], "r").read(), **kwargs):
-                if part.startswith("-L"):
-                    ext.library_dirs.append(part[2:])
-                    foundicu = True
-                elif part.startswith("-l"):
-                    ext.libraries.append(part[2:])
-                    foundicu = True
-
-            if foundicu:
-                write("ICU: Added includes, flags and libraries from " + method)
+                write("ICU: Added includes, flags and libraries from " + icc.tool)
                 os.putenv("APSW_TEST_ICU", "1")
             else:
                 write("ICU: Unable to determine includes/libraries for ICU using pkg-config or icu-config")
-                write("ICU: You will need to manually edit setup.py or setup.cfg to set them")
 
         # done ...
         return v
@@ -795,6 +774,32 @@ def add_doc(archive, topdir):
         ofile.close()
     else:
         raise Exception("Don't know what to do with " + archive)
+
+
+@dataclass
+class IcuConfig:
+    tool: str
+    cflags: str
+    ldflags: str
+
+
+def get_icu_config() -> IcuConfig | None:
+    skw = {"text": True, "capture_output": True}
+    cflags = ldflags = ""
+
+    if shutil.which("pkg-config"):
+        with contextlib.suppress(subprocess.CalledProcessError):
+            cflags = subprocess.run(["pkg-config", "--cflags", "icu-uc", "icu-i18n"], **skw).stdout.strip()
+        with contextlib.suppress(subprocess.CalledProcessError):
+            ldflags = subprocess.run(["pkg-config", "--libs", "icu-uc", "icu-i18n"], **skw).stdout.strip()
+        if cflags or ldflags:
+            return IcuConfig(tool="pkg-config", cflags=cflags, ldflags=ldflags)
+    if shutil.which("icu-config"):
+        cflags = subprocess.run(["icu-config", "--cppflags"], **skw).stdout.strip()
+        ldflags = subprocess.run(["icu-config", "--ldflags"], **skw).stdout.strip()
+        return IcuConfig(tool="icu-config", cflags=cflags, ldflags=ldflags)
+
+    return None
 
 
 # We depend on every .[ch] file in src
