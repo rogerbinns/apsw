@@ -8035,11 +8035,10 @@ class APSW(unittest.TestCase):
 
         def testnasty():
             reset()
-            # py 3 barfs with any codepoints above 0xffff whining
-            # about surrogates not being allowed.  If only it
-            # implemented unicode properly.
-            cmd(u"create table if not exists nastydata(x,y); insert into nastydata values(null,'xxx\\u1234\\uabcdyyy\r\n\t\"this is nasty\u0001stuff!');"
-                )
+            cmd("""create table if not exists nastydata(x,y);
+                 insert into nastydata values(x'', 1e999); -- see issue 482 for zero sized blob
+                 insert into nastydata values(null,'xxx\\u1234\\uabcdyyy\r\n\t\"this is nasty\u0001stuff!');
+                """)
             s.cmdloop()
             isempty(fh[1])
             isempty(fh[2])
