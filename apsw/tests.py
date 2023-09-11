@@ -2585,7 +2585,11 @@ class APSW(unittest.TestCase):
         # function that takes one argument
         self.assertRaisesRegex(TypeError, "Missing required parameter", apsw.sleep)
         self.assertRaisesRegex(TypeError, "'fred' is an invalid keyword argument", apsw.sleep, fred=3)
-        self.assertRaisesRegex(TypeError, "argument 'milliseconds' given by name and position", apsw.sleep, 10, milliseconds=20)
+        self.assertRaisesRegex(TypeError,
+                               "argument 'milliseconds' given by name and position",
+                               apsw.sleep,
+                               10,
+                               milliseconds=20)
         self.assertRaisesRegex(TypeError, "Too many positional arguments", apsw.sleep, 10, 20)
 
         # many args where varargs had to be converted to fastcall
@@ -2595,12 +2599,26 @@ class APSW(unittest.TestCase):
         self.assertRaisesRegex(apsw.SQLError, "no such vfs", apsw.Connection, "", vfs="fred")
         c = apsw.Connection(statementcachesize=22, flags=apsw.SQLITE_OPEN_READONLY, vfs=None, filename="")
         self.assertEqual(22, c.cache_stats()["size"])
-        self.assertRaisesRegex(TypeError, "Missing required parameter", apsw.Connection, statementcachesize=22, flags=apsw.SQLITE_OPEN_READONLY, vfs=None)
+        self.assertRaisesRegex(TypeError,
+                               "Missing required parameter",
+                               apsw.Connection,
+                               statementcachesize=22,
+                               flags=apsw.SQLITE_OPEN_READONLY,
+                               vfs=None)
 
         # keyword only args
         self.assertRaisesRegex(TypeError, "Too many positional arguments", c.execute, "select 3", None, False)
-        self.assertEqual(3, c.execute(explain=0, prepare_flags=1, can_cache=1, bindings=None, statements="select 3").get)
-        self.assertRaisesRegex(TypeError, "argument 'statements' given by name and position", c.execute, "select 4", explain=0, prepare_flags=1, can_cache=1, bindings=None, statements="select 3")
+        self.assertEqual(3,
+                         c.execute(explain=0, prepare_flags=1, can_cache=1, bindings=None, statements="select 3").get)
+        self.assertRaisesRegex(TypeError,
+                               "argument 'statements' given by name and position",
+                               c.execute,
+                               "select 4",
+                               explain=0,
+                               prepare_flags=1,
+                               can_cache=1,
+                               bindings=None,
+                               statements="select 3")
 
     def testCollation(self):
         "Verify collations"
