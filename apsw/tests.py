@@ -9552,10 +9552,10 @@ shell.write(shell.stdout, "hello world\\n")
                 continue
             # all others
             if mode not in noheadermodes:
-                self.assertTrue(colname in get(fh[1]))
+                self.assertIn(colname if "json" not in mode else json.dumps(colname), get(fh[1]))
             cnt = 0
             for o in outputs:
-                cnt += o in get(fh[1])
+                cnt += (o if "json" not in mode else json.dumps(o)) in get(fh[1])
             self.assertTrue(cnt)
 
         # clean up files
