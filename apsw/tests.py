@@ -9812,27 +9812,28 @@ shell.write(shell.stdout, "hello world\\n")
 
     def testBestPractice(self) -> None:
         "apsw.bestpractice module"
-        out = io.StringIO()
-        root = logging.getLogger()
-        root.setLevel(logging.DEBUG)
-        handler = logging.StreamHandler(out)
-        root.addHandler(handler)
-        try:
+        if sys.version_info >= (3, 10):
+            with self.assertNoLogs():
+                apsw.log(apsw.SQLITE_NOMEM, "Zebras are striped")
+        apsw.bestpractice.apply(apsw.bestpractice.recommended)
+        with self.assertLogs() as l:
             apsw.log(apsw.SQLITE_NOMEM, "Zebras are striped")
-            self.assertNotIn("Zebras", out.getvalue())
-            apsw.bestpractice.apply(apsw.bestpractice.recommended)
-            apsw.log(apsw.SQLITE_NOMEM, "Zebras are striped")
-            self.assertIn("Zebras", out.getvalue())
-            # I was unable to find a ddl statement that errors
-            dqs = 'select "world"'
-            self.db.execute(dqs)  # no error
-            self.assertIn("world", out.getvalue())
-            apsw.bestpractice.apply(apsw.bestpractice.recommended)
-            con = apsw.Connection("")
-            # now fail
-            self.assertRaises(apsw.SQLError, con.execute, dqs)
-        finally:
-            root.removeHandler(handler)
+        self.assertIn("Zebras", str(l.output))
+
+        dqs = 'select "world"'
+
+        with self.assertLogs() as l:
+            # this connection was made before applying bestpractice
+            self.db.execute(dqs)  # no error but does log
+
+        self.assertIn("double-quoted string literal", str(l.output))
+
+        con = apsw.Connection("")
+        # now fail
+        apsw.config(apsw.SQLITE_CONFIG_LOG, None)
+        if sys.version_info >= (3, 10):
+            with self.assertNoLogs():
+                self.assertRaises(apsw.SQLError, con.execute, dqs)
 
     def testExtDataClassRowFactory(self) -> None:
         "apsw.ext.DataClassRowFactory"
