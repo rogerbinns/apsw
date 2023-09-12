@@ -76,14 +76,14 @@ recommended: tuple[Callable, ...] = (
 
 def apply(which: tuple[Callable, ...]) -> None:
     "Applies library immediately and connection to new connections"
-    hooks = []
+    hooks : list[Callable] = []
     for func in which:
         if func.__name__.startswith("connection_"):
             hooks.append(func)
         else:
             func()
 
-    def best_practise_connection_apply(connection: apsw.Connection):
+    def best_practise_connection_apply(connection: apsw.Connection) -> None:
         for func in hooks:
             func(connection)
 
