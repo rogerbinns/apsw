@@ -339,6 +339,7 @@ OPTIONS include:
    -line                set output mode to 'line'
    -list                set output mode to 'list'
    -python              set output mode to 'python'
+   -jsonl               set output mode to 'jsonl'
    -separator 'x'       set output field separator (|)
    -nullvalue 'text'    set text string for NULL values
    -version             show SQLite version
@@ -595,17 +596,24 @@ OPTIONS include:
         out = "INSERT INTO " + self._output_table + " VALUES(" + ",".join([fmt(l) for l in line]) + ");\n"
         self.write(self.stdout, out)
 
-    def output_json(self, header, line):
+    def output_json(self, header, line: Shell.Row):
         """
-        Each line as a JSON object with a trailing comma.  Blobs are
-        output as base64 encoded strings.
+        Output a JSON array.  Blobs are output as base64 encoded strings.
         """
-        if header:
-            self._output_json_cols = line
-            return
+        if header: return
         fmt = lambda x: self.colour.colour_value(x, self._fmt_json_value(x))
-        out = ["%s: %s" % (self._fmt_json_value(k), fmt(line[i])) for i, k in enumerate(self._output_json_cols)]
-        self.write(self.stdout, "{ " + ", ".join(out) + "},\n")
+        out = ["%s: %s" % (self._fmt_json_value(k), fmt(line.row[i])) for i, k in enumerate(line.columns)]
+        self.write(self.stdout,
+                   ("[" if line.is_first else "") + "{ " + ", ".join(out) + "}" + ("]" if line.is_last else ",") + "\n")
+
+    def output_jsonl(self, header, line: Shell.Row):
+        """
+        Output as JSON objects, newline separated.  Blobs are output as base64 encoded strings.
+        """
+        if header: return
+        fmt = lambda x: self.colour.colour_value(x, self._fmt_json_value(x))
+        out = ["%s: %s" % (self._fmt_json_value(k), fmt(line.row[i])) for i, k in enumerate(line.columns)]
+        self.write(self.stdout, "{ " + ", ".join(out) + "}\n")
 
     def output_line(self, header, line):
         """
@@ -859,7 +867,7 @@ Enter ".help" for instructions
                              e, explain)
         return Shell._qd(sql[:len(saved)], sql[len(saved):], None, None, None, explain)
 
-    def process_sql(self, sql, bindings=None, internal=False, summary=None):
+    def process_sql(self, sql: str, bindings=None, internal=False, summary=None):
         """Processes SQL text consisting of one or more statements
 
         :param sql: SQL to execute
@@ -922,6 +930,14 @@ Enter ".help" for instructions
                 self.truncate = False
                 self.output = self.output_column
 
+            use_prow = False
+            sig = inspect.signature(self.output)
+            try:
+                p = sig.parameters["line"]
+                use_prow = p.annotation == "Shell.Row"
+            except KeyError:
+                break
+
             timing_start = self.get_resource_usage()
 
             column_names = None
@@ -946,10 +962,12 @@ Enter ".help" for instructions
                         self.output(True, column_names)
                 if qd.explain == 2:
                     row = tuple(c for i, c in enumerate(row) if i != 2)
+
+                row = prow if use_prow else row
                 if rows is None:
                     self.output(False, row)
                 else:
-                    rows.append(list(row))
+                    rows.append(row)
 
             if column_names and rows:
                 self.output(column_names, rows)
