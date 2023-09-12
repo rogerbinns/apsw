@@ -36,11 +36,6 @@ def run(cmd):
 
 def dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug, sysconfig):
     pyflags = "-X warn_default_encoding  -X dev -X tracemalloc=5" if debug else ""
-    # bundled setuptools does deprecated stuff
-    pyflags += " -W ignore::DeprecationWarning:setuptools"
-    if "3.10" in pybin:
-        # distutils -> configparser
-        pyflags += " -W ignore::EncodingWarning"
     extdebug = "--debug" if debug else ""
     logf = os.path.abspath(os.path.join(logdir, "buildruntests.txt"))
     # this is used to alternate support for full metadata and test --definevalues flags
@@ -49,21 +44,19 @@ def dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug, sysconfig):
     if pyver == "system" or sysconfig:
         build_ext_flags += " --use-system-sqlite-config"
 
-    pypip = os.path.join(os.path.dirname(pybin), "pip3")
-
     run(f"""(
             set -ex ;
             cd { workdir } ;
-            { pybin } -m ensurepip || true ;
-            { pybin } -m pip install --upgrade --upgrade-strategy eager pip wheel setuptools ;
-            env LD_LIBRARY_PATH={ pylib } { pybin } -bb -Werror { pyflags } setup.py fetch \
+            { pybin } -m venv venv
+            venv/bin/python3 -m ensurepip || true ;
+            venv/bin/python3 -m pip install --upgrade --upgrade-strategy eager pip wheel setuptools ;
+            env LD_LIBRARY_PATH={ pylib } venv/bin/python3 -bb -Werror { pyflags } setup.py fetch \
                 --version={ sqlitever } --all build_test_extension build_ext --inplace --force --enable-all-extensions \
                 { extdebug } { build_ext_flags } test -v ;
             cp tools/setup-pypi.cfg setup.apsw ;
-            { pybin } -m pip wheel -v . ;
-            { pybin } -m pip install --force-reinstall --find-links=. apsw ;
-            mkdir clean ; cd clean ;  cp ../testextension.sqlext . ;
-            { pybin } -m apsw.tests
+            venv/bin/python3 -m pip wheel -v . ;
+            venv/bin/python3 -m pip install --no-index --force-reinstall --find-links=. apsw ;
+            venv/bin/python3 -m apsw.tests
             ) >{ logf }  2>&1""")
 
 
