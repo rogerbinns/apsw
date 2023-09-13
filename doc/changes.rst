@@ -3,8 +3,8 @@ Change History
 
 .. currentmodule:: apsw
 
-next
-====
+3.43.1.0
+========
 
 All C code calling into Python and all C code called by Python uses
 vectorcall / fastcall (see :pep:`590`) which reduces the overhead of
@@ -23,6 +23,10 @@ passing and receiving positional and keyword arguments. (:issue:`477`
 * A :source:`virtual table benchmark <tools/vtbench.py>` takes 35%
   less time
 
+The :doc:`shell <shell>` JSON output modes have been fixed.  Mode
+'json' outputs a json array, while mode 'jsonl' does newline delimited
+json objects, aka `json lines <https://jsonlines.org/>`__.
+(:issue:`483`)
 
 3.43.0.0
 ========
