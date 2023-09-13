@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-# mypy: ignore-errors
 import argparse
 import base64
 import code
@@ -81,12 +80,12 @@ class Shell:
         pass
 
     def __init__(self,
-                 stdin: Optional[TextIO] = None,
-                 stdout=None,
-                 stderr=None,
+                 stdin: TextIO | None = None,
+                 stdout: TextIO | None = None,
+                 stderr: TextIO | None = None,
                  encoding: str = "utf8",
-                 args=None,
-                 db=None):
+                 args: list[str] | None = None,
+                 db: apsw.Connection | None = None):
         """Create instance, set defaults and do argument processing."""
         # The parameter doc has to be in main class doc as sphinx
         # ignores any described here
@@ -110,8 +109,8 @@ class Shell:
         self.timer = False
         self.header = False
         self.nullvalue = ""
-        self.output = self.output_list
-        self._output_table = self._fmt_sql_identifier("table")
+        self.output : Callable = self.output_list
+        self._output_table : str = self._fmt_sql_identifier("table")
         self.widths = []
         # do we truncate output in list mode?
         self.truncate = True
