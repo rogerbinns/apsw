@@ -3339,7 +3339,7 @@ Enter ".help" for instructions
     ### Output helpers
     @dataclasses.dataclass(**({"slots": True, "frozen": True} if sys.version_info >= (3, 10) else {}))
     class Row:
-        "Returned by :class:`PositionRow`"
+        "Returned by :class:`Shell.PositionRow`"
         is_first: bool
         is_last: bool
         row: apsw.SQLiteValues
