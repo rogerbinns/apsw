@@ -65,6 +65,7 @@ You can use the shell directly from the command line.
      -line                set output mode to 'line'
      -list                set output mode to 'list'
      -python              set output mode to 'python'
+     -jsonl               set output mode to 'jsonl'
      -separator 'x'       set output field separator (|)
      -nullvalue 'text'    set text string for NULL values
      -version             show SQLite version
@@ -517,7 +518,7 @@ log ON|OFF
 mode MODE ?OPTIONS?
 -------------------
 
-*Sets output mode to one of box column columns csv html insert json line lines list python qbox table tabs tcl*
+*Sets output mode to one of box column columns csv html insert json jsonl line lines list python qbox table tabs tcl*
 
 box: Outputs using line drawing and auto sizing columns
 
@@ -537,8 +538,10 @@ html: HTML table style
 insert: Lines as SQL insert statements. The table name is "table" unless you
 specified a different one as the second parameter to the .mode command.
 
-json: Each line as a JSON object with a trailing comma. Blobs are output as
-base64 encoded strings. You should be using UTF8 output encoding.
+json: Output a JSON array. Blobs are output as base64 encoded strings.
+
+jsonl: Output as JSON objects, newline separated. Blobs are output as base64
+encoded strings.
 
 lines: One value per line in the form 'column = value' with a blank line between
 rows.
