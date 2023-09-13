@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; APSW 3.43.0.0 documentation</title>
+  <title>Index &mdash; APSW 3.43.1.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/favicon.ico"/>
@@ -13,7 +13,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=c3a517ee"></script>
+        <script src="_static/documentation_options.js?v=b2705db7"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -36,7 +36,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.43.0.0
+                3.43.1.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -345,6 +345,8 @@
       <li><a href="ext.html#apsw.ext.QueryAction.column_name">column_name (QueryAction attribute)</a>
 </li>
       <li><a href="vtable.html#apsw.VTCursor.ColumnNoChange">ColumnNoChange() (VTCursor method)</a>
+</li>
+      <li><a href="shell.html#apsw.shell.Shell.Row.columns">columns (Shell.Row attribute)</a>
 </li>
       <li><a href="vtable.html#apsw.IndexInfo.colUsed">colUsed (IndexInfo attribute)</a>
 </li>
@@ -770,10 +772,10 @@
 </li>
       <li><a href="shell.html#index-20">indices (Shell command)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ext.html#apsw.ext.JournalFileInfo.initial_pages">initial_pages (JournalFileInfo attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="apsw.html#apsw.initialize">initialize() (in module apsw)</a>
 </li>
       <li><a href="exceptions.html#apsw.InternalError">InternalError</a>
@@ -790,7 +792,11 @@
         <li><a href="ext.html#apsw.ext.QueryDetails.is_explain">(QueryDetails attribute)</a>
 </li>
       </ul></li>
+      <li><a href="shell.html#apsw.shell.Shell.Row.is_first">is_first (Shell.Row attribute)</a>
+</li>
       <li><a href="connection.html#apsw.Connection.is_interrupted">is_interrupted (Connection attribute)</a>
+</li>
+      <li><a href="shell.html#apsw.shell.Shell.Row.is_last">is_last (Shell.Row attribute)</a>
 </li>
       <li><a href="cursor.html#apsw.Cursor.is_readonly">is_readonly (Cursor attribute)</a>
 
@@ -1043,10 +1049,10 @@
 </li>
       <li><a href="ext.html#apsw.ext.QueryAction.pragma_name">pragma_name (QueryAction attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ext.html#apsw.ext.QueryAction.pragma_value">pragma_value (QueryAction attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="example.html#index-11">Pragmas (example code)</a>
 </li>
       <li><a href="shell.html#index-28">print (Shell command)</a>
@@ -1079,9 +1085,11 @@
     Python Enhancement Proposals
 
       <ul>
-        <li><a href="backup.html#index-0">PEP 0343</a>, <a href="blob.html#index-0">[1]</a>, <a href="changes.html#index-0">[2]</a>, <a href="connection.html#index-1">[3]</a>
+        <li><a href="backup.html#index-0">PEP 0343</a>, <a href="blob.html#index-0">[1]</a>, <a href="changes.html#index-1">[2]</a>, <a href="connection.html#index-1">[3]</a>
 </li>
         <li><a href="dbapi.html#index-0">PEP 249</a>, <a href="pysqlite.html#index-0">[1]</a>
+</li>
+        <li><a href="changes.html#index-0">PEP 590</a>
 </li>
       </ul></li>
   </ul></td>
@@ -1167,6 +1175,8 @@
 </li>
       </ul></li>
       <li><a href="vtable.html#apsw.VTTable.Rollback">Rollback() (VTTable method)</a>
+</li>
+      <li><a href="shell.html#apsw.shell.Shell.Row.row">row (Shell.Row attribute)</a>
 </li>
       <li><a href="vtable.html#apsw.VTCursor.Rowid">Rowid() (VTCursor method)</a>
 </li>
@@ -1261,6 +1271,10 @@
       <li><a href="shell.html#index-35">shell (Shell command)</a>
 </li>
       <li><a href="shell.html#apsw.shell.Shell.Error">Shell.Error</a>
+</li>
+      <li><a href="shell.html#apsw.shell.Shell.PositionRow">Shell.PositionRow (class in apsw.shell)</a>
+</li>
+      <li><a href="shell.html#apsw.shell.Shell.Row">Shell.Row (class in apsw.shell)</a>
 </li>
       <li><a href="shell.html#index-36">show (Shell command)</a>
 </li>
@@ -1358,10 +1372,10 @@
 </li>
       <li><a href="connection.html#index-46">sqlite3_db_status</a>
 </li>
-      <li><a href="connection.html#index-19">sqlite3_deserialize</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="connection.html#index-19">sqlite3_deserialize</a>
+</li>
       <li><a href="connection.html#index-20">sqlite3_enable_load_extension</a>
 </li>
       <li><a href="apsw.html#index-3">sqlite3_enable_shared_cache</a>
@@ -1811,7 +1825,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Aug 25, 2023.
+      <span class="lastupdated">Last updated on Sep 13, 2023.
       </span></p>
   </div>
 

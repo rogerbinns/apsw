@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Example/Tour &mdash; APSW 3.43.0.0 documentation</title>
+  <title>Example/Tour &mdash; APSW 3.43.1.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/favicon.ico"/>
@@ -14,7 +14,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=c3a517ee"></script>
+        <script src="_static/documentation_options.js?v=b2705db7"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.43.0.0
+                3.43.1.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -184,9 +184,9 @@ see what gets printed when you run the code.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">      Using APSW file /space/apsw/apsw/__init__.cpython-311-x86_64-linux-gnu.so</span>
-<span class="go">         APSW version 3.43.0.0</span>
-<span class="go">SQLite header version 3043000</span>
-<span class="go">   SQLite lib version 3.43.0</span>
+<span class="go">         APSW version 3.43.1.0</span>
+<span class="go">SQLite header version 3043001</span>
+<span class="go">   SQLite lib version 3.43.1</span>
 <span class="go">   Using amalgamation True</span>
 </pre></div>
 </div>
@@ -1119,7 +1119,7 @@ feedback and allows cancelling.</p>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
-<span class="go">(9949457420,)</span>
+<span class="go">(9820078994,)</span>
 </pre></div>
 </div>
 </section>
@@ -1201,8 +1201,7 @@ with  <a class="reference internal" href="connection.html#apsw.Connection.setcom
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">in commit hook</span>
-<span class="go">no commits out of hours</span>
-<span class="go">commit was not allowed</span>
+<span class="go">commits okay at this time</span>
 </pre></div>
 </div>
 </section>
@@ -1445,10 +1444,10 @@ useful instead.</p>
 <span class="go">│ .local     │ 1534       │</span>
 <span class="go">│ .o         │ 20304      │</span>
 <span class="go">│ .ps1       │ 9033       │</span>
-<span class="go">│ .py        │ 11771814   │</span>
-<span class="go">│ .pyc       │ 13245896   │</span>
+<span class="go">│ .py        │ 11773809   │</span>
+<span class="go">│ .pyc       │ 13256978   │</span>
 <span class="go">│ .rst       │ 9561       │</span>
-<span class="go">│ .sh        │ 3919       │</span>
+<span class="go">│ .sh        │ 3932       │</span>
 <span class="go">│ .so        │ 27584936   │</span>
 <span class="go">│ .stdlib    │ 10752      │</span>
 <span class="go">│ .supp      │ 70         │</span>
@@ -1677,9 +1676,9 @@ Python.</p>
 
 <span class="go">Dump output</span>
 
-<span class="go">-- SQLite dump (by APSW 3.43.0.0)</span>
-<span class="go">-- SQLite version 3.43.0</span>
-<span class="go">-- Date: Fri Aug 25 07:26:17 2023</span>
+<span class="go">-- SQLite dump (by APSW 3.43.1.0)</span>
+<span class="go">-- SQLite version 3.43.1</span>
+<span class="go">-- Date: Wed Sep 13 15:58:02 2023</span>
 <span class="go">-- Tables like: csvtest%</span>
 <span class="go">-- Database: /space/apsw/dbfile</span>
 <span class="go">-- User: rogerb @ clamps</span>
@@ -1714,7 +1713,7 @@ Python.</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SQLite memory usage </span><span class="si">{</span><span class="w"> </span><span class="n">current_usage</span><span class="w"> </span><span class="si">}</span><span class="s2"> max </span><span class="si">{</span><span class="w"> </span><span class="n">max_usage</span><span class="w"> </span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite memory usage 434024 max 2341816</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite memory usage 438680 max 2346512</span>
 </pre></div>
 </div>
 </section>
@@ -1768,7 +1767,7 @@ Python.</p>
 
 <span class="go">code is  SQLITE_TRACE_PROFILE</span>
 <span class="go">{&#39;code&#39;: 2,</span>
-<span class="go"> &#39;nanoseconds&#39;: 17000000,</span>
+<span class="go"> &#39;nanoseconds&#39;: 18000000,</span>
 <span class="go"> &#39;stmt_status&#39;: {&#39;SQLITE_STMTSTATUS_AUTOINDEX&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FILTER_HIT&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FILTER_MISS&#39;: 0,</span>
@@ -1909,7 +1908,7 @@ rollback the partial data.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Aug 25, 2023.
+      <span class="lastupdated">Last updated on Sep 13, 2023.
       </span></p>
   </div>
 

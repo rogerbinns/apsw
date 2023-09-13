@@ -59,9 +59,9 @@ Checking APSW and SQLite versions
 .. code-block:: output
 
           Using APSW file /space/apsw/apsw/__init__.cpython-311-x86_64-linux-gnu.so
-             APSW version 3.43.0.0
-    SQLite header version 3043000
-       SQLite lib version 3.43.0
+             APSW version 3.43.1.0
+    SQLite header version 3043001
+       SQLite lib version 3.43.1
        Using amalgamation True
 
 
@@ -1211,7 +1211,7 @@ feedback and allows cancelling.
     progress handler called
     progress handler called
     progress handler called
-    (9949457420,)
+    (9820078994,)
 
 
 .. index:: File Control (example code)
@@ -1316,8 +1316,7 @@ with  :meth:`Connection.setcommithook`.
 .. code-block:: output
 
     in commit hook
-    no commits out of hours
-    commit was not allowed
+    commits okay at this time
 
 
 .. index:: Update hook (example code)
@@ -1614,10 +1613,10 @@ useful instead.
     │ .local     │ 1534       │
     │ .o         │ 20304      │
     │ .ps1       │ 9033       │
-    │ .py        │ 11771814   │
-    │ .pyc       │ 13245896   │
+    │ .py        │ 11773809   │
+    │ .pyc       │ 13256978   │
     │ .rst       │ 9561       │
-    │ .sh        │ 3919       │
+    │ .sh        │ 3932       │
     │ .so        │ 27584936   │
     │ .stdlib    │ 10752      │
     │ .supp      │ 70         │
@@ -1888,9 +1887,9 @@ Python.
     
     Dump output
     
-    -- SQLite dump (by APSW 3.43.0.0)
-    -- SQLite version 3.43.0
-    -- Date: Fri Aug 25 07:26:17 2023
+    -- SQLite dump (by APSW 3.43.1.0)
+    -- SQLite version 3.43.1
+    -- Date: Wed Sep 13 15:58:02 2023
     -- Tables like: csvtest%
     -- Database: /space/apsw/dbfile
     -- User: rogerb @ clamps
@@ -1936,7 +1935,7 @@ SQLite provides statistics by :meth:`status`
 
 .. code-block:: output
 
-    SQLite memory usage 434024 max 2341816
+    SQLite memory usage 438680 max 2346512
 
 
 .. index:: Tracing (example code)
@@ -2000,7 +1999,7 @@ This shows using :meth:`Connection.trace_v2`
     
     code is  SQLITE_TRACE_PROFILE
     {'code': 2,
-     'nanoseconds': 17000000,
+     'nanoseconds': 18000000,
      'stmt_status': {'SQLITE_STMTSTATUS_AUTOINDEX': 0,
                      'SQLITE_STMTSTATUS_FILTER_HIT': 0,
                      'SQLITE_STMTSTATUS_FILTER_MISS': 0,

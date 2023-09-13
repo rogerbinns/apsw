@@ -37,32 +37,39 @@ underlying queries are based on `SQLite's speed test
                           [--scale SCALE] [--database DATABASE] [--tests TESTS]
                           [--iterations N] [--tests-detail] [--dump-sql FILENAME]
                           [--sc-size N] [--unicode UNICODE] [--data-size SIZE]
-                          [--hide-runs]
+                          [--hide-runs] [--vfs VFS]
+                          [--sqlite-cache SQLITE_CACHE_MB]
     
     Tests performance of apsw and sqlite3 packages
     
     options:
-      -h, --help           show this help message and exit
-      --apsw               Include apsw in testing [False]
-      --sqlite3            Include sqlite3 module in testing [False]
-      --correctness        Do a correctness test
-      --scale SCALE        How many statements to execute. Each 5 units takes
-                           about 1 second per test on memory only databases. [10]
-      --database DATABASE  The database file to use [:memory:]
-      --tests TESTS        What tests to run
-                           [bigstmt,statements,statements_nobindings]
-      --iterations N       How many times to run the tests [4]
-      --tests-detail       Print details of what the tests do. (Does not run the
-                           tests)
-      --dump-sql FILENAME  Name of file to dump SQL to. This is useful for feeding
-                           into the SQLite command line shell.
-      --sc-size N          Size of the statement cache. [128]
-      --unicode UNICODE    Percentage of text that is non-ascii unicode characters
-                           [0]
-      --data-size SIZE     Duplicate the ~50 byte text column value up to this
-                           many times (amount randomly selected per row)
-      --hide-runs          Don't show the individual iteration timings, only final
-                           summary
+      -h, --help            show this help message and exit
+      --apsw                Include apsw in testing [False]
+      --sqlite3             Include sqlite3 module in testing [False]
+      --correctness         Do a correctness test
+      --scale SCALE         How many statements to execute. Each 5 units takes
+                            about 1 second per test on memory only databases. [10]
+      --database DATABASE   The database file to use [:memory:]
+      --tests TESTS         What tests to run
+                            [bigstmt,statements,statements_nobindings]
+      --iterations N        How many times to run the tests [4]
+      --tests-detail        Print details of what the tests do. (Does not run the
+                            tests)
+      --dump-sql FILENAME   Name of file to dump SQL to. This is useful for
+                            feeding into the SQLite command line shell.
+      --sc-size N           Size of the statement cache. [128]
+      --unicode UNICODE     Percentage of text that is non-ascii unicode
+                            characters [0]
+      --data-size SIZE      Duplicate the ~50 byte text column value up to this
+                            many times (amount randomly selected per row)
+      --hide-runs           Don't show the individual iteration timings, only
+                            final summary
+      --vfs VFS             Use the named vfs. 'passthru' creates a dummy APSW
+                            vfs. You need to provide a real database filename
+                            otherwise the memory vfs is used.
+      --sqlite-cache SQLITE_CACHE_MB
+                            Size of the SQLite in memory cache in megabytes.
+                            Working data outside of this size causes disk I/O. [2]
     
 
     $ python3 -m apsw.speedtest --tests-detail

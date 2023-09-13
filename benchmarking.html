@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Benchmarking &mdash; APSW 3.43.0.0 documentation</title>
+  <title>Benchmarking &mdash; APSW 3.43.1.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/favicon.ico"/>
@@ -14,7 +14,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=c3a517ee"></script>
+        <script src="_static/documentation_options.js?v=b2705db7"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.43.0.0
+                3.43.1.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -130,32 +130,39 @@ usage: apsw.speedtest [-h] [--apsw] [--sqlite3] [--correctness]
                       [--scale SCALE] [--database DATABASE] [--tests TESTS]
                       [--iterations N] [--tests-detail] [--dump-sql FILENAME]
                       [--sc-size N] [--unicode UNICODE] [--data-size SIZE]
-                      [--hide-runs]
+                      [--hide-runs] [--vfs VFS]
+                      [--sqlite-cache SQLITE_CACHE_MB]
 
 Tests performance of apsw and sqlite3 packages
 
 options:
-  -h, --help           show this help message and exit
-  --apsw               Include apsw in testing [False]
-  --sqlite3            Include sqlite3 module in testing [False]
-  --correctness        Do a correctness test
-  --scale SCALE        How many statements to execute. Each 5 units takes
-                       about 1 second per test on memory only databases. [10]
-  --database DATABASE  The database file to use [:memory:]
-  --tests TESTS        What tests to run
-                       [bigstmt,statements,statements_nobindings]
-  --iterations N       How many times to run the tests [4]
-  --tests-detail       Print details of what the tests do. (Does not run the
-                       tests)
-  --dump-sql FILENAME  Name of file to dump SQL to. This is useful for feeding
-                       into the SQLite command line shell.
-  --sc-size N          Size of the statement cache. [128]
-  --unicode UNICODE    Percentage of text that is non-ascii unicode characters
-                       [0]
-  --data-size SIZE     Duplicate the ~50 byte text column value up to this
-                       many times (amount randomly selected per row)
-  --hide-runs          Don&#39;t show the individual iteration timings, only final
-                       summary
+  -h, --help            show this help message and exit
+  --apsw                Include apsw in testing [False]
+  --sqlite3             Include sqlite3 module in testing [False]
+  --correctness         Do a correctness test
+  --scale SCALE         How many statements to execute. Each 5 units takes
+                        about 1 second per test on memory only databases. [10]
+  --database DATABASE   The database file to use [:memory:]
+  --tests TESTS         What tests to run
+                        [bigstmt,statements,statements_nobindings]
+  --iterations N        How many times to run the tests [4]
+  --tests-detail        Print details of what the tests do. (Does not run the
+                        tests)
+  --dump-sql FILENAME   Name of file to dump SQL to. This is useful for
+                        feeding into the SQLite command line shell.
+  --sc-size N           Size of the statement cache. [128]
+  --unicode UNICODE     Percentage of text that is non-ascii unicode
+                        characters [0]
+  --data-size SIZE      Duplicate the ~50 byte text column value up to this
+                        many times (amount randomly selected per row)
+  --hide-runs           Don&#39;t show the individual iteration timings, only
+                        final summary
+  --vfs VFS             Use the named vfs. &#39;passthru&#39; creates a dummy APSW
+                        vfs. You need to provide a real database filename
+                        otherwise the memory vfs is used.
+  --sqlite-cache SQLITE_CACHE_MB
+                        Size of the SQLite in memory cache in megabytes.
+                        Working data outside of this size causes disk I/O. [2]
 
 
 $ python3 -m apsw.speedtest --tests-detail
@@ -209,7 +216,7 @@ statements_nobindings:
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Aug 25, 2023.
+      <span class="lastupdated">Last updated on Sep 13, 2023.
       </span></p>
   </div>
 

@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Various interesting and useful bits of functionality &mdash; APSW 3.43.0.0 documentation</title>
+  <title>Various interesting and useful bits of functionality &mdash; APSW 3.43.1.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/favicon.ico"/>
@@ -14,7 +14,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=c3a517ee"></script>
+        <script src="_static/documentation_options.js?v=b2705db7"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.43.0.0
+                3.43.1.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -71,7 +71,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#accessing-result-rows-by-column-name">Accessing result rows by column name</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#converting-types-into-and-out-of-sqlite">Converting types into and out of SQLite</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#detailed-query-information">Detailed Query Information</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#api-reference">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-apsw.ext">API Reference</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.ext.DataClassRowFactory"><code class="docutils literal notranslate"><span class="pre">DataClassRowFactory</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.ext.DataClassRowFactory.get_dataclass"><code class="docutils literal notranslate"><span class="pre">DataClassRowFactory.get_dataclass()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.ext.DataClassRowFactory.get_type"><code class="docutils literal notranslate"><span class="pre">DataClassRowFactory.get_type()</span></code></a></li>
@@ -322,9 +322,9 @@ query results - see <a class="reference external" href="https://sqlite.org/eqp.h
 </ul>
 <p>See <a class="reference internal" href="example.html#example-query-details"><span class="std std-ref">the example</span></a>.</p>
 </section>
-<section id="api-reference">
-<h2>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading"></a></h2>
-<dl class="py class" id="module-apsw.ext">
+<section id="module-apsw.ext">
+<span id="api-reference"></span><h2>API Reference<a class="headerlink" href="#module-apsw.ext" title="Link to this heading"></a></h2>
+<dl class="py class">
 <dt class="sig sig-object py" id="apsw.ext.DataClassRowFactory">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DataClassRowFactory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataclass_kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.11)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/ext.html#DataClassRowFactory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.DataClassRowFactory" title="Link to this definition"></a></dt>
 <dd><p>Returns each row as a <a class="reference external" href="https://docs.python.org/3/library/dataclasses.html#module-dataclasses" title="(in Python v3.11)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataclass</span></code></a>, accessible by column name.</p>
@@ -511,6 +511,12 @@ useful messages, including those that aren't raised as exceptions.</p>
 </ul>
 </dd>
 </dl>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
+    <span class="o">....</span>
+<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+    <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">print_augmented_traceback</span><span class="p">(</span><span class="o">*</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">())</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -1324,7 +1330,7 @@ directly expressed in the query itself</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Aug 25, 2023.
+      <span class="lastupdated">Last updated on Sep 13, 2023.
       </span></p>
   </div>
 

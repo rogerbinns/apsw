@@ -4,7 +4,7 @@ About
 **APSW** |version| **released** |today|
 
 Use with `SQLite <https://sqlite.org/>`__ 3.43 or later, `Python
-<https://www.python.org/downloads/>`__ 3.6 and later.
+<https://www.python.org/downloads/>`__ 3.8 and later.
 
 
 What APSW does
