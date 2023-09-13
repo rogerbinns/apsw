@@ -69,7 +69,6 @@ jobs:
   pypi_publish:
     needs: [build_source, build_binary_native, build_binary_qemu]
     runs-on: ubuntu-latest
-    environment: pypi
     permissions:
         id-token: write
 
