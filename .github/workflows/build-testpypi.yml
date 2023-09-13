@@ -8,14 +8,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-       os: [ubuntu-20.04, windows-2019, macos-11]
+       os: [ubuntu-22.04, windows-2022, macos-11]
 
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.15
@@ -28,7 +24,6 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: wheelhouse
           path: ./wheelhouse/*.whl
 
 
@@ -37,10 +32,6 @@ jobs:
 
       steps:
         - uses: actions/checkout@v4
-
-        - uses: actions/setup-python@v4
-          with:
-            python-version: "3.11"
 
         - name: Set up QEMU
           uses: docker/setup-qemu-action@v3
@@ -59,7 +50,6 @@ jobs:
 
         - uses: actions/upload-artifact@v3
           with:
-            name: wheelhouse
             path: ./wheelhouse/*.whl
 
 
@@ -69,34 +59,27 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.11"
-
-    - name: Install dependencies
-      run: |
-        pip install --upgrade pip
-
     - name: Create source dist
       run: python setup.py sdist --for-pypi
 
     - uses: actions/upload-artifact@v3
       with:
-        name: wheelhouse
         path: ./dist/*
 
   pypi_publish:
     needs: [build_source, build_binary_native, build_binary_qemu]
     runs-on: ubuntu-latest
+    environment: pypi
     permissions:
         id-token: write
+
     steps:
     - name: Stage wheels
       uses: actions/download-artifact@v3
       with:
-        name: wheelhouse
+        name: artifact
         path: dist
+
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
