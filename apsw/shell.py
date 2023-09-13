@@ -688,6 +688,8 @@ OPTIONS include:
 
         kwargs.update({"colour": self.colour != self._colours["off"]})
 
+        rows = list(list(row) for row in rows)
+
         self.stdout.write(apsw.ext.format_query_table._format_table(column_names, rows, **kwargs))
 
     output_box.all_at_once = True
