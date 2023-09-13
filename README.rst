@@ -5,7 +5,7 @@
   :target: https://rogerbinns.github.io/apsw/
 
 APSW stands for **A**\ nother **P**\ ython **S**\ QLite **W**\ rapper.   APSW
-supports CPython 3.6 onwards.
+supports CPython 3.8 onwards.
 
 About
 =====
