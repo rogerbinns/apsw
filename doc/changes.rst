@@ -21,7 +21,7 @@ passing and receiving positional and keyword arguments. (:issue:`477`
   from being 17% slower than pure SQLite to 2% slower.
 
 * A :source:`virtual table benchmark <tools/vtbench.py>` takes 35%
-  less time
+  less time.  (Remember that benchmarks are best case!)
 
 The :doc:`shell <shell>` JSON output modes have been fixed.  Mode
 'json' outputs a json array, while mode 'jsonl' does newline delimited
