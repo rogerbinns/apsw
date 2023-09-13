@@ -21,10 +21,9 @@ import contextlib
 from dataclasses import dataclass
 
 from setuptools import setup, Extension, Command
-from setuptools.command import build_ext, sdist
-from distutils.command import build
+from setuptools.command import build_ext, sdist, build
 
-# This is used to find the compiler for building the test extension
+# This is used to find the compiler and flags for building the test extension
 import distutils.ccompiler
 
 include_dirs = ['src']
