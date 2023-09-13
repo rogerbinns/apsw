@@ -8185,19 +8185,36 @@ class APSW(unittest.TestCase):
         cmd(".mode json\n.header ON\n select " + all + ";")
         s.cmdloop()
         isempty(fh[2])
-        v = get(fh[1]).strip()
-        v = v[:-1]  # remove trailing comma
-        out = json.loads(v)
-        self.assertEqual(out, {"3": 3, "2.2": 2.2, "'string'": "string", "null": None, "x'0311'": "AxE="})
+        out = json.loads(get(fh[1]))
+        self.assertEqual(out, [{"3": 3, "2.2": 2.2, "'string'": "string", "null": None, "x'0311'": "AxE="}])
         # a regular table
         reset()
-        cmd("create table jsontest([int], [float], [string], [null], [blob]);insert into jsontest values(" + all +
-            ");select * from jsontest;")
+        cmd(f"""create table jsontest([int], [float], [string], [null], [blob]);
+                insert into jsontest values({ all });
+                insert into jsontest values({ all });
+                select * from jsontest;""")
         s.cmdloop()
         isempty(fh[2])
-        v = get(fh[1]).strip()[:-1]
+        out = json.loads(get(fh[1]))
+        self.assertEqual(out, [{"int": 3, "float": 2.2, "string": "string", "null": None, "blob": "AxE="}] * 2)
+        testnasty()
+
+        ###
+        ### Output formats - jsonl
+        ###
+        reset()
+        cmd(".mode jsonl\n.header ON\n select " + all + ";")
+        s.cmdloop()
+        isempty(fh[2])
+        v = get(fh[1]).strip()
         out = json.loads(v)
-        self.assertEqual(out, {"int": 3, "float": 2.2, "string": "string", "null": None, "blob": "AxE="})
+        self.assertEqual(out, {"3": 3, "2.2": 2.2, "'string'": "string", "null": None, "x'0311'": "AxE="})
+        reset()
+        cmd("select * from jsontest;")
+        s.cmdloop()
+        isempty(fh[2])
+        out = [json.loads(line) for line in get(fh[1]).splitlines()]
+        self.assertEqual(out, [{"int": 3, "float": 2.2, "string": "string", "null": None, "blob": "AxE="}] * 2)
         testnasty()
 
         ###
