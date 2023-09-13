@@ -934,11 +934,9 @@ Enter ".help" for instructions
 
             use_prow = False
             sig = inspect.signature(self.output)
-            try:
-                p = sig.parameters["line"]
-                use_prow = p.annotation == "Shell.Row"
-            except KeyError:
-                break
+            param_name = list(sig.parameters.keys())[1]
+            p = sig.parameters[param_name]
+            use_prow = p.annotation == "Shell.Row"
 
             timing_start = self.get_resource_usage()
 
