@@ -22,7 +22,12 @@ from dataclasses import dataclass
 
 from setuptools import setup, Extension, Command
 from setuptools.command import build_ext, sdist
-from distutils.command import build
+try:
+    # current setuptools has build
+    from setuptools.command import build
+except ImportError:
+    # but older pythons with older versions don't
+    from distutils.command import build
 
 # This is used to find the compiler and flags for building the test extension
 import distutils.ccompiler
