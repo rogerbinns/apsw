@@ -75,6 +75,9 @@ API Reference
 #ifndef APSW_NO_NDEBUG
 #define SQLITE_API static
 #define SQLITE_EXTERN static
+#endif
+
+#ifdef SQLITE_DEBUG
 #define SQLITE_ENABLE_API_ARMOR 1
 #endif
 
