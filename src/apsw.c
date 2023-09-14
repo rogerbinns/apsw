@@ -67,7 +67,6 @@ API Reference
 #ifdef APSW_USE_SQLITE_AMALGAMATION
 
 #define SQLITE_OMIT_DEPRECATED
-#define SQLITE_ENABLE_API_ARMOR 1
 
 #ifndef SQLITE_MAX_ATTACHED
 #define SQLITE_MAX_ATTACHED 125
@@ -76,6 +75,7 @@ API Reference
 #ifndef APSW_NO_NDEBUG
 #define SQLITE_API static
 #define SQLITE_EXTERN static
+#define SQLITE_ENABLE_API_ARMOR 1
 #endif
 
 #include "sqlite3.c"
