@@ -7,10 +7,6 @@ import hashlib
 import os
 import sys
 
-# prevent setuptools.setup from running.  It runs because of
-# https://github.com/pypa/cibuildwheel/issues/1611
-import setuptools
-setuptools.setup = lambda *args, **kwargs: 0
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import setup
 
