@@ -20,7 +20,7 @@ static void AddTraceBackHere(const char *filename, int lineno, const char *funct
      this code should do. That method does everything we need, except
      attaching variables */
 
-  PyObject *localargs = 0, *one = 0, *two = 0, *three = 0, *empty_dict;
+  PyObject *localargs = 0, *empty_dict;
   PyCodeObject *code = 0;
   PyFrameObject *frame = 0;
   va_list localargsva;
@@ -29,7 +29,7 @@ static void AddTraceBackHere(const char *filename, int lineno, const char *funct
 
   /* we have to save and restore the error indicators otherwise intermediate code has no effect! */
   assert(PyErr_Occurred());
-  PyErr_Fetch(&one, &two, &three);
+  PY_ERR_FETCH(exc_save);
   empty_dict = PyDict_New();
   if (!empty_dict)
     goto end;
@@ -65,7 +65,7 @@ end:
   if (PyErr_Occurred())
     apsw_write_unraisable(NULL);
   /* add dummy frame to traceback after restoring exception info */
-  PyErr_Restore(one, two, three);
+  PY_ERR_RESTORE(exc_save);
   if (frame)
     PyTraceBack_Here(frame);
 

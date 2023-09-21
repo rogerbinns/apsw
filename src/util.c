@@ -127,7 +127,6 @@ apsw_write_unraisable(PyObject *hookobject)
 {
   assert(PyErr_Occurred());
 
-  PyObject *err_type = NULL, *err_value = NULL, *err_traceback = NULL;
   PyObject *excepthook = NULL;
   PyObject *result = NULL;
 
@@ -155,16 +154,16 @@ apsw_write_unraisable(PyObject *hookobject)
 #endif
 
   /* Get the exception details */
-  PyErr_Fetch(&err_type, &err_value, &err_traceback);
-  PyErr_NormalizeException(&err_type, &err_value, &err_traceback);
+  PY_ERR_FETCH(exc);
+  PY_ERR_NORMALIZE(exc);
 
   /* tell sqlite3_log */
-  if (err_value && 0 == Py_EnterRecursiveCall("apsw_write_unraisable forwarding to sqlite3_log"))
+  if (exc && 0 == Py_EnterRecursiveCall("apsw_write_unraisable forwarding to sqlite3_log"))
   {
-    PyObject *message = PyObject_Str(err_value);
+    PyObject *message = PyObject_Str(exc);
     const char *utf8 = message ? PyUnicode_AsUTF8(message) : "failed to get string of error";
     PyErr_Clear();
-    sqlite3_log(SQLITE_ERROR, "apsw_write_unraisable %s: %s", Py_TypeName(err_value), utf8);
+    sqlite3_log(SQLITE_ERROR, "apsw_write_unraisable %s: %s", Py_TYPE(exc)->tp_name, utf8);
     Py_CLEAR(message);
     Py_LeaveRecursiveCall();
   }
@@ -177,7 +176,11 @@ apsw_write_unraisable(PyObject *hookobject)
     PyErr_Clear();
     if (excepthook)
     {
-      PyObject *vargs[] = {NULL, OBJ(err_type), OBJ(err_value), OBJ(err_traceback)};
+#if PY_VERSION_HEX < 0x030c0000
+      PyObject *vargs[] = {NULL, OBJ(exctype), OBJ(exc), OBJ(exctraceback)};
+#else
+      PyObject *vargs[] = {NULL, Py_TYPE(OBJ(exc)), OBJ(exc), Py_None};
+#endif
       result = PyObject_Vectorcall(excepthook, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
       if (result)
         goto finally;
@@ -193,9 +196,14 @@ apsw_write_unraisable(PyObject *hookobject)
     PyObject *arg = PyStructSequence_New(&apsw_unraisable_info_type);
     if (arg)
     {
-      PyStructSequence_SetItem(arg, 0, Py_NewRef(OBJ(err_type)));
-      PyStructSequence_SetItem(arg, 1, Py_NewRef(OBJ(err_value)));
-      PyStructSequence_SetItem(arg, 2, Py_NewRef(OBJ(err_traceback)));
+#if PY_VERSION_HEX < 0x030c0000
+      PyStructSequence_SetItem(arg, 0, Py_NewRef(OBJ(exctype)));
+      PyStructSequence_SetItem(arg, 1, Py_NewRef(OBJ(exc)));
+      PyStructSequence_SetItem(arg, 2, Py_NewRef(OBJ(exctraceback)));
+#else
+      PyStructSequence_SetItem(arg, 0, Py_NewRef(Py_TYPE(OBJ(exc))));
+      PyStructSequence_SetItem(arg, 1, Py_NewRef(exc));
+#endif
       PyObject *vargs[] = {NULL, arg};
       result = PyObject_Vectorcall(excepthook, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
       Py_DECREF(arg);
@@ -210,7 +218,12 @@ apsw_write_unraisable(PyObject *hookobject)
   {
     Py_INCREF(excepthook); /* borrowed reference from PySys_GetObject so we increment */
     PyErr_Clear();
-    PyObject *vargs[] = {NULL, OBJ(err_type), OBJ(err_value), OBJ(err_traceback)};
+#if PY_VERSION_HEX < 0x030c0000
+    PyObject *vargs[] = {NULL, OBJ(exctype), OBJ(exc), OBJ(exctraceback)};
+#else
+      PyObject *vargs[] = {NULL, Py_TYPE(OBJ(exc)), OBJ(exc), Py_None};
+#endif
+
     result = PyObject_Vectorcall(excepthook, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
     if (result)
       goto finally;
@@ -219,14 +232,16 @@ apsw_write_unraisable(PyObject *hookobject)
   /* remove any error from callback failure since we'd have to call
      ourselves to raise it! */
   PyErr_Clear();
-  PyErr_Display(err_type, err_value, err_traceback);
+#if PY_VERSION_HEX < 0x030c0000
+  PyErr_Display(exctype, exc, exctraceback);
+#else
+  PyErr_DisplayException(exc);
+#endif
 
 finally:
   Py_XDECREF(excepthook);
   Py_XDECREF(result);
-  Py_XDECREF(err_traceback);
-  Py_XDECREF(err_value);
-  Py_XDECREF(err_type);
+  PY_ERR_CLEAR(exc);
   PyErr_Clear(); /* being paranoid - make sure no errors on return */
 }
 

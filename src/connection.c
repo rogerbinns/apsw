@@ -203,10 +203,8 @@ static int
 Connection_close_internal(Connection *self, int force)
 {
   int res;
-  PyObject *etype, *eval, *etb;
 
-  if (force == 2)
-    PyErr_Fetch(&etype, &eval, &etb);
+  PY_ERR_FETCH_IF(force == 2 , exc_save);
 
   /* close out dependents by repeatedly processing first item until
      list is empty.  note that closing an item will cause the list to
@@ -272,7 +270,7 @@ Connection_close_internal(Connection *self, int force)
   }
 
   if (force == 2)
-    PyErr_Restore(etype, eval, etb);
+    PY_ERR_RESTORE(exc_save);
   return 0;
 }
 
@@ -629,7 +627,7 @@ Connection_backup(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_
   /* self (destination) can't be used if there are outstanding blobs, cursors or backups */
   if (PyList_GET_SIZE(self->dependents))
   {
-    PyObject *args = NULL, *etype, *evalue, *etb;
+    PyObject *args = NULL;
 
     args = PyTuple_New(2);
     if (!args)
@@ -642,9 +640,10 @@ Connection_backup(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_
 
     PyErr_SetObject(ExcThreadingViolation, args);
 
-    PyErr_Fetch(&etype, &evalue, &etb);
-    PyErr_NormalizeException(&etype, &evalue, &etb);
-    PyErr_Restore(etype, evalue, etb);
+    /* this forces the exception ot have a traceback etc */
+    PY_ERR_FETCH(normalize_exc);
+    PY_ERR_NORMALIZE(normalize_exc);
+    PY_ERR_RESTORE(normalize_exc);
 
   thisfinally:
     Py_XDECREF(args);
@@ -2640,20 +2639,19 @@ cbdispatch_final(sqlite3_context *context)
   PyGILState_STATE gilstate;
   PyObject *retval = NULL;
   aggregatefunctioncontext *aggfc = NULL;
-  PyObject *err_type = NULL, *err_value = NULL, *err_traceback = NULL;
 
   gilstate = PyGILState_Ensure();
 
   MakeExistingException();
 
-  PyErr_Fetch(&err_type, &err_value, &err_traceback);
+  PY_ERR_FETCH(exc_save);
 
   aggfc = getaggregatefunctioncontext(context);
   assert(aggfc);
 
   MakeExistingException();
 
-  if ((err_type || err_value || err_traceback) || PyErr_Occurred() || !aggfc->finalfunc)
+  if (PY_ERR_NOT_NULL(exc_save) || PyErr_Occurred() || !aggfc->finalfunc)
   {
     sqlite3_result_error(context, "Prior Python Error in step function", -1);
     goto finally;
@@ -2676,11 +2674,13 @@ finally:
   Py_XDECREF(aggfc->stepfunc);
   Py_XDECREF(aggfc->finalfunc);
 
-  if (PyErr_Occurred() && (err_type || err_value || err_traceback))
+  /* ::TODO:: these should be chained */
+
+  if (PyErr_Occurred() && PY_ERR_NOT_NULL(exc_save))
     apsw_write_unraisable(NULL);
 
-  if (err_type || err_value || err_traceback)
-    PyErr_Restore(err_type, err_value, err_traceback);
+  if(PY_ERR_NOT_NULL(exc_save))
+    PY_ERR_RESTORE(exc_save);
 
   if (PyErr_Occurred())
   {
@@ -3967,10 +3967,8 @@ static int connection_trace_and_exec(Connection *self, int release, int sp, int 
   if (self->exectrace && !Py_IsNone(self->exectrace))
   {
     PyObject *result = NULL;
-    PyObject *etype = NULL, *eval = NULL, *etb = NULL;
 
-    if (PyErr_Occurred())
-      PyErr_Fetch(&etype, &eval, &etb);
+    CHAIN_EXC_BEGIN
     PyObject *vargs[] = {NULL, (PyObject *)self, PyUnicode_FromString(sql), Py_None};
     if (vargs[2])
     {
@@ -3978,9 +3976,7 @@ static int connection_trace_and_exec(Connection *self, int release, int sp, int 
       Py_DECREF(vargs[2]);
     }
     Py_XDECREF(result);
-
-    if (etype || eval || etb)
-      PyErr_Restore(etype, eval, etb);
+    CHAIN_EXC_END;
 
     if (!result && !continue_on_trace_error)
     {

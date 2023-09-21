@@ -46,11 +46,10 @@ static void
 apsw_set_errmsg(const char *msg)
 {
   PyObject *key = NULL, *value = NULL;
-  PyObject *etype, *eval, *etb;
 
   PyGILState_STATE gilstate = PyGILState_Ensure();
   /* dictionary operations whine if there is an outstanding error */
-  PyErr_Fetch(&etype, &eval, &etb);
+  PY_ERR_FETCH(exc_save);
 
   assert(tls_errmsg);
 
@@ -65,7 +64,7 @@ apsw_set_errmsg(const char *msg)
 
   Py_XDECREF(key);
   Py_XDECREF(value);
-  PyErr_Restore(etype, eval, etb);
+  PY_ERR_RESTORE(exc_save);
   PyGILState_Release(gilstate);
 }
 
@@ -226,18 +225,18 @@ static void make_exception(int res, sqlite3 *db)
   for (i = 0; exc_descriptors[i].name; i++)
     if (exc_descriptors[i].code == (res & 0xff))
     {
-      PyObject *etype, *eval, *etb, *tmp;
+      PyObject *tmp;
       assert(exc_descriptors[i].cls);
       PyErr_Format(exc_descriptors[i].cls, "%sError: %s", exc_descriptors[i].name, errmsg);
-      PyErr_Fetch(&etype, &eval, &etb);
-      PyErr_NormalizeException(&etype, &eval, &etb);
+      PY_ERR_FETCH(exc);
+      PY_ERR_NORMALIZE(exc);
 
       assert(!PyErr_Occurred());
       tmp = PyLong_FromLongLong(res & 0xff);
       if (!tmp)
         goto error;
 
-      if (PyObject_SetAttr(eval, apst.result, tmp))
+      if (PyObject_SetAttr(exc, apst.result, tmp))
         goto error;
 
       Py_DECREF(tmp);
@@ -245,7 +244,7 @@ static void make_exception(int res, sqlite3 *db)
       if (!tmp)
         goto error;
 
-      if (PyObject_SetAttr(eval, apst.extendedresult, tmp))
+      if (PyObject_SetAttr(exc, apst.extendedresult, tmp))
         goto error;
       Py_DECREF(tmp);
 
@@ -253,12 +252,12 @@ static void make_exception(int res, sqlite3 *db)
       if (!tmp)
         goto error;
 
-      PyObject_SetAttr(eval, apst.error_offset, tmp);
+      PyObject_SetAttr(exc, apst.error_offset, tmp);
     error:
       Py_XDECREF(tmp);
       if (PyErr_Occurred())
         apsw_write_unraisable(NULL);
-      PyErr_Restore(etype, eval, etb);
+      PY_ERR_RESTORE(exc);
       assert(PyErr_Occurred());
       return;
     }
@@ -279,22 +278,22 @@ MakeSqliteMsgFromPyException(char **errmsg)
   int res = SQLITE_ERROR;
   int i;
   PyObject *str = NULL;
-  PyObject *etype = NULL, *evalue = NULL, *etraceback = NULL;
 
   assert(PyErr_Occurred());
 
-  PyErr_Fetch(&etype, &evalue, &etraceback);
+  PY_ERR_FETCH(exc);
+  PY_ERR_NORMALIZE(exc);
 
   /* find out if the exception corresponds to an apsw exception descriptor */
   for (i = 0; exc_descriptors[i].code != -1; i++)
-    if (PyErr_GivenExceptionMatches(etype, exc_descriptors[i].cls))
+    if (PyErr_GivenExceptionMatches(exc, exc_descriptors[i].cls))
     {
       res = exc_descriptors[i].code;
       /* do we have extended information available? */
-      if (PyObject_HasAttr(evalue, apst.extendedresult))
+      if (PyObject_HasAttr(exc, apst.extendedresult))
       {
         /* extract it */
-        PyObject *extended = PyObject_GetAttr(evalue, apst.extendedresult);
+        PyObject *extended = PyObject_GetAttr(exc, apst.extendedresult);
         if (extended && PyLong_Check(extended))
           res = PyLong_AsInt(extended);
         Py_XDECREF(extended);
@@ -309,13 +308,8 @@ MakeSqliteMsgFromPyException(char **errmsg)
   if (errmsg)
   {
     /* I just want a string of the error! */
-    if (!str && evalue)
-      str = PyObject_Str(evalue);
-    if (!str && etype)
-    {
-      PyErr_Clear();
-      str = PyObject_Str(etype);
-    }
+    if (!str && exc)
+      str = PyObject_Str(exc);
     if (!str)
     {
       PyErr_Clear();
@@ -330,7 +324,7 @@ MakeSqliteMsgFromPyException(char **errmsg)
     Py_XDECREF(str);
   }
 
-  PyErr_Restore(etype, evalue, etraceback);
+  PY_ERR_RESTORE(exc);
   assert(PyErr_Occurred());
   assert(res != -1);
   assert(res > 0);
