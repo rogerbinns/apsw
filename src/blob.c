@@ -164,10 +164,8 @@ static int
 APSWBlob_close_internal(APSWBlob *self, int force)
 {
   int setexc = 0;
-  PyObject *err_type, *err_value, *err_traceback;
 
-  if (force == 2)
-    PyErr_Fetch(&err_type, &err_value, &err_traceback);
+  PY_ERR_FETCH_IF(force == 2, exc_save);
 
   /* note that sqlite3_blob_close always works even if an error is
      returned */
@@ -203,7 +201,7 @@ APSWBlob_close_internal(APSWBlob *self, int force)
   Py_CLEAR(self->connection);
 
   if (force == 2)
-    PyErr_Restore(err_type, err_value, err_traceback);
+    PY_ERR_RESTORE(exc_save);
 
   return setexc;
 }

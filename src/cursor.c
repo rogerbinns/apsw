@@ -178,15 +178,13 @@ static int
 resetcursor(APSWCursor *self, int force)
 {
   int res = SQLITE_OK;
-  PyObject *etype, *eval, *etb;
   int hasmore = statementcache_hasmore(self->statement);
 
   Py_CLEAR(self->description_cache[0]);
   Py_CLEAR(self->description_cache[1]);
   Py_CLEAR(self->description_cache[2]);
 
-  if (force)
-    PyErr_Fetch(&etype, &eval, &etb);
+  PY_ERR_FETCH_IF(force, exc_save);
 
   if (self->statement)
   {
@@ -241,7 +239,7 @@ resetcursor(APSWCursor *self, int force)
   }
 
   if (force)
-    PyErr_Restore(etype, eval, etb);
+    PY_ERR_RESTORE(exc_save);
 
   return res;
 }
@@ -249,16 +247,14 @@ resetcursor(APSWCursor *self, int force)
 static int
 APSWCursor_close_internal(APSWCursor *self, int force)
 {
-  PyObject *err_type, *err_value, *err_traceback;
   int res;
 
-  if (force == 2)
-    PyErr_Fetch(&err_type, &err_value, &err_traceback);
+  PY_ERR_FETCH_IF(force == 2, exc_save);
 
   res = resetcursor(self, force);
 
   if (force == 2)
-    PyErr_Restore(err_type, err_value, err_traceback);
+    PY_ERR_RESTORE(exc_save);
   else
   {
     if (res)
@@ -296,8 +292,7 @@ APSWCursor_dealloc(APSWCursor *self)
 {
   /* dealloc is not allowed to return an exception or
      clear the current exception */
-  PyObject *one, *two, *three;
-  PyErr_Fetch(&one, &two, &three);
+  PY_ERR_FETCH(exc_save);
 
   PyObject_GC_UnTrack(self);
   APSW_CLEAR_WEAKREFS;
@@ -307,7 +302,7 @@ APSWCursor_dealloc(APSWCursor *self)
   if (PyErr_Occurred())
     apsw_write_unraisable(NULL);
 
-  PyErr_Restore(one, two, three);
+  PY_ERR_RESTORE(exc_save);
   Py_TpFree((PyObject *)self);
 }
 

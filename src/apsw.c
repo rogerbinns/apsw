@@ -184,11 +184,11 @@ static void apsw_write_unraisable(PyObject *hookobject);
 /* string constants struct */
 #include "stringconstants.c"
 
-/* Augment tracebacks */
-#include "traceback.c"
-
 /* Make various versions of Python code compatible with each other */
 #include "pyutil.c"
+
+/* Augment tracebacks */
+#include "traceback.c"
 
 /* various utility functions and macros */
 #include "util.c"
@@ -425,14 +425,13 @@ static void
 apsw_logger(void *arg, int errcode, const char *message)
 {
   PyGILState_STATE gilstate;
-  PyObject *etype = NULL, *evalue = NULL, *etraceback = NULL;
   PyObject *res = NULL;
 
   gilstate = PyGILState_Ensure();
   MakeExistingException();
   assert(arg == logger_cb);
   assert(arg);
-  PyErr_Fetch(&etype, &evalue, &etraceback);
+  PY_ERR_FETCH(exc);
 
   PyObject *vargs[] = {NULL, PyLong_FromLong(errcode), PyUnicode_FromString(message)};
   if (vargs[1] && vargs[2])
@@ -459,8 +458,8 @@ apsw_logger(void *arg, int errcode, const char *message)
   else
     Py_DECREF(res);
 
-  if (etype || evalue || etraceback)
-    PyErr_Restore(etype, evalue, etraceback);
+  if(PY_ERR_NOT_NULL(exc))
+    PY_ERR_RESTORE(exc);
   PyGILState_Release(gilstate);
 }
 
@@ -2069,7 +2068,6 @@ static long long
 APSW_FaultInjectControl(const char *faultfunction, const char *filename, const char *funcname, int linenum, const char *args)
 {
   PyObject *callable, *res = NULL;
-  PyObject *etype = NULL, *evalue = NULL, *etraceback = NULL;
   const char *err_details = NULL;
   long long ficres = 0;
   int suppress = 0;
@@ -2078,7 +2076,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
   PyGILState_STATE gilstate = PyGILState_Ensure();
   recursion_limit = Py_GetRecursionLimit();
   Py_SetRecursionLimit(recursion_limit + 50);
-  PyErr_Fetch(&etype, &evalue, &etraceback);
+  PY_ERR_FETCH(exc);
 
   callable = PySys_GetObject("apsw_fault_inject_control");
   if (!callable || Py_IsNone(callable))
@@ -2144,14 +2142,12 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
   }
 
   assert(!PyErr_Occurred());
-  Py_CLEAR(etype);
-  Py_CLEAR(evalue);
-  Py_CLEAR(etraceback);
+  PY_ERR_CLEAR(exc);
   PyErr_SetString(PyTuple_GET_ITEM(res, 1), utf8);
 
 success:
-  if (etype || evalue || etraceback)
-    PyErr_Restore(etype, evalue, etraceback);
+  if (PY_ERR_NOT_NULL(exc))
+    PY_ERR_RESTORE(exc);
   Py_CLEAR(res);
   Py_SetRecursionLimit(recursion_limit);
   PyGILState_Release(gilstate);
@@ -2159,26 +2155,20 @@ success:
 
 errorexit:
   Py_CLEAR(res);
-  PyObject *_p1, *_p2, *_p3;
-  PyErr_Fetch(&_p1, &_p2, &_p3);
+  PY_ERR_FETCH(exc_errexit);
   if (!suppress)
     fprintf(stderr, "FaultInjectControl ERROR: {\"%s\", \"%s\", \"%s\", %d, \"%s\"}\n", faultfunction, filename, funcname, linenum, args);
   if (err_details)
     fprintf(stderr, "%s\n", err_details);
-  if (_p1 || _p2 || _p3)
+  if (PY_ERR_NOT_NULL(exc_errexit))
   {
-    fprintf(stderr, "Exception type: ");
-    PyObject_Print(_p1, stderr, 0);
+    PY_ERR_NORMALIZE(exc_errexit);
     fprintf(stderr, "\nException value: ");
-    PyObject_Print(_p2, stderr, 0);
-    fprintf(stderr, "\nException tb: ");
-    PyObject_Print(_p3, stderr, 0);
+    PyObject_Print(exc_errexit, stderr, 0);
     fprintf(stderr, "\n");
-    Py_CLEAR(_p1);
-    Py_CLEAR(_p2);
-    Py_CLEAR(_p3);
+    PY_ERR_CLEAR(exc_errexit);
   }
-  PyErr_Restore(etype, evalue, etraceback);
+  PY_ERR_RESTORE(exc);
   Py_SetRecursionLimit(recursion_limit);
   PyGILState_Release(gilstate);
   return 0x1FACADE;
@@ -2189,12 +2179,11 @@ APSW_Should_Fault(const char *name)
 {
   PyGILState_STATE gilstate;
   PyObject *res, *callable;
-  PyObject *errsave1 = NULL, *errsave2 = NULL, *errsave3 = NULL;
   int callres = 0;
 
   gilstate = PyGILState_Ensure();
 
-  PyErr_Fetch(&errsave1, &errsave2, &errsave3);
+  PY_ERR_FETCH(exc_save);
 
   callable = PySys_GetObject("apsw_should_fault");
   if (!callable)
@@ -2208,7 +2197,14 @@ APSW_Should_Fault(const char *name)
     goto end;
   }
 
-  PyObject *vargs[] = {NULL, PyUnicode_FromString(name), PyTuple_Pack(3, OBJ(errsave1), OBJ(errsave2), OBJ(errsave3))};
+  PyObject *vargs[] = { NULL,
+                        PyUnicode_FromString(name),
+#if PY_VERSION_HEX < 0x030c0000
+                        PyTuple_Pack(3, OBJ(exc_savetype), OBJ(exc_save), OBJ(exc_savetraceback))
+#else
+                        PyTuple_Pack(1, OBJ(exc_save))
+#endif
+  };
   res = PyObject_Vectorcall(callable, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   Py_DECREF(vargs[1]);
   Py_DECREF(vargs[2]);
@@ -2220,7 +2216,7 @@ APSW_Should_Fault(const char *name)
   callres = Py_IsTrue(res);
   Py_DECREF(res);
 
-  PyErr_Restore(errsave1, errsave2, errsave3);
+  PY_ERR_RESTORE(exc_save);
 end:
   PyGILState_Release(gilstate);
   return callres;

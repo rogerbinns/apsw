@@ -119,13 +119,12 @@ APSWBackup_close_internal(APSWBackup *self, int force)
       break;
     case 2:
     {
-      PyObject *etype, *eval, *etb;
-      PyErr_Fetch(&etype, &eval, &etb);
+      PY_ERR_FETCH(exc_save);
 
       SET_EXC(res, self->dest->db);
       apsw_write_unraisable(NULL);
 
-      PyErr_Restore(etype, eval, etb);
+      PY_ERR_RESTORE(exc_save);
       break;
     }
     }
