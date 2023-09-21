@@ -166,29 +166,75 @@ PyObject_IsTrueStrict(PyObject *o)
   return PyObject_IsTrue(o);
 }
 
-/* similar space to the above but if there was an
-   exception coming in and the call to `x` results
-   in an exception, then `x` exception is  chained \
-   to the incoming exception.  The type is that
+/* Python 3.12+ only has exception, earlier has type, value, and
+traceback.  Earlier versions also won't set all 3 as a performance
+optimisation, or the type might be TypeError while value is a string.
+NormalizeException is then used to make sure all 3 are set, the value
+is an exception (ie the constructor has been run) etc.  These macros
+hide all this.
+ */
+#if PY_VERSION_HEX < 0x030c0000
+#define PY_ERR_FETCH_IF(condition, name)                              \
+  PyObject *name##type = NULL, *name = NULL, *name##traceback = NULL; \
+  if (condition)                                                      \
+  PyErr_Fetch(&name##type, &name, &name##traceback)
+
+#define PY_ERR_FETCH(name) PY_ERR_FETCH_IF(1, name)
+
+#define PY_ERR_RESTORE(name) \
+  PyErr_Restore(name##type, name, name##traceback)
+
+#define PY_ERR_NORMALIZE(name) \
+  PyErr_NormalizeException(&name##type, &name, &name##traceback)
+
+#define PY_ERR_CLEAR(name) \
+  Py_CLEAR(name##type);    \
+  Py_CLEAR(name);          \
+  Py_CLEAR(name##traceback);
+
+#define PY_ERR_NOT_NULL(name) (name##type || name || name##traceback)
+
+#else
+/* Python 3.12+ */
+#define PY_ERR_FETCH_IF(condition, name) \
+  PyObject *name = NULL;                 \
+  if (condition)                         \
+  name = PyErr_GetRaisedException()
+
+#define PY_ERR_FETCH(name) PY_ERR_FETCH_IF(1, name)
+
+#define PY_ERR_RESTORE(name) \
+  PyErr_SetRaisedException(name)
+
+#define PY_ERR_NORMALIZE(name) \
+  do                           \
+  {                            \
+  } while (0)
+
+#define PY_ERR_CLEAR(name) Py_CLEAR(name)
+
+#define PY_ERR_NOT_NULL(name) (name)
+#endif
+
+/* if there was an exception coming in and the call to
+   `x` results in an exception, then `x` exception is
+   chained to the incoming exception.  The type is that
    from `x` though!
 
    Exception incoming exception
    During the handling of the above, another occurred:
-      `x exception`
+       `x exception`
    */
 #if PY_VERSION_HEX < 0x030c0000
-#define _chainexcapi(a1, a2, a3) _PyErr_ChainExceptions(a1, a2, a3)
+#define _chainexcapi(name) _PyErr_ChainExceptions(name##type, name, name##traceback)
 #else
-#define _chainexcapi(a1, a2, a3) _PyErr_ChainExceptions1(a2)
+#define _chainexcapi(name) _PyErr_ChainExceptions1(name)
 #endif
-#define CHAIN_EXC_BEGIN                \
-  do                                   \
-  {                                    \
-    PyObject *_exc = PyErr_Occurred(); \
-    PyObject *_e1, *_e2, *_e3;         \
-    if (_exc)                          \
-      PyErr_Fetch(&_e1, &_e2, &_e3);   \
-    do                                 \
+#define CHAIN_EXC_BEGIN      \
+  do                         \
+  {                          \
+    PY_ERR_FETCH(chain_exc); \
+    do                       \
     {
 
 /* the seemingly spurious first do-while0 is because immediately
@@ -196,21 +242,21 @@ PyObject_IsTrueStrict(PyObject *o)
    complain that the block didn't end in a statement, so we put a
    pointless one there;
 */
-#define CHAIN_EXC_END               \
-  do                                \
-  {                                 \
-  } while (0);                      \
-  }                                 \
-  while (0)                         \
-    ;                               \
-  if (_exc)                         \
-  {                                 \
-    if (PyErr_Occurred())           \
-      _chainexcapi(_e1, _e2, _e3);  \
-    else                            \
-      PyErr_Restore(_e1, _e2, _e3); \
-  }                                 \
-  }                                 \
+#define CHAIN_EXC_END             \
+  do                              \
+  {                               \
+  } while (0);                    \
+  }                               \
+  while (0)                       \
+    ;                             \
+  if (PY_ERR_NOT_NULL(chain_exc)) \
+  {                               \
+    if (PyErr_Occurred())         \
+      _chainexcapi(chain_exc);    \
+    else                          \
+      PY_ERR_RESTORE(chain_exc);  \
+  }                               \
+  }                               \
   while (0)
 
 #define CHAIN_EXC(x) \
@@ -219,15 +265,14 @@ PyObject_IsTrueStrict(PyObject *o)
 
 /* Some functions can clear the error indicator
    so this keeps it */
-#define PRESERVE_EXC(x)            \
-  do                               \
-  {                                \
-    PyObject *_e1, *_e2, *_e3;     \
-    PyErr_Fetch(&_e1, &_e2, &_e3); \
-                                   \
-    x;                             \
-                                   \
-    PyErr_Restore(_e1, _e2, _e3);  \
+#define PRESERVE_EXC(x)           \
+  do                              \
+  {                               \
+    PY_ERR_FETCH(preserve_exc);   \
+                                  \
+    x;                            \
+                                  \
+    PY_ERR_RESTORE(preserve_exc); \
   } while (0)
 
 /* See PEP 678 */
@@ -243,12 +288,12 @@ static void PyErr_AddExceptionNoteV(const char *format, ...)
 
   if (message)
   {
-    PyObject *n0, *n1, *n2, *nres;
-    PyErr_Fetch(&n0, &n1, &n2);
-    PyErr_NormalizeException(&n0, &n1, &n2);
-    PyErr_Restore(n0, n1, n2);
+    PyObject *nres;
+    PY_ERR_FETCH(exc);
+    PY_ERR_NORMALIZE(exc);
+    PY_ERR_RESTORE(exc);
 
-    PyObject *vargs[] = {NULL, n1, message};
+    PyObject *vargs[] = {NULL, exc, message};
     CHAIN_EXC(nres = PyObject_VectorcallMethod(apst.add_note, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL));
     Py_XDECREF(nres);
 
