@@ -651,7 +651,7 @@ def do_argparse(item):
     { "ARG_CONVERT_VARARGS_TO_FASTCALL;" if is_init else "" }
     ARG_PROLOG({ max_pos}, { item['symbol'] }_KWNAMES);
 """ + code + f"""
-    ARG_EPILOG({ "NULL" if not is_init else -1 }, { item['symbol'] }_USAGE,{ " Py_XDECREF(fast_kwnames)" if is_init else "" });
+    ARG_EPILOG({ "NULL" if not is_init else -1 }, { item['symbol'] }_USAGE,{ " Py_XDECREF(fast_kwnames)" if is_init else " " });
   }}"""
 
     code = "\n".join(line for line in code.split("\n") if line.strip())
