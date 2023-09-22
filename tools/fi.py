@@ -144,14 +144,13 @@ def exercise(example_code, expect_exception):
     if expect_exception:
         return
 
-    for query in ("select 3,4", "select 3; select 4", "select 3,4; select 4,5",
-        "select 3,4; select 5", "select 3"):
+    for query in ("select 3,4", "select 3; select 4", "select 3,4; select 4,5", "select 3,4; select 5", "select 3"):
         con.execute(query).get
-    con.executemany("select ?", [(i,) for i in range(10)]).get
+    con.executemany("select ?", [(i, ) for i in range(10)]).get
 
     con.execute("/* comment */").get
 
-    cur=con.cursor()
+    cur = con.cursor()
     cur.execute("select 3").fetchall()
     cur.get
 
@@ -239,13 +238,14 @@ def exercise(example_code, expect_exception):
     con.setprofile(None)
 
     # has to be done on a real file not memory db
-    con2=apsw.Connection("/tmp/fitesting")
+    con2 = apsw.Connection("/tmp/fitesting")
     con2.pragma("user_version", 77)
     con2.read("main", 0, 0, 256_000)
 
     # this is to work MakeSqliteMsgFromPyException
     def meth(*args):
         raise apsw.SchemaChangeError("a" * 16384)
+
     Source.Table.BestIndexObject = meth
     try:
         con.execute("select * from vtable where c2>2")
@@ -373,7 +373,7 @@ def exercise(example_code, expect_exception):
     v = apsw.VFS(vname, iVersion=3)
     registered = [vfs for vfs in apsw.vfs_details() if vfs["zName"] == vname][0]
     meth_names = [n for n in registered if n.startswith("x")]
-    for ver in (1,2,3):
+    for ver in (1, 2, 3):
         v = apsw.VFS(f"{vname}{ver}", exclude=set(random.sample(meth_names, 5)))
         apsw.vfs_details()
         try:
@@ -403,7 +403,7 @@ def exercise(example_code, expect_exception):
     flags = [apsw.SQLITE_OPEN_MAIN_DB | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_READWRITE, 0]
     apsw.VFSFile("testvfs", testdbname, flags)
 
-    longdbname = testdbname + "/." * (4096 - len(testdbname)//2)
+    longdbname = testdbname + "/." * (4096 - len(testdbname) // 2)
     try:
         apsw.VFSFile("testvfs", longdbname, flags)
     except apsw.CantOpenError:
@@ -774,11 +774,6 @@ class Tester:
 
         if complete:
             print("\nAll faults exercised")
-
-        ### ::TODO:: cli options to show this
-        if False:
-            for n in sorted(self.has_faulted_ever):
-                print(n)
 
         print(f"Total faults: { len(self.has_faulted_ever) }")
 
