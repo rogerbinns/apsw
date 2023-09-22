@@ -691,7 +691,7 @@ class APSW(unittest.TestCase):
         # simple memory leaks will show up
         c = self.db.cursor()
         c.execute("create table foo(x)")
-        vals = [[1], [None], [math.pi], ["kjkljkljl"], [u"\u1234\u345432432423423kjgjklhdfgkjhsdfjkghdfjskh"],
+        vals = [[1], [None], [math.pi], ["kjkljkljl"], ["\u1234\u345432432423423kjgjklhdfgkjhsdfjkghdfjskh"],
                 [b"78696ghgjhgjhkgjkhgjhg\xfe\xdf"]]
         c.executemany("insert into foo values(?)", vals)
         for i in range(MEMLEAKITERATIONS):
@@ -751,13 +751,13 @@ class APSW(unittest.TestCase):
                 'c': 3
             }),
             # some unicode fun
-            (u"($\N{LATIN SMALL LETTER E WITH CIRCUMFLEX},:\N{LATIN SMALL LETTER A WITH TILDE},$\N{LATIN SMALL LETTER O WITH DIAERESIS})",
+            ("($\N{LATIN SMALL LETTER E WITH CIRCUMFLEX},:\N{LATIN SMALL LETTER A WITH TILDE},$\N{LATIN SMALL LETTER O WITH DIAERESIS})",
              (1, 2, 3)),
-            (u"($\N{LATIN SMALL LETTER E WITH CIRCUMFLEX},:\N{LATIN SMALL LETTER A WITH TILDE},$\N{LATIN SMALL LETTER O WITH DIAERESIS})",
+            ("($\N{LATIN SMALL LETTER E WITH CIRCUMFLEX},:\N{LATIN SMALL LETTER A WITH TILDE},$\N{LATIN SMALL LETTER O WITH DIAERESIS})",
              {
-                 u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}": 1,
-                 u"\N{LATIN SMALL LETTER A WITH TILDE}": 2,
-                 u"\N{LATIN SMALL LETTER O WITH DIAERESIS}": 3,
+                 "\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}": 1,
+                 "\N{LATIN SMALL LETTER A WITH TILDE}": 2,
+                 "\N{LATIN SMALL LETTER O WITH DIAERESIS}": 3,
              }))
 
         for str, bindings in vals:
@@ -928,8 +928,8 @@ class APSW(unittest.TestCase):
             ("y", "TEXT"),
             ("z", "foo"),
             ("a", "char"),
-            (u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}\N{LATIN SMALL LETTER A WITH TILDE}",
-             u"\N{LATIN SMALL LETTER O WITH DIAERESIS}\N{LATIN SMALL LETTER U WITH CIRCUMFLEX}"),
+            ("\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}\N{LATIN SMALL LETTER A WITH TILDE}",
+             "\N{LATIN SMALL LETTER O WITH DIAERESIS}\N{LATIN SMALL LETTER U WITH CIRCUMFLEX}"),
         )
         c.execute("drop table foo; create table foo (%s)" % (", ".join(["[%s] %s" % (n, t) for n, t in cols]), ))
         c.execute("insert into foo([x a space]) values(1)")
@@ -1252,10 +1252,10 @@ class APSW(unittest.TestCase):
             (-9223372036854775808, "-9223372036854775808"),
             (None, "NULL"),
             ("ABC", "'ABC'"),
-            (u"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET} ",
-             "'" + u"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET} " + "'"),
-            (u"\N{BLACK STAR} \N{WHITE STAR} ' \N{LIGHTNING} \N{COMET} ",
-             "'" + u"\N{BLACK STAR} \N{WHITE STAR} '' \N{LIGHTNING} \N{COMET} " + "'"),
+            ("\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET} ",
+             "'" + "\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET} " + "'"),
+            ("\N{BLACK STAR} \N{WHITE STAR} ' \N{LIGHTNING} \N{COMET} ",
+             "'" + "\N{BLACK STAR} \N{WHITE STAR} '' \N{LIGHTNING} \N{COMET} " + "'"),
             ("", "''"),
             ("'", "''''"),
             ("'a", "'''a'"),
@@ -2234,11 +2234,11 @@ class APSW(unittest.TestCase):
             # misuse can be returned for too many args
             pass
         # some unicode fun
-        self.db.createscalarfunction, u"twelve\N{BLACK STAR}", ilove7
+        self.db.createscalarfunction, "twelve\N{BLACK STAR}", ilove7
         try:
             # SQLite happily registers the function, but you can't
             # call it
-            self.assertEqual(c.execute("select " + u"twelve\N{BLACK STAR}" + "(3)").fetchall(), [[7]])
+            self.assertEqual(c.execute("select " + "twelve\N{BLACK STAR}" + "(3)").fetchall(), [[7]])
         except apsw.SQLError:
             pass
 
@@ -2357,7 +2357,7 @@ class APSW(unittest.TestCase):
                 pass
             self.db.createaggregatefunction("twelve", None)
 
-        self.assertRaises(TypeError, self.db.createaggregatefunction, u"twelve\N{BLACK STAR}", 12)  # must be ascii
+        self.assertRaises(TypeError, self.db.createaggregatefunction, "twelve\N{BLACK STAR}", 12)  # must be ascii
         self.db.createaggregatefunction("longest", longest.factory)
 
         vals = (
@@ -2655,7 +2655,7 @@ class APSW(unittest.TestCase):
         self.db.createcollation("strnum", strnumcollate)
         c.execute("create table foo(x)")
         # adding this unicode in front improves coverage
-        uni = u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}"
+        uni = "\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}"
         vals = (uni + "file1", uni + "file7", uni + "file9", uni + "file17", uni + "file20")
         valsrev = list(vals)
         valsrev.reverse()  # put them into table in reverse order
@@ -2833,7 +2833,7 @@ class APSW(unittest.TestCase):
         self.assertEqual(True, apsw.complete("select * from foo; select *;"))
         self.assertEqual(False, apsw.complete("select * from foo where x=1"))
         self.assertEqual(True, apsw.complete("select * from foo;"))
-        self.assertEqual(True, apsw.complete(u"select '\u9494\ua7a7';"))
+        self.assertEqual(True, apsw.complete("select '\u9494\ua7a7';"))
         self.assertRaises(TypeError, apsw.complete, 12)  # wrong type
         self.assertRaises(TypeError, apsw.complete)  # not enough args
         self.assertRaises(TypeError, apsw.complete, "foo", "bar")  # too many args
@@ -3224,14 +3224,14 @@ class APSW(unittest.TestCase):
         c = self.db.cursor()
         c.execute("create table foo(row,str)")
         vals = ("\0a simple string", "a simple string\0with a null", "a string\0with two\0nulls",
-                "or even a \0\0\0\0\0\0sequence\0\0\0\0of them", u"a \u1234 unicode \ufe54 string \u0089",
-                u"a \u1234 unicode \ufe54 string \u0089\0and some text",
-                u"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET}\0more\0than you\0can handle",
-                u"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET}\0\0\0\0\0sequences\0\0\0of them")
+                "or even a \0\0\0\0\0\0sequence\0\0\0\0of them", "a \u1234 unicode \ufe54 string \u0089",
+                "a \u1234 unicode \ufe54 string \u0089\0and some text",
+                "\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET}\0more\0than you\0can handle",
+                "\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET}\0\0\0\0\0sequences\0\0\0of them")
 
         vals = vals + (
             "a simple string\0",
-            u"a \u1234 unicode \ufe54 string \u0089\0",
+            "a \u1234 unicode \ufe54 string \u0089\0",
         )
 
         for i, v in enumerate(vals):
@@ -3261,7 +3261,7 @@ class APSW(unittest.TestCase):
         # collation
         def colcmp(l, r):
             self.failUnless("\0" in l and "\0" in r)
-            if l < r : return -1
+            if l < r: return -1
             if l > r: return 1
             return 0
 
@@ -3534,9 +3534,9 @@ class APSW(unittest.TestCase):
 
         data = (  # row 0 is headers, column 0 is rowid
             ("rowid", "name", "number", "item", "description"),
-            (1, "Joe Smith", 1.1, u"\u00f6\u1234", "foo"),
-            (6000000000, "Road Runner", -7.3, u"\u00f6\u1235", "foo"),
-            (77, "Fred", 0, u"\u00f6\u1236", "foo"),
+            (1, "Joe Smith", 1.1, "\u00f6\u1234", "foo"),
+            (6000000000, "Road Runner", -7.3, "\u00f6\u1235", "foo"),
+            (77, "Fred", 0, "\u00f6\u1236", "foo"),
         )
 
         dataschema = "create table this_should_be_ignored" + str(data[0][1:])
@@ -3593,7 +3593,7 @@ class APSW(unittest.TestCase):
 
             def CreateUnicodeException(self, *args):
                 raise Exception(
-                    u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}\N{LATIN SMALL LETTER A WITH TILDE}\N{LATIN SMALL LETTER O WITH DIAERESIS}"
+                    "\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}\N{LATIN SMALL LETTER A WITH TILDE}\N{LATIN SMALL LETTER O WITH DIAERESIS}"
                 )
 
             def CreateBadSchemaType(self, *args):
@@ -3623,11 +3623,11 @@ class APSW(unittest.TestCase):
         self.db.createmodule("testmod1", Source("testmod1", "main", "xyzzy", "1", '"one"'))
         self.assertRaises(ZeroDivisionError, cur.execute, 'create virtual table xyzzy using testmod1(1,"one")')
         # unicode
-        uni = u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}\N{LATIN SMALL LETTER A WITH TILDE}\N{LATIN SMALL LETTER O WITH DIAERESIS}"
+        uni = "\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}\N{LATIN SMALL LETTER A WITH TILDE}\N{LATIN SMALL LETTER O WITH DIAERESIS}"
 
         self.db.createmodule("testmod1dash1", Source("testmod1dash1", "main", uni, "1", '"' + uni + '"'))
         self.assertRaises(ZeroDivisionError, cur.execute,
-                          u'create virtual table %s using testmod1dash1(1,"%s")' % (uni, uni))
+                          'create virtual table %s using testmod1dash1(1,"%s")' % (uni, uni))
         Source.Create = Source.CreateErrorCode
         self.assertRaises(apsw.BusyError, cur.execute, 'create virtual table xyzzz using testmod1(2, "two")')
         Source.Create = Source.CreateUnicodeException
@@ -3687,10 +3687,10 @@ class APSW(unittest.TestCase):
                 return retval
 
             def BestIndex4(self, constraints, orderbys):
-                return (None, 12, u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}", "anything", "bad")
+                return (None, 12, "\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}", "anything", "bad")
 
             def BestIndex4_1(self, constraints, orderbys):
-                return (None, 12, u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}", True, "bad")
+                return (None, 12, "\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}", True, "bad")
 
             def BestIndex5(self, constraints, orderbys):
                 # unicode error
@@ -3709,7 +3709,7 @@ class APSW(unittest.TestCase):
                 cl.sort()
                 assert allconstraintsl == cl
                 assert orderbys == ((2, False), )
-                retval = ([4, (3, True), [2, False], 1, (0, False)], 997, u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}",
+                retval = ([4, (3, True), [2, False], 1, (0, False)], 997, "\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}",
                           False, 99)[:self._bestindexreturn]
                 return retval
 
@@ -3884,7 +3884,7 @@ class APSW(unittest.TestCase):
                     return
                 # 3 or more
                 assert idxnum == 997
-                assert idxstr == u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}"
+                assert idxstr == "\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}"
                 assert constraintargs == ('foo', 'A', 12.4, 'A', -1000)
 
             def Filter(self, *args):
@@ -5079,7 +5079,7 @@ class APSW(unittest.TestCase):
             pass
         db2.close()
         # Get some coverage - overflow cache and recycling
-        l = [self.db.cursor().execute(u"select 3" + " " * i) for i in range(100 + 256 + 17)]
+        l = [self.db.cursor().execute("select 3" + " " * i) for i in range(100 + 256 + 17)]
         while l:
             l.pop().fetchall()
         # embedded nulls
@@ -5216,7 +5216,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.SQLError, self.db.execute, "select 6", explain=7)
 
     # the text also includes characters that can't be represented in 16 bits (BMP)
-    wikipedia_text = u"""Wikipedia\nThe Free Encyclopedia\nEnglish\n6 383 000+ articles\n日本語\n1 292 000+ 記事\nРусский\n1 756 000+ статей\nDeutsch\n2 617 000+ Artikel\nEspañol\n1 717 000+ artículos\nFrançais\n2 362 000+ articles\nItaliano\n1 718 000+ voci\n中文\n1 231 000+ 條目\nPolski\n1 490 000+ haseł\nPortuguês\n1 074 000+ artigos\nSearch Wikipedia\nEN\nEnglish\n\n Read Wikipedia in your language\n1 000 000+ articles\nPolski\nالعربية\nDeutsch\nEnglish\nEspañol\nFrançais\nItaliano\nمصرى\nNederlands\n日本語\nPortuguês\nРусский\nSinugboanong Binisaya\nSvenska\nУкраїнська\nTiếng Việt\nWinaray\n中文\n100 000+ articles\nAfrikaans\nSlovenčina\nAsturianu\nAzərbaycanca\nБългарски\nBân-lâm-gú / Hō-ló-oē\nবাংলা\nБеларуская\nCatalà\nČeština\nCymraeg\nDansk\nEesti\nΕλληνικά\nEsperanto\nEuskara\nفارسی\nGalego\n한국어\nՀայերեն\nहिन्दी\nHrvatski\nBahasa Indonesia\nעברית\nქართული\nLatina\nLatviešu\nLietuvių\nMagyar\nМакедонски\nBahasa Melayu\nBahaso Minangkabau\nNorskbokmålnynorsk\nНохчийн\nOʻzbekcha / Ўзбекча\nҚазақша / Qazaqşa / قازاقشا\nRomână\nSimple English\nSlovenščina\nСрпски / Srpski\nSrpskohrvatski / Српскохрватски\nSuomi\nதமிழ்\nТатарча / Tatarça\nภาษาไทย\nТоҷикӣ\nتۆرکجه\nTürkçe\nاردو\nVolapük\n粵語\nမြန်မာဘာသာ\n10 000+ articles\nBahsa Acèh\nAlemannisch\nአማርኛ\nAragonés\nBasa Banyumasan\nБашҡортса\nБеларуская (Тарашкевіца)\nBikol Central\nবিষ্ণুপ্রিয়া মণিপুরী\nBoarisch\nBosanski\nBrezhoneg\nЧӑвашла\nDiné Bizaad\nEmigliàn–Rumagnòl\nFøroyskt\nFrysk\nGaeilge\nGàidhlig\nગુજરાતી\nHausa\nHornjoserbsce\nIdo\nIlokano\nInterlingua\nИрон æвзаг\nÍslenska\nJawa\nಕನ್ನಡ\nKreyòl Ayisyen\nKurdî / كوردی\nکوردیی ناوەندی\nКыргызча\nКырык Мары\nLëtzebuergesch\nLimburgs\nLombard\nLìgure\nमैथिली\nMalagasy\nമലയാളം\n文言\nमराठी\nმარგალური\nمازِرونی\nMìng-dĕ̤ng-ngṳ̄ / 閩東語\nМонгол\nनेपाल भाषा\nनेपाली\nNnapulitano\nNordfriisk\nOccitan\nМарий\nଓଡି଼ଆ\nਪੰਜਾਬੀ (ਗੁਰਮੁਖੀ)\nپنجابی (شاہ مکھی)\nپښتو\nPiemontèis\nPlattdüütsch\nQırımtatarca\nRuna Simi\nसंस्कृतम्\nСаха Тыла\nScots\nShqip\nSicilianu\nසිංහල\nسنڌي\nŚlůnski\nBasa Sunda\nKiswahili\nTagalog\nతెలుగు\nᨅᨔ ᨕᨙᨁᨗ / Basa Ugi\nVèneto\nWalon\n吳語\nייִדיש\nYorùbá\nZazaki\nŽemaitėška\nisiZulu\n1 000+ articles\nАдыгэбзэ\nÆnglisc\nAkan\nаԥсшәа\nԱրեւմտահայերէն\nArmãneashce\nArpitan\nܐܬܘܪܝܐ\nAvañe’ẽ\nАвар\nAymar\nBasa Bali\nBahasa Banjar\nभोजपुरी\nBislama\nབོད་ཡིག\nБуряад\nChavacano de Zamboanga\nCorsu\nVahcuengh / 話僮\nDavvisámegiella\nDeitsch\nދިވެހިބަސް\nDolnoserbski\nЭрзянь\nEstremeñu\nFiji Hindi\nFurlan\nGaelg\nGagauz\nGĩkũyũ\nگیلکی\n贛語\nHak-kâ-ngî / 客家語\nХальмг\nʻŌlelo Hawaiʻi\nIgbo\nInterlingue\nKabɩyɛ\nKapampangan\nKaszëbsczi\nKernewek\nភាសាខ្មែរ\nKinyarwanda\nКоми\nKongo\nकोंकणी / Konknni\nKriyòl Gwiyannen\nພາສາລາວ\nDzhudezmo / לאדינו\nЛакку\nLatgaļu\nЛезги\nLingála\nlojban\nLuganda\nMalti\nReo Mā’ohi\nMāori\nMirandés\nМокшень\nߒߞߏ\nNa Vosa Vaka-Viti\nNāhuatlahtōlli\nDorerin Naoero\nNedersaksisch\nNouormand / Normaund\nNovial\nAfaan Oromoo\nঅসমীযা়\nपालि\nPangasinán\nPapiamentu\nПерем Коми\nPfälzisch\nPicard\nКъарачай–Малкъар\nQaraqalpaqsha\nRipoarisch\nRumantsch\nРусиньскый Язык\nGagana Sāmoa\nSardu\nSeeltersk\nSesotho sa Leboa\nChiShona\nSoomaaliga\nSranantongo\nTaqbaylit\nTarandíne\nTetun\nTok Pisin\nfaka Tonga\nTürkmençe\nТыва дыл\nУдмурт\nئۇيغۇرچه\nVepsän\nVõro\nWest-Vlams\nWolof\nisiXhosa\nZeêuws\n100+ articles\nBamanankan\nChamoru\nChichewa\nEʋegbe\nFulfulde\n𐌲𐌿𐍄𐌹𐍃𐌺\nᐃᓄᒃᑎᑐᑦ / Inuktitut\nIñupiak\nKalaallisut\nكٲشُر\nLi Niha\nNēhiyawēwin / ᓀᐦᐃᔭᐍᐏᐣ\nNorfuk / Pitkern\nΠοντιακά\nརྫོང་ཁ\nRomani\nKirundi\nSängö\nSesotho\nSetswana\nСловѣ́ньскъ / ⰔⰎⰑⰂⰡⰐⰠⰔⰍⰟ\nSiSwati\nThuɔŋjäŋ\nᏣᎳᎩ\nTsėhesenėstsestotse\nTshivenḓa\nXitsonga\nchiTumbuka\nTwi\nትግርኛ\nဘာသာ မန်\n"""
+    wikipedia_text = """Wikipedia\nThe Free Encyclopedia\nEnglish\n6 383 000+ articles\n日本語\n1 292 000+ 記事\nРусский\n1 756 000+ статей\nDeutsch\n2 617 000+ Artikel\nEspañol\n1 717 000+ artículos\nFrançais\n2 362 000+ articles\nItaliano\n1 718 000+ voci\n中文\n1 231 000+ 條目\nPolski\n1 490 000+ haseł\nPortuguês\n1 074 000+ artigos\nSearch Wikipedia\nEN\nEnglish\n\n Read Wikipedia in your language\n1 000 000+ articles\nPolski\nالعربية\nDeutsch\nEnglish\nEspañol\nFrançais\nItaliano\nمصرى\nNederlands\n日本語\nPortuguês\nРусский\nSinugboanong Binisaya\nSvenska\nУкраїнська\nTiếng Việt\nWinaray\n中文\n100 000+ articles\nAfrikaans\nSlovenčina\nAsturianu\nAzərbaycanca\nБългарски\nBân-lâm-gú / Hō-ló-oē\nবাংলা\nБеларуская\nCatalà\nČeština\nCymraeg\nDansk\nEesti\nΕλληνικά\nEsperanto\nEuskara\nفارسی\nGalego\n한국어\nՀայերեն\nहिन्दी\nHrvatski\nBahasa Indonesia\nעברית\nქართული\nLatina\nLatviešu\nLietuvių\nMagyar\nМакедонски\nBahasa Melayu\nBahaso Minangkabau\nNorskbokmålnynorsk\nНохчийн\nOʻzbekcha / Ўзбекча\nҚазақша / Qazaqşa / قازاقشا\nRomână\nSimple English\nSlovenščina\nСрпски / Srpski\nSrpskohrvatski / Српскохрватски\nSuomi\nதமிழ்\nТатарча / Tatarça\nภาษาไทย\nТоҷикӣ\nتۆرکجه\nTürkçe\nاردو\nVolapük\n粵語\nမြန်မာဘာသာ\n10 000+ articles\nBahsa Acèh\nAlemannisch\nአማርኛ\nAragonés\nBasa Banyumasan\nБашҡортса\nБеларуская (Тарашкевіца)\nBikol Central\nবিষ্ণুপ্রিয়া মণিপুরী\nBoarisch\nBosanski\nBrezhoneg\nЧӑвашла\nDiné Bizaad\nEmigliàn–Rumagnòl\nFøroyskt\nFrysk\nGaeilge\nGàidhlig\nગુજરાતી\nHausa\nHornjoserbsce\nIdo\nIlokano\nInterlingua\nИрон æвзаг\nÍslenska\nJawa\nಕನ್ನಡ\nKreyòl Ayisyen\nKurdî / كوردی\nکوردیی ناوەندی\nКыргызча\nКырык Мары\nLëtzebuergesch\nLimburgs\nLombard\nLìgure\nमैथिली\nMalagasy\nമലയാളം\n文言\nमराठी\nმარგალური\nمازِرونی\nMìng-dĕ̤ng-ngṳ̄ / 閩東語\nМонгол\nनेपाल भाषा\nनेपाली\nNnapulitano\nNordfriisk\nOccitan\nМарий\nଓଡି଼ଆ\nਪੰਜਾਬੀ (ਗੁਰਮੁਖੀ)\nپنجابی (شاہ مکھی)\nپښتو\nPiemontèis\nPlattdüütsch\nQırımtatarca\nRuna Simi\nसंस्कृतम्\nСаха Тыла\nScots\nShqip\nSicilianu\nසිංහල\nسنڌي\nŚlůnski\nBasa Sunda\nKiswahili\nTagalog\nతెలుగు\nᨅᨔ ᨕᨙᨁᨗ / Basa Ugi\nVèneto\nWalon\n吳語\nייִדיש\nYorùbá\nZazaki\nŽemaitėška\nisiZulu\n1 000+ articles\nАдыгэбзэ\nÆnglisc\nAkan\nаԥсшәа\nԱրեւմտահայերէն\nArmãneashce\nArpitan\nܐܬܘܪܝܐ\nAvañe’ẽ\nАвар\nAymar\nBasa Bali\nBahasa Banjar\nभोजपुरी\nBislama\nབོད་ཡིག\nБуряад\nChavacano de Zamboanga\nCorsu\nVahcuengh / 話僮\nDavvisámegiella\nDeitsch\nދިވެހިބަސް\nDolnoserbski\nЭрзянь\nEstremeñu\nFiji Hindi\nFurlan\nGaelg\nGagauz\nGĩkũyũ\nگیلکی\n贛語\nHak-kâ-ngî / 客家語\nХальмг\nʻŌlelo Hawaiʻi\nIgbo\nInterlingue\nKabɩyɛ\nKapampangan\nKaszëbsczi\nKernewek\nភាសាខ្មែរ\nKinyarwanda\nКоми\nKongo\nकोंकणी / Konknni\nKriyòl Gwiyannen\nພາສາລາວ\nDzhudezmo / לאדינו\nЛакку\nLatgaļu\nЛезги\nLingála\nlojban\nLuganda\nMalti\nReo Mā’ohi\nMāori\nMirandés\nМокшень\nߒߞߏ\nNa Vosa Vaka-Viti\nNāhuatlahtōlli\nDorerin Naoero\nNedersaksisch\nNouormand / Normaund\nNovial\nAfaan Oromoo\nঅসমীযা়\nपालि\nPangasinán\nPapiamentu\nПерем Коми\nPfälzisch\nPicard\nКъарачай–Малкъар\nQaraqalpaqsha\nRipoarisch\nRumantsch\nРусиньскый Язык\nGagana Sāmoa\nSardu\nSeeltersk\nSesotho sa Leboa\nChiShona\nSoomaaliga\nSranantongo\nTaqbaylit\nTarandíne\nTetun\nTok Pisin\nfaka Tonga\nTürkmençe\nТыва дыл\nУдмурт\nئۇيغۇرچه\nVepsän\nVõro\nWest-Vlams\nWolof\nisiXhosa\nZeêuws\n100+ articles\nBamanankan\nChamoru\nChichewa\nEʋegbe\nFulfulde\n𐌲𐌿𐍄𐌹𐍃𐌺\nᐃᓄᒃᑎᑐᑦ / Inuktitut\nIñupiak\nKalaallisut\nكٲشُر\nLi Niha\nNēhiyawēwin / ᓀᐦᐃᔭᐍᐏᐣ\nNorfuk / Pitkern\nΠοντιακά\nརྫོང་ཁ\nRomani\nKirundi\nSängö\nSesotho\nSetswana\nСловѣ́ньскъ / ⰔⰎⰑⰂⰡⰐⰠⰔⰍⰟ\nSiSwati\nThuɔŋjäŋ\nᏣᎳᎩ\nTsėhesenėstsestotse\nTshivenḓa\nXitsonga\nchiTumbuka\nTwi\nትግርኛ\nဘာသာ မန်\n"""
     assert (any(ord(c) > 65536 for c in wikipedia_text))
 
     def testWikipedia(self):
@@ -5750,7 +5750,7 @@ class APSW(unittest.TestCase):
 
     def testTxnState(self):
         "Verify db.txn_state"
-        n = u"\u1234\u3454324"
+        n = "\u1234\u3454324"
         self.assertRaises(TypeError, self.db.txn_state, 3)
         self.assertEqual(apsw.mapping_txn_state["SQLITE_TXN_NONE"], self.db.txn_state())
         self.db.cursor().execute("BEGIN EXCLUSIVE")
@@ -5795,9 +5795,9 @@ class APSW(unittest.TestCase):
         rowid = curnext(
             cur.execute("create table foo(x blob); insert into foo values(zeroblob(98765)); select rowid from foo"))[0]
         self.assertRaises(TypeError, self.db.blobopen, 1)
-        self.assertRaises(TypeError, self.db.blobopen, u"main", "foo\xf3")
-        self.assertRaises(TypeError, self.db.blobopen, u"main", "foo", "x", complex(-1, -1), True)
-        self.assertRaises(TypeError, self.db.blobopen, u"main", "foo", "x", rowid, True, False)
+        self.assertRaises(TypeError, self.db.blobopen, "main", "foo\xf3")
+        self.assertRaises(TypeError, self.db.blobopen, "main", "foo", "x", complex(-1, -1), True)
+        self.assertRaises(TypeError, self.db.blobopen, "main", "foo", "x", rowid, True, False)
         self.assertRaises(apsw.SQLError, self.db.blobopen, "main", "foo", "x", rowid + 27, False)
         self.assertRaises(apsw.SQLError, self.db.blobopen, "foo", "foo", "x", rowid, False)
         self.assertRaises(apsw.SQLError, self.db.blobopen, "main", "x", "x", rowid, False)
@@ -5911,7 +5911,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.AbortError, blobro.readinto, buf)
         # should fail with buffer being a string
         self.assertRaises(TypeError, blobro.readinto, "abcd", 1, 1)
-        self.assertRaises(TypeError, blobro.readinto, u"abcd", 1, 1)
+        self.assertRaises(TypeError, blobro.readinto, "abcd", 1, 1)
         # write tests
         blobrw = self.db.blobopen("main", "foo", "x", rowid, True)
         self.assertEqual(blobrw.length(), 98765)
@@ -5927,7 +5927,7 @@ class APSW(unittest.TestCase):
         self.assertEqual(blobrw.read(55), b"abcdefg" + b"\x00" * 43 + b"hijkl")
         self.assertRaises(TypeError, blobrw.write, 12)
         self.assertRaises(TypeError, blobrw.write)
-        self.assertRaises(TypeError, blobrw.write, u"foo")
+        self.assertRaises(TypeError, blobrw.write, "foo")
         # try to go beyond end
         self.assertRaises(ValueError, blobrw.write, b" " * 100000)
         self.assertRaises(TypeError, blobrw.close, "elephant")
@@ -6299,7 +6299,7 @@ class APSW(unittest.TestCase):
                 return b"abcd"
 
             def xRandomness4(self, n):
-                return u"abcd"
+                return "abcd"
 
             def xRandomness5(self, n):
                 return b"a" * (2 * n)
@@ -6411,7 +6411,7 @@ class APSW(unittest.TestCase):
                 return 12  # bad return type
 
             def xFullPathname99(self, name):
-                assert (type(name) == type(u""))
+                assert (type(name) == type(""))
                 return super().xFullPathname(name)
 
             def xOpen1(self, bad, number, of, arguments):
@@ -6430,7 +6430,7 @@ class APSW(unittest.TestCase):
                 return None
 
             def xOpen99(self, name, flags):
-                assert (isinstance(name, apsw.URIFilename) or name is None or type(name) == type(u""))
+                assert (isinstance(name, apsw.URIFilename) or name is None or type(name) == type(""))
                 assert (type(flags) == type([]))
                 assert (len(flags) == 2)
                 assert (type(flags[0]) in (int, ))
@@ -6463,7 +6463,7 @@ class APSW(unittest.TestCase):
                 return 0xffffffffffffffff10
 
             def xDlOpen99(self, name):
-                assert (type(name) == type(u""))
+                assert (type(name) == type(""))
                 res = super().xDlOpen(name)
                 if ctypes:
                     try:
@@ -6493,7 +6493,7 @@ class APSW(unittest.TestCase):
 
             def xDlSym99(self, handle, name):
                 assert (type(handle) in (int, ))
-                assert (type(name) == type(u""))
+                assert (type(name) == type(""))
                 res = super().xDlSym(handle, name)
                 # pypy doesn't have dlsym
                 if not iswindows and hasattr(_ctypes, "dlsym"):
@@ -6729,7 +6729,7 @@ class APSW(unittest.TestCase):
                 return 3
 
             def xRead4(self, amount, offset):
-                return u"a" * amount
+                return "a" * amount
 
             def xRead5(self, amount, offset):
                 return super().xRead(amount - 1, offset)
@@ -6911,10 +6911,10 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestVFS.xAccess = TestVFS.xAccess99
         if iswindows:
-            self.assertRaises(apsw.IOError, vfs.xAccess, u"<bad<filename:", apsw.SQLITE_ACCESS_READWRITE)
+            self.assertRaises(apsw.IOError, vfs.xAccess, "<bad<filename:", apsw.SQLITE_ACCESS_READWRITE)
         else:
-            self.assertEqual(False, vfs.xAccess(u"<bad<filename:", apsw.SQLITE_ACCESS_READWRITE))
-            self.assertEqual(True, vfs.xAccess(u".", apsw.SQLITE_ACCESS_EXISTS))
+            self.assertEqual(False, vfs.xAccess("<bad<filename:", apsw.SQLITE_ACCESS_READWRITE))
+            self.assertEqual(True, vfs.xAccess(".", apsw.SQLITE_ACCESS_EXISTS))
         # unix vfs doesn't ever return error so we have to indirect through one of ours
         errvfs = ErrorVFS()
         errvfs.xAccess = errvfs.errorme
@@ -7230,7 +7230,7 @@ class APSW(unittest.TestCase):
         ## xWrite
         self.assertRaises(TypeError, t.xWrite, "three", "four")
         self.assertRaises(OverflowError, t.xWrite, b"three", 0xffffffffeeeeeeee0)
-        self.assertRaises(TypeError, t.xWrite, u"foo", 0)
+        self.assertRaises(TypeError, t.xWrite, "foo", 0)
         TestFile.xWrite = TestFile.xWrite1
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestFile.xWrite = TestFile.xWrite2
@@ -7725,10 +7725,10 @@ class APSW(unittest.TestCase):
             def handler(code, message, called=called):
                 called[0] += 1
                 self.assertEqual(code, apsw.SQLITE_MISUSE)
-                self.assertEqual(message, u"a \u1234 unicode ' \ufe54 string \u0089")
+                self.assertEqual(message, "a \u1234 unicode ' \ufe54 string \u0089")
 
             apsw.config(apsw.SQLITE_CONFIG_LOG, handler)
-            apsw.log(apsw.SQLITE_MISUSE, u"a \u1234 unicode ' \ufe54 string \u0089")
+            apsw.log(apsw.SQLITE_MISUSE, "a \u1234 unicode ' \ufe54 string \u0089")
             self.assertEqual(called[0], 1)
 
             def badhandler(code, message, called=called):
@@ -7736,12 +7736,12 @@ class APSW(unittest.TestCase):
                     return
                 called[0] += 1
                 self.assertEqual(code, apsw.SQLITE_NOMEM)
-                self.assertEqual(message, u"Xa \u1234 unicode ' \ufe54 string \u0089")
+                self.assertEqual(message, "Xa \u1234 unicode ' \ufe54 string \u0089")
                 1 / 0
 
             apsw.config(apsw.SQLITE_CONFIG_LOG, badhandler)
             self.assertRaisesUnraisable(ZeroDivisionError, apsw.log, apsw.SQLITE_NOMEM,
-                                        u"Xa \u1234 unicode ' \ufe54 string \u0089")
+                                        "Xa \u1234 unicode ' \ufe54 string \u0089")
             self.assertEqual(called[0], 2)
         finally:
             gc.collect()
@@ -8088,7 +8088,7 @@ class APSW(unittest.TestCase):
         self.assertNotEqual(v[0], v[1])
         self.assertEqual(len(v[0]), len(v[1]))
         # do not output blob as is
-        self.assertTrue(u"\xaa" not in get(fh[1]))
+        self.assertTrue("\xaa" not in get(fh[1]))
         # undo explain
         reset()
         cmd(".explain OFF\n")
@@ -8755,7 +8755,7 @@ class APSW(unittest.TestCase):
         s.db.cursor().execute("pragma user_version=0")
         # some nasty stuff
         reset()
-        cmd(u"create table nastydata(x,y); insert into nastydata values(null,'xxx\\u1234\\uabcd\\U00012345yyy\r\n\t\"this is nasty\u0001stuff!');"
+        cmd("create table nastydata(x,y); insert into nastydata values(null,'xxx\\u1234\\uabcd\\U00012345yyy\r\n\t\"this is nasty\u0001stuff!');"
             'create table "table"([except] int); create table [](""); create table [using]("&");')
         s.cmdloop()
         isempty(fh[1])
@@ -8886,7 +8886,7 @@ insert into xxblah values(3);
         self.assertTrue("no known encoding" in get(fh[2]).lower())
         # use iso8859-1 to make sure data is read correctly - it
         # differs from utf8
-        us = u"unitestdata \xaa\x89 34"
+        us = "unitestdata \xaa\x89 34"
         write_whole_file(TESTFILEPREFIX + "test-shell-1",
                          "w",
                          f"insert into enctest values('{ us }');\n",
@@ -8932,7 +8932,7 @@ insert into xxblah values(3);
         self.assertTrue("blahblah" in get(fh[2]))
         # check replace works
         reset()
-        us = u"\N{BLACK STAR}8\N{WHITE STAR}"
+        us = "\N{BLACK STAR}8\N{WHITE STAR}"
         write_whole_file(TESTFILEPREFIX + "test-shell-1",
                          "w",
                          f"insert into enctest values('{ us }');",
@@ -9575,8 +9575,8 @@ shell.write(shell.stdout, "hello world\\n")
         ###
         ### Unicode output with all output modes
         ###
-        colname = u"\N{BLACK STAR}8\N{WHITE STAR}"
-        val = u'xxx\u1234\uabcdyyy this\" is nasty\u0001stuff!'
+        colname = "\N{BLACK STAR}8\N{WHITE STAR}"
+        val = 'xxx\u1234\uabcdyyy this\" is nasty\u0001stuff!'
         noheadermodes = ('insert', )
         # possible ways val can be represented (eg csv doubles up double quotes)
         outputs = (val, val.replace('"', '""'), val.replace('"', '&quot;'), val.replace('"', '\\"'))
@@ -10561,9 +10561,9 @@ def setup():
 test_types_vals = (
     "a simple string",  # "ascii" string
     "0123456789" * 200000,  # a longer string
-    u"a \u1234 unicode \ufe54 string \u0089",  # simple unicode string
-    u"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET} ",  # funky unicode or an episode of b5
-    u"\N{MUSICAL SYMBOL G CLEF}",  # https://www.cmlenz.net/archives/2008/07/the-truth-about-unicode-in-python
+    "a \u1234 unicode \ufe54 string \u0089",  # simple unicode string
+    "\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET} ",  # funky unicode or an episode of b5
+    "\N{MUSICAL SYMBOL G CLEF}",  # https://www.cmlenz.net/archives/2008/07/the-truth-about-unicode-in-python
     97,  # integer
     2147483647,  # numbers on 31 bit boundary (32nd bit used for integer sign), and then
     -2147483647,  # start using 32nd bit (must be represented by 64bit to avoid losing
