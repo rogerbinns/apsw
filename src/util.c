@@ -179,7 +179,7 @@ apsw_write_unraisable(PyObject *hookobject)
 #if PY_VERSION_HEX < 0x030c0000
       PyObject *vargs[] = {NULL, OBJ(exctype), OBJ(exc), OBJ(exctraceback)};
 #else
-      PyObject *vargs[] = {NULL, Py_TYPE(OBJ(exc)), OBJ(exc), Py_None};
+      PyObject *vargs[] = {NULL, (PyObject *)Py_TYPE(OBJ(exc)), OBJ(exc), Py_None};
 #endif
       result = PyObject_Vectorcall(excepthook, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
       if (result)
@@ -201,7 +201,7 @@ apsw_write_unraisable(PyObject *hookobject)
       PyStructSequence_SetItem(arg, 1, Py_NewRef(OBJ(exc)));
       PyStructSequence_SetItem(arg, 2, Py_NewRef(OBJ(exctraceback)));
 #else
-      PyStructSequence_SetItem(arg, 0, Py_NewRef(Py_TYPE(OBJ(exc))));
+      PyStructSequence_SetItem(arg, 0, Py_NewRef((PyObject *)Py_TYPE(OBJ(exc))));
       PyStructSequence_SetItem(arg, 1, Py_NewRef(exc));
 #endif
       PyObject *vargs[] = {NULL, arg};
@@ -221,7 +221,7 @@ apsw_write_unraisable(PyObject *hookobject)
 #if PY_VERSION_HEX < 0x030c0000
     PyObject *vargs[] = {NULL, OBJ(exctype), OBJ(exc), OBJ(exctraceback)};
 #else
-      PyObject *vargs[] = {NULL, Py_TYPE(OBJ(exc)), OBJ(exc), Py_None};
+    PyObject *vargs[] = {NULL, (PyObject *)Py_TYPE(OBJ(exc)), OBJ(exc), Py_None};
 #endif
 
     result = PyObject_Vectorcall(excepthook, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
