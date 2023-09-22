@@ -269,7 +269,7 @@ APSWBlob_read(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
     Blob_read_CHECK;
     ARG_PROLOG(1, Blob_read_KWNAMES);
     ARG_OPTIONAL ARG_int(length);
-    ARG_EPILOG(NULL, Blob_read_USAGE,);
+    ARG_EPILOG(NULL, Blob_read_USAGE, );
   }
 
   if (
@@ -353,7 +353,7 @@ APSWBlob_readinto(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_na
     ARG_MANDATORY ARG_pyobject(buffer);
     ARG_OPTIONAL ARG_int64(offset);
     ARG_OPTIONAL ARG_int64(length);
-    ARG_EPILOG(NULL, Blob_readinto_USAGE,);
+    ARG_EPILOG(NULL, Blob_readinto_USAGE, );
   }
 
 #define ERREXIT(x)  \
@@ -428,7 +428,7 @@ APSWBlob_seek(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
     ARG_PROLOG(2, Blob_seek_KWNAMES);
     ARG_MANDATORY ARG_int(offset);
     ARG_OPTIONAL ARG_int(whence);
-    ARG_EPILOG(NULL, Blob_seek_USAGE,);
+    ARG_EPILOG(NULL, Blob_seek_USAGE, );
   }
   switch (whence)
   {
@@ -497,7 +497,7 @@ APSWBlob_write(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_nargs
     Blob_write_CHECK;
     ARG_PROLOG(1, Blob_write_KWNAMES);
     ARG_MANDATORY ARG_py_buffer(data);
-    ARG_EPILOG(NULL, Blob_write_USAGE,);
+    ARG_EPILOG(NULL, Blob_write_USAGE, );
   }
 
   if (0 != PyObject_GetBufferContiguous(data, &data_buffer, PyBUF_SIMPLE))
@@ -576,7 +576,7 @@ APSWBlob_close(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_nargs
     Blob_close_CHECK;
     ARG_PROLOG(1, Blob_close_KWNAMES);
     ARG_OPTIONAL ARG_bool(force);
-    ARG_EPILOG(NULL, Blob_close_USAGE,);
+    ARG_EPILOG(NULL, Blob_close_USAGE, );
   }
   setexc = APSWBlob_close_internal(self, !!force);
 
@@ -653,7 +653,7 @@ APSWBlob_reopen(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_narg
     Blob_reopen_CHECK;
     ARG_PROLOG(1, Blob_reopen_KWNAMES);
     ARG_MANDATORY ARG_int64(rowid);
-    ARG_EPILOG(NULL, Blob_reopen_USAGE,);
+    ARG_EPILOG(NULL, Blob_reopen_USAGE, );
   }
   /* no matter what happens we always reset current offset */
   self->curoffset = 0;

@@ -1062,7 +1062,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast
     ARG_OPTIONAL ARG_bool(can_cache);
     ARG_OPTIONAL ARG_int(prepare_flags);
     ARG_OPTIONAL ARG_int(explain);
-    ARG_EPILOG(NULL, Cursor_execute_USAGE,);
+    ARG_EPILOG(NULL, Cursor_execute_USAGE, );
   }
   self->bindings = bindings;
 
@@ -1180,7 +1180,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t 
     ARG_OPTIONAL ARG_bool(can_cache);
     ARG_OPTIONAL ARG_int(prepare_flags);
     ARG_OPTIONAL ARG_int(explain);
-    ARG_EPILOG(NULL, Cursor_executemany_USAGE,);
+    ARG_EPILOG(NULL, Cursor_executemany_USAGE, );
   }
   self->emiter = PyObject_GetIter(sequenceofbindings);
   if (!self->emiter)
@@ -1291,7 +1291,7 @@ APSWCursor_close(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast_n
     Cursor_close_CHECK;
     ARG_PROLOG(1, Cursor_close_KWNAMES);
     ARG_OPTIONAL ARG_bool(force);
-    ARG_EPILOG(NULL, Cursor_close_USAGE,);
+    ARG_EPILOG(NULL, Cursor_close_USAGE, );
   }
   APSWCursor_close_internal(self, !!force);
 
@@ -1391,7 +1391,7 @@ APSWCursor_setexectrace(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t
     Cursor_setexectrace_CHECK;
     ARG_PROLOG(1, Cursor_setexectrace_KWNAMES);
     ARG_MANDATORY ARG_optional_Callable(callable);
-    ARG_EPILOG(NULL, Cursor_setexectrace_USAGE,);
+    ARG_EPILOG(NULL, Cursor_setexectrace_USAGE, );
   }
 
   Py_XINCREF(callable);
@@ -1417,7 +1417,7 @@ APSWCursor_setrowtrace(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t 
     Cursor_setrowtrace_CHECK;
     ARG_PROLOG(1, Cursor_setrowtrace_KWNAMES);
     ARG_MANDATORY ARG_optional_Callable(callable);
-    ARG_EPILOG(NULL, Cursor_setrowtrace_USAGE,);
+    ARG_EPILOG(NULL, Cursor_setrowtrace_USAGE, );
   }
 
   Py_XINCREF(callable);

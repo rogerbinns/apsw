@@ -136,7 +136,7 @@ SqliteIndexInfo_get_aConstraint_iColumn(SqliteIndexInfo *self, PyObject *const *
     IndexInfo_get_aConstraint_iColumn_CHECK;
     ARG_PROLOG(1, IndexInfo_get_aConstraint_iColumn_KWNAMES);
     ARG_MANDATORY ARG_int(which);
-    ARG_EPILOG(NULL, IndexInfo_get_aConstraint_iColumn_USAGE,);
+    ARG_EPILOG(NULL, IndexInfo_get_aConstraint_iColumn_USAGE, );
   }
 
   CHECK_RANGE(nConstraint);
@@ -160,7 +160,7 @@ SqliteIndexInfo_get_aConstraint_op(SqliteIndexInfo *self, PyObject *const *fast_
     IndexInfo_get_aConstraint_op_CHECK;
     ARG_PROLOG(1, IndexInfo_get_aConstraint_op_KWNAMES);
     ARG_MANDATORY ARG_int(which);
-    ARG_EPILOG(NULL, IndexInfo_get_aConstraint_op_USAGE,);
+    ARG_EPILOG(NULL, IndexInfo_get_aConstraint_op_USAGE, );
   }
 
   CHECK_RANGE(nConstraint);
@@ -184,7 +184,7 @@ SqliteIndexInfo_get_aConstraint_usable(SqliteIndexInfo *self, PyObject *const *f
     IndexInfo_get_aConstraint_usable_CHECK;
     ARG_PROLOG(1, IndexInfo_get_aConstraint_usable_KWNAMES);
     ARG_MANDATORY ARG_int(which);
-    ARG_EPILOG(NULL, IndexInfo_get_aConstraint_usable_USAGE,);
+    ARG_EPILOG(NULL, IndexInfo_get_aConstraint_usable_USAGE, );
   }
   CHECK_RANGE(nConstraint);
 
@@ -211,7 +211,7 @@ SqliteIndexInfo_get_aConstraint_collation(SqliteIndexInfo *self, PyObject *const
     IndexInfo_get_aConstraint_collation_CHECK;
     ARG_PROLOG(1, IndexInfo_get_aConstraint_collation_KWNAMES);
     ARG_MANDATORY ARG_int(which);
-    ARG_EPILOG(NULL, IndexInfo_get_aConstraint_collation_USAGE,);
+    ARG_EPILOG(NULL, IndexInfo_get_aConstraint_collation_USAGE, );
   }
   CHECK_RANGE(nConstraint);
 
@@ -236,7 +236,7 @@ SqliteIndexInfo_get_aConstraint_rhs(SqliteIndexInfo *self, PyObject *const *fast
     IndexInfo_get_aConstraint_rhs_CHECK;
     ARG_PROLOG(1, IndexInfo_get_aConstraint_rhs_KWNAMES);
     ARG_MANDATORY ARG_int(which);
-    ARG_EPILOG(NULL, IndexInfo_get_aConstraint_rhs_USAGE,);
+    ARG_EPILOG(NULL, IndexInfo_get_aConstraint_rhs_USAGE, );
   }
   CHECK_RANGE(nConstraint);
 
@@ -269,7 +269,7 @@ SqliteIndexInfo_get_aOrderBy_iColumn(SqliteIndexInfo *self, PyObject *const *fas
     IndexInfo_get_aOrderBy_iColumn_CHECK;
     ARG_PROLOG(1, IndexInfo_get_aOrderBy_iColumn_KWNAMES);
     ARG_MANDATORY ARG_int(which);
-    ARG_EPILOG(NULL, IndexInfo_get_aOrderBy_iColumn_USAGE,);
+    ARG_EPILOG(NULL, IndexInfo_get_aOrderBy_iColumn_USAGE, );
   }
   CHECK_RANGE(nOrderBy);
 
@@ -292,7 +292,7 @@ SqliteIndexInfo_get_aOrderBy_desc(SqliteIndexInfo *self, PyObject *const *fast_a
     IndexInfo_get_aOrderBy_desc_CHECK;
     ARG_PROLOG(1, IndexInfo_get_aOrderBy_desc_KWNAMES);
     ARG_MANDATORY ARG_int(which);
-    ARG_EPILOG(NULL, IndexInfo_get_aOrderBy_desc_USAGE,);
+    ARG_EPILOG(NULL, IndexInfo_get_aOrderBy_desc_USAGE, );
   }
   CHECK_RANGE(nOrderBy);
 
@@ -315,7 +315,7 @@ SqliteIndexInfo_get_aConstraintUsage_argvIndex(SqliteIndexInfo *self, PyObject *
     IndexInfo_get_aConstraintUsage_argvIndex_CHECK;
     ARG_PROLOG(1, IndexInfo_get_aConstraintUsage_argvIndex_KWNAMES);
     ARG_MANDATORY ARG_int(which);
-    ARG_EPILOG(NULL, IndexInfo_get_aConstraintUsage_argvIndex_USAGE,);
+    ARG_EPILOG(NULL, IndexInfo_get_aConstraintUsage_argvIndex_USAGE, );
   }
   CHECK_RANGE(nConstraint);
 
@@ -339,7 +339,7 @@ SqliteIndexInfo_set_aConstraintUsage_argvIndex(SqliteIndexInfo *self, PyObject *
     ARG_PROLOG(2, IndexInfo_set_aConstraintUsage_argvIndex_KWNAMES);
     ARG_MANDATORY ARG_int(which);
     ARG_MANDATORY ARG_int(argvIndex);
-    ARG_EPILOG(NULL, IndexInfo_set_aConstraintUsage_argvIndex_USAGE,);
+    ARG_EPILOG(NULL, IndexInfo_set_aConstraintUsage_argvIndex_USAGE, );
   }
   CHECK_RANGE(nConstraint);
 
@@ -363,7 +363,7 @@ SqliteIndexInfo_get_aConstraintUsage_omit(SqliteIndexInfo *self, PyObject *const
     IndexInfo_get_aConstraintUsage_omit_CHECK;
     ARG_PROLOG(1, IndexInfo_get_aConstraintUsage_omit_KWNAMES);
     ARG_MANDATORY ARG_int(which);
-    ARG_EPILOG(NULL, IndexInfo_get_aConstraintUsage_omit_USAGE,);
+    ARG_EPILOG(NULL, IndexInfo_get_aConstraintUsage_omit_USAGE, );
   }
   CHECK_RANGE(nConstraint);
 
@@ -389,7 +389,7 @@ SqliteIndexInfo_set_aConstraintUsage_omit(SqliteIndexInfo *self, PyObject *const
     ARG_PROLOG(2, IndexInfo_set_aConstraintUsage_omit_KWNAMES);
     ARG_MANDATORY ARG_int(which);
     ARG_MANDATORY ARG_bool(omit);
-    ARG_EPILOG(NULL, IndexInfo_set_aConstraintUsage_omit_USAGE,);
+    ARG_EPILOG(NULL, IndexInfo_set_aConstraintUsage_omit_USAGE, );
   }
   CHECK_RANGE(nConstraint);
 
@@ -414,7 +414,7 @@ SqliteIndexInfo_get_aConstraintUsage_in(SqliteIndexInfo *self, PyObject *const *
     IndexInfo_get_aConstraintUsage_in_CHECK;
     ARG_PROLOG(1, IndexInfo_get_aConstraintUsage_in_KWNAMES);
     ARG_MANDATORY ARG_int(which);
-    ARG_EPILOG(NULL, IndexInfo_get_aConstraintUsage_in_USAGE,);
+    ARG_EPILOG(NULL, IndexInfo_get_aConstraintUsage_in_USAGE, );
   }
   CHECK_RANGE(nConstraint);
 
@@ -442,7 +442,7 @@ SqliteIndexInfo_set_aConstraintUsage_in(SqliteIndexInfo *self, PyObject *const *
     ARG_PROLOG(2, IndexInfo_set_aConstraintUsage_in_KWNAMES);
     ARG_MANDATORY ARG_int(which);
     ARG_MANDATORY ARG_bool(filter_all);
-    ARG_EPILOG(NULL, IndexInfo_set_aConstraintUsage_in_USAGE,);
+    ARG_EPILOG(NULL, IndexInfo_set_aConstraintUsage_in_USAGE, );
   }
   CHECK_RANGE(nConstraint);
 
