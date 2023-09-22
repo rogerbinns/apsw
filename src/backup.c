@@ -210,7 +210,7 @@ APSWBackup_step(APSWBackup *self, PyObject *const *fast_args, Py_ssize_t fast_na
 
   if (res)
   {
-    SET_EXC(res, NULL); /* ::TODO:: will likely have message on dest->db */
+    SET_EXC(res, NULL);
     return NULL;
   }
 
