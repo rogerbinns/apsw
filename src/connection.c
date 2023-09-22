@@ -2674,8 +2674,6 @@ finally:
   Py_XDECREF(aggfc->stepfunc);
   Py_XDECREF(aggfc->finalfunc);
 
-  /* ::TODO:: these should be chained */
-
   if (PyErr_Occurred() && PY_ERR_NOT_NULL(exc_save))
     apsw_write_unraisable(NULL);
 
