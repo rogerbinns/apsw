@@ -282,8 +282,7 @@ APSWBlob_read(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
     length = sqlite3_blob_bytes(self->pBlob) - self->curoffset;
 
   /* trying to read more than is in the blob? */
-  /* ::TODO:: use 64 arithmetic to avoid overflow */
-  if (self->curoffset + length > sqlite3_blob_bytes(self->pBlob))
+  if ((sqlite3_int64)self->curoffset + (sqlite3_int64)length > sqlite3_blob_bytes(self->pBlob))
     length = sqlite3_blob_bytes(self->pBlob) - self->curoffset;
 
   buffy = PyBytes_FromStringAndSize(NULL, length);
