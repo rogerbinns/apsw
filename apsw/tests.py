@@ -3224,7 +3224,7 @@ class APSW(unittest.TestCase):
         c = self.db.cursor()
         c.execute("create table foo(row,str)")
         vals = ("\0a simple string", "a simple string\0with a null", "a string\0with two\0nulls",
-                "or even a \0\0\0\0\0\0sequence\0\0\0\0of them", "a \u1234 unicode \ufe54 string \u0089",
+                "or even a \0\0\0\0\0\0sequence\0\0\0\0of them", "a \u1234 unic\0de \ufe54 string \u0089",
                 "a \u1234 unicode \ufe54 string \u0089\0and some text",
                 "\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET}\0more\0than you\0can handle",
                 "\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET}\0\0\0\0\0sequences\0\0\0of them")
@@ -3260,13 +3260,13 @@ class APSW(unittest.TestCase):
 
         # collation
         def colcmp(l, r):
-            self.failUnless("\0" in l and "\0" in r)
+            self.assertTrue("\0" in l and "\0" in r)
             if l < r: return -1
             if l > r: return 1
             return 0
 
         self.db.createcollation("colcmp", colcmp)
-        self.db.execute("select row,str from foo order by row,str").get
+        self.db.execute("select str from foo order by str collate colcmp").get
 
     def testSharedCache(self):
         "Verify setting of shared cache"
