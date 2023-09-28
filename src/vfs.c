@@ -597,9 +597,9 @@ apswvfs_xFullPathname(sqlite3_vfs *vfs, const char *zName, int nOut, char *zOut)
       goto finally;
     }
     memcpy(zOut, utf8, utf8len + 1); /* Python always null terminates hence +1 */
+    result = SQLITE_OK;
   }
 
-  result = SQLITE_OK;
 finally:
   Py_XDECREF(pyresult);
 
