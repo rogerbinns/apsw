@@ -1166,8 +1166,7 @@ class APSW(unittest.TestCase):
         b = VFSB()
         sys.setrecursionlimit(200)
         print("A message due to RecursionError is possible, and what is being tested", file=sys.stderr)
-        self.assertRaises((apsw.SQLError, RecursionError),
-                          self.assertRaisesUnraisable, (apsw.SQLError, RecursionError),
+        self.assertRaises(RecursionError,
                           apsw.Connection,
                           "testdb",
                           vfs="vfsa")
