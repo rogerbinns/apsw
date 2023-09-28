@@ -1166,10 +1166,7 @@ class APSW(unittest.TestCase):
         b = VFSB()
         sys.setrecursionlimit(200)
         print("A message due to RecursionError is possible, and what is being tested", file=sys.stderr)
-        self.assertRaises(RecursionError,
-                          apsw.Connection,
-                          "testdb",
-                          vfs="vfsa")
+        self.assertRaises(RecursionError, apsw.Connection, "testdb", vfs="vfsa")
         sys.setrecursionlimit(1000)
 
         def handler():  # incorrect number of arguments on purpose
@@ -6116,9 +6113,8 @@ class APSW(unittest.TestCase):
                 1 / 0
 
         testvfs = TVFS()
-        self.assertRaises(apsw.SQLError,
-                          self.assertRaisesUnraisable,
-                          ZeroDivisionError,
+
+        self.assertRaises(ZeroDivisionError,
                           apsw.Connection,
                           "file:testdb2?foo=1%262%3D3&bar=43242342&bam=true&baz=fal%73%65",
                           flags=apsw.SQLITE_OPEN_READWRITE | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_URI,
@@ -6319,19 +6315,19 @@ class APSW(unittest.TestCase):
         self.assertRaises(ValueError, vfs.xRandomness, -88)
 
         RandomVFS.xRandomness = RandomVFS.xRandomness1
-        self.assertRaisesUnraisable(TypeError, testrand)
+        self.assertRaises(TypeError, testrand)
         RandomVFS.xRandomness = RandomVFS.xRandomness2
-        self.assertRaisesUnraisable(ZeroDivisionError, testrand)
+        self.assertRaises(ZeroDivisionError, testrand)
         RandomVFS.xRandomness = RandomVFS.xRandomness3
         testrand()  # shouldn't have problems
         RandomVFS.xRandomness = RandomVFS.xRandomness4
-        self.assertRaisesUnraisable(TypeError, testrand)
+        self.assertRaises(TypeError, testrand)
         RandomVFS.xRandomness = RandomVFS.xRandomness5
         testrand()  # shouldn't have problems
         RandomVFS.xRandomness = RandomVFS.xRandomness6
         testrand()  # shouldn't have problems
         RandomVFS.xRandomness = RandomVFS.xRandomness7
-        self.assertRaisesUnraisable(TypeError, testrand)
+        self.assertRaises(TypeError, testrand)
         RandomVFS.xRandomness = RandomVFS.xRandomness99
         testrand()  # shouldn't have problems
         vfsupper.xRandomness = vfsupper.xRandomness1
@@ -6871,7 +6867,7 @@ class APSW(unittest.TestCase):
         self.assertTrue("never" not in apsw.vfsnames())
         TestVFS.__init__ = TestVFS.init1
         vfs = TestVFS()
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, apsw.VFSNotImplementedError, testdb)
+        self.assertRaises(apsw.VFSNotImplementedError, testdb)
         del vfs
         gc.collect()
         TestVFS.__init__ = TestVFS.init99
@@ -6887,27 +6883,26 @@ class APSW(unittest.TestCase):
         ## xDelete
         self.assertRaises(TypeError, vfs.xDelete, "bogus", "arguments")
         TestVFS.xDelete = TestVFS.xDelete1
-        err = [apsw.IOError, apsw.IOError][iswindows]
-        self.assertRaises(err, self.assertRaisesUnraisable, err, testdb)
+        self.assertRaises(apsw.IOError, testdb)
         TestVFS.xDelete = TestVFS.xDelete2
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
+        self.assertRaises(TypeError, testdb)
         TestVFS.xDelete = TestVFS.xDelete3
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
+        self.assertRaises(ZeroDivisionError, testdb)
         TestVFS.xDelete = TestVFS.xDelete4
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
+        self.assertRaises(TypeError, testdb)
         TestVFS.xDelete = TestVFS.xDelete99
         testdb()
 
         ## xAccess
         self.assertRaises(TypeError, vfs.xAccess, "bogus", "arguments")
         TestVFS.xAccess = TestVFS.xAccess1
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
+        self.assertRaises(TypeError, testdb)
         TestVFS.xAccess = TestVFS.xAccess2
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
+        self.assertRaises(ZeroDivisionError, testdb)
         TestVFS.xAccess = TestVFS.xAccess3
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
+        self.assertRaises(TypeError, testdb)
         TestVFS.xAccess = TestVFS.xAccess4
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
+        self.assertRaises(TypeError, testdb)
         TestVFS.xAccess = TestVFS.xAccess99
         if iswindows:
             self.assertRaises(apsw.IOError, vfs.xAccess, "<bad<filename:", apsw.SQLITE_ACCESS_READWRITE)
@@ -6918,7 +6913,7 @@ class APSW(unittest.TestCase):
         errvfs = ErrorVFS()
         errvfs.xAccess = errvfs.errorme
         vfs2 = TestVFS("apswtest2", "errorvfs")
-        self.assertRaises(apsw.IOError, self.assertRaisesUnraisable, apsw.IOError, testdb, vfsname="apswtest2")
+        self.assertRaises(apsw.IOError, testdb, vfsname="apswtest2")
         del vfs2
         del errvfs
         gc.collect()
@@ -6927,21 +6922,21 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, vfs.xFullPathname, "bogus", "arguments")
         self.assertRaises(TypeError, vfs.xFullPathname, 3)
         TestVFS.xFullPathname = TestVFS.xFullPathname1
-        self.assertRaises(apsw.CantOpenError, self.assertRaisesUnraisable, TypeError, testdb)
+        self.assertRaises(TypeError, testdb)
         TestVFS.xFullPathname = TestVFS.xFullPathname2
-        self.assertRaises(apsw.CantOpenError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
+        self.assertRaises(ZeroDivisionError, testdb)
         TestVFS.xFullPathname = TestVFS.xFullPathname3
-        self.assertRaises(apsw.CantOpenError, self.assertRaisesUnraisable, TypeError, testdb)
+        self.assertRaises(TypeError, testdb)
         TestVFS.xFullPathname = TestVFS.xFullPathname4
         if not iswindows:
+            # ::TODO:: check this on windows
             # SQLite doesn't give an error even though the vfs is silently truncating
             # the full pathname.  See SQLite ticket 3373
-            self.assertMayRaiseUnraisable(apsw.CantOpenError, self.assertRaises, apsw.CantOpenError,
-                                          testdb)  # we get cantopen on the truncated fullname
+            self.assertRaises(apsw.CantOpenError, testdb)  # we get cantopen on the truncated fullname
         TestVFS.xFullPathname = TestVFS.xFullPathname5
-        self.assertRaises(apsw.TooBigError, self.assertRaisesUnraisable, apsw.TooBigError, testdb)
+        self.assertRaises(apsw.TooBigError, testdb)
         TestVFS.xFullPathname = TestVFS.xFullPathname6
-        self.assertRaises(apsw.CantOpenError, self.assertRaisesUnraisable, TypeError, testdb)
+        self.assertRaises(TypeError, testdb)
         TestVFS.xFullPathname = TestVFS.xFullPathname99
         testdb()
 
@@ -6956,19 +6951,16 @@ class APSW(unittest.TestCase):
         self.assertRaises(OverflowError, vfs.xOpen, None, [0xffffffff0, 2])
         self.assertRaises(OverflowError, vfs.xOpen, None, [1, 0xffffffff0])
         self.assertRaises(
-            apsw.CantOpenError,
-            self.assertRaisesUnraisable,
-            apsw.CantOpenError,
-            testdb,
+            apsw.CantOpenError, testdb,
             filename="notadir/notexist/nochance")  # can't open due to intermediate directories not existing
         TestVFS.xOpen = TestVFS.xOpen1
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
+        self.assertRaises(TypeError, testdb)
         TestVFS.xOpen = TestVFS.xOpen2
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
+        self.assertRaises(TypeError, testdb)
         TestVFS.xOpen = TestVFS.xOpen3
-        self.assertRaises(apsw.CantOpenError, self.assertRaisesUnraisable, TypeError, testdb)
+        self.assertRaises(TypeError, testdb)
         TestVFS.xOpen = TestVFS.xOpen4
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, AttributeError, testdb)
+        self.assertRaises(AttributeError, testdb)
         TestVFS.xOpen = TestVFS.xOpen99
         testdb()
 
