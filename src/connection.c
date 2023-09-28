@@ -2308,6 +2308,9 @@ Connection_loadextension(Connection *self, PyObject *const *fast_args, Py_ssize_
   }
   PYSQLITE_CON_CALL(res = sqlite3_load_extension(self->db, filename, entrypoint, &errmsg));
 
+  if (PyErr_Occurred())
+    return NULL;
+
   /* load_extension doesn't set the error message on the db so we have to make exception manually */
   if (res != SQLITE_OK)
   {
