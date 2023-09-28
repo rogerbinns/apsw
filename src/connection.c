@@ -204,7 +204,7 @@ Connection_close_internal(Connection *self, int force)
 {
   int res;
 
-  PY_ERR_FETCH_IF(force == 2 , exc_save);
+  PY_ERR_FETCH_IF(force == 2, exc_save);
 
   /* close out dependents by repeatedly processing first item until
      list is empty.  note that closing an item will cause the list to
@@ -2677,7 +2677,7 @@ finally:
   if (PyErr_Occurred() && PY_ERR_NOT_NULL(exc_save))
     apsw_write_unraisable(NULL);
 
-  if(PY_ERR_NOT_NULL(exc_save))
+  if (PY_ERR_NOT_NULL(exc_save))
     PY_ERR_RESTORE(exc_save);
 
   if (PyErr_Occurred())
