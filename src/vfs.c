@@ -2638,27 +2638,31 @@ apswvfsfile_xDeviceCharacteristics(sqlite3_file *file)
   int result = 0;
   PyObject *pyresult = NULL;
   FILEPREAMBLE;
-  PyObject *vargs[] = {NULL, apswfile->file};
-  pyresult = PyObject_VectorcallMethod(apst.xDeviceCharacteristics, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
-  if (!pyresult)
-    result = MakeSqliteMsgFromPyException(NULL);
-  else if (!Py_IsNone(pyresult))
-  {
-    if (PyLong_Check(pyresult))
-      result = PyLong_AsInt(pyresult); /* sets to -1 on error */
-    else
-      PyErr_Format(PyExc_TypeError, "xDeviceCharacteristics should return a number");
-  }
 
-  /* We can't return errors so use unraisable */
-  if (PyErr_Occurred())
+  if (PyObject_HasAttr(apswfile->file, apst.xDeviceCharacteristics))
   {
-    AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xDeviceCharacteristics", "{s: O}", "result", OBJ(pyresult));
-    apsw_write_unraisable(apswfile->file);
-    result = 0; /* harmless value for error cases */
-  }
+    PyObject *vargs[] = {NULL, apswfile->file};
+    pyresult = PyObject_VectorcallMethod(apst.xDeviceCharacteristics, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+    if (!pyresult)
+      result = MakeSqliteMsgFromPyException(NULL);
+    else if (!Py_IsNone(pyresult))
+    {
+      if (PyLong_Check(pyresult))
+        result = PyLong_AsInt(pyresult); /* sets to -1 on error */
+      else
+        PyErr_Format(PyExc_TypeError, "xDeviceCharacteristics should return a number");
+    }
 
-  Py_XDECREF(pyresult);
+    /* We can't return errors so use unraisable */
+    if (PyErr_Occurred())
+    {
+      AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xDeviceCharacteristics", "{s: O}", "result", OBJ(pyresult));
+      apsw_write_unraisable(apswfile->file);
+      result = 0; /* harmless value for error cases */
+    }
+
+    Py_XDECREF(pyresult);
+  }
   FILEPOSTAMBLE;
   return result;
 }
