@@ -6969,19 +6969,19 @@ class APSW(unittest.TestCase):
             self.assertRaises(TypeError, vfs.xDlOpen, 3)
             self.assertRaises(TypeError, vfs.xDlOpen, b"\xfb\xfc\xfd\xfe\xff\xff\xff\xff")
             TestVFS.xDlOpen = TestVFS.xDlOpen1
-            self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
+            self.assertRaises(TypeError, testdb)
             TestVFS.xDlOpen = TestVFS.xDlOpen2
-            self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
+            self.assertRaises(ZeroDivisionError, testdb)
             TestVFS.xDlOpen = TestVFS.xDlOpen3
-            # skip testing xDlOpen3 as python is happy to convert -1 to void ptr!
+            self.assertRaises(TypeError, testdb)
             TestVFS.xDlOpen = TestVFS.xDlOpen4
-            self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
+            self.assertRaises(TypeError, testdb)
             TestVFS.xDlOpen = TestVFS.xDlOpen5
-            self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
+            self.assertRaises(TypeError, testdb)
             TestVFS.xDlOpen = TestVFS.xDlOpen6
-            self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
+            self.assertRaises(TypeError, testdb)
             TestVFS.xDlOpen = TestVFS.xDlOpen7
-            self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, OverflowError, testdb)
+            self.assertRaises(OverflowError, testdb)
             TestVFS.xDlOpen = TestVFS.xDlOpen99
             testdb()
 
@@ -6990,17 +6990,17 @@ class APSW(unittest.TestCase):
             self.assertRaises(TypeError, vfs.xDlSym, 3, 3)
             self.assertRaises(TypeError, vfs.xDlSym, "three", "three")
             TestVFS.xDlSym = TestVFS.xDlSym1
-            self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
+            self.assertRaises(TypeError, testdb)
             TestVFS.xDlSym = TestVFS.xDlSym2
-            self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
+            self.assertRaises(ZeroDivisionError, testdb)
             TestVFS.xDlSym = TestVFS.xDlSym3
-            self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
+            self.assertRaises(TypeError, testdb)
             TestVFS.xDlSym = TestVFS.xDlSym4
-            self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
+            self.assertRaises(TypeError, testdb)
             TestVFS.xDlSym = TestVFS.xDlSym5
-            self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
+            self.assertRaises(TypeError, testdb)
             TestVFS.xDlSym = TestVFS.xDlSym6
-            self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, OverflowError, testdb)
+            self.assertRaises(OverflowError, testdb)
             TestVFS.xDlSym = TestVFS.xDlSym99
             testdb()
 
@@ -7008,26 +7008,26 @@ class APSW(unittest.TestCase):
             self.assertRaises(TypeError, vfs.xDlClose, "three")
             self.assertRaises(OverflowError, vfs.xDlClose, 0xffffffffffffffff10)
             TestVFS.xDlClose = TestVFS.xDlClose1
-            self.assertRaisesUnraisable(TypeError, testdb)
+            self.assertRaises(TypeError, testdb)
             TestVFS.xDlClose = TestVFS.xDlClose2
-            self.assertRaisesUnraisable(ZeroDivisionError, testdb)
+            self.assertRaises(ZeroDivisionError, testdb)
             TestVFS.xDlClose = TestVFS.xDlClose3
-            self.assertRaisesUnraisable(TypeError, testdb)
+            self.assertRaises(TypeError, testdb)
             TestVFS.xDlClose = TestVFS.xDlClose99
             testdb()
 
             ## xDlError
             self.assertRaises(TypeError, vfs.xDlError, "three")
             TestVFS.xDlError = TestVFS.xDlError1
-            self.assertRaisesUnraisable(TypeError, testdb)
+            self.assertRaises(TypeError, testdb)
             TestVFS.xDlError = TestVFS.xDlError2
-            self.assertRaisesUnraisable(ZeroDivisionError, testdb)
+            self.assertRaises(ZeroDivisionError, testdb)
             TestVFS.xDlError = TestVFS.xDlError3
-            self.assertRaisesUnraisable(TypeError, testdb)
+            self.assertRaises(TypeError, testdb)
             TestVFS.xDlError = TestVFS.xDlError4
-            self.assertRaisesUnraisable(TypeError, testdb)
+            self.assertRaises(TypeError, testdb)
             TestVFS.xDlError = TestVFS.xDlError5
-            self.assertRaisesUnraisable(TypeError, testdb)
+            self.assertRaises(TypeError, testdb)
             TestVFS.xDlError = TestVFS.xDlError6  # should not error
             testdb()
             TestVFS.xDlError = TestVFS.xDlError99
@@ -7038,17 +7038,17 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, vfs.xSleep, "three")
         self.assertRaises(TypeError, vfs.xSleep, 3, 3)
         TestVFS.xSleep = TestVFS.xSleep1
-        self.assertRaisesUnraisable(TypeError, testdb, mode="delete")
+        self.assertRaises(TypeError, testdb, mode="delete")
         TestVFS.xSleep = TestVFS.xSleep2
-        self.assertRaisesUnraisable(ZeroDivisionError, testdb, mode="delete")
+        self.assertRaises(ZeroDivisionError, testdb, mode="delete")
         TestVFS.xSleep = TestVFS.xSleep3
-        self.assertRaisesUnraisable(TypeError, testdb, mode="delete")
+        self.assertRaises(TypeError, testdb, mode="delete")
         TestVFS.xSleep = TestVFS.xSleep4
-        self.assertRaisesUnraisable(TypeError, testdb, mode="delete")
+        self.assertRaises(TypeError, testdb, mode="delete")
         TestVFS.xSleep = TestVFS.xSleep5
-        self.assertRaisesUnraisable(OverflowError, testdb, mode="delete")
+        self.assertRaises(OverflowError, testdb, mode="delete")
         TestVFS.xSleep = TestVFS.xSleep6
-        self.assertRaisesUnraisable(OverflowError, testdb, mode="delete")
+        self.assertRaises(OverflowError, testdb, mode="delete")
         TestVFS.xSleep = TestVFS.xSleep99
         testdb(mode="delete")
         testtimeout = False
@@ -7059,22 +7059,22 @@ class APSW(unittest.TestCase):
         for vname in "apswtest", "apswtest_notime64":
             TestVFS.xCurrentTime = TestVFS.xCurrentTime1
             TestVFS.xCurrentTimeInt64 = TestVFS.xCurrentTimeInt641
-            self.assertRaisesUnraisable(TypeError, testdb, vfsname=vname)
+            self.assertRaises(TypeError, testdb, vfsname=vname)
             TestVFS.xCurrentTime = TestVFS.xCurrentTime2
             TestVFS.xCurrentTimeInt64 = TestVFS.xCurrentTimeInt642
-            self.assertRaisesUnraisable(ZeroDivisionError, testdb, vfsname=vname)
+            self.assertRaises(ZeroDivisionError, testdb, vfsname=vname)
             TestVFS.xCurrentTime = TestVFS.xCurrentTime3
             TestVFS.xCurrentTimeInt64 = TestVFS.xCurrentTimeInt643
-            self.assertRaisesUnraisable(TypeError, testdb, vfsname=vname)
+            self.assertRaises(TypeError, testdb, vfsname=vname)
             TestVFS.xCurrentTime = TestVFS.xCurrentTime4
             TestVFS.xCurrentTimeInt64 = TestVFS.xCurrentTimeInt644
-            self.assertRaisesUnraisable(TypeError, testdb, vfsname=vname)
+            self.assertRaises(TypeError, testdb, vfsname=vname)
             TestVFS.xCurrentTime = TestVFS.xCurrentTime5
             TestVFS.xCurrentTimeInt64 = TestVFS.xCurrentTimeInt645
-            self.assertMayRaiseUnraisable(OverflowError, testdb, vfsname=vname)
+            self.assertRaises(OverflowError, testdb, vfsname=vname)
             TestVFS.xCurrentTime = TestVFS.xCurrentTime99
             TestVFS.xCurrentTimeInt64 = TestVFS.xCurrentTimeInt6499
-            self.assertMayRaiseUnraisable(apsw.VFSNotImplementedError, testdb, vfsname=vname)
+            testdb(vfsname=vname)
             TestVFS.xCurrentTime = TestVFS.xCurrentTimeCorrect
             TestVFS.xCurrentTimeInt64 = TestVFS.xCurrentTimeInt6499
             testdb(vfsname=vname)
