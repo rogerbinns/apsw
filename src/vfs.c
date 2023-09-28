@@ -300,17 +300,15 @@ static PyTypeObject apswfcntl_pragma_Type = {
     return PyErr_Format(ExcVFSFileClosed, "VFSFileClosed: Attempting operation on closed file"); \
   }
 
-#define VFSPREAMBLE                                     \
-  PyGILState_STATE gilstate;                            \
-  gilstate = PyGILState_Ensure();                       \
-  MakeExistingException();                              \
-  if (PyErr_Occurred())                                 \
-    apsw_write_unraisable((PyObject *)(vfs->pAppData)); \
+#define VFSPREAMBLE               \
+  PyGILState_STATE gilstate;      \
+  gilstate = PyGILState_Ensure(); \
+  MakeExistingException();        \
+  CHAIN_EXC_BEGIN                 \
   CHECKVFS;
 
-#define VFSPOSTAMBLE                                    \
-  if (PyErr_Occurred())                                 \
-    apsw_write_unraisable((PyObject *)(vfs->pAppData)); \
+#define VFSPOSTAMBLE \
+  CHAIN_EXC_END;     \
   PyGILState_Release(gilstate);
 
 #define FILEPREAMBLE                                           \
@@ -318,13 +316,11 @@ static PyTypeObject apswfcntl_pragma_Type = {
   PyGILState_STATE gilstate;                                   \
   gilstate = PyGILState_Ensure();                              \
   MakeExistingException();                                     \
-  if (PyErr_Occurred())                                        \
-    apsw_write_unraisable(apswfile->file);                     \
+  CHAIN_EXC_BEGIN                                              \
   CHECKVFSFILE;
 
-#define FILEPOSTAMBLE                      \
-  if (PyErr_Occurred())                    \
-    apsw_write_unraisable(apswfile->file); \
+#define FILEPOSTAMBLE \
+  CHAIN_EXC_END;      \
   PyGILState_Release(gilstate);
 
 typedef struct
