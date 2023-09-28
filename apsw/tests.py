@@ -10298,12 +10298,10 @@ SELECT group_concat(rtrim(t),x'0a') FROM a;
                 exc = e
             if r is False:
                 self.assertIsNone(exc)
-                self.assertIsNone(seen_unraiseable)
                 self.assertIsNone(res)
             elif isinstance(r, apsw.Error):
                 self.assertIsInstance(exc, r.__class__)
-                self.assertIs(seen_unraiseable[1], r)
-                self.assertTrue(exc.args[0].endswith("message: " + r.args[0]))
+                self.assertEqual(exc.args[0], r.args[0])
                 self.assertIsNone(res)
             else:
                 self.assertEqual(res, r)
