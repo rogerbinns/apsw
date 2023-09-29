@@ -1694,13 +1694,12 @@ apswvfspy_xNextSystemCall(APSWVFS *self, PyObject *const *fast_args, Py_ssize_t 
   }
 
   zName = self->basevfs->xNextSystemCall(self->basevfs, name);
-  if (zName)
+  if (PyErr_Occurred())
+    AddTraceBackHere(__FILE__, __LINE__, "vfspy.xNextSystemCall", "{s:s}", "name", name);
+  else if (zName)
     res = convertutf8string(zName);
   else
     res = Py_NewRef(Py_None);
-
-  if (PyErr_Occurred())
-    AddTraceBackHere(__FILE__, __LINE__, "vfspy.xNextSystemCall", "{s:s}", "name", name);
 
   return res;
 }
