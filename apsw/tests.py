@@ -380,7 +380,7 @@ class APSW(unittest.TestCase):
 
             return mgr()
         try:
-            args[0](*args[1:], **kwargs)
+            return args[0](*args[1:], **kwargs)
         except BaseException as e:
             while e.__context__:
                 e = e.__context__
@@ -6587,7 +6587,7 @@ class APSW(unittest.TestCase):
                 return "three"
 
             def xCurrentTimeInt645(self):
-                return 2**65
+                return 2**66
 
             def xCurrentTimeCorrect(self):
                 # actual correct implementation https://stackoverflow.com/questions/466321/convert-unix-timestamp-to-julian
@@ -7071,7 +7071,7 @@ class APSW(unittest.TestCase):
             self.assertRaises(TypeError, testdb, vfsname=vname)
             TestVFS.xCurrentTime = TestVFS.xCurrentTime5
             TestVFS.xCurrentTimeInt64 = TestVFS.xCurrentTimeInt645
-            self.assertRaises(OverflowError, testdb, vfsname=vname)
+            self.assertRaisesRoot(OverflowError, testdb, vfsname=vname)
             TestVFS.xCurrentTime = TestVFS.xCurrentTime99
             TestVFS.xCurrentTimeInt64 = TestVFS.xCurrentTimeInt6499
             testdb(vfsname=vname)
@@ -7083,7 +7083,7 @@ class APSW(unittest.TestCase):
         # We can't directly test because the methods are called as side effects
         # of other errors.  However coverage shows we are exercising the code.
         def provoke_error():
-            self.assertRaises(apsw.CantOpenError, self.assertRaisesUnraisable, apsw.CantOpenError, testdb, attachdb='.')
+            self.assertRaisesRoot(apsw.CantOpenError, testdb, attachdb='.')
 
         for n in range(1, 11):
             TestVFS.xGetLastError = getattr(TestVFS, "xGetLastError" + str(n))
@@ -7093,7 +7093,7 @@ class APSW(unittest.TestCase):
         provoke_error()
 
         ## System call stuff
-        if "unix" in apsw.vfsnames() and "APSW_NO_MEMLEAK" not in os.environ:
+        if "unix" in apsw.vfsnames():
 
             class VFS2(apsw.VFS):
 
@@ -7115,11 +7115,11 @@ class APSW(unittest.TestCase):
             self.assertTrue("open" in items)
 
             TestVFS.xNextSystemCall = TestVFS.xNextSystemCall1
-            self.assertRaisesUnraisable(TypeError, vfs2.xNextSystemCall, "open")
+            self.assertRaisesRoot(TypeError, vfs2.xNextSystemCall, "open")
             TestVFS.xNextSystemCall = TestVFS.xNextSystemCall2
-            self.assertRaisesUnraisable(TypeError, vfs2.xNextSystemCall, "open")
+            self.assertRaisesRoot(TypeError, vfs2.xNextSystemCall, "open")
             TestVFS.xNextSystemCall = TestVFS.xNextSystemCall4
-            self.assertEqual(None, self.assertRaisesUnraisable(ZeroDivisionError, vfs2.xNextSystemCall, "open"))
+            self.assertEqual(None, self.assertRaisesRoot(ZeroDivisionError, vfs2.xNextSystemCall, "open"))
             TestVFS.xNextSystemCall = TestVFS.xNextSystemCall99
             vfs2.xNextSystemCall("open")
 
@@ -7130,13 +7130,13 @@ class APSW(unittest.TestCase):
             self.assertTrue(isinstance(vfs.xGetSystemCall("open"), (int, )))
 
             TestVFS.xGetSystemCall = TestVFS.xGetSystemCall1
-            self.assertRaisesUnraisable(TypeError, vfs2.xGetSystemCall, "open")
+            self.assertRaises(TypeError, vfs2.xGetSystemCall, "open")
             TestVFS.xGetSystemCall = TestVFS.xGetSystemCall2
-            self.assertRaisesUnraisable(ZeroDivisionError, vfs2.xGetSystemCall, "open")
+            self.assertRaises(ZeroDivisionError, vfs2.xGetSystemCall, "open")
             TestVFS.xGetSystemCall = TestVFS.xGetSystemCall3
-            self.assertRaisesUnraisable(TypeError, vfs2.xGetSystemCall, "open")
+            self.assertRaises(TypeError, vfs2.xGetSystemCall, "open")
             TestVFS.xGetSystemCall = TestVFS.xGetSystemCall4
-            self.assertRaisesUnraisable(TypeError, vfs2.xGetSystemCall, "open")
+            self.assertRaises(TypeError, vfs2.xGetSystemCall, "open")
             TestVFS.xGetSystemCall = TestVFS.xGetSystemCall99
             self.assertTrue(vfs2.xGetSystemCall("open") > 0)
 
