@@ -6198,7 +6198,7 @@ class APSW(unittest.TestCase):
 
         compare(orig, encryptme(obfu))
 
-        # versioning and exlcudes
+        # versioning and excludes
         meth_names = {}
         for ver in (1, 2, 3):
             name = f"foo{ ver }"
