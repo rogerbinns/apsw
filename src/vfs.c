@@ -1592,20 +1592,20 @@ apswvfs_xGetSystemCall(sqlite3_vfs *vfs, const char *zName)
   VFSPREAMBLE;
   PyObject *vargs[] = {NULL, (PyObject *)(vfs->pAppData), PyUnicode_FromString(zName)};
   if (vargs[2])
+  {
     pyresult = PyObject_VectorcallMethod(apst.xGetSystemCall, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
-  Py_DECREF(vargs[2]);
-  if (!pyresult)
-    goto finally;
-
-  if (PyLong_Check(pyresult))
-    ptr = PyLong_AsVoidPtr(pyresult);
-  else
-    PyErr_Format(PyExc_TypeError, "Pointer must be int/long");
-
+    Py_DECREF(vargs[2]);
+    if (pyresult)
+    {
+      if (PyLong_Check(pyresult))
+        ptr = PyLong_AsVoidPtr(pyresult);
+      else
+        PyErr_Format(PyExc_TypeError, "Pointer must be int/long");
+    }
+  }
   if (PyErr_Occurred())
     AddTraceBackHere(__FILE__, __LINE__, "vfs.xGetSystemCall", "{s:O}", "pyresult", OBJ(pyresult));
 
-finally:
   Py_XDECREF(pyresult);
   VFSPOSTAMBLE;
   return ptr;
@@ -1635,6 +1635,8 @@ apswvfspy_xGetSystemCall(APSWVFS *self, PyObject *const *fast_args, Py_ssize_t f
 
   if (ptr)
     return PyLong_FromVoidPtr(ptr);
+  if (PyErr_Occurred())
+    return NULL;
   Py_RETURN_NONE;
 }
 
