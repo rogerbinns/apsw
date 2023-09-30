@@ -1095,7 +1095,7 @@ apswvtabDestroyOrDisconnect(sqlite3_vtab *pVtab, PyObject *methodname, const cha
   }
   CHAIN_EXC_END;
 
-  if (sqliteres == SQLITE_OK)
+  if (sqliteres == SQLITE_OK || methodname == apst.Disconnect)
   {
     Py_DECREF(vtable);
     Py_XDECREF(((apsw_vtable *)pVtab)->functions);
