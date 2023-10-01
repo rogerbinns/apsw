@@ -1433,7 +1433,7 @@ apswvfs_xGetLastError(sqlite3_vfs *vfs, int nByte, char *zErrMsg)
 
 end:
   if (PyErr_Occurred())
-    AddTraceBackHere(__FILE__, __LINE__, "vfs.xGetLastError", NULL);
+    AddTraceBackHere(__FILE__, __LINE__, "vfs.xGetLastError", "{s:O}", "pyresult", OBJ(pyresult));
 
   Py_XDECREF(pyresult);
   Py_XDECREF(item0);
