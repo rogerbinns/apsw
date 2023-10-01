@@ -1466,7 +1466,7 @@ apswvfspy_xGetLastError(APSWVFS *self)
     goto error;
   memset(buffer, 0, size + 1);
 
-  errval = self->basevfs->xGetLastError(self->basevfs, size, buffer);
+  errval = self->basevfs->xGetLastError(self->basevfs, (int)size, buffer);
 
   msglen = strnlen(buffer, size);
   if (msglen > 0)
