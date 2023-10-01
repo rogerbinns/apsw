@@ -1454,30 +1454,29 @@ apswvfspy_xGetLastError(APSWVFS *self)
   PyObject *res = NULL, *text = NULL;
   int errval;
   size_t msglen;
-  const Py_ssize_t size = 1024;
+  const size_t size = 1024;
+  char *buffer = NULL;
 
   CHECKVFSPY;
   VFSNOTIMPLEMENTED(xGetLastError, 1);
 
-  text = PyBytes_FromStringAndSize(NULL, size);
-  if (!text)
+  /* the plus one is to ensure it is always null terminated */
+  buffer = (char *)sqlite3_malloc64(size + 1);
+  if (!buffer)
     goto error;
+  memset(buffer, 0, size + 1);
 
-  /* SQLite before 3.12 said the buffer may be left unterminated.  3.12 says
-     nothing useful, so as a defensive measure we ensure the buffer is zero
-     filled */
-  memset(PyBytes_AS_STRING(text), 0, size);
+  errval = self->basevfs->xGetLastError(self->basevfs, size, buffer);
 
-  errval = self->basevfs->xGetLastError(self->basevfs, size, PyBytes_AS_STRING(text));
-  msglen = strnlen(PyBytes_AS_STRING(text), size);
+  msglen = strnlen(buffer, size);
   if (msglen > 0)
   {
-    if (_PyBytes_Resize(&text, msglen))
+    text = PyUnicode_FromStringAndSize(buffer, msglen);
+    if (!text)
       goto error;
   }
   else
   {
-    Py_CLEAR(text);
     text = Py_NewRef(Py_None);
   }
 
@@ -1490,10 +1489,13 @@ apswvfspy_xGetLastError(APSWVFS *self)
   if (PyErr_Occurred())
     goto error;
 
+  sqlite3_free(buffer);
+
   return res;
 
 error:
   assert(PyErr_Occurred());
+  sqlite3_free(buffer);
   AddTraceBackHere(__FILE__, __LINE__, "vfspy.xGetLastError", "{s: O, s: i}", "self", self, "size", (int)size);
   Py_XDECREF(text);
   Py_XDECREF(res);
