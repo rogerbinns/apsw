@@ -77,7 +77,7 @@ returns = {
             PyUnicode_New  PyUnicode_AsUTF8 PyObject_GetAttr _PyObject_New PyUnicode_FromString
             PyObject_Str PyUnicode_AsUTF8AndSize PyTuple_New PyDict_New Py_BuildValue PyList_New
             PyWeakref_NewRef PyMem_Calloc PyLong_FromLong PyObject_GetIter
-            PyObject_CallObject PyLong_AsInt PyUnicode_FromStringAndSize
+            PyObject_CallObject PyUnicode_FromStringAndSize
             PySequence_GetItem PyLong_FromLongLong PySequence_GetSlice PyBytes_FromStringAndSize
             PyFloat_FromDouble  PyBool_FromLong PyCode_NewEmpty PyFloat_AsDouble
             PyIter_Next PyList_GetItem PyList_SetItem PyLong_FromVoidPtr PyMapping_GetItemString PyNumber_Float
@@ -129,7 +129,7 @@ returns = {
         PyLong_AsLongLong PyList_Append PyDict_SetItemString
         PyObject_SetAttr _PyBytes_Resize PyDict_SetItem PyList_SetSlice
         PyObject_IsTrue PySequence_Size PySet_Add PyObject_IsTrueStrict
-        PyStructSequence_InitType2 PyList_Size
+        PyStructSequence_InitType2 PyList_Size PyLong_AsInt
 
         PyObject_GetBufferContiguous PyObject_GetBuffer
 
