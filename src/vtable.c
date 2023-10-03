@@ -2526,6 +2526,9 @@ apswvtabRowid(sqlite3_vtab_cursor *pCursor, sqlite3_int64 *pRowid)
 
   cursor = ((apsw_vtable_cursor *)pCursor)->cursor;
 
+  if (PyErr_Occurred())
+    goto pyexception;
+
   PyObject *vargs[] = {NULL, cursor};
   res = PyObject_VectorcallMethod(apst.Rowid, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (!res)
