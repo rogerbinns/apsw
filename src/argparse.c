@@ -72,31 +72,36 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
         argp_optindex++;               \
     else
 
-#define ARG_EPILOG(retval, usage, cleanup)                                                                                                  \
-    assert(argp_optindex == actual_nargs);                                                                                                  \
-    goto success;                                                                                                                           \
-    /* this wont be hit but is here to stop warnings about unused label */                                                                  \
-    goto missing_required;                                                                                                                  \
-    too_many_args:                                                                                                                          \
-    PyErr_Format(PyExc_TypeError, "Too many positional arguments %d (max %d) provided to %s", (int)actual_nargs, (int)maxpos_args_, usage); \
-    goto error_return;                                                                                                                      \
-    missing_required:                                                                                                                       \
-    PyErr_Format(PyExc_TypeError, "Missing required parameter #%d '%s' of %s", (int)argp_optindex + 1, kwlist[argp_optindex], usage);       \
-    goto error_return;                                                                                                                      \
-    unknown_keyword_arg:                                                                                                                    \
-    PyErr_Format(PyExc_TypeError, "'%s' is an invalid keyword argument for %s", unknown_keyword, usage);                                    \
-    goto error_return;                                                                                                                      \
-    pos_and_keyword:                                                                                                                        \
-    PyErr_Format(PyExc_TypeError, "argument '%s' given by name and position for %s", unknown_keyword, usage);                               \
-    goto error_return;                                                                                                                      \
-    param_error:                                                                                                                            \
-    PyErr_AddExceptionNoteV("Processing parameter #%d '%s' of %s", (int)argp_optindex + 1, kwlist[argp_optindex], usage);                   \
-    goto error_return;                                                                                                                      \
-    error_return:                                                                                                                           \
-    assert(PyErr_Occurred());                                                                                                               \
-    cleanup;                                                                                                                                \
-    return retval;                                                                                                                          \
-    success:                                                                                                                                \
+#define ARG_EPILOG(retval, usage, cleanup)                                                                                                      \
+    assert(argp_optindex == actual_nargs);                                                                                                      \
+    goto success;                                                                                                                               \
+    /* this wont be hit but is here to stop warnings about unused label */                                                                      \
+    goto missing_required;                                                                                                                      \
+    too_many_args:                                                                                                                              \
+    if (!PyErr_Occurred())                                                                                                                      \
+        PyErr_Format(PyExc_TypeError, "Too many positional arguments %d (max %d) provided to %s", (int)actual_nargs, (int)maxpos_args_, usage); \
+    goto error_return;                                                                                                                          \
+    missing_required:                                                                                                                           \
+    if (!PyErr_Occurred())                                                                                                                      \
+        PyErr_Format(PyExc_TypeError, "Missing required parameter #%d '%s' of %s", (int)argp_optindex + 1, kwlist[argp_optindex], usage);       \
+    goto error_return;                                                                                                                          \
+    unknown_keyword_arg:                                                                                                                        \
+    if (!PyErr_Occurred())                                                                                                                      \
+        PyErr_Format(PyExc_TypeError, "'%s' is an invalid keyword argument for %s", unknown_keyword, usage);                                    \
+    goto error_return;                                                                                                                          \
+    pos_and_keyword:                                                                                                                            \
+    if (!PyErr_Occurred())                                                                                                                      \
+        PyErr_Format(PyExc_TypeError, "argument '%s' given by name and position for %s", unknown_keyword, usage);                               \
+    goto error_return;                                                                                                                          \
+    param_error:                                                                                                                                \
+    assert(PyErr_Occurred());                                                                                                                   \
+    PyErr_AddExceptionNoteV("Processing parameter #%d '%s' of %s", (int)argp_optindex + 1, kwlist[argp_optindex], usage);                       \
+    goto error_return;                                                                                                                          \
+    error_return:                                                                                                                               \
+    assert(PyErr_Occurred());                                                                                                                   \
+    cleanup;                                                                                                                                    \
+    return retval;                                                                                                                              \
+    success:                                                                                                                                    \
     cleanup;
 
 #define ARG_pyobject(varname)                                                                    \
