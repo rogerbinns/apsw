@@ -19,13 +19,15 @@
 static int
 ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const char **kwname)
 {
-    *kwname = PyUnicode_AsUTF8(item);
+    const char *n = PyUnicode_AsUTF8(item);
     size_t cmp;
-    for (cmp = 0; cmp < n_kwlist; cmp++)
-    {
-        if (0 == strcmp(*kwname, kwlist[cmp]))
-            return (int)cmp;
-    }
+    if (n)
+        for (cmp = 0; cmp < n_kwlist; cmp++)
+        {
+            if (0 == strcmp(n, kwlist[cmp]))
+                return (int)cmp;
+        }
+    *kwname = n;
     return -1;
 }
 
