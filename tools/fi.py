@@ -240,7 +240,7 @@ def exercise(example_code, expect_exception):
     # has to be done on a real file not memory db
     con2 = apsw.Connection("/tmp/fitesting")
     con2.pragma("user_version", 77)
-    con2.read("main", 0, 0, 256_000)
+    con2.read("main", 0, 0, 0x1ffff)  # larger fires sanity check assertion
 
     # this is to work MakeSqliteMsgFromPyException
     def meth(*args):
