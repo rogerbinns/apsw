@@ -1759,15 +1759,13 @@ APSWVFS_dealloc(APSWVFS *self)
     PyObject *xx;
 
     /* not allowed to clobber existing exception */
-    PyObject *etype = NULL, *evalue = NULL, *etraceback = NULL;
-    PyErr_Fetch(&etype, &evalue, &etraceback);
-
+    PY_ERR_FETCH(exc_save);
     xx = apswvfspy_unregister(self);
     Py_XDECREF(xx);
 
     if (PyErr_Occurred())
       apsw_write_unraisable(NULL);
-    PyErr_Restore(etype, evalue, etraceback);
+    PY_ERR_RESTORE(exc_save);
 
     /* some cleanups */
     self->containingvfs->pAppData = NULL;
@@ -2005,9 +2003,7 @@ static PyObject *apswvfsfilepy_xClose(APSWVFSFile *self);
 static void
 APSWVFSFile_dealloc(APSWVFSFile *self)
 {
-  PyObject *a, *b, *c;
-
-  PyErr_Fetch(&a, &b, &c);
+  PY_ERR_FETCH(exc_save);
 
   if (self->base)
   {
@@ -2025,7 +2021,7 @@ APSWVFSFile_dealloc(APSWVFSFile *self)
   }
   Py_TpFree((PyObject *)self);
 
-  PyErr_Restore(a, b, c);
+  PY_ERR_RESTORE(exc_save);
 }
 
 static PyObject *
