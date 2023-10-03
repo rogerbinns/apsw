@@ -1463,7 +1463,10 @@ apswvfspy_xGetLastError(APSWVFS *self)
   /* the plus one is to ensure it is always null terminated */
   buffer = (char *)sqlite3_malloc64(size + 1);
   if (!buffer)
+  {
+    PyErr_NoMemory();
     goto error;
+  }
   memset(buffer, 0, size + 1);
 
   errval = self->basevfs->xGetLastError(self->basevfs, (int)size, buffer);
