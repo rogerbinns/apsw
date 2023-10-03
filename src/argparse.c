@@ -268,27 +268,29 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
         }                                                                                                                                                                  \
     } while (0)
 
-#define ARG_List_int_int(varname)                                                                                                            \
-    do                                                                                                                                       \
-    {                                                                                                                                        \
-        if (!PyList_Check(useargs[argp_optindex]) || PyList_Size(useargs[argp_optindex]) != 2)                                               \
-        {                                                                                                                                    \
-            PyErr_Format(PyExc_TypeError, "Expected a two item list of int");                                                                \
-            goto param_error;                                                                                                                \
-        }                                                                                                                                    \
-        for (int i = 0; i < 2; i++)                                                                                                          \
-        {                                                                                                                                    \
-            PyObject *list_item = PyList_GetItem(useargs[argp_optindex], i);                                                                 \
-            if (!list_item)                                                                                                                  \
-                goto param_error;                                                                                                            \
-            if (!PyLong_Check(list_item))                                                                                                    \
-            {                                                                                                                                \
-                PyErr_Format(PyExc_TypeError, "Function argument list[int,int] expected int for item %d not %s", i, Py_TypeName(list_item)); \
-                goto param_error;                                                                                                            \
-            }                                                                                                                                \
-        }                                                                                                                                    \
-        varname = useargs[argp_optindex];                                                                                                    \
-        argp_optindex++;                                                                                                                     \
+#define ARG_List_int_int(varname)                                                                                                                \
+    do                                                                                                                                           \
+    {                                                                                                                                            \
+        if (!PyList_Check(useargs[argp_optindex]) || PyList_Size(useargs[argp_optindex]) != 2)                                                   \
+        {                                                                                                                                        \
+            if (!PyErr_Occurred())                                                                                                               \
+                PyErr_Format(PyExc_TypeError, "Expected a two item list of int");                                                                \
+            goto param_error;                                                                                                                    \
+        }                                                                                                                                        \
+        for (int i = 0; i < 2; i++)                                                                                                              \
+        {                                                                                                                                        \
+            PyObject *list_item = PyList_GetItem(useargs[argp_optindex], i);                                                                     \
+            if (!list_item)                                                                                                                      \
+                goto param_error;                                                                                                                \
+            if (!PyLong_Check(list_item))                                                                                                        \
+            {                                                                                                                                    \
+                if (!PyErr_Occurred())                                                                                                           \
+                    PyErr_Format(PyExc_TypeError, "Function argument list[int,int] expected int for item %d not %s", i, Py_TypeName(list_item)); \
+                goto param_error;                                                                                                                \
+            }                                                                                                                                    \
+        }                                                                                                                                        \
+        varname = useargs[argp_optindex];                                                                                                        \
+        argp_optindex++;                                                                                                                         \
     } while (0)
 
 #define ARG_optional_set(varname)                                                                               \
