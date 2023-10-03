@@ -37,7 +37,18 @@ close connection_hooks cursor error_offset excepthook execute
 executemany extendedresult get Mapping result add_note
 
 step final value inverse
+
+NULL 0.0 -1e999 1e999
 """
+
+# we have to make some valid C identifiers
+def mangle(name):
+    return {
+        "NULL": "sNULL",
+        "0.0": "s0_0",
+        "-1e999": "s_1e999",
+        "1e999": "s1e999",
+    }.get(name, name)
 
 # tokenize names
 
@@ -55,7 +66,7 @@ print(header)
 
 print("static struct _apsw_string_table\n{")
 for n in names:
-    print(f"    PyObject *{ n };")
+    print(f"    PyObject *{ mangle(n) };")
 print("""} apst = {0};""")
 
 print("""
@@ -63,7 +74,7 @@ static void
 fini_apsw_strings(void)
 {""")
 for n in names:
-    print(f"    Py_CLEAR(apst.{ n });")
+    print(f"    Py_CLEAR(apst.{ mangle(n) });")
 print("}")
 
 print("""
@@ -73,7 +84,7 @@ init_apsw_strings()
 {""")
 print("    if (", end="")
 for i, n in enumerate(names):
-    print(f'{ " || " if i else "" }(0 == (apst.{ n } = PyUnicode_FromString("{ n }")))', end="")
+    print(f'{ " || " if i else "" }(0 == (apst.{ mangle(n) } = PyUnicode_FromString("{ n }")))', end="")
 print(""")
     {
         fini_apsw_strings();

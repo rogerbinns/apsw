@@ -1883,21 +1883,17 @@ APSWVFS_init(APSWVFS *self, PyObject *args, PyObject *kwargs)
   if (!self->containingvfs->zName)
     goto error;
   self->containingvfs->pAppData = self;
-#define METHOD(meth)                                         \
-  do                                                         \
-  {                                                          \
-    int include = 1;                                         \
-    if (exclude)                                             \
-    {                                                        \
-      PyObject *tmpstring = PyUnicode_FromString("x" #meth); \
-      if (!tmpstring)                                        \
-        goto error;                                          \
-      if (1 == PySet_Contains(exclude, tmpstring))           \
-        include = 0;                                         \
-      Py_DECREF(tmpstring);                                  \
-    }                                                        \
-    if (include)                                             \
-      self->containingvfs->x##meth = apswvfs_x##meth;        \
+#define METHOD(meth)                                  \
+  do                                                  \
+  {                                                   \
+    int include = 1;                                  \
+    if (exclude)                                      \
+    {                                                 \
+      if (1 == PySet_Contains(exclude, apst.x##meth)) \
+        include = 0;                                  \
+    }                                                 \
+    if (include)                                      \
+      self->containingvfs->x##meth = apswvfs_x##meth; \
   } while (0)
 
   METHOD(Delete);
