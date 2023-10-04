@@ -2572,8 +2572,10 @@ class APSW(unittest.TestCase):
                 1 / 0
 
         self.db.create_window_function("sumint", windowfunc2)
-        self.db.execute(query, can_cache=False)
-        self.db.execute(query, can_cache=True)
+        with self.assertRaises(ZeroDivisionError):
+            self.db.execute(query, can_cache=False).close()
+        with self.assertRaises(ZeroDivisionError):
+            self.db.execute(query, can_cache=True).close()
         self.db.close()
 
     def testFastcall(self):
