@@ -627,7 +627,11 @@ apswvfspy_xFullPathname(APSWVFS *self, PyObject *const *fast_args, Py_ssize_t fa
 
   resbuf = PyMem_Calloc(1, self->basevfs->mxPathname + 1);
   if (resbuf)
+  {
     res = self->basevfs->xFullPathname(self->basevfs, name, self->basevfs->mxPathname + 1, resbuf);
+    if (PyErr_Occurred())
+      res = MakeSqliteMsgFromPyException(NULL);
+  }
 
   if (res == SQLITE_OK)
     result = convertutf8string(resbuf);
@@ -2627,7 +2631,7 @@ apswvfsfilepy_xSectorSize(APSWVFSFile *self)
 
   res = self->base->pMethods->xSectorSize(self->base);
 
-  return PyLong_FromLong(res);
+  return PyErr_Occurred() ? NULL : PyLong_FromLong(res);
 }
 
 static int
