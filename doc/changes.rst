@@ -3,12 +3,21 @@ Change History
 
 .. currentmodule:: apsw
 
+next
+====
+
+:doc:`Exception <exceptions>` handling has been updated, with multiple
+exceptions in the same SQLite control flow being chained together.
+Previously more would have used the :ref:`unraisable <unraisable>`
+mechanism.  (:issue:`489`)
+
+
 3.43.1.0
 ========
 
 All C code calling into Python and all C code called by Python uses
 vectorcall / fastcall (see :pep:`590`) which reduces the overhead of
-passing and receiving positional and keyword arguments. (:issue:`477`
+passing and receiving positional and keyword arguments. (:issue:`477`,
 :issue:`446`):
 
 * Conversion of arguments from Python values to C values drops generic

@@ -12,27 +12,33 @@ systems as needed.  Exceptions raised in Python code called by SQLite
 will have that exception present when control returns to Python, and
 SQLite will understand that an error occurred.
 
+Chaining
+--------
+
+When an error is reported to SQLite, it may take further actions.  For
+example errors in :doc:`VFS <vfs>` can result in error recovery
+attempts, while an error in a window function step method will result
+in the final method being called to do clean up.  Your code
+implementing those could also have additional exceptions.
+
+When multiple exceptions occur in the same SQLite control flow then
+they will be :pep:`chained <3134>`.  Python's traceback printing code
+will show `all the exceptions
+<https://docs.python.org/3/library/exceptions.html#exception-context>`__.
+
+
 .. _unraisable:
 
 Unraisable
 ----------
 
 There are a few places where it is not possible for a Python exception
-to be reported to SQLite as an error, typically because SQLite does
-not allow an error to be signalled in that context.  Another example
-would be in :doc:`VFS <vfs>` code, because SQLite takes actions to
-recover from errors (eg it may try to rollback a transaction on a
-write error).  Python wants to return to callers, not continue
-execution while the exception is pending.  (Also only one exception
-can be active at a time.)
-
-Unraisable exceptions in VFS code are handled by calling
-:meth:`VFS.excepthook` or :meth:`VFSFile.excepthook` (:ref:`more info
-<vfserrors>`).  In other code `sys.unraisablehook
-<https://docs.python.org/3/library/sys.html#sys.unraisablehook>`__ is
-called, and if that is not present then `sys.excepthook
-<https://docs.python.org/3/library/sys.html#sys.excepthook>`__ is
-called.
+to be reported to SQLite as an error, and Python C code does not allow
+destructors to report exceptions.  These exceptions are reported via
+`sys.unraisablehook
+<https://docs.python.org/3/library/sys.html#sys.unraisablehook>`__,
+and if that is not present then `sys.excepthook
+<https://docs.python.org/3/library/sys.html#sys.excepthook>`__.
 
 `sqlite3_log <https://www.sqlite.org/c3ref/log.html>`__ is also called
 so that you will have the context of when the exception happened
