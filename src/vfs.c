@@ -199,7 +199,10 @@ apswfcntl_pragma_set_result(apswfcntl_pragma *self, PyObject *value)
       return -1;
     self->strings[0] = sqlite3_mprintf("%s", cstr);
     if (!self->strings[0])
+    {
+      PyErr_NoMemory();
       return -1;
+    }
   }
   return 0;
 }
@@ -899,7 +902,7 @@ apswvfspy_xDlOpen(APSWVFS *self, PyObject *const *fast_args, Py_ssize_t fast_nar
   }
   res = self->basevfs->xDlOpen(self->basevfs, filename);
 
-  return PyLong_FromVoidPtr(res);
+  return PyErr_Occurred() ? NULL : PyLong_FromVoidPtr(res);
 }
 
 static void (*apswvfs_xDlSym(sqlite3_vfs *vfs, void *handle, const char *zName))(void)
