@@ -1932,6 +1932,13 @@ static PyTypeObject APSWVFSType =
         .tp_new = APSWVFS_new,
 };
 
+static int is_apsw_vfs(sqlite3_vfs *vfs)
+{
+#define M(n) (vfs->n == NULL || vfs->n == apswvfs_##n)
+  return vfs->iVersion >= 1 && M(xOpen) && M(xDelete) && M(xAccess) && M(xFullPathname) && M(xDlOpen) && M(xDlError) && M(xDlSym) && M(xDlClose) && M(xRandomness) && M(xSleep) && M(xCurrentTime) && M(xGetLastError);
+#undef M
+}
+
 /** .. class:: VFSFile
 
     Wraps access to a file.  You only need to derive from this class

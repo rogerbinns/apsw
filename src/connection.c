@@ -402,7 +402,7 @@ Connection_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSE
 
 */
 /* forward declaration so we can tell if it is one of ours */
-static int apswvfs_xAccess(sqlite3_vfs *vfs, const char *zName, int flags, int *pResOut);
+static int is_apsw_vfs(sqlite3_vfs *vfs);
 
 static int
 Connection_init(Connection *self, PyObject *args, PyObject *kwargs)
@@ -446,7 +446,7 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwargs)
   if (res != SQLITE_OK || PyErr_Occurred())
     goto pyexception;
 
-  if (vfsused && vfsused->xAccess == apswvfs_xAccess)
+  if (vfsused && is_apsw_vfs(vfsused))
     self->vfs = Py_NewRef((PyObject *)(vfsused->pAppData));
 
   /* record information */
