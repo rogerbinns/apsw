@@ -21,14 +21,18 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
 {
     const char *n = PyUnicode_AsUTF8(item);
     size_t cmp;
+    int res = -1;
     if (n)
         for (cmp = 0; cmp < n_kwlist; cmp++)
         {
             if (0 == strcmp(n, kwlist[cmp]))
-                return (int)cmp;
+            {
+                res = (int)cmp;
+                break;
+            }
         }
     *kwname = n;
-    return -1;
+    return res;
 }
 
 #define ARG_PROLOG(maxpos_args, kwname_list)                                                      \
