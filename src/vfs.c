@@ -2159,7 +2159,7 @@ finally:
   if (res != 0 && file)
   {
     if (xopenresult == SQLITE_OK)
-      PRESERVE_EXC(file->pMethods->xClose(file));
+      CHAIN_EXC(file->pMethods->xClose(file));
 
     PyMem_Free(file);
   }
