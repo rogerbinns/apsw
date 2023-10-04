@@ -2216,8 +2216,8 @@ APSW_Should_Fault(const char *name)
   callres = Py_IsTrue(res);
   Py_DECREF(res);
 
-  PY_ERR_RESTORE(exc_save);
 end:
+  PY_ERR_RESTORE(exc_save);
   PyGILState_Release(gilstate);
   return callres;
 }
