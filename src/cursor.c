@@ -189,10 +189,12 @@ resetcursor(APSWCursor *self, int force)
   if (self->statement)
   {
     INUSE_CALL(res = statementcache_finalize(self->connection->stmtcache, self->statement));
+    if (res == SQLITE_OK && PyErr_Occurred())
+      res = SQLITE_ERROR;
     if (res)
     {
-      if (force)
-        PyErr_Clear();
+      if (force && PyErr_Occurred())
+        apsw_write_unraisable(NULL);
       else
         SET_EXC(res, self->connection->db);
     }
