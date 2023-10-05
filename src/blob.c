@@ -60,7 +60,10 @@ ZeroBlobBind_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNU
   ZeroBlobBind *self;
   self = (ZeroBlobBind *)type->tp_alloc(type, 0);
   if (self)
+  {
     self->blobsize = 0;
+    self->init_was_called = 0;
+  }
   return (PyObject *)self;
 }
 
@@ -75,6 +78,7 @@ ZeroBlobBind_init(ZeroBlobBind *self, PyObject *args, PyObject *kwargs)
 
   {
     Zeroblob_init_CHECK;
+    PREVENT_INIT_MULTIPLE_CALLS;
     ARG_CONVERT_VARARGS_TO_FASTCALL;
     ARG_PROLOG(1, Zeroblob_init_KWNAMES);
     ARG_MANDATORY ARG_int64(size);

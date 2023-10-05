@@ -4940,6 +4940,23 @@ class APSW(unittest.TestCase):
                 except apsw.Error:
                     pass
 
+    def testIssue488(self):
+        "__init__ called multiple times"
+        objects = [
+            self.db,
+            self.db.cursor(),
+            apsw.zeroblob(3),
+            apsw.VFS("aname", ""),
+            apsw.VFSFile(
+                "",
+                self.db.db_filename("main"),
+                [apsw.SQLITE_OPEN_MAIN_DB | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_READWRITE, 0],
+            )
+        ]
+        for o in objects:
+            self.assertRaisesRegex(RuntimeError, "__init__ has already been called, and cannot be called again",
+                                   o.__init__, "issue 488")
+
     def testCursorGet(self):
         "Cursor.get"
         for query, expected in (("select 3,4", (3, 4)), ("select 3; select 4", [3, 4]), ("select 3,4; select 4,5", [
@@ -10256,6 +10273,8 @@ SELECT group_concat(rtrim(t),x'0a') FROM a;
                     return super().xFileControl(op, ptr)
                 self.assertRaises(TypeError, apsw.VFSFcntlPragma, "a string")
                 p = apsw.VFSFcntlPragma(ptr)
+                self.assertRaisesRegex(RuntimeError, "__init__ has already been called, and cannot be called again",
+                                       p.__init__, "issue 488")
                 self.assertIn((p.name, p.value), test_pragmas)
                 self.assertRaises(TypeError, setattr, p, "result", 3)
                 v = test_pragmas[(p.name, p.value)]

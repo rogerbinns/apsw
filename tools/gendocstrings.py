@@ -648,6 +648,7 @@ def do_argparse(item):
     code = f"""\
   {{
     { item['symbol'] }_CHECK;
+    { "PREVENT_INIT_MULTIPLE_CALLS;" if is_init else "" }
     { "ARG_CONVERT_VARARGS_TO_FASTCALL;" if is_init else "" }
     ARG_PROLOG({ max_pos}, { item['symbol'] }_KWNAMES);
 """ + code + f"""

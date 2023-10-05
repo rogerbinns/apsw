@@ -348,3 +348,12 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
             fa_pos++;                                                             \
         }                                                                         \
     }
+
+/* see issue 488 */
+#define PREVENT_INIT_MULTIPLE_CALLS                                                                       \
+    if (self->init_was_called)                                                                            \
+    {                                                                                                     \
+        PyErr_Format(PyExc_RuntimeError, "__init__ has already been called, and cannot be called again"); \
+        return -1;                                                                                        \
+    }                                                                                                     \
+    self->init_was_called = 1;

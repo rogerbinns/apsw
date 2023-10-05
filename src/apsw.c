@@ -175,6 +175,7 @@ static PyTypeObject apsw_no_change_object = {
 typedef struct
 {
   PyObject_HEAD long long blobsize;
+  int init_was_called;
 } ZeroBlobBind;
 
 static void apsw_write_unraisable(PyObject *hookobject);

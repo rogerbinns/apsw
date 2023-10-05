@@ -158,6 +158,8 @@ struct APSWCursor
   PyObject *weakreflist;
 
   PyObject *description_cache[3];
+
+  int init_was_called;
 };
 
 typedef struct APSWCursor APSWCursor;
@@ -330,6 +332,7 @@ APSWCursor_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSE
     self->description_cache[0] = 0;
     self->description_cache[1] = 0;
     self->description_cache[2] = 0;
+    self->init_was_called = 0;
   }
 
   return (PyObject *)self;
@@ -348,6 +351,7 @@ APSWCursor_init(APSWCursor *self, PyObject *args, PyObject *kwargs)
 
   {
     Cursor_init_CHECK;
+    PREVENT_INIT_MULTIPLE_CALLS;
     ARG_CONVERT_VARARGS_TO_FASTCALL;
     ARG_PROLOG(1, Cursor_init_KWNAMES);
     ARG_MANDATORY ARG_Connection(connection);

@@ -100,6 +100,8 @@ struct Connection
   /* limit calls to callbacks */
   CALL_TRACK(xConnect);
   CALL_TRACK(xUpdate);
+
+  int init_was_called;
 };
 
 typedef struct Connection Connection;
@@ -417,6 +419,7 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwargs)
 
   {
     Connection_init_CHECK;
+    PREVENT_INIT_MULTIPLE_CALLS;
     ARG_CONVERT_VARARGS_TO_FASTCALL;
     ARG_PROLOG(4, Connection_init_KWNAMES);
     ARG_MANDATORY ARG_str(filename);

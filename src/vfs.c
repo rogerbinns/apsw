@@ -86,6 +86,7 @@ outside of that will result in memory corruption and crashes.
 typedef struct apswfcntl_pragma
 {
   PyObject_HEAD char **strings;
+  int init_was_called;
 } apswfcntl_pragma;
 
 static PyObject *
@@ -95,6 +96,7 @@ apswfcntl_pragma_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py
   if (self != NULL)
   {
     self->strings = NULL;
+    self->init_was_called = 0;
   }
   return (PyObject *)self;
 }
@@ -110,6 +112,7 @@ apswfcntl_pragma_init(apswfcntl_pragma *self, PyObject *args, PyObject *kwargs)
   void *pointer = NULL;
   {
     VFSFcntlPragma_init_CHECK;
+    PREVENT_INIT_MULTIPLE_CALLS;
     ARG_CONVERT_VARARGS_TO_FASTCALL;
     ARG_PROLOG(1, VFSFcntlPragma_init_KWNAMES);
     ARG_MANDATORY ARG_pointer(pointer);
@@ -283,6 +286,7 @@ typedef struct
       sqlite3_vfs *basevfs;   /* who we inherit from (might be null) */
   sqlite3_vfs *containingvfs; /* pointer given to sqlite for this instance */
   int registered;             /* are we currently registered? */
+  int init_was_called;
 } APSWVFS;
 
 static PyTypeObject APSWVFSType;
@@ -308,6 +312,7 @@ typedef struct
   /* If you add any new members then also initialize them in
      apswvfspy_xOpen() as that function does not call init because it
      has values already */
+  int init_was_called;
 } APSWVFSFile;
 
 static PyTypeObject APSWVFSFileType;
@@ -1792,6 +1797,7 @@ APSWVFS_init(APSWVFS *self, PyObject *args, PyObject *kwargs)
 
   {
     VFS_init_CHECK;
+    PREVENT_INIT_MULTIPLE_CALLS;
     ARG_CONVERT_VARARGS_TO_FASTCALL;
     ARG_PROLOG(4, VFS_init_KWNAMES);
     ARG_MANDATORY ARG_str(name);
@@ -2037,6 +2043,7 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwargs)
 
   {
     VFSFile_init_CHECK;
+    PREVENT_INIT_MULTIPLE_CALLS;
     ARG_CONVERT_VARARGS_TO_FASTCALL;
     ARG_PROLOG(3, VFSFile_init_KWNAMES);
     ARG_MANDATORY ARG_str(vfs);
