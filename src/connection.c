@@ -2464,6 +2464,8 @@ cbdispatch_func(sqlite3_context *context, int argc, sqlite3_value **argv)
   FunctionCBInfo *cbinfo = (FunctionCBInfo *)sqlite3_user_data(context);
   assert(cbinfo);
 
+  VLA_PYO(vargs, 1 + argc);
+
   gilstate = PyGILState_Ensure();
 
   assert(cbinfo->scalarfunc);
@@ -2477,7 +2479,6 @@ cbdispatch_func(sqlite3_context *context, int argc, sqlite3_value **argv)
     goto finalfinally;
   }
 
-  PyObject **vargs = alloca(sizeof(PyObject *) * (1 + argc));
   if (getfunctionargs(vargs + 1, context, argc, argv))
     goto finally;
 
@@ -2590,6 +2591,8 @@ cbdispatch_step(sqlite3_context *context, int argc, sqlite3_value **argv)
   PyObject *retval;
   aggregatefunctioncontext *aggfc = NULL;
 
+  VLA_PYO(vargs, 2 + argc);
+
   gilstate = PyGILState_Ensure();
 
   MakeExistingException();
@@ -2604,7 +2607,6 @@ cbdispatch_step(sqlite3_context *context, int argc, sqlite3_value **argv)
 
   assert(aggfc);
 
-  PyObject **vargs = alloca(sizeof(PyObject *) * (2 + argc));
   vargs[1] = aggfc->aggvalue;
   if (getfunctionargs(vargs + 2, context, argc, argv))
     goto finally;
@@ -2846,6 +2848,8 @@ cbw_step(sqlite3_context *context, int argc, sqlite3_value **argv)
   windowfunctioncontext *winfc = NULL;
   PyObject *retval = NULL;
 
+  VLA_PYO(vargs, 2 + argc);
+
   gilstate = PyGILState_Ensure();
 
   MakeExistingException();
@@ -2857,7 +2861,6 @@ cbw_step(sqlite3_context *context, int argc, sqlite3_value **argv)
   if (!winfc)
     goto error;
 
-  PyObject **vargs = alloca(sizeof(PyObject *) * (2 + argc));
   int offset = (winfc->aggvalue) ? 1 : 0;
   vargs[1] = winfc->aggvalue;
   if (getfunctionargs(vargs + 1 + offset, context, argc, argv))
@@ -2969,6 +2972,8 @@ cbw_inverse(sqlite3_context *context, int argc, sqlite3_value **argv)
   windowfunctioncontext *winfc;
   PyObject *retval = NULL;
 
+  VLA_PYO(vargs, 2 + argc);
+
   gilstate = PyGILState_Ensure();
 
   MakeExistingException();
@@ -2980,7 +2985,6 @@ cbw_inverse(sqlite3_context *context, int argc, sqlite3_value **argv)
   if (!winfc)
     goto error;
 
-  PyObject **vargs = alloca(sizeof(PyObject *) * (2 + argc));
   int offset = (winfc->aggvalue) ? 1 : 0;
   vargs[1] = winfc->aggvalue;
   if (getfunctionargs(vargs + 1 + offset, context, argc, argv))

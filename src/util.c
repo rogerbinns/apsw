@@ -4,6 +4,14 @@
   See the accompanying LICENSE file.
 */
 
+/* msvc doesn't support vla, so do it the hard way */
+#if defined(_MSC_VER) || defined(__STDC_NO_VLA__)
+#define VLA_PYO(name, size) \
+  PyObject **name = alloca(sizeof(PyObject *) * (size))
+#else
+#define VLA_PYO(name, size) PyObject *name[size]
+#endif
+
 /* These macros are to address several issues:
 
   - Prevent simultaneous calls on the same object while the GIL is

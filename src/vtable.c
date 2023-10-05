@@ -832,7 +832,9 @@ apswvtabCreateOrConnect(sqlite3 *db,
   apsw_vtable *avi = NULL;
   int res = SQLITE_OK;
   int i;
-  PyObject **vargs = NULL;
+  PyObject **vargs_cleanup = NULL;
+
+  VLA_PYO(vargs, 3 + argc);
 
   gilstate = PyGILState_Ensure();
 
@@ -847,14 +849,14 @@ apswvtabCreateOrConnect(sqlite3 *db,
   if (PyErr_Occurred())
     goto pyexception;
 
-  /* msvc doesn't support variable sized array */
-  vargs = alloca(sizeof(PyObject *) * (3 + argc));
   vargs[0] = NULL;
   vargs[1] = vti->datasource;
   vargs[2] = (PyObject *)self;
 
   for (i = 0; i < argc; i++)
     vargs[3 + i] = convertutf8string(argv[i]);
+
+  vargs_cleanup = vargs;
 
   for (i = 0; i < argc; i++)
     if (!vargs[3 + i])
@@ -918,9 +920,9 @@ pyexception: /* we had an exception in python code */
                    "{s: s, s: s, s: s, s: O}", "modulename", argv[0], "database", argv[1], "tablename", argv[2], "schema", OBJ(schema));
 
 finally: /* cleanup */
-  if (vargs)
+  if (vargs_cleanup)
     for (i = 0; i < argc; i++)
-      Py_XDECREF(vargs[3 + i]);
+      Py_XDECREF(vargs_cleanup[3 + i]);
   Py_XDECREF(pyres);
   Py_XDECREF(schema);
   Py_XDECREF(vtable);

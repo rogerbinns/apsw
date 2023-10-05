@@ -11,6 +11,9 @@ exceptions in the same SQLite control flow being chained together.
 Previously more would have used the :ref:`unraisable <unraisable>`
 mechanism.  (:issue:`489`)
 
+Only use alloca with msvc because it doesn't support `VLA
+<https://en.wikipedia.org/wiki/Variable-length_array>`__.  The arrays
+are used for fastcall. (:issue:`487`)
 
 3.43.1.0
 ========

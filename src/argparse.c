@@ -324,25 +324,27 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
         argp_optindex++;                                                                                                                                \
     } while (0)
 
-#define ARG_CONVERT_VARARGS_TO_FASTCALL                                                                        \
-    Py_ssize_t fast_nargs = PyTuple_GET_SIZE(args);                                                            \
-    PyObject **fast_args = alloca(sizeof(PyObject *) * (fast_nargs + (kwargs ? PyDict_GET_SIZE(kwargs) : 0))); \
-    PyObject *fast_kwnames = NULL;                                                                             \
-    Py_ssize_t acvtf_i;                                                                                        \
-    for (acvtf_i = 0; acvtf_i < fast_nargs; acvtf_i++)                                                         \
-        fast_args[acvtf_i] = PyTuple_GET_ITEM(args, acvtf_i);                                                  \
-    if (kwargs)                                                                                                \
-    {                                                                                                          \
-        fast_kwnames = PyTuple_New(PyDict_GET_SIZE(kwargs));                                                   \
-        if (!fast_kwnames)                                                                                     \
-            return -1;                                                                                         \
-        PyObject *pkey, *pvalue;                                                                               \
-        int fa_pos = (int)fast_nargs;                                                                          \
-        acvtf_i = 0;                                                                                           \
-        while (PyDict_Next(kwargs, &acvtf_i, &pkey, &pvalue))                                                  \
-        {                                                                                                      \
-            fast_args[fa_pos] = pvalue; /* borrowing reference */                                              \
-            PyTuple_SET_ITEM(fast_kwnames, fa_pos - fast_nargs, Py_NewRef(pkey));                              \
-            fa_pos++;                                                                                          \
-        }                                                                                                      \
+/* 1 is added to the size of fast_args to ensure the vla is always at
+   least 1 item long.  If it ends up as zero then sanitizers complain. */
+#define ARG_CONVERT_VARARGS_TO_FASTCALL                                           \
+    Py_ssize_t fast_nargs = PyTuple_GET_SIZE(args);                               \
+    VLA_PYO(fast_args, 1 + fast_nargs + (kwargs ? PyDict_GET_SIZE(kwargs) : 0));  \
+    PyObject *fast_kwnames = NULL;                                                \
+    Py_ssize_t acvtf_i;                                                           \
+    for (acvtf_i = 0; acvtf_i < fast_nargs; acvtf_i++)                            \
+        fast_args[acvtf_i] = PyTuple_GET_ITEM(args, acvtf_i);                     \
+    if (kwargs)                                                                   \
+    {                                                                             \
+        fast_kwnames = PyTuple_New(PyDict_GET_SIZE(kwargs));                      \
+        if (!fast_kwnames)                                                        \
+            return -1;                                                            \
+        PyObject *pkey, *pvalue;                                                  \
+        int fa_pos = (int)fast_nargs;                                             \
+        acvtf_i = 0;                                                              \
+        while (PyDict_Next(kwargs, &acvtf_i, &pkey, &pvalue))                     \
+        {                                                                         \
+            fast_args[fa_pos] = pvalue; /* borrowing reference */                 \
+            PyTuple_SET_ITEM(fast_kwnames, fa_pos - fast_nargs, Py_NewRef(pkey)); \
+            fa_pos++;                                                             \
+        }                                                                         \
     }

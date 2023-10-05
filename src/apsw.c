@@ -104,8 +104,6 @@ API Reference
 #include <stdarg.h>
 #ifdef _MSC_VER
 #include <malloc.h>
-#else
-#include <alloca.h>
 #endif
 
 /* Get the version number */
