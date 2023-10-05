@@ -2271,15 +2271,12 @@ class VFSFile:
 
     def excepthook(self, etype: type[BaseException], evalue: BaseException, etraceback: Optional[types.TracebackType]) ->None:
         """Called when there has been an exception in a :class:`VFSFile`
-        routine.  The default implementation passes the exception information
+        routine, and it can't be reported to the caller as usual.
+
+        The default implementation passes the exception information
         to sqlite3_log, and the first non-error of
         :func:`sys.unraisablehook` and :func:`sys.excepthook`, falling back to
-        `PyErr_Display`.
-
-        :param etype: The exception type
-        :param evalue: The exception  value
-        :param etraceback: The exception traceback.  Note this
-          includes all frames all the way up to the thread being started."""
+        `PyErr_Display`."""
         ...
 
     def __init__(self, vfs: str, filename: str | URIFilename, flags: list[int]):
@@ -2415,7 +2412,9 @@ class VFS:
     create a VFS your Python class must inherit from :class:`VFS`."""
 
     def excepthook(self, etype: type[BaseException], evalue: BaseException, etraceback: Optional[types.TracebackType]) -> Any:
-        """Called when there has been an exception in a :class:`VFS` routine.
+        """Called when there has been an exception in a :class:`VFS` routine,
+        and it can't be reported to the caller as usual.
+
         The default implementation passes the exception information
         to sqlite3_log, and the first non-error of
         :func:`sys.unraisablehook` and :func:`sys.excepthook`, falling back to
