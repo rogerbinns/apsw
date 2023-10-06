@@ -36,17 +36,14 @@ instance that has your overridden :class:`VFSFile` methods.  The
 :ref:`example <example_vfs>` demonstrates obfuscating the database
 file contents.
 
-.. _vfserrors:
-
 Exceptions and errors
 =====================
 
 To return an error from any routine you should raise an exception. The
-exception will be translated into the appropriate SQLite error code
-for SQLite. To return a specific SQLite error code use
-:meth:`exceptionfor`.  If the exception does not map to any specific
-error code then *SQLITE_ERROR* which corresponds to
-:exc:`SQLError` is returned to SQLite.
+exception will be translated into the corresponding SQLite error code.
+To return a specific SQLite error code use :meth:`exceptionfor`.  If
+the exception does not map to any specific error code then
+*SQLITE_ERROR* which corresponds to :exc:`SQLError` is returned to SQLite.
 
 The SQLite code that deals with VFS errors behaves in varying
 ways. Some routines have no way to return an error (eg `xDlOpen
@@ -62,57 +59,11 @@ database can result in many different VFS function calls such as hot
 journals being detected, locking, and read/writes for
 playback/rollback.
 
-To avoid confusion with exceptions being raised in the VFS and
-exceptions from normal code to open Connections or execute SQL
-queries, VFS exceptions are not raised in the normal way. (If they
-were, only one could be raised and it would obscure whatever
-exceptions the :class:`Connection` open or SQL query execute wanted to
-raise.)  Instead the :func:`VFS.excepthook` or
-:func:`VFSFile.excepthook` method is called with a tuple of exception
-type, exception value and exception traceback. The default
-implementation of ``excepthook`` calls :func:`sys.unraisablehook`,
-or if that fails :func:`sys.excepthook`.
-
-In normal VFS usage there will be no exceptions raised, or specific
-expected ones which APSW clears after noting them and returning the
-appropriate value back to SQLite. The exception hooking behaviour
-helps you find issues in your code or unexpected behaviour of the
-external environment. Remember that :ref:`augmented stack traces
-<augmentedstacktraces>` are available which significantly increase
-detail about the exceptions.
-
-As an example, lets say you have a divide by zero error in your xWrite
-routine. The table below shows what happens with time going down and
-across.
-
-+----------------------------------------------+--------------------------------+---------------------------------------------+
-| Python Query Code                            | SQLite and APSW C code         | Python VFS code                             |
-+==============================================+================================+=============================================+
-| ``cursor.execute("update table set foo=3")`` |                                |                                             |
-+----------------------------------------------+--------------------------------+---------------------------------------------+
-|                                              | SQLite starts executing query  |                                             |
-+----------------------------------------------+--------------------------------+---------------------------------------------+
-|                                              |                                | Your VFS routines are called                |
-+----------------------------------------------+--------------------------------+---------------------------------------------+
-|                                              |                                | Your xWrite divides by zero                 |
-+----------------------------------------------+--------------------------------+---------------------------------------------+
-|                                              |                                | :meth:`VFSFile.excepthook` is called with   |
-|                                              |                                | ZeroDivision exception                      |
-+----------------------------------------------+--------------------------------+---------------------------------------------+
-|                                              | *SQLITE_ERROR* (closest        |                                             |
-|                                              | matching SQLite error code) is |                                             |
-|                                              | returned to SQLite by APSW     |                                             |
-+----------------------------------------------+--------------------------------+---------------------------------------------+
-|                                              | SQLite error handling and      | More VFS routines are called.  Any          |
-|                                              | recovery operates which calls  | exceptions in these routines will result in |
-|                                              | more VFS routines.             | :meth:`VFSFile.excepthook` being called with|
-|                                              |                                | them.                                       |
-+----------------------------------------------+--------------------------------+---------------------------------------------+
-|                                              | SQLite returns                 |                                             |
-|                                              | *SQLITE_FULL* to APSW          |                                             |
-+----------------------------------------------+--------------------------------+---------------------------------------------+
-| APSW returns :class:`apsw.FullError`         |                                |                                             |
-+----------------------------------------------+--------------------------------+---------------------------------------------+
+If multiple exceptions occur during the same SQLite control flow, then
+they will be :doc:`chained <exceptions>` together.  Remember that
+:ref:`augmented stack traces <augmentedstacktraces>` are available
+which significantly increase detail about the exceptions and help with
+debugging.
 
 VFSFcntlPragma class
 ====================
@@ -185,7 +136,9 @@ VFS class
 
 .. method:: VFS.excepthook(etype: type[BaseException], evalue: BaseException, etraceback: Optional[types.TracebackType]) -> Any
 
-    Called when there has been an exception in a :class:`VFS` routine.
+    Called when there has been an exception in a :class:`VFS` routine,
+    and it can't be reported to the caller as usual.
+
     The default implementation passes the exception information
     to sqlite3_log, and the first non-error of
     :func:`sys.unraisablehook` and :func:`sys.excepthook`, falling back to
@@ -400,15 +353,12 @@ VFSFile class
 .. method:: VFSFile.excepthook(etype: type[BaseException], evalue: BaseException, etraceback: Optional[types.TracebackType]) ->None
 
     Called when there has been an exception in a :class:`VFSFile`
-    routine.  The default implementation passes the exception information
+    routine, and it can't be reported to the caller as usual.
+
+    The default implementation passes the exception information
     to sqlite3_log, and the first non-error of
     :func:`sys.unraisablehook` and :func:`sys.excepthook`, falling back to
     `PyErr_Display`.
-
-    :param etype: The exception type
-    :param evalue: The exception  value
-    :param etraceback: The exception traceback.  Note this
-      includes all frames all the way up to the thread being started.
 
 .. method:: VFSFile.xCheckReservedLock() -> bool
 

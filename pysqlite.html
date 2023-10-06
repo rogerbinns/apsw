@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>sqlite3 module differences &mdash; APSW 3.43.1.0 documentation</title>
+  <title>sqlite3 module differences &mdash; APSW 3.43.1.1 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/favicon.ico"/>
@@ -14,7 +14,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=b2705db7"></script>
+        <script src="_static/documentation_options.js?v=1608d9ae"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.43.1.0
+                3.43.1.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -122,7 +122,7 @@ other databases.  Consequently it does hide some of SQLite's nuances.</p>
 <p class="admonition-title">Note</p>
 <p>I suggest using APSW when you want to directly use SQLite and its
 functionality or are using your own code to deal with database
-independence rather than DBAPI.  Use <a class="reference external" href="https://docs.python.org/3/library/sqlite3.html#module-sqlite3" title="(in Python v3.11)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">sqlite3</span></code></a> and DBAPI if
+independence rather than DBAPI.  Use <a class="reference external" href="https://docs.python.org/3/library/sqlite3.html#module-sqlite3" title="(in Python v3.12)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">sqlite3</span></code></a> and DBAPI if
 your needs are simple, and you don't want to use SQLite specific
 features.</p>
 </div>
@@ -146,7 +146,7 @@ that the <a class="reference internal" href="connection.html#apsw.Connection" ti
 used in the same thread.  You can disable its checking, but unless
 you are very careful with your own mutexes you will have a crash or
 a deadlock.</p></li>
-<li><p>APSW <a class="reference external" href="https://docs.python.org/3/extending/building.html#building" title="(in Python v3.11)"><span class="xref std std-ref">build instructions</span></a> show you how to include
+<li><p>APSW <a class="reference external" href="https://docs.python.org/3/extending/building.html#building" title="(in Python v3.12)"><span class="xref std std-ref">build instructions</span></a> show you how to include
 SQLite statically in the extension, avoiding a dependency on system
 SQLite.</p></li>
 <li><p><strong>Nothing</strong> happens behind your back. By default sqlite3 tries to
@@ -279,7 +279,7 @@ libraries that abstract away the database layer</p></li>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Sep 13, 2023.
+      <span class="lastupdated">Last updated on Oct 06, 2023.
       </span></p>
   </div>
 

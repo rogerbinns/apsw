@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Exceptions and Errors &mdash; APSW 3.43.1.0 documentation</title>
+  <title>Exceptions and Errors &mdash; APSW 3.43.1.1 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/favicon.ico"/>
@@ -14,7 +14,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=b2705db7"></script>
+        <script src="_static/documentation_options.js?v=1608d9ae"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.43.1.0
+                3.43.1.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -66,6 +66,7 @@
 <li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Exceptions and Errors</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#chaining">Chaining</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#unraisable">Unraisable</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#exception-classes">Exception Classes</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.Error"><code class="docutils literal notranslate"><span class="pre">Error</span></code></a><ul>
@@ -142,25 +143,29 @@
              
   <section id="exceptions-and-errors">
 <span id="exceptions"></span><h1>Exceptions and Errors<a class="headerlink" href="#exceptions-and-errors" title="Link to this heading"></a></h1>
-<p>Python uses <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">exceptions</span></code></a> to indicate an error has
+<p>Python uses <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">exceptions</span></code></a> to indicate an error has
 happened.  The SQLite library uses <a class="reference external" href="https://www.sqlite.org/rescode.html">integer error codes</a>.  APSW maps between the two
 systems as needed.  Exceptions raised in Python code called by SQLite
 will have that exception present when control returns to Python, and
 SQLite will understand that an error occurred.</p>
+<section id="chaining">
+<h2>Chaining<a class="headerlink" href="#chaining" title="Link to this heading"></a></h2>
+<p>When an error is reported to SQLite, it may take further actions.  For
+example errors in <a class="reference internal" href="vfs.html"><span class="doc">VFS</span></a> can result in error recovery
+attempts, while an error in a window function step method will result
+in the final method being called to do clean up.  Your code
+implementing those could also have additional exceptions.</p>
+<p>When multiple exceptions occur in the same SQLite control flow then
+they will be <span class="target" id="index-0"></span><a class="pep reference external" href="https://peps.python.org/pep-3134/"><strong>chained</strong></a>.  Python's traceback printing code
+will show <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#exception-context">all the exceptions</a>.</p>
+</section>
 <section id="unraisable">
 <span id="id1"></span><h2>Unraisable<a class="headerlink" href="#unraisable" title="Link to this heading"></a></h2>
 <p>There are a few places where it is not possible for a Python exception
-to be reported to SQLite as an error, typically because SQLite does
-not allow an error to be signalled in that context.  Another example
-would be in <a class="reference internal" href="vfs.html"><span class="doc">VFS</span></a> code, because SQLite takes actions to
-recover from errors (eg it may try to rollback a transaction on a
-write error).  Python wants to return to callers, not continue
-execution while the exception is pending.  (Also only one exception
-can be active at a time.)</p>
-<p>Unraisable exceptions in VFS code are handled by calling
-<a class="reference internal" href="vfs.html#apsw.VFS.excepthook" title="apsw.VFS.excepthook"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VFS.excepthook()</span></code></a> or <a class="reference internal" href="vfs.html#apsw.VFSFile.excepthook" title="apsw.VFSFile.excepthook"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VFSFile.excepthook()</span></code></a> (<a class="reference internal" href="vfs.html#vfserrors"><span class="std std-ref">more info</span></a>).  In other code <a class="reference external" href="https://docs.python.org/3/library/sys.html#sys.unraisablehook">sys.unraisablehook</a> is
-called, and if that is not present then <a class="reference external" href="https://docs.python.org/3/library/sys.html#sys.excepthook">sys.excepthook</a> is
-called.</p>
+to be reported to SQLite as an error, and Python C code does not allow
+destructors to report exceptions.  These exceptions are reported via
+<a class="reference external" href="https://docs.python.org/3/library/sys.html#sys.unraisablehook">sys.unraisablehook</a>,
+and if that is not present then <a class="reference external" href="https://docs.python.org/3/library/sys.html#sys.excepthook">sys.excepthook</a>.</p>
 <p><a class="reference external" href="https://www.sqlite.org/c3ref/log.html">sqlite3_log</a> is also called
 so that you will have the context of when the exception happened
 relative to the errors SQLite is logging.</p>
@@ -626,7 +631,7 @@ almost completely useless!</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Sep 13, 2023.
+      <span class="lastupdated">Last updated on Oct 06, 2023.
       </span></p>
   </div>
 

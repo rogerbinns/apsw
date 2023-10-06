@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Example/Tour &mdash; APSW 3.43.1.0 documentation</title>
+  <title>Example/Tour &mdash; APSW 3.43.1.1 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/favicon.ico"/>
@@ -14,7 +14,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=b2705db7"></script>
+        <script src="_static/documentation_options.js?v=1608d9ae"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.43.1.0
+                3.43.1.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -184,7 +184,7 @@ see what gets printed when you run the code.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">      Using APSW file /space/apsw/apsw/__init__.cpython-311-x86_64-linux-gnu.so</span>
-<span class="go">         APSW version 3.43.1.0</span>
+<span class="go">         APSW version 3.43.1.1</span>
 <span class="go">SQLite header version 3043001</span>
 <span class="go">   SQLite lib version 3.43.1</span>
 <span class="go">   Using amalgamation True</span>
@@ -205,7 +205,7 @@ via <a class="reference internal" href="bestpractice.html"><span class="doc">aps
 <span id="example-logging"></span><span id="index-2"></span><h2>Logging<a class="headerlink" href="#logging" title="Link to this heading"></a></h2>
 <p>It is a good idea to get SQLite's logs as you will get more
 information about errors.  <a class="reference internal" href="ext.html#apsw.ext.log_sqlite" title="apsw.ext.log_sqlite"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.ext.log_sqlite()</span></code></a> forwards
-SQLite's log messages to the <a class="reference external" href="https://docs.python.org/3/library/logging.html#module-logging" title="(in Python v3.11)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">logging</span></code></a> module.  The prior
+SQLite's log messages to the <a class="reference external" href="https://docs.python.org/3/library/logging.html#module-logging" title="(in Python v3.12)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">logging</span></code></a> module.  The prior
 best practice also includes this.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">log_sqlite</span><span class="p">()</span>
 
@@ -672,7 +672,7 @@ register a collation by calling <a class="reference internal" href="connection.h
 </section>
 <section id="accessing-results-by-column-name">
 <span id="example-colnames"></span><span id="index-18"></span><h2>Accessing results by column name<a class="headerlink" href="#accessing-results-by-column-name" title="Link to this heading"></a></h2>
-<p>You can access results by column name using <a class="reference external" href="https://docs.python.org/3/library/dataclasses.html#module-dataclasses" title="(in Python v3.11)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataclasses</span></code></a>.
+<p>You can access results by column name using <a class="reference external" href="https://docs.python.org/3/library/dataclasses.html#module-dataclasses" title="(in Python v3.12)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataclasses</span></code></a>.
 APSW provides <a class="reference internal" href="ext.html#apsw.ext.DataClassRowFactory" title="apsw.ext.DataClassRowFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">apsw.ext.DataClassRowFactory</span></code></a> for names
 instead</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">apsw.ext</span>
@@ -1119,7 +1119,7 @@ feedback and allows cancelling.</p>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
-<span class="go">(9820078994,)</span>
+<span class="go">(9973029666,)</span>
 </pre></div>
 </div>
 </section>
@@ -1201,7 +1201,8 @@ with  <a class="reference internal" href="connection.html#apsw.Connection.setcom
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">in commit hook</span>
-<span class="go">commits okay at this time</span>
+<span class="go">no commits out of hours</span>
+<span class="go">commit was not allowed</span>
 </pre></div>
 </div>
 </section>
@@ -1444,10 +1445,10 @@ useful instead.</p>
 <span class="go">│ .local     │ 1534       │</span>
 <span class="go">│ .o         │ 20304      │</span>
 <span class="go">│ .ps1       │ 9033       │</span>
-<span class="go">│ .py        │ 11773809   │</span>
-<span class="go">│ .pyc       │ 13256978   │</span>
+<span class="go">│ .py        │ 11776971   │</span>
+<span class="go">│ .pyc       │ 13267393   │</span>
 <span class="go">│ .rst       │ 9561       │</span>
-<span class="go">│ .sh        │ 3932       │</span>
+<span class="go">│ .sh        │ 3941       │</span>
 <span class="go">│ .so        │ 27584936   │</span>
 <span class="go">│ .stdlib    │ 10752      │</span>
 <span class="go">│ .supp      │ 70         │</span>
@@ -1676,9 +1677,9 @@ Python.</p>
 
 <span class="go">Dump output</span>
 
-<span class="go">-- SQLite dump (by APSW 3.43.1.0)</span>
+<span class="go">-- SQLite dump (by APSW 3.43.1.1)</span>
 <span class="go">-- SQLite version 3.43.1</span>
-<span class="go">-- Date: Wed Sep 13 15:58:02 2023</span>
+<span class="go">-- Date: Fri Oct  6 07:11:15 2023</span>
 <span class="go">-- Tables like: csvtest%</span>
 <span class="go">-- Database: /space/apsw/dbfile</span>
 <span class="go">-- User: rogerb @ clamps</span>
@@ -1713,7 +1714,7 @@ Python.</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SQLite memory usage </span><span class="si">{</span><span class="w"> </span><span class="n">current_usage</span><span class="w"> </span><span class="si">}</span><span class="s2"> max </span><span class="si">{</span><span class="w"> </span><span class="n">max_usage</span><span class="w"> </span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite memory usage 438680 max 2346512</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite memory usage 433992 max 2341792</span>
 </pre></div>
 </div>
 </section>
@@ -1908,7 +1909,7 @@ rollback the partial data.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Sep 13, 2023.
+      <span class="lastupdated">Last updated on Oct 06, 2023.
       </span></p>
   </div>
 

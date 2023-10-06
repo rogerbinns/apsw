@@ -15,7 +15,9 @@ also unique in many ways.  Read about the unique features at the
 `SQLite website <https://sqlite.org/different.html>`__ and `quirks
 <https://www.sqlite.org/quirks.html>`__.
 
-:doc:`Best practice <bestpractice>` is recommended.
+.. tip::
+
+  :doc:`Best practice <bestpractice>` is recommended.
 
 Transactions
 ============
@@ -80,18 +82,19 @@ from each other.  Anything done on one cursor is immediately visible
 to all other Cursors on the same connection.  This still applies if
 you start transactions.  Connections are isolated from each other.
 
-Cursor objects are obtained by :meth:`Connection.cursor` and are very
-cheap.  It is best practise to not re-use them, and instead get a new one
-each time.  If you don't, code refactoring and nested loops can unintentionally
-use the same cursor object which will not crash but will cause hard to
-diagnose behaviour in your program.
+:meth:`Connection.execute` and :meth:`Connection.executemany`
+automatically obtains cursors from  :meth:`Connection.cursor` which
+are very cheap.  It is best practise to not re-use them, and instead
+get a new one each time.  If you don't, code refactoring and nested
+loops can unintentionally use the same cursor object which will not
+crash but will cause hard to diagnose behaviour in your program.
 
 Read more about :ref:`Cursors <cursors>`.
 
 Bindings
 ========
 
-When using a cursor, always use bindings.  `String interpolation
+When issuing a query, always use bindings.  `String interpolation
 <https://docs.python.org/library/stdtypes.html#printf-style-string-formatting>`_
 may seem more convenient but you will encounter difficulties.  You may
 feel that you have complete control over all data accessed but if your
@@ -184,29 +187,6 @@ Sometimes you want to know what a particular SQL statement does.  Use
 :func:`apsw.ext.query_info` which will provide as much detail as you
 need.
 
-Unexpected behaviour
-====================
-
-Occasionally you may get different results than you expected.  Before
-littering your code with *print*, try :ref:`apswtrace <apswtrace>`
-with all options turned on to see exactly what is going on. You can
-also use the :ref:`SQLite shell <shell>` to dump the contents of your
-database to a text file.  For example you could dump it before and
-after a run to see what changed.
-
-One fairly common gotcha is using double quotes instead of single
-quotes.  (This wouldn't be a problem if you use bindings!)  SQL
-strings use single quotes.  If you use double quotes then it will
-mostly appear to work, but they are intended to be used for
-identifiers such as column names.  For example if you have a column
-named ``a b`` (a space b) then you would need to use::
-
-  SELECT "a b" from table
-
-If you use double quotes and happen to use a string whose contents are
-the same as a table, alias, column etc then unexpected results will
-occur.
-
 .. _customizing_connection_cursor:
 
 Customizing Connections
@@ -282,33 +262,6 @@ design SQL schemas is called `normalization
 <https://en.wikipedia.org/wiki/Database_normalization>`_.  The page
 also shows common pitfalls if you don't normalize your schema.
 
-.. _sharedcache:
-
-Shared Cache Mode
-=================
-
-SQLite supports a `shared cache mode
-<https://sqlite.org/sharedcache.html>`__ where multiple connections
-to the same database can share a cache instead of having their own.
-It is not recommended that you use this mode.
-
-A big issue is that :ref:`busy handling <busyhandling>` is not done
-the same way.  The timeouts and handlers are ignored and instead
-*SQLITE_LOCKED_SHAREDCACHE* extended error is returned.
-Consequently you will have to do your own busy handling.  (`SQLite
-ticket
-<https://sqlite.org/src/tktview/ebde3f66fc64e21e61ef2854ed1a36dfff884a2f>`__,
-:issue:`59`)
-
-The amount of memory and I/O saved is trivial compared to Python's
-overall memory and I/O consumption.  You may also need to tune the
-shared cache's memory back up to what it would have been with separate
-connections to get the same performance.
-
-The shared cache mode is targeted at embedded systems where every
-byte of memory and I/O matters.  For example an MP3 player may only
-have kilobytes of memory available for SQLite.
-
 .. _wal:
 
 Write Ahead Logging
@@ -322,7 +275,7 @@ can also turn it on for all opened databases by using
 :attr:`connection_hooks`::
 
   def setwal(db):
-      db.execute("pragma journal_mode=wal")
+      db.pragma("journal_mode", "wal")
       # custom auto checkpoint interval (use zero to disable)
       db.wal_autocheckpoint(10)
 
@@ -338,3 +291,18 @@ If you write your own VFS, then inheriting from an existing VFS that
 supports WAL will make your VFS support the extra WAL methods too.
 (Your VFS will point directly to the base methods - there is no
 indirect call via Python.)
+
+.. _sharedcache:
+
+Shared Cache Mode
+=================
+
+SQLite supports a `shared cache mode
+<https://sqlite.org/sharedcache.html>`__ where multiple connections to
+the same database can share a cache instead of having their own.
+SQLite recommend that `you do not use this mode
+<https://sqlite.org/sharedcache.html#use_of_shared_cache_is_discouraged>`__.
+
+If you do use it, be aware that :ref:`busy handling <busyhandling>` is
+very different, and that you are unlikely to save any memory or I/O
+compared to what Python programs usually do.
