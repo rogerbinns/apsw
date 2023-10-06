@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+# mypy: ignore-errors
+
 import argparse
 import base64
 import code
