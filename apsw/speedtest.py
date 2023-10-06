@@ -581,7 +581,7 @@ if __name__ == "__main__":
         class passthrufile(apsw.VFSFile):
             pass
 
-        passthru = passthru()
+        keepalive = passthru()
 
     if options.vfs and options.database in (":memory:", ""):
         parser.error("For vfs to take effect you need a non-memory database filename")
