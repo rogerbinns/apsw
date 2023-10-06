@@ -3,8 +3,8 @@ Change History
 
 .. currentmodule:: apsw
 
-next
-====
+3.43.1.1
+========
 
 :doc:`Exception <exceptions>` handling has been updated, with multiple
 exceptions in the same SQLite control flow being chained together.
