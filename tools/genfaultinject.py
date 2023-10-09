@@ -75,7 +75,7 @@ returns = {
 
             PyModule_Create2 PyErr_NewExceptionWithDoc PySet_New
             PyUnicode_New  PyUnicode_AsUTF8 PyObject_GetAttr _PyObject_New PyUnicode_FromString
-            PyObject_Str PyUnicode_AsUTF8AndSize PyTuple_New PyDict_New Py_BuildValue PyList_New
+            PyObject_Str PyUnicode_AsUTF8AndSize PyTuple_New PyDict_New Py_BuildValue Py_VaBuildValue PyList_New
             PyWeakref_NewRef PyMem_Calloc PyLong_FromLong PyObject_GetIter
             PyObject_CallObject PyUnicode_FromStringAndSize
             PySequence_GetItem PyLong_FromLongLong PySequence_GetSlice PyBytes_FromStringAndSize

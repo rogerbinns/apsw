@@ -79,6 +79,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef PyUnicode_New
 #undef PyWeakref_NewRef
 #undef Py_BuildValue
+#undef Py_VaBuildValue
 #undef _PyBytes_Resize
 #undef _PyObject_New
 #undef allocfunccbinfo
@@ -1140,6 +1141,22 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res__Py_BuildValue_SizeT = (typeof (_res__Py_BuildValue_SizeT))18;                                                                               \
     }                                                                                                                                                     \
     _res__Py_BuildValue_SizeT;                                                                                                                            \
+})
+#undef Py_VaBuildValue
+#define Py_VaBuildValue(...) \
+({                                                                                                                                                              \
+    __auto_type _res__Py_VaBuildValue_SizeT = 0 ? _Py_VaBuildValue_SizeT(__VA_ARGS__) : 0;                                                                      \
+                                                                                                                                                                \
+    _res__Py_VaBuildValue_SizeT = (typeof (_res__Py_VaBuildValue_SizeT))APSW_FaultInjectControl("Py_VaBuildValue", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                \
+    if ((typeof (_res__Py_VaBuildValue_SizeT))0x1FACADE == _res__Py_VaBuildValue_SizeT)                                                                         \
+       _res__Py_VaBuildValue_SizeT = _Py_VaBuildValue_SizeT(__VA_ARGS__);                                                                                       \
+    else if ((typeof(_res__Py_VaBuildValue_SizeT))0x2FACADE == _res__Py_VaBuildValue_SizeT)                                                                     \
+    {                                                                                                                                                           \
+        _Py_VaBuildValue_SizeT(__VA_ARGS__);                                                                                                                    \
+        _res__Py_VaBuildValue_SizeT = (typeof (_res__Py_VaBuildValue_SizeT))18;                                                                                 \
+    }                                                                                                                                                           \
+    _res__Py_VaBuildValue_SizeT;                                                                                                                                \
 })
 #define _PyBytes_Resize(...) \
 ({                                                                                                                                                \
