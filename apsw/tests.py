@@ -1046,6 +1046,9 @@ class APSW(unittest.TestCase):
         c.executemany(statements="select ?", sequenceofbindings=((1, ), (2, )), can_cache=False,
                       prepare_flags=0).fetchall()
 
+        # non-contiguous buffers
+        self.assertRaises(BufferError, c.execute, "select ?", (memoryview(b"234567890")[::2], ))
+
     def testIssue373(self):
         "issue 373: dict type checking in bindings"
 

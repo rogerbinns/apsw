@@ -16,6 +16,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 
 #undef MakeExistingException
 #undef PyBool_FromLong
+#undef PyBuffer_IsContiguous
 #undef PyBytes_FromStringAndSize
 #undef PyCode_NewEmpty
 #undef PyDict_New
@@ -193,6 +194,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res_PyBool_FromLong = (typeof (_res_PyBool_FromLong))18;                                                                                 \
     }                                                                                                                                             \
     _res_PyBool_FromLong;                                                                                                                         \
+})
+#define PyBuffer_IsContiguous(...) \
+({                                                                                                                                                                  \
+    __auto_type _res_PyBuffer_IsContiguous = 0 ? PyBuffer_IsContiguous(__VA_ARGS__) : 0;                                                                            \
+                                                                                                                                                                    \
+    _res_PyBuffer_IsContiguous = (typeof (_res_PyBuffer_IsContiguous))APSW_FaultInjectControl("PyBuffer_IsContiguous", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                    \
+    if ((typeof (_res_PyBuffer_IsContiguous))0x1FACADE == _res_PyBuffer_IsContiguous)                                                                               \
+       _res_PyBuffer_IsContiguous = PyBuffer_IsContiguous(__VA_ARGS__);                                                                                             \
+    else if ((typeof(_res_PyBuffer_IsContiguous))0x2FACADE == _res_PyBuffer_IsContiguous)                                                                           \
+    {                                                                                                                                                               \
+        PyBuffer_IsContiguous(__VA_ARGS__);                                                                                                                         \
+        _res_PyBuffer_IsContiguous = (typeof (_res_PyBuffer_IsContiguous))18;                                                                                       \
+    }                                                                                                                                                               \
+    _res_PyBuffer_IsContiguous;                                                                                                                                     \
 })
 #define PyBytes_FromStringAndSize(...) \
 ({                                                                                                                                                                              \

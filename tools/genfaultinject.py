@@ -132,6 +132,7 @@ returns = {
         PyStructSequence_InitType2 PyList_Size PyLong_AsInt
 
         PyObject_GetBufferContiguous PyObject_GetBuffer
+        PyBuffer_IsContiguous
 
         connection_trace_and_exec getfunctionargs
         """.split(),

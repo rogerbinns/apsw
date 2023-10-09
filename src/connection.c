@@ -2416,7 +2416,8 @@ set_context_result(sqlite3_context *context, PyObject *obj)
 
     if (asrb != 0)
     {
-      sqlite3_result_error(context, "PyObject_GetBuffer failed", -1);
+      assert(PyErr_Occurred());
+      sqlite3_result_error(context, "PyObject_GetBufferContiguous failed", -1);
       return 0;
     }
     sqlite3_result_blob64(context, py3buffer.buf, py3buffer.len, SQLITE_TRANSIENT);
