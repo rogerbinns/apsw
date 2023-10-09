@@ -600,6 +600,8 @@ class APSW(unittest.TestCase):
 
     def testBackwardsCompatibility(self):
         "Verifies changed names etc are still accessible through the old ones"
+        self.assertIs(apsw.main, apsw.shell.main)
+        self.assertIs(apsw.Shell, apsw.shell.Shell)
 
     def testModuleStringFunctions(self):
         "Tests various string comparison/matching functions"
