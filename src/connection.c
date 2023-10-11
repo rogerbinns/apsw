@@ -34,6 +34,12 @@ typedef struct
 /* a particular aggregate function instance used as sqlite3_aggregate_context */
 typedef struct
 {
+  enum
+  {
+    afcOK = 1,
+    afcUNINIT = 0,
+    afcERROR = -1
+  } state;
   PyObject *aggvalue;  /* the aggregation value passed as first parameter */
   PyObject *stepfunc;  /* step function */
   PyObject *finalfunc; /* final function */
@@ -2228,6 +2234,7 @@ Connection_deserialize(Connection *self, PyObject *const *fast_args, Py_ssize_t 
     PYSQLITE_CON_CALL(res = sqlite3_deserialize(self->db, name, (unsigned char *)newcontents, len, len, SQLITE_DESERIALIZE_RESIZEABLE | SQLITE_DESERIALIZE_FREEONCLOSE));
   SET_EXC(res, self->db);
 
+  /* sqlite frees the buffer on error due to freeonclose flag */
   if (res != SQLITE_OK)
     return NULL;
   Py_RETURN_NONE;
@@ -2522,60 +2529,85 @@ getaggregatefunctioncontext(sqlite3_context *context)
   FunctionCBInfo *cbinfo;
   PyObject *retval;
   /* have we seen it before? */
-  if (aggfc->aggvalue)
+  if (aggfc->state == afcOK)
     return aggfc;
-
-  /* fill in with Py_None so we know it is valid */
-  aggfc->aggvalue = Py_NewRef(Py_None);
+  if (aggfc->state == afcERROR)
+    return NULL;
+  assert(aggfc->state == afcUNINIT);
 
   cbinfo = (FunctionCBInfo *)sqlite3_user_data(context);
   assert(cbinfo);
   assert(cbinfo->aggregatefactory);
+
+  aggfc->state = afcERROR;
 
   /* call the aggregatefactory to get our working objects */
   PyObject *vargs[] = {NULL};
   retval = PyObject_Vectorcall(cbinfo->aggregatefactory, vargs + 1, 0 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
 
   if (!retval)
-    return aggfc;
-  /* it should have returned a tuple of 3 items: object, stepfunction and finalfunction */
+  {
+    return NULL;
+  }
+  /* it should have returned object or a tuple of 3 items: object, stepfunction and finalfunction */
   if (!PyTuple_Check(retval))
   {
-    PyErr_Format(PyExc_TypeError, "Aggregate factory should return tuple of (object, stepfunction, finalfunction)");
-    goto finally;
+    aggfc->aggvalue = NULL;
+    aggfc->stepfunc = PyObject_GetAttr(retval, apst.step);
+    if (!aggfc->stepfunc)
+      goto finally;
+    if (!PyCallable_Check(aggfc->stepfunc))
+    {
+      PyErr_Format(PyExc_TypeError, "aggregate step function must be callable");
+      goto finally;
+    }
+    aggfc->finalfunc = PyObject_GetAttr(retval, apst.final);
+    if (!aggfc->finalfunc)
+      goto finally;
+    if (!PyCallable_Check(aggfc->finalfunc))
+    {
+      PyErr_Format(PyExc_TypeError, "aggregate final function must be callable");
+      goto finally;
+    }
+    aggfc->state = afcOK;
   }
-  if (PyTuple_GET_SIZE(retval) != 3)
+  else
   {
-    PyErr_Format(PyExc_TypeError, "Aggregate factory should return 3 item tuple of (object, stepfunction, finalfunction)");
-    goto finally;
+
+    if (PyTuple_GET_SIZE(retval) != 3)
+    {
+      PyErr_Format(PyExc_TypeError, "Aggregate factory should return 3 item tuple of (object, stepfunction, finalfunction)");
+      goto finally;
+    }
+    /* we don't care about the type of the zeroth item (object) ... */
+
+    /* stepfunc */
+    if (!PyCallable_Check(PyTuple_GET_ITEM(retval, 1)))
+    {
+      PyErr_Format(PyExc_TypeError, "stepfunction must be callable");
+      goto finally;
+    }
+
+    /* finalfunc */
+    if (!PyCallable_Check(PyTuple_GET_ITEM(retval, 2)))
+    {
+      PyErr_Format(PyExc_TypeError, "final function must be callable");
+      goto finally;
+    }
+
+    aggfc->aggvalue = Py_NewRef(PyTuple_GET_ITEM(retval, 0));
+    aggfc->stepfunc = Py_NewRef(PyTuple_GET_ITEM(retval, 1));
+    aggfc->finalfunc = Py_NewRef(PyTuple_GET_ITEM(retval, 2));
+
+    aggfc->state = afcOK;
   }
-  /* we don't care about the type of the zeroth item (object) ... */
-
-  /* stepfunc */
-  if (!PyCallable_Check(PyTuple_GET_ITEM(retval, 1)))
-  {
-    PyErr_Format(PyExc_TypeError, "stepfunction must be callable");
-    goto finally;
-  }
-
-  /* finalfunc */
-  if (!PyCallable_Check(PyTuple_GET_ITEM(retval, 2)))
-  {
-    PyErr_Format(PyExc_TypeError, "final function must be callable");
-    goto finally;
-  }
-
-  aggfc->aggvalue = PyTuple_GET_ITEM(retval, 0);
-  aggfc->stepfunc = PyTuple_GET_ITEM(retval, 1);
-  aggfc->finalfunc = PyTuple_GET_ITEM(retval, 2);
-
-  Py_INCREF(aggfc->aggvalue);
-  Py_INCREF(aggfc->stepfunc);
-  Py_INCREF(aggfc->finalfunc);
-
-  Py_DECREF(Py_None); /* we used this earlier as a sentinel */
-
 finally:
+  if (aggfc->state != afcOK)
+  {
+    Py_CLEAR(aggfc->aggvalue);
+    Py_CLEAR(aggfc->stepfunc);
+    Py_CLEAR(aggfc->finalfunc);
+  }
   assert(retval);
   Py_DECREF(retval);
   return aggfc;
@@ -2606,18 +2638,17 @@ cbdispatch_step(sqlite3_context *context, int argc, sqlite3_value **argv)
 
   aggfc = getaggregatefunctioncontext(context);
 
-  if (PyErr_Occurred())
+  if (!aggfc || PyErr_Occurred())
     goto finally;
 
-  assert(aggfc);
-
+  int offset = (aggfc->aggvalue) ? 1 : 0;
   vargs[1] = aggfc->aggvalue;
-  if (getfunctionargs(vargs + 2, context, argc, argv))
+  if (getfunctionargs(vargs + 1 + offset, context, argc, argv))
     goto finally;
 
   assert(!PyErr_Occurred());
-  retval = PyObject_Vectorcall(aggfc->stepfunc, vargs + 1, (argc + 1) | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
-  Py_DECREF_ARRAY(vargs + 2, argc);
+  retval = PyObject_Vectorcall(aggfc->stepfunc, vargs + 1, (argc + offset) | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  Py_DECREF_ARRAY(vargs + 1 + offset, argc);
   Py_XDECREF(retval);
 
   if (!retval)
@@ -2657,7 +2688,8 @@ cbdispatch_final(sqlite3_context *context)
   PY_ERR_FETCH(exc_save);
 
   aggfc = getaggregatefunctioncontext(context);
-  assert(aggfc);
+  if (!aggfc)
+    goto finally;
 
   MakeExistingException();
 
@@ -2667,8 +2699,9 @@ cbdispatch_final(sqlite3_context *context)
     goto finally;
   }
 
+  int offset = (aggfc->aggvalue) ? 1 : 0;
   PyObject *vargs[] = {NULL, aggfc->aggvalue};
-  retval = PyObject_Vectorcall(aggfc->finalfunc, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  retval = PyObject_Vectorcall(aggfc->finalfunc, vargs + 1, offset | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (retval)
   {
     int ok = set_context_result(context, retval);
@@ -2679,10 +2712,12 @@ cbdispatch_final(sqlite3_context *context)
 
 finally:
   /* we also free the aggregatefunctioncontext here */
-  assert(aggfc->aggvalue); /* should always be set, perhaps to Py_None */
-  Py_XDECREF(aggfc->aggvalue);
-  Py_XDECREF(aggfc->stepfunc);
-  Py_XDECREF(aggfc->finalfunc);
+  if (aggfc)
+  {
+    Py_CLEAR(aggfc->aggvalue);
+    Py_CLEAR(aggfc->stepfunc);
+    Py_CLEAR(aggfc->finalfunc);
+  }
 
   if (PyErr_Occurred() && PY_ERR_NOT_NULL(exc_save))
     apsw_write_unraisable(NULL);
@@ -3196,7 +3231,11 @@ finally:
   :param numargs: How many arguments the function takes, with -1 meaning any number
   :param flags: `Function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__
 
-  When a query starts, the *factory* will be called and must return a tuple of 3 items:
+  When a query starts, the *factory* will be called.  It can be a class
+  with a *step* function called for each matching row, and a *final* function
+  to return the final value.
+
+  Alternatively a non-class approach can return a tuple of 3 items:
 
     a context object
        This can be of any type
