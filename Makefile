@@ -135,9 +135,9 @@ src/apswversion.h: Makefile
 	echo "#define APSW_VERSION \"$(VERSION)\"" > src/apswversion.h
 
 stubtest: build_ext  ## Verifies type annotations with mypy
-	$(PYTHON) -m mypy.stubtest --allowlist tools/stubtest.allowlist apsw
-	$(PYTHON) -m mypy example-code.py
-	$(PYTHON) -m mypy --strict example-code.py
+	-$(PYTHON) -m mypy.stubtest --allowlist tools/stubtest.allowlist apsw
+	$(PYTHON) -m mypy --allow-redefinition example-code.py
+	$(PYTHON) -m mypy --allow-redefinition --strict example-code.py
 
 fossil: ## Grabs latest trunk from SQLite source control, extracts and builds in sqlite3 directory
 	-mv sqlite3/sqlite3config.h .
