@@ -303,14 +303,8 @@ class longest:
         # Called at the very end
         return self.longest
 
-    @classmethod
-    def factory(cls) -> apsw.AggregateCallbacks:
-        return cls(), cls.step, cls.final
-
-
-connection.createaggregatefunction("longest", longest.factory)
-for row in connection.execute("select longest(event) from log"):
-    print(row)
+connection.createaggregatefunction("longest", longest)
+print(connection.execute("select longest(event) from log").get)
 
 ### window: Defining window functions
 # Window functions input values come from a "window" around a row of

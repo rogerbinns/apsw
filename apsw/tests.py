@@ -2322,7 +2322,7 @@ class APSW(unittest.TestCase):
 
     def testAggregateFunctions(self):
         "Verify aggregate functions"
-        c = self.db.cursor()
+        c = self.db
         c.execute("create table foo(x,y,z)")
 
         # aggregate function
@@ -2430,7 +2430,7 @@ class APSW(unittest.TestCase):
             return {}
 
         self.db.createaggregatefunction("badfunc", badfactory)
-        self.assertRaises(TypeError, c.execute, "select badfunc(x) from foo")
+        self.assertRaises(AttributeError, c.execute, "select badfunc(x) from foo")
 
         # incorrect number of items returned
         def badfactory():
@@ -2443,8 +2443,8 @@ class APSW(unittest.TestCase):
 
             return (None, badfunc, final, badfactory)
 
-        self.db.createaggregatefunction("badfunc", badfactory)
-        self.assertRaises(TypeError, c.execute, "select badfunc(x) from foo")
+        self.db.createaggregatefunction("badfunc3", badfactory)
+        self.assertRaises(TypeError, c.execute, "select badfunc3(x) from foo")
 
         # step not callable
         def badfactory():
@@ -2457,8 +2457,8 @@ class APSW(unittest.TestCase):
 
             return (None, True, final)
 
-        self.db.createaggregatefunction("badfunc", badfactory)
-        self.assertRaises(TypeError, c.execute, "select badfunc(x) from foo")
+        self.db.createaggregatefunction("badfunc4", badfactory)
+        self.assertRaises(TypeError, c.execute, "select badfunc4(x) from foo")
 
         # final not callable
         def badfactory():
@@ -2471,15 +2471,45 @@ class APSW(unittest.TestCase):
 
             return (None, badfunc, True)
 
-        self.db.createaggregatefunction("badfunc", badfactory)
-        self.assertRaises(TypeError, c.execute, "select badfunc(x) from foo")
+        self.db.createaggregatefunction("badfunc5", badfactory)
+        self.assertRaises(TypeError, c.execute, "select badfunc5(x) from foo")
 
         # error in factory method
         def badfactory():
             1 / 0
 
-        self.db.createaggregatefunction("badfunc", badfactory)
-        self.assertRaises(ZeroDivisionError, c.execute, "select badfunc(x) from foo")
+        self.db.createaggregatefunction("badfunc6", badfactory)
+        self.assertRaises(ZeroDivisionError, c.execute, "select badfunc6(x) from foo")
+
+        # class based aggregate
+        class summer:
+
+            def __init__(self):
+                self.sum = 0
+
+            def step(self, v):
+                self.sum += v
+
+            def final(self):
+                return self.sum
+
+        c.execute("create table xyz(val)")
+        c.executemany("insert into xyz values(?)", ((i, ) for i in range(20)))
+        self.db.createaggregatefunction("summer", summer, -1)
+        self.assertEqual(sum(range(20)), c.execute("select summer(val) from xyz").get)
+
+        del summer.final
+        self.assertRaises(AttributeError, c.execute, "select summer(val) from xyz")
+        del summer.step
+        self.assertRaises(AttributeError, c.execute, "select summer(val) from xyz")
+
+        summer.step = summer.final = 3
+        self.db.createaggregatefunction("summer1", summer, -1)
+        self.assertRaisesRegex(TypeError, "step function must be callable", c.execute, "select summer1(val) from xyz")
+
+        summer.step = lambda v: 0
+        self.db.createaggregatefunction("summer2", summer, -1)
+        self.assertRaisesRegex(TypeError, "final function must be callable", c.execute, "select summer2(val) from xyz")
 
     def testWindowFunctions(self):
         "Verify window functions"
