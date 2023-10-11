@@ -19,6 +19,16 @@ to SQLiteValues.  You can also provide zeroblob in Bindings. You can use
 dict subclasses or any type registered with :class:`collections.abc.Mapping`
 for named bindings"""
 
+class AggregateClass(Protocol):
+    "Represents a running aggregate function"
+    def step(self, *values: SQLiteValue) -> None:
+            "Called with value(s) from a matching row"
+            ...
+    def final(self) -> SQLiteValue:
+            "Called after all matching rows have been processed to get the final value"
+            ...
+
+
 # Neither TypeVar nor ParamSpec work, when either should
 AggregateT = Any
 "An object provided as first parameter of step and final aggregate functions"
@@ -37,7 +47,7 @@ AggregateStep = \
 AggregateFinal= Callable[[AggregateT], SQLiteValue]
 "Final is called after all matching rows have been processed by step, and returns a SQLiteValue"
 
-AggregateFactory = Callable[[], tuple[AggregateT, AggregateStep, AggregateFinal]]
+AggregateFactory = Callable[[], AggregateClass | tuple[AggregateT, AggregateStep, AggregateFinal]]
 """Called each time for the start of a new calculation using an aggregate function,
 returning an object, a step function and a final function"""
 

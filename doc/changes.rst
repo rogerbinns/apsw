@@ -3,6 +3,12 @@ Change History
 
 .. currentmodule:: apsw
 
+next
+====
+
+:meth:`Connection.createaggregatefunction` can take a class with step
+and final methods. (:issue:`421`)
+
 3.43.1.1
 ========
 
