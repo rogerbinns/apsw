@@ -551,6 +551,11 @@ class Tester:
                 self.expect_exception.append(apsw_attr("TooBigError"))  # code 18
                 return self.ProceedReturn18
 
+            if fname == "sqlite3_deserialize":
+                # it frees the buffer even on error
+                self.expect_exception.append(apsw_attr("TooBigError"))  # code 18
+                return self.ProceedReturn18
+
             if fname == "sqlite3_enable_shared_cache":
                 self.expect_exception.append(apsw_attr("Error"))
                 return 0xFE  # also does unknown error code to make_exception

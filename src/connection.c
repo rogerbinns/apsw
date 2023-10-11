@@ -4776,7 +4776,10 @@ Connection_read(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_na
     goto error;
   }
 
-  return Py_BuildValue("ON", (res == SQLITE_OK) ? Py_True : Py_False, bytes);
+  PyObject *retval = Py_BuildValue("ON", (res == SQLITE_OK) ? Py_True : Py_False, bytes);
+  if (!retval)
+    Py_DECREF(bytes);
+  return retval;
 
 error:
   Py_XDECREF(bytes);
