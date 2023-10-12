@@ -31,6 +31,8 @@ import collections
 import copy
 import pathlib
 
+import names
+
 # symbols to skip because we can't apply docstrings (PyModule_AddObject doesn't take docstring)
 docstrings_skip = {
     "apsw.compile_options",
@@ -89,6 +91,14 @@ def get_mapping_info(name: str) -> dict:
         raise ValueError(f"Couldn't figure out { name }")
     f = found_in[-1]
     return {"title": f[1], "url": f[2]["page"], "members": f[2]["vars"]}
+
+
+def get_old_name(item) -> str | None:
+    klass, member = item["name"].split(".")
+    try:
+        return names.renames[klass][member]
+    except KeyError:
+        return None
 
 
 all_exc_doc = {}
@@ -362,7 +372,7 @@ type_overrides = {
     "apsw.hard_heap_limit": {
         "limit": "int64"
     },
-    "Blob.readinto": {
+    "Blob.read_into": {
         "buffer": "PyObject",
         "offset": "int64",
         "length": "int64"
@@ -662,6 +672,10 @@ def do_argparse(item):
     n = ", ".join(f'"{ a }"' for a in kwlist)
     res.insert(0, f"""#define { item['symbol'] }_KWNAMES { n }""")
 
+    old_name = get_old_name(item)
+    if old_name:
+        res.append(f'''#define { item['symbol'] }_OLDNAME "{ old_name }"''')
+        res.append(f'''#define { item['symbol'] }_OLDDOC { item['symbol'] }_USAGE "\\n(Old less clear name { old_name })"''')
 
     check_and_update(f"{ item['symbol'] }_CHECK", code)
 
@@ -743,7 +757,6 @@ def generate_typestubs(items: list[dict]) -> None:
         else:
             if klass != lastclass:
                 lastclass = klass
-                #print("\n", file=out)
                 doc = get_class_doc(klass, items)
 
                 baseindent = ""
