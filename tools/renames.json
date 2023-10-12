@@ -8,10 +8,10 @@
         "release_memory": "releasememory",
         "soft_heap_limit": "softheaplimit",
         "sqlite_lib_version": "sqlitelibversion",
-        "vfs_names": "vfsnames",
+        "vfs_names": "vfsnames"
     },
     "Backup": {
-        "page_count": "pagecount",
+        "page_count": "pagecount"
     },
     "Blob": {
         "read_into": "readinto"
@@ -26,6 +26,7 @@
         "create_scalar_function": "createscalarfunction",
         "enable_load_extension": "enableloadextension",
         "exec_trace": "exectrace",
+        "file_control": "filecontrol",
         "get_autocommit": "getautocommit",
         "get_exec_trace": "getexectrace",
         "get_row_trace": "getrowtrace",
@@ -43,7 +44,7 @@
         "set_update_hook": "setupdatehook",
         "set_wal_hook": "setwalhook",
         "sqlite3_pointer": "sqlite3pointer",
-        "total_changes": "totalchanges",
+        "total_changes": "totalchanges"
     },
     "Cursor": {
         "exec_trace": "exectrace",
