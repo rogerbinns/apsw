@@ -1,0 +1,58 @@
+{
+    "apsw": {
+        "apsw_version": "apswversion",
+        "enable_shared_cache": "enablesharedcache",
+        "exception_for": "exceptionfor",
+        "memory_high_water": "memoryhighwater",
+        "memory_used": "memoryused",
+        "release_memory": "releasememory",
+        "soft_heap_limit": "softheaplimit",
+        "sqlite_lib_version": "sqlitelibversion",
+        "vfs_names": "vfsnames",
+    },
+    "Backup": {
+        "page_count": "pagecount",
+    },
+    "Blob": {
+        "read_into": "readinto"
+    },
+    "Connection": {
+        "blob_open": "blobopen",
+        "cache_flush": "cacheflush",
+        "collation_needed": "collationneeded",
+        "create_aggregate_function": "createaggregatefunction",
+        "create_collation": "createcollation",
+        "create_module": "createmodule",
+        "create_scalar_function": "createscalarfunction",
+        "enable_load_extension": "enableloadextension",
+        "exec_trace": "exectrace",
+        "get_autocommit": "getautocommit",
+        "get_exec_trace": "getexectrace",
+        "get_row_trace": "getrowtrace",
+        "load_extension": "loadextension",
+        "overload_function": "overloadfunction",
+        "row_trace": "rowtrace",
+        "set_authorizer": "setauthorizer",
+        "set_busy_handler": "setbusyhandler",
+        "set_busy_timeout": "setbusytimeout",
+        "set_exec_trace": "setexectrace",
+        "set_profile": "setprofile",
+        "set_progress_handler": "setprogresshandler",
+        "set_rollback_hook": "setrollbackhook",
+        "set_row_trace": "setrowtrace",
+        "set_update_hook": "setupdatehook",
+        "set_wal_hook": "setwalhook",
+        "sqlite3_pointer": "sqlite3pointer",
+        "total_changes": "totalchanges",
+    },
+    "Cursor": {
+        "exec_trace": "exectrace",
+        "get_connection": "getconnection",
+        "get_description": "getdescription",
+        "get_exectrace": "getexectrace",
+        "get_rowtrace": "getrowtrace",
+        "row_trace": "rowtrace",
+        "set_exec_trace": "setexectrace",
+        "set_row_trace": "setrowtrace"
+    }
+}
