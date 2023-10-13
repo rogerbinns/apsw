@@ -2031,7 +2031,7 @@ column sets. You have to compile SQLite with
 *SQLITE_ENABLE_COLUMN_METADATA* to get them. This is not the
 default for SQLite. I don't believe these are generally useful except
 in some corner cases and so they aren't wrapped. However please shout
-if you do need them.  Note that :meth:`Cursor.getdescription` will
+if you do need them.  Note that :meth:`Cursor.get_description` will
 already give you generally useful information. (Also see the `pragmas
 <https://sqlite.org/pragma.html>`_)
 

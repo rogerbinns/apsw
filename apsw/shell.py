@@ -3356,7 +3356,7 @@ Enter ".help" for instructions
             self.end = False
             self.index = -1
             try:
-                self.columns = tuple(h for h, _ in source.getdescription())
+                self.columns = tuple(h for h, _ in source.get_description())
             except apsw.ExecutionCompleteError:
                 self.columns = None
 

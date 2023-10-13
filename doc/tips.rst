@@ -223,10 +223,10 @@ object to use as a cursor.
 
 For example instead of returning rows as tuples, we can return them as
 dictionaries using a :ref:`row tracer <rowtracer>` with
-:meth:`Cursor.getdescription`::
+:meth:`Cursor.get_description`::
 
   def dict_row(cursor, row):
-    return {k[0]: row[i] for i, k in enumerate(cursor.getdescription())}
+    return {k[0]: row[i] for i, k in enumerate(cursor.get_description())}
 
   def my_factory(connection):
     cursor = apsw.Cursor(connection)

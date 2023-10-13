@@ -84,7 +84,7 @@ class DataClassRowFactory:
         """Returns dataclass and tuple of (potentially renamed) column names
 
         The dataclass is what is returned for each row with that
-        :meth:`description <apsw.Cursor.getdescription>`
+        :meth:`description <apsw.Cursor.get_description>`
 
         This method caches its results.
         """
@@ -110,7 +110,7 @@ class DataClassRowFactory:
         return make_dataclass(f"{ self.__class__.__name__ }{ suffix }", zip(names, types), **kwargs), tuple(names)
 
     def get_type(self, t: str | None) -> Any:
-        """Returns the `type hint <https://docs.python.org/3/library/typing.html>`__ to use in the dataclass based on the type in the :meth:`description <apsw.Cursor.getdescription>`
+        """Returns the `type hint <https://docs.python.org/3/library/typing.html>`__ to use in the dataclass based on the type in the :meth:`description <apsw.Cursor.get_description>`
 
         `SQLite's affinity rules  <https://www.sqlite.org/datatype3.html#affname>`__ are followed.
 
@@ -138,7 +138,7 @@ class DataClassRowFactory:
         This :meth:`looks up <get_dataclass>` the dataclass and column
         names, and then returns an instance of the dataclass.
         """
-        dc, column_names = self.get_dataclass(cursor.getdescription())
+        dc, column_names = self.get_dataclass(cursor.get_description())
         return dc(**dict(zip(column_names, row)))
 
 
@@ -246,7 +246,7 @@ class TypesConverterCursorFactory:
             self.row_trace = self._rowtracer
 
         def _rowtracer(self, cursor: apsw.Cursor, values: apsw.SQLiteValues) -> tuple[Any, ...]:
-            return tuple(self.factory.convert_value(d[1], v) for d, v in zip(cursor.getdescription(), values))
+            return tuple(self.factory.convert_value(d[1], v) for d, v in zip(cursor.get_description(), values))
 
         def execute(self,
                     statements: str,
@@ -650,7 +650,7 @@ def format_query_table(db: apsw.Connection,
         if colnames:
             res.append(format_query_table._format_table(colnames, rows, **kwargs))
             rows = []
-        colnames = [n for n, _ in c.getdescription()]
+        colnames = [n for n, _ in c.get_description()]
         return True
 
     cursor.exec_trace = trace
@@ -1365,7 +1365,7 @@ def query_info(db: apsw.Connection,
             "is_explain": cursor.is_explain,
             "is_readonly": cursor.is_readonly,
             "has_vdbe": cursor.has_vdbe,
-            "description": cursor.getdescription(),
+            "description": cursor.get_description(),
             "description_full": None,
         })
         if hasattr(cursor, "description_full"):
@@ -1452,7 +1452,7 @@ def query_info(db: apsw.Connection,
         vdbe: list[VDBEInstruction] = []
         for row in cur.execute(res["first_query"], bindings, explain=1):
             vdbe.append(
-                VDBEInstruction(**dict((v[0][0], v[1]) for v in zip(cur.getdescription(), row) if v[1] is not None)))
+                VDBEInstruction(**dict((v[0][0], v[1]) for v in zip(cur.get_description(), row) if v[1] is not None)))
         res["explain"] = vdbe
 
     if explain_query_plan and not res["is_explain"]:
@@ -1460,7 +1460,7 @@ def query_info(db: apsw.Connection,
         byid: Any = {0: {"detail": "QUERY PLAN"}}
 
         for row in cur.execute(res["first_query"], bindings, explain=2):
-            node = dict((v[0][0], v[1]) for v in zip(cur.getdescription(), row) if v[0][0] != "notused")
+            node = dict((v[0][0], v[1]) for v in zip(cur.get_description(), row) if v[0][0] != "notused")
             assert len(node) == 3  # catch changes in returned format
             parent: list[str | dict[str, Any]] = byid[node["parent"]]
             if subn not in parent:
@@ -1498,7 +1498,7 @@ class QueryDetails:
     has_vdbe: bool
     ":attr:`Cursor.has_vdbe <apsw.Cursor.has_vdbe>`"
     description: tuple[tuple[str, str], ...]
-    ":meth:`Cursor.getdescription <apsw.Cursor.getdescription>`"
+    ":meth:`Cursor.get_description <apsw.Cursor.get_description>`"
     description_full: tuple[tuple[str, str, str, str, str], ...] | None
     ":attr:`Cursor.description_full <apsw.Cursor.description_full>`"
     expanded_sql: str | None

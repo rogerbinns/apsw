@@ -378,7 +378,7 @@ static const char *description_formats[] = {
     "(sssss)"};
 
 static PyObject *
-APSWCursor_internal_getdescription(APSWCursor *self, int fmtnum)
+APSWCursor_internal_get_description(APSWCursor *self, int fmtnum)
 {
   int ncols, i;
   PyObject *result = NULL;
@@ -455,7 +455,7 @@ error:
   return NULL;
 }
 
-/** .. method:: getdescription() -> tuple[tuple[str, str], ...]
+/** .. method:: get_description() -> tuple[tuple[str, str], ...]
 
    If you are trying to get information about a table or view,
    then `pragma table_info <https://sqlite.org/pragma.html#pragma_table_info>`__
@@ -467,11 +467,11 @@ error:
    before you have finished::
 
       # This will error
-      cursor.getdescription()
+      cursor.get_description()
 
       for row in cursor.execute("select ....."):
          # this works
-         print (cursor.getdescription())
+         print (cursor.get_description())
          print (row)
 
    The information about each column is a tuple of ``(column_name,
@@ -492,7 +492,7 @@ error:
       cursor.execute("insert into books values(?,?,?)", ("fjfjfj", 3.7, 97))
 
       for row in cursor.execute("select * from books"):
-         print (cursor.getdescription())
+         print (cursor.get_description())
          print (row)
 
    Output::
@@ -509,9 +509,9 @@ error:
    -* sqlite3_column_name sqlite3_column_decltype
 
 */
-static PyObject *APSWCursor_getdescription(APSWCursor *self)
+static PyObject *APSWCursor_get_description(APSWCursor *self)
 {
-  return APSWCursor_internal_getdescription(self, 0);
+  return APSWCursor_internal_get_description(self, 0);
 }
 
 /** .. attribute:: description
@@ -519,13 +519,13 @@ static PyObject *APSWCursor_getdescription(APSWCursor *self)
 
     Based on the `DB-API cursor property
     <https://www.python.org/dev/peps/pep-0249/>`__, this returns the
-    same as :meth:`getdescription` but with 5 Nones appended.  See
+    same as :meth:`get_description` but with 5 Nones appended.  See
     also :issue:`131`.
 */
 
 static PyObject *APSWCursor_getdescription_dbapi(APSWCursor *self)
 {
-  return APSWCursor_internal_getdescription(self, 1);
+  return APSWCursor_internal_get_description(self, 1);
 }
 
 /** .. attribute:: description_full
@@ -544,7 +544,7 @@ name, table name, and origin name.
 #ifdef SQLITE_ENABLE_COLUMN_METADATA
 static PyObject *APSWCursor_getdescription_full(APSWCursor *self)
 {
-  return APSWCursor_internal_getdescription(self, 2);
+  return APSWCursor_internal_get_description(self, 2);
 }
 #endif
 
@@ -1473,13 +1473,13 @@ APSWCursor_get_row_trace(APSWCursor *self)
   return Py_NewRef(ret);
 }
 
-/** .. method:: getconnection() -> Connection
+/** .. method:: get_connection() -> Connection
 
   Returns the :attr:`connection` this cursor is using
 */
 
 static PyObject *
-APSWCursor_getconnection(APSWCursor *self)
+APSWCursor_get_connection(APSWCursor *self)
 {
   CHECK_USE(NULL);
   CHECK_CURSOR_CLOSED(NULL);
@@ -1618,7 +1618,7 @@ APSWCursor_set_row_trace_attr(APSWCursor *self, PyObject *value)
   :class:`Connection` this cursor is using
 */
 static PyObject *
-APSWCursor_getconnection_attr(APSWCursor *self)
+APSWCursor_get_connection_attr(APSWCursor *self)
 {
   CHECK_USE(NULL);
   CHECK_CURSOR_CLOSED(NULL);
@@ -1835,10 +1835,14 @@ static PyMethodDef APSWCursor_methods[] = {
      Cursor_get_row_trace_DOC},
     {Cursor_get_row_trace_OLDNAME, (PyCFunction)APSWCursor_get_row_trace, METH_NOARGS,
      Cursor_get_row_trace_OLDDOC},
-    {"getconnection", (PyCFunction)APSWCursor_getconnection, METH_NOARGS,
-     Cursor_getconnection_DOC},
-    {"getdescription", (PyCFunction)APSWCursor_getdescription, METH_NOARGS,
-     Cursor_getdescription_DOC},
+    {"get_connection", (PyCFunction)APSWCursor_get_connection, METH_NOARGS,
+     Cursor_get_connection_DOC},
+    {Cursor_get_connection_OLDNAME, (PyCFunction)APSWCursor_get_connection, METH_NOARGS,
+     Cursor_get_connection_OLDDOC},
+    {"get_description", (PyCFunction)APSWCursor_get_description, METH_NOARGS,
+     Cursor_get_description_DOC},
+    {Cursor_get_description_OLDNAME, (PyCFunction)APSWCursor_get_description, METH_NOARGS,
+     Cursor_get_description_OLDDOC},
     {"close", (PyCFunction)APSWCursor_close, METH_FASTCALL | METH_KEYWORDS,
      Cursor_close_DOC},
     {"fetchall", (PyCFunction)APSWCursor_fetchall, METH_NOARGS,
@@ -1861,7 +1865,7 @@ static PyGetSetDef APSWCursor_getset[] = {
     {Cursor_exec_trace_OLDNAME, (getter)APSWCursor_get_exec_trace_attr, (setter)APSWCursor_set_exec_trace_attr, Cursor_exec_trace_OLDDOC},
     {"row_trace", (getter)APSWCursor_get_row_trace_attr, (setter)APSWCursor_set_row_trace_attr, Cursor_row_trace_DOC},
     {Cursor_row_trace_OLDNAME, (getter)APSWCursor_get_row_trace_attr, (setter)APSWCursor_set_row_trace_attr, Cursor_row_trace_OLDDOC},
-    {"connection", (getter)APSWCursor_getconnection_attr, NULL, Cursor_connection_DOC},
+    {"connection", (getter)APSWCursor_get_connection_attr, NULL, Cursor_connection_DOC},
     {"get", (getter)APSWCursor_get, NULL, Cursor_get_DOC},
     {NULL, NULL, NULL, NULL, NULL}};
 
