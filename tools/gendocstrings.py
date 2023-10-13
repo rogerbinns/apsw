@@ -101,6 +101,10 @@ def get_old_name(item) -> str | None:
         return None
 
 
+def get_usage(item) -> str:
+    return f"{ item['name'] }{ item['signature_original'] }".replace('"', '\\"')
+
+
 all_exc_doc = {}
 
 
@@ -421,8 +425,7 @@ type_overrides = {
     "VFSFile.xWrite": {
         "offset": "int64"
     },
-    "VFSFcntlPragma.__init__":
-    {
+    "VFSFcntlPragma.__init__": {
         "pointer": "pointer",
     },
     "VFS.xDlClose": {
@@ -489,7 +492,7 @@ def do_argparse(item):
     code = ""
 
     seen_star = False
-    max_pos= None
+    max_pos = None
     for param in item["signature"]:
         if param["name"] == "return":
             continue
@@ -649,7 +652,7 @@ def do_argparse(item):
             res.append(f"  assert({ default_check }); \\")
 
         mandatory = "ARG_MANDATORY " if not seen_star else "ARG_OPTIONAL "
-        code+=(f"    { mandatory }ARG_{ kind }({ pname });\n")
+        code += (f"    { mandatory }ARG_{ kind }({ pname });\n")
 
     res.append("} while(0)\n")
     if max_pos is None:
@@ -667,15 +670,9 @@ def do_argparse(item):
 
     code = "\n".join(line for line in code.split("\n") if line.strip())
 
-    usage = f"{ item['name'] }{ item['signature_original'] }".replace('"', '\\"')
-    res.insert(0, f"""#define { item['symbol'] }_USAGE "{ usage }"\n""")
+    res.insert(0, f"""#define { item['symbol'] }_USAGE "{ get_usage(item) }"\n""")
     n = ", ".join(f'"{ a }"' for a in kwlist)
     res.insert(0, f"""#define { item['symbol'] }_KWNAMES { n }""")
-
-    old_name = get_old_name(item)
-    if old_name:
-        res.append(f'''#define { item['symbol'] }_OLDNAME "{ old_name }"''')
-        res.append(f'''#define { item['symbol'] }_OLDDOC { item['symbol'] }_USAGE "\\n(Old less clear name { old_name })"''')
 
     check_and_update(f"{ item['symbol'] }_CHECK", code)
 
@@ -862,6 +859,7 @@ if __name__ == '__main__':
         if item["skip_docstring"]:
             continue
         print(f"""{ method } { item["symbol"] }_DOC{ mid }{ fixup( item, eol) } { end }\n""", file=out)
+
         if f"{ item['symbol'] }_CHECK" in allcode:
             print(do_argparse(item), file=out)
         else:
@@ -879,6 +877,17 @@ if __name__ == '__main__':
                         "Blob.__exit__",
                 }:
                     missing.append(item["name"])
+
+        if item["kind"] != "class":
+            old_name = get_old_name(item)
+            if old_name:
+                print(f'''#define { item['symbol'] }_OLDNAME "{ old_name }"''', file=out)
+                if f"{ item['symbol'] }_CHECK" not in allcode:
+                    print(f'''#define { item['symbol'] }_USAGE "{ get_usage(item) }"''', file=out)
+                print(
+                    f'''#define { item['symbol'] }_OLDDOC { item['symbol'] }_USAGE "\\n(Old less clear name { old_name })"\n''',
+                    file=out)
+
     for name, doc in sorted(all_exc_doc.items()):
         print(f"""{ method } { name }_exc_DOC{ mid }{ cppsafe(doc, eol) } { end }\n""", file=out)
 
