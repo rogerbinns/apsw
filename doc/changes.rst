@@ -1255,7 +1255,7 @@ Windows Python 3.2 binaries now available.
 Binary downloads for Windows 64 bit Python versions 2.6 and above
 including Python 3 are now available.
 
-:meth:`apsw.softheaplimit` now uses `sqlite3_soft_heap_limit64
+:meth:`apsw.soft_heap_limit` now uses `sqlite3_soft_heap_limit64
 <https://sqlite.org/c3ref/soft_heap_limit64.html>`__ so you can
 provide values larger than 2GB.  It is now also able to return the
 previous value instead of None.
@@ -2122,7 +2122,7 @@ introduced in SQLite 3.1.3).
 Changed various C++-isms into standard C (eg // comments and the
 placing of some *CHECK_THREAD* macro calls).
 
-Added module level function :meth:`~apsw.apswversion` which returns
+Added module level function :meth:`~apsw.apsw_version` which returns
 the version of APSW.
 
 SQLite 3.1.3 had no changes in the stable C API other than what is

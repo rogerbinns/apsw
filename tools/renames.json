@@ -50,8 +50,8 @@
         "exec_trace": "exectrace",
         "get_connection": "getconnection",
         "get_description": "getdescription",
-        "get_exectrace": "getexectrace",
-        "get_rowtrace": "getrowtrace",
+        "get_exec_trace": "getexectrace",
+        "get_row_trace": "getrowtrace",
         "row_trace": "rowtrace",
         "set_exec_trace": "setexectrace",
         "set_row_trace": "setrowtrace"

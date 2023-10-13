@@ -3555,7 +3555,7 @@ is returned as a number using `PyLong_FromVoidPtr
 under the hood. You should also ensure that you increment the
 reference count on the :class:`Connection` for as long as the other
 libraries are using the pointer.  It is also a very good idea to call
-:meth:`sqlitelibversion` and ensure it is the same as the other
+:meth:`sqlite_lib_version` and ensure it is the same as the other
 libraries.
 
 */

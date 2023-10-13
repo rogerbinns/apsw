@@ -20,13 +20,13 @@ from typing import Optional, Iterator, Any
 print("      Using APSW file", apsw.__file__)
 
 # From the extension
-print("         APSW version", apsw.apswversion())
+print("         APSW version", apsw.apsw_version())
 
 # From the sqlite header file at APSW compile time
 print("SQLite header version", apsw.SQLITE_VERSION_NUMBER)
 
 # The SQLite code running
-print("   SQLite lib version", apsw.sqlitelibversion())
+print("   SQLite lib version", apsw.sqlite_lib_version())
 
 # If True then SQLite is incorporated into the extension.
 # If False then a shared library is being used, or static linking
@@ -946,7 +946,7 @@ class ObfuscatedVFSFile(apsw.VFSFile):
 obfuvfs = ObfuscatedVFS()
 
 # Lets see what vfs are now available?
-print("VFS available", apsw.vfsnames())
+print("VFS available", apsw.vfs_names())
 
 # Make an obfuscated db, passing in some URI parameters
 # default open flags

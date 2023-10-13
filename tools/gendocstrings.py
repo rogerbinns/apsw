@@ -370,7 +370,7 @@ def replace_if_different(filename: str, contents: str) -> None:
 # Python 'int' can be different C sizes (int32, int64 etc) so we override with more
 # specific types here
 type_overrides = {
-    "apsw.softheaplimit": {
+    "apsw.soft_heap_limit": {
         "limit": "int64"
     },
     "apsw.hard_heap_limit": {

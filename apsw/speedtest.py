@@ -35,8 +35,8 @@ def doit():
         import apsw
 
         print("   Testing with APSW file ", apsw.__file__)
-        print("             APSW version ", apsw.apswversion())
-        print("       SQLite lib version ", apsw.sqlitelibversion())
+        print("             APSW version ", apsw.apsw_version())
+        print("       SQLite lib version ", apsw.sqlite_lib_version())
         print("   SQLite headers version ", apsw.SQLITE_VERSION_NUMBER, end="\n\n")
 
         def apsw_setup(dbfile):

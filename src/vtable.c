@@ -48,7 +48,7 @@ At the C level, they are just one set of methods. At the Python/APSW level,
 they are split over the 3 types of object. The leading **x** is
 omitted in Python. You can return SQLite error codes (eg
 *SQLITE_READONLY*) by raising the appropriate exceptions (eg
-:exc:`ReadOnlyError`).  :meth:`exceptionfor` is a useful helper
+:exc:`ReadOnlyError`).  :meth:`exception_for` is a useful helper
 function to do the mapping.
 
 */

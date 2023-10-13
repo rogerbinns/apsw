@@ -65,22 +65,22 @@ def exercise(example_code, expect_exception):
         return
 
     for n in """
-            SQLITE_VERSION_NUMBER apswversion compile_options keywords memoryused
-            sqlite3_sourceid sqlitelibversion using_amalgamation vfsnames
-            memoryhighwater
+            SQLITE_VERSION_NUMBER apsw_version compile_options keywords memory_used
+            sqlite3_sourceid sqlite_lib_version using_amalgamation vfs_names
+            memory_high_water
         """.split():
         obj = getattr(apsw, n)
         if callable(obj):
             obj()
 
-    apsw.softheaplimit(1_000_000_000)
+    apsw.soft_heap_limit(1_000_000_000)
     apsw.hard_heap_limit(1_000_000_000)
     apsw.randomness(32)
-    apsw.enablesharedcache(False)
-    apsw.releasememory(1024)
-    apsw.exceptionfor(3)
+    apsw.enable_shared_cache(False)
+    apsw.release_memory(1024)
+    apsw.exception_for(3)
     try:
-        apsw.exceptionfor(0xfe)
+        apsw.exception_for(0xfe)
     except ValueError:
         pass
 

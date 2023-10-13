@@ -271,7 +271,7 @@ class Shell:
                 continue
 
             if args[0] == "version":
-                self.write(self.stdout, apsw.sqlitelibversion() + "\n")
+                self.write(self.stdout, apsw.sqlite_lib_version() + "\n")
                 # A pretty gnarly thing to do
                 sys.exit(0)
 
@@ -723,7 +723,7 @@ OPTIONS include:
         """
         if intro is None:
             intro = f"""
-SQLite version { apsw.sqlitelibversion() } (APSW { apsw.apswversion() })
+SQLite version { apsw.sqlite_lib_version() } (APSW { apsw.apsw_version() })
 Enter ".help" for instructions
 """
             intro = intro.lstrip()
@@ -1341,8 +1341,8 @@ Enter ".help" for instructions
                 self.write(self.stdout, textwrap.fill(s, 78, initial_indent="-- ", subsequent_indent="-- ") + "\n")
 
             pats = ", ".join([(x, "(All)")[x == "%"] for x in cmd])
-            comment("SQLite dump (by APSW %s)" % (apsw.apswversion(), ))
-            comment("SQLite version " + apsw.sqlitelibversion())
+            comment("SQLite dump (by APSW %s)" % (apsw.apsw_version(), ))
+            comment("SQLite version " + apsw.sqlite_lib_version())
             comment("Date: " + unicodify(time.strftime("%c")))
             comment("Tables like: " + pats)
             comment("Database: " + self.db.filename)
@@ -2715,7 +2715,7 @@ Enter ".help" for instructions
         if cmd:
             raise self.Error("No parameters taken")
         versions = {
-            "SQLite": f"{ apsw.sqlitelibversion() } { apsw.sqlite3_sourceid() }",
+            "SQLite": f"{ apsw.sqlite_lib_version() } { apsw.sqlite3_sourceid() }",
             "Python": f"{ sys.version } - { sys.executable }",
             "APSW": apsw.apswversion(),
             "APSW file": apsw.__file__,

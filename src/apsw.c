@@ -226,7 +226,7 @@ static int allow_missing_dict_bindings = 0;
 
 /* MODULE METHODS */
 
-/** .. method:: sqlitelibversion() -> str
+/** .. method:: sqlite_lib_version() -> str
 
   Returns the version of the SQLite library.  This value is queried at
   run time from the library so if you use shared libraries it will be
@@ -236,7 +236,7 @@ static int allow_missing_dict_bindings = 0;
 */
 
 static PyObject *
-getsqliteversion(void)
+get_sqlite_version(void)
 {
   return PyUnicode_FromString(sqlite3_libversion());
 }
@@ -577,7 +577,7 @@ config(PyObject *Py_UNUSED(self), PyObject *args)
   Py_RETURN_NONE;
 }
 
-/** .. method:: memoryused() -> int
+/** .. method:: memory_used() -> int
 
   Returns the amount of memory SQLite is currently using.
 
@@ -588,7 +588,7 @@ config(PyObject *Py_UNUSED(self), PyObject *args)
   -* sqlite3_memory_used
 */
 static PyObject *
-memoryused(void)
+memory_used(void)
 {
   return PyLong_FromLongLong(sqlite3_memory_used());
 }
@@ -618,7 +618,7 @@ memory_high_water(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssiz
   return PyLong_FromLongLong(sqlite3_memory_highwater(reset));
 }
 
-/** .. method:: softheaplimit(limit: int) -> int
+/** .. method:: soft_heap_limit(limit: int) -> int
 
   Requests SQLite try to keep memory usage below *limit* bytes and
   returns the previous limit.
@@ -630,14 +630,14 @@ memory_high_water(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssiz
   -* sqlite3_soft_heap_limit64
 */
 static PyObject *
-softheaplimit(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+soft_heap_limit(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   sqlite3_int64 limit, oldlimit;
   {
-    Apsw_softheaplimit_CHECK;
-    ARG_PROLOG(1, Apsw_softheaplimit_KWNAMES);
+    Apsw_soft_heap_limit_CHECK;
+    ARG_PROLOG(1, Apsw_soft_heap_limit_KWNAMES);
     ARG_MANDATORY ARG_int64(limit);
-    ARG_EPILOG(NULL, Apsw_softheaplimit_USAGE, );
+    ARG_EPILOG(NULL, Apsw_soft_heap_limit_USAGE, );
   }
   oldlimit = sqlite3_soft_heap_limit64(limit);
 
@@ -651,7 +651,7 @@ softheaplimit(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t 
 
   .. seealso::
 
-      :meth:`softheaplimit`
+      :meth:`soft_heap_limit`
 
   -* sqlite3_hard_heap_limit64
 */
@@ -700,7 +700,7 @@ randomness(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fas
   return bytes;
 }
 
-/** .. method:: releasememory(amount: int) -> int
+/** .. method:: release_memory(amount: int) -> int
 
   Requests SQLite try to free *amount* bytes of memory.  Returns how
   many bytes were freed.
@@ -709,15 +709,15 @@ randomness(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fas
 */
 
 static PyObject *
-releasememory(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+release_memory(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int amount;
 
   {
-    Apsw_releasememory_CHECK;
-    ARG_PROLOG(1, Apsw_releasememory_KWNAMES);
+    Apsw_release_memory_CHECK;
+    ARG_PROLOG(1, Apsw_release_memory_KWNAMES);
     ARG_MANDATORY ARG_int(amount);
-    ARG_EPILOG(NULL, Apsw_releasememory_USAGE, );
+    ARG_EPILOG(NULL, Apsw_release_memory_USAGE, );
   }
   return PyLong_FromLong(sqlite3_release_memory(amount));
 }
@@ -760,7 +760,7 @@ status(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_na
   return Py_BuildValue("(LL)", current, highwater);
 }
 
-/** .. method:: vfsnames() -> list[str]
+/** .. method:: vfs_names() -> list[str]
 
   Returns a list of the currently installed :ref:`vfs <vfs>`.  The first
   item in the list is the default vfs.
@@ -768,7 +768,7 @@ status(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_na
   -* sqlite3_vfs_find
 */
 static PyObject *
-vfsnames(PyObject *Py_UNUSED(self))
+vfs_names(PyObject *Py_UNUSED(self))
 {
   PyObject *result = NULL, *str = NULL;
   int res;
@@ -1641,7 +1641,7 @@ apsw_strnicmp(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t 
 /** .. method:: set_default_vfs(name: str) -> None
 
  Sets the default vfs to *name* which must be an existing vfs.
- See :meth:`vfsnames`.
+ See :meth:`vfs_names`.
 
  -* sqlite3_vfs_register sqlite3_vfs_find
 */
@@ -1671,7 +1671,7 @@ apsw_set_default_vfs(PyObject *Py_UNUSED(module), PyObject *const *fast_args, Py
 
 /** .. method:: unregister_vfs(name: str) -> None
 
- Unregisters the named vfs.  See :meth:`vfsnames`.
+ Unregisters the named vfs.  See :meth:`vfs_names`.
 
  -* sqlite3_vfs_unregister sqlite3_vfs_find
 */
@@ -1784,14 +1784,18 @@ apsw_getattr(PyObject *Py_UNUSED(module), PyObject *name)
 static PyMethodDef module_methods[] = {
     {"sqlite3_sourceid", (PyCFunction)get_sqlite3_sourceid, METH_NOARGS,
      Apsw_sqlite3_sourceid_DOC},
-    {"sqlitelibversion", (PyCFunction)getsqliteversion, METH_NOARGS,
-     Apsw_sqlitelibversion_DOC},
+    {"sqlite_lib_version", (PyCFunction)get_sqlite_version, METH_NOARGS,
+     Apsw_sqlite_lib_version_DOC},
+    {Apsw_sqlite_lib_version_OLDNAME, (PyCFunction)get_sqlite_version, METH_NOARGS,
+     Apsw_sqlite_lib_version_OLDDOC},
     {"apsw_version", (PyCFunction)get_apsw_version, METH_NOARGS,
      Apsw_apsw_version_DOC},
     {Apsw_apsw_version_OLDNAME, (PyCFunction)get_apsw_version, METH_NOARGS,
      Apsw_apsw_version_OLDDOC},
-    {"vfsnames", (PyCFunction)vfsnames, METH_NOARGS,
-     Apsw_vfsnames_DOC},
+    {"vfs_names", (PyCFunction)vfs_names, METH_NOARGS,
+     Apsw_vfs_names_DOC},
+    {Apsw_vfs_names_OLDNAME, (PyCFunction)vfs_names, METH_NOARGS,
+     Apsw_vfs_names_OLDDOC},
     {"vfs_details", (PyCFunction)vfs_details, METH_NOARGS,
      Apsw_vfs_details_DOC},
     {"enable_shared_cache", (PyCFunction)enable_shared_cache, METH_FASTCALL | METH_KEYWORDS,
@@ -1808,20 +1812,26 @@ static PyMethodDef module_methods[] = {
      Apsw_config_DOC},
     {"log", (PyCFunction)apsw_log, METH_FASTCALL | METH_KEYWORDS,
      Apsw_log_DOC},
-    {"memoryused", (PyCFunction)memoryused, METH_NOARGS,
-     Apsw_memoryused_DOC},
+    {"memory_used", (PyCFunction)memory_used, METH_NOARGS,
+     Apsw_memory_used_DOC},
+    {Apsw_memory_used_OLDNAME, (PyCFunction)memory_used, METH_NOARGS,
+     Apsw_memory_used_OLDDOC},
     {"memory_high_water", (PyCFunction)memory_high_water, METH_FASTCALL | METH_KEYWORDS,
      Apsw_memory_high_water_DOC},
     {Apsw_memory_high_water_OLDNAME, (PyCFunction)memory_high_water, METH_FASTCALL | METH_KEYWORDS,
      Apsw_memory_high_water_OLDDOC},
     {"status", (PyCFunction)status, METH_FASTCALL | METH_KEYWORDS,
      Apsw_status_DOC},
-    {"softheaplimit", (PyCFunction)softheaplimit, METH_FASTCALL | METH_KEYWORDS,
-     Apsw_softheaplimit_DOC},
+    {"soft_heap_limit", (PyCFunction)soft_heap_limit, METH_FASTCALL | METH_KEYWORDS,
+     Apsw_soft_heap_limit_DOC},
+    {Apsw_soft_heap_limit_OLDNAME, (PyCFunction)soft_heap_limit, METH_FASTCALL | METH_KEYWORDS,
+     Apsw_soft_heap_limit_OLDDOC},
     {"hard_heap_limit", (PyCFunction)apsw_hard_heap_limit, METH_FASTCALL | METH_KEYWORDS,
      Apsw_hard_heap_limit_DOC},
-    {"releasememory", (PyCFunction)releasememory, METH_FASTCALL | METH_KEYWORDS,
-     Apsw_releasememory_DOC},
+    {"release_memory", (PyCFunction)release_memory, METH_FASTCALL | METH_KEYWORDS,
+     Apsw_release_memory_DOC},
+    {Apsw_release_memory_OLDNAME, (PyCFunction)release_memory, METH_FASTCALL | METH_KEYWORDS,
+     Apsw_release_memory_OLDDOC},
     {"randomness", (PyCFunction)randomness, METH_FASTCALL | METH_KEYWORDS,
      Apsw_randomness_DOC},
     {"exception_for", (PyCFunction)get_apsw_exception_for, METH_FASTCALL | METH_KEYWORDS,
@@ -1962,7 +1972,7 @@ PyInit_apsw(void)
     against.  For example SQLite 3.6.4 will have the value *3006004*.
     This number may be different than the actual library in use if the
     library is shared and has been updated.  Call
-    :meth:`sqlitelibversion` to get the actual library version.
+    :meth:`sqlite_lib_version` to get the actual library version.
 
     */
   if (PyModule_AddIntConstant(m, "SQLITE_VERSION_NUMBER", SQLITE_VERSION_NUMBER))

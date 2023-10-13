@@ -84,7 +84,7 @@ def main(options) -> None:
     if so:
         out.append(("Dynamically loaded", so))
     out.append(("py sqlite3 version", sqlite3.sqlite_version))
-    out.append(("apsw sqlite3 version", apsw.sqlitelibversion()))
+    out.append(("apsw sqlite3 version", apsw.sqlite_lib_version()))
     out.append(("apsw amalgamation", apsw.using_amalgamation))
 
     pyco = sorted(transmogrify([row[0] for row in sqlite3.connect("").execute("pragma compile_options")]))

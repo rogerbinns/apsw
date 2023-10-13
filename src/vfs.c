@@ -44,7 +44,7 @@ Exceptions and errors
 
 To return an error from any routine you should raise an exception. The
 exception will be translated into the corresponding SQLite error code.
-To return a specific SQLite error code use :meth:`exceptionfor`.  If
+To return a specific SQLite error code use :meth:`exception_for`.  If
 the exception does not map to any specific error code then
 *SQLITE_ERROR* which corresponds to :exc:`SQLError` is returned to SQLite.
 
@@ -1764,7 +1764,7 @@ APSWVFS_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSED(k
 
     :param name: The name to register this vfs under.  If the name
         already exists then this vfs will replace the prior one of the
-        same name.  Use :meth:`apsw.vfsnames` to get a list of
+        same name.  Use :meth:`apsw.vfs_names` to get a list of
         registered vfs names.
 
     :param base: If you would like to inherit behaviour from an already registered vfs then give
