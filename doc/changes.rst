@@ -1273,7 +1273,7 @@ in the `SQLite documentation
 ========
 
 You can read blobs into pre-existing buffers using
-:meth:`Blob.readinto`.  (This is more efficient than allocating new
+:meth:`Blob.read_into`.  (This is more efficient than allocating new
 buffers as :meth:`Blob.read` does and then copying.)  (:issue:`109`).
 
 Fixed bug with unicode output in CSV mode in the shell.

@@ -332,7 +332,7 @@ def exercise(example_code, expect_exception):
     blob.seek(80)
     blob.read(10)
     m = bytearray(b"12345678")
-    blob.readinto(m)
+    blob.read_into(m)
     blob.tell()
     blob.read(0)
     blob.seek(blob.length())
