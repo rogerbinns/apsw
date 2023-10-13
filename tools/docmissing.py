@@ -9,6 +9,8 @@ import glob, sys
 
 import apsw
 
+import names
+
 retval = 0
 
 classes = {}
@@ -39,7 +41,6 @@ vfs = apsw.VFS("aname", "")
 vfsfile = apsw.VFSFile("", con.db_filename("main"),
                        [apsw.SQLITE_OPEN_MAIN_DB | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_READWRITE, 0])
 
-
 # virtual tables aren't real - just check their size hasn't changed
 for n, e in (("VTModule", 3), ("VTTable", 16), ("VTCursor", 7)):
     if len(classes[n]) != e:
@@ -66,6 +67,9 @@ for name, obj in (
             print("%s.%s in documentation but not object" % (name, c))
     for c in dir(obj):
         if c.startswith("__"): continue
+        # old renamed names?
+        if name in names.renames and c in names.renames[name].values():
+            continue
         if name == "apsw":
             # ignore imports
             if getattr(getattr(apsw, c), "__module__", name) != name:
@@ -80,7 +84,8 @@ for name, obj in (
             if isinstance(getattr(apsw, c), type) and issubclass(getattr(apsw, c), Exception):
                 continue
             # ignore classes !!!
-            if c in ("Connection", "VFS", "VFSFile", "zeroblob", "Shell", "URIFilename", "Cursor", "Blob", "Backup", "IndexInfo", "VFSFcntlPragma"):
+            if c in ("Connection", "VFS", "VFSFile", "zeroblob", "Shell", "URIFilename", "Cursor", "Blob", "Backup",
+                     "IndexInfo", "VFSFcntlPragma"):
                 continue
             # ignore mappings !!!
             if c.startswith("mapping_"):
