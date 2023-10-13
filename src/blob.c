@@ -139,7 +139,7 @@ static PyTypeObject APSWBlobType;
 
 /** .. class:: Blob
 
-  This object is created by :meth:`Connection.blobopen` and provides
+  This object is created by :meth:`Connection.blob_open` and provides
   access to a blob in the database.  It behaves like a Python file.
   At the C level it wraps a `sqlite3_blob
   <https://sqlite.org/c3ref/blob.html>`_.
@@ -599,7 +599,7 @@ APSWBlob_close(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_nargs
 
   For example::
 
-    with connection.blobopen() as blob:
+    with connection.blob_open() as blob:
         blob.write("...")
         res=blob.read(1024)
 

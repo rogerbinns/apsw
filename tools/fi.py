@@ -119,8 +119,8 @@ def exercise(example_code, expect_exception):
     con.config(apsw.SQLITE_DBCONFIG_ENABLE_TRIGGER, 1)
     con.setauthorizer(None)
     con.authorizer = None
-    con.collationneeded(None)
-    con.collationneeded(lambda *args: 0)
+    con.collation_needed(None)
+    con.collation_needed(lambda *args: 0)
     con.enableloadextension(True)
     con.setbusyhandler(None)
     con.setbusyhandler(lambda *args: True)
@@ -270,7 +270,7 @@ def exercise(example_code, expect_exception):
     con.execute("begin; create table goingaway(x,y,z); rollback")
     con.setrollbackhook(None)
 
-    con.collationneeded(lambda *args: con.createcollation("foo", lambda *args: 0))
+    con.collation_needed(lambda *args: con.createcollation("foo", lambda *args: 0))
     con.execute(
         "create table col(x); insert into col values ('aa'), ('bb'), ('cc'); select * from col order by x collate foo")
 
@@ -317,7 +317,7 @@ def exercise(example_code, expect_exception):
         """):
         pass
 
-    for n in """db_names cacheflush changes filename filename_journal
+    for n in """db_names cache_flush changes filename filename_journal
                 filename_wal getautocommit in_transaction interrupt last_insert_rowid
                 open_flags open_vfs release_memory sqlite3pointer system_errno
                 totalchanges txn_state
@@ -327,7 +327,7 @@ def exercise(example_code, expect_exception):
             obj()
 
     con.execute("create table blobby(x); insert into blobby values(?)", (apsw.zeroblob(990), ))
-    blob = con.blobopen("main", "blobby", "x", con.last_insert_rowid(), True)
+    blob = con.blob_open("main", "blobby", "x", con.last_insert_rowid(), True)
     blob.write(b"hello world")
     blob.seek(80)
     blob.read(10)

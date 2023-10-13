@@ -243,7 +243,7 @@ Ensure all SQLite APIs are wrapped. :attr:`Connection.system_errno`,
 :meth:`apsw.strnicmp`, :attr:`Connection.filename_wal`,
 :attr:`Connection.filename_journal`, :meth:`Connection.table_exists`,
 :meth:`Connection.column_metadata`, :attr:`Error.error_offset`,
-:meth:`Connection.cacheflush`, :meth:`Connection.release_memory`,
+:meth:`Connection.cache_flush`, :meth:`Connection.release_memory`,
 :meth:`apsw.hard_heap_limit`. :meth:`Connection.drop_modules`
 (:issue:`382`)
 
@@ -1904,7 +1904,7 @@ Improved test coverage a few more percent.
 The statement cache now defaults to the same number of entries as
 pysqlite (100). You can however specify more or less as needed.
 
-:func:`Connection.collationneeded` was implemented.
+:func:`Connection.collation_needed` was implemented.
 
 
 3.3.13-r1

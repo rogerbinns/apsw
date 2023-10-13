@@ -526,7 +526,7 @@ finally:
   return res;
 }
 
-/** .. method:: blobopen(database: str, table: str, column: str, rowid: int, writeable: bool)  -> Blob
+/** .. method:: blob_open(database: str, table: str, column: str, rowid: int, writeable: bool)  -> Blob
 
    Opens a blob for :ref:`incremental I/O <blobio>`.
 
@@ -548,7 +548,7 @@ finally:
    -* sqlite3_blob_open
 */
 static PyObject *
-Connection_blobopen(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+Connection_blob_open(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   struct APSWBlob *apswblob = 0;
   sqlite3_blob *blob = 0;
@@ -562,14 +562,14 @@ Connection_blobopen(Connection *self, PyObject *const *fast_args, Py_ssize_t fas
   CHECK_CLOSED(self, NULL);
 
   {
-    Connection_blobopen_CHECK;
-    ARG_PROLOG(5, Connection_blobopen_KWNAMES);
+    Connection_blob_open_CHECK;
+    ARG_PROLOG(5, Connection_blob_open_KWNAMES);
     ARG_MANDATORY ARG_str(database);
     ARG_MANDATORY ARG_str(table);
     ARG_MANDATORY ARG_str(column);
     ARG_MANDATORY ARG_int64(rowid);
     ARG_MANDATORY ARG_bool(writeable);
-    ARG_EPILOG(NULL, Connection_blobopen_USAGE, );
+    ARG_EPILOG(NULL, Connection_blob_open_USAGE, );
   }
   PYSQLITE_CON_CALL(res = sqlite3_blob_open(self->db, database, table, column, rowid, writeable, &blob));
 
@@ -1947,7 +1947,7 @@ collationneeded_cb(void *pAux, sqlite3 *Py_UNUSED(db), int eTextRep, const char 
   PyGILState_Release(gilstate);
 }
 
-/** .. method:: collationneeded(callable: Optional[Callable[[Connection, str], None]]) -> None
+/** .. method:: collation_needed(callable: Optional[Callable[[Connection, str], None]]) -> None
 
   *callable* will be called if a statement requires a `collation
   <https://en.wikipedia.org/wiki/Collation>`_ that hasn't been
@@ -1961,7 +1961,7 @@ collationneeded_cb(void *pAux, sqlite3 *Py_UNUSED(db), int eTextRep, const char 
   the collation name, but since there are thousands of locales in
   popular use it would not be useful to :meth:`prereigster
   <Connection.createcollation>` them all.  Using
-  :meth:`~Connection.collationneeded` tells you when you need to
+  :meth:`~Connection.collation_needed` tells you when you need to
   register them.
 
   .. seealso::
@@ -1971,7 +1971,7 @@ collationneeded_cb(void *pAux, sqlite3 *Py_UNUSED(db), int eTextRep, const char 
   -* sqlite3_collation_needed
 */
 static PyObject *
-Connection_collationneeded(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+Connection_collation_needed(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int res;
   PyObject *callable;
@@ -1980,10 +1980,10 @@ Connection_collationneeded(Connection *self, PyObject *const *fast_args, Py_ssiz
   CHECK_CLOSED(self, NULL);
 
   {
-    Connection_collationneeded_CHECK;
-    ARG_PROLOG(1, Connection_collationneeded_KWNAMES);
+    Connection_collation_needed_CHECK;
+    ARG_PROLOG(1, Connection_collation_needed_KWNAMES);
     ARG_MANDATORY ARG_optional_Callable(callable);
-    ARG_EPILOG(NULL, Connection_collationneeded_USAGE, );
+    ARG_EPILOG(NULL, Connection_collation_needed_USAGE, );
   }
 
   if (!callable)
@@ -4604,14 +4604,14 @@ Connection_column_metadata(Connection *self, PyObject *const *fast_args, Py_ssiz
   return Py_BuildValue("(ssOOO)", datatype, collseq, notnull ? Py_True : Py_False, primarykey ? Py_True : Py_False, autoinc ? Py_True : Py_False);
 }
 
-/** .. method:: cacheflush() -> None
+/** .. method:: cache_flush() -> None
 
   Flushes caches to disk mid-transaction.
 
   -* sqlite3_db_cacheflush
 */
 static PyObject *
-Connection_cacheflush(Connection *self)
+Connection_cache_flush(Connection *self)
 {
   int res;
 
@@ -5194,16 +5194,20 @@ static PyMethodDef Connection_methods[] = {
      Connection_last_insert_rowid_DOC},
     {"set_last_insert_rowid", (PyCFunction)Connection_set_last_insert_rowid, METH_FASTCALL | METH_KEYWORDS,
      Connection_set_last_insert_rowid_DOC},
-    {"collationneeded", (PyCFunction)Connection_collationneeded, METH_FASTCALL | METH_KEYWORDS,
-     Connection_collationneeded_DOC},
+    {"collation_needed", (PyCFunction)Connection_collation_needed, METH_FASTCALL | METH_KEYWORDS,
+     Connection_collation_needed_DOC},
+    {Connection_collation_needed_OLDNAME, (PyCFunction)Connection_collation_needed, METH_FASTCALL | METH_KEYWORDS,
+     Connection_collation_needed_OLDDOC},
     {"setauthorizer", (PyCFunction)Connection_setauthorizer, METH_FASTCALL | METH_KEYWORDS,
      Connection_setauthorizer_DOC},
     {"setupdatehook", (PyCFunction)Connection_setupdatehook, METH_FASTCALL | METH_KEYWORDS,
      Connection_setupdatehook_DOC},
     {"setrollbackhook", (PyCFunction)Connection_setrollbackhook, METH_FASTCALL | METH_KEYWORDS,
      Connection_setrollbackhook_DOC},
-    {"blobopen", (PyCFunction)Connection_blobopen, METH_FASTCALL | METH_KEYWORDS,
-     Connection_blobopen_DOC},
+    {"blob_open", (PyCFunction)Connection_blob_open, METH_FASTCALL | METH_KEYWORDS,
+     Connection_blob_open_DOC},
+    {Connection_blob_open_OLDNAME, (PyCFunction)Connection_blob_open, METH_FASTCALL | METH_KEYWORDS,
+     Connection_blob_open_OLDDOC},
     {"setprogresshandler", (PyCFunction)Connection_setprogresshandler, METH_FASTCALL | METH_KEYWORDS,
      Connection_setprogresshandler_DOC},
     {"setcommithook", (PyCFunction)Connection_setcommithook, METH_FASTCALL | METH_KEYWORDS,
@@ -5280,8 +5284,9 @@ static PyMethodDef Connection_methods[] = {
     {"table_exists", (PyCFunction)Connection_table_exists, METH_FASTCALL | METH_KEYWORDS, Connection_table_exists_DOC},
     {"column_metadata", (PyCFunction)Connection_column_metadata, METH_FASTCALL | METH_KEYWORDS, Connection_column_metadata_DOC},
     {"trace_v2", (PyCFunction)Connection_trace_v2, METH_FASTCALL | METH_KEYWORDS, Connection_trace_v2_DOC},
-    {"cacheflush", (PyCFunction)Connection_cacheflush, METH_NOARGS, Connection_cacheflush_DOC},
-    {"release_memory", (PyCFunction)Connection_release_memory, METH_NOARGS, Connection_release_memory_DOC},
+    {"cache_flush", (PyCFunction)Connection_cache_flush, METH_NOARGS, Connection_cache_flush_DOC},
+    {Connection_cache_flush_OLDNAME, (PyCFunction)Connection_cache_flush, METH_NOARGS, Connection_cache_flush_OLDDOC},
+    {"release_memory", (PyCFunction)Connection_release_memory, METH_FASTCALL | METH_KEYWORDS, Connection_release_memory_DOC},
     {"drop_modules", (PyCFunction)Connection_drop_modules, METH_FASTCALL | METH_KEYWORDS, Connection_drop_modules_DOC},
     {"create_window_function", (PyCFunction)Connection_create_window_function, METH_FASTCALL | METH_KEYWORDS,
      Connection_create_window_function_DOC},

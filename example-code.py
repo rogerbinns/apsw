@@ -576,7 +576,7 @@ print("\nFirst 5 explain\n", pprint.pformat(qd.explain[:5]))
 # cannot change the size of one, but you can allocate one filled with
 # zeroes, and then later open it and read / write the contents similar
 # to a file, without having the entire blob in memory.  Use
-# :meth:`Connection.blobopen` to open a blob.
+# :meth:`Connection.blob_open` to open a blob.
 
 connection.execute("create table blobby(x,y)")
 # Add a blob we will fill in later
@@ -585,7 +585,7 @@ connection.execute("insert into blobby values(1, zeroblob(10000))")
 connection.execute("insert into blobby values(2, ?)", (apsw.zeroblob(20000), ))
 # Open a blob for writing.  We need to know the rowid
 rowid = connection.execute("select ROWID from blobby where x=1").get
-blob = connection.blobopen("main", "blobby", "y", rowid, True)
+blob = connection.blob_open("main", "blobby", "y", rowid, True)
 blob.write(b"hello world")
 blob.seek(2000)
 blob.write(b"hello world, again")

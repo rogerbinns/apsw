@@ -384,7 +384,7 @@ type_overrides = {
     "Blob.reopen": {
         "rowid": "int64"
     },
-    "Connection.blobopen": {
+    "Connection.blob_open": {
         "rowid": "int64"
     },
     "Connection.drop_modules": {
