@@ -255,17 +255,17 @@ get_sqlite3_sourceid(void)
   return PyUnicode_FromString(sqlite3_sourceid());
 }
 
-/** .. method:: apswversion() -> str
+/** .. method:: apsw_version() -> str
 
   Returns the APSW version.
 */
 static PyObject *
-getapswversion(void)
+get_apsw_version(void)
 {
   return PyUnicode_FromString(APSW_VERSION);
 }
 
-/** .. method:: enablesharedcache(enable: bool) -> None
+/** .. method:: enable_shared_cache(enable: bool) -> None
 
   If you use the same :class:`Connection` across threads or use
   multiple :class:`connections <Connection>` accessing the same file,
@@ -276,14 +276,14 @@ getapswversion(void)
   -* sqlite3_enable_shared_cache
 */
 static PyObject *
-enablesharedcache(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+enable_shared_cache(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int enable = 0, res;
   {
-    Apsw_enablesharedcache_CHECK;
-    ARG_PROLOG(1, Apsw_enablesharedcache_KWNAMES);
+    Apsw_enable_shared_cache_CHECK;
+    ARG_PROLOG(1, Apsw_enable_shared_cache_KWNAMES);
     ARG_MANDATORY ARG_bool(enable);
-    ARG_EPILOG(NULL, Apsw_enablesharedcache_USAGE, );
+    ARG_EPILOG(NULL, Apsw_enable_shared_cache_USAGE, );
   }
   res = sqlite3_enable_shared_cache(enable);
   SET_EXC(res, NULL);
@@ -457,7 +457,7 @@ apsw_logger(void *arg, int errcode, const char *message)
   else
     Py_DECREF(res);
 
-  if(PY_ERR_NOT_NULL(exc))
+  if (PY_ERR_NOT_NULL(exc))
     PY_ERR_RESTORE(exc);
   PyGILState_Release(gilstate);
 }
@@ -593,7 +593,7 @@ memoryused(void)
   return PyLong_FromLongLong(sqlite3_memory_used());
 }
 
-/** .. method:: memoryhighwater(reset: bool = False) -> int
+/** .. method:: memory_high_water(reset: bool = False) -> int
 
   Returns the maximum amount of memory SQLite has used.  If *reset* is
   True then the high water mark is reset to the current value.
@@ -605,15 +605,15 @@ memoryused(void)
   -* sqlite3_memory_highwater
 */
 static PyObject *
-memoryhighwater(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+memory_high_water(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int reset = 0;
 
   {
-    Apsw_memoryhighwater_CHECK;
-    ARG_PROLOG(1, Apsw_memoryhighwater_KWNAMES);
+    Apsw_memory_high_water_CHECK;
+    ARG_PROLOG(1, Apsw_memory_high_water_KWNAMES);
     ARG_OPTIONAL ARG_bool(reset);
-    ARG_EPILOG(NULL, Apsw_memoryhighwater_USAGE, );
+    ARG_EPILOG(NULL, Apsw_memory_high_water_USAGE, );
   }
   return PyLong_FromLongLong(sqlite3_memory_highwater(reset));
 }
@@ -872,7 +872,7 @@ vfs_details(PyObject *Py_UNUSED(self))
 #undef S
 #undef P
 
-/** .. method:: exceptionfor(code: int) -> Exception
+/** .. method:: exception_for(code: int) -> Exception
 
   If you would like to raise an exception that corresponds to a
   particular SQLite `error code
@@ -882,20 +882,20 @@ vfs_details(PyObject *Py_UNUSED(self))
 
   For example to raise `SQLITE_IOERR_ACCESS <https://sqlite.org/c3ref/c_ioerr_access.html>`_::
 
-    raise apsw.exceptionfor(apsw.SQLITE_IOERR_ACCESS)
+    raise apsw.exception_for(apsw.SQLITE_IOERR_ACCESS)
 
 */
 static PyObject *
-getapswexceptionfor(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+get_apsw_exception_for(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int code = 0, i;
   PyObject *result = NULL, *tmp = NULL;
 
   {
-    Apsw_exceptionfor_CHECK;
-    ARG_PROLOG(1, Apsw_exceptionfor_KWNAMES);
+    Apsw_exception_for_CHECK;
+    ARG_PROLOG(1, Apsw_exception_for_KWNAMES);
     ARG_MANDATORY ARG_int(code);
-    ARG_EPILOG(NULL, Apsw_exceptionfor_USAGE, );
+    ARG_EPILOG(NULL, Apsw_exception_for_USAGE, );
   }
 
   for (i = 0; exc_descriptors[i].name; i++)
@@ -1786,14 +1786,18 @@ static PyMethodDef module_methods[] = {
      Apsw_sqlite3_sourceid_DOC},
     {"sqlitelibversion", (PyCFunction)getsqliteversion, METH_NOARGS,
      Apsw_sqlitelibversion_DOC},
-    {"apswversion", (PyCFunction)getapswversion, METH_NOARGS,
-     Apsw_apswversion_DOC},
+    {"apsw_version", (PyCFunction)get_apsw_version, METH_NOARGS,
+     Apsw_apsw_version_DOC},
+    {Apsw_apsw_version_OLDNAME, (PyCFunction)get_apsw_version, METH_NOARGS,
+     Apsw_apsw_version_OLDDOC},
     {"vfsnames", (PyCFunction)vfsnames, METH_NOARGS,
      Apsw_vfsnames_DOC},
     {"vfs_details", (PyCFunction)vfs_details, METH_NOARGS,
      Apsw_vfs_details_DOC},
-    {"enablesharedcache", (PyCFunction)enablesharedcache, METH_FASTCALL | METH_KEYWORDS,
-     Apsw_enablesharedcache_DOC},
+    {"enable_shared_cache", (PyCFunction)enable_shared_cache, METH_FASTCALL | METH_KEYWORDS,
+     Apsw_enable_shared_cache_DOC},
+    {Apsw_enable_shared_cache_OLDNAME, (PyCFunction)enable_shared_cache, METH_FASTCALL | METH_KEYWORDS,
+     Apsw_enable_shared_cache_OLDDOC},
     {"initialize", (PyCFunction)initialize, METH_NOARGS,
      Apsw_initialize_DOC},
     {"shutdown", (PyCFunction)sqliteshutdown, METH_NOARGS,
@@ -1806,8 +1810,10 @@ static PyMethodDef module_methods[] = {
      Apsw_log_DOC},
     {"memoryused", (PyCFunction)memoryused, METH_NOARGS,
      Apsw_memoryused_DOC},
-    {"memoryhighwater", (PyCFunction)memoryhighwater, METH_FASTCALL | METH_KEYWORDS,
-     Apsw_memoryhighwater_DOC},
+    {"memory_high_water", (PyCFunction)memory_high_water, METH_FASTCALL | METH_KEYWORDS,
+     Apsw_memory_high_water_DOC},
+    {Apsw_memory_high_water_OLDNAME, (PyCFunction)memory_high_water, METH_FASTCALL | METH_KEYWORDS,
+     Apsw_memory_high_water_OLDDOC},
     {"status", (PyCFunction)status, METH_FASTCALL | METH_KEYWORDS,
      Apsw_status_DOC},
     {"softheaplimit", (PyCFunction)softheaplimit, METH_FASTCALL | METH_KEYWORDS,
@@ -1818,8 +1824,10 @@ static PyMethodDef module_methods[] = {
      Apsw_releasememory_DOC},
     {"randomness", (PyCFunction)randomness, METH_FASTCALL | METH_KEYWORDS,
      Apsw_randomness_DOC},
-    {"exceptionfor", (PyCFunction)getapswexceptionfor, METH_FASTCALL | METH_KEYWORDS,
-     Apsw_exceptionfor_DOC},
+    {"exception_for", (PyCFunction)get_apsw_exception_for, METH_FASTCALL | METH_KEYWORDS,
+     Apsw_exception_for_DOC},
+    {Apsw_exception_for_OLDNAME, (PyCFunction)get_apsw_exception_for, METH_FASTCALL | METH_KEYWORDS,
+     Apsw_exception_for_OLDDOC},
     {"complete", (PyCFunction)apswcomplete, METH_FASTCALL | METH_KEYWORDS,
      Apsw_complete_DOC},
     {"strlike", (PyCFunction)apsw_strlike, METH_FASTCALL | METH_KEYWORDS, Apsw_strlike_DOC},
