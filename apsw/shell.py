@@ -855,7 +855,7 @@ Enter ".help" for instructions
             explain = cursor.is_explain
             return False
 
-        cur.exectrace = et
+        cur.exec_trace = et
 
         try:
             cur.execute(sql, bindings)
@@ -945,10 +945,10 @@ Enter ".help" for instructions
             rows = [] if getattr(self.output, "all_at_once", False) else None
 
             cur = self.db.cursor()
-            if self.db.exectrace:
-                cur.exectrace = lambda *args: True
-            if self.db.rowtrace:
-                cur.rowtrace = lambda x, y: y
+            if self.db.exec_trace:
+                cur.exec_trace = lambda *args: True
+            if self.db.row_trace:
+                cur.row_trace = lambda x, y: y
 
             for prow in Shell.PositionRow(cur.execute(qd.query, bindings)):
                 row = prow.row

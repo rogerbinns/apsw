@@ -60,7 +60,7 @@ with tempfile.NamedTemporaryFile() as f:
     f.flush()
 
     db = apsw.Connection(f.name)
-    db.rowtrace = apsw.ext.DataClassRowFactory(dataclass_kwargs={"frozen": True})
+    db.row_trace = apsw.ext.DataClassRowFactory(dataclass_kwargs={"frozen": True})
 
     constants: dict[str, list[str]] = {}
 

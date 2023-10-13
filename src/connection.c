@@ -3823,22 +3823,22 @@ Connection_overloadfunction(Connection *self, PyObject *const *fast_args, Py_ssi
   Py_RETURN_NONE;
 }
 
-/** .. method:: setexectrace(callable: Optional[ExecTracer]) -> None
+/** .. method:: set_exec_trace(callable: Optional[ExecTracer]) -> None
 
-   Method to set :attr:`Connection.exectrace`
+   Method to set :attr:`Connection.exec_trace`
 */
 static PyObject *
-Connection_setexectrace(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+Connection_set_exec_trace(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   PyObject *callable;
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
-    Connection_setexectrace_CHECK;
-    ARG_PROLOG(1, Connection_setexectrace_KWNAMES);
+    Connection_set_exec_trace_CHECK;
+    ARG_PROLOG(1, Connection_set_exec_trace_KWNAMES);
     ARG_MANDATORY ARG_optional_Callable(callable);
-    ARG_EPILOG(NULL, Connection_setexectrace_USAGE, );
+    ARG_EPILOG(NULL, Connection_set_exec_trace_USAGE, );
   }
 
   Py_XINCREF(callable);
@@ -3848,13 +3848,13 @@ Connection_setexectrace(Connection *self, PyObject *const *fast_args, Py_ssize_t
   Py_RETURN_NONE;
 }
 
-/** .. method:: setrowtrace(callable: Optional[RowTracer]) -> None
+/** .. method:: set_row_trace(callable: Optional[RowTracer]) -> None
 
-  Method to set :attr:`Connection.rowtrace`
+  Method to set :attr:`Connection.row_trace`
 */
 
 static PyObject *
-Connection_setrowtrace(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+Connection_set_row_trace(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   PyObject *callable;
 
@@ -3862,10 +3862,10 @@ Connection_setrowtrace(Connection *self, PyObject *const *fast_args, Py_ssize_t 
   CHECK_CLOSED(self, NULL);
 
   {
-    Connection_setrowtrace_CHECK;
-    ARG_PROLOG(1, Connection_setrowtrace_KWNAMES);
+    Connection_set_row_trace_CHECK;
+    ARG_PROLOG(1, Connection_set_row_trace_KWNAMES);
     ARG_MANDATORY ARG_optional_Callable(callable);
-    ARG_EPILOG(NULL, Connection_setrowtrace_USAGE, );
+    ARG_EPILOG(NULL, Connection_set_row_trace_USAGE, );
   }
 
   Py_XINCREF(callable);
@@ -3875,14 +3875,14 @@ Connection_setrowtrace(Connection *self, PyObject *const *fast_args, Py_ssize_t 
   Py_RETURN_NONE;
 }
 
-/** .. method:: getexectrace() -> Optional[ExecTracer]
+/** .. method:: get_exec_trace() -> Optional[ExecTracer]
 
   Returns the currently installed :attr:`execution tracer
-  <Connection.exectrace>`
+  <Connection.exec_trace>`
 
 */
 static PyObject *
-Connection_getexectrace(Connection *self)
+Connection_get_exec_trace(Connection *self)
 {
   PyObject *ret;
 
@@ -3893,14 +3893,14 @@ Connection_getexectrace(Connection *self)
   return Py_NewRef(ret);
 }
 
-/** .. method:: getrowtrace() -> Optional[RowTracer]
+/** .. method:: get_row_trace() -> Optional[RowTracer]
 
   Returns the currently installed :attr:`row tracer
-  <Connection.rowtrace>`
+  <Connection.row_trace>`
 
 */
 static PyObject *
-Connection_getrowtrace(Connection *self)
+Connection_get_row_trace(Connection *self)
 {
   PyObject *ret;
 
@@ -4927,7 +4927,7 @@ Connection_get_in_transaction(Connection *self)
   Py_RETURN_FALSE;
 }
 
-/** .. attribute:: exectrace
+/** .. attribute:: exec_trace
   :type: Optional[ExecTracer]
 
   Called with the cursor, statement and bindings for
@@ -4943,11 +4943,11 @@ Connection_get_in_transaction(Connection *self)
 
     * :ref:`tracing`
     * :ref:`rowtracer`
-    * :attr:`Cursor.exectrace`
+    * :attr:`Cursor.exec_trace`
 
 */
 static PyObject *
-Connection_get_exectrace_attr(Connection *self)
+Connection_get_exec_trace_attr(Connection *self)
 {
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
@@ -4956,14 +4956,14 @@ Connection_get_exectrace_attr(Connection *self)
 }
 
 static int
-Connection_set_exectrace_attr(Connection *self, PyObject *value)
+Connection_set_exec_trace_attr(Connection *self, PyObject *value)
 {
   CHECK_USE(-1);
   CHECK_CLOSED(self, -1);
 
   if (!Py_IsNone(value) && !PyCallable_Check(value))
   {
-    PyErr_Format(PyExc_TypeError, "exectrace expected a Callable");
+    PyErr_Format(PyExc_TypeError, "exec_trace expected a Callable");
     return -1;
   }
   Py_CLEAR(self->exectrace);
@@ -4972,7 +4972,7 @@ Connection_set_exectrace_attr(Connection *self, PyObject *value)
   return 0;
 }
 
-/** .. attribute:: rowtrace
+/** .. attribute:: row_trace
   :type: Optional[RowTracer]
 
   Called with the cursor and row being returned for
@@ -4987,11 +4987,11 @@ Connection_set_exectrace_attr(Connection *self, PyObject *value)
 
     * :ref:`tracing`
     * :ref:`rowtracer`
-    * :attr:`Cursor.exectrace`
+    * :attr:`Cursor.exec_trace`
 
 */
 static PyObject *
-Connection_get_rowtrace_attr(Connection *self)
+Connection_get_row_trace_attr(Connection *self)
 {
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
@@ -5002,14 +5002,14 @@ Connection_get_rowtrace_attr(Connection *self)
 }
 
 static int
-Connection_set_rowtrace_attr(Connection *self, PyObject *value)
+Connection_set_row_trace_attr(Connection *self, PyObject *value)
 {
   CHECK_USE(-1);
   CHECK_CLOSED(self, -1);
 
   if (!Py_IsNone(value) && !PyCallable_Check(value))
   {
-    PyErr_Format(PyExc_TypeError, "rowtrace expected a Callable");
+    PyErr_Format(PyExc_TypeError, "row trace expected a Callable");
     return -1;
   }
   Py_CLEAR(self->rowtrace);
@@ -5117,8 +5117,10 @@ static PyGetSetDef Connection_getseters[] = {
      (setter)Connection_set_cursor_factory, Connection_cursor_factory_DOC, NULL},
     {"in_transaction", (getter)Connection_get_in_transaction,
      NULL, Connection_in_transaction_DOC},
-    {"exectrace", (getter)Connection_get_exectrace_attr, (setter)Connection_set_exectrace_attr, Connection_exectrace_DOC},
-    {"rowtrace", (getter)Connection_get_rowtrace_attr, (setter)Connection_set_rowtrace_attr, Connection_rowtrace_DOC},
+    {"exec_trace", (getter)Connection_get_exec_trace_attr, (setter)Connection_set_exec_trace_attr, Connection_exec_trace_DOC},
+    {Connection_exec_trace_OLDNAME, (getter)Connection_get_exec_trace_attr, (setter)Connection_set_exec_trace_attr, Connection_exec_trace_OLDDOC},
+    {"row_trace", (getter)Connection_get_row_trace_attr, (setter)Connection_set_row_trace_attr, Connection_row_trace_DOC},
+    {Connection_row_trace_OLDNAME, (getter)Connection_get_row_trace_attr, (setter)Connection_set_row_trace_attr, Connection_row_trace_OLDDOC},
     {"authorizer", (getter)Connection_get_authorizer_attr, (setter)Connection_set_authorizer_attr, Connection_authorizer_DOC},
     {"system_errno", (getter)Connection_get_system_errno, NULL, Connection_system_errno_DOC},
     {"is_interrupted", (getter)Connection_is_interrupted, NULL, Connection_is_interrupted_DOC},
@@ -5228,14 +5230,22 @@ static PyMethodDef Connection_methods[] = {
      Connection_filecontrol_DOC},
     {"sqlite3pointer", (PyCFunction)Connection_sqlite3pointer, METH_NOARGS,
      Connection_sqlite3pointer_DOC},
-    {"setexectrace", (PyCFunction)Connection_setexectrace, METH_FASTCALL | METH_KEYWORDS,
-     Connection_setexectrace_DOC},
-    {"setrowtrace", (PyCFunction)Connection_setrowtrace, METH_FASTCALL | METH_KEYWORDS,
-     Connection_setrowtrace_DOC},
-    {"getexectrace", (PyCFunction)Connection_getexectrace, METH_NOARGS,
-     Connection_getexectrace_DOC},
-    {"getrowtrace", (PyCFunction)Connection_getrowtrace, METH_NOARGS,
-     Connection_getrowtrace_DOC},
+    {"set_exec_trace", (PyCFunction)Connection_set_exec_trace, METH_FASTCALL | METH_KEYWORDS,
+     Connection_set_exec_trace_DOC},
+    {Connection_set_exec_trace_OLDNAME, (PyCFunction)Connection_set_exec_trace, METH_FASTCALL | METH_KEYWORDS,
+     Connection_set_exec_trace_OLDDOC},
+    {"set_row_trace", (PyCFunction)Connection_set_row_trace, METH_FASTCALL | METH_KEYWORDS,
+     Connection_set_row_trace_DOC},
+    {Connection_set_row_trace_OLDNAME, (PyCFunction)Connection_set_row_trace, METH_FASTCALL | METH_KEYWORDS,
+     Connection_set_row_trace_OLDDOC},
+    {"get_exec_trace", (PyCFunction)Connection_get_exec_trace, METH_NOARGS,
+     Connection_get_exec_trace_DOC},
+    {Connection_get_exec_trace_OLDNAME, (PyCFunction)Connection_get_exec_trace, METH_NOARGS,
+     Connection_get_exec_trace_OLDDOC},
+    {"get_row_trace", (PyCFunction)Connection_get_row_trace, METH_NOARGS,
+     Connection_get_row_trace_DOC},
+    {Connection_get_row_trace_OLDNAME, (PyCFunction)Connection_get_row_trace, METH_NOARGS,
+     Connection_get_row_trace_OLDDOC},
     {"__enter__", (PyCFunction)Connection_enter, METH_NOARGS,
      Connection_enter_DOC},
     {"__exit__", (PyCFunction)Connection_exit, METH_FASTCALL | METH_KEYWORDS,

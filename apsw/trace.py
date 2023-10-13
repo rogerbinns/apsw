@@ -161,9 +161,9 @@ class APSWTracer(object):
         if self.options.report:
             con.setprofile(self.profiler)
         if self.options.sql or self.options.report:
-            con.exectrace = self.exectracer
+            con.exec_trace = self.exectracer
         if self.options.rows or self.options.report:
-            con.rowtrace = self.rowtracer
+            con.row_trace = self.rowtracer
         if self.options.sql:
             self.log(id(con), "OPEN:", self.formatstring(con.filename, checkmaxlen=False), con.open_vfs, self.flagme(con.open_flags, self.mapping_open_flags, "SQLITE_OPEN_"))
 

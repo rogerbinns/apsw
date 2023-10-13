@@ -5354,7 +5354,7 @@ class APSW(unittest.TestCase):
 
         checks = {
             "APSWCursor": {
-                "skip": ("dealloc", "init", "dobinding", "dobindings", "doexectrace", "dorowtrace", "step", "close",
+                "skip": ("dealloc", "init", "dobinding", "dobindings", "do_exec_trace", "do_row_trace", "step", "close",
                          "close_internal", "tp_traverse"),
                 "req": {
                     "use": "CHECK_USE",

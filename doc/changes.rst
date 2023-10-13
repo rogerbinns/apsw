@@ -282,8 +282,8 @@ Added :doc:`ext` (:issue:`369`)
 
 Added more Pythonic attributes as an alternative to getters and
 setters, including :attr:`Connection.in_transaction`,
-:attr:`Connection.exectrace`, :attr:`Connection.rowtrace`,
-:attr:`Cursor.exectrace`, :attr:`Cursor.rowtrace`,
+:attr:`Connection.exec_trace`, :attr:`Connection.row_trace`,
+:attr:`Cursor.exec_trace`, :attr:`Cursor.row_trace`,
 :attr:`Cursor.connection` (:issue:`371`)
 
 Completed: To the extent permitted by CPython APIs every item has the
@@ -1700,7 +1700,7 @@ detecting and diagnosing this issue.
 <https://docs.python.org/library/weakref.html>`_.
 
 You can now install :class:`Connection` wide :meth:`execution
-<Connection.setexectrace>` and :meth:`row <Connection.setrowtrace>`
+<Connection.set_exec_trace>` and :meth:`row <Connection.set_row_trace>`
 :ref:`tracers <tracing>`.
 
 The callbacks for execution and row tracers have a different signature

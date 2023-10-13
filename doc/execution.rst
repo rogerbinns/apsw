@@ -128,7 +128,7 @@ code.
   your tracer was called from. If you would like to make more queries
   in the tracer then do them from a new cursor object.  For example::
 
-    def exectracer(cursor, sql, bindings):
+    def exec_tracer(cursor, sql, bindings):
       cursor.connection.cursor().execute("insert into log values(?,?)", (sql,str(bindings)))
       return True
 
@@ -155,8 +155,8 @@ aborted with an :exc:`ExecTraceAbort` exception.  See the
 :ref:`example <example_exectrace>`.
 
 Execution tracers can be installed on a specific cursor by setting
-:attr:`Cursor.exectrace` or for all cursors by setting
-:attr:`Connection.exectrace`, with the cursor tracer taking
+:attr:`Cursor.exec_trace` or for all cursors by setting
+:attr:`Connection.exec_trace`, with the cursor tracer taking
 priority.
 
 If you use the Connection :meth:`with <Connection.__enter__>` statement
@@ -183,8 +183,8 @@ the caller of :meth:`~Cursor.execute`. If you return None then the
 whole row is skipped. See the :ref:`example <example_rowtrace>`.
 
 Row tracers can be installed on a specific cursor by setting
-:attr:`Cursor.rowtrace` or for all cursors by setting
-:attr:`Connection.rowtrace`, with the cursor tracer taking
+:attr:`Cursor.row_trace` or for all cursors by setting
+:attr:`Connection.row_trace`, with the cursor tracer taking
 priority.
 
 .. _apswtrace:

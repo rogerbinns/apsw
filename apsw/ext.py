@@ -46,11 +46,11 @@ except ImportError:
 class DataClassRowFactory:
     """Returns each row as a :mod:`dataclass <dataclasses>`, accessible by column name.
 
-    To use set an instance as :attr:`Connection.rowtrace
-    <apsw.Connection.rowtrace>` to affect all :class:`cursors
+    To use set an instance as :attr:`Connection.row_trace
+    <apsw.Connection.row_trace>` to affect all :class:`cursors
     <apsw.Cursor>`, or on a specific cursor::
 
-        connection.rowtrace = apsw.ext.DataClassRowFactory()
+        connection.row_trace = apsw.ext.DataClassRowFactory()
         for row in connection.execute("SELECT title, sum(orders) AS total, ..."):
             # You can now access by name
             print (row.title, row.total)
@@ -243,7 +243,7 @@ class TypesConverterCursorFactory:
         def __init__(self, connection: apsw.Connection, factory: TypesConverterCursorFactory):
             super().__init__(connection)
             self.factory = factory
-            self.rowtrace = self._rowtracer
+            self.row_trace = self._rowtracer
 
         def _rowtracer(self, cursor: apsw.Cursor, values: apsw.SQLiteValues) -> tuple[Any, ...]:
             return tuple(self.factory.convert_value(d[1], v) for d, v in zip(cursor.getdescription(), values))
@@ -653,10 +653,10 @@ def format_query_table(db: apsw.Connection,
         colnames = [n for n, _ in c.getdescription()]
         return True
 
-    cursor.exectrace = trace
-    # mitigate any existing rowtracer
-    if db.rowtrace:
-        cursor.rowtrace = lambda x, y: y
+    cursor.exec_trace = trace
+    # mitigate any existing row tracer
+    if db.row_trace:
+        cursor.row_trace = lambda x, y: y
 
     for row in cursor.execute(query, bindings):
         rows.append(list(row))
@@ -1433,7 +1433,7 @@ def query_info(db: apsw.Connection,
         return apsw.SQLITE_OK
 
     cur = db.cursor()
-    cur.exectrace = tracer
+    cur.exec_trace = tracer
     if actions:
         orig_authorizer = db.authorizer
         db.authorizer = auther
@@ -1444,7 +1444,7 @@ def query_info(db: apsw.Connection,
     finally:
         if actions:
             db.authorizer = orig_authorizer
-    cur.exectrace = None
+    cur.exec_trace = None
     if actions:
         res["actions"] = actions_taken
 

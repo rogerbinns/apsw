@@ -103,10 +103,10 @@ def exercise(example_code, expect_exception):
     def trace(*args):
         return True
 
-    con.exectrace = trace
+    con.exec_trace = trace
     with con:
         con.executemany("insert into foo values(zeroblob(1023))", [tuple() for _ in range(500)])
-    con.exectrace = None
+    con.exec_trace = None
 
     apsw.zeroblob(77).length()
 

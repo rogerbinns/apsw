@@ -40,8 +40,8 @@ Accessing result rows by column name
 See :ref:`the example <example_colnames>`.
 
 Use :class:`apsw.ext.DataClassRowFactory` as a
-:attr:`apsw.Connection.rowtrace` for an entire connection, or
-:attr:`apsw.Cursor.rowtrace` for a specific cursor.
+:attr:`apsw.Connection.row_trace` for an entire connection, or
+:attr:`apsw.Cursor.row_trace` for a specific cursor.
 
 
 Converting types into and out of SQLite

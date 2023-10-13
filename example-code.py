@@ -227,7 +227,7 @@ def my_tracer(cursor: apsw.Cursor, statement: str, bindings: Optional[apsw.Bindi
 
 # you can trace a single cursor
 cursor = connection.cursor()
-cursor.exectrace = my_tracer
+cursor.exec_trace = my_tracer
 cursor.execute(
     """
         drop table if exists bar;
@@ -236,9 +236,9 @@ cursor.execute(
         """, (3, ))
 
 # if set on a connection then all cursors are traced
-connection.exectrace = my_tracer
+connection.exec_trace = my_tracer
 # and clearing it
-connection.exectrace = None
+connection.exec_trace = None
 
 ### rowtrace: Tracing returned rows
 # You can trace returned rows, including modifying what is returned or
@@ -254,14 +254,14 @@ def row_tracer(cursor: apsw.Cursor, row: apsw.SQLiteValues) -> apsw.SQLiteValues
 
 # you can trace a single cursor
 cursor = connection.cursor()
-cursor.rowtrace = row_tracer
+cursor.row_trace = row_tracer
 for row in cursor.execute("select x,y from point where x>4"):
     pass
 
 # if set on a connection then all cursors are traced
-connection.rowtrace = row_tracer
+connection.row_trace = row_tracer
 # and clearing it
-connection.rowtrace = None
+connection.row_trace = None
 
 ### scalar: Defining your own functions
 # Scalar functions take one or more values and return one value.  They
@@ -429,7 +429,7 @@ for row in connection.execute("select title, id, year from books where author=?"
     print("year", row[2])
 
 # Turn on dataclasses - frozen makes them read-only
-connection.rowtrace = apsw.ext.DataClassRowFactory(dataclass_kwargs={"frozen": True})
+connection.row_trace = apsw.ext.DataClassRowFactory(dataclass_kwargs={"frozen": True})
 
 print("\nNow with dataclasses\n")
 
@@ -444,7 +444,7 @@ for row in connection.execute(
     print("year", row.book_year)
 
 # clear
-connection.rowtrace = None
+connection.row_trace = None
 
 ### type_conversion: Type conversion into/out of database
 # You can use :class:`apsw.ext.TypesConverterCursorFactory` to do
