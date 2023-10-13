@@ -5381,7 +5381,7 @@ class APSW(unittest.TestCase):
                 "order": ("use", "closed")
             },
             "APSWBackup": {
-                "skip": ("dealloc", "init", "close_internal", "get_remaining", "get_pagecount"),
+                "skip": ("dealloc", "init", "close_internal", "get_remaining", "get_page_count"),
                 "req": {
                     "use": "CHECK_USE",
                     "closed": "CHECK_BACKUP_CLOSED"

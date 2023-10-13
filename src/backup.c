@@ -27,7 +27,7 @@ Here is an example usage using the **with** statement to ensure
   with db.backup("main", source, "main") as b:
       while not b.done:
           b.step(100)
-          print(b.remaining, b.pagecount, "\r", flush = True)
+          print(b.remaining, b.page_count, "\r", flush = True)
 
 If you are not using **with** then you'll need to ensure
 :meth:`~Backup.finish` is called::
@@ -37,7 +37,7 @@ If you are not using **with** then you'll need to ensure
   try:
       while not b.done:
           b.step(100)
-          print(b.remaining, b.pagecount, "\r", flush = True)
+          print(b.remaining, b.page_count, "\r", flush = True)
   finally:
       b.finish()
 
@@ -294,7 +294,7 @@ APSWBackup_get_remaining(APSWBackup *self, void *Py_UNUSED(ignored))
   return PyLong_FromLong(self->backup ? sqlite3_backup_remaining(self->backup) : 0);
 }
 
-/** .. attribute:: pagecount
+/** .. attribute:: page_count
   :type: int
 
   Read only. How many pages were in the source database after the last
@@ -305,7 +305,7 @@ APSWBackup_get_remaining(APSWBackup *self, void *Py_UNUSED(ignored))
   -* sqlite3_backup_pagecount
 */
 static PyObject *
-APSWBackup_get_pagecount(APSWBackup *self, void *Py_UNUSED(ignored))
+APSWBackup_get_page_count(APSWBackup *self, void *Py_UNUSED(ignored))
 {
   CHECK_USE(NULL);
   return PyLong_FromLong(self->backup ? sqlite3_backup_pagecount(self->backup) : 0);
@@ -380,7 +380,8 @@ static PyMemberDef backup_members[] = {
 static PyGetSetDef backup_getset[] = {
     /* name getter setter doc closure */
     {"remaining", (getter)APSWBackup_get_remaining, NULL, Backup_remaining_DOC, NULL},
-    {"pagecount", (getter)APSWBackup_get_pagecount, NULL, Backup_pagecount_DOC, NULL},
+    {"page_count", (getter)APSWBackup_get_page_count, NULL, Backup_page_count_DOC, NULL},
+    {Backup_page_count_OLDNAME, (getter)APSWBackup_get_page_count, NULL, Backup_page_count_OLDDOC, NULL},
     {0, 0, 0, 0, 0}};
 
 static PyMethodDef backup_methods[] = {

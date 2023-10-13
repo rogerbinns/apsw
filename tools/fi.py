@@ -360,7 +360,7 @@ def exercise(example_code, expect_exception):
     with con2.backup("main", con, "main") as backup:
         while backup.remaining:
             backup.step(1)
-            backup.pagecount
+            backup.page_count
     backup.finish()
     del con2
 
