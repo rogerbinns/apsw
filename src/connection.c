@@ -4642,7 +4642,7 @@ Connection_release_memory(Connection *self)
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  PYSQLITE_CON_CALL(res = sqlite3_db_cacheflush(self->db));
+  PYSQLITE_CON_CALL(res = sqlite3_db_release_memory(self->db));
   if (res != SQLITE_OK)
   {
     SET_EXC(res, self->db);
