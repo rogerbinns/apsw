@@ -93,7 +93,7 @@ def exercise(example_code, expect_exception):
 
     extfname = "./testextension.sqlext"
     if os.path.exists(extfname):
-        con.enableloadextension(True)
+        con.enable_load_extension(True)
         con.loadextension(extfname)
         con.execute("select half(7)")
 
@@ -121,11 +121,11 @@ def exercise(example_code, expect_exception):
     con.authorizer = None
     con.collation_needed(None)
     con.collation_needed(lambda *args: 0)
-    con.enableloadextension(True)
+    con.enable_load_extension(True)
     con.setbusyhandler(None)
     con.setbusyhandler(lambda *args: True)
     con.setbusytimeout(99)
-    con.createscalarfunction("failme", lambda x: x + 1)
+    con.create_scalar_function("failme", lambda x: x + 1)
     cur = con.cursor()
     for _ in cur.execute("select failme(3)"):
         cur.description
@@ -217,8 +217,8 @@ def exercise(example_code, expect_exception):
             def Close(self):
                 pass
 
-    con.createmodule("vtable", Source(), use_bestindex_object=True, iVersion=3, eponymous=True)
-    con.createmodule("vtable2", Source(), use_bestindex_object=False, iVersion=3, eponymous=True)
+    con.create_module("vtable", Source(), use_bestindex_object=True, iVersion=3, eponymous=True)
+    con.create_module("vtable2", Source(), use_bestindex_object=False, iVersion=3, eponymous=True)
     con.overloadfunction("vtf", 2)
     con.overloadfunction("vtf", 1)
     con.execute("select * from vtable where c2>2 and c1 in (1,2,3)")
@@ -257,7 +257,7 @@ def exercise(example_code, expect_exception):
     def func(*args):
         return 3.14
 
-    con.createscalarfunction("func", func)
+    con.create_scalar_function("func", func)
     con.execute("select func(1,null,'abc',x'aabb')")
 
     if expect_exception:
@@ -270,7 +270,7 @@ def exercise(example_code, expect_exception):
     con.execute("begin; create table goingaway(x,y,z); rollback")
     con.setrollbackhook(None)
 
-    con.collation_needed(lambda *args: con.createcollation("foo", lambda *args: 0))
+    con.collation_needed(lambda *args: con.create_collation("foo", lambda *args: 0))
     con.execute(
         "create table col(x); insert into col values ('aa'), ('bb'), ('cc'); select * from col order by x collate foo")
 
@@ -318,7 +318,7 @@ def exercise(example_code, expect_exception):
         pass
 
     for n in """db_names cache_flush changes filename filename_journal
-                filename_wal getautocommit in_transaction interrupt last_insert_rowid
+                filename_wal get_autocommit in_transaction interrupt last_insert_rowid
                 open_flags open_vfs release_memory sqlite3pointer system_errno
                 totalchanges txn_state
         """.split():
@@ -475,7 +475,7 @@ def exercise(example_code, expect_exception):
         apsw.tests.vfstestdb(f"{ tmpdir.name }/dbfile-delme-vfswal", "apswfivfs2", mode="wal")
         testing_recursion = False
 
-    apsw.set_default_vfs(apsw.vfsnames()[0])
+    apsw.set_default_vfs(apsw.vfs_names()[0])
     apsw.unregister_vfs("apswfivfs")
 
     del vfsinstance

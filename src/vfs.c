@@ -2802,8 +2802,8 @@ apswvfsfile_xFileControl(sqlite3_file *file, int op, void *pArg)
 
    Receives `file control
    <https://sqlite.org/c3ref/file_control.html>`_ request typically
-   issued by :meth:`Connection.filecontrol`.  See
-   :meth:`Connection.filecontrol` for an example of how to pass a
+   issued by :meth:`Connection.file_control`.  See
+   :meth:`Connection.file_control` for an example of how to pass a
    Python object to this routine.
 
    :param op: A numeric code.  Codes below 100 are reserved for SQLite

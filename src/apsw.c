@@ -1946,7 +1946,7 @@ PyInit_apsw(void)
        :type: list[Callable[[Connection], None]]
 
        The purpose of the hooks is to allow the easy registration of
-       :meth:`functions <Connection.createscalarfunction>`,
+       :meth:`functions <Connection.create_scalar_function>`,
        :ref:`virtual tables <virtualtables>` or similar items with
        each :class:`Connection` as it is created. The default value is an empty
        list. Whenever a Connection is created, each item in

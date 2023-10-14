@@ -332,8 +332,8 @@ traceback::
     1/0
 
   con=apsw.Connection(":memory:")
-  con.createscalarfunction("foo", myfunc)
-  con.createscalarfunction("fam", myfunc)
+  con.create_scalar_function("foo", myfunc)
+  con.create_scalar_function("fam", myfunc)
   cursor=con.cursor()
   cursor.execute("create table bar(x,y,z);insert into bar values(1,2,3)")
   cursor.execute("select foo(1) from bar")

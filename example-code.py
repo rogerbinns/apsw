@@ -265,7 +265,7 @@ connection.row_trace = None
 
 ### scalar: Defining your own functions
 # Scalar functions take one or more values and return one value.  They
-# are registered by calling :meth:`Connection.createscalarfunction`.
+# are registered by calling :meth:`Connection.create_scalar_function`.
 
 
 def ilove7(*args: apsw.SQLiteValue) -> int:
@@ -274,7 +274,7 @@ def ilove7(*args: apsw.SQLiteValue) -> int:
     return 7
 
 
-connection.createscalarfunction("seven", ilove7)
+connection.create_scalar_function("seven", ilove7)
 
 for row in connection.execute("select seven(x,y) from point where x>4"):
     print("row", row)
@@ -283,7 +283,7 @@ for row in connection.execute("select seven(x,y) from point where x>4"):
 # Aggregate functions are called multiple times with matching rows,
 # and then provide a final value.  An example is calculating an
 # average.  They are registered by calling
-# :meth:`Connection.createaggregatefunction`.
+# :meth:`Connection.create_aggregate_function`.
 
 
 class longest:
@@ -303,7 +303,7 @@ class longest:
         # Called at the very end
         return self.longest
 
-connection.createaggregatefunction("longest", longest)
+connection.create_aggregate_function("longest", longest)
 print(connection.execute("select longest(event) from log").get)
 
 ### window: Defining window functions
@@ -361,7 +361,7 @@ for row in connection.execute("""
 
 ### collation: Defining collations (sorting)
 # How you sort can depend on the languages or values involved.  You
-# register a collation by calling :meth:`Connection.createcollation`.
+# register a collation by calling :meth:`Connection.create_collation`.
 
 # This example sorting mechanisms understands some text followed by a
 # number and ensures the number portion gets sorted correctly
@@ -401,7 +401,7 @@ def str_num_collate(s1: apsw.SQLiteValue, s2: apsw.SQLiteValue) -> int:
     return 0
 
 
-connection.createcollation("strnum", str_num_collate)
+connection.create_collation("strnum", str_num_collate)
 
 print()
 print("Using strnum")
@@ -655,7 +655,7 @@ connection.setprogresshandler(None)
 
 ### filecontrol: File Control
 # We can get/set low level information using the
-# :meth:`Connection.filecontrol` interface.  In this example we get
+# :meth:`Connection.file_control` interface.  In this example we get
 # the `data version
 # <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntldataversion>`__.
 # There is a `pragma
@@ -669,7 +669,7 @@ import ctypes
 def get_data_version(db):
     # unsigned 32 bit integer
     data_version = ctypes.c_uint32(0)
-    ok = db.filecontrol(
+    ok = db.file_control(
         "main",  # or an attached database name
         apsw.SQLITE_FCNTL_DATA_VERSION,  # code
         ctypes.addressof(data_version))  # pass C level pointer
@@ -878,7 +878,7 @@ query = """SELECT extension, SUM(st_size) as total_size
 print(apsw.ext.format_query_table(connection, query, bindings))
 
 # unregister a virtual table by passing None
-connection.createmodule("files_info", None)
+connection.create_module("files_info", None)
 
 ### vfs: VFS - Virtual File System
 # VFS lets you control access to the filesystem from SQLite.  APSW

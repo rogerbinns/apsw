@@ -6,7 +6,7 @@ Change History
 next
 ====
 
-:meth:`Connection.createaggregatefunction` can take a class with step
+:meth:`Connection.create_aggregate_function` can take a class with step
 and final methods. (:issue:`421`)
 
 3.43.1.1
@@ -193,7 +193,7 @@ Virtual table updates:
 * Added :meth:`Connection.vtab_config` and
   :meth:`Connection.vtab_on_conflict` (:issue:`189`, :issue:`190`)
 
-* :meth:`Connection.createmodule` lets you have `eponymous
+* :meth:`Connection.create_module` lets you have `eponymous
   <https://sqlite.org/vtab.html#eponymous_virtual_tables>`__,
   `eponymous_only
   <https://sqlite.org/vtab.html#eponymous_only_virtual_tables>`__, and
@@ -201,13 +201,13 @@ Virtual table updates:
 
 * Virtual table updates can avoid having to provide all column
   values when only a subset are changing.  See :attr:`apsw.no_change`,
-  :meth:`Connection.createmodule` *use_no_change* parameter,
+  :meth:`Connection.create_module` *use_no_change* parameter,
   :meth:`VTCursor.ColumnNoChange` and :meth:`VTTable.UpdateChangeRow`
   (:issue:`402`)
 
 * All `virtual table methods <https://www.sqlite.org/c3ref/module.html>`__
   are supported - added *iVersion* 2 and 3.  You can specify the
-  *iVersion* in :meth:`Connection.createmodule` (:issue:`128`)
+  *iVersion* in :meth:`Connection.create_module` (:issue:`128`)
 
 * :meth:`apsw.ext.make_virtual_module` makes it very easy to turn
   a Python function into a virtual table module.
@@ -231,8 +231,8 @@ Implemented `window functions
 (:issue:`292`)
 
 `Function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__
-can be specified to :meth:`Connection.createscalarfunction` and
-:meth:`Connection.createaggregatefunction`. Added
+can be specified to :meth:`Connection.create_scalar_function` and
+:meth:`Connection.create_aggregate_function`. Added
 :attr:`apsw.mapping_function_flags`. (:issue:`384`)
 
 Added :meth:`Connection.trace_v2` with :attr:`apsw.mapping_trace_codes`
@@ -815,7 +815,7 @@ Adjusted some internal detection related to the :func:`fork checker
 ===========
 
 Added deterministic parameter to
-:func:`Connection.createscalarfunction` (:issue:`187`)
+:func:`Connection.create_scalar_function` (:issue:`187`)
 
 Switched to new SQLite API returning 64 bit values for :func:`status`
 (:issue:`191`)
@@ -1242,7 +1242,7 @@ information.
 Backwards incompatible change in SQLite 3.7.5 for handling of
 :meth:`~VFSFile.xFileControl`.  If you implement this method in a VFS
 then you must return True or False to indicate if the operation was
-understood.  :meth:`Connection.filecontrol` now returns that value.
+understood.  :meth:`Connection.file_control` now returns that value.
 (Previously you could not tell the difference between an op being
 understood and an error resulting, or the op not being understood at
 all.)
@@ -1294,7 +1294,7 @@ No changes to APSW.  Upgrading to this version of SQLite is
 
 Updated various constants including `SQLITE_FCNTL_CHUNK_SIZE
 <https://sqlite.org/c3ref/c_fcntl_chunk_size.html>`__ used with
-:meth:`Connection.filecontrol`.
+:meth:`Connection.file_control`.
 
 Fixed Unicode output with some file objects from the shell (:issue:`108`).
 

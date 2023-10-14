@@ -1236,8 +1236,8 @@ def make_virtual_module(db: apsw.Connection,
         repr_invalid)
 
     # unregister any existing first
-    db.createmodule(name, None)
-    db.createmodule(
+    db.create_module(name, None)
+    db.create_module(
         name,
         mod,  # type: ignore[arg-type]
         use_bestindex_object=True,

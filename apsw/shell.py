@@ -2113,7 +2113,7 @@ Enter ".help" for instructions
         if len(cmd) < 1 or len(cmd) > 2:
             raise self.Error("load takes one or two parameters")
         try:
-            self.db.enableloadextension(True)
+            self.db.enable_load_extension(True)
         except Exception:
             raise self.Error("Extension loading is not supported")
 

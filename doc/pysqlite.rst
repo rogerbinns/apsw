@@ -42,7 +42,7 @@ module:
 * APSW gives all functionality of SQLite including :ref:`virtual
   tables <virtualtables>`, :ref:`VFS`, :ref:`BLOB I/O <blobio>`,
   :ref:`backups <backup>` and :meth:`file control
-  <Connection.filecontrol>`.
+  <Connection.file_control>`.
 
 * You can use the same :class:`Connection` across threads with APSW
   without needing any additional level of locking.  sqlite3 `requires
@@ -120,7 +120,7 @@ module:
     # apsw
     import apsw
     con = apsw.Connection(":memory:")
-    con.createscalarfunction("badfunc", badfunc, 1)
+    con.create_scalar_function("badfunc", badfunc, 1)
     cur = con.cursor()
     cur.execute("select badfunc(3)")
 

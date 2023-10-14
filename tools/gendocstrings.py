@@ -390,7 +390,7 @@ type_overrides = {
     "Connection.drop_modules": {
         "keep": "PyObject"
     },
-    "Connection.filecontrol": {
+    "Connection.file_control": {
         "pointer": "pointer"
     },
     "Connection.read": {

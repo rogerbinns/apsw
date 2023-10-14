@@ -41,7 +41,7 @@ def doit():
 
         def apsw_setup(dbfile):
             con = apsw.Connection(dbfile, statementcachesize=options.scsize, vfs=options.vfs)
-            con.createscalarfunction("number_name", number_name, 1)
+            con.create_scalar_function("number_name", number_name, 1)
             return con
 
     if options.sqlite3:
