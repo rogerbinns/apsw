@@ -234,8 +234,8 @@ Abort/Busy Etc
 .. exception:: BusyError
 
   *SQLITE_BUSY*.  The database file is locked.  Use
-  :meth:`Connection.setbusytimeout` to change how long SQLite waits
-  for the database to be unlocked or :meth:`Connection.setbusyhandler`
+  :meth:`Connection.set_busy_timeout` to change how long SQLite waits
+  for the database to be unlocked or :meth:`Connection.set_busy_handler`
   to use your own handler.
 
 .. exception:: LockedError

@@ -61,8 +61,8 @@ another. You also can't do things like try to
 If you have multiple threads and/or multiple programs accessing the
 same database then there may be contention for the file. SQLite will
 return SQLITE_BUSY which will be raised as BusyError. You can call
-:meth:`Connection.setbusytimeout` to set how long SQLite will retry
-for or :meth:`Connection.setbusyhandler` to install your own busy
+:meth:`Connection.set_busy_timeout` to set how long SQLite will retry
+for or :meth:`Connection.set_busy_handler` to install your own busy
 handler. Note that SQLite won't call the busy handler or timeout if it
 believes a deadlock has arisen. SQLite's locking and concurrency is
 described `here <https://sqlite.org/lockingv3.html>`_.

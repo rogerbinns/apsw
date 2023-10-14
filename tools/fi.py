@@ -94,7 +94,7 @@ def exercise(example_code, expect_exception):
     extfname = "./testextension.sqlext"
     if os.path.exists(extfname):
         con.enable_load_extension(True)
-        con.loadextension(extfname)
+        con.load_extension(extfname)
         con.execute("select half(7)")
 
     con.execute(
@@ -117,21 +117,21 @@ def exercise(example_code, expect_exception):
         con.execute("delete from foo where rowid=?", (victim, ))
 
     con.config(apsw.SQLITE_DBCONFIG_ENABLE_TRIGGER, 1)
-    con.setauthorizer(None)
+    con.set_authorizer(None)
     con.authorizer = None
     con.collation_needed(None)
     con.collation_needed(lambda *args: 0)
     con.enable_load_extension(True)
-    con.setbusyhandler(None)
-    con.setbusyhandler(lambda *args: True)
-    con.setbusytimeout(99)
+    con.set_busy_handler(None)
+    con.set_busy_handler(lambda *args: True)
+    con.set_busy_timeout(99)
     con.create_scalar_function("failme", lambda x: x + 1)
     cur = con.cursor()
     for _ in cur.execute("select failme(3)"):
         cur.description
         if hasattr(cur, "description_full"):
             cur.description_full
-        cur.getdescription()
+        cur.get_description()
 
     if expect_exception:
         return
@@ -219,8 +219,8 @@ def exercise(example_code, expect_exception):
 
     con.create_module("vtable", Source(), use_bestindex_object=True, iVersion=3, eponymous=True)
     con.create_module("vtable2", Source(), use_bestindex_object=False, iVersion=3, eponymous=True)
-    con.overloadfunction("vtf", 2)
-    con.overloadfunction("vtf", 1)
+    con.overload_function("vtf", 2)
+    con.overload_function("vtf", 1)
     con.execute("select * from vtable where c2>2 and c1 in (1,2,3)")
     con.execute("create virtual table fred using vtable()")
     con.execute("select vtf(c3) from fred where c3>5; select vtf(c2,c1) from fred where c3>5 order by c2").fetchall()
@@ -234,8 +234,8 @@ def exercise(example_code, expect_exception):
 
     con.drop_modules(["something", "vtable", "something else"])
 
-    con.setprofile(lambda: 1)
-    con.setprofile(None)
+    con.set_profile(lambda: 1)
+    con.set_profile(None)
 
     # has to be done on a real file not memory db
     con2 = apsw.Connection("/tmp/fitesting")
@@ -266,9 +266,9 @@ def exercise(example_code, expect_exception):
     def do_nothing():
         pass
 
-    con.setrollbackhook(do_nothing)
+    con.set_rollback_hook(do_nothing)
     con.execute("begin; create table goingaway(x,y,z); rollback")
-    con.setrollbackhook(None)
+    con.set_rollback_hook(None)
 
     con.collation_needed(lambda *args: con.create_collation("foo", lambda *args: 0))
     con.execute(
@@ -319,8 +319,8 @@ def exercise(example_code, expect_exception):
 
     for n in """db_names cache_flush changes filename filename_journal
                 filename_wal get_autocommit in_transaction interrupt last_insert_rowid
-                open_flags open_vfs release_memory sqlite3pointer system_errno
-                totalchanges txn_state
+                open_flags open_vfs release_memory sqlite3_pointer system_errno
+                total_changes txn_state
         """.split():
         obj = getattr(con, n)
         if callable(obj):

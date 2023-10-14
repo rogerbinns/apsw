@@ -75,7 +75,7 @@ Reduced overhead of the Column method when using
 
 Work with SQLite compiled with `SQLITE_OMIT_DEPRECATED
 <https://www.sqlite.org/compile.html#omit_deprecated>`__.
-:meth:`Connection.setprofile` was changed from using the deprecated
+:meth:`Connection.set_profile` was changed from using the deprecated
 `sqlite3_profile <https://sqlite.org/c3ref/profile.html>`__ to
 `sqlite3_trace_v2 <https://sqlite.org/c3ref/trace_v2.html>`__ giving
 the same results.  When including the amalgamation,
@@ -311,7 +311,7 @@ the statement cache.
 
 :meth:`Cursor.execute` has a new `can_cache` parameter to control
 whether the query can use the statement cache.  One example use is
-with :meth:`authorizers <Connection.setauthorizer>` because they only
+with :meth:`authorizers <Connection.set_authorizer>` because they only
 run during prepare, which doesn't happen with already cached
 statements.
 
@@ -472,7 +472,7 @@ Updated size of mutex array used by the :func:`fork checker <fork_checker>`
 Connections are opened with SQLITE_OPEN_EXRESCODE so open errors will
 also include extended result codes.
 
-:meth:`Connection.changes` and :meth:`Connection.totalchanges` use the
+:meth:`Connection.changes` and :meth:`Connection.total_changes` use the
 new SQLite APIs that return 64 bit values (ie can now return values
 greater than 2 billion).
 
@@ -1821,7 +1821,7 @@ for numbers fitting in signed 32 bit. This only affects Python 2 as
 Python 3 uses long exclusively. Thanks to Joe Pham for reporting this
 as :issue:`24`
 
-Added :meth:`Connection.sqlite3pointer` method to help with
+Added :meth:`Connection.sqlite3_pointer` method to help with
 :issue:`26`
 
 3.5.9-r2

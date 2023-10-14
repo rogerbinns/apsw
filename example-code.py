@@ -623,7 +623,7 @@ connection.authorizer = None
 ### progress_handler: Progress handler
 # Some operations (eg joins, sorting) can take many operations to
 # complete.  Register a progress handler callback with
-# :meth:`Connection.setprogresshandler` which lets you provide
+# :meth:`Connection.set_progress_handler` which lets you provide
 # feedback and allows cancelling.
 
 
@@ -644,14 +644,14 @@ def progress_handler() -> bool:
 
 
 # register handler every 50 vdbe instructions
-connection.setprogresshandler(progress_handler, 50)
+connection.set_progress_handler(progress_handler, 50)
 
 # Sorting the numbers to find the biggest
 for max_num in connection.execute("select max(x) from numbers"):
     print(max_num)
 
 # Clear handler
-connection.setprogresshandler(None)
+connection.set_progress_handler(None)
 
 ### filecontrol: File Control
 # We can get/set low level information using the
@@ -695,7 +695,7 @@ for sql in (
 
 ### commit_hook: Commit hook
 # A commit hook can allow or veto commits.  Register a commit hook
-# with  :meth:`Connection.setcommithook`.
+# with  :meth:`Connection.set_commit_hook`.
 
 
 def my_commit_hook() -> bool:
@@ -708,20 +708,20 @@ def my_commit_hook() -> bool:
     return False  # let commit go ahead
 
 
-connection.setcommithook(my_commit_hook)
+connection.set_commit_hook(my_commit_hook)
 try:
     with connection:
         connection.execute("create table example(x,y,z); insert into example values (3,4,5)")
 except apsw.ConstraintError:
     print("commit was not allowed")
 
-connection.setcommithook(None)
+connection.set_commit_hook(None)
 
 ### update_hook: Update hook
 # Update hooks let you know that data has been added, changed, or
 # removed.  For example you could use this to discard cached
 # information.  Register a hook using
-# :meth:`Connection.setupdatehook`.
+# :meth:`Connection.set_update_hook`.
 
 
 def my_update_hook(type: int, db_name: str, table_name: str, rowid: int) -> None:
@@ -729,13 +729,13 @@ def my_update_hook(type: int, db_name: str, table_name: str, rowid: int) -> None
     print(f"Updated: { op } db { db_name }, table { table_name }, rowid { rowid }")
 
 
-connection.setupdatehook(my_update_hook)
+connection.set_update_hook(my_update_hook)
 connection.execute("insert into names values(?)", ("file93", ))
 connection.execute("update names set name=? where name=?", ("file94", "file93"))
 connection.execute("delete from names where name=?", ("file94", ))
 
 # Clear the hook
-connection.setupdatehook(None)
+connection.set_update_hook(None)
 
 ### virtual_tables: Virtual tables
 # Virtual tables let you provide data on demand as a SQLite table so

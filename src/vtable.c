@@ -1959,7 +1959,7 @@ finally:
 
   .. seealso::
 
-    * :meth:`Connection.overloadfunction`
+    * :meth:`Connection.overload_function`
     * `FindFunction documentation <https://www.sqlite.org/vtab.html#xfindfunction>`__
 
 */

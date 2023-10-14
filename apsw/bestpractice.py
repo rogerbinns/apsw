@@ -30,7 +30,7 @@ def connection_busy_timeout(connection: apsw.Connection, duration_ms: int = 100)
     timeout <https://www.sqlite.org/c3ref/busy_timeout.html>`__ gives
     a grace period during which SQLite retries.
     """
-    connection.setbusytimeout(duration_ms)
+    connection.set_busy_timeout(duration_ms)
 
 
 def connection_enable_foreign_keys(connection: apsw.Connection) -> None:

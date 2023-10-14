@@ -759,7 +759,7 @@ Enter ".help" for instructions
                     self._completion_cache = None
                     self._using_readline = True
                 try:
-                    command = self.getcompleteline()
+                    command = self.get_complete_line()
                     if command is None:  # EOF
                         if self.interactive:
                             self.write(self.stdout, "\n")
@@ -888,7 +888,7 @@ Enter ".help" for instructions
           command which shows table names.
         """
 
-        changes_start = self.db.totalchanges()
+        changes_start = self.db.total_changes()
 
         def fixws(s: str):
             return re.sub(r"\s", " ", s, flags=re.UNICODE)
@@ -982,10 +982,10 @@ Enter ".help" for instructions
             if qd.explain:
                 self.pop_output()
 
-        changes = self.db.totalchanges() - changes_start
+        changes = self.db.total_changes() - changes_start
         if not internal and changes and self.changes:
             text = ("changes: " + self.colour.colour_value(changes, str(changes)) + "\t" + "total changes: " +
-                    self.colour.colour_value(self.db.totalchanges(), str(self.db.totalchanges())) + "\n")
+                    self.colour.colour_value(self.db.total_changes(), str(self.db.total_changes())) + "\n")
             self.write(self.stdout, text)
 
     def process_command(self, command):
@@ -2117,7 +2117,7 @@ Enter ".help" for instructions
         except Exception:
             raise self.Error("Extension loading is not supported")
 
-        self.db.loadextension(*cmd)
+        self.db.load_extension(*cmd)
 
     def log_handler(self, code, message):
         code = f"( { code } - { apsw.mapping_result_codes.get(code, 'unknown') } ) "
@@ -2500,7 +2500,7 @@ Enter ".help" for instructions
                     self.interactive = False
                     self.input_line_number = 0
                     while True:
-                        line = self.getcompleteline()
+                        line = self.get_complete_line()
                         if line is None:
                             break
                         self.process_complete_line(line)
@@ -2691,7 +2691,7 @@ Enter ".help" for instructions
             t = int(cmd[0])
         except ValueError:
             raise self.Error("%s is not a number" % (cmd[0], ))
-        self.db.setbusytimeout(t)
+        self.db.set_busy_timeout(t)
 
     def command_timer(self, cmd):
         """timer ON|OFF: Control printing of time and resource usage after each query
@@ -2717,7 +2717,7 @@ Enter ".help" for instructions
         versions = {
             "SQLite": f"{ apsw.sqlite_lib_version() } { apsw.sqlite3_sourceid() }",
             "Python": f"{ sys.version } - { sys.executable }",
-            "APSW": apsw.apswversion(),
+            "APSW": apsw.apsw_version(),
             "APSW file": apsw.__file__,
             "Amalgamation": apsw.using_amalgamation,
         }
@@ -2872,7 +2872,7 @@ Enter ".help" for instructions
 
     _raw_input = input
 
-    def getline(self, prompt=""):
+    def get_line(self, prompt=""):
         """Returns a single line of input (may be incomplete SQL) from self.stdin.
 
         If EOF is reached then return None.  Do not include trailing
@@ -2902,7 +2902,7 @@ Enter ".help" for instructions
             line = line[:-1]
         return line
 
-    def getcompleteline(self):
+    def get_complete_line(self):
         """Returns a complete input.
 
         For dot commands it will be one line.  For SQL statements it
@@ -2911,7 +2911,7 @@ Enter ".help" for instructions
         Returns None on end of file."""
         try:
             self._completion_first = True
-            command = self.getline(self.prompt)
+            command = self.get_line(self.prompt)
             if command is None:
                 return None
             if len(command.strip()) == 0:
@@ -2920,7 +2920,7 @@ Enter ".help" for instructions
             # incomplete SQL?
             while command[0] != "." and not apsw.complete(command):
                 self._completion_first = False
-                line = self.getline(self.moreprompt)
+                line = self.get_line(self.moreprompt)
                 if line is None:  # unexpected eof
                     raise self.Error("Incomplete SQL (line %d of %s): %s\n" %
                                      (self.input_line_number, getattr(self.stdin, "name", "<stdin>"), command))

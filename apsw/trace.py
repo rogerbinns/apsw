@@ -159,7 +159,7 @@ class APSWTracer(object):
     def connection_hook(self, con):
         self.numconnections+=1
         if self.options.report:
-            con.setprofile(self.profiler)
+            con.set_profile(self.profiler)
         if self.options.sql or self.options.report:
             con.exec_trace = self.exectracer
         if self.options.rows or self.options.report:

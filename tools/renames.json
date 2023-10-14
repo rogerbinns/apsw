@@ -36,6 +36,7 @@
         "set_authorizer": "setauthorizer",
         "set_busy_handler": "setbusyhandler",
         "set_busy_timeout": "setbusytimeout",
+        "set_commit_hook": "setcommithook",
         "set_exec_trace": "setexectrace",
         "set_profile": "setprofile",
         "set_progress_handler": "setprogresshandler",
