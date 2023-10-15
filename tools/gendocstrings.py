@@ -745,12 +745,11 @@ def generate_typestubs(items: list[dict]) -> None:
                 assert signature.startswith("(")
                 print(f"{ baseindent }def { name }{ signature }:", file=out)
                 print(fmt_docstring(item["doc"], indent=f"{ baseindent }    "), file=out)
-                print(f"{ baseindent }    ...\n", file=out)
+                print(f"{ baseindent }    ...", file=out)
             else:
                 assert item["kind"] == "attribute"
                 print(f"{ baseindent }{ name }: { attribute_type(item) }", file=out)
                 print(fmt_docstring(attr_docstring(item["doc"]), indent=baseindent), file=out)
-                print("", file=out)
         else:
             if klass != lastclass:
                 lastclass = klass
@@ -764,7 +763,6 @@ def generate_typestubs(items: list[dict]) -> None:
                     print("@final", file=out)
                 print(f"{ baseindent }class { klass }{ extra }:", file=out)
                 print(fmt_docstring(doc, indent=f"{ baseindent }    "), file=out)
-                print("", file=out)
 
             if item["kind"] == "method":
                 for find, replace in (
@@ -776,13 +774,20 @@ def generate_typestubs(items: list[dict]) -> None:
                     signature = "(self" + (", " if signature[1] != ")" else "") + signature[1:]
                 print(f"{ baseindent }    def { name }{ signature }:", file=out)
                 print(fmt_docstring(item["doc"], indent=f"{ baseindent }        "), file=out)
-                print(f"{ baseindent }        ...\n", file=out)
+                print(f"{ baseindent }        ...", file=out)
 
             else:
                 assert item["kind"] == "attribute"
                 print(f"{ baseindent }    { name }: { attribute_type(item) }", file=out)
                 print(fmt_docstring(attr_docstring(item["doc"]), indent=f"{ baseindent }    "), file=out)
-                print("", file=out)
+
+        print("", file=out)
+
+        try:
+            old_name = names.renames[klass][name]
+        except KeyError:
+            continue
+        print(f"{ baseindent }{ '    ' if klass != 'apsw' else '' }{ old_name } = { name } # OLD NAME\n", file=out)
 
     # constants
     print("\n", file=out)
