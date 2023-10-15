@@ -1855,7 +1855,7 @@ static PyMethodDef APSWCursor_methods[] = {
 static PyGetSetDef APSWCursor_getset[] = {
     {"description", (getter)APSWCursor_getdescription_dbapi, NULL, Cursor_description_DOC, NULL},
 #ifdef SQLITE_ENABLE_COLUMN_METADATA
-    {"description_full", (getter)APSWCursor_getdescription_full, NULL, Cursor_description_full_DOC, NULL},
+    {"description_full", (getter)APSWCursor_get_description_full, NULL, Cursor_description_full_DOC, NULL},
 #endif
     {"is_explain", (getter)APSWCursor_is_explain, NULL, Cursor_is_explain_DOC, NULL},
     {"is_readonly", (getter)APSWCursor_is_readonly, NULL, Cursor_is_readonly_DOC, NULL},
