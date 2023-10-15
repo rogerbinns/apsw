@@ -7,10 +7,8 @@ import collections.abc
 import dataclasses
 from dataclasses import dataclass, make_dataclass, is_dataclass
 
-import typing
-if typing.TYPE_CHECKING:
-    from typing import Union, Any, Callable, Sequence, TextIO, Literal, Iterator, Generator
-    import types
+from typing import Union, Any, Callable, Sequence, TextIO, Literal, Iterator, Generator
+import types
 
 import functools
 import abc
@@ -119,7 +117,7 @@ class DataClassRowFactory:
         this is just a hint.
         """
         if not t:
-            return typing.Any
+            return Any
         # From 3.1 https://www.sqlite.org/datatype3.html
         t = t.upper()
         if "INT" in t:
@@ -130,7 +128,7 @@ class DataClassRowFactory:
             return bytes
         if "REAL" in t or "FLOA" in t or "DOUB" in t:
             return float
-        return typing.Union[float, int]
+        return Union[float, int]
 
     def __call__(self, cursor: apsw.Cursor, row: apsw.SQLiteValues) -> Any:
         """What the row tracer calls
