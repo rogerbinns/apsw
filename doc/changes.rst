@@ -3,6 +3,15 @@ Change History
 
 .. currentmodule:: apsw
 
+Better :pep:`8` complaint names for some methods and attributes were
+added - :ref:`see details <renaming>`.
+
+You may also be interested in the `SQLite release history
+<https://www.sqlite.org/chronology.html>`__.
+
+APSW changes by version
+-----------------------
+
 next
 ====
 
@@ -2163,3 +2172,17 @@ Finished this documentation.
 ========
 
 Initial release
+
+.. _renaming:
+
+Renaming
+--------
+
+Early APSW exposed some method and attribute names not complying with
+Python naming conventions as documented in :pep:`8`.  For example
+``exceptionfor`` instead of ``exception_for``.  This has now been
+corrected with the compliant names being documented and used in
+examples.  The old names are still available maintaining
+:ref:`backwards compatibility <backcompat>`.
+
+.. include:: ../doc/renames.rstgen

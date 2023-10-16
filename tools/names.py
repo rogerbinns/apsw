@@ -23,6 +23,36 @@ def check_old():
     sys.exit(subprocess.run(["git", "--no-pager", "grep", "-E", "-w", pattern, "--"] + excludes).returncode)
 
 
+def rst_gen():
+    # we need to know if something is an attribute or a function
+    import apsw
+
+    def get_link(klass: str, name: str) -> str:
+        h = apsw if klass == "apsw" else getattr(apsw, klass)
+        return "meth" if callable(getattr(h, name)) else "attr"
+
+    print("""
+.. list-table::
+    :header-rows: 1
+    :widths: auto
+
+    * - Class
+      - Name
+      - Old name
+""")
+    for klass, members in sorted(renames.items(), key=lambda x: x[0].lower()):
+        if klass == "apsw":
+            kl = ":mod:`apsw`"
+        else:
+            kl = f":class:`{ klass }`"
+        for new, old in sorted(members.items()):
+            print(f"""\
+    * - { kl }
+      - :{ get_link(klass, new) }:`{ klass }.{ new }`
+      - :index:`{ old } <single: { old }; { klass }.{ new }>`""")
+            kl = ""
+
+
 if __name__ == '__main__':
     import argparse
 
@@ -31,6 +61,9 @@ if __name__ == '__main__':
 
     p = sub.add_parser("check-old", help="Check use of old names")
     p.set_defaults(func=check_old)
+
+    p = sub.add_parser("rst-gen", help="Generate documentation")
+    p.set_defaults(func=rst_gen)
 
     options = parser.parse_args()
     if not hasattr(options, "func"):

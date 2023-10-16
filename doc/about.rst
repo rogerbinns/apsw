@@ -57,6 +57,16 @@ You can find existing and fixed bugs by clicking on `Issues
 <https://github.com/rogerbinns/apsw/issues>`__ and using "New Issue"
 to report previously unknown issues.
 
+.. _backcompat:
+
+Backwards compatibility
+-----------------------
+
+Great effort is expended to ensure your code using APSW continues to
+work without maintenance as Python, SQLite, and APSW update over time.
+The very rare breaks are documented in the :doc:`change log
+<changes>`.  20 year old code still works unchanged!
+
 APSW and SQLite versions
 ------------------------
 
