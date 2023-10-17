@@ -683,8 +683,6 @@ static PyMethodDef APSWBlob_methods[] = {
      Blob_read_DOC},
     {"read_into", (PyCFunction)APSWBlob_read_into, METH_FASTCALL | METH_KEYWORDS,
      Blob_read_into_DOC},
-    {Blob_read_into_OLDNAME, (PyCFunction)APSWBlob_read_into, METH_FASTCALL | METH_KEYWORDS,
-     Blob_read_into_OLDDOC},
     {"seek", (PyCFunction)APSWBlob_seek, METH_FASTCALL | METH_KEYWORDS,
      Blob_seek_DOC},
     {"tell", (PyCFunction)APSWBlob_tell, METH_NOARGS,
@@ -699,6 +697,10 @@ static PyMethodDef APSWBlob_methods[] = {
      Blob_enter_DOC},
     {"__exit__", (PyCFunction)APSWBlob_exit, METH_VARARGS,
      Blob_exit_DOC},
+#ifndef APSW_OMIT_OLD_NAMES
+    {Blob_read_into_OLDNAME, (PyCFunction)APSWBlob_read_into, METH_FASTCALL | METH_KEYWORDS,
+     Blob_read_into_OLDDOC},
+#endif
     {0, 0, 0, 0} /* Sentinel */
 };
 

@@ -381,7 +381,9 @@ static PyGetSetDef backup_getset[] = {
     /* name getter setter doc closure */
     {"remaining", (getter)APSWBackup_get_remaining, NULL, Backup_remaining_DOC, NULL},
     {"page_count", (getter)APSWBackup_get_page_count, NULL, Backup_page_count_DOC, NULL},
+#ifndef APSW_OMIT_OLD_NAMES
     {Backup_page_count_OLDNAME, (getter)APSWBackup_get_page_count, NULL, Backup_page_count_OLDDOC, NULL},
+#endif
     {0, 0, 0, 0, 0}};
 
 static PyMethodDef backup_methods[] = {
