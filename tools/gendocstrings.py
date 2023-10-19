@@ -787,7 +787,7 @@ def generate_typestubs(items: list[dict]) -> None:
             old_name = names.renames[klass][name]
         except KeyError:
             continue
-        print(f"{ baseindent }{ '    ' if klass != 'apsw' else '' }{ old_name } = { name } # OLD NAME\n", file=out)
+        print(f"{ baseindent }{ '    ' if klass != 'apsw' else '' }{ old_name } = { name } ## OLD-NAME\n", file=out)
 
     # constants
     print("\n", file=out)

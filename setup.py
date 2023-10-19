@@ -489,6 +489,19 @@ def findamalgamation():
     return None
 
 
+def update_type_stubs_old_names(include_old: bool) -> None:
+    stubs = pathlib.Path("apsw/__init__.pyi").read_text()
+    new_stubs = []
+    for line in stubs.split("\n"):
+        if line.endswith("## OLD-NAME") and include_old == line.startswith("#"):
+            line = ("#" + line) if not include_old else line[1:]
+        new_stubs.append(line)
+    new_stubs = "\n".join(new_stubs)
+    if new_stubs != stubs:
+        print("Updating type stubs to", "include" if include_old else "exclude", "old names")
+        pathlib.Path("apsw/__init__.pyi").write_text(new_stubs)
+
+
 beparent = build_ext.build_ext
 
 
@@ -499,9 +512,12 @@ class apsw_build_ext(beparent):
                     ("omit=", None, "Omit SQLite functionality (comma separated list)"),
                     ("enable-all-extensions", None, "Enable all SQLite extensions"),
                     ("use-system-sqlite-config", None, "Uses system SQLite library config (enabled/omitted APIs etc)"),
-                    ("definevalues=", None, "Additional defines eg --definevalues SQLITE_MAX_ATTACHED=37,SQLITE_EXTRA_INIT=mycore_init")
+                    ("definevalues=", None, "Additional defines eg --definevalues SQLITE_MAX_ATTACHED=37,SQLITE_EXTRA_INIT=mycore_init"),
+                    ("apsw-no-old-names", None, "Old non-PEP8 names are excluded")
                     ]
-    boolean_options = beparent.boolean_options + ["enable-all-extensions", "use-system-sqlite-config"]
+    boolean_options = beparent.boolean_options + [
+        "enable-all-extensions", "use-system-sqlite-config", "apsw-no-old-names"
+    ]
 
     def initialize_options(self):
         v = beparent.initialize_options(self)
@@ -510,6 +526,7 @@ class apsw_build_ext(beparent):
         self.enable_all_extensions = build_enable_all_extensions
         self.definevalues = None
         self.use_system_sqlite_config = False
+        self.apsw_no_old_names = False
         return v
 
     def finalize_options(self):
@@ -535,6 +552,11 @@ class apsw_build_ext(beparent):
         if not ext.include_dirs: ext.include_dirs = []
         if not ext.library_dirs: ext.library_dirs = []
         if not ext.libraries: ext.libraries = []
+
+        if self.apsw_no_old_names:
+            ext.define_macros.append(("APSW_OMIT_OLD_NAMES", "1"))
+
+        update_type_stubs_old_names(include_old=not self.apsw_no_old_names)
 
         if self.definevalues:
             for define in self.definevalues.split(","):
