@@ -93,7 +93,7 @@ src/stringconstants.c: Makefile tools/genstrings.py src/apswversion.h
 	-rm -f src/stringconstants.c
 	$(PYTHON) tools/genstrings.py > src/stringconstants.c
 
-build_ext: src/apswversion.h  ## Fetches SQLite and builds the extension
+build_ext: src/apswversion.h  apsw/__init__.pyi src/apsw.docstrings ## Fetches SQLite and builds the extension
 	env $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext -DSQLITE_ENABLE_COLUMN_METADATA --inplace --force --enable-all-extensions
 
 src/faultinject.h: tools/genfaultinject.py
@@ -120,6 +120,11 @@ pycoverage:  ## Coverage of the Python code
 
 test: build_ext ## Standard testing
 	env $(PYTHON) -m apsw.tests
+	env PYTHONPATH=. $(PYTHON) tools/names.py run-tests
+	env $(PYTHON) setup.py build_ext -DSQLITE_ENABLE_COLUMN_METADATA --inplace --force --enable-all-extensions --apsw-no-old-names
+	env $(PYTHON) -m apsw.tests
+	rm apsw/__init__.pyi
+	$(MAKE) apsw/__init__.pyi
 
 test_debug: $(PYDEBUG_DIR)/bin/python3  src/faultinject.h ## Testing in debug mode and sanitizer
 	$(MAKE) build_ext_debug PYTHON=$(PYDEBUG_DIR)/bin/python3
