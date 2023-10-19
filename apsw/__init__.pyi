@@ -20,6 +20,16 @@ to SQLiteValues.  You can also provide zeroblob in Bindings. You can use
 dict subclasses or any type registered with :class:`collections.abc.Mapping`
 for named bindings"""
 
+class AggregateClass(Protocol):
+    "Represents a running aggregate function"
+    def step(self, *values: SQLiteValue) -> None:
+            "Called with value(s) from a matching row"
+            ...
+    def final(self) -> SQLiteValue:
+            "Called after all matching rows have been processed to get the final value"
+            ...
+
+
 # Neither TypeVar nor ParamSpec work, when either should
 AggregateT = Any
 "An object provided as first parameter of step and final aggregate functions"
@@ -38,7 +48,7 @@ AggregateStep = \
 AggregateFinal= Callable[[AggregateT], SQLiteValue]
 "Final is called after all matching rows have been processed by step, and returns a SQLiteValue"
 
-AggregateFactory = Callable[[], tuple[AggregateT, AggregateStep, AggregateFinal]]
+AggregateFactory = Callable[[], AggregateClass | tuple[AggregateT, AggregateStep, AggregateFinal]]
 """Called each time for the start of a new calculation using an aggregate function,
 returning an object, a step function and a final function"""
 
@@ -126,7 +136,7 @@ SQLITE_VERSION_NUMBER: int
 against.  For example SQLite 3.6.4 will have the value *3006004*.
 This number may be different than the actual library in use if the
 library is shared and has been updated.  Call
-:meth:`sqlitelibversion` to get the actual library version."""
+:meth:`sqlite_lib_version` to get the actual library version."""
 
 def allow_missing_dict_bindings(value: bool) -> bool:
     """Changes how missing bindings are handled when using a :class:`dict`.
@@ -145,9 +155,11 @@ def allow_missing_dict_bindings(value: bool) -> bool:
     The previous value is returned."""
     ...
 
-def apswversion() -> str:
+def apsw_version() -> str:
     """Returns the APSW version."""
     ...
+
+apswversion = apsw_version ## OLD-NAME
 
 compile_options: tuple[str, ...]
 """A tuple of the options used to compile SQLite.  For example it
@@ -188,7 +200,7 @@ def config(op: int, *args: Any) -> None:
 
 connection_hooks: list[Callable[[Connection], None]]
 """The purpose of the hooks is to allow the easy registration of
-:meth:`functions <Connection.createscalarfunction>`,
+:meth:`functions <Connection.create_scalar_function>`,
 :ref:`virtual tables <virtualtables>` or similar items with
 each :class:`Connection` as it is created. The default value is an empty
 list. Whenever a Connection is created, each item in
@@ -205,7 +217,7 @@ def connections() -> list[Connection]:
     """Returns a list of the connections"""
     ...
 
-def enablesharedcache(enable: bool) -> None:
+def enable_shared_cache(enable: bool) -> None:
     """If you use the same :class:`Connection` across threads or use
     multiple :class:`connections <Connection>` accessing the same file,
     then SQLite can `share the cache between them
@@ -215,7 +227,9 @@ def enablesharedcache(enable: bool) -> None:
     Calls: `sqlite3_enable_shared_cache <https://sqlite.org/c3ref/enable_shared_cache.html>`__"""
     ...
 
-def exceptionfor(code: int) -> Exception:
+enablesharedcache = enable_shared_cache ## OLD-NAME
+
+def exception_for(code: int) -> Exception:
     """If you would like to raise an exception that corresponds to a
     particular SQLite `error code
     <https://sqlite.org/c3ref/c_abort.html>`_ then call this function.
@@ -224,8 +238,10 @@ def exceptionfor(code: int) -> Exception:
 
     For example to raise `SQLITE_IOERR_ACCESS <https://sqlite.org/c3ref/c_ioerr_access.html>`_::
 
-      raise apsw.exceptionfor(apsw.SQLITE_IOERR_ACCESS)"""
+      raise apsw.exception_for(apsw.SQLITE_IOERR_ACCESS)"""
     ...
+
+exceptionfor = exception_for ## OLD-NAME
 
 def fork_checker() -> None:
     """**Note** This method is not available on Windows as it does not
@@ -288,7 +304,7 @@ def hard_heap_limit(limit: int) -> int:
 
     .. seealso::
 
-        :meth:`softheaplimit`
+        :meth:`soft_heap_limit`
 
     Calls: `sqlite3_hard_heap_limit64 <https://sqlite.org/c3ref/hard_heap_limit64.html>`__"""
     ...
@@ -318,7 +334,7 @@ def log(errorcode: int, message: str) -> None:
     Calls: `sqlite3_log <https://sqlite.org/c3ref/log.html>`__"""
     ...
 
-def memoryhighwater(reset: bool = False) -> int:
+def memory_high_water(reset: bool = False) -> int:
     """Returns the maximum amount of memory SQLite has used.  If *reset* is
     True then the high water mark is reset to the current value.
 
@@ -329,7 +345,9 @@ def memoryhighwater(reset: bool = False) -> int:
     Calls: `sqlite3_memory_highwater <https://sqlite.org/c3ref/memory_highwater.html>`__"""
     ...
 
-def memoryused() -> int:
+memoryhighwater = memory_high_water ## OLD-NAME
+
+def memory_used() -> int:
     """Returns the amount of memory SQLite is currently using.
 
     .. seealso::
@@ -338,6 +356,8 @@ def memoryused() -> int:
 
     Calls: `sqlite3_memory_used <https://sqlite.org/c3ref/memory_highwater.html>`__"""
     ...
+
+memoryused = memory_used ## OLD-NAME
 
 no_change: object
 """A sentinel value used to indicate no change in a value when
@@ -352,16 +372,18 @@ def randomness(amount: int)  -> bytes:
     Calls: `sqlite3_randomness <https://sqlite.org/c3ref/randomness.html>`__"""
     ...
 
-def releasememory(amount: int) -> int:
+def release_memory(amount: int) -> int:
     """Requests SQLite try to free *amount* bytes of memory.  Returns how
     many bytes were freed.
 
     Calls: `sqlite3_release_memory <https://sqlite.org/c3ref/release_memory.html>`__"""
     ...
 
+releasememory = release_memory ## OLD-NAME
+
 def set_default_vfs(name: str) -> None:
     """Sets the default vfs to *name* which must be an existing vfs.
-    See :meth:`vfsnames`.
+    See :meth:`vfs_names`.
 
     Calls:
       * `sqlite3_vfs_register <https://sqlite.org/c3ref/vfs_find.html>`__
@@ -385,7 +407,7 @@ def sleep(milliseconds: int) -> int:
     Calls: `sqlite3_sleep <https://sqlite.org/c3ref/sleep.html>`__"""
     ...
 
-def softheaplimit(limit: int) -> int:
+def soft_heap_limit(limit: int) -> int:
     """Requests SQLite try to keep memory usage below *limit* bytes and
     returns the previous limit.
 
@@ -396,6 +418,8 @@ def softheaplimit(limit: int) -> int:
     Calls: `sqlite3_soft_heap_limit64 <https://sqlite.org/c3ref/hard_heap_limit64.html>`__"""
     ...
 
+softheaplimit = soft_heap_limit ## OLD-NAME
+
 def sqlite3_sourceid() -> str:
     """Returns the exact checkin information for the SQLite 3 source
     being used.
@@ -403,13 +427,15 @@ def sqlite3_sourceid() -> str:
     Calls: `sqlite3_sourceid <https://sqlite.org/c3ref/libversion.html>`__"""
     ...
 
-def sqlitelibversion() -> str:
+def sqlite_lib_version() -> str:
     """Returns the version of the SQLite library.  This value is queried at
     run time from the library so if you use shared libraries it will be
     the version in the shared library.
 
     Calls: `sqlite3_libversion <https://sqlite.org/c3ref/libversion.html>`__"""
     ...
+
+sqlitelibversion = sqlite_lib_version ## OLD-NAME
 
 def status(op: int, reset: bool = False) -> tuple[int, int]:
     """Returns current and highwater measurements.
@@ -452,7 +478,7 @@ def strnicmp(string1: str, string2: str, count: int) -> int:
     ...
 
 def unregister_vfs(name: str) -> None:
-    """Unregisters the named vfs.  See :meth:`vfsnames`.
+    """Unregisters the named vfs.  See :meth:`vfs_names`.
 
     Calls:
       * `sqlite3_vfs_unregister <https://sqlite.org/c3ref/vfs_find.html>`__
@@ -478,17 +504,18 @@ def vfs_details() -> list[dict[str, int | str]]:
     Calls: `sqlite3_vfs_find <https://sqlite.org/c3ref/vfs_find.html>`__"""
     ...
 
-def vfsnames() -> list[str]:
+def vfs_names() -> list[str]:
     """Returns a list of the currently installed :ref:`vfs <vfs>`.  The first
     item in the list is the default vfs.
 
     Calls: `sqlite3_vfs_find <https://sqlite.org/c3ref/vfs_find.html>`__"""
     ...
 
+vfsnames = vfs_names ## OLD-NAME
+
 @final
 class Backup:
     """You create a backup instance by calling :meth:`Connection.backup`."""
-
     def close(self, force: bool = False) -> None:
         """Does the same thing as :meth:`~Backup.finish`.  This extra api is
         provided to give the same api as other APSW objects such as
@@ -524,13 +551,15 @@ class Backup:
         Calls: `sqlite3_backup_finish <https://sqlite.org/c3ref/backup_finish.html#sqlite3backupfinish>`__"""
         ...
 
-    pagecount: int
+    page_count: int
     """Read only. How many pages were in the source database after the last
     step.  If you haven't called :meth:`~Backup.step` or the backup
     object has been :meth:`finished <Backup.finish>` then zero is
     returned.
 
     Calls: `sqlite3_backup_pagecount <https://sqlite.org/c3ref/backup_finish.html#sqlite3backuppagecount>`__"""
+
+    pagecount = page_count ## OLD-NAME
 
     remaining: int
     """Read only. How many pages were remaining to be copied after the last
@@ -562,7 +591,7 @@ class Backup:
 
 @final
 class Blob:
-    """This object is created by :meth:`Connection.blobopen` and provides
+    """This object is created by :meth:`Connection.blob_open` and provides
     access to a blob in the database.  It behaves like a Python file.
     At the C level it wraps a `sqlite3_blob
     <https://sqlite.org/c3ref/blob.html>`_.
@@ -575,7 +604,6 @@ class Blob:
       <https://sqlite.org/lang_corefunc.html>`_ function.
 
     See the :ref:`example <example_blob_io>`."""
-
     def close(self, force: bool = False) -> None:
         """Closes the blob.  Note that even if an error occurs the blob is
         still closed.
@@ -606,7 +634,7 @@ class Blob:
 
         For example::
 
-          with connection.blobopen() as blob:
+          with connection.blob_open() as blob:
               blob.write("...")
               res=blob.read(1024)"""
         ...
@@ -632,7 +660,7 @@ class Blob:
         Calls: `sqlite3_blob_read <https://sqlite.org/c3ref/blob_read.html>`__"""
         ...
 
-    def readinto(self, buffer: bytearray |  array.array[Any] | memoryview, offset: int = 0, length: int = -1) -> None:
+    def read_into(self, buffer: bytearray |  array.array[Any] | memoryview, offset: int = 0, length: int = -1) -> None:
         """Reads from the blob into a buffer you have supplied.  This method is
         useful if you already have a buffer like object that data is being
         assembled in, and avoids allocating results in :meth:`Blob.read` and
@@ -652,6 +680,8 @@ class Blob:
 
         Calls: `sqlite3_blob_read <https://sqlite.org/c3ref/blob_read.html>`__"""
         ...
+
+    readinto = read_into ## OLD-NAME
 
     def reopen(self, rowid: int) -> None:
         """Change this blob object to point to a different row.  It can be
@@ -692,7 +722,6 @@ class Blob:
 class Connection:
     """This object wraps a `sqlite3 pointer
     <https://sqlite.org/c3ref/sqlite3.html>`_."""
-
     authorizer: Optional[Authorizer]
     """While `preparing <https://sqlite.org/c3ref/prepare.html>`_
     statements, SQLite will call any defined authorizer to see if a
@@ -758,7 +787,7 @@ class Connection:
         Calls: `sqlite3_backup_init <https://sqlite.org/c3ref/backup_finish.html#sqlite3backupinit>`__"""
         ...
 
-    def blobopen(self, database: str, table: str, column: str, rowid: int, writeable: bool)  -> Blob:
+    def blob_open(self, database: str, table: str, column: str, rowid: int, writeable: bool)  -> Blob:
         """Opens a blob for :ref:`incremental I/O <blobio>`.
 
         :param database: Name of the database.  This will be ``main`` for
@@ -778,6 +807,16 @@ class Connection:
 
         Calls: `sqlite3_blob_open <https://sqlite.org/c3ref/blob_open.html>`__"""
         ...
+
+    blobopen = blob_open ## OLD-NAME
+
+    def cache_flush(self) -> None:
+        """Flushes caches to disk mid-transaction.
+
+        Calls: `sqlite3_db_cacheflush <https://sqlite.org/c3ref/db_cacheflush.html>`__"""
+        ...
+
+    cacheflush = cache_flush ## OLD-NAME
 
     def cache_stats(self, include_entries: bool = False) -> dict[str, int]:
         """Returns information about the statement cache as dict.
@@ -842,12 +881,6 @@ class Connection:
               the first statement"""
         ...
 
-    def cacheflush(self) -> None:
-        """Flushes caches to disk mid-transaction.
-
-        Calls: `sqlite3_db_cacheflush <https://sqlite.org/c3ref/db_cacheflush.html>`__"""
-        ...
-
     def changes(self) -> int:
         """Returns the number of database rows that were changed (or inserted
         or deleted) by the most recently completed INSERT, UPDATE, or DELETE
@@ -881,28 +914,30 @@ class Connection:
         Calls: `sqlite3_close <https://sqlite.org/c3ref/close.html>`__"""
         ...
 
-    def collationneeded(self, callable: Optional[Callable[[Connection, str], None]]) -> None:
+    def collation_needed(self, callable: Optional[Callable[[Connection, str], None]]) -> None:
         """*callable* will be called if a statement requires a `collation
         <https://en.wikipedia.org/wiki/Collation>`_ that hasn't been
         registered. Your callable will be passed two parameters. The first
         is the connection object. The second is the name of the
         collation. If you have the collation code available then call
-        :meth:`Connection.createcollation`.
+        :meth:`Connection.create_collation`.
 
         This is useful for creating collations on demand.  For example you
         may include the `locale <https://en.wikipedia.org/wiki/Locale>`_ in
         the collation name, but since there are thousands of locales in
         popular use it would not be useful to :meth:`prereigster
-        <Connection.createcollation>` them all.  Using
-        :meth:`~Connection.collationneeded` tells you when you need to
+        <Connection.create_collation>` them all.  Using
+        :meth:`~Connection.collation_needed` tells you when you need to
         register them.
 
         .. seealso::
 
-          * :meth:`~Connection.createcollation`
+          * :meth:`~Connection.create_collation`
 
         Calls: `sqlite3_collation_needed <https://sqlite.org/c3ref/collation_needed.html>`__"""
         ...
+
+    collationneeded = collation_needed ## OLD-NAME
 
     def column_metadata(self, dbname: Optional[str], table_name: str, column_name: str) -> tuple[str, str, bool, bool, bool]:
         """`dbname` is the specific database (eg "main", "temp") or None to search
@@ -938,35 +973,7 @@ class Connection:
         Calls: `sqlite3_db_config <https://sqlite.org/c3ref/db_config.html>`__"""
         ...
 
-    def create_window_function(self, name:str, factory: Optional[WindowFactory], numargs: int =-1, *, flags: int = 0) -> None:
-        """Registers a `window function
-        <https://sqlite.org/windowfunctions.html#user_defined_aggregate_window_functions>`__
-
-          :param name: The string name of the function.  It should be less than 255 characters
-          :param factory: Called to start a new window.  Use None to delete the function.
-          :param numargs: How many arguments the function takes, with -1 meaning any number
-          :param flags: `Function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__
-
-        You need to provide callbacks for the ``step``, ``final``, ``value``
-        and ``inverse`` methods.  This can be done by having `factory` as a
-        class, and the corresponding method names, or by having `factory`
-        return a sequence of a first parameter, and then each of the 4
-        functions.
-
-        **Debugging note** SQlite always calls the ``final`` method to allow
-        for cleanup.  If you have an error in one of the other methods, then
-        ``final`` will also be called, and you may see both methods in
-        tracebacks.
-
-        .. seealso::
-
-         * :ref:`Example <example_window>`
-         * :meth:`~Connection.createaggregatefunction`
-
-        Calls: `sqlite3_create_window_function <https://sqlite.org/c3ref/create_function.html>`__"""
-        ...
-
-    def createaggregatefunction(self, name: str, factory: Optional[AggregateFactory], numargs: int = -1, *, flags: int = 0) -> None:
+    def create_aggregate_function(self, name: str, factory: Optional[AggregateFactory], numargs: int = -1, *, flags: int = 0) -> None:
         """Registers an aggregate function.  Aggregate functions operate on all
         the relevant rows such as counting how many there are.
 
@@ -975,7 +982,11 @@ class Connection:
         :param numargs: How many arguments the function takes, with -1 meaning any number
         :param flags: `Function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__
 
-        When a query starts, the *factory* will be called and must return a tuple of 3 items:
+        When a query starts, the *factory* will be called.  It can be a class
+        with a *step* function called for each matching row, and a *final* function
+        to return the final value.
+
+        Alternatively a non-class approach can return a tuple of 3 items:
 
           a context object
              This can be of any type
@@ -996,17 +1007,19 @@ class Connection:
 
           You can register the same named function but with different
           callables and *numargs*.  See
-          :meth:`~Connection.createscalarfunction` for an example.
+          :meth:`~Connection.create_scalar_function` for an example.
 
         .. seealso::
 
            * :ref:`Example <example_aggregate>`
-           * :meth:`~Connection.createscalarfunction`
+           * :meth:`~Connection.create_scalar_function`
 
         Calls: `sqlite3_create_function_v2 <https://sqlite.org/c3ref/create_function.html>`__"""
         ...
 
-    def createcollation(self, name: str, callback: Optional[Callable[[str, str], int]]) -> None:
+    createaggregatefunction = create_aggregate_function ## OLD-NAME
+
+    def create_collation(self, name: str, callback: Optional[Callable[[str, str], int]]) -> None:
         """You can control how SQLite sorts (termed `collation
         <https://en.wikipedia.org/wiki/Collation>`_) when giving the
         ``COLLATE`` term to a `SELECT
@@ -1034,7 +1047,9 @@ class Connection:
         Calls: `sqlite3_create_collation_v2 <https://sqlite.org/c3ref/create_collation.html>`__"""
         ...
 
-    def createmodule(self, name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 1, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None:
+    createcollation = create_collation ## OLD-NAME
+
+    def create_module(self, name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 1, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None:
         """Registers a virtual table, or drops it if *datasource* is *None*.
         See :ref:`virtualtables` for details.
 
@@ -1054,7 +1069,9 @@ class Connection:
         Calls: `sqlite3_create_module_v2 <https://sqlite.org/c3ref/create_module.html>`__"""
         ...
 
-    def createscalarfunction(self, name: str, callable: Optional[ScalarProtocol], numargs: int = -1, *, deterministic: bool = False, flags: int = 0) -> None:
+    createmodule = create_module ## OLD-NAME
+
+    def create_scalar_function(self, name: str, callable: Optional[ScalarProtocol], numargs: int = -1, *, deterministic: bool = False, flags: int = 0) -> None:
         """Registers a scalar function.  Scalar functions operate on one set of parameters once.
 
         :param name: The string name of the function.  It should be less than 255 characters
@@ -1073,9 +1090,9 @@ class Connection:
           You can register the same named function but with different
           *callable* and *numargs*.  For example::
 
-            connection.createscalarfunction("toip", ipv4convert, 4)
-            connection.createscalarfunction("toip", ipv6convert, 16)
-            connection.createscalarfunction("toip", strconvert, -1)
+            connection.create_scalar_function("toip", ipv4convert, 4)
+            connection.create_scalar_function("toip", ipv6convert, 16)
+            connection.create_scalar_function("toip", strconvert, -1)
 
           The one with the correct *numargs* will be called and only if that
           doesn't exist then the one with negative *numargs* will be called.
@@ -1083,9 +1100,39 @@ class Connection:
         .. seealso::
 
            * :ref:`Example <example_scalar>`
-           * :meth:`~Connection.createaggregatefunction`
+           * :meth:`~Connection.create_aggregate_function`
 
         Calls: `sqlite3_create_function_v2 <https://sqlite.org/c3ref/create_function.html>`__"""
+        ...
+
+    createscalarfunction = create_scalar_function ## OLD-NAME
+
+    def create_window_function(self, name:str, factory: Optional[WindowFactory], numargs: int =-1, *, flags: int = 0) -> None:
+        """Registers a `window function
+        <https://sqlite.org/windowfunctions.html#user_defined_aggregate_window_functions>`__
+
+          :param name: The string name of the function.  It should be less than 255 characters
+          :param factory: Called to start a new window.  Use None to delete the function.
+          :param numargs: How many arguments the function takes, with -1 meaning any number
+          :param flags: `Function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__
+
+        You need to provide callbacks for the ``step``, ``final``, ``value``
+        and ``inverse`` methods.  This can be done by having `factory` as a
+        class, and the corresponding method names, or by having `factory`
+        return a sequence of a first parameter, and then each of the 4
+        functions.
+
+        **Debugging note** SQlite always calls the ``final`` method to allow
+        for cleanup.  If you have an error in one of the other methods, then
+        ``final`` will also be called, and you may see both methods in
+        tracebacks.
+
+        .. seealso::
+
+         * :ref:`Example <example_window>`
+         * :meth:`~Connection.create_aggregate_function`
+
+        Calls: `sqlite3_create_window_function <https://sqlite.org/c3ref/create_function.html>`__"""
         ...
 
     def cursor(self) -> Cursor:
@@ -1143,7 +1190,7 @@ class Connection:
         are kept, dropping all others."""
         ...
 
-    def enableloadextension(self, enable: bool) -> None:
+    def enable_load_extension(self, enable: bool) -> None:
         """Enables/disables `extension loading
         <https://www.sqlite.org/loadext.html>`_
         which is disabled by default.
@@ -1154,8 +1201,10 @@ class Connection:
 
         .. seealso::
 
-          * :meth:`~Connection.loadextension`"""
+          * :meth:`~Connection.load_extension`"""
         ...
+
+    enableloadextension = enable_load_extension ## OLD-NAME
 
     def __enter__(self) -> Connection:
         """You can use the database as a `context manager
@@ -1180,7 +1229,7 @@ class Connection:
         SQLite 3.6.8 is used to provide nested transactions."""
         ...
 
-    exectrace: Optional[ExecTracer]
+    exec_trace: Optional[ExecTracer]
     """Called with the cursor, statement and bindings for
     each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
     Connection, unless the :class:`Cursor` installed its own
@@ -1194,7 +1243,9 @@ class Connection:
 
       * :ref:`tracing`
       * :ref:`rowtracer`
-      * :attr:`Cursor.exectrace`"""
+      * :attr:`Cursor.exec_trace`"""
+
+    exectrace = exec_trace ## OLD-NAME
 
     def execute(self, statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor:
         """Executes the statements using the supplied bindings.  Execution
@@ -1219,7 +1270,7 @@ class Connection:
         savepoint."""
         ...
 
-    def filecontrol(self, dbname: str, op: int, pointer: int) -> bool:
+    def file_control(self, dbname: str, op: int, pointer: int) -> bool:
         """Calls the :meth:`~VFSFile.xFileControl` method on the :ref:`VFS`
         implementing :class:`file access <VFSFile>` for the database.
 
@@ -1244,7 +1295,7 @@ class Connection:
           obj={"foo": 1, 2: 3}                 # object we want to pass
           objwrap=ctypes.py_object(obj)        # objwrap must live before and after the call else
                                                # it gets garbage collected
-          connection.filecontrol(
+          connection.file_control(
                    "main",                     # which db
                    123,                        # our op code
                    ctypes.addressof(objwrap))  # get pointer
@@ -1264,13 +1315,15 @@ class Connection:
 
         This is how you set the chunk size by which the database grows.  Do
         not combine it into one line as the c_int would be garbage collected
-        before the filecontrol call is made::
+        before the file control call is made::
 
            chunksize=ctypes.c_int(32768)
-           connection.filecontrol("main", apsw.SQLITE_FCNTL_CHUNK_SIZE, ctypes.addressof(chunksize))
+           connection.file_control("main", apsw.SQLITE_FCNTL_CHUNK_SIZE, ctypes.addressof(chunksize))
 
         Calls: `sqlite3_file_control <https://sqlite.org/c3ref/file_control.html>`__"""
         ...
+
+    filecontrol = file_control ## OLD-NAME
 
     filename: str
     """The filename of the database.
@@ -1287,21 +1340,27 @@ class Connection:
 
     Calls: `sqlite3_filename_wal <https://sqlite.org/c3ref/filename_database.html>`__"""
 
-    def getautocommit(self) -> bool:
+    def get_autocommit(self) -> bool:
         """Returns if the Connection is in auto commit mode (ie not in a transaction).
 
         Calls: `sqlite3_get_autocommit <https://sqlite.org/c3ref/get_autocommit.html>`__"""
         ...
 
-    def getexectrace(self) -> Optional[ExecTracer]:
+    getautocommit = get_autocommit ## OLD-NAME
+
+    def get_exec_trace(self) -> Optional[ExecTracer]:
         """Returns the currently installed :attr:`execution tracer
-        <Connection.exectrace>`"""
+        <Connection.exec_trace>`"""
         ...
 
-    def getrowtrace(self) -> Optional[RowTracer]:
+    getexectrace = get_exec_trace ## OLD-NAME
+
+    def get_row_trace(self) -> Optional[RowTracer]:
         """Returns the currently installed :attr:`row tracer
-        <Connection.rowtrace>`"""
+        <Connection.row_trace>`"""
         ...
+
+    getrowtrace = get_row_trace ## OLD-NAME
 
     in_transaction: bool
     """True if currently in a transaction, else False
@@ -1367,7 +1426,7 @@ class Connection:
           * :ref:`Example <example_limits>`"""
         ...
 
-    def loadextension(self, filename: str, entrypoint: Optional[str] = None) -> None:
+    def load_extension(self, filename: str, entrypoint: Optional[str] = None) -> None:
         """Loads *filename* as an `extension <https://www.sqlite.org/loadext.html>`_
 
         :param filename: The file to load.
@@ -1383,8 +1442,10 @@ class Connection:
 
         .. seealso::
 
-          * :meth:`~Connection.enableloadextension`"""
+          * :meth:`~Connection.enable_load_extension`"""
         ...
+
+    loadextension = load_extension ## OLD-NAME
 
     open_flags: int
     """The integer flags used to open the database."""
@@ -1392,7 +1453,7 @@ class Connection:
     open_vfs: str
     """The string name of the vfs used to open the database."""
 
-    def overloadfunction(self, name: str, nargs: int) -> None:
+    def overload_function(self, name: str, nargs: int) -> None:
         """Registers a placeholder function so that a virtual table can provide an implementation via
         :meth:`VTTable.FindFunction`.
 
@@ -1401,6 +1462,8 @@ class Connection:
 
           Calls: `sqlite3_overload_function <https://sqlite.org/c3ref/overload_function.html>`__"""
         ...
+
+    overloadfunction = overload_function ## OLD-NAME
 
     def pragma(self, name: str, value: Optional[SQLiteValue] = None) -> Any:
         """Issues the pragma (with the value if supplied) and returns the result with
@@ -1450,7 +1513,7 @@ class Connection:
         Calls: `sqlite3_db_release_memory <https://sqlite.org/c3ref/db_release_memory.html>`__"""
         ...
 
-    rowtrace: Optional[RowTracer]
+    row_trace: Optional[RowTracer]
     """Called with the cursor and row being returned for
     :class:`cursors <Cursor>` associated with this Connection, unless
     the Cursor installed its own tracer.  You can change the data that
@@ -1463,7 +1526,9 @@ class Connection:
 
       * :ref:`tracing`
       * :ref:`rowtracer`
-      * :attr:`Cursor.exectrace`"""
+      * :attr:`Cursor.exec_trace`"""
+
+    rowtrace = row_trace ## OLD-NAME
 
     def serialize(self, name: str) -> bytes:
         """Returns a memory copy of the database. *name* is **"main"** for the
@@ -1482,17 +1547,13 @@ class Connection:
          Calls: `sqlite3_serialize <https://sqlite.org/c3ref/serialize.html>`__"""
         ...
 
-    def set_last_insert_rowid(self, rowid: int) -> None:
-        """Sets the value calls to :meth:`last_insert_rowid` will return.
-
-        Calls: `sqlite3_set_last_insert_rowid <https://sqlite.org/c3ref/set_last_insert_rowid.html>`__"""
-        ...
-
-    def setauthorizer(self, callable: Optional[Authorizer]) -> None:
+    def set_authorizer(self, callable: Optional[Authorizer]) -> None:
         """Sets the :attr:`authorizer`"""
         ...
 
-    def setbusyhandler(self, callable: Optional[Callable[[int], bool]]) -> None:
+    setauthorizer = set_authorizer ## OLD-NAME
+
+    def set_busy_handler(self, callable: Optional[Callable[[int], bool]]) -> None:
         """Sets the busy handler to callable. callable will be called with one
         integer argument which is the number of prior calls to the busy
         callback for the same lock. If the busy callback returns False,
@@ -1500,20 +1561,22 @@ class Connection:
         the callback returns True, then SQLite tries to open the table
         again and the cycle repeats.
 
-        If you previously called :meth:`~Connection.setbusytimeout` then
+        If you previously called :meth:`~Connection.set_busy_timeout` then
         calling this overrides that.
 
         Passing None unregisters the existing handler.
 
         .. seealso::
 
-          * :meth:`Connection.setbusytimeout`
+          * :meth:`Connection.set_busy_timeout`
           * :ref:`Busy handling <busyhandling>`
 
         Calls: `sqlite3_busy_handler <https://sqlite.org/c3ref/busy_handler.html>`__"""
         ...
 
-    def setbusytimeout(self, milliseconds: int) -> None:
+    setbusyhandler = set_busy_handler ## OLD-NAME
+
+    def set_busy_timeout(self, milliseconds: int) -> None:
         """If the database is locked such as when another connection is making
         changes, SQLite will keep retrying.  This sets the maximum amount of
         time SQLite will keep retrying before giving up.  If the database is
@@ -1521,18 +1584,20 @@ class Connection:
 
         :param milliseconds: Maximum thousandths of a second to wait.
 
-        If you previously called :meth:`~Connection.setbusyhandler` then
+        If you previously called :meth:`~Connection.set_busy_handler` then
         calling this overrides that.
 
         .. seealso::
 
-           * :meth:`Connection.setbusyhandler`
+           * :meth:`Connection.set_busy_handler`
            * :ref:`Busy handling <busyhandling>`
 
         Calls: `sqlite3_busy_timeout <https://sqlite.org/c3ref/busy_timeout.html>`__"""
         ...
 
-    def setcommithook(self, callable: Optional[CommitHook]) -> None:
+    setbusytimeout = set_busy_timeout ## OLD-NAME
+
+    def set_commit_hook(self, callable: Optional[CommitHook]) -> None:
         """*callable* will be called just before a commit.  It should return
         False for the commit to go ahead and True for it to be turned
         into a rollback. In the case of an exception in your callable, a
@@ -1546,11 +1611,21 @@ class Connection:
         Calls: `sqlite3_commit_hook <https://sqlite.org/c3ref/commit_hook.html>`__"""
         ...
 
-    def setexectrace(self, callable: Optional[ExecTracer]) -> None:
-        """Method to set :attr:`Connection.exectrace`"""
+    setcommithook = set_commit_hook ## OLD-NAME
+
+    def set_exec_trace(self, callable: Optional[ExecTracer]) -> None:
+        """Method to set :attr:`Connection.exec_trace`"""
         ...
 
-    def setprofile(self, callable: Optional[Callable[[str, int], None]]) -> None:
+    setexectrace = set_exec_trace ## OLD-NAME
+
+    def set_last_insert_rowid(self, rowid: int) -> None:
+        """Sets the value calls to :meth:`last_insert_rowid` will return.
+
+        Calls: `sqlite3_set_last_insert_rowid <https://sqlite.org/c3ref/set_last_insert_rowid.html>`__"""
+        ...
+
+    def set_profile(self, callable: Optional[Callable[[str, int], None]]) -> None:
         """Sets a callable which is invoked at the end of execution of each
         statement and passed the statement string and how long it took to
         execute. (The execution time is in nanoseconds.) Note that it is
@@ -1564,7 +1639,9 @@ class Connection:
         Calls: `sqlite3_trace_v2 <https://sqlite.org/c3ref/trace_v2.html>`__"""
         ...
 
-    def setprogresshandler(self, callable: Optional[Callable[[], bool]], nsteps: int = 20) -> None:
+    setprofile = set_profile ## OLD-NAME
+
+    def set_progress_handler(self, callable: Optional[Callable[[], bool]], nsteps: int = 20) -> None:
         """Sets a callable which is invoked every *nsteps* SQLite
         inststructions. The callable should return True to abort
         or False to continue. (If there is an error in your Python *callable*
@@ -1577,7 +1654,9 @@ class Connection:
         Calls: `sqlite3_progress_handler <https://sqlite.org/c3ref/progress_handler.html>`__"""
         ...
 
-    def setrollbackhook(self, callable: Optional[Callable[[], None]]) -> None:
+    setprogresshandler = set_progress_handler ## OLD-NAME
+
+    def set_rollback_hook(self, callable: Optional[Callable[[], None]]) -> None:
         """Sets a callable which is invoked during a rollback.  If *callable*
         is *None* then any existing rollback hook is unregistered.
 
@@ -1586,11 +1665,15 @@ class Connection:
         Calls: `sqlite3_rollback_hook <https://sqlite.org/c3ref/commit_hook.html>`__"""
         ...
 
-    def setrowtrace(self, callable: Optional[RowTracer]) -> None:
-        """Method to set :attr:`Connection.rowtrace`"""
+    setrollbackhook = set_rollback_hook ## OLD-NAME
+
+    def set_row_trace(self, callable: Optional[RowTracer]) -> None:
+        """Method to set :attr:`Connection.row_trace`"""
         ...
 
-    def setupdatehook(self, callable: Optional[Callable[[int, str, str, int], None]]) -> None:
+    setrowtrace = set_row_trace ## OLD-NAME
+
+    def set_update_hook(self, callable: Optional[Callable[[int, str, str, int], None]]) -> None:
         """Calls *callable* whenever a row is updated, deleted or inserted.  If
         *callable* is *None* then any existing update hook is
         unregistered.  The update hook cannot make changes to the database while
@@ -1616,7 +1699,9 @@ class Connection:
         Calls: `sqlite3_update_hook <https://sqlite.org/c3ref/update_hook.html>`__"""
         ...
 
-    def setwalhook(self, callable: Optional[Callable[[Connection, str, int], int]]) -> None:
+    setupdatehook = set_update_hook ## OLD-NAME
+
+    def set_wal_hook(self, callable: Optional[Callable[[Connection, str, int], int]]) -> None:
         """*callable* will be called just after data is committed in :ref:`wal`
         mode.  It should return *SQLITE_OK* or an error code.  The
         callback is called with 3 parameters:
@@ -1630,7 +1715,9 @@ class Connection:
         Calls: `sqlite3_wal_hook <https://sqlite.org/c3ref/wal_hook.html>`__"""
         ...
 
-    def sqlite3pointer(self) -> int:
+    setwalhook = set_wal_hook ## OLD-NAME
+
+    def sqlite3_pointer(self) -> int:
         """Returns the underlying `sqlite3 *
         <https://sqlite.org/c3ref/sqlite3.html>`_ for the connection. This
         method is useful if there are other C level libraries in the same
@@ -1640,9 +1727,11 @@ class Connection:
         under the hood. You should also ensure that you increment the
         reference count on the :class:`Connection` for as long as the other
         libraries are using the pointer.  It is also a very good idea to call
-        :meth:`sqlitelibversion` and ensure it is the same as the other
+        :meth:`sqlite_lib_version` and ensure it is the same as the other
         libraries."""
         ...
+
+    sqlite3pointer = sqlite3_pointer ## OLD-NAME
 
     def status(self, op: int, reset: bool = False) -> tuple[int, int]:
         """Returns current and highwater measurements for the database.
@@ -1674,12 +1763,14 @@ class Connection:
         Calls: `sqlite3_table_column_metadata <https://sqlite.org/c3ref/table_column_metadata.html>`__"""
         ...
 
-    def totalchanges(self) -> int:
+    def total_changes(self) -> int:
         """Returns the total number of database rows that have be modified,
         inserted, or deleted since the database connection was opened.
 
         Calls: `sqlite3_total_changes64 <https://sqlite.org/c3ref/total_changes.html>`__"""
         ...
+
+    totalchanges = total_changes ## OLD-NAME
 
     def trace_v2(self, mask: int, callback: Optional[Callable[[dict], None]] = None) -> None:
         """Registers a trace callback.  The callback is called with a dict of relevant values based
@@ -1767,7 +1858,6 @@ class Connection:
 
 class Cursor:
     """You obtain cursors by calling :meth:`Connection.cursor`."""
-
     def close(self, force: bool = False) -> None:
         """It is very unlikely you will need to call this method.  It exists
         because older versions of SQLite required all Connection/Cursor
@@ -1794,7 +1884,7 @@ class Cursor:
     description: tuple[tuple[str, str, None, None, None, None, None], ...]
     """Based on the `DB-API cursor property
     <https://www.python.org/dev/peps/pep-0249/>`__, this returns the
-    same as :meth:`getdescription` but with 5 Nones appended.  See
+    same as :meth:`get_description` but with 5 Nones appended.  See
     also :issue:`131`."""
 
     description_full: tuple[tuple[str, str, str, str, str], ...]
@@ -1812,7 +1902,7 @@ class Cursor:
       * `sqlite3_column_table_name <https://sqlite.org/c3ref/column_database_name.html>`__
       * `sqlite3_column_origin_name <https://sqlite.org/c3ref/column_database_name.html>`__"""
 
-    exectrace: Optional[ExecTracer]
+    exec_trace: Optional[ExecTracer]
     """Called with the cursor, statement and bindings for
     each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
     cursor.
@@ -1824,7 +1914,9 @@ class Cursor:
 
       * :ref:`tracing`
       * :ref:`executiontracer`
-      * :attr:`Connection.exectrace`"""
+      * :attr:`Connection.exec_trace`"""
+
+    exectrace = exec_trace ## OLD-NAME
 
     def execute(self, statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor:
         """Executes the statements using the supplied bindings.  Execution
@@ -1958,11 +2050,13 @@ class Cursor:
 
     Row tracers are not called when using this method."""
 
-    def getconnection(self) -> Connection:
+    def get_connection(self) -> Connection:
         """Returns the :attr:`connection` this cursor is using"""
         ...
 
-    def getdescription(self) -> tuple[tuple[str, str], ...]:
+    getconnection = get_connection ## OLD-NAME
+
+    def get_description(self) -> tuple[tuple[str, str], ...]:
         """If you are trying to get information about a table or view,
         then `pragma table_info <https://sqlite.org/pragma.html#pragma_table_info>`__
         is better.
@@ -1973,11 +2067,11 @@ class Cursor:
         before you have finished::
 
            # This will error
-           cursor.getdescription()
+           cursor.get_description()
 
            for row in cursor.execute("select ....."):
               # this works
-              print (cursor.getdescription())
+              print (cursor.get_description())
               print (row)
 
         The information about each column is a tuple of ``(column_name,
@@ -1998,7 +2092,7 @@ class Cursor:
            cursor.execute("insert into books values(?,?,?)", ("fjfjfj", 3.7, 97))
 
            for row in cursor.execute("select * from books"):
-              print (cursor.getdescription())
+              print (cursor.get_description())
               print (row)
 
         Output::
@@ -2017,23 +2111,29 @@ class Cursor:
           * `sqlite3_column_decltype <https://sqlite.org/c3ref/column_decltype.html>`__"""
         ...
 
-    def getexectrace(self) -> Optional[ExecTracer]:
+    getdescription = get_description ## OLD-NAME
+
+    def get_exec_trace(self) -> Optional[ExecTracer]:
         """Returns the currently installed :attr:`execution tracer
-        <Cursor.exectrace>`
+        <Cursor.exec_trace>`
 
         .. seealso::
 
           * :ref:`tracing`"""
         ...
 
-    def getrowtrace(self) -> Optional[RowTracer]:
-        """Returns the currently installed (via :meth:`~Cursor.setrowtrace`)
+    getexectrace = get_exec_trace ## OLD-NAME
+
+    def get_row_trace(self) -> Optional[RowTracer]:
+        """Returns the currently installed (via :meth:`~Cursor.set_row_trace`)
         row tracer.
 
         .. seealso::
 
           * :ref:`tracing`"""
         ...
+
+    getrowtrace = get_row_trace ## OLD-NAME
 
     has_vdbe: bool
     """`True` if the SQL can be evaluated.  Comments have nothing to
@@ -2064,7 +2164,7 @@ class Cursor:
         """Cursors are iterators"""
         ...
 
-    rowtrace: Optional[RowTracer]
+    row_trace: Optional[RowTracer]
     """Called with cursor and row being returned.  You can
     change the data that is returned or cause the row to be skipped
     altogether.
@@ -2076,15 +2176,21 @@ class Cursor:
 
       * :ref:`tracing`
       * :ref:`rowtracer`
-      * :attr:`Connection.rowtrace`"""
+      * :attr:`Connection.row_trace`"""
 
-    def setexectrace(self, callable: Optional[ExecTracer]) -> None:
-        """Sets the :attr:`execution tracer <Cursor.exectrace>`"""
+    rowtrace = row_trace ## OLD-NAME
+
+    def set_exec_trace(self, callable: Optional[ExecTracer]) -> None:
+        """Sets the :attr:`execution tracer <Cursor.exec_trace>`"""
         ...
 
-    def setrowtrace(self, callable: Optional[RowTracer]) -> None:
-        """Sets the :attr:`row tracer <Cursor.rowtrace>`"""
+    setexectrace = set_exec_trace ## OLD-NAME
+
+    def set_row_trace(self, callable: Optional[RowTracer]) -> None:
+        """Sets the :attr:`row tracer <Cursor.row_trace>`"""
         ...
+
+    setrowtrace = set_row_trace ## OLD-NAME
 
 @final
 class IndexInfo:
@@ -2102,7 +2208,6 @@ class IndexInfo:
 
     :meth:`apsw.ext.index_info_to_dict` provides a convenient
     representation of this object as a :class:`dict`."""
-
     colUsed: set[int]
     """(Read-only) Columns used by the statement.  Note that a set is returned, not
     the underlying integer."""
@@ -2211,7 +2316,6 @@ class URIFilename:
 
     You can safely pass it on to the :class:`VFSFile` constructor
     which knows how to get the name back out."""
-
     def filename(self) -> str:
         """Returns the filename."""
         ...
@@ -2245,7 +2349,6 @@ class VFSFcntlPragma:
 
     It is only valid while in :meth:`VFSFile.xFileControl`, and using
     outside of that will result in memory corruption and crashes."""
-
     def __init__(self, pointer: int):
         """The pointer must be what your xFileControl method received."""
         ...
@@ -2268,7 +2371,6 @@ class VFSFile:
 
        All file sizes and offsets are 64 bit quantities even on 32 bit
        operating systems."""
-
     def excepthook(self, etype: type[BaseException], evalue: BaseException, etraceback: Optional[types.TracebackType]) ->None:
         """Called when there has been an exception in a :class:`VFSFile`
         routine, and it can't be reported to the caller as usual.
@@ -2320,8 +2422,8 @@ class VFSFile:
     def xFileControl(self, op: int, ptr: int) -> bool:
         """Receives `file control
         <https://sqlite.org/c3ref/file_control.html>`_ request typically
-        issued by :meth:`Connection.filecontrol`.  See
-        :meth:`Connection.filecontrol` for an example of how to pass a
+        issued by :meth:`Connection.file_control`.  See
+        :meth:`Connection.file_control` for an example of how to pass a
         Python object to this routine.
 
         :param op: A numeric code.  Codes below 100 are reserved for SQLite
@@ -2410,7 +2512,6 @@ class VFS:
     """Provides operating system access.  You can get an overview in the
     `SQLite documentation <https://sqlite.org/c3ref/vfs.html>`_.  To
     create a VFS your Python class must inherit from :class:`VFS`."""
-
     def excepthook(self, etype: type[BaseException], evalue: BaseException, etraceback: Optional[types.TracebackType]) -> Any:
         """Called when there has been an exception in a :class:`VFS` routine,
         and it can't be reported to the caller as usual.
@@ -2424,7 +2525,7 @@ class VFS:
     def __init__(self, name: str, base: Optional[str] = None, makedefault: bool = False, maxpathname: int = 1024, *, iVersion: int = 3, exclude: Optional[set[str]] = None):
         """:param name: The name to register this vfs under.  If the name
             already exists then this vfs will replace the prior one of the
-            same name.  Use :meth:`apsw.vfsnames` to get a list of
+            same name.  Use :meth:`apsw.vfs_names` to get a list of
             registered vfs names.
 
         :param base: If you would like to inherit behaviour from an already registered vfs then give
@@ -2642,7 +2743,6 @@ class VTCursor(Protocol):
     .. seealso::
 
          :ref:`Virtual table structure <vtablestructure>`"""
-
     def Close(self) -> None:
         """This is the destructor for the cursor. Note that you must
         cleanup. The method will not be called again if you raise an
@@ -2668,7 +2768,7 @@ class VTCursor(Protocol):
         had been called.
 
         This method will only be called if *use_no_change* was *True* in the
-        call to :meth:`Connection.createmodule`.
+        call to :meth:`Connection.create_module`.
 
         Calls: `sqlite3_vtab_nochange <https://sqlite.org/c3ref/vtab_nochange.html>`__"""
         ...
@@ -2726,13 +2826,13 @@ class VTModule(Protocol):
 
     A module instance is used to create the virtual tables.  Once you have
     a module object, you register it with a connection by calling
-    :meth:`Connection.createmodule`::
+    :meth:`Connection.create_module`::
 
       # make an instance
       mymod=MyModuleClass()
 
       # register the vtable on connection con
-      con.createmodule("modulename", mymod)
+      con.create_module("modulename", mymod)
 
       # tell SQLite about the table
       con.execute("create VIRTUAL table tablename USING modulename('arg1', 2)")
@@ -2740,7 +2840,6 @@ class VTModule(Protocol):
     The create step is to tell SQLite about the existence of the table.
     Any number of tables referring to the same module can be made this
     way.  Note the (optional) arguments which are passed to the module."""
-
     def Connect(self, connection: Connection, modulename: str, databasename: str, tablename: str, *args: tuple[SQLiteValue, ...])  -> tuple[str, VTTable]:
         """The parameters and return are identical to
         :meth:`~VTModule.Create`.  This method is called
@@ -2768,7 +2867,7 @@ class VTModule(Protocol):
         <Connection>`.
 
         :param connection: An instance of :class:`Connection`
-        :param modulename: The string name under which the module was :meth:`registered <Connection.createmodule>`
+        :param modulename: The string name under which the module was :meth:`registered <Connection.create_module>`
         :param databasename: The name of the database.  This will be ``main`` for directly opened files and the name specified in
                 `ATTACH <https://sqlite.org/lang_attach.html>`_ statements.
         :param tablename: Name of the table the user wants to create.
@@ -2822,7 +2921,6 @@ class VTTable(Protocol):
 
     It is possible to not have a rowid - read more at `the SQLite
     site <https://www.sqlite.org/vtab.html#_without_rowid_virtual_tables_>`__"""
-
     def Begin(self) -> None:
         """This function is used as part of transactions.  You do not have to
         provide the method."""
@@ -3010,7 +3108,7 @@ class VTTable(Protocol):
     def BestIndexObject(self, index_info: IndexInfo) -> bool:
         """This method is called instead of :meth:`BestIndex` if
         *use_bestindex_object* was *True* in the call to
-        :meth:`Connection.createmodule`.
+        :meth:`Connection.create_module`.
 
         Use the :class:`IndexInfo` to tell SQLite about your indexes, and
         extract other information.
@@ -3059,7 +3157,7 @@ class VTTable(Protocol):
 
         .. seealso::
 
-          * :meth:`Connection.overloadfunction`
+          * :meth:`Connection.overload_function`
           * `FindFunction documentation <https://www.sqlite.org/vtab.html#xfindfunction>`__"""
         ...
 
@@ -3147,7 +3245,6 @@ class zeroblob:
     This class is used for the second way.  Once a blob exists in the
     database, you then use the :class:`Blob` class to read and write its
     contents."""
-
     def __init__(self, size: int):
         """:param size: Number of zeroed bytes to create"""
         ...
@@ -4240,8 +4337,8 @@ class BindingsError(Error):
 
 class BusyError(Error):
     """*SQLITE_BUSY*.  The database file is locked.  Use
-    :meth:`Connection.setbusytimeout` to change how long SQLite waits
-    for the database to be unlocked or :meth:`Connection.setbusyhandler`
+    :meth:`Connection.set_busy_timeout` to change how long SQLite waits
+    for the database to be unlocked or :meth:`Connection.set_busy_handler`
     to use your own handler."""
 
 class CantOpenError(Error):
