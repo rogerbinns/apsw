@@ -64,6 +64,8 @@ def run_tests():
 
     for _, members in renames.items():
         for new, old in members.items():
+            if new in subs:
+                assert subs[new] == old
             subs[new] = old
 
     def repl(mo):
