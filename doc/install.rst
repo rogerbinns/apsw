@@ -276,6 +276,9 @@ This performs the compilation of the C code.
         enabled <https://www.sqlite.org/compile.html#_options_to_omit_features>`__
         omitting the :code:`SQLITE_OMIT` prefix.  They will be
         uppercased.  eg :code:`--omit automatic_index`
+    * - --apsw-no-old-names
+      - Excludes old non :pep:`8` :ref:`complaint name aliases
+        <renaming>` from the extension and type stubs.
 
 .. _testing:
 

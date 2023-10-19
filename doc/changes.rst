@@ -19,6 +19,9 @@ next
 :meth:`Connection.create_aggregate_function` can take a class with step
 and final methods. (:issue:`421`)
 
+Corrected non :pep:`8` :ref:`compliant names <renaming>`.  The old
+names remain as aliases to the new ones, and your code will not break.
+
 3.43.1.1
 ========
 
