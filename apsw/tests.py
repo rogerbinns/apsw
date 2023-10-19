@@ -5305,8 +5305,8 @@ class APSW(unittest.TestCase):
            # isn't a problem.
                         'skipcalls': re.compile("^sqlite3_(blob_bytes|column_count|bind_parameter_count|data_count|vfs_.+|changes64|total_changes64"
                                                 "|get_autocommit|last_insert_rowid|complete|interrupt|limit|malloc64|free|threadsafe|value_.+"
-                                                "|libversion|enable_shared_cache|initialize|shutdown|config|memory_.+|soft_heap_limit64|hard_heap_limit64"
-                                                "|randomness|db_readonly|db_filename|release_memory|status64|result_.+|user_data|mprintf|aggregate_context"
+                                                "|libversion|enable_" "shared_cache|initialize|shutdown|config|memory_.+|soft_heap_limit64|hard_heap_limit64"
+                                                "|randomness|db_readonly|db_filename|release_" "memory|status64|result_.+|user_data|mprintf|aggregate_context"
                                                 "|declare_vtab|backup_remaining|backup_pagecount|mutex_enter|mutex_leave|sourceid|uri_.+"
                                                 "|column_name|column_decltype|column_database_name|column_table_name|column_origin_name"
                                                 "|stmt_isexplain|stmt_readonly|filename_journal|filename_wal|stmt_status|sql|log|vtab_collation"
