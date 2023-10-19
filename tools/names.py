@@ -4,8 +4,11 @@ import json
 import pathlib
 import subprocess
 import sys
+import re
+import unittest
+import types
 
-renames = json.load(pathlib.Path(__file__).with_name("renames.json").open())
+renames = json.loads(pathlib.Path(__file__).with_name("renames.json").read_text())
 
 
 def check_old():
@@ -53,6 +56,31 @@ def rst_gen():
             kl = ""
 
 
+def run_tests():
+    test_file_name = pathlib.Path("apsw/tests.py")
+    source = test_file_name.read_text()
+
+    subs = {}
+
+    for _, members in renames.items():
+        for new, old in members.items():
+            subs[new] = old
+
+    def repl(mo):
+        return subs[mo.group(0)]
+
+    old_source = re.sub("\\b(" + "|".join(subs.keys()) + ")\\b", repl, source)
+
+    module = types.ModuleType("tests")
+    module.__dict__["__file__"] = str(test_file_name)
+
+    exec(compile(old_source, "apsw/tests.py", "exec"), module.__dict__)
+
+    module.setup()
+
+    unittest.TextTestRunner().run(unittest.defaultTestLoader.loadTestsFromModule(module))
+
+
 if __name__ == '__main__':
     import argparse
 
@@ -64,6 +92,9 @@ if __name__ == '__main__':
 
     p = sub.add_parser("rst-gen", help="Generate documentation")
     p.set_defaults(func=rst_gen)
+
+    p = sub.add_parser("run-tests", help="Run tests converting them to use old names")
+    p.set_defaults(func=run_tests)
 
     options = parser.parse_args()
     if not hasattr(options, "func"):
