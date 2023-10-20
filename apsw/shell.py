@@ -210,8 +210,8 @@ class Shell:
         argument is encountered then
         :meth:`process_unknown_args` is called.
         """
-        # we don't use optparse as we need to use single dashes for
-        # options - all hand parsed
+        # we don't use argparse as we need to be compatible with what
+        # SQLite's C code does
         if not args:
             return None, [], []
 
