@@ -180,7 +180,7 @@ class APSWTracer(object):
     def run(self):
         import sys
         import __main__
-        d=__main__.__dict__
+        d=vars(__main__)
         # We use compile so that filename is present in printed exceptions
         code=compile(open(sys.argv[0], "rb").read(), sys.argv[0], "exec")
         exec(code, d, d)

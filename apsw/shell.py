@@ -3409,7 +3409,7 @@ Enter ".help" for instructions
             return True
 
         def __str__(self):
-            return "_colourscheme(" + str(self.__dict__) + ")"
+            return "_colourscheme(" + str(vars(self)) + ")"
 
         def __getattr__(self, k):
             return ""

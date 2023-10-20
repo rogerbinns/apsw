@@ -74,9 +74,9 @@ def run_tests():
     old_source = re.sub("\\b(" + "|".join(subs.keys()) + ")\\b", repl, source)
 
     module = types.ModuleType("tests")
-    module.__dict__["__file__"] = str(test_file_name)
+    vars(module)["__file__"] = str(test_file_name)
 
-    exec(compile(old_source, "apsw/tests.py", "exec"), module.__dict__)
+    exec(compile(old_source, "apsw/tests.py", "exec"), vars(module))
 
     module.setup()
 
