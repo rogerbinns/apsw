@@ -271,62 +271,101 @@ def fmtfloat(n, decimals=3, total=None):
     return s
 
 def main():
-    import optparse
+    import argparse
     import os
     import sys
 
-    reports=("summary", "popular", "aggregate", "individual")
+    reports = ("summary", "popular", "aggregate", "individual")
 
-    parser=optparse.OptionParser(usage="%prog [options] pythonscript.py [pythonscriptoptions]",
-                                 description="This script runs a Python program that uses APSW "
-                                 "and reports on SQL queries without modifying the program.  This is "
-                                 "done by using connection_hooks and registering row and execution "
-                                 "tracers.  See APSW documentation for more details on the output.")
-    parser.add_option("-o", "--output", dest="output", default="stdout",
-                      help="Where to send the output.  Use a filename, a single dash for stdout, or the words stdout and stderr. [%default]")
-    parser.add_option("-s", "--sql", dest="sql", default=False, action="store_true",
-                      help="Log SQL statements as they are executed. [%default]")
-    parser.add_option("-r", "--rows", dest="rows", default=False, action="store_true",
-                      help="Log returned rows as they are returned (turns on sql). [%default]")
-    parser.add_option("-t", "--timestamps", dest="timestamps", default=False, action="store_true",
-                      help="Include timestamps in logging")
-    parser.add_option("-i", "--thread", dest="thread", default=False, action="store_true",
-                      help="Include thread id in logging")
-    parser.add_option("-l", "--length", dest="length", default=30, type="int",
-                      help="Max amount of a string to print [%default]")
-    parser.add_option("--no-report", dest="report", default=True, action="store_false",
-                      help="A summary report is normally generated at program exit.  This turns off the report and saves memory.")
-    parser.add_option("--report-items", dest="reportn", metavar="N", default=15, type="int",
-                      help="How many items to report in top lists [%default]")
-    parser.add_option("--reports", dest="reports", default=",".join(reports),
-                      help="Which reports to show [%default]")
+    parser = argparse.ArgumentParser(prog="python3 -m apsw.trace",
+                                     description="This script runs a Python program that uses APSW "
+                                     "and reports on SQL queries without modifying the program.  This is "
+                                     "done by using connection_hooks and registering row and execution "
+                                     "tracers.  See APSW documentation for more details on the output.")
 
-    parser.disable_interspersed_args()
-    options, args=parser.parse_args()
+    parser.add_argument(
+        "-o",
+        "--output",
+        dest="output",
+        default="stdout",
+        help=
+        "Where to send the output.  Use a filename, a single dash for stdout, or the words stdout and stderr. [%(default)s]"
+    )
+    parser.add_argument("-s",
+                        "--sql",
+                        dest="sql",
+                        default=False,
+                        action="store_true",
+                        help="Log SQL statements as they are executed. [%(default)s]")
+    parser.add_argument("-r",
+                        "--rows",
+                        dest="rows",
+                        default=False,
+                        action="store_true",
+                        help="Log returned rows as they are returned (turns on sql). [%(default)s]")
+    parser.add_argument("-t",
+                        "--timestamps",
+                        dest="timestamps",
+                        default=False,
+                        action="store_true",
+                        help="Include timestamps in logging")
+    parser.add_argument("-i",
+                        "--thread",
+                        dest="thread",
+                        default=False,
+                        action="store_true",
+                        help="Include thread id in logging")
+    parser.add_argument("-l",
+                        "--length",
+                        dest="length",
+                        default=30,
+                        type=int,
+                        help="Max amount of a string to print [%(default)s]")
+    parser.add_argument(
+        "--no-report",
+        dest="report",
+        default=True,
+        action="store_false",
+        help="A summary report is normally generated at program exit.  This turns off the report and saves memory.")
+    parser.add_argument("--report-items",
+                        dest="reportn",
+                        metavar="N",
+                        default=15,
+                        type=int,
+                        help="How many items to report in top lists [%(default)s]")
+    parser.add_argument("--reports",
+                        dest="reports",
+                        default=",".join(reports),
+                        help="Which reports to show [%(default)s]")
+    parser.add_argument("python-script", help="Python script to run")
+    parser.add_argument("script-args", nargs="*", help="Optional arguments for Python script")
 
-    options.reports=[x.strip() for x in options.reports.split(",") if x.strip()]
+    options = parser.parse_args()
+    # it doesn't make the dashes underscore for some reason
+    for n in ("python-script", "script-args"):
+        setattr(options, n.replace("-", "_"), getattr(options, n))
+
+    options.reports = [x.strip() for x in options.reports.split(",") if x.strip()]
     for r in options.reports:
         if r not in reports:
-            parser.error(r+" is not a valid report.  You should supply one or more of "+", ".join(reports))
+            parser.error(r + " is not a valid report.  You should supply one or more of " + ", ".join(reports))
 
     if options.rows:
-        options.sql=True
+        options.sql = True
 
-    if not args:
-        parser.error("You must specify a python script to execute")
+    if not os.path.exists(options.python_script):
+        parser.error(f"Unable to find script { options.python_script }")
 
-    if not os.path.exists(args[0]):
-        parser.error("Unable to find script %r\n" % (args[0],))
+    sys.argv = [options.python_script] + options.script_args
+    sys.path[0] = os.path.split(os.path.abspath(sys.argv[0]))[0]
 
-    sys.argv=args
-    sys.path[0]=os.path.split(os.path.abspath(sys.argv[0]))[0]
-
-    t=APSWTracer(options)
+    t = APSWTracer(options)
 
     try:
         t.run()
     finally:
         t.report()
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     main()
