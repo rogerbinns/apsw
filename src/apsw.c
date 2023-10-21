@@ -304,17 +304,22 @@ static PyObject *
 apsw_connections(PyObject *Py_UNUSED(self))
 {
   Py_ssize_t i;
-  PyObject *res = PyList_New(0);
+  PyObject *res = PyList_New(0), *item = NULL;
   for (i = 0; i < PyList_GET_SIZE(the_connections); i++)
   {
-    PyObject *item = PyWeakref_GetObject(PyList_GET_ITEM(the_connections, i));
-    if (!Py_IsNone(item))
+    if (PyWeakref_GetRef(PyList_GET_ITEM(the_connections, i), &item) < 0)
+      goto fail;
+    if (item)
+    {
       if (PyList_Append(res, item))
         goto fail;
+      Py_CLEAR(item);
+    }
   }
   return res;
 fail:
   Py_XDECREF(res);
+  Py_XDECREF(item);
   return NULL;
 }
 
@@ -325,15 +330,22 @@ apsw_connection_remove(Connection *con)
   for (i = 0; i < PyList_GET_SIZE(the_connections);)
   {
     PyObject *wr = PyList_GET_ITEM(the_connections, i);
-    PyObject *wo = PyWeakref_GetObject(wr);
-    if (wo == (PyObject *)con || Py_IsNone(wo))
+    PyObject *wo = NULL;
+    if (PyWeakref_GetRef(wr, &wo) < 0)
+    {
+      apsw_write_unraisable(NULL);
+      continue;
+    }
+    if (!wo || wo == (PyObject *)con)
     {
       if (PyList_SetSlice(the_connections, i, i + 1, NULL))
         apsw_write_unraisable(NULL);
-      if (Py_IsNone(wo))
+      if (!wo)
         continue;
+      Py_DECREF(wo);
       return;
     }
+    Py_DECREF(wo);
     i++;
   }
 }

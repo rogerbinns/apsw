@@ -194,15 +194,21 @@ Connection_remove_dependent(Connection *self, PyObject *o)
   for (i = 0; i < PyList_GET_SIZE(self->dependents);)
   {
     PyObject *wr = PyList_GET_ITEM(self->dependents, i);
-    PyObject *wo = PyWeakref_GetObject(wr);
-    if (Py_Is(wo, o) || Py_IsNone(wo))
+    PyObject *wo = NULL;
+    if(PyWeakref_GetRef(wr, &wo)<0)
+    {
+      apsw_write_unraisable(NULL);
+      continue;
+    }
+    if (!wo || Py_Is(wo, o))
     {
       PyList_SetSlice(self->dependents, i, i + 1, NULL);
-      if (Py_IsNone(wo))
+      if (!wo)
         continue;
-      else
-        return;
+      Py_DECREF(wo);
+      return;
     }
+    Py_XDECREF(wo);
     i++;
   }
 }
@@ -219,18 +225,19 @@ Connection_close_internal(Connection *self, int force)
      be perturbed as a side effect */
   while (self->dependents && PyList_GET_SIZE(self->dependents))
   {
-    PyObject *closeres = NULL, *item, *wr = PyList_GET_ITEM(self->dependents, 0);
-    item = PyWeakref_GetObject(wr);
-    if (Py_IsNone(item))
+    PyObject *closeres = NULL, *item=NULL, *wr = PyList_GET_ITEM(self->dependents, 0);
+    if(PyWeakref_GetRef(wr, &item)<0)
+    {
+      apsw_write_unraisable(NULL);
+      return;
+    }
+    if (!item)
     {
       Connection_remove_dependent(self, item);
       continue;
     }
 
-    /* we have to hold a reference to item while close is called
-       otherwise gc can happen during the call which perturbs dependents and
-       can lead to double freeing */
-    PyObject *vargs[] = {NULL, Py_NewRef(item), PyBool_FromLong(force)};
+    PyObject *vargs[] = {NULL, item, PyBool_FromLong(force)};
     if (vargs[2])
       closeres = PyObject_VectorcallMethod(apst.close, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
     Py_XDECREF(vargs[2]);

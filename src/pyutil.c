@@ -121,6 +121,7 @@ convertutf8string(const char *str)
   return PyUnicode_FromStringAndSize(str, strlen(str));
 }
 
+#if PY_VERSION_HEX < 0x030d0000
 #undef PyLong_AsInt
 static int
 PyLong_AsInt(PyObject *val)
@@ -139,6 +140,30 @@ PyLong_AsInt(PyObject *val)
   }
   return ival;
 }
+#endif
+
+#if PY_VERSION_HEX < 0x030d0000
+#undef PyWeakRef_GetRef
+static int
+PyWeakref_GetRef(PyObject *ref, PyObject **pobj)
+{
+#include "faultinject.h"
+  PyObject *obj = PyWeakref_GetObject(ref);
+  if(!obj)
+  {
+    assert(PyErr_Occurred());
+    *pobj = NULL;
+    return -1;
+  }
+  if(Py_IsNone(obj))
+  {
+    *pobj = NULL;
+    return 0;
+  }
+  *pobj = Py_NewRef(obj);
+  return 1;
+}
+#endif
 
 /* some we made up in the same spirit*/
 static void
