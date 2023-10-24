@@ -143,7 +143,7 @@ PyLong_AsInt(PyObject *val)
 #endif
 
 #if PY_VERSION_HEX < 0x030d0000
-#undef PyWeakRef_GetRef
+#undef PyWeakref_GetRef
 static int
 PyWeakref_GetRef(PyObject *ref, PyObject **pobj)
 {

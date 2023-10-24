@@ -84,7 +84,7 @@ returns = {
             PyNumber_Long PySequence_Fast PySequence_List PySequence_SetItem
             PyFrame_New PyStructSequence_NewType PyStructSequence_New
             PyMem_Realloc PyUnicode_FromFormat
-            PyObject_VectorcallMethod PyObject_Vectorcall
+            PyObject_VectorcallMethod PyObject_Vectorcall PyWeakref_GetObject
             """.split(),
     # numeric return
     "sqlite":
@@ -132,7 +132,7 @@ returns = {
         PyStructSequence_InitType2 PyList_Size PyLong_AsInt
 
         PyObject_GetBufferContiguous PyObject_GetBuffer
-        PyBuffer_IsContiguous
+        PyBuffer_IsContiguous PyWeakref_GetRef
 
         connection_trace_and_exec getfunctionargs
         """.split(),
@@ -166,7 +166,7 @@ no_error = set("""PyBuffer_Release PyDict_GetItem PyMem_Free PyDict_GetItemStrin
     PyEval_SaveThread PyGILState_Ensure PyGILState_Release PyOS_snprintf
     PyObject_CheckBuffer PyObject_ClearWeakRefs PyObject_GC_UnTrack PyObject_HasAttr
     PyThreadState_Get PyThread_get_thread_ident PyTraceBack_Here
-    PyType_IsSubtype PyUnicode_CopyCharacters PyWeakref_GetObject _Py_Dealloc
+    PyType_IsSubtype PyUnicode_CopyCharacters  _Py_Dealloc
     _Py_HashBytes _Py_NegativeRefcount _Py_RefTotal PyThreadState_GetFrame
 """.split())
 

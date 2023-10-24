@@ -77,6 +77,8 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef PyUnicode_FromString
 #undef PyUnicode_FromStringAndSize
 #undef PyUnicode_New
+#undef PyWeakref_GetObject
+#undef PyWeakref_GetRef
 #undef PyWeakref_NewRef
 #undef Py_BuildValue
 #undef Py_VaBuildValue
@@ -1110,6 +1112,36 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res_PyUnicode_New = (typeof (_res_PyUnicode_New))18;                                                                               \
     }                                                                                                                                       \
     _res_PyUnicode_New;                                                                                                                     \
+})
+#define PyWeakref_GetObject(...) \
+({                                                                                                                                                            \
+    __auto_type _res_PyWeakref_GetObject = 0 ? PyWeakref_GetObject(__VA_ARGS__) : 0;                                                                          \
+                                                                                                                                                              \
+    _res_PyWeakref_GetObject = (typeof (_res_PyWeakref_GetObject))APSW_FaultInjectControl("PyWeakref_GetObject", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                              \
+    if ((typeof (_res_PyWeakref_GetObject))0x1FACADE == _res_PyWeakref_GetObject)                                                                             \
+       _res_PyWeakref_GetObject = PyWeakref_GetObject(__VA_ARGS__);                                                                                           \
+    else if ((typeof(_res_PyWeakref_GetObject))0x2FACADE == _res_PyWeakref_GetObject)                                                                         \
+    {                                                                                                                                                         \
+        PyWeakref_GetObject(__VA_ARGS__);                                                                                                                     \
+        _res_PyWeakref_GetObject = (typeof (_res_PyWeakref_GetObject))18;                                                                                     \
+    }                                                                                                                                                         \
+    _res_PyWeakref_GetObject;                                                                                                                                 \
+})
+#define PyWeakref_GetRef(...) \
+({                                                                                                                                                   \
+    __auto_type _res_PyWeakref_GetRef = 0 ? PyWeakref_GetRef(__VA_ARGS__) : 0;                                                                       \
+                                                                                                                                                     \
+    _res_PyWeakref_GetRef = (typeof (_res_PyWeakref_GetRef))APSW_FaultInjectControl("PyWeakref_GetRef", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                     \
+    if ((typeof (_res_PyWeakref_GetRef))0x1FACADE == _res_PyWeakref_GetRef)                                                                          \
+       _res_PyWeakref_GetRef = PyWeakref_GetRef(__VA_ARGS__);                                                                                        \
+    else if ((typeof(_res_PyWeakref_GetRef))0x2FACADE == _res_PyWeakref_GetRef)                                                                      \
+    {                                                                                                                                                \
+        PyWeakref_GetRef(__VA_ARGS__);                                                                                                               \
+        _res_PyWeakref_GetRef = (typeof (_res_PyWeakref_GetRef))18;                                                                                  \
+    }                                                                                                                                                \
+    _res_PyWeakref_GetRef;                                                                                                                           \
 })
 #define PyWeakref_NewRef(...) \
 ({                                                                                                                                                   \

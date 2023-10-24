@@ -195,7 +195,7 @@ Connection_remove_dependent(Connection *self, PyObject *o)
   {
     PyObject *wr = PyList_GET_ITEM(self->dependents, i);
     PyObject *wo = NULL;
-    if(PyWeakref_GetRef(wr, &wo)<0)
+    if (PyWeakref_GetRef(wr, &wo) < 0)
     {
       apsw_write_unraisable(NULL);
       continue;
@@ -213,6 +213,7 @@ Connection_remove_dependent(Connection *self, PyObject *o)
   }
 }
 
+/* returns zero on success, non-zero on error */
 static int
 Connection_close_internal(Connection *self, int force)
 {
@@ -225,12 +226,9 @@ Connection_close_internal(Connection *self, int force)
      be perturbed as a side effect */
   while (self->dependents && PyList_GET_SIZE(self->dependents))
   {
-    PyObject *closeres = NULL, *item=NULL, *wr = PyList_GET_ITEM(self->dependents, 0);
-    if(PyWeakref_GetRef(wr, &item)<0)
-    {
-      apsw_write_unraisable(NULL);
-      return;
-    }
+    PyObject *closeres = NULL, *item = NULL, *wr = PyList_GET_ITEM(self->dependents, 0);
+    if (PyWeakref_GetRef(wr, &item) < 0)
+      return 1;
     if (!item)
     {
       Connection_remove_dependent(self, item);
