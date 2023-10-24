@@ -16,7 +16,6 @@ import subprocess
 import sysconfig
 import shutil
 import pathlib
-import subprocess
 import contextlib
 from dataclasses import dataclass
 
@@ -490,7 +489,7 @@ def findamalgamation():
 
 
 def update_type_stubs_old_names(include_old: bool) -> None:
-    stubs = pathlib.Path("apsw/__init__.pyi").read_text()
+    stubs = pathlib.Path("apsw/__init__.pyi").read_text(encoding="utf8")
     new_stubs = []
     for line in stubs.split("\n"):
         if line.endswith("## OLD-NAME") and include_old == line.startswith("#"):
@@ -499,7 +498,7 @@ def update_type_stubs_old_names(include_old: bool) -> None:
     new_stubs = "\n".join(new_stubs)
     if new_stubs != stubs:
         print("Updating type stubs to", "include" if include_old else "exclude", "old names")
-        pathlib.Path("apsw/__init__.pyi").write_text(new_stubs)
+        pathlib.Path("apsw/__init__.pyi").write_text(new_stubs, encoding="utf8")
 
 
 beparent = build_ext.build_ext
