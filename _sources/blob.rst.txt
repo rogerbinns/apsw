@@ -59,7 +59,7 @@ Blob class
 
 .. class:: Blob
 
-  This object is created by :meth:`Connection.blobopen` and provides
+  This object is created by :meth:`Connection.blob_open` and provides
   access to a blob in the database.  It behaves like a Python file.
   At the C level it wraps a `sqlite3_blob
   <https://sqlite.org/c3ref/blob.html>`_.
@@ -83,7 +83,7 @@ Blob class
 
   For example::
 
-    with connection.blobopen() as blob:
+    with connection.blob_open() as blob:
         blob.write("...")
         res=blob.read(1024)
 
@@ -137,7 +137,7 @@ Blob class
 
 .. index:: sqlite3_blob_read
 
-.. method:: Blob.readinto(buffer: bytearray |  array.array[Any] | memoryview, offset: int = 0, length: int = -1) -> None
+.. method:: Blob.read_into(buffer: bytearray |  array.array[Any] | memoryview, offset: int = 0, length: int = -1) -> None
 
   Reads from the blob into a buffer you have supplied.  This method is
   useful if you already have a buffer like object that data is being

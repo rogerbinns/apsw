@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>sqlite3 module differences &mdash; APSW 3.43.1.1 documentation</title>
+  <title>sqlite3 module differences &mdash; APSW 3.43.2.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/favicon.ico"/>
@@ -14,7 +14,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=1608d9ae"></script>
+        <script src="_static/documentation_options.js?v=200f835c"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.43.1.1
+                3.43.2.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -139,7 +139,7 @@ APSW release brings the most recent SQLite to Python 3.8 all the way
 through Python 3.13.</p></li>
 <li><p>APSW gives all functionality of SQLite including <a class="reference internal" href="vtable.html#virtualtables"><span class="std std-ref">virtual
 tables</span></a>, <a class="reference internal" href="vfs.html#vfs"><span class="std std-ref">Virtual File System (VFS)</span></a>, <a class="reference internal" href="blob.html#blobio"><span class="std std-ref">BLOB I/O</span></a>,
-<a class="reference internal" href="backup.html#backup"><span class="std std-ref">backups</span></a> and <a class="reference internal" href="connection.html#apsw.Connection.filecontrol" title="apsw.Connection.filecontrol"><code class="xref py py-meth docutils literal notranslate"><span class="pre">file</span> <span class="pre">control</span></code></a>.</p></li>
+<a class="reference internal" href="backup.html#backup"><span class="std std-ref">backups</span></a> and <a class="reference internal" href="connection.html#apsw.Connection.file_control" title="apsw.Connection.file_control"><code class="xref py py-meth docutils literal notranslate"><span class="pre">file</span> <span class="pre">control</span></code></a>.</p></li>
 <li><p>You can use the same <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> across threads with APSW
 without needing any additional level of locking.  sqlite3 <a class="reference external" href="https://docs.python.org/3/library/sqlite3.html?highlight=sqlite#sqlite3.threadsafety">requires</a>
 that the <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> and any <a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">cursors</span></code></a> are
@@ -206,7 +206,7 @@ happened.</p>
 <span class="c1"># apsw</span>
 <span class="kn">import</span> <span class="nn">apsw</span>
 <span class="n">con</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;:memory:&quot;</span><span class="p">)</span>
-<span class="n">con</span><span class="o">.</span><span class="n">createscalarfunction</span><span class="p">(</span><span class="s2">&quot;badfunc&quot;</span><span class="p">,</span> <span class="n">badfunc</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">con</span><span class="o">.</span><span class="n">create_scalar_function</span><span class="p">(</span><span class="s2">&quot;badfunc&quot;</span><span class="p">,</span> <span class="n">badfunc</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="n">cur</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
 <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select badfunc(3)&quot;</span><span class="p">)</span>
 </pre></div>
@@ -279,7 +279,7 @@ libraries that abstract away the database layer</p></li>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Oct 06, 2023.
+      <span class="lastupdated">Last updated on Oct 24, 2023.
       </span></p>
   </div>
 

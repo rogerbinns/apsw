@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; APSW 3.43.1.1 documentation</title>
+  <title>Index &mdash; APSW 3.43.2.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/favicon.ico"/>
@@ -13,7 +13,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=1608d9ae"></script>
+        <script src="_static/documentation_options.js?v=200f835c"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -36,7 +36,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.43.1.1
+                3.43.2.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -224,8 +224,15 @@
         <li><a href="shell.html#module-apsw.shell">module</a>
 </li>
       </ul></li>
-      <li><a href="apsw.html#apsw.apswversion">apswversion() (in module apsw)</a>
+      <li><a href="apsw.html#apsw.apsw_version">apsw_version() (in module apsw)</a>
 </li>
+      <li>
+    apswversion
+
+      <ul>
+        <li><a href="changes.html#index-4">apsw.apsw_version</a>
+</li>
+      </ul></li>
       <li><a href="exceptions.html#apsw.AuthError">AuthError</a>
 </li>
       <li><a href="apsw.html#apsw.Authorizer">Authorizer (class in apsw)</a>
@@ -266,10 +273,10 @@
 </li>
       <li><a href="apsw.html#apsw.Bindings">Bindings (class in apsw)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="example.html#index-7">Bindings (dict) (example code)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ext.html#apsw.ext.QueryDetails.bindings">bindings (QueryDetails attribute)</a>
 </li>
       <li><a href="example.html#index-6">Bindings (sequence) (example code)</a>
@@ -280,8 +287,15 @@
 </li>
       <li><a href="example.html#index-21">Blob I/O (example code)</a>
 </li>
-      <li><a href="connection.html#apsw.Connection.blobopen">blobopen() (Connection method)</a>
+      <li><a href="connection.html#apsw.Connection.blob_open">blob_open() (Connection method)</a>
 </li>
+      <li>
+    blobopen
+
+      <ul>
+        <li><a href="changes.html#index-15">Connection.blob_open</a>
+</li>
+      </ul></li>
       <li><a href="exceptions.html#apsw.BusyError">BusyError</a>
 </li>
       <li><a href="ext.html#apsw.ext.VTColumnAccess.By_Attr">By_Attr (VTColumnAccess attribute)</a>
@@ -296,10 +310,17 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="connection.html#apsw.Connection.cache_flush">cache_flush() (Connection method)</a>
+</li>
       <li><a href="connection.html#apsw.Connection.cache_stats">cache_stats() (Connection method)</a>
 </li>
-      <li><a href="connection.html#apsw.Connection.cacheflush">cacheflush() (Connection method)</a>
+      <li>
+    cacheflush
+
+      <ul>
+        <li><a href="changes.html#index-16">Connection.cache_flush</a>
 </li>
+      </ul></li>
       <li><a href="exceptions.html#apsw.CantOpenError">CantOpenError</a>
 </li>
       <li><a href="shell.html#index-3">cd (Shell command)</a>
@@ -334,8 +355,15 @@
 </li>
       <li><a href="shell.html#apsw.shell.Shell.cmdloop">cmdloop() (Shell method)</a>
 </li>
-      <li><a href="connection.html#apsw.Connection.collationneeded">collationneeded() (Connection method)</a>
+      <li><a href="connection.html#apsw.Connection.collation_needed">collation_needed() (Connection method)</a>
 </li>
+      <li>
+    collationneeded
+
+      <ul>
+        <li><a href="changes.html#index-17">Connection.collation_needed</a>
+</li>
+      </ul></li>
       <li><a href="shell.html#index-6">colour (Shell command)</a>
 </li>
       <li><a href="vtable.html#apsw.VTCursor.Column">Column() (VTCursor method)</a>
@@ -360,14 +388,14 @@
 </li>
       <li><a href="apsw.html#apsw.compile_options">compile_options (in module apsw)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="apsw.html#apsw.complete">complete() (in module apsw)</a>
 
       <ul>
         <li><a href="shell.html#apsw.shell.Shell.complete">(Shell method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="shell.html#apsw.shell.Shell.complete_command">complete_command() (Shell method)</a>
 </li>
       <li><a href="shell.html#apsw.shell.Shell.complete_sql">complete_sql() (Shell method)</a>
@@ -412,16 +440,44 @@
 </li>
       <li><a href="vtable.html#apsw.VTModule.Create">Create() (VTModule method)</a>
 </li>
+      <li><a href="connection.html#apsw.Connection.create_aggregate_function">create_aggregate_function() (Connection method)</a>
+</li>
+      <li><a href="connection.html#apsw.Connection.create_collation">create_collation() (Connection method)</a>
+</li>
+      <li><a href="connection.html#apsw.Connection.create_module">create_module() (Connection method)</a>
+</li>
+      <li><a href="connection.html#apsw.Connection.create_scalar_function">create_scalar_function() (Connection method)</a>
+</li>
       <li><a href="connection.html#apsw.Connection.create_window_function">create_window_function() (Connection method)</a>
 </li>
-      <li><a href="connection.html#apsw.Connection.createaggregatefunction">createaggregatefunction() (Connection method)</a>
+      <li>
+    createaggregatefunction
+
+      <ul>
+        <li><a href="changes.html#index-18">Connection.create_aggregate_function</a>
 </li>
-      <li><a href="connection.html#apsw.Connection.createcollation">createcollation() (Connection method)</a>
+      </ul></li>
+      <li>
+    createcollation
+
+      <ul>
+        <li><a href="changes.html#index-19">Connection.create_collation</a>
 </li>
-      <li><a href="connection.html#apsw.Connection.createmodule">createmodule() (Connection method)</a>
+      </ul></li>
+      <li>
+    createmodule
+
+      <ul>
+        <li><a href="changes.html#index-20">Connection.create_module</a>
 </li>
-      <li><a href="connection.html#apsw.Connection.createscalarfunction">createscalarfunction() (Connection method)</a>
+      </ul></li>
+      <li>
+    createscalarfunction
+
+      <ul>
+        <li><a href="changes.html#index-21">Connection.create_scalar_function</a>
 </li>
+      </ul></li>
       <li><a href="cursor.html#apsw.Cursor">Cursor (class in apsw)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.cursor">cursor() (Connection method)</a>
@@ -508,10 +564,24 @@
 </li>
       <li><a href="exceptions.html#apsw.EmptyError">EmptyError</a>
 </li>
-      <li><a href="connection.html#apsw.Connection.enableloadextension">enableloadextension() (Connection method)</a>
+      <li><a href="connection.html#apsw.Connection.enable_load_extension">enable_load_extension() (Connection method)</a>
 </li>
-      <li><a href="apsw.html#apsw.enablesharedcache">enablesharedcache() (in module apsw)</a>
+      <li><a href="apsw.html#apsw.enable_shared_cache">enable_shared_cache() (in module apsw)</a>
 </li>
+      <li>
+    enableloadextension
+
+      <ul>
+        <li><a href="changes.html#index-22">Connection.enable_load_extension</a>
+</li>
+      </ul></li>
+      <li>
+    enablesharedcache
+
+      <ul>
+        <li><a href="changes.html#index-5">apsw.enable_shared_cache</a>
+</li>
+      </ul></li>
       <li><a href="shell.html#index-13">encoding (Shell command)</a>
 </li>
       <li><a href="vtable.html#apsw.VTCursor.Eof">Eof() (VTCursor method)</a>
@@ -530,18 +600,34 @@
         <li><a href="vfs.html#apsw.VFSFile.excepthook">(VFSFile method)</a>
 </li>
       </ul></li>
-      <li><a href="apsw.html#apsw.exceptionfor">exceptionfor() (in module apsw)</a>
+      <li><a href="apsw.html#apsw.exception_for">exception_for() (in module apsw)</a>
 </li>
-      <li><a href="shell.html#index-14">exceptions (Shell command)</a>
-</li>
-      <li><a href="connection.html#apsw.Connection.exectrace">exectrace (Connection attribute)</a>
+      <li>
+    exceptionfor
 
       <ul>
-        <li><a href="cursor.html#apsw.Cursor.exectrace">(Cursor attribute)</a>
+        <li><a href="changes.html#index-6">apsw.exception_for</a>
+</li>
+      </ul></li>
+      <li><a href="shell.html#index-14">exceptions (Shell command)</a>
+</li>
+      <li><a href="connection.html#apsw.Connection.exec_trace">exec_trace (Connection attribute)</a>
+
+      <ul>
+        <li><a href="cursor.html#apsw.Cursor.exec_trace">(Cursor attribute)</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    exectrace
+
+      <ul>
+        <li><a href="changes.html#index-23">Connection.exec_trace</a>
+</li>
+        <li><a href="changes.html#index-44">Cursor.exec_trace</a>
+</li>
+      </ul></li>
       <li><a href="exceptions.html#apsw.ExecTraceAbort">ExecTraceAbort</a>
 </li>
       <li><a href="apsw.html#apsw.ExecTracer">ExecTracer (class in apsw)</a>
@@ -596,10 +682,17 @@
 </li>
       <li><a href="ext.html#apsw.ext.DatabaseFileInfo.file_change_counter">file_change_counter (DatabaseFileInfo attribute)</a>
 </li>
+      <li><a href="connection.html#apsw.Connection.file_control">file_control() (Connection method)</a>
+</li>
       <li><a href="ext.html#apsw.ext.QueryAction.file_name">file_name (QueryAction attribute)</a>
 </li>
-      <li><a href="connection.html#apsw.Connection.filecontrol">filecontrol() (Connection method)</a>
+      <li>
+    filecontrol
+
+      <ul>
+        <li><a href="changes.html#index-24">Connection.file_control</a>
 </li>
+      </ul></li>
       <li><a href="connection.html#apsw.Connection.filename">filename (Connection attribute)</a>
 
       <ul>
@@ -616,10 +709,10 @@
 </li>
       <li><a href="connection.html#apsw.Connection.filename_wal">filename_wal (Connection attribute)</a>
 </li>
-      <li><a href="vtable.html#apsw.VTCursor.Filter">Filter() (VTCursor method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="vtable.html#apsw.VTCursor.Filter">Filter() (VTCursor method)</a>
+</li>
       <li><a href="shell.html#index-16">find (Shell command)</a>
 </li>
       <li><a href="vtable.html#apsw.VTTable.FindFunction">FindFunction() (VTTable method)</a>
@@ -682,36 +775,75 @@
 </li>
       <li><a href="vtable.html#apsw.IndexInfo.get_aOrderBy_iColumn">get_aOrderBy_iColumn() (IndexInfo method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="connection.html#apsw.Connection.get_autocommit">get_autocommit() (Connection method)</a>
+</li>
       <li><a href="ext.html#apsw.ext.get_column_names">get_column_names() (in module apsw.ext)</a>
+</li>
+      <li><a href="shell.html#apsw.shell.Shell.get_complete_line">get_complete_line() (Shell method)</a>
+</li>
+      <li><a href="cursor.html#apsw.Cursor.get_connection">get_connection() (Cursor method)</a>
 </li>
       <li><a href="ext.html#apsw.ext.DataClassRowFactory.get_dataclass">get_dataclass() (DataClassRowFactory method)</a>
 </li>
-      <li><a href="shell.html#apsw.shell.Shell.get_resource_usage">get_resource_usage() (Shell method)</a>
+      <li><a href="cursor.html#apsw.Cursor.get_description">get_description() (Cursor method)</a>
 </li>
-      <li><a href="ext.html#apsw.ext.DataClassRowFactory.get_type">get_type() (DataClassRowFactory method)</a>
-</li>
-      <li><a href="connection.html#apsw.Connection.getautocommit">getautocommit() (Connection method)</a>
-</li>
-      <li><a href="shell.html#apsw.shell.Shell.getcompleteline">getcompleteline() (Shell method)</a>
-</li>
-      <li><a href="cursor.html#apsw.Cursor.getconnection">getconnection() (Cursor method)</a>
-</li>
-      <li><a href="cursor.html#apsw.Cursor.getdescription">getdescription() (Cursor method)</a>
-</li>
-      <li><a href="connection.html#apsw.Connection.getexectrace">getexectrace() (Connection method)</a>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="connection.html#apsw.Connection.get_exec_trace">get_exec_trace() (Connection method)</a>
 
       <ul>
-        <li><a href="cursor.html#apsw.Cursor.getexectrace">(Cursor method)</a>
+        <li><a href="cursor.html#apsw.Cursor.get_exec_trace">(Cursor method)</a>
 </li>
       </ul></li>
-      <li><a href="shell.html#apsw.shell.Shell.getline">getline() (Shell method)</a>
+      <li><a href="shell.html#apsw.shell.Shell.get_line">get_line() (Shell method)</a>
 </li>
-      <li><a href="connection.html#apsw.Connection.getrowtrace">getrowtrace() (Connection method)</a>
+      <li><a href="shell.html#apsw.shell.Shell.get_resource_usage">get_resource_usage() (Shell method)</a>
+</li>
+      <li><a href="connection.html#apsw.Connection.get_row_trace">get_row_trace() (Connection method)</a>
 
       <ul>
-        <li><a href="cursor.html#apsw.Cursor.getrowtrace">(Cursor method)</a>
+        <li><a href="cursor.html#apsw.Cursor.get_row_trace">(Cursor method)</a>
+</li>
+      </ul></li>
+      <li><a href="ext.html#apsw.ext.DataClassRowFactory.get_type">get_type() (DataClassRowFactory method)</a>
+</li>
+      <li>
+    getautocommit
+
+      <ul>
+        <li><a href="changes.html#index-25">Connection.get_autocommit</a>
+</li>
+      </ul></li>
+      <li>
+    getconnection
+
+      <ul>
+        <li><a href="changes.html#index-45">Cursor.get_connection</a>
+</li>
+      </ul></li>
+      <li>
+    getdescription
+
+      <ul>
+        <li><a href="changes.html#index-46">Cursor.get_description</a>
+</li>
+      </ul></li>
+      <li>
+    getexectrace
+
+      <ul>
+        <li><a href="changes.html#index-26">Connection.get_exec_trace</a>
+</li>
+        <li><a href="changes.html#index-47">Cursor.get_exec_trace</a>
+</li>
+      </ul></li>
+      <li>
+    getrowtrace
+
+      <ul>
+        <li><a href="changes.html#index-27">Connection.get_row_trace</a>
+</li>
+        <li><a href="changes.html#index-48">Cursor.get_row_trace</a>
 </li>
       </ul></li>
   </ul></td>
@@ -842,10 +974,17 @@
 </li>
       <li><a href="shell.html#index-21">load (Shell command)</a>
 </li>
+      <li><a href="connection.html#apsw.Connection.load_extension">load_extension() (Connection method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="connection.html#apsw.Connection.loadextension">loadextension() (Connection method)</a>
+      <li>
+    loadextension
+
+      <ul>
+        <li><a href="changes.html#index-28">Connection.load_extension</a>
 </li>
+      </ul></li>
       <li><a href="exceptions.html#apsw.LockedError">LockedError</a>
 </li>
       <li><a href="shell.html#index-22">log (Shell command)</a>
@@ -904,12 +1043,12 @@
 </li>
       <li><a href="apsw.html#apsw.mapping_result_codes">mapping_result_codes (in module apsw)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="apsw.html#apsw.mapping_statement_status">mapping_statement_status (in module apsw)</a>
 </li>
       <li><a href="apsw.html#apsw.mapping_status">mapping_status (in module apsw)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="apsw.html#apsw.mapping_sync">mapping_sync (in module apsw)</a>
 </li>
       <li><a href="apsw.html#apsw.mapping_trace_codes">mapping_trace_codes (in module apsw)</a>
@@ -924,10 +1063,24 @@
 </li>
       <li><a href="apsw.html#apsw.mapping_xshmlock_flags">mapping_xshmlock_flags (in module apsw)</a>
 </li>
-      <li><a href="apsw.html#apsw.memoryhighwater">memoryhighwater() (in module apsw)</a>
+      <li><a href="apsw.html#apsw.memory_high_water">memory_high_water() (in module apsw)</a>
 </li>
-      <li><a href="apsw.html#apsw.memoryused">memoryused() (in module apsw)</a>
+      <li><a href="apsw.html#apsw.memory_used">memory_used() (in module apsw)</a>
 </li>
+      <li>
+    memoryhighwater
+
+      <ul>
+        <li><a href="changes.html#index-7">apsw.memory_high_water</a>
+</li>
+      </ul></li>
+      <li>
+    memoryused
+
+      <ul>
+        <li><a href="changes.html#index-8">apsw.memory_used</a>
+</li>
+      </ul></li>
       <li><a href="exceptions.html#apsw.MismatchError">MismatchError</a>
 </li>
       <li><a href="exceptions.html#apsw.MisuseError">MisuseError</a>
@@ -993,18 +1146,25 @@
 </li>
       <li><a href="connection.html#apsw.Connection.open_vfs">open_vfs (Connection attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="example.html#index-3">Opening the database (example code)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ext.html#apsw.ext.QueryAction.operation">operation (QueryAction attribute)</a>
 </li>
       <li><a href="vtable.html#apsw.IndexInfo.orderByConsumed">orderByConsumed (IndexInfo attribute)</a>
 </li>
       <li><a href="shell.html#index-26">output (Shell command)</a>
 </li>
-      <li><a href="connection.html#apsw.Connection.overloadfunction">overloadfunction() (Connection method)</a>
+      <li><a href="connection.html#apsw.Connection.overload_function">overload_function() (Connection method)</a>
 </li>
+      <li>
+    overloadfunction
+
+      <ul>
+        <li><a href="changes.html#index-29">Connection.overload_function</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -1021,9 +1181,11 @@
 </li>
       <li><a href="ext.html#apsw.ext.VDBEInstruction.p5">p5 (VDBEInstruction attribute)</a>
 </li>
-      <li><a href="ext.html#apsw.ext.DatabaseFileInfo.page_count">page_count (DatabaseFileInfo attribute)</a>
+      <li><a href="backup.html#apsw.Backup.page_count">page_count (Backup attribute)</a>
 
       <ul>
+        <li><a href="ext.html#apsw.ext.DatabaseFileInfo.page_count">(DatabaseFileInfo attribute)</a>
+</li>
         <li><a href="ext.html#apsw.ext.JournalFileInfo.page_count">(JournalFileInfo attribute)</a>
 </li>
       </ul></li>
@@ -1035,8 +1197,13 @@
         <li><a href="ext.html#apsw.ext.WALFileInfo.page_size">(WALFileInfo attribute)</a>
 </li>
       </ul></li>
-      <li><a href="backup.html#apsw.Backup.pagecount">pagecount (Backup attribute)</a>
+      <li>
+    pagecount
+
+      <ul>
+        <li><a href="changes.html#index-13">Backup.page_count</a>
 </li>
+      </ul></li>
       <li><a href="shell.html#index-27">parameter (Shell command)</a>
 </li>
       <li><a href="exceptions.html#apsw.PermissionsError">PermissionsError</a>
@@ -1085,13 +1252,15 @@
     Python Enhancement Proposals
 
       <ul>
-        <li><a href="backup.html#index-0">PEP 0343</a>, <a href="blob.html#index-0">[1]</a>, <a href="changes.html#index-1">[2]</a>, <a href="connection.html#index-1">[3]</a>
+        <li><a href="backup.html#index-0">PEP 0343</a>, <a href="blob.html#index-0">[1]</a>, <a href="changes.html#index-2">[2]</a>, <a href="connection.html#index-1">[3]</a>
 </li>
         <li><a href="dbapi.html#index-0">PEP 249</a>, <a href="pysqlite.html#index-0">[1]</a>
 </li>
         <li><a href="exceptions.html#index-0">PEP 3134</a>
 </li>
-        <li><a href="changes.html#index-0">PEP 590</a>
+        <li><a href="changes.html#index-1">PEP 590</a>
+</li>
+        <li><a href="changes.html#index-0">PEP 8</a>, <a href="changes.html#index-3">[1]</a>, <a href="install.html#index-0">[2]</a>
 </li>
       </ul></li>
   </ul></td>
@@ -1140,8 +1309,15 @@
       </ul></li>
       <li><a href="ext.html#apsw.ext.DatabaseFileInfo.read_format">read_format (DatabaseFileInfo attribute)</a>
 </li>
-      <li><a href="blob.html#apsw.Blob.readinto">readinto() (Blob method)</a>
+      <li><a href="blob.html#apsw.Blob.read_into">read_into() (Blob method)</a>
 </li>
+      <li>
+    readinto
+
+      <ul>
+        <li><a href="changes.html#index-14">Blob.read_into</a>
+</li>
+      </ul></li>
       <li><a href="connection.html#apsw.Connection.readonly">readonly() (Connection method)</a>
 </li>
       <li><a href="exceptions.html#apsw.ReadOnlyError">ReadOnlyError</a>
@@ -1154,12 +1330,21 @@
 </li>
       <li><a href="vtable.html#apsw.VTTable.Release">Release() (VTTable method)</a>
 </li>
+      <li><a href="connection.html#apsw.Connection.release_memory">release_memory() (Connection method)</a>
+
+      <ul>
+        <li><a href="apsw.html#apsw.release_memory">(in module apsw)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="connection.html#apsw.Connection.release_memory">release_memory() (Connection method)</a>
+      <li>
+    releasememory
+
+      <ul>
+        <li><a href="changes.html#index-9">apsw.release_memory</a>
 </li>
-      <li><a href="apsw.html#apsw.releasememory">releasememory() (in module apsw)</a>
-</li>
+      </ul></li>
       <li><a href="backup.html#apsw.Backup.remaining">remaining (Backup attribute)</a>
 </li>
       <li><a href="vtable.html#apsw.VTTable.Rename">Rename() (VTTable method)</a>
@@ -1180,12 +1365,21 @@
 </li>
       <li><a href="shell.html#apsw.shell.Shell.Row.row">row (Shell.Row attribute)</a>
 </li>
-      <li><a href="vtable.html#apsw.VTCursor.Rowid">Rowid() (VTCursor method)</a>
-</li>
-      <li><a href="connection.html#apsw.Connection.rowtrace">rowtrace (Connection attribute)</a>
+      <li><a href="connection.html#apsw.Connection.row_trace">row_trace (Connection attribute)</a>
 
       <ul>
-        <li><a href="cursor.html#apsw.Cursor.rowtrace">(Cursor attribute)</a>
+        <li><a href="cursor.html#apsw.Cursor.row_trace">(Cursor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="vtable.html#apsw.VTCursor.Rowid">Rowid() (VTCursor method)</a>
+</li>
+      <li>
+    rowtrace
+
+      <ul>
+        <li><a href="changes.html#index-30">Connection.row_trace</a>
+</li>
+        <li><a href="changes.html#index-49">Cursor.row_trace</a>
 </li>
       </ul></li>
       <li><a href="apsw.html#apsw.RowTracer">RowTracer (class in apsw)</a>
@@ -1226,42 +1420,123 @@
 </li>
       <li><a href="vtable.html#apsw.IndexInfo.set_aConstraintUsage_omit">set_aConstraintUsage_omit() (IndexInfo method)</a>
 </li>
+      <li><a href="connection.html#apsw.Connection.set_authorizer">set_authorizer() (Connection method)</a>
+</li>
+      <li><a href="connection.html#apsw.Connection.set_busy_handler">set_busy_handler() (Connection method)</a>
+</li>
+      <li><a href="connection.html#apsw.Connection.set_busy_timeout">set_busy_timeout() (Connection method)</a>
+</li>
+      <li><a href="connection.html#apsw.Connection.set_commit_hook">set_commit_hook() (Connection method)</a>
+</li>
       <li><a href="apsw.html#apsw.set_default_vfs">set_default_vfs() (in module apsw)</a>
 </li>
       <li><a href="shell.html#apsw.shell.Shell.set_encoding">set_encoding() (Shell method)</a>
 </li>
+      <li><a href="connection.html#apsw.Connection.set_exec_trace">set_exec_trace() (Connection method)</a>
+
+      <ul>
+        <li><a href="cursor.html#apsw.Cursor.set_exec_trace">(Cursor method)</a>
+</li>
+      </ul></li>
       <li><a href="connection.html#apsw.Connection.set_last_insert_rowid">set_last_insert_rowid() (Connection method)</a>
 </li>
-      <li><a href="connection.html#apsw.Connection.setauthorizer">setauthorizer() (Connection method)</a>
+      <li><a href="connection.html#apsw.Connection.set_profile">set_profile() (Connection method)</a>
 </li>
-      <li><a href="connection.html#apsw.Connection.setbusyhandler">setbusyhandler() (Connection method)</a>
+      <li><a href="connection.html#apsw.Connection.set_progress_handler">set_progress_handler() (Connection method)</a>
 </li>
-      <li><a href="connection.html#apsw.Connection.setbusytimeout">setbusytimeout() (Connection method)</a>
+      <li><a href="connection.html#apsw.Connection.set_rollback_hook">set_rollback_hook() (Connection method)</a>
 </li>
-      <li><a href="connection.html#apsw.Connection.setcommithook">setcommithook() (Connection method)</a>
-</li>
-      <li><a href="connection.html#apsw.Connection.setexectrace">setexectrace() (Connection method)</a>
+      <li><a href="connection.html#apsw.Connection.set_row_trace">set_row_trace() (Connection method)</a>
 
       <ul>
-        <li><a href="cursor.html#apsw.Cursor.setexectrace">(Cursor method)</a>
+        <li><a href="cursor.html#apsw.Cursor.set_row_trace">(Cursor method)</a>
 </li>
       </ul></li>
-      <li><a href="connection.html#apsw.Connection.setprofile">setprofile() (Connection method)</a>
+      <li><a href="connection.html#apsw.Connection.set_update_hook">set_update_hook() (Connection method)</a>
 </li>
-      <li><a href="connection.html#apsw.Connection.setprogresshandler">setprogresshandler() (Connection method)</a>
+      <li><a href="connection.html#apsw.Connection.set_wal_hook">set_wal_hook() (Connection method)</a>
 </li>
-      <li><a href="connection.html#apsw.Connection.setrollbackhook">setrollbackhook() (Connection method)</a>
-</li>
-      <li><a href="connection.html#apsw.Connection.setrowtrace">setrowtrace() (Connection method)</a>
+      <li>
+    setauthorizer
 
       <ul>
-        <li><a href="cursor.html#apsw.Cursor.setrowtrace">(Cursor method)</a>
+        <li><a href="changes.html#index-31">Connection.set_authorizer</a>
 </li>
       </ul></li>
-      <li><a href="connection.html#apsw.Connection.setupdatehook">setupdatehook() (Connection method)</a>
+      <li>
+    setbusyhandler
+
+      <ul>
+        <li><a href="changes.html#index-32">Connection.set_busy_handler</a>
 </li>
-      <li><a href="connection.html#apsw.Connection.setwalhook">setwalhook() (Connection method)</a>
+      </ul></li>
+      <li>
+    setbusytimeout
+
+      <ul>
+        <li><a href="changes.html#index-33">Connection.set_busy_timeout</a>
 </li>
+      </ul></li>
+      <li>
+    setcommithook
+
+      <ul>
+        <li><a href="changes.html#index-34">Connection.set_commit_hook</a>
+</li>
+      </ul></li>
+      <li>
+    setexectrace
+
+      <ul>
+        <li><a href="changes.html#index-35">Connection.set_exec_trace</a>
+</li>
+        <li><a href="changes.html#index-50">Cursor.set_exec_trace</a>
+</li>
+      </ul></li>
+      <li>
+    setprofile
+
+      <ul>
+        <li><a href="changes.html#index-36">Connection.set_profile</a>
+</li>
+      </ul></li>
+      <li>
+    setprogresshandler
+
+      <ul>
+        <li><a href="changes.html#index-37">Connection.set_progress_handler</a>
+</li>
+      </ul></li>
+      <li>
+    setrollbackhook
+
+      <ul>
+        <li><a href="changes.html#index-38">Connection.set_rollback_hook</a>
+</li>
+      </ul></li>
+      <li>
+    setrowtrace
+
+      <ul>
+        <li><a href="changes.html#index-39">Connection.set_row_trace</a>
+</li>
+        <li><a href="changes.html#index-51">Cursor.set_row_trace</a>
+</li>
+      </ul></li>
+      <li>
+    setupdatehook
+
+      <ul>
+        <li><a href="changes.html#index-40">Connection.set_update_hook</a>
+</li>
+      </ul></li>
+      <li>
+    setwalhook
+
+      <ul>
+        <li><a href="changes.html#index-41">Connection.set_wal_hook</a>
+</li>
+      </ul></li>
       <li><a href="vtable.html#apsw.VTModule.ShadowName">ShadowName() (VTModule method)</a>
 </li>
       <li><a href="shell.html#apsw.shell.Shell">Shell (class in apsw.shell)</a>
@@ -1284,8 +1559,15 @@
 </li>
       <li><a href="apsw.html#apsw.sleep">sleep() (in module apsw)</a>
 </li>
-      <li><a href="apsw.html#apsw.softheaplimit">softheaplimit() (in module apsw)</a>
+      <li><a href="apsw.html#apsw.soft_heap_limit">soft_heap_limit() (in module apsw)</a>
 </li>
+      <li>
+    softheaplimit
+
+      <ul>
+        <li><a href="changes.html#index-10">apsw.soft_heap_limit</a>
+</li>
+      </ul></li>
       <li><a href="exceptions.html#apsw.SQLError">SQLError</a>
 </li>
       <li><a href="connection.html#index-3">sqlite3_autovacuum_pages</a>
@@ -1324,9 +1606,9 @@
 </li>
       <li><a href="blob.html#index-6">sqlite3_blob_write</a>
 </li>
-      <li><a href="connection.html#index-38">sqlite3_busy_handler</a>
+      <li><a href="connection.html#index-37">sqlite3_busy_handler</a>
 </li>
-      <li><a href="connection.html#index-39">sqlite3_busy_timeout</a>
+      <li><a href="connection.html#index-38">sqlite3_busy_timeout</a>
 </li>
       <li><a href="connection.html#index-7">sqlite3_changes64</a>
 </li>
@@ -1344,7 +1626,7 @@
 </li>
       <li><a href="cursor.html#index-0">sqlite3_column_table_name</a>
 </li>
-      <li><a href="connection.html#index-40">sqlite3_commit_hook</a>
+      <li><a href="connection.html#index-39">sqlite3_commit_hook</a>
 </li>
       <li><a href="apsw.html#index-0">sqlite3_compileoption_get</a>
 </li>
@@ -1352,13 +1634,15 @@
 </li>
       <li><a href="apsw.html#index-2">sqlite3_config</a>
 </li>
-      <li><a href="connection.html#index-14">sqlite3_create_collation_v2</a>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="connection.html#index-13">sqlite3_create_collation_v2</a>
 </li>
-      <li><a href="connection.html#index-13">sqlite3_create_function_v2</a>, <a href="connection.html#index-16">[1]</a>
+      <li><a href="connection.html#index-12">sqlite3_create_function_v2</a>, <a href="connection.html#index-15">[1]</a>
 </li>
-      <li><a href="connection.html#index-15">sqlite3_create_module_v2</a>
+      <li><a href="connection.html#index-14">sqlite3_create_module_v2</a>
 </li>
-      <li><a href="connection.html#index-12">sqlite3_create_window_function</a>
+      <li><a href="connection.html#index-16">sqlite3_create_window_function</a>
 </li>
       <li><a href="connection.html#index-6">sqlite3_db_cacheflush</a>
 </li>
@@ -1374,8 +1658,6 @@
 </li>
       <li><a href="connection.html#index-46">sqlite3_db_status</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="connection.html#index-19">sqlite3_deserialize</a>
 </li>
       <li><a href="connection.html#index-20">sqlite3_enable_load_extension</a>
@@ -1422,6 +1704,8 @@
 </li>
       <li><a href="connection.html#index-32">sqlite3_overload_function</a>
 </li>
+      <li><a href="connection.html#apsw.Connection.sqlite3_pointer">sqlite3_pointer() (Connection method)</a>
+</li>
       <li><a href="cursor.html#index-1">sqlite3_prepare_v3</a>
 </li>
       <li><a href="connection.html#index-42">sqlite3_progress_handler</a>
@@ -1436,7 +1720,7 @@
 </li>
       <li><a href="connection.html#index-2">sqlite3_set_authorizer</a>
 </li>
-      <li><a href="connection.html#index-37">sqlite3_set_last_insert_rowid</a>
+      <li><a href="connection.html#index-40">sqlite3_set_last_insert_rowid</a>
 </li>
       <li><a href="apsw.html#index-13">sqlite3_shutdown</a>
 </li>
@@ -1514,14 +1798,26 @@
 </li>
       <li><a href="connection.html#index-45">sqlite3_wal_hook</a>
 </li>
-      <li><a href="connection.html#apsw.Connection.sqlite3pointer">sqlite3pointer() (Connection method)</a>
+      <li>
+    sqlite3pointer
+
+      <ul>
+        <li><a href="changes.html#index-42">Connection.sqlite3_pointer</a>
+</li>
+      </ul></li>
+      <li><a href="apsw.html#apsw.sqlite_lib_version">sqlite_lib_version() (in module apsw)</a>
 </li>
       <li><a href="ext.html#apsw.ext.DatabaseFileInfo.sqlite_version">sqlite_version (DatabaseFileInfo attribute)</a>
 </li>
       <li><a href="apsw.html#apsw.SQLITE_VERSION_NUMBER">SQLITE_VERSION_NUMBER (in module apsw)</a>
 </li>
-      <li><a href="apsw.html#apsw.sqlitelibversion">sqlitelibversion() (in module apsw)</a>
+      <li>
+    sqlitelibversion
+
+      <ul>
+        <li><a href="changes.html#index-11">apsw.sqlite_lib_version</a>
 </li>
+      </ul></li>
       <li><a href="ext.html#apsw.ext.SQLiteTypeAdapter">SQLiteTypeAdapter (class in apsw.ext)</a>
 </li>
       <li><a href="apsw.html#apsw.SQLiteValue">SQLiteValue (class in apsw)</a>
@@ -1578,8 +1874,15 @@
 </li>
       <li><a href="exceptions.html#apsw.TooBigError">TooBigError</a>
 </li>
-      <li><a href="connection.html#apsw.Connection.totalchanges">totalchanges() (Connection method)</a>
+      <li><a href="connection.html#apsw.Connection.total_changes">total_changes() (Connection method)</a>
 </li>
+      <li>
+    totalchanges
+
+      <ul>
+        <li><a href="changes.html#index-43">Connection.total_changes</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="connection.html#apsw.Connection.trace_v2">trace_v2() (Connection method)</a>
@@ -1612,6 +1915,12 @@
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="types.html#index-0">Unicode</a>
+
+      <ul>
+        <li><a href="types.html#index-1">Normalization</a>
+</li>
+      </ul></li>
       <li><a href="vfs.html#apsw.VFS.unregister">unregister() (VFS method)</a>
 </li>
       <li><a href="apsw.html#apsw.unregister_vfs">unregister_vfs() (in module apsw)</a>
@@ -1624,10 +1933,10 @@
 </li>
       <li><a href="vtable.html#apsw.VTTable.UpdateInsertRow">UpdateInsertRow() (VTTable method)</a>
 </li>
-      <li><a href="vfs.html#apsw.URIFilename.uri_boolean">uri_boolean() (URIFilename method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="vfs.html#apsw.URIFilename.uri_boolean">uri_boolean() (URIFilename method)</a>
+</li>
       <li><a href="vfs.html#apsw.URIFilename.uri_int">uri_int() (URIFilename method)</a>
 </li>
       <li><a href="vfs.html#apsw.URIFilename.uri_parameter">uri_parameter() (URIFilename method)</a>
@@ -1662,6 +1971,8 @@
 </li>
       <li><a href="apsw.html#apsw.vfs_details">vfs_details() (in module apsw)</a>
 </li>
+      <li><a href="apsw.html#apsw.vfs_names">vfs_names() (in module apsw)</a>
+</li>
       <li><a href="vfs.html#apsw.VFSFcntlPragma">VFSFcntlPragma (class in apsw)</a>
 </li>
       <li><a href="vfs.html#apsw.VFSFile">VFSFile (class in apsw)</a>
@@ -1676,8 +1987,13 @@
 </li>
       <li><a href="shell.html#index-43">vfsname (Shell command)</a>
 </li>
-      <li><a href="apsw.html#apsw.vfsnames">vfsnames() (in module apsw)</a>
+      <li>
+    vfsnames
+
+      <ul>
+        <li><a href="changes.html#index-12">apsw.vfs_names</a>
 </li>
+      </ul></li>
       <li><a href="exceptions.html#apsw.VFSNotImplementedError">VFSNotImplementedError</a>
 </li>
       <li><a href="ext.html#apsw.ext.QueryAction.view_name">view_name (QueryAction attribute)</a>
@@ -1827,7 +2143,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Oct 06, 2023.
+      <span class="lastupdated">Last updated on Oct 24, 2023.
       </span></p>
   </div>
 

@@ -234,8 +234,8 @@ Abort/Busy Etc
 .. exception:: BusyError
 
   *SQLITE_BUSY*.  The database file is locked.  Use
-  :meth:`Connection.setbusytimeout` to change how long SQLite waits
-  for the database to be unlocked or :meth:`Connection.setbusyhandler`
+  :meth:`Connection.set_busy_timeout` to change how long SQLite waits
+  for the database to be unlocked or :meth:`Connection.set_busy_handler`
   to use your own handler.
 
 .. exception:: LockedError
@@ -332,8 +332,8 @@ traceback::
     1/0
 
   con=apsw.Connection(":memory:")
-  con.createscalarfunction("foo", myfunc)
-  con.createscalarfunction("fam", myfunc)
+  con.create_scalar_function("foo", myfunc)
+  con.create_scalar_function("fam", myfunc)
   cursor=con.cursor()
   cursor.execute("create table bar(x,y,z);insert into bar values(1,2,3)")
   cursor.execute("select foo(1) from bar")

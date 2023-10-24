@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Virtual Tables &mdash; APSW 3.43.1.1 documentation</title>
+  <title>Virtual Tables &mdash; APSW 3.43.2.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/favicon.ico"/>
@@ -14,7 +14,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=1608d9ae"></script>
+        <script src="_static/documentation_options.js?v=200f835c"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.43.1.1
+                3.43.2.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -212,7 +212,7 @@ At the C level, they are just one set of methods. At the Python/APSW level,
 they are split over the 3 types of object. The leading <strong>x</strong> is
 omitted in Python. You can return SQLite error codes (eg
 <em>SQLITE_READONLY</em>) by raising the appropriate exceptions (eg
-<a class="reference internal" href="exceptions.html#apsw.ReadOnlyError" title="apsw.ReadOnlyError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ReadOnlyError</span></code></a>).  <a class="reference internal" href="apsw.html#apsw.exceptionfor" title="apsw.exceptionfor"><code class="xref py py-meth docutils literal notranslate"><span class="pre">exceptionfor()</span></code></a> is a useful helper
+<a class="reference internal" href="exceptions.html#apsw.ReadOnlyError" title="apsw.ReadOnlyError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ReadOnlyError</span></code></a>).  <a class="reference internal" href="apsw.html#apsw.exception_for" title="apsw.exception_for"><code class="xref py py-meth docutils literal notranslate"><span class="pre">exception_for()</span></code></a> is a useful helper
 function to do the mapping.</p>
 <section id="indexinfo-class">
 <h2>IndexInfo class<a class="headerlink" href="#indexinfo-class" title="Link to this heading"></a></h2>
@@ -392,12 +392,12 @@ Your module instance should implement all the methods documented here.</p>
 </div>
 <p>A module instance is used to create the virtual tables.  Once you have
 a module object, you register it with a connection by calling
-<a class="reference internal" href="connection.html#apsw.Connection.createmodule" title="apsw.Connection.createmodule"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.createmodule()</span></code></a>:</p>
+<a class="reference internal" href="connection.html#apsw.Connection.create_module" title="apsw.Connection.create_module"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.create_module()</span></code></a>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># make an instance</span>
 <span class="n">mymod</span><span class="o">=</span><span class="n">MyModuleClass</span><span class="p">()</span>
 
 <span class="c1"># register the vtable on connection con</span>
-<span class="n">con</span><span class="o">.</span><span class="n">createmodule</span><span class="p">(</span><span class="s2">&quot;modulename&quot;</span><span class="p">,</span> <span class="n">mymod</span><span class="p">)</span>
+<span class="n">con</span><span class="o">.</span><span class="n">create_module</span><span class="p">(</span><span class="s2">&quot;modulename&quot;</span><span class="p">,</span> <span class="n">mymod</span><span class="p">)</span>
 
 <span class="c1"># tell SQLite about the table</span>
 <span class="n">con</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create VIRTUAL table tablename USING modulename(&#39;arg1&#39;, 2)&quot;</span><span class="p">)</span>
@@ -437,7 +437,7 @@ set <a class="reference internal" href="#apsw.VTModule.Connect" title="apsw.VTMo
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>connection</strong> -- An instance of <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a></p></li>
-<li><p><strong>modulename</strong> -- The string name under which the module was <a class="reference internal" href="connection.html#apsw.Connection.createmodule" title="apsw.Connection.createmodule"><code class="xref py py-meth docutils literal notranslate"><span class="pre">registered</span></code></a></p></li>
+<li><p><strong>modulename</strong> -- The string name under which the module was <a class="reference internal" href="connection.html#apsw.Connection.create_module" title="apsw.Connection.create_module"><code class="xref py py-meth docutils literal notranslate"><span class="pre">registered</span></code></a></p></li>
 <li><p><strong>databasename</strong> -- The name of the database.  This will be <code class="docutils literal notranslate"><span class="pre">main</span></code> for directly opened files and the name specified in
 <a class="reference external" href="https://sqlite.org/lang_attach.html">ATTACH</a> statements.</p></li>
 <li><p><strong>tablename</strong> -- Name of the table the user wants to create.</p></li>
@@ -674,7 +674,7 @@ index on customer equality and price.</p>
 <span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">BestIndexObject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#apsw.IndexInfo" title="apsw.IndexInfo"><span class="pre">IndexInfo</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#apsw.VTTable.BestIndexObject" title="Link to this definition"></a></dt>
 <dd><p>This method is called instead of <a class="reference internal" href="#apsw.VTTable.BestIndex" title="apsw.VTTable.BestIndex"><code class="xref py py-meth docutils literal notranslate"><span class="pre">BestIndex()</span></code></a> if
 <em>use_bestindex_object</em> was <em>True</em> in the call to
-<a class="reference internal" href="connection.html#apsw.Connection.createmodule" title="apsw.Connection.createmodule"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.createmodule()</span></code></a>.</p>
+<a class="reference internal" href="connection.html#apsw.Connection.create_module" title="apsw.Connection.create_module"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.create_module()</span></code></a>.</p>
 <p>Use the <a class="reference internal" href="#apsw.IndexInfo" title="apsw.IndexInfo"><code class="xref py py-class docutils literal notranslate"><span class="pre">IndexInfo</span></code></a> to tell SQLite about your indexes, and
 extract other information.</p>
 <p>Return <em>True</em> to indicate all is well.  If you return <em>False</em> or there is an error,
@@ -729,7 +729,7 @@ This is useful for <em>SQLITE_INDEX_CONSTRAINT_FUNCTION</em> returns.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="connection.html#apsw.Connection.overloadfunction" title="apsw.Connection.overloadfunction"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.overloadfunction()</span></code></a></p></li>
+<li><p><a class="reference internal" href="connection.html#apsw.Connection.overload_function" title="apsw.Connection.overload_function"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.overload_function()</span></code></a></p></li>
 <li><p><a class="reference external" href="https://www.sqlite.org/vtab.html#xfindfunction">FindFunction documentation</a></p></li>
 </ul>
 </div>
@@ -881,7 +881,7 @@ will have <a class="reference internal" href="apsw.html#apsw.no_change" title="a
 anything else then it will have that value - as though <a class="reference internal" href="#apsw.VTCursor.Column" title="apsw.VTCursor.Column"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTCursor.Column()</span></code></a>
 had been called.</p>
 <p>This method will only be called if <em>use_no_change</em> was <em>True</em> in the
-call to <a class="reference internal" href="connection.html#apsw.Connection.createmodule" title="apsw.Connection.createmodule"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.createmodule()</span></code></a>.</p>
+call to <a class="reference internal" href="connection.html#apsw.Connection.create_module" title="apsw.Connection.create_module"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.create_module()</span></code></a>.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/vtab_nochange.html">sqlite3_vtab_nochange</a></p>
 </dd></dl>
 
@@ -973,7 +973,7 @@ receive any constraintargs at all.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Oct 06, 2023.
+      <span class="lastupdated">Last updated on Oct 24, 2023.
       </span></p>
   </div>
 

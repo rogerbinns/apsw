@@ -47,7 +47,7 @@ API Reference
     against.  For example SQLite 3.6.4 will have the value *3006004*.
     This number may be different than the actual library in use if the
     library is shared and has been updated.  Call
-    :meth:`sqlitelibversion` to get the actual library version.
+    :meth:`sqlite_lib_version` to get the actual library version.
 
 .. method:: allow_missing_dict_bindings(value: bool) -> bool
 
@@ -66,7 +66,7 @@ API Reference
 
   The previous value is returned.
 
-.. method:: apswversion() -> str
+.. method:: apsw_version() -> str
 
   Returns the APSW version.
 
@@ -119,7 +119,7 @@ API Reference
        :type: list[Callable[[Connection], None]]
 
        The purpose of the hooks is to allow the easy registration of
-       :meth:`functions <Connection.createscalarfunction>`,
+       :meth:`functions <Connection.create_scalar_function>`,
        :ref:`virtual tables <virtualtables>` or similar items with
        each :class:`Connection` as it is created. The default value is an empty
        list. Whenever a Connection is created, each item in
@@ -138,7 +138,7 @@ API Reference
 
 .. index:: sqlite3_enable_shared_cache
 
-.. method:: enablesharedcache(enable: bool) -> None
+.. method:: enable_shared_cache(enable: bool) -> None
 
   If you use the same :class:`Connection` across threads or use
   multiple :class:`connections <Connection>` accessing the same file,
@@ -148,7 +148,7 @@ API Reference
 
   Calls: `sqlite3_enable_shared_cache <https://sqlite.org/c3ref/enable_shared_cache.html>`__
 
-.. method:: exceptionfor(code: int) -> Exception
+.. method:: exception_for(code: int) -> Exception
 
   If you would like to raise an exception that corresponds to a
   particular SQLite `error code
@@ -158,7 +158,7 @@ API Reference
 
   For example to raise `SQLITE_IOERR_ACCESS <https://sqlite.org/c3ref/c_ioerr_access.html>`_::
 
-    raise apsw.exceptionfor(apsw.SQLITE_IOERR_ACCESS)
+    raise apsw.exception_for(apsw.SQLITE_IOERR_ACCESS)
 
 .. method:: fork_checker() -> None
 
@@ -224,7 +224,7 @@ API Reference
 
   .. seealso::
 
-      :meth:`softheaplimit`
+      :meth:`soft_heap_limit`
 
   Calls: `sqlite3_hard_heap_limit64 <https://sqlite.org/c3ref/hard_heap_limit64.html>`__
 
@@ -263,7 +263,7 @@ API Reference
 
 .. index:: sqlite3_memory_highwater
 
-.. method:: memoryhighwater(reset: bool = False) -> int
+.. method:: memory_high_water(reset: bool = False) -> int
 
   Returns the maximum amount of memory SQLite has used.  If *reset* is
   True then the high water mark is reset to the current value.
@@ -276,7 +276,7 @@ API Reference
 
 .. index:: sqlite3_memory_used
 
-.. method:: memoryused() -> int
+.. method:: memory_used() -> int
 
   Returns the amount of memory SQLite is currently using.
 
@@ -304,7 +304,7 @@ API Reference
 
 .. index:: sqlite3_release_memory
 
-.. method:: releasememory(amount: int) -> int
+.. method:: release_memory(amount: int) -> int
 
   Requests SQLite try to free *amount* bytes of memory.  Returns how
   many bytes were freed.
@@ -316,7 +316,7 @@ API Reference
 .. method:: set_default_vfs(name: str) -> None
 
  Sets the default vfs to *name* which must be an existing vfs.
- See :meth:`vfsnames`.
+ See :meth:`vfs_names`.
 
  Calls:
    * `sqlite3_vfs_register <https://sqlite.org/c3ref/vfs_find.html>`__
@@ -345,7 +345,7 @@ API Reference
 
 .. index:: sqlite3_soft_heap_limit64
 
-.. method:: softheaplimit(limit: int) -> int
+.. method:: soft_heap_limit(limit: int) -> int
 
   Requests SQLite try to keep memory usage below *limit* bytes and
   returns the previous limit.
@@ -367,7 +367,7 @@ API Reference
 
 .. index:: sqlite3_libversion
 
-.. method:: sqlitelibversion() -> str
+.. method:: sqlite_lib_version() -> str
 
   Returns the version of the SQLite library.  This value is queried at
   run time from the library so if you use shared libraries it will be
@@ -429,7 +429,7 @@ API Reference
 
 .. method:: unregister_vfs(name: str) -> None
 
- Unregisters the named vfs.  See :meth:`vfsnames`.
+ Unregisters the named vfs.  See :meth:`vfs_names`.
 
  Calls:
    * `sqlite3_vfs_unregister <https://sqlite.org/c3ref/vfs_find.html>`__
@@ -460,7 +460,7 @@ Calls: `sqlite3_vfs_find <https://sqlite.org/c3ref/vfs_find.html>`__
 
 .. index:: sqlite3_vfs_find
 
-.. method:: vfsnames() -> list[str]
+.. method:: vfs_names() -> list[str]
 
   Returns a list of the currently installed :ref:`vfs <vfs>`.  The first
   item in the list is the default vfs.

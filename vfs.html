@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Virtual File System (VFS) &mdash; APSW 3.43.1.1 documentation</title>
+  <title>Virtual File System (VFS) &mdash; APSW 3.43.2.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/favicon.ico"/>
@@ -14,7 +14,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=1608d9ae"></script>
+        <script src="_static/documentation_options.js?v=200f835c"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.43.1.1
+                3.43.2.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -198,7 +198,7 @@ file contents.</p>
 <h2>Exceptions and errors<a class="headerlink" href="#exceptions-and-errors" title="Link to this heading"></a></h2>
 <p>To return an error from any routine you should raise an exception. The
 exception will be translated into the corresponding SQLite error code.
-To return a specific SQLite error code use <a class="reference internal" href="apsw.html#apsw.exceptionfor" title="apsw.exceptionfor"><code class="xref py py-meth docutils literal notranslate"><span class="pre">exceptionfor()</span></code></a>.  If
+To return a specific SQLite error code use <a class="reference internal" href="apsw.html#apsw.exception_for" title="apsw.exception_for"><code class="xref py py-meth docutils literal notranslate"><span class="pre">exception_for()</span></code></a>.  If
 the exception does not map to any specific error code then
 <em>SQLITE_ERROR</em> which corresponds to <a class="reference internal" href="exceptions.html#apsw.SQLError" title="apsw.SQLError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">SQLError</span></code></a> is returned to SQLite.</p>
 <p>The SQLite code that deals with VFS errors behaves in varying
@@ -263,7 +263,7 @@ create a VFS your Python class must inherit from <a class="reference internal" h
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> -- The name to register this vfs under.  If the name
 already exists then this vfs will replace the prior one of the
-same name.  Use <a class="reference internal" href="apsw.html#apsw.vfsnames" title="apsw.vfsnames"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.vfsnames()</span></code></a> to get a list of
+same name.  Use <a class="reference internal" href="apsw.html#apsw.vfs_names" title="apsw.vfs_names"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.vfs_names()</span></code></a> to get a list of
 registered vfs names.</p></li>
 <li><p><strong>base</strong> -- If you would like to inherit behaviour from an already registered vfs then give
 their name.  To inherit from the default vfs, use a zero
@@ -609,8 +609,8 @@ error then 0 (the SQLite default) is returned.</p>
 <dt class="sig sig-object py" id="apsw.VFSFile.xFileControl">
 <span class="sig-prename descclassname"><span class="pre">VFSFile.</span></span><span class="sig-name descname"><span class="pre">xFileControl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">op</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ptr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#apsw.VFSFile.xFileControl" title="Link to this definition"></a></dt>
 <dd><p>Receives <a class="reference external" href="https://sqlite.org/c3ref/file_control.html">file control</a> request typically
-issued by <a class="reference internal" href="connection.html#apsw.Connection.filecontrol" title="apsw.Connection.filecontrol"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.filecontrol()</span></code></a>.  See
-<a class="reference internal" href="connection.html#apsw.Connection.filecontrol" title="apsw.Connection.filecontrol"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.filecontrol()</span></code></a> for an example of how to pass a
+issued by <a class="reference internal" href="connection.html#apsw.Connection.file_control" title="apsw.Connection.file_control"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.file_control()</span></code></a>.  See
+<a class="reference internal" href="connection.html#apsw.Connection.file_control" title="apsw.Connection.file_control"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.file_control()</span></code></a> for an example of how to pass a
 Python object to this routine.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -785,7 +785,7 @@ present.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Oct 06, 2023.
+      <span class="lastupdated">Last updated on Oct 24, 2023.
       </span></p>
   </div>
 

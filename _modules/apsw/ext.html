@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>apsw.ext &mdash; APSW 3.43.1.1 documentation</title>
+  <title>apsw.ext &mdash; APSW 3.43.2.0 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
@@ -13,7 +13,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=1608d9ae"></script>
+        <script src="../../_static/documentation_options.js?v=200f835c"></script>
         <script src="../../_static/doctools.js?v=888ff710"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -36,7 +36,7 @@
               <img src="../../_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.43.1.1
+                3.43.2.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -109,10 +109,8 @@
 <span class="kn">import</span> <span class="nn">dataclasses</span>
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">make_dataclass</span><span class="p">,</span> <span class="n">is_dataclass</span>
 
-<span class="kn">import</span> <span class="nn">typing</span>
-<span class="k">if</span> <span class="n">typing</span><span class="o">.</span><span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">TextIO</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Generator</span>
-    <span class="kn">import</span> <span class="nn">types</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">TextIO</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Generator</span>
+<span class="kn">import</span> <span class="nn">types</span>
 
 <span class="kn">import</span> <span class="nn">functools</span>
 <span class="kn">import</span> <span class="nn">abc</span>
@@ -150,11 +148,11 @@
 <span class="k">class</span> <span class="nc">DataClassRowFactory</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns each row as a :mod:`dataclass &lt;dataclasses&gt;`, accessible by column name.</span>
 
-<span class="sd">    To use set an instance as :attr:`Connection.rowtrace</span>
-<span class="sd">    &lt;apsw.Connection.rowtrace&gt;` to affect all :class:`cursors</span>
+<span class="sd">    To use set an instance as :attr:`Connection.row_trace</span>
+<span class="sd">    &lt;apsw.Connection.row_trace&gt;` to affect all :class:`cursors</span>
 <span class="sd">    &lt;apsw.Cursor&gt;`, or on a specific cursor::</span>
 
-<span class="sd">        connection.rowtrace = apsw.ext.DataClassRowFactory()</span>
+<span class="sd">        connection.row_trace = apsw.ext.DataClassRowFactory()</span>
 <span class="sd">        for row in connection.execute(&quot;SELECT title, sum(orders) AS total, ...&quot;):</span>
 <span class="sd">            # You can now access by name</span>
 <span class="sd">            print (row.title, row.total)</span>
@@ -190,7 +188,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns dataclass and tuple of (potentially renamed) column names</span>
 
 <span class="sd">        The dataclass is what is returned for each row with that</span>
-<span class="sd">        :meth:`description &lt;apsw.Cursor.getdescription&gt;`</span>
+<span class="sd">        :meth:`description &lt;apsw.Cursor.get_description&gt;`</span>
 
 <span class="sd">        This method caches its results.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -219,7 +217,7 @@
 <div class="viewcode-block" id="DataClassRowFactory.get_type">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.DataClassRowFactory.get_type">[docs]</a>
     <span class="k">def</span> <span class="nf">get_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the `type hint &lt;https://docs.python.org/3/library/typing.html&gt;`__ to use in the dataclass based on the type in the :meth:`description &lt;apsw.Cursor.getdescription&gt;`</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the `type hint &lt;https://docs.python.org/3/library/typing.html&gt;`__ to use in the dataclass based on the type in the :meth:`description &lt;apsw.Cursor.get_description&gt;`</span>
 
 <span class="sd">        `SQLite&#39;s affinity rules  &lt;https://www.sqlite.org/datatype3.html#affname&gt;`__ are followed.</span>
 
@@ -228,7 +226,7 @@
 <span class="sd">        this is just a hint.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">t</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span>
+            <span class="k">return</span> <span class="n">Any</span>
         <span class="c1"># From 3.1 https://www.sqlite.org/datatype3.html</span>
         <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
         <span class="k">if</span> <span class="s2">&quot;INT&quot;</span> <span class="ow">in</span> <span class="n">t</span><span class="p">:</span>
@@ -239,7 +237,7 @@
             <span class="k">return</span> <span class="nb">bytes</span>
         <span class="k">if</span> <span class="s2">&quot;REAL&quot;</span> <span class="ow">in</span> <span class="n">t</span> <span class="ow">or</span> <span class="s2">&quot;FLOA&quot;</span> <span class="ow">in</span> <span class="n">t</span> <span class="ow">or</span> <span class="s2">&quot;DOUB&quot;</span> <span class="ow">in</span> <span class="n">t</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">float</span>
-        <span class="k">return</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="DataClassRowFactory.__call__">
@@ -250,7 +248,7 @@
 <span class="sd">        This :meth:`looks up &lt;get_dataclass&gt;` the dataclass and column</span>
 <span class="sd">        names, and then returns an instance of the dataclass.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">dc</span><span class="p">,</span> <span class="n">column_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_dataclass</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">getdescription</span><span class="p">())</span>
+        <span class="n">dc</span><span class="p">,</span> <span class="n">column_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_dataclass</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">get_description</span><span class="p">())</span>
         <span class="k">return</span> <span class="n">dc</span><span class="p">(</span><span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">column_names</span><span class="p">,</span> <span class="n">row</span><span class="p">)))</span></div>
 </div>
 
@@ -391,10 +389,10 @@
         <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">TypesConverterCursorFactory</span><span class="p">):</span>
             <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">connection</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">factory</span> <span class="o">=</span> <span class="n">factory</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">rowtrace</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rowtracer</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">row_trace</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rowtracer</span>
 
         <span class="k">def</span> <span class="nf">_rowtracer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cursor</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-            <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">convert_value</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">getdescription</span><span class="p">(),</span> <span class="n">values</span><span class="p">))</span>
+            <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">convert_value</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">get_description</span><span class="p">(),</span> <span class="n">values</span><span class="p">))</span>
 
 <div class="viewcode-block" id="TypesConverterCursorFactory.TypeConverterCursor.execute">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.TypeConverterCursor.execute">[docs]</a>
@@ -820,13 +818,13 @@
         <span class="k">if</span> <span class="n">colnames</span><span class="p">:</span>
             <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">format_query_table</span><span class="o">.</span><span class="n">_format_table</span><span class="p">(</span><span class="n">colnames</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
             <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">colnames</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">getdescription</span><span class="p">()]</span>
+        <span class="n">colnames</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">get_description</span><span class="p">()]</span>
         <span class="k">return</span> <span class="kc">True</span>
 
-    <span class="n">cursor</span><span class="o">.</span><span class="n">exectrace</span> <span class="o">=</span> <span class="n">trace</span>
-    <span class="c1"># mitigate any existing rowtracer</span>
-    <span class="k">if</span> <span class="n">db</span><span class="o">.</span><span class="n">rowtrace</span><span class="p">:</span>
-        <span class="n">cursor</span><span class="o">.</span><span class="n">rowtrace</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">y</span>
+    <span class="n">cursor</span><span class="o">.</span><span class="n">exec_trace</span> <span class="o">=</span> <span class="n">trace</span>
+    <span class="c1"># mitigate any existing row tracer</span>
+    <span class="k">if</span> <span class="n">db</span><span class="o">.</span><span class="n">row_trace</span><span class="p">:</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">row_trace</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">y</span>
 
     <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">bindings</span><span class="p">):</span>
         <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">row</span><span class="p">))</span>
@@ -1415,8 +1413,8 @@
         <span class="n">repr_invalid</span><span class="p">)</span>
 
     <span class="c1"># unregister any existing first</span>
-    <span class="n">db</span><span class="o">.</span><span class="n">createmodule</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-    <span class="n">db</span><span class="o">.</span><span class="n">createmodule</span><span class="p">(</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">create_module</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">create_module</span><span class="p">(</span>
         <span class="n">name</span><span class="p">,</span>
         <span class="n">mod</span><span class="p">,</span>  <span class="c1"># type: ignore[arg-type]</span>
         <span class="n">use_bestindex_object</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -1553,7 +1551,7 @@
             <span class="s2">&quot;is_explain&quot;</span><span class="p">:</span> <span class="n">cursor</span><span class="o">.</span><span class="n">is_explain</span><span class="p">,</span>
             <span class="s2">&quot;is_readonly&quot;</span><span class="p">:</span> <span class="n">cursor</span><span class="o">.</span><span class="n">is_readonly</span><span class="p">,</span>
             <span class="s2">&quot;has_vdbe&quot;</span><span class="p">:</span> <span class="n">cursor</span><span class="o">.</span><span class="n">has_vdbe</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="n">cursor</span><span class="o">.</span><span class="n">getdescription</span><span class="p">(),</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="n">cursor</span><span class="o">.</span><span class="n">get_description</span><span class="p">(),</span>
             <span class="s2">&quot;description_full&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
         <span class="p">})</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="s2">&quot;description_full&quot;</span><span class="p">):</span>
@@ -1621,7 +1619,7 @@
         <span class="k">return</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OK</span>
 
     <span class="n">cur</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-    <span class="n">cur</span><span class="o">.</span><span class="n">exectrace</span> <span class="o">=</span> <span class="n">tracer</span>
+    <span class="n">cur</span><span class="o">.</span><span class="n">exec_trace</span> <span class="o">=</span> <span class="n">tracer</span>
     <span class="k">if</span> <span class="n">actions</span><span class="p">:</span>
         <span class="n">orig_authorizer</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">authorizer</span>
         <span class="n">db</span><span class="o">.</span><span class="n">authorizer</span> <span class="o">=</span> <span class="n">auther</span>
@@ -1632,7 +1630,7 @@
     <span class="k">finally</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">actions</span><span class="p">:</span>
             <span class="n">db</span><span class="o">.</span><span class="n">authorizer</span> <span class="o">=</span> <span class="n">orig_authorizer</span>
-    <span class="n">cur</span><span class="o">.</span><span class="n">exectrace</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">cur</span><span class="o">.</span><span class="n">exec_trace</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="n">actions</span><span class="p">:</span>
         <span class="n">res</span><span class="p">[</span><span class="s2">&quot;actions&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">actions_taken</span>
 
@@ -1640,7 +1638,7 @@
         <span class="n">vdbe</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">VDBEInstruction</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s2">&quot;first_query&quot;</span><span class="p">],</span> <span class="n">bindings</span><span class="p">,</span> <span class="n">explain</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
             <span class="n">vdbe</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">VDBEInstruction</span><span class="p">(</span><span class="o">**</span><span class="nb">dict</span><span class="p">((</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">cur</span><span class="o">.</span><span class="n">getdescription</span><span class="p">(),</span> <span class="n">row</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)))</span>
+                <span class="n">VDBEInstruction</span><span class="p">(</span><span class="o">**</span><span class="nb">dict</span><span class="p">((</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">cur</span><span class="o">.</span><span class="n">get_description</span><span class="p">(),</span> <span class="n">row</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)))</span>
         <span class="n">res</span><span class="p">[</span><span class="s2">&quot;explain&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">vdbe</span>
 
     <span class="k">if</span> <span class="n">explain_query_plan</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">res</span><span class="p">[</span><span class="s2">&quot;is_explain&quot;</span><span class="p">]:</span>
@@ -1648,7 +1646,7 @@
         <span class="n">byid</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;QUERY PLAN&quot;</span><span class="p">}}</span>
 
         <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s2">&quot;first_query&quot;</span><span class="p">],</span> <span class="n">bindings</span><span class="p">,</span> <span class="n">explain</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
-            <span class="n">node</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">cur</span><span class="o">.</span><span class="n">getdescription</span><span class="p">(),</span> <span class="n">row</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;notused&quot;</span><span class="p">)</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">cur</span><span class="o">.</span><span class="n">get_description</span><span class="p">(),</span> <span class="n">row</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;notused&quot;</span><span class="p">)</span>
             <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span>  <span class="c1"># catch changes in returned format</span>
             <span class="n">parent</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="n">byid</span><span class="p">[</span><span class="n">node</span><span class="p">[</span><span class="s2">&quot;parent&quot;</span><span class="p">]]</span>
             <span class="k">if</span> <span class="n">subn</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">parent</span><span class="p">:</span>
@@ -1689,7 +1687,7 @@
     <span class="n">has_vdbe</span><span class="p">:</span> <span class="nb">bool</span>
     <span class="s2">&quot;:attr:`Cursor.has_vdbe &lt;apsw.Cursor.has_vdbe&gt;`&quot;</span>
     <span class="n">description</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span>
-    <span class="s2">&quot;:meth:`Cursor.getdescription &lt;apsw.Cursor.getdescription&gt;`&quot;</span>
+    <span class="s2">&quot;:meth:`Cursor.get_description &lt;apsw.Cursor.get_description&gt;`&quot;</span>
     <span class="n">description_full</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="s2">&quot;:attr:`Cursor.description_full &lt;apsw.Cursor.description_full&gt;`&quot;</span>
     <span class="n">expanded_sql</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
@@ -1883,7 +1881,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Oct 06, 2023.
+      <span class="lastupdated">Last updated on Oct 24, 2023.
       </span></p>
   </div>
 

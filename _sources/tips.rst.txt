@@ -223,14 +223,14 @@ object to use as a cursor.
 
 For example instead of returning rows as tuples, we can return them as
 dictionaries using a :ref:`row tracer <rowtracer>` with
-:meth:`Cursor.getdescription`::
+:meth:`Cursor.get_description`::
 
   def dict_row(cursor, row):
-    return {k[0]: row[i] for i, k in enumerate(cursor.getdescription())}
+    return {k[0]: row[i] for i, k in enumerate(cursor.get_description())}
 
   def my_factory(connection):
     cursor = apsw.Cursor(connection)
-    cursor.rowtrace = dict_row
+    cursor.row_trace = dict_row
     return cursor
 
   connection.cursor_factory = my_factory
@@ -249,9 +249,9 @@ short a time as possible.  See the `SQLite documentation
 <https://sqlite.org/lockingv3.html>`__ for more details.
 
 By default you will get a :exc:`BusyError` if a lock cannot be
-acquired.  You can set a :meth:`timeout <Connection.setbusytimeout>`
+acquired.  You can set a :meth:`timeout <Connection.set_busy_timeout>`
 which will keep retrying or a :meth:`callback
-<Connection.setbusyhandler>` where you decide what to do.
+<Connection.set_busy_handler>` where you decide what to do.
 
 Database schema
 ===============

@@ -3,6 +3,22 @@ Change History
 
 .. currentmodule:: apsw
 
+You may also be interested in the `SQLite release history
+<https://www.sqlite.org/chronology.html>`__ and `Python release
+history <https://devguide.python.org/versions/>`__.
+
+APSW changes by version
+-----------------------
+
+3.43.2.0
+========
+
+:meth:`Connection.create_aggregate_function` can take a class with step
+and final methods. (:issue:`421`)
+
+Corrected non :pep:`8` :ref:`compliant names <renaming>`.  The old
+names remain as aliases to the new ones, and your code will not break.
+
 3.43.1.1
 ========
 
@@ -69,7 +85,7 @@ Reduced overhead of the Column method when using
 
 Work with SQLite compiled with `SQLITE_OMIT_DEPRECATED
 <https://www.sqlite.org/compile.html#omit_deprecated>`__.
-:meth:`Connection.setprofile` was changed from using the deprecated
+:meth:`Connection.set_profile` was changed from using the deprecated
 `sqlite3_profile <https://sqlite.org/c3ref/profile.html>`__ to
 `sqlite3_trace_v2 <https://sqlite.org/c3ref/trace_v2.html>`__ giving
 the same results.  When including the amalgamation,
@@ -187,7 +203,7 @@ Virtual table updates:
 * Added :meth:`Connection.vtab_config` and
   :meth:`Connection.vtab_on_conflict` (:issue:`189`, :issue:`190`)
 
-* :meth:`Connection.createmodule` lets you have `eponymous
+* :meth:`Connection.create_module` lets you have `eponymous
   <https://sqlite.org/vtab.html#eponymous_virtual_tables>`__,
   `eponymous_only
   <https://sqlite.org/vtab.html#eponymous_only_virtual_tables>`__, and
@@ -195,13 +211,13 @@ Virtual table updates:
 
 * Virtual table updates can avoid having to provide all column
   values when only a subset are changing.  See :attr:`apsw.no_change`,
-  :meth:`Connection.createmodule` *use_no_change* parameter,
+  :meth:`Connection.create_module` *use_no_change* parameter,
   :meth:`VTCursor.ColumnNoChange` and :meth:`VTTable.UpdateChangeRow`
   (:issue:`402`)
 
 * All `virtual table methods <https://www.sqlite.org/c3ref/module.html>`__
   are supported - added *iVersion* 2 and 3.  You can specify the
-  *iVersion* in :meth:`Connection.createmodule` (:issue:`128`)
+  *iVersion* in :meth:`Connection.create_module` (:issue:`128`)
 
 * :meth:`apsw.ext.make_virtual_module` makes it very easy to turn
   a Python function into a virtual table module.
@@ -225,8 +241,8 @@ Implemented `window functions
 (:issue:`292`)
 
 `Function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__
-can be specified to :meth:`Connection.createscalarfunction` and
-:meth:`Connection.createaggregatefunction`. Added
+can be specified to :meth:`Connection.create_scalar_function` and
+:meth:`Connection.create_aggregate_function`. Added
 :attr:`apsw.mapping_function_flags`. (:issue:`384`)
 
 Added :meth:`Connection.trace_v2` with :attr:`apsw.mapping_trace_codes`
@@ -237,7 +253,7 @@ Ensure all SQLite APIs are wrapped. :attr:`Connection.system_errno`,
 :meth:`apsw.strnicmp`, :attr:`Connection.filename_wal`,
 :attr:`Connection.filename_journal`, :meth:`Connection.table_exists`,
 :meth:`Connection.column_metadata`, :attr:`Error.error_offset`,
-:meth:`Connection.cacheflush`, :meth:`Connection.release_memory`,
+:meth:`Connection.cache_flush`, :meth:`Connection.release_memory`,
 :meth:`apsw.hard_heap_limit`. :meth:`Connection.drop_modules`
 (:issue:`382`)
 
@@ -276,8 +292,8 @@ Added :doc:`ext` (:issue:`369`)
 
 Added more Pythonic attributes as an alternative to getters and
 setters, including :attr:`Connection.in_transaction`,
-:attr:`Connection.exectrace`, :attr:`Connection.rowtrace`,
-:attr:`Cursor.exectrace`, :attr:`Cursor.rowtrace`,
+:attr:`Connection.exec_trace`, :attr:`Connection.row_trace`,
+:attr:`Cursor.exec_trace`, :attr:`Cursor.row_trace`,
 :attr:`Cursor.connection` (:issue:`371`)
 
 Completed: To the extent permitted by CPython APIs every item has the
@@ -305,7 +321,7 @@ the statement cache.
 
 :meth:`Cursor.execute` has a new `can_cache` parameter to control
 whether the query can use the statement cache.  One example use is
-with :meth:`authorizers <Connection.setauthorizer>` because they only
+with :meth:`authorizers <Connection.set_authorizer>` because they only
 run during prepare, which doesn't happen with already cached
 statements.
 
@@ -466,7 +482,7 @@ Updated size of mutex array used by the :func:`fork checker <fork_checker>`
 Connections are opened with SQLITE_OPEN_EXRESCODE so open errors will
 also include extended result codes.
 
-:meth:`Connection.changes` and :meth:`Connection.totalchanges` use the
+:meth:`Connection.changes` and :meth:`Connection.total_changes` use the
 new SQLite APIs that return 64 bit values (ie can now return values
 greater than 2 billion).
 
@@ -809,7 +825,7 @@ Adjusted some internal detection related to the :func:`fork checker
 ===========
 
 Added deterministic parameter to
-:func:`Connection.createscalarfunction` (:issue:`187`)
+:func:`Connection.create_scalar_function` (:issue:`187`)
 
 Switched to new SQLite API returning 64 bit values for :func:`status`
 (:issue:`191`)
@@ -1236,7 +1252,7 @@ information.
 Backwards incompatible change in SQLite 3.7.5 for handling of
 :meth:`~VFSFile.xFileControl`.  If you implement this method in a VFS
 then you must return True or False to indicate if the operation was
-understood.  :meth:`Connection.filecontrol` now returns that value.
+understood.  :meth:`Connection.file_control` now returns that value.
 (Previously you could not tell the difference between an op being
 understood and an error resulting, or the op not being understood at
 all.)
@@ -1249,7 +1265,7 @@ Windows Python 3.2 binaries now available.
 Binary downloads for Windows 64 bit Python versions 2.6 and above
 including Python 3 are now available.
 
-:meth:`apsw.softheaplimit` now uses `sqlite3_soft_heap_limit64
+:meth:`apsw.soft_heap_limit` now uses `sqlite3_soft_heap_limit64
 <https://sqlite.org/c3ref/soft_heap_limit64.html>`__ so you can
 provide values larger than 2GB.  It is now also able to return the
 previous value instead of None.
@@ -1267,7 +1283,7 @@ in the `SQLite documentation
 ========
 
 You can read blobs into pre-existing buffers using
-:meth:`Blob.readinto`.  (This is more efficient than allocating new
+:meth:`Blob.read_into`.  (This is more efficient than allocating new
 buffers as :meth:`Blob.read` does and then copying.)  (:issue:`109`).
 
 Fixed bug with unicode output in CSV mode in the shell.
@@ -1288,7 +1304,7 @@ No changes to APSW.  Upgrading to this version of SQLite is
 
 Updated various constants including `SQLITE_FCNTL_CHUNK_SIZE
 <https://sqlite.org/c3ref/c_fcntl_chunk_size.html>`__ used with
-:meth:`Connection.filecontrol`.
+:meth:`Connection.file_control`.
 
 Fixed Unicode output with some file objects from the shell (:issue:`108`).
 
@@ -1694,7 +1710,7 @@ detecting and diagnosing this issue.
 <https://docs.python.org/library/weakref.html>`_.
 
 You can now install :class:`Connection` wide :meth:`execution
-<Connection.setexectrace>` and :meth:`row <Connection.setrowtrace>`
+<Connection.set_exec_trace>` and :meth:`row <Connection.set_row_trace>`
 :ref:`tracers <tracing>`.
 
 The callbacks for execution and row tracers have a different signature
@@ -1815,7 +1831,7 @@ for numbers fitting in signed 32 bit. This only affects Python 2 as
 Python 3 uses long exclusively. Thanks to Joe Pham for reporting this
 as :issue:`24`
 
-Added :meth:`Connection.sqlite3pointer` method to help with
+Added :meth:`Connection.sqlite3_pointer` method to help with
 :issue:`26`
 
 3.5.9-r2
@@ -1898,7 +1914,7 @@ Improved test coverage a few more percent.
 The statement cache now defaults to the same number of entries as
 pysqlite (100). You can however specify more or less as needed.
 
-:func:`Connection.collationneeded` was implemented.
+:func:`Connection.collation_needed` was implemented.
 
 
 3.3.13-r1
@@ -2025,7 +2041,7 @@ column sets. You have to compile SQLite with
 *SQLITE_ENABLE_COLUMN_METADATA* to get them. This is not the
 default for SQLite. I don't believe these are generally useful except
 in some corner cases and so they aren't wrapped. However please shout
-if you do need them.  Note that :meth:`Cursor.getdescription` will
+if you do need them.  Note that :meth:`Cursor.get_description` will
 already give you generally useful information. (Also see the `pragmas
 <https://sqlite.org/pragma.html>`_)
 
@@ -2116,7 +2132,7 @@ introduced in SQLite 3.1.3).
 Changed various C++-isms into standard C (eg // comments and the
 placing of some *CHECK_THREAD* macro calls).
 
-Added module level function :meth:`~apsw.apswversion` which returns
+Added module level function :meth:`~apsw.apsw_version` which returns
 the version of APSW.
 
 SQLite 3.1.3 had no changes in the stable C API other than what is
@@ -2157,3 +2173,17 @@ Finished this documentation.
 ========
 
 Initial release
+
+.. _renaming:
+
+Renaming
+--------
+
+Early APSW exposed some method and attribute names not complying with
+Python naming conventions as documented in :pep:`8`.  For example
+``exceptionfor`` instead of ``exception_for``.  This has now been
+corrected with the compliant names being documented and used in
+examples.  The old names are still available maintaining
+:ref:`backwards compatibility <backcompat>`.
+
+.. include:: ../doc/renames.rstgen

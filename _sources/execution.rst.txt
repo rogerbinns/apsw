@@ -61,8 +61,8 @@ another. You also can't do things like try to
 If you have multiple threads and/or multiple programs accessing the
 same database then there may be contention for the file. SQLite will
 return SQLITE_BUSY which will be raised as BusyError. You can call
-:meth:`Connection.setbusytimeout` to set how long SQLite will retry
-for or :meth:`Connection.setbusyhandler` to install your own busy
+:meth:`Connection.set_busy_timeout` to set how long SQLite will retry
+for or :meth:`Connection.set_busy_handler` to install your own busy
 handler. Note that SQLite won't call the busy handler or timeout if it
 believes a deadlock has arisen. SQLite's locking and concurrency is
 described `here <https://sqlite.org/lockingv3.html>`_.
@@ -128,7 +128,7 @@ code.
   your tracer was called from. If you would like to make more queries
   in the tracer then do them from a new cursor object.  For example::
 
-    def exectracer(cursor, sql, bindings):
+    def exec_tracer(cursor, sql, bindings):
       cursor.connection.cursor().execute("insert into log values(?,?)", (sql,str(bindings)))
       return True
 
@@ -155,8 +155,8 @@ aborted with an :exc:`ExecTraceAbort` exception.  See the
 :ref:`example <example_exectrace>`.
 
 Execution tracers can be installed on a specific cursor by setting
-:attr:`Cursor.exectrace` or for all cursors by setting
-:attr:`Connection.exectrace`, with the cursor tracer taking
+:attr:`Cursor.exec_trace` or for all cursors by setting
+:attr:`Connection.exec_trace`, with the cursor tracer taking
 priority.
 
 If you use the Connection :meth:`with <Connection.__enter__>` statement
@@ -183,8 +183,8 @@ the caller of :meth:`~Cursor.execute`. If you return None then the
 whole row is skipped. See the :ref:`example <example_rowtrace>`.
 
 Row tracers can be installed on a specific cursor by setting
-:attr:`Cursor.rowtrace` or for all cursors by setting
-:attr:`Connection.rowtrace`, with the cursor tracer taking
+:attr:`Cursor.row_trace` or for all cursors by setting
+:attr:`Connection.row_trace`, with the cursor tracer taking
 priority.
 
 .. _apswtrace:

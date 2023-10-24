@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>APSW Module &mdash; APSW 3.43.1.1 documentation</title>
+  <title>APSW Module &mdash; APSW 3.43.2.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/favicon.ico"/>
@@ -14,7 +14,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=1608d9ae"></script>
+        <script src="_static/documentation_options.js?v=200f835c"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.43.1.1
+                3.43.2.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -80,31 +80,31 @@
 <li class="toctree-l2"><a class="reference internal" href="#api-reference">API Reference</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.SQLITE_VERSION_NUMBER"><code class="docutils literal notranslate"><span class="pre">SQLITE_VERSION_NUMBER</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.allow_missing_dict_bindings"><code class="docutils literal notranslate"><span class="pre">allow_missing_dict_bindings()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#apsw.apswversion"><code class="docutils literal notranslate"><span class="pre">apswversion()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.apsw_version"><code class="docutils literal notranslate"><span class="pre">apsw_version()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.compile_options"><code class="docutils literal notranslate"><span class="pre">compile_options</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.complete"><code class="docutils literal notranslate"><span class="pre">complete()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.config"><code class="docutils literal notranslate"><span class="pre">config()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.connection_hooks"><code class="docutils literal notranslate"><span class="pre">connection_hooks</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.connections"><code class="docutils literal notranslate"><span class="pre">connections()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#apsw.enablesharedcache"><code class="docutils literal notranslate"><span class="pre">enablesharedcache()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#apsw.exceptionfor"><code class="docutils literal notranslate"><span class="pre">exceptionfor()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.enable_shared_cache"><code class="docutils literal notranslate"><span class="pre">enable_shared_cache()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.exception_for"><code class="docutils literal notranslate"><span class="pre">exception_for()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.fork_checker"><code class="docutils literal notranslate"><span class="pre">fork_checker()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.format_sql_value"><code class="docutils literal notranslate"><span class="pre">format_sql_value()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.hard_heap_limit"><code class="docutils literal notranslate"><span class="pre">hard_heap_limit()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.initialize"><code class="docutils literal notranslate"><span class="pre">initialize()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.keywords"><code class="docutils literal notranslate"><span class="pre">keywords</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.log"><code class="docutils literal notranslate"><span class="pre">log()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#apsw.memoryhighwater"><code class="docutils literal notranslate"><span class="pre">memoryhighwater()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#apsw.memoryused"><code class="docutils literal notranslate"><span class="pre">memoryused()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.memory_high_water"><code class="docutils literal notranslate"><span class="pre">memory_high_water()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.memory_used"><code class="docutils literal notranslate"><span class="pre">memory_used()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.no_change"><code class="docutils literal notranslate"><span class="pre">no_change</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.randomness"><code class="docutils literal notranslate"><span class="pre">randomness()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#apsw.releasememory"><code class="docutils literal notranslate"><span class="pre">releasememory()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.release_memory"><code class="docutils literal notranslate"><span class="pre">release_memory()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.set_default_vfs"><code class="docutils literal notranslate"><span class="pre">set_default_vfs()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.shutdown"><code class="docutils literal notranslate"><span class="pre">shutdown()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.sleep"><code class="docutils literal notranslate"><span class="pre">sleep()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#apsw.softheaplimit"><code class="docutils literal notranslate"><span class="pre">softheaplimit()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.soft_heap_limit"><code class="docutils literal notranslate"><span class="pre">soft_heap_limit()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.sqlite3_sourceid"><code class="docutils literal notranslate"><span class="pre">sqlite3_sourceid()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#apsw.sqlitelibversion"><code class="docutils literal notranslate"><span class="pre">sqlitelibversion()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.sqlite_lib_version"><code class="docutils literal notranslate"><span class="pre">sqlite_lib_version()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.status"><code class="docutils literal notranslate"><span class="pre">status()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.strglob"><code class="docutils literal notranslate"><span class="pre">strglob()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.stricmp"><code class="docutils literal notranslate"><span class="pre">stricmp()</span></code></a></li>
@@ -113,7 +113,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#apsw.unregister_vfs"><code class="docutils literal notranslate"><span class="pre">unregister_vfs()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.using_amalgamation"><code class="docutils literal notranslate"><span class="pre">using_amalgamation</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.vfs_details"><code class="docutils literal notranslate"><span class="pre">vfs_details()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#apsw.vfsnames"><code class="docutils literal notranslate"><span class="pre">vfsnames()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.vfs_names"><code class="docutils literal notranslate"><span class="pre">vfs_names()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#sqlite-constants">SQLite constants</a><ul>
@@ -286,7 +286,7 @@ for named bindings</p>
 <dt class="sig sig-object py" id="apsw.AggregateFactory">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">AggregateFactory</span></span><a class="headerlink" href="#apsw.AggregateFactory" title="Link to this definition"></a></dt>
 <dd><div class="line-block">
-<div class="line"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a>​[[], <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>​[<a class="reference internal" href="#apsw.AggregateT" title="apsw.AggregateT"><code class="xref py py-class docutils literal notranslate"><span class="pre">AggregateT</span></code></a>​, <a class="reference internal" href="#apsw.AggregateStep" title="apsw.AggregateStep"><code class="xref py py-class docutils literal notranslate"><span class="pre">AggregateStep</span></code></a>​, <a class="reference internal" href="#apsw.AggregateFinal" title="apsw.AggregateFinal"><code class="xref py py-class docutils literal notranslate"><span class="pre">AggregateFinal</span></code></a>​]]</div>
+<div class="line"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a>​[[], AggregateClass | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>​[<a class="reference internal" href="#apsw.AggregateT" title="apsw.AggregateT"><code class="xref py py-class docutils literal notranslate"><span class="pre">AggregateT</span></code></a>​, <a class="reference internal" href="#apsw.AggregateStep" title="apsw.AggregateStep"><code class="xref py py-class docutils literal notranslate"><span class="pre">AggregateStep</span></code></a>​, <a class="reference internal" href="#apsw.AggregateFinal" title="apsw.AggregateFinal"><code class="xref py py-class docutils literal notranslate"><span class="pre">AggregateFinal</span></code></a>​]]</div>
 </div>
 <p>Called each time for the start of a new calculation using an aggregate function,
 returning an object, a step function and a final function</p>
@@ -434,7 +434,7 @@ to let it continue</p>
 against.  For example SQLite 3.6.4 will have the value <em>3006004</em>.
 This number may be different than the actual library in use if the
 library is shared and has been updated.  Call
-<a class="reference internal" href="#apsw.sqlitelibversion" title="apsw.sqlitelibversion"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sqlitelibversion()</span></code></a> to get the actual library version.</p>
+<a class="reference internal" href="#apsw.sqlite_lib_version" title="apsw.sqlite_lib_version"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sqlite_lib_version()</span></code></a> to get the actual library version.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -454,8 +454,8 @@ the earlier behaviour, and <em>False</em> to have an exception.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="apsw.apswversion">
-<span class="sig-name descname"><span class="pre">apswversion</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></span><a class="headerlink" href="#apsw.apswversion" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="apsw.apsw_version">
+<span class="sig-name descname"><span class="pre">apsw_version</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></span><a class="headerlink" href="#apsw.apsw_version" title="Link to this definition"></a></dt>
 <dd><p>Returns the APSW version.</p>
 </dd></dl>
 
@@ -509,7 +509,7 @@ log messages (SQLITE_CONFIG_LOG)</p>
 <dt class="sig sig-object py" id="apsw.connection_hooks">
 <span class="sig-name descname"><span class="pre">connection_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#apsw.connection_hooks" title="Link to this definition"></a></dt>
 <dd><p>The purpose of the hooks is to allow the easy registration of
-<a class="reference internal" href="connection.html#apsw.Connection.createscalarfunction" title="apsw.Connection.createscalarfunction"><code class="xref py py-meth docutils literal notranslate"><span class="pre">functions</span></code></a>,
+<a class="reference internal" href="connection.html#apsw.Connection.create_scalar_function" title="apsw.Connection.create_scalar_function"><code class="xref py py-meth docutils literal notranslate"><span class="pre">functions</span></code></a>,
 <a class="reference internal" href="vtable.html#virtualtables"><span class="std std-ref">virtual tables</span></a> or similar items with
 each <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> as it is created. The default value is an empty
 list. Whenever a Connection is created, each item in
@@ -529,8 +529,8 @@ functions.</p>
 </dd></dl>
 
 <dl class="py method" id="index-3">
-<dt class="sig sig-object py" id="apsw.enablesharedcache">
-<span class="sig-name descname"><span class="pre">enablesharedcache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.enablesharedcache" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="apsw.enable_shared_cache">
+<span class="sig-name descname"><span class="pre">enable_shared_cache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.enable_shared_cache" title="Link to this definition"></a></dt>
 <dd><p>If you use the same <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> across threads or use
 multiple <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">connections</span></code></a> accessing the same file,
 then SQLite can <a class="reference external" href="https://sqlite.org/sharedcache.html">share the cache between them</a>.  It is <a class="reference internal" href="tips.html#sharedcache"><span class="std std-ref">not
@@ -539,13 +539,13 @@ recommended</span></a> that you use this.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="apsw.exceptionfor">
-<span class="sig-name descname"><span class="pre">exceptionfor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.12)"><span class="pre">Exception</span></a></span></span><a class="headerlink" href="#apsw.exceptionfor" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="apsw.exception_for">
+<span class="sig-name descname"><span class="pre">exception_for</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.12)"><span class="pre">Exception</span></a></span></span><a class="headerlink" href="#apsw.exception_for" title="Link to this definition"></a></dt>
 <dd><p>If you would like to raise an exception that corresponds to a
 particular SQLite <a class="reference external" href="https://sqlite.org/c3ref/c_abort.html">error code</a> then call this function.
 It also understands <a class="reference external" href="https://sqlite.org/c3ref/c_ioerr_access.html">extended error codes</a>.</p>
 <p>For example to raise <a class="reference external" href="https://sqlite.org/c3ref/c_ioerr_access.html">SQLITE_IOERR_ACCESS</a>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">raise</span> <span class="n">apsw</span><span class="o">.</span><span class="n">exceptionfor</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_IOERR_ACCESS</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">raise</span> <span class="n">apsw</span><span class="o">.</span><span class="n">exception_for</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_IOERR_ACCESS</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -604,7 +604,7 @@ syntax.</p>
 returns the previous limit.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
-<p><a class="reference internal" href="#apsw.softheaplimit" title="apsw.softheaplimit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">softheaplimit()</span></code></a></p>
+<p><a class="reference internal" href="#apsw.soft_heap_limit" title="apsw.soft_heap_limit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">soft_heap_limit()</span></code></a></p>
 </div>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/hard_heap_limit64.html">sqlite3_hard_heap_limit64</a></p>
 </dd></dl>
@@ -643,8 +643,8 @@ receive log messages.</p>
 </dd></dl>
 
 <dl class="py method" id="index-8">
-<dt class="sig sig-object py" id="apsw.memoryhighwater">
-<span class="sig-name descname"><span class="pre">memoryhighwater</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.memoryhighwater" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="apsw.memory_high_water">
+<span class="sig-name descname"><span class="pre">memory_high_water</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.memory_high_water" title="Link to this definition"></a></dt>
 <dd><p>Returns the maximum amount of memory SQLite has used.  If <em>reset</em> is
 True then the high water mark is reset to the current value.</p>
 <div class="admonition seealso">
@@ -655,8 +655,8 @@ True then the high water mark is reset to the current value.</p>
 </dd></dl>
 
 <dl class="py method" id="index-9">
-<dt class="sig sig-object py" id="apsw.memoryused">
-<span class="sig-name descname"><span class="pre">memoryused</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.memoryused" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="apsw.memory_used">
+<span class="sig-name descname"><span class="pre">memory_used</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.memory_used" title="Link to this definition"></a></dt>
 <dd><p>Returns the amount of memory SQLite is currently using.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
@@ -686,8 +686,8 @@ used with <a class="reference internal" href="vtable.html#apsw.VTCursor.ColumnNo
 </dd></dl>
 
 <dl class="py method" id="index-11">
-<dt class="sig sig-object py" id="apsw.releasememory">
-<span class="sig-name descname"><span class="pre">releasememory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">amount</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.releasememory" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="apsw.release_memory">
+<span class="sig-name descname"><span class="pre">release_memory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">amount</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.release_memory" title="Link to this definition"></a></dt>
 <dd><p>Requests SQLite try to free <em>amount</em> bytes of memory.  Returns how
 many bytes were freed.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/release_memory.html">sqlite3_release_memory</a></p>
@@ -697,7 +697,7 @@ many bytes were freed.</p>
 <dt class="sig sig-object py" id="apsw.set_default_vfs">
 <span class="sig-name descname"><span class="pre">set_default_vfs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.set_default_vfs" title="Link to this definition"></a></dt>
 <dd><p>Sets the default vfs to <em>name</em> which must be an existing vfs.
-See <a class="reference internal" href="#apsw.vfsnames" title="apsw.vfsnames"><code class="xref py py-meth docutils literal notranslate"><span class="pre">vfsnames()</span></code></a>.</p>
+See <a class="reference internal" href="#apsw.vfs_names" title="apsw.vfs_names"><code class="xref py py-meth docutils literal notranslate"><span class="pre">vfs_names()</span></code></a>.</p>
 <dl class="simple">
 <dt>Calls:</dt><dd><ul class="simple">
 <li><p><a class="reference external" href="https://sqlite.org/c3ref/vfs_find.html">sqlite3_vfs_register</a></p></li>
@@ -727,8 +727,8 @@ milliseconds were requested.</p>
 </dd></dl>
 
 <dl class="py method" id="index-15">
-<dt class="sig sig-object py" id="apsw.softheaplimit">
-<span class="sig-name descname"><span class="pre">softheaplimit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.softheaplimit" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="apsw.soft_heap_limit">
+<span class="sig-name descname"><span class="pre">soft_heap_limit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.soft_heap_limit" title="Link to this definition"></a></dt>
 <dd><p>Requests SQLite try to keep memory usage below <em>limit</em> bytes and
 returns the previous limit.</p>
 <div class="admonition seealso">
@@ -747,8 +747,8 @@ being used.</p>
 </dd></dl>
 
 <dl class="py method" id="index-17">
-<dt class="sig sig-object py" id="apsw.sqlitelibversion">
-<span class="sig-name descname"><span class="pre">sqlitelibversion</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></span><a class="headerlink" href="#apsw.sqlitelibversion" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="apsw.sqlite_lib_version">
+<span class="sig-name descname"><span class="pre">sqlite_lib_version</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></span><a class="headerlink" href="#apsw.sqlite_lib_version" title="Link to this definition"></a></dt>
 <dd><p>Returns the version of the SQLite library.  This value is queried at
 run time from the library so if you use shared libraries it will be
 the version in the shared library.</p>
@@ -812,7 +812,7 @@ on a match.</p>
 <dl class="py method" id="index-23">
 <dt class="sig sig-object py" id="apsw.unregister_vfs">
 <span class="sig-name descname"><span class="pre">unregister_vfs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.unregister_vfs" title="Link to this definition"></a></dt>
-<dd><p>Unregisters the named vfs.  See <a class="reference internal" href="#apsw.vfsnames" title="apsw.vfsnames"><code class="xref py py-meth docutils literal notranslate"><span class="pre">vfsnames()</span></code></a>.</p>
+<dd><p>Unregisters the named vfs.  See <a class="reference internal" href="#apsw.vfs_names" title="apsw.vfs_names"><code class="xref py py-meth docutils literal notranslate"><span class="pre">vfs_names()</span></code></a>.</p>
 <dl class="simple">
 <dt>Calls:</dt><dd><ul class="simple">
 <li><p><a class="reference external" href="https://sqlite.org/c3ref/vfs_find.html">sqlite3_vfs_unregister</a></p></li>
@@ -842,8 +842,8 @@ corresponding values.</p>
 <p>Pointers are converted using <a class="reference external" href="https://docs.python.org/3/c-api/long.html?highlight=voidptr#c.PyLong_FromVoidPtr">PyLong_FromVoidPtr</a>.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/vfs_find.html">sqlite3_vfs_find</a></p>
 <dl class="py method" id="index-25">
-<dt class="sig sig-object py" id="apsw.vfsnames">
-<span class="sig-name descname"><span class="pre">vfsnames</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#apsw.vfsnames" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="apsw.vfs_names">
+<span class="sig-name descname"><span class="pre">vfs_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#apsw.vfs_names" title="Link to this definition"></a></dt>
 <dd><p>Returns a list of the currently installed <a class="reference internal" href="vfs.html#vfs"><span class="std std-ref">vfs</span></a>.  The first
 item in the list is the default vfs.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/vfs_find.html">sqlite3_vfs_find</a></p>
@@ -1063,7 +1063,7 @@ modules etc. For example:</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Oct 06, 2023.
+      <span class="lastupdated">Last updated on Oct 24, 2023.
       </span></p>
   </div>
 

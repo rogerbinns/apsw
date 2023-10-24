@@ -149,7 +149,7 @@ Connection class
 
 .. index:: sqlite3_blob_open
 
-.. method:: Connection.blobopen(database: str, table: str, column: str, rowid: int, writeable: bool)  -> Blob
+.. method:: Connection.blob_open(database: str, table: str, column: str, rowid: int, writeable: bool)  -> Blob
 
    Opens a blob for :ref:`incremental I/O <blobio>`.
 
@@ -169,6 +169,14 @@ Connection class
      * `SQLite row ids <https://sqlite.org/autoinc.html>`_
 
    Calls: `sqlite3_blob_open <https://sqlite.org/c3ref/blob_open.html>`__
+
+.. index:: sqlite3_db_cacheflush
+
+.. method:: Connection.cache_flush() -> None
+
+  Flushes caches to disk mid-transaction.
+
+  Calls: `sqlite3_db_cacheflush <https://sqlite.org/c3ref/db_cacheflush.html>`__
 
 .. method:: Connection.cache_stats(include_entries: bool = False) -> dict[str, int]
 
@@ -233,14 +241,6 @@ If `entries` is present, then each list entry is a dict with the following infor
     - Boolean indicating if there was more query text than
       the first statement
 
-.. index:: sqlite3_db_cacheflush
-
-.. method:: Connection.cacheflush() -> None
-
-  Flushes caches to disk mid-transaction.
-
-  Calls: `sqlite3_db_cacheflush <https://sqlite.org/c3ref/db_cacheflush.html>`__
-
 .. index:: sqlite3_changes64
 
 .. method:: Connection.changes() -> int
@@ -280,26 +280,26 @@ If `entries` is present, then each list entry is a dict with the following infor
 
 .. index:: sqlite3_collation_needed
 
-.. method:: Connection.collationneeded(callable: Optional[Callable[[Connection, str], None]]) -> None
+.. method:: Connection.collation_needed(callable: Optional[Callable[[Connection, str], None]]) -> None
 
   *callable* will be called if a statement requires a `collation
   <https://en.wikipedia.org/wiki/Collation>`_ that hasn't been
   registered. Your callable will be passed two parameters. The first
   is the connection object. The second is the name of the
   collation. If you have the collation code available then call
-  :meth:`Connection.createcollation`.
+  :meth:`Connection.create_collation`.
 
   This is useful for creating collations on demand.  For example you
   may include the `locale <https://en.wikipedia.org/wiki/Locale>`_ in
   the collation name, but since there are thousands of locales in
   popular use it would not be useful to :meth:`prereigster
-  <Connection.createcollation>` them all.  Using
-  :meth:`~Connection.collationneeded` tells you when you need to
+  <Connection.create_collation>` them all.  Using
+  :meth:`~Connection.collation_needed` tells you when you need to
   register them.
 
   .. seealso::
 
-    * :meth:`~Connection.createcollation`
+    * :meth:`~Connection.create_collation`
 
   Calls: `sqlite3_collation_needed <https://sqlite.org/c3ref/collation_needed.html>`__
 
@@ -341,39 +341,9 @@ If `entries` is present, then each list entry is a dict with the following infor
 
     Calls: `sqlite3_db_config <https://sqlite.org/c3ref/db_config.html>`__
 
-.. index:: sqlite3_create_window_function
-
-.. method:: Connection.create_window_function(name:str, factory: Optional[WindowFactory], numargs: int =-1, *, flags: int = 0) -> None
-
-    Registers a `window function
-    <https://sqlite.org/windowfunctions.html#user_defined_aggregate_window_functions>`__
-
-      :param name: The string name of the function.  It should be less than 255 characters
-      :param factory: Called to start a new window.  Use None to delete the function.
-      :param numargs: How many arguments the function takes, with -1 meaning any number
-      :param flags: `Function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__
-
-    You need to provide callbacks for the ``step``, ``final``, ``value``
-    and ``inverse`` methods.  This can be done by having `factory` as a
-    class, and the corresponding method names, or by having `factory`
-    return a sequence of a first parameter, and then each of the 4
-    functions.
-
-    **Debugging note** SQlite always calls the ``final`` method to allow
-    for cleanup.  If you have an error in one of the other methods, then
-    ``final`` will also be called, and you may see both methods in
-    tracebacks.
-
-    .. seealso::
-
-     * :ref:`Example <example_window>`
-     * :meth:`~Connection.createaggregatefunction`
-
-    Calls: `sqlite3_create_window_function <https://sqlite.org/c3ref/create_function.html>`__
-
 .. index:: sqlite3_create_function_v2
 
-.. method:: Connection.createaggregatefunction(name: str, factory: Optional[AggregateFactory], numargs: int = -1, *, flags: int = 0) -> None
+.. method:: Connection.create_aggregate_function(name: str, factory: Optional[AggregateFactory], numargs: int = -1, *, flags: int = 0) -> None
 
   Registers an aggregate function.  Aggregate functions operate on all
   the relevant rows such as counting how many there are.
@@ -383,7 +353,11 @@ If `entries` is present, then each list entry is a dict with the following infor
   :param numargs: How many arguments the function takes, with -1 meaning any number
   :param flags: `Function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__
 
-  When a query starts, the *factory* will be called and must return a tuple of 3 items:
+  When a query starts, the *factory* will be called.  It can be a class
+  with a *step* function called for each matching row, and a *final* function
+  to return the final value.
+
+  Alternatively a non-class approach can return a tuple of 3 items:
 
     a context object
        This can be of any type
@@ -404,18 +378,18 @@ If `entries` is present, then each list entry is a dict with the following infor
 
     You can register the same named function but with different
     callables and *numargs*.  See
-    :meth:`~Connection.createscalarfunction` for an example.
+    :meth:`~Connection.create_scalar_function` for an example.
 
   .. seealso::
 
      * :ref:`Example <example_aggregate>`
-     * :meth:`~Connection.createscalarfunction`
+     * :meth:`~Connection.create_scalar_function`
 
   Calls: `sqlite3_create_function_v2 <https://sqlite.org/c3ref/create_function.html>`__
 
 .. index:: sqlite3_create_collation_v2
 
-.. method:: Connection.createcollation(name: str, callback: Optional[Callable[[str, str], int]]) -> None
+.. method:: Connection.create_collation(name: str, callback: Optional[Callable[[str, str], int]]) -> None
 
   You can control how SQLite sorts (termed `collation
   <https://en.wikipedia.org/wiki/Collation>`_) when giving the
@@ -445,7 +419,7 @@ If `entries` is present, then each list entry is a dict with the following infor
 
 .. index:: sqlite3_create_module_v2
 
-.. method:: Connection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 1, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None
+.. method:: Connection.create_module(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 1, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None
 
     Registers a virtual table, or drops it if *datasource* is *None*.
     See :ref:`virtualtables` for details.
@@ -467,7 +441,7 @@ If `entries` is present, then each list entry is a dict with the following infor
 
 .. index:: sqlite3_create_function_v2
 
-.. method:: Connection.createscalarfunction(name: str, callable: Optional[ScalarProtocol], numargs: int = -1, *, deterministic: bool = False, flags: int = 0) -> None
+.. method:: Connection.create_scalar_function(name: str, callable: Optional[ScalarProtocol], numargs: int = -1, *, deterministic: bool = False, flags: int = 0) -> None
 
   Registers a scalar function.  Scalar functions operate on one set of parameters once.
 
@@ -487,9 +461,9 @@ If `entries` is present, then each list entry is a dict with the following infor
     You can register the same named function but with different
     *callable* and *numargs*.  For example::
 
-      connection.createscalarfunction("toip", ipv4convert, 4)
-      connection.createscalarfunction("toip", ipv6convert, 16)
-      connection.createscalarfunction("toip", strconvert, -1)
+      connection.create_scalar_function("toip", ipv4convert, 4)
+      connection.create_scalar_function("toip", ipv6convert, 16)
+      connection.create_scalar_function("toip", strconvert, -1)
 
     The one with the correct *numargs* will be called and only if that
     doesn't exist then the one with negative *numargs* will be called.
@@ -497,9 +471,39 @@ If `entries` is present, then each list entry is a dict with the following infor
   .. seealso::
 
      * :ref:`Example <example_scalar>`
-     * :meth:`~Connection.createaggregatefunction`
+     * :meth:`~Connection.create_aggregate_function`
 
   Calls: `sqlite3_create_function_v2 <https://sqlite.org/c3ref/create_function.html>`__
+
+.. index:: sqlite3_create_window_function
+
+.. method:: Connection.create_window_function(name:str, factory: Optional[WindowFactory], numargs: int =-1, *, flags: int = 0) -> None
+
+    Registers a `window function
+    <https://sqlite.org/windowfunctions.html#user_defined_aggregate_window_functions>`__
+
+      :param name: The string name of the function.  It should be less than 255 characters
+      :param factory: Called to start a new window.  Use None to delete the function.
+      :param numargs: How many arguments the function takes, with -1 meaning any number
+      :param flags: `Function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__
+
+    You need to provide callbacks for the ``step``, ``final``, ``value``
+    and ``inverse`` methods.  This can be done by having `factory` as a
+    class, and the corresponding method names, or by having `factory`
+    return a sequence of a first parameter, and then each of the 4
+    functions.
+
+    **Debugging note** SQlite always calls the ``final`` method to allow
+    for cleanup.  If you have an error in one of the other methods, then
+    ``final`` will also be called, and you may see both methods in
+    tracebacks.
+
+    .. seealso::
+
+     * :ref:`Example <example_window>`
+     * :meth:`~Connection.create_aggregate_function`
+
+    Calls: `sqlite3_create_window_function <https://sqlite.org/c3ref/create_function.html>`__
 
 .. method:: Connection.cursor() -> Cursor
 
@@ -566,7 +570,7 @@ If `entries` is present, then each list entry is a dict with the following infor
 
 .. index:: sqlite3_enable_load_extension
 
-.. method:: Connection.enableloadextension(enable: bool) -> None
+.. method:: Connection.enable_load_extension(enable: bool) -> None
 
   Enables/disables `extension loading
   <https://www.sqlite.org/loadext.html>`_
@@ -576,11 +580,11 @@ If `entries` is present, then each list entry is a dict with the following infor
 
   .. seealso::
 
-    * :meth:`~Connection.loadextension`
+    * :meth:`~Connection.load_extension`
 
   Calls: `sqlite3_enable_load_extension <https://sqlite.org/c3ref/enable_load_extension.html>`__
 
-.. attribute:: Connection.exectrace
+.. attribute:: Connection.exec_trace
   :type: Optional[ExecTracer]
 
   Called with the cursor, statement and bindings for
@@ -596,7 +600,7 @@ If `entries` is present, then each list entry is a dict with the following infor
 
     * :ref:`tracing`
     * :ref:`rowtracer`
-    * :attr:`Cursor.exectrace`
+    * :attr:`Cursor.exec_trace`
 
 .. method:: Connection.execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor
 
@@ -616,7 +620,7 @@ See :meth:`Cursor.executemany` for more details.
 
 .. index:: sqlite3_file_control
 
-.. method:: Connection.filecontrol(dbname: str, op: int, pointer: int) -> bool
+.. method:: Connection.file_control(dbname: str, op: int, pointer: int) -> bool
 
   Calls the :meth:`~VFSFile.xFileControl` method on the :ref:`VFS`
   implementing :class:`file access <VFSFile>` for the database.
@@ -642,7 +646,7 @@ See :meth:`Cursor.executemany` for more details.
     obj={"foo": 1, 2: 3}                 # object we want to pass
     objwrap=ctypes.py_object(obj)        # objwrap must live before and after the call else
                                          # it gets garbage collected
-    connection.filecontrol(
+    connection.file_control(
              "main",                     # which db
              123,                        # our op code
              ctypes.addressof(objwrap))  # get pointer
@@ -662,10 +666,10 @@ See :meth:`Cursor.executemany` for more details.
 
   This is how you set the chunk size by which the database grows.  Do
   not combine it into one line as the c_int would be garbage collected
-  before the filecontrol call is made::
+  before the file control call is made::
 
      chunksize=ctypes.c_int(32768)
-     connection.filecontrol("main", apsw.SQLITE_FCNTL_CHUNK_SIZE, ctypes.addressof(chunksize))
+     connection.file_control("main", apsw.SQLITE_FCNTL_CHUNK_SIZE, ctypes.addressof(chunksize))
 
   Calls: `sqlite3_file_control <https://sqlite.org/c3ref/file_control.html>`__
 
@@ -698,21 +702,21 @@ See :meth:`Cursor.executemany` for more details.
 
 .. index:: sqlite3_get_autocommit
 
-.. method:: Connection.getautocommit() -> bool
+.. method:: Connection.get_autocommit() -> bool
 
   Returns if the Connection is in auto commit mode (ie not in a transaction).
 
   Calls: `sqlite3_get_autocommit <https://sqlite.org/c3ref/get_autocommit.html>`__
 
-.. method:: Connection.getexectrace() -> Optional[ExecTracer]
+.. method:: Connection.get_exec_trace() -> Optional[ExecTracer]
 
   Returns the currently installed :attr:`execution tracer
-  <Connection.exectrace>`
+  <Connection.exec_trace>`
 
-.. method:: Connection.getrowtrace() -> Optional[RowTracer]
+.. method:: Connection.get_row_trace() -> Optional[RowTracer]
 
   Returns the currently installed :attr:`row tracer
-  <Connection.rowtrace>`
+  <Connection.row_trace>`
 
 .. index:: sqlite3_get_autocommit
 
@@ -772,7 +776,7 @@ See :meth:`Cursor.executemany` for more details.
 
 .. index:: sqlite3_load_extension
 
-.. method:: Connection.loadextension(filename: str, entrypoint: Optional[str] = None) -> None
+.. method:: Connection.load_extension(filename: str, entrypoint: Optional[str] = None) -> None
 
   Loads *filename* as an `extension <https://www.sqlite.org/loadext.html>`_
 
@@ -787,7 +791,7 @@ See :meth:`Cursor.executemany` for more details.
 
   .. seealso::
 
-    * :meth:`~Connection.enableloadextension`
+    * :meth:`~Connection.enable_load_extension`
 
   Calls: `sqlite3_load_extension <https://sqlite.org/c3ref/load_extension.html>`__
 
@@ -803,7 +807,7 @@ See :meth:`Cursor.executemany` for more details.
 
 .. index:: sqlite3_overload_function
 
-.. method:: Connection.overloadfunction(name: str, nargs: int) -> None
+.. method:: Connection.overload_function(name: str, nargs: int) -> None
 
   Registers a placeholder function so that a virtual table can provide an implementation via
   :meth:`VTTable.FindFunction`.
@@ -867,7 +871,7 @@ See :meth:`Cursor.executemany` for more details.
 
   Calls: `sqlite3_db_release_memory <https://sqlite.org/c3ref/db_release_memory.html>`__
 
-.. attribute:: Connection.rowtrace
+.. attribute:: Connection.row_trace
   :type: Optional[RowTracer]
 
   Called with the cursor and row being returned for
@@ -882,7 +886,7 @@ See :meth:`Cursor.executemany` for more details.
 
     * :ref:`tracing`
     * :ref:`rowtracer`
-    * :attr:`Cursor.exectrace`
+    * :attr:`Cursor.exec_trace`
 
 .. index:: sqlite3_serialize
 
@@ -903,21 +907,13 @@ See :meth:`Cursor.executemany` for more details.
 
   Calls: `sqlite3_serialize <https://sqlite.org/c3ref/serialize.html>`__
 
-.. index:: sqlite3_set_last_insert_rowid
-
-.. method:: Connection.set_last_insert_rowid(rowid: int) -> None
-
-  Sets the value calls to :meth:`last_insert_rowid` will return.
-
-  Calls: `sqlite3_set_last_insert_rowid <https://sqlite.org/c3ref/set_last_insert_rowid.html>`__
-
-.. method:: Connection.setauthorizer(callable: Optional[Authorizer]) -> None
+.. method:: Connection.set_authorizer(callable: Optional[Authorizer]) -> None
 
   Sets the :attr:`authorizer`
 
 .. index:: sqlite3_busy_handler
 
-.. method:: Connection.setbusyhandler(callable: Optional[Callable[[int], bool]]) -> None
+.. method:: Connection.set_busy_handler(callable: Optional[Callable[[int], bool]]) -> None
 
    Sets the busy handler to callable. callable will be called with one
    integer argument which is the number of prior calls to the busy
@@ -926,21 +922,21 @@ See :meth:`Cursor.executemany` for more details.
    the callback returns True, then SQLite tries to open the table
    again and the cycle repeats.
 
-   If you previously called :meth:`~Connection.setbusytimeout` then
+   If you previously called :meth:`~Connection.set_busy_timeout` then
    calling this overrides that.
 
    Passing None unregisters the existing handler.
 
    .. seealso::
 
-     * :meth:`Connection.setbusytimeout`
+     * :meth:`Connection.set_busy_timeout`
      * :ref:`Busy handling <busyhandling>`
 
    Calls: `sqlite3_busy_handler <https://sqlite.org/c3ref/busy_handler.html>`__
 
 .. index:: sqlite3_busy_timeout
 
-.. method:: Connection.setbusytimeout(milliseconds: int) -> None
+.. method:: Connection.set_busy_timeout(milliseconds: int) -> None
 
   If the database is locked such as when another connection is making
   changes, SQLite will keep retrying.  This sets the maximum amount of
@@ -949,19 +945,19 @@ See :meth:`Cursor.executemany` for more details.
 
   :param milliseconds: Maximum thousandths of a second to wait.
 
-  If you previously called :meth:`~Connection.setbusyhandler` then
+  If you previously called :meth:`~Connection.set_busy_handler` then
   calling this overrides that.
 
   .. seealso::
 
-     * :meth:`Connection.setbusyhandler`
+     * :meth:`Connection.set_busy_handler`
      * :ref:`Busy handling <busyhandling>`
 
   Calls: `sqlite3_busy_timeout <https://sqlite.org/c3ref/busy_timeout.html>`__
 
 .. index:: sqlite3_commit_hook
 
-.. method:: Connection.setcommithook(callable: Optional[CommitHook]) -> None
+.. method:: Connection.set_commit_hook(callable: Optional[CommitHook]) -> None
 
   *callable* will be called just before a commit.  It should return
   False for the commit to go ahead and True for it to be turned
@@ -975,13 +971,21 @@ See :meth:`Cursor.executemany` for more details.
 
   Calls: `sqlite3_commit_hook <https://sqlite.org/c3ref/commit_hook.html>`__
 
-.. method:: Connection.setexectrace(callable: Optional[ExecTracer]) -> None
+.. method:: Connection.set_exec_trace(callable: Optional[ExecTracer]) -> None
 
-   Method to set :attr:`Connection.exectrace`
+   Method to set :attr:`Connection.exec_trace`
+
+.. index:: sqlite3_set_last_insert_rowid
+
+.. method:: Connection.set_last_insert_rowid(rowid: int) -> None
+
+  Sets the value calls to :meth:`last_insert_rowid` will return.
+
+  Calls: `sqlite3_set_last_insert_rowid <https://sqlite.org/c3ref/set_last_insert_rowid.html>`__
 
 .. index:: sqlite3_trace_v2
 
-.. method:: Connection.setprofile(callable: Optional[Callable[[str, int], None]]) -> None
+.. method:: Connection.set_profile(callable: Optional[Callable[[str, int], None]]) -> None
 
   Sets a callable which is invoked at the end of execution of each
   statement and passed the statement string and how long it took to
@@ -996,7 +1000,7 @@ See :meth:`Cursor.executemany` for more details.
 
 .. index:: sqlite3_progress_handler
 
-.. method:: Connection.setprogresshandler(callable: Optional[Callable[[], bool]], nsteps: int = 20) -> None
+.. method:: Connection.set_progress_handler(callable: Optional[Callable[[], bool]], nsteps: int = 20) -> None
 
   Sets a callable which is invoked every *nsteps* SQLite
   inststructions. The callable should return True to abort
@@ -1011,7 +1015,7 @@ See :meth:`Cursor.executemany` for more details.
 
 .. index:: sqlite3_rollback_hook
 
-.. method:: Connection.setrollbackhook(callable: Optional[Callable[[], None]]) -> None
+.. method:: Connection.set_rollback_hook(callable: Optional[Callable[[], None]]) -> None
 
   Sets a callable which is invoked during a rollback.  If *callable*
   is *None* then any existing rollback hook is unregistered.
@@ -1020,13 +1024,13 @@ See :meth:`Cursor.executemany` for more details.
 
   Calls: `sqlite3_rollback_hook <https://sqlite.org/c3ref/commit_hook.html>`__
 
-.. method:: Connection.setrowtrace(callable: Optional[RowTracer]) -> None
+.. method:: Connection.set_row_trace(callable: Optional[RowTracer]) -> None
 
-  Method to set :attr:`Connection.rowtrace`
+  Method to set :attr:`Connection.row_trace`
 
 .. index:: sqlite3_update_hook
 
-.. method:: Connection.setupdatehook(callable: Optional[Callable[[int, str, str, int], None]]) -> None
+.. method:: Connection.set_update_hook(callable: Optional[Callable[[int, str, str, int], None]]) -> None
 
   Calls *callable* whenever a row is updated, deleted or inserted.  If
   *callable* is *None* then any existing update hook is
@@ -1054,7 +1058,7 @@ See :meth:`Cursor.executemany` for more details.
 
 .. index:: sqlite3_wal_hook
 
-.. method:: Connection.setwalhook(callable: Optional[Callable[[Connection, str, int], int]]) -> None
+.. method:: Connection.set_wal_hook(callable: Optional[Callable[[Connection, str, int], int]]) -> None
 
  *callable* will be called just after data is committed in :ref:`wal`
  mode.  It should return *SQLITE_OK* or an error code.  The
@@ -1068,7 +1072,7 @@ See :meth:`Cursor.executemany` for more details.
 
  Calls: `sqlite3_wal_hook <https://sqlite.org/c3ref/wal_hook.html>`__
 
-.. method:: Connection.sqlite3pointer() -> int
+.. method:: Connection.sqlite3_pointer() -> int
 
 Returns the underlying `sqlite3 *
 <https://sqlite.org/c3ref/sqlite3.html>`_ for the connection. This
@@ -1079,7 +1083,7 @@ is returned as a number using `PyLong_FromVoidPtr
 under the hood. You should also ensure that you increment the
 reference count on the :class:`Connection` for as long as the other
 libraries are using the pointer.  It is also a very good idea to call
-:meth:`sqlitelibversion` and ensure it is the same as the other
+:meth:`sqlite_lib_version` and ensure it is the same as the other
 libraries.
 
 .. index:: sqlite3_db_status
@@ -1122,7 +1126,7 @@ libraries.
 
 .. index:: sqlite3_total_changes64
 
-.. method:: Connection.totalchanges() -> int
+.. method:: Connection.total_changes() -> int
 
   Returns the total number of database rows that have be modified,
   inserted, or deleted since the database connection was opened.

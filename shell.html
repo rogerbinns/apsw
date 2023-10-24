@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Shell &mdash; APSW 3.43.1.1 documentation</title>
+  <title>Shell &mdash; APSW 3.43.2.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/favicon.ico"/>
@@ -14,7 +14,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=1608d9ae"></script>
+        <script src="_static/documentation_options.js?v=200f835c"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.43.1.1
+                3.43.2.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -126,9 +126,9 @@
 <li class="toctree-l4"><a class="reference internal" href="#apsw.shell.Shell.db"><code class="docutils literal notranslate"><span class="pre">Shell.db</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.shell.Shell.display_timing"><code class="docutils literal notranslate"><span class="pre">Shell.display_timing()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.shell.Shell.fixup_backslashes"><code class="docutils literal notranslate"><span class="pre">Shell.fixup_backslashes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.shell.Shell.get_complete_line"><code class="docutils literal notranslate"><span class="pre">Shell.get_complete_line()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.shell.Shell.get_line"><code class="docutils literal notranslate"><span class="pre">Shell.get_line()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.shell.Shell.get_resource_usage"><code class="docutils literal notranslate"><span class="pre">Shell.get_resource_usage()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.shell.Shell.getcompleteline"><code class="docutils literal notranslate"><span class="pre">Shell.getcompleteline()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.shell.Shell.getline"><code class="docutils literal notranslate"><span class="pre">Shell.getline()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.shell.Shell.handle_exception"><code class="docutils literal notranslate"><span class="pre">Shell.handle_exception()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.shell.Shell.handle_interrupt"><code class="docutils literal notranslate"><span class="pre">Shell.handle_interrupt()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.shell.Shell.log_handler"><code class="docutils literal notranslate"><span class="pre">Shell.log_handler()</span></code></a></li>
@@ -921,16 +921,8 @@ turning backslash t into a tab.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="apsw.shell.Shell.get_resource_usage">
-<span class="sig-name descname"><span class="pre">get_resource_usage</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.get_resource_usage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.get_resource_usage" title="Link to this definition"></a></dt>
-<dd><p>Return a dict of various numbers (ints or floats).  The
-.timer command shows the difference between before and after
-results of what this returns by calling <a class="reference internal" href="#apsw.shell.Shell.display_timing" title="apsw.shell.Shell.display_timing"><code class="xref py py-meth docutils literal notranslate"><span class="pre">display_timing()</span></code></a></p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="apsw.shell.Shell.getcompleteline">
-<span class="sig-name descname"><span class="pre">getcompleteline</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.getcompleteline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.getcompleteline" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="apsw.shell.Shell.get_complete_line">
+<span class="sig-name descname"><span class="pre">get_complete_line</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.get_complete_line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.get_complete_line" title="Link to this definition"></a></dt>
 <dd><p>Returns a complete input.</p>
 <p>For dot commands it will be one line.  For SQL statements it
 will be as many as is necessary to have a
@@ -939,11 +931,19 @@ Returns None on end of file.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="apsw.shell.Shell.getline">
-<span class="sig-name descname"><span class="pre">getline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.getline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.getline" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="apsw.shell.Shell.get_line">
+<span class="sig-name descname"><span class="pre">get_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.get_line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.get_line" title="Link to this definition"></a></dt>
 <dd><p>Returns a single line of input (may be incomplete SQL) from self.stdin.</p>
 <p>If EOF is reached then return None.  Do not include trailing
 newline in return.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.shell.Shell.get_resource_usage">
+<span class="sig-name descname"><span class="pre">get_resource_usage</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.get_resource_usage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.get_resource_usage" title="Link to this definition"></a></dt>
+<dd><p>Return a dict of various numbers (ints or floats).  The
+.timer command shows the difference between before and after
+results of what this returns by calling <a class="reference internal" href="#apsw.shell.Shell.display_timing" title="apsw.shell.Shell.display_timing"><code class="xref py py-meth docutils literal notranslate"><span class="pre">display_timing()</span></code></a></p>
 </dd></dl>
 
 <dl class="py method">
@@ -1146,7 +1146,7 @@ automatically passes in sys.argv[1:] and exits Python when done.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Oct 06, 2023.
+      <span class="lastupdated">Last updated on Oct 24, 2023.
       </span></p>
   </div>
 

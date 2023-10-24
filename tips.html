@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tips &mdash; APSW 3.43.1.1 documentation</title>
+  <title>Tips &mdash; APSW 3.43.2.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/favicon.ico"/>
@@ -14,7 +14,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=1608d9ae"></script>
+        <script src="_static/documentation_options.js?v=200f835c"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.43.1.1
+                3.43.2.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -306,13 +306,13 @@ called with the connection as the only parameter, and return the
 object to use as a cursor.</p>
 <p>For example instead of returning rows as tuples, we can return them as
 dictionaries using a <a class="reference internal" href="execution.html#rowtracer"><span class="std std-ref">row tracer</span></a> with
-<a class="reference internal" href="cursor.html#apsw.Cursor.getdescription" title="apsw.Cursor.getdescription"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.getdescription()</span></code></a>:</p>
+<a class="reference internal" href="cursor.html#apsw.Cursor.get_description" title="apsw.Cursor.get_description"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.get_description()</span></code></a>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">dict_row</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">row</span><span class="p">):</span>
-  <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">row</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">getdescription</span><span class="p">())}</span>
+  <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">row</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">get_description</span><span class="p">())}</span>
 
 <span class="k">def</span> <span class="nf">my_factory</span><span class="p">(</span><span class="n">connection</span><span class="p">):</span>
   <span class="n">cursor</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">(</span><span class="n">connection</span><span class="p">)</span>
-  <span class="n">cursor</span><span class="o">.</span><span class="n">rowtrace</span> <span class="o">=</span> <span class="n">dict_row</span>
+  <span class="n">cursor</span><span class="o">.</span><span class="n">row_trace</span> <span class="o">=</span> <span class="n">dict_row</span>
   <span class="k">return</span> <span class="n">cursor</span>
 
 <span class="n">connection</span><span class="o">.</span><span class="n">cursor_factory</span> <span class="o">=</span> <span class="n">my_factory</span>
@@ -327,8 +327,8 @@ general goal is to have the locks be as lax as possible (allowing
 concurrency) and when using more restrictive locks to keep them for as
 short a time as possible.  See the <a class="reference external" href="https://sqlite.org/lockingv3.html">SQLite documentation</a> for more details.</p>
 <p>By default you will get a <a class="reference internal" href="exceptions.html#apsw.BusyError" title="apsw.BusyError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">BusyError</span></code></a> if a lock cannot be
-acquired.  You can set a <a class="reference internal" href="connection.html#apsw.Connection.setbusytimeout" title="apsw.Connection.setbusytimeout"><code class="xref py py-meth docutils literal notranslate"><span class="pre">timeout</span></code></a>
-which will keep retrying or a <a class="reference internal" href="connection.html#apsw.Connection.setbusyhandler" title="apsw.Connection.setbusyhandler"><code class="xref py py-meth docutils literal notranslate"><span class="pre">callback</span></code></a> where you decide what to do.</p>
+acquired.  You can set a <a class="reference internal" href="connection.html#apsw.Connection.set_busy_timeout" title="apsw.Connection.set_busy_timeout"><code class="xref py py-meth docutils literal notranslate"><span class="pre">timeout</span></code></a>
+which will keep retrying or a <a class="reference internal" href="connection.html#apsw.Connection.set_busy_handler" title="apsw.Connection.set_busy_handler"><code class="xref py py-meth docutils literal notranslate"><span class="pre">callback</span></code></a> where you decide what to do.</p>
 </section>
 <section id="database-schema">
 <h2>Database schema<a class="headerlink" href="#database-schema" title="Link to this heading"></a></h2>
@@ -385,7 +385,7 @@ compared to what Python programs usually do.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Oct 06, 2023.
+      <span class="lastupdated">Last updated on Oct 24, 2023.
       </span></p>
   </div>
 

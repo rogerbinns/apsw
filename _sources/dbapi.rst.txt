@@ -56,7 +56,7 @@ you aware of that.
 Cursor Objects
 ==============
 
-Use :meth:`Cursor.getdescription` instead of description. This
+Use :meth:`Cursor.get_description` instead of description. This
 information is only obtained on request.
 
 .. _rowcount:

@@ -160,7 +160,7 @@ Cursor class
 
     Based on the `DB-API cursor property
     <https://www.python.org/dev/peps/pep-0249/>`__, this returns the
-    same as :meth:`getdescription` but with 5 Nones appended.  See
+    same as :meth:`get_description` but with 5 Nones appended.  See
     also :issue:`131`.
 
 .. index:: sqlite3_column_name, sqlite3_column_decltype, sqlite3_column_database_name, sqlite3_column_table_name, sqlite3_column_origin_name
@@ -182,7 +182,7 @@ Calls:
   * `sqlite3_column_table_name <https://sqlite.org/c3ref/column_database_name.html>`__
   * `sqlite3_column_origin_name <https://sqlite.org/c3ref/column_database_name.html>`__
 
-.. attribute:: Cursor.exectrace
+.. attribute:: Cursor.exec_trace
   :type: Optional[ExecTracer]
 
   Called with the cursor, statement and bindings for
@@ -196,7 +196,7 @@ Calls:
 
     * :ref:`tracing`
     * :ref:`executiontracer`
-    * :attr:`Connection.exectrace`
+    * :attr:`Connection.exec_trace`
 
 .. index:: sqlite3_prepare_v3, sqlite3_step, sqlite3_bind_int64, sqlite3_bind_null, sqlite3_bind_text64, sqlite3_bind_double, sqlite3_bind_blob64, sqlite3_bind_zeroblob
 
@@ -342,13 +342,13 @@ Calls:
 
  Row tracers are not called when using this method.
 
-.. method:: Cursor.getconnection() -> Connection
+.. method:: Cursor.get_connection() -> Connection
 
   Returns the :attr:`connection` this cursor is using
 
 .. index:: sqlite3_column_name, sqlite3_column_decltype
 
-.. method:: Cursor.getdescription() -> tuple[tuple[str, str], ...]
+.. method:: Cursor.get_description() -> tuple[tuple[str, str], ...]
 
    If you are trying to get information about a table or view,
    then `pragma table_info <https://sqlite.org/pragma.html#pragma_table_info>`__
@@ -360,11 +360,11 @@ Calls:
    before you have finished::
 
       # This will error
-      cursor.getdescription()
+      cursor.get_description()
 
       for row in cursor.execute("select ....."):
          # this works
-         print (cursor.getdescription())
+         print (cursor.get_description())
          print (row)
 
    The information about each column is a tuple of ``(column_name,
@@ -385,7 +385,7 @@ Calls:
       cursor.execute("insert into books values(?,?,?)", ("fjfjfj", 3.7, 97))
 
       for row in cursor.execute("select * from books"):
-         print (cursor.getdescription())
+         print (cursor.get_description())
          print (row)
 
    Output::
@@ -403,18 +403,18 @@ Calls:
      * `sqlite3_column_name <https://sqlite.org/c3ref/column_name.html>`__
      * `sqlite3_column_decltype <https://sqlite.org/c3ref/column_decltype.html>`__
 
-.. method:: Cursor.getexectrace() -> Optional[ExecTracer]
+.. method:: Cursor.get_exec_trace() -> Optional[ExecTracer]
 
   Returns the currently installed :attr:`execution tracer
-  <Cursor.exectrace>`
+  <Cursor.exec_trace>`
 
   .. seealso::
 
     * :ref:`tracing`
 
-.. method:: Cursor.getrowtrace() -> Optional[RowTracer]
+.. method:: Cursor.get_row_trace() -> Optional[RowTracer]
 
-  Returns the currently installed (via :meth:`~Cursor.setrowtrace`)
+  Returns the currently installed (via :meth:`~Cursor.set_row_trace`)
   row tracer.
 
   .. seealso::
@@ -448,7 +448,7 @@ Calls:
 
   Calls: `sqlite3_stmt_readonly <https://sqlite.org/c3ref/stmt_readonly.html>`__
 
-.. attribute:: Cursor.rowtrace
+.. attribute:: Cursor.row_trace
   :type: Optional[RowTracer]
 
   Called with cursor and row being returned.  You can
@@ -462,13 +462,13 @@ Calls:
 
     * :ref:`tracing`
     * :ref:`rowtracer`
-    * :attr:`Connection.rowtrace`
+    * :attr:`Connection.row_trace`
 
-.. method:: Cursor.setexectrace(callable: Optional[ExecTracer]) -> None
+.. method:: Cursor.set_exec_trace(callable: Optional[ExecTracer]) -> None
 
-  Sets the :attr:`execution tracer <Cursor.exectrace>`
+  Sets the :attr:`execution tracer <Cursor.exec_trace>`
 
-.. method:: Cursor.setrowtrace(callable: Optional[RowTracer]) -> None
+.. method:: Cursor.set_row_trace(callable: Optional[RowTracer]) -> None
 
-  Sets the :attr:`row tracer <Cursor.rowtrace>`
+  Sets the :attr:`row tracer <Cursor.row_trace>`
 

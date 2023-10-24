@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Connections to a database &mdash; APSW 3.43.1.1 documentation</title>
+  <title>Connections to a database &mdash; APSW 3.43.2.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/favicon.ico"/>
@@ -14,7 +14,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=1608d9ae"></script>
+        <script src="_static/documentation_options.js?v=200f835c"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.43.1.1
+                3.43.2.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -64,68 +64,68 @@
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.authorizer"><code class="docutils literal notranslate"><span class="pre">Connection.authorizer</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.autovacuum_pages"><code class="docutils literal notranslate"><span class="pre">Connection.autovacuum_pages()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.backup"><code class="docutils literal notranslate"><span class="pre">Connection.backup()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.blobopen"><code class="docutils literal notranslate"><span class="pre">Connection.blobopen()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.blob_open"><code class="docutils literal notranslate"><span class="pre">Connection.blob_open()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.cache_flush"><code class="docutils literal notranslate"><span class="pre">Connection.cache_flush()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.cache_stats"><code class="docutils literal notranslate"><span class="pre">Connection.cache_stats()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.cacheflush"><code class="docutils literal notranslate"><span class="pre">Connection.cacheflush()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.changes"><code class="docutils literal notranslate"><span class="pre">Connection.changes()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.close"><code class="docutils literal notranslate"><span class="pre">Connection.close()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.collationneeded"><code class="docutils literal notranslate"><span class="pre">Connection.collationneeded()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.collation_needed"><code class="docutils literal notranslate"><span class="pre">Connection.collation_needed()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.column_metadata"><code class="docutils literal notranslate"><span class="pre">Connection.column_metadata()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.config"><code class="docutils literal notranslate"><span class="pre">Connection.config()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.create_aggregate_function"><code class="docutils literal notranslate"><span class="pre">Connection.create_aggregate_function()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.create_collation"><code class="docutils literal notranslate"><span class="pre">Connection.create_collation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.create_module"><code class="docutils literal notranslate"><span class="pre">Connection.create_module()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.create_scalar_function"><code class="docutils literal notranslate"><span class="pre">Connection.create_scalar_function()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.create_window_function"><code class="docutils literal notranslate"><span class="pre">Connection.create_window_function()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.createaggregatefunction"><code class="docutils literal notranslate"><span class="pre">Connection.createaggregatefunction()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.createcollation"><code class="docutils literal notranslate"><span class="pre">Connection.createcollation()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.createmodule"><code class="docutils literal notranslate"><span class="pre">Connection.createmodule()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.createscalarfunction"><code class="docutils literal notranslate"><span class="pre">Connection.createscalarfunction()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.cursor"><code class="docutils literal notranslate"><span class="pre">Connection.cursor()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.cursor_factory"><code class="docutils literal notranslate"><span class="pre">Connection.cursor_factory</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.db_filename"><code class="docutils literal notranslate"><span class="pre">Connection.db_filename()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.db_names"><code class="docutils literal notranslate"><span class="pre">Connection.db_names()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.deserialize"><code class="docutils literal notranslate"><span class="pre">Connection.deserialize()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.drop_modules"><code class="docutils literal notranslate"><span class="pre">Connection.drop_modules()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.enableloadextension"><code class="docutils literal notranslate"><span class="pre">Connection.enableloadextension()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.exectrace"><code class="docutils literal notranslate"><span class="pre">Connection.exectrace</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.enable_load_extension"><code class="docutils literal notranslate"><span class="pre">Connection.enable_load_extension()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.exec_trace"><code class="docutils literal notranslate"><span class="pre">Connection.exec_trace</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.execute"><code class="docutils literal notranslate"><span class="pre">Connection.execute()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.executemany"><code class="docutils literal notranslate"><span class="pre">Connection.executemany()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.filecontrol"><code class="docutils literal notranslate"><span class="pre">Connection.filecontrol()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.file_control"><code class="docutils literal notranslate"><span class="pre">Connection.file_control()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.filename"><code class="docutils literal notranslate"><span class="pre">Connection.filename</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.filename_journal"><code class="docutils literal notranslate"><span class="pre">Connection.filename_journal</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.filename_wal"><code class="docutils literal notranslate"><span class="pre">Connection.filename_wal</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.getautocommit"><code class="docutils literal notranslate"><span class="pre">Connection.getautocommit()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.getexectrace"><code class="docutils literal notranslate"><span class="pre">Connection.getexectrace()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.getrowtrace"><code class="docutils literal notranslate"><span class="pre">Connection.getrowtrace()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.get_autocommit"><code class="docutils literal notranslate"><span class="pre">Connection.get_autocommit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.get_exec_trace"><code class="docutils literal notranslate"><span class="pre">Connection.get_exec_trace()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.get_row_trace"><code class="docutils literal notranslate"><span class="pre">Connection.get_row_trace()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.in_transaction"><code class="docutils literal notranslate"><span class="pre">Connection.in_transaction</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.interrupt"><code class="docutils literal notranslate"><span class="pre">Connection.interrupt()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.is_interrupted"><code class="docutils literal notranslate"><span class="pre">Connection.is_interrupted</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.last_insert_rowid"><code class="docutils literal notranslate"><span class="pre">Connection.last_insert_rowid()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.limit"><code class="docutils literal notranslate"><span class="pre">Connection.limit()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.loadextension"><code class="docutils literal notranslate"><span class="pre">Connection.loadextension()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.load_extension"><code class="docutils literal notranslate"><span class="pre">Connection.load_extension()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.open_flags"><code class="docutils literal notranslate"><span class="pre">Connection.open_flags</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.open_vfs"><code class="docutils literal notranslate"><span class="pre">Connection.open_vfs</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.overloadfunction"><code class="docutils literal notranslate"><span class="pre">Connection.overloadfunction()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.overload_function"><code class="docutils literal notranslate"><span class="pre">Connection.overload_function()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.pragma"><code class="docutils literal notranslate"><span class="pre">Connection.pragma()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.read"><code class="docutils literal notranslate"><span class="pre">Connection.read()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.readonly"><code class="docutils literal notranslate"><span class="pre">Connection.readonly()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.release_memory"><code class="docutils literal notranslate"><span class="pre">Connection.release_memory()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.rowtrace"><code class="docutils literal notranslate"><span class="pre">Connection.rowtrace</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.row_trace"><code class="docutils literal notranslate"><span class="pre">Connection.row_trace</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.serialize"><code class="docutils literal notranslate"><span class="pre">Connection.serialize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.set_authorizer"><code class="docutils literal notranslate"><span class="pre">Connection.set_authorizer()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.set_busy_handler"><code class="docutils literal notranslate"><span class="pre">Connection.set_busy_handler()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.set_busy_timeout"><code class="docutils literal notranslate"><span class="pre">Connection.set_busy_timeout()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.set_commit_hook"><code class="docutils literal notranslate"><span class="pre">Connection.set_commit_hook()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.set_exec_trace"><code class="docutils literal notranslate"><span class="pre">Connection.set_exec_trace()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.set_last_insert_rowid"><code class="docutils literal notranslate"><span class="pre">Connection.set_last_insert_rowid()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.setauthorizer"><code class="docutils literal notranslate"><span class="pre">Connection.setauthorizer()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.setbusyhandler"><code class="docutils literal notranslate"><span class="pre">Connection.setbusyhandler()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.setbusytimeout"><code class="docutils literal notranslate"><span class="pre">Connection.setbusytimeout()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.setcommithook"><code class="docutils literal notranslate"><span class="pre">Connection.setcommithook()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.setexectrace"><code class="docutils literal notranslate"><span class="pre">Connection.setexectrace()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.setprofile"><code class="docutils literal notranslate"><span class="pre">Connection.setprofile()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.setprogresshandler"><code class="docutils literal notranslate"><span class="pre">Connection.setprogresshandler()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.setrollbackhook"><code class="docutils literal notranslate"><span class="pre">Connection.setrollbackhook()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.setrowtrace"><code class="docutils literal notranslate"><span class="pre">Connection.setrowtrace()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.setupdatehook"><code class="docutils literal notranslate"><span class="pre">Connection.setupdatehook()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.setwalhook"><code class="docutils literal notranslate"><span class="pre">Connection.setwalhook()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.sqlite3pointer"><code class="docutils literal notranslate"><span class="pre">Connection.sqlite3pointer()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.set_profile"><code class="docutils literal notranslate"><span class="pre">Connection.set_profile()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.set_progress_handler"><code class="docutils literal notranslate"><span class="pre">Connection.set_progress_handler()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.set_rollback_hook"><code class="docutils literal notranslate"><span class="pre">Connection.set_rollback_hook()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.set_row_trace"><code class="docutils literal notranslate"><span class="pre">Connection.set_row_trace()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.set_update_hook"><code class="docutils literal notranslate"><span class="pre">Connection.set_update_hook()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.set_wal_hook"><code class="docutils literal notranslate"><span class="pre">Connection.set_wal_hook()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.sqlite3_pointer"><code class="docutils literal notranslate"><span class="pre">Connection.sqlite3_pointer()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.status"><code class="docutils literal notranslate"><span class="pre">Connection.status()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.system_errno"><code class="docutils literal notranslate"><span class="pre">Connection.system_errno</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.table_exists"><code class="docutils literal notranslate"><span class="pre">Connection.table_exists()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.totalchanges"><code class="docutils literal notranslate"><span class="pre">Connection.totalchanges()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.total_changes"><code class="docutils literal notranslate"><span class="pre">Connection.total_changes()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.trace_v2"><code class="docutils literal notranslate"><span class="pre">Connection.trace_v2()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.txn_state"><code class="docutils literal notranslate"><span class="pre">Connection.txn_state()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.vtab_config"><code class="docutils literal notranslate"><span class="pre">Connection.vtab_config()</span></code></a></li>
@@ -333,8 +333,8 @@ the main connection and the name you specified for <a class="reference external"
 </dd></dl>
 
 <dl class="py method" id="index-5">
-<dt class="sig sig-object py" id="apsw.Connection.blobopen">
-<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">blobopen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">column</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rowid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">writeable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="blob.html#apsw.Blob" title="apsw.Blob"><span class="pre">Blob</span></a></span></span><a class="headerlink" href="#apsw.Connection.blobopen" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="apsw.Connection.blob_open">
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">blob_open</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">column</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rowid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">writeable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="blob.html#apsw.Blob" title="apsw.Blob"><span class="pre">Blob</span></a></span></span><a class="headerlink" href="#apsw.Connection.blob_open" title="Link to this definition"></a></dt>
 <dd><p>Opens a blob for <a class="reference internal" href="blob.html#blobio"><span class="std std-ref">incremental I/O</span></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -360,6 +360,13 @@ the main connection and the name you specified for <a class="reference external"
 </ul>
 </div>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/blob_open.html">sqlite3_blob_open</a></p>
+</dd></dl>
+
+<dl class="py method" id="index-6">
+<dt class="sig sig-object py" id="apsw.Connection.cache_flush">
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">cache_flush</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.cache_flush" title="Link to this definition"></a></dt>
+<dd><p>Flushes caches to disk mid-transaction.</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/db_cacheflush.html">sqlite3_db_cacheflush</a></p>
 </dd></dl>
 
 <dl class="py method">
@@ -443,13 +450,6 @@ the first statement</p></td>
 </tr>
 </tbody>
 </table>
-<dl class="py method" id="index-6">
-<dt class="sig sig-object py" id="apsw.Connection.cacheflush">
-<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">cacheflush</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.cacheflush" title="Link to this definition"></a></dt>
-<dd><p>Flushes caches to disk mid-transaction.</p>
-<p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/db_cacheflush.html">sqlite3_db_cacheflush</a></p>
-</dd></dl>
-
 <dl class="py method" id="index-7">
 <dt class="sig sig-object py" id="apsw.Connection.changes">
 <span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">changes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.Connection.changes" title="Link to this definition"></a></dt>
@@ -482,23 +482,23 @@ database, reverting the database to a know good state.</p>
 </dd></dl>
 
 <dl class="py method" id="index-9">
-<dt class="sig sig-object py" id="apsw.Connection.collationneeded">
-<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">collationneeded</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.collationneeded" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="apsw.Connection.collation_needed">
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">collation_needed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.collation_needed" title="Link to this definition"></a></dt>
 <dd><p><em>callable</em> will be called if a statement requires a <a class="reference external" href="https://en.wikipedia.org/wiki/Collation">collation</a> that hasn't been
 registered. Your callable will be passed two parameters. The first
 is the connection object. The second is the name of the
 collation. If you have the collation code available then call
-<a class="reference internal" href="#apsw.Connection.createcollation" title="apsw.Connection.createcollation"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.createcollation()</span></code></a>.</p>
+<a class="reference internal" href="#apsw.Connection.create_collation" title="apsw.Connection.create_collation"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.create_collation()</span></code></a>.</p>
 <p>This is useful for creating collations on demand.  For example you
 may include the <a class="reference external" href="https://en.wikipedia.org/wiki/Locale">locale</a> in
 the collation name, but since there are thousands of locales in
-popular use it would not be useful to <a class="reference internal" href="#apsw.Connection.createcollation" title="apsw.Connection.createcollation"><code class="xref py py-meth docutils literal notranslate"><span class="pre">prereigster</span></code></a> them all.  Using
-<a class="reference internal" href="#apsw.Connection.collationneeded" title="apsw.Connection.collationneeded"><code class="xref py py-meth docutils literal notranslate"><span class="pre">collationneeded()</span></code></a> tells you when you need to
+popular use it would not be useful to <a class="reference internal" href="#apsw.Connection.create_collation" title="apsw.Connection.create_collation"><code class="xref py py-meth docutils literal notranslate"><span class="pre">prereigster</span></code></a> them all.  Using
+<a class="reference internal" href="#apsw.Connection.collation_needed" title="apsw.Connection.collation_needed"><code class="xref py py-meth docutils literal notranslate"><span class="pre">collation_needed()</span></code></a> tells you when you need to
 register them.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="#apsw.Connection.createcollation" title="apsw.Connection.createcollation"><code class="xref py py-meth docutils literal notranslate"><span class="pre">createcollation()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#apsw.Connection.create_collation" title="apsw.Connection.create_collation"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create_collation()</span></code></a></p></li>
 </ul>
 </div>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/collation_needed.html">sqlite3_collation_needed</a></p>
@@ -539,6 +539,155 @@ leaves unaltered.  The effective value is always returned.</p>
 </dd></dl>
 
 <dl class="py method" id="index-12">
+<dt class="sig sig-object py" id="apsw.Connection.create_aggregate_function">
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">create_aggregate_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">factory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.AggregateFactory" title="apsw.AggregateFactory"><span class="pre">AggregateFactory</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">numargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.create_aggregate_function" title="Link to this definition"></a></dt>
+<dd><p>Registers an aggregate function.  Aggregate functions operate on all
+the relevant rows such as counting how many there are.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> -- The string name of the function.  It should be less than 255 characters</p></li>
+<li><p><strong>factory</strong> -- The function that will be called.  Use None to delete the function.</p></li>
+<li><p><strong>numargs</strong> -- How many arguments the function takes, with -1 meaning any number</p></li>
+<li><p><strong>flags</strong> -- <a class="reference external" href="https://www.sqlite.org/c3ref/c_deterministic.html">Function flags</a></p></li>
+</ul>
+</dd>
+</dl>
+<p>When a query starts, the <em>factory</em> will be called.  It can be a class
+with a <em>step</em> function called for each matching row, and a <em>final</em> function
+to return the final value.</p>
+<p>Alternatively a non-class approach can return a tuple of 3 items:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>a context object</dt><dd><p>This can be of any type</p>
+</dd>
+<dt>a step function</dt><dd><p>This function is called once for each row.  The first parameter
+will be the context object and the remaining parameters will be
+from the SQL statement.  Any value returned will be ignored.</p>
+</dd>
+<dt>a final function</dt><dd><p>This function is called at the very end with the context object
+as a parameter.  The value returned is set as the return for
+the function. The final function is always called even if an
+exception was raised by the step function. This allows you to
+ensure any resources are cleaned up.</p>
+</dd>
+</dl>
+</div></blockquote>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can register the same named function but with different
+callables and <em>numargs</em>.  See
+<a class="reference internal" href="#apsw.Connection.create_scalar_function" title="apsw.Connection.create_scalar_function"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create_scalar_function()</span></code></a> for an example.</p>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="example.html#example-aggregate"><span class="std std-ref">Example</span></a></p></li>
+<li><p><a class="reference internal" href="#apsw.Connection.create_scalar_function" title="apsw.Connection.create_scalar_function"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create_scalar_function()</span></code></a></p></li>
+</ul>
+</div>
+<p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/create_function.html">sqlite3_create_function_v2</a></p>
+</dd></dl>
+
+<dl class="py method" id="index-13">
+<dt class="sig sig-object py" id="apsw.Connection.create_collation">
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">create_collation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.create_collation" title="Link to this definition"></a></dt>
+<dd><p>You can control how SQLite sorts (termed <a class="reference external" href="https://en.wikipedia.org/wiki/Collation">collation</a>) when giving the
+<code class="docutils literal notranslate"><span class="pre">COLLATE</span></code> term to a <a class="reference external" href="https://sqlite.org/lang_select.html">SELECT</a>.  For example your
+collation could take into account locale or do numeric sorting.</p>
+<p>The <em>callback</em> will be called with two items.  It should return -1
+if the first is less then the second, 0 if they are equal, and 1 if
+first is greater:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">mycollation</span><span class="p">(</span><span class="n">one</span><span class="p">,</span> <span class="n">two</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">one</span> <span class="o">&lt;</span> <span class="n">two</span><span class="p">:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="k">if</span> <span class="n">one</span> <span class="o">==</span> <span class="n">two</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">one</span> <span class="o">&gt;</span> <span class="n">two</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>Passing None as the callback will unregister the collation.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="example.html#example-collation"><span class="std std-ref">Example</span></a></p></li>
+</ul>
+</div>
+<p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/create_collation.html">sqlite3_create_collation_v2</a></p>
+</dd></dl>
+
+<dl class="py method" id="index-14">
+<dt class="sig sig-object py" id="apsw.Connection.create_module">
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">create_module</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">datasource</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="vtable.html#apsw.VTModule" title="apsw.VTModule"><span class="pre">VTModule</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_bestindex_object</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_no_change</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iVersion</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eponymous</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eponymous_only</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_only</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.create_module" title="Link to this definition"></a></dt>
+<dd><p>Registers a virtual table, or drops it if <em>datasource</em> is <em>None</em>.
+See <a class="reference internal" href="vtable.html#virtualtables"><span class="std std-ref">Virtual Tables</span></a> for details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> -- Module name (what comes after USING in CREATE VIRTUAL TABLE tablename USING ...)</p></li>
+<li><p><strong>datasource</strong> -- Provides <a class="reference internal" href="vtable.html#apsw.VTModule" title="apsw.VTModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">VTModule</span></code></a> methods</p></li>
+<li><p><strong>use_bestindex_object</strong> -- If True then BestIndexObject is used, else BestIndex</p></li>
+<li><p><strong>use_no_change</strong> -- Turn on understanding <a class="reference internal" href="vtable.html#apsw.VTCursor.ColumnNoChange" title="apsw.VTCursor.ColumnNoChange"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTCursor.ColumnNoChange()</span></code></a> and using <a class="reference internal" href="apsw.html#apsw.no_change" title="apsw.no_change"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.no_change</span></code></a> to reduce <a class="reference internal" href="vtable.html#apsw.VTTable.UpdateChangeRow" title="apsw.VTTable.UpdateChangeRow"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTTable.UpdateChangeRow()</span></code></a> work</p></li>
+<li><p><strong>iVersion</strong> -- iVersion field in <a class="reference external" href="https://www.sqlite.org/c3ref/module.html">sqlite3_module</a></p></li>
+<li><p><strong>eponymous</strong> -- Configures module to be <a class="reference external" href="https://www.sqlite.org/vtab.html#eponymous_virtual_tables">eponymous</a></p></li>
+<li><p><strong>eponymous_only</strong> -- Configures module to be <a class="reference external" href="https://www.sqlite.org/vtab.html#eponymous_only_virtual_tables">eponymous only</a></p></li>
+<li><p><strong>read_only</strong> -- Leaves <a class="reference external" href="https://www.sqlite.org/c3ref/module.html">sqlite3_module</a> methods that involve writing and transactions as NULL</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="example.html#example-virtual-tables"><span class="std std-ref">Example</span></a></p></li>
+</ul>
+</div>
+<p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/create_module.html">sqlite3_create_module_v2</a></p>
+</dd></dl>
+
+<dl class="py method" id="index-15">
+<dt class="sig sig-object py" id="apsw.Connection.create_scalar_function">
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">create_scalar_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.ScalarProtocol" title="apsw.ScalarProtocol"><span class="pre">ScalarProtocol</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">numargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deterministic</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.create_scalar_function" title="Link to this definition"></a></dt>
+<dd><p>Registers a scalar function.  Scalar functions operate on one set of parameters once.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> -- The string name of the function.  It should be less than 255 characters</p></li>
+<li><p><strong>callable</strong> -- The function that will be called.  Use None to unregister.</p></li>
+<li><p><strong>numargs</strong> -- How many arguments the function takes, with -1 meaning any number</p></li>
+<li><p><strong>deterministic</strong> -- When True this means the function always
+returns the same result for the same input arguments.
+SQLite's query planner can perform additional optimisations
+for deterministic functions.  For example a random()
+function is not deterministic while one that returns the
+length of a string is.</p></li>
+<li><p><strong>flags</strong> -- Additional <a class="reference external" href="https://www.sqlite.org/c3ref/c_deterministic.html">function flags</a></p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can register the same named function but with different
+<em>callable</em> and <em>numargs</em>.  For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">connection</span><span class="o">.</span><span class="n">create_scalar_function</span><span class="p">(</span><span class="s2">&quot;toip&quot;</span><span class="p">,</span> <span class="n">ipv4convert</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">create_scalar_function</span><span class="p">(</span><span class="s2">&quot;toip&quot;</span><span class="p">,</span> <span class="n">ipv6convert</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">create_scalar_function</span><span class="p">(</span><span class="s2">&quot;toip&quot;</span><span class="p">,</span> <span class="n">strconvert</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The one with the correct <em>numargs</em> will be called and only if that
+doesn't exist then the one with negative <em>numargs</em> will be called.</p>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="example.html#example-scalar"><span class="std std-ref">Example</span></a></p></li>
+<li><p><a class="reference internal" href="#apsw.Connection.create_aggregate_function" title="apsw.Connection.create_aggregate_function"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create_aggregate_function()</span></code></a></p></li>
+</ul>
+</div>
+<p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/create_function.html">sqlite3_create_function_v2</a></p>
+</dd></dl>
+
+<dl class="py method" id="index-16">
 <dt class="sig sig-object py" id="apsw.Connection.create_window_function">
 <span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">create_window_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">factory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.WindowFactory" title="apsw.WindowFactory"><span class="pre">WindowFactory</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">numargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.create_window_function" title="Link to this definition"></a></dt>
 <dd><p>Registers a <a class="reference external" href="https://sqlite.org/windowfunctions.html#user_defined_aggregate_window_functions">window function</a></p>
@@ -571,156 +720,10 @@ tracebacks.</p>
 <p class="admonition-title">See also</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="example.html#example-window"><span class="std std-ref">Example</span></a></p></li>
-<li><p><a class="reference internal" href="#apsw.Connection.createaggregatefunction" title="apsw.Connection.createaggregatefunction"><code class="xref py py-meth docutils literal notranslate"><span class="pre">createaggregatefunction()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#apsw.Connection.create_aggregate_function" title="apsw.Connection.create_aggregate_function"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create_aggregate_function()</span></code></a></p></li>
 </ul>
 </div>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/create_function.html">sqlite3_create_window_function</a></p>
-</dd></dl>
-
-<dl class="py method" id="index-13">
-<dt class="sig sig-object py" id="apsw.Connection.createaggregatefunction">
-<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">createaggregatefunction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">factory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.AggregateFactory" title="apsw.AggregateFactory"><span class="pre">AggregateFactory</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">numargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.createaggregatefunction" title="Link to this definition"></a></dt>
-<dd><p>Registers an aggregate function.  Aggregate functions operate on all
-the relevant rows such as counting how many there are.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> -- The string name of the function.  It should be less than 255 characters</p></li>
-<li><p><strong>factory</strong> -- The function that will be called.  Use None to delete the function.</p></li>
-<li><p><strong>numargs</strong> -- How many arguments the function takes, with -1 meaning any number</p></li>
-<li><p><strong>flags</strong> -- <a class="reference external" href="https://www.sqlite.org/c3ref/c_deterministic.html">Function flags</a></p></li>
-</ul>
-</dd>
-</dl>
-<p>When a query starts, the <em>factory</em> will be called and must return a tuple of 3 items:</p>
-<blockquote>
-<div><dl class="simple">
-<dt>a context object</dt><dd><p>This can be of any type</p>
-</dd>
-<dt>a step function</dt><dd><p>This function is called once for each row.  The first parameter
-will be the context object and the remaining parameters will be
-from the SQL statement.  Any value returned will be ignored.</p>
-</dd>
-<dt>a final function</dt><dd><p>This function is called at the very end with the context object
-as a parameter.  The value returned is set as the return for
-the function. The final function is always called even if an
-exception was raised by the step function. This allows you to
-ensure any resources are cleaned up.</p>
-</dd>
-</dl>
-</div></blockquote>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>You can register the same named function but with different
-callables and <em>numargs</em>.  See
-<a class="reference internal" href="#apsw.Connection.createscalarfunction" title="apsw.Connection.createscalarfunction"><code class="xref py py-meth docutils literal notranslate"><span class="pre">createscalarfunction()</span></code></a> for an example.</p>
-</div>
-<div class="admonition seealso">
-<p class="admonition-title">See also</p>
-<ul class="simple">
-<li><p><a class="reference internal" href="example.html#example-aggregate"><span class="std std-ref">Example</span></a></p></li>
-<li><p><a class="reference internal" href="#apsw.Connection.createscalarfunction" title="apsw.Connection.createscalarfunction"><code class="xref py py-meth docutils literal notranslate"><span class="pre">createscalarfunction()</span></code></a></p></li>
-</ul>
-</div>
-<p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/create_function.html">sqlite3_create_function_v2</a></p>
-</dd></dl>
-
-<dl class="py method" id="index-14">
-<dt class="sig sig-object py" id="apsw.Connection.createcollation">
-<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">createcollation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.createcollation" title="Link to this definition"></a></dt>
-<dd><p>You can control how SQLite sorts (termed <a class="reference external" href="https://en.wikipedia.org/wiki/Collation">collation</a>) when giving the
-<code class="docutils literal notranslate"><span class="pre">COLLATE</span></code> term to a <a class="reference external" href="https://sqlite.org/lang_select.html">SELECT</a>.  For example your
-collation could take into account locale or do numeric sorting.</p>
-<p>The <em>callback</em> will be called with two items.  It should return -1
-if the first is less then the second, 0 if they are equal, and 1 if
-first is greater:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">mycollation</span><span class="p">(</span><span class="n">one</span><span class="p">,</span> <span class="n">two</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">one</span> <span class="o">&lt;</span> <span class="n">two</span><span class="p">:</span>
-        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
-    <span class="k">if</span> <span class="n">one</span> <span class="o">==</span> <span class="n">two</span><span class="p">:</span>
-        <span class="k">return</span> <span class="mi">0</span>
-    <span class="k">if</span> <span class="n">one</span> <span class="o">&gt;</span> <span class="n">two</span><span class="p">:</span>
-        <span class="k">return</span> <span class="mi">1</span>
-</pre></div>
-</div>
-<p>Passing None as the callback will unregister the collation.</p>
-<div class="admonition seealso">
-<p class="admonition-title">See also</p>
-<ul class="simple">
-<li><p><a class="reference internal" href="example.html#example-collation"><span class="std std-ref">Example</span></a></p></li>
-</ul>
-</div>
-<p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/create_collation.html">sqlite3_create_collation_v2</a></p>
-</dd></dl>
-
-<dl class="py method" id="index-15">
-<dt class="sig sig-object py" id="apsw.Connection.createmodule">
-<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">createmodule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">datasource</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="vtable.html#apsw.VTModule" title="apsw.VTModule"><span class="pre">VTModule</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_bestindex_object</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_no_change</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iVersion</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eponymous</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eponymous_only</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_only</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.createmodule" title="Link to this definition"></a></dt>
-<dd><p>Registers a virtual table, or drops it if <em>datasource</em> is <em>None</em>.
-See <a class="reference internal" href="vtable.html#virtualtables"><span class="std std-ref">Virtual Tables</span></a> for details.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> -- Module name (what comes after USING in CREATE VIRTUAL TABLE tablename USING ...)</p></li>
-<li><p><strong>datasource</strong> -- Provides <a class="reference internal" href="vtable.html#apsw.VTModule" title="apsw.VTModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">VTModule</span></code></a> methods</p></li>
-<li><p><strong>use_bestindex_object</strong> -- If True then BestIndexObject is used, else BestIndex</p></li>
-<li><p><strong>use_no_change</strong> -- Turn on understanding <a class="reference internal" href="vtable.html#apsw.VTCursor.ColumnNoChange" title="apsw.VTCursor.ColumnNoChange"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTCursor.ColumnNoChange()</span></code></a> and using <a class="reference internal" href="apsw.html#apsw.no_change" title="apsw.no_change"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.no_change</span></code></a> to reduce <a class="reference internal" href="vtable.html#apsw.VTTable.UpdateChangeRow" title="apsw.VTTable.UpdateChangeRow"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTTable.UpdateChangeRow()</span></code></a> work</p></li>
-<li><p><strong>iVersion</strong> -- iVersion field in <a class="reference external" href="https://www.sqlite.org/c3ref/module.html">sqlite3_module</a></p></li>
-<li><p><strong>eponymous</strong> -- Configures module to be <a class="reference external" href="https://www.sqlite.org/vtab.html#eponymous_virtual_tables">eponymous</a></p></li>
-<li><p><strong>eponymous_only</strong> -- Configures module to be <a class="reference external" href="https://www.sqlite.org/vtab.html#eponymous_only_virtual_tables">eponymous only</a></p></li>
-<li><p><strong>read_only</strong> -- Leaves <a class="reference external" href="https://www.sqlite.org/c3ref/module.html">sqlite3_module</a> methods that involve writing and transactions as NULL</p></li>
-</ul>
-</dd>
-</dl>
-<div class="admonition seealso">
-<p class="admonition-title">See also</p>
-<ul class="simple">
-<li><p><a class="reference internal" href="example.html#example-virtual-tables"><span class="std std-ref">Example</span></a></p></li>
-</ul>
-</div>
-<p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/create_module.html">sqlite3_create_module_v2</a></p>
-</dd></dl>
-
-<dl class="py method" id="index-16">
-<dt class="sig sig-object py" id="apsw.Connection.createscalarfunction">
-<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">createscalarfunction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.ScalarProtocol" title="apsw.ScalarProtocol"><span class="pre">ScalarProtocol</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">numargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deterministic</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.createscalarfunction" title="Link to this definition"></a></dt>
-<dd><p>Registers a scalar function.  Scalar functions operate on one set of parameters once.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> -- The string name of the function.  It should be less than 255 characters</p></li>
-<li><p><strong>callable</strong> -- The function that will be called.  Use None to unregister.</p></li>
-<li><p><strong>numargs</strong> -- How many arguments the function takes, with -1 meaning any number</p></li>
-<li><p><strong>deterministic</strong> -- When True this means the function always
-returns the same result for the same input arguments.
-SQLite's query planner can perform additional optimisations
-for deterministic functions.  For example a random()
-function is not deterministic while one that returns the
-length of a string is.</p></li>
-<li><p><strong>flags</strong> -- Additional <a class="reference external" href="https://www.sqlite.org/c3ref/c_deterministic.html">function flags</a></p></li>
-</ul>
-</dd>
-</dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>You can register the same named function but with different
-<em>callable</em> and <em>numargs</em>.  For example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">connection</span><span class="o">.</span><span class="n">createscalarfunction</span><span class="p">(</span><span class="s2">&quot;toip&quot;</span><span class="p">,</span> <span class="n">ipv4convert</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">createscalarfunction</span><span class="p">(</span><span class="s2">&quot;toip&quot;</span><span class="p">,</span> <span class="n">ipv6convert</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">createscalarfunction</span><span class="p">(</span><span class="s2">&quot;toip&quot;</span><span class="p">,</span> <span class="n">strconvert</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>The one with the correct <em>numargs</em> will be called and only if that
-doesn't exist then the one with negative <em>numargs</em> will be called.</p>
-</div>
-<div class="admonition seealso">
-<p class="admonition-title">See also</p>
-<ul class="simple">
-<li><p><a class="reference internal" href="example.html#example-scalar"><span class="std std-ref">Example</span></a></p></li>
-<li><p><a class="reference internal" href="#apsw.Connection.createaggregatefunction" title="apsw.Connection.createaggregatefunction"><code class="xref py py-meth docutils literal notranslate"><span class="pre">createaggregatefunction()</span></code></a></p></li>
-</ul>
-</div>
-<p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/create_function.html">sqlite3_create_function_v2</a></p>
 </dd></dl>
 
 <dl class="py method">
@@ -790,8 +793,8 @@ are kept, dropping all others.</p>
 </dd></dl>
 
 <dl class="py method" id="index-20">
-<dt class="sig sig-object py" id="apsw.Connection.enableloadextension">
-<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">enableloadextension</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.enableloadextension" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="apsw.Connection.enable_load_extension">
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">enable_load_extension</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.enable_load_extension" title="Link to this definition"></a></dt>
 <dd><p>Enables/disables <a class="reference external" href="https://www.sqlite.org/loadext.html">extension loading</a>
 which is disabled by default.</p>
 <dl class="field-list simple">
@@ -802,15 +805,15 @@ which is disabled by default.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="#apsw.Connection.loadextension" title="apsw.Connection.loadextension"><code class="xref py py-meth docutils literal notranslate"><span class="pre">loadextension()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#apsw.Connection.load_extension" title="apsw.Connection.load_extension"><code class="xref py py-meth docutils literal notranslate"><span class="pre">load_extension()</span></code></a></p></li>
 </ul>
 </div>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/enable_load_extension.html">sqlite3_enable_load_extension</a></p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="apsw.Connection.exectrace">
-<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">exectrace</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="apsw.html#apsw.ExecTracer" title="apsw.ExecTracer"><span class="pre">ExecTracer</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></em><a class="headerlink" href="#apsw.Connection.exectrace" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="apsw.Connection.exec_trace">
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">exec_trace</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="apsw.html#apsw.ExecTracer" title="apsw.ExecTracer"><span class="pre">ExecTracer</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></em><a class="headerlink" href="#apsw.Connection.exec_trace" title="Link to this definition"></a></dt>
 <dd><p>Called with the cursor, statement and bindings for
 each <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">execute()</span></code></a> or <a class="reference internal" href="cursor.html#apsw.Cursor.executemany" title="apsw.Cursor.executemany"><code class="xref py py-meth docutils literal notranslate"><span class="pre">executemany()</span></code></a> on this
 Connection, unless the <a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cursor</span></code></a> installed its own
@@ -823,7 +826,7 @@ removed.</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="execution.html#tracing"><span class="std std-ref">Tracing</span></a></p></li>
 <li><p><a class="reference internal" href="execution.html#rowtracer"><span class="std std-ref">Row Tracer</span></a></p></li>
-<li><p><a class="reference internal" href="cursor.html#apsw.Cursor.exectrace" title="apsw.Cursor.exectrace"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Cursor.exectrace</span></code></a></p></li>
+<li><p><a class="reference internal" href="cursor.html#apsw.Cursor.exec_trace" title="apsw.Cursor.exec_trace"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Cursor.exec_trace</span></code></a></p></li>
 </ul>
 </div>
 </dd></dl>
@@ -847,8 +850,8 @@ sequence of bindings, such as inserting into a database.  (A cursor is
 automatically obtained).</p>
 <p>See <a class="reference internal" href="cursor.html#apsw.Cursor.executemany" title="apsw.Cursor.executemany"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.executemany()</span></code></a> for more details.</p>
 <dl class="py method" id="index-21">
-<dt class="sig sig-object py" id="apsw.Connection.filecontrol">
-<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">filecontrol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dbname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">op</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pointer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#apsw.Connection.filecontrol" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="apsw.Connection.file_control">
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">file_control</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dbname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">op</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pointer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#apsw.Connection.file_control" title="Link to this definition"></a></dt>
 <dd><p>Calls the <a class="reference internal" href="vfs.html#apsw.VFSFile.xFileControl" title="apsw.VFSFile.xFileControl"><code class="xref py py-meth docutils literal notranslate"><span class="pre">xFileControl()</span></code></a> method on the <a class="reference internal" href="vfs.html#vfs"><span class="std std-ref">Virtual File System (VFS)</span></a>
 implementing <a class="reference internal" href="vfs.html#apsw.VFSFile" title="apsw.VFSFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">file</span> <span class="pre">access</span></code></a> for the database.</p>
 <dl class="field-list simple">
@@ -873,7 +876,7 @@ can then modify the dictionary to set return values:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">obj</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;foo&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">3</span><span class="p">}</span>                 <span class="c1"># object we want to pass</span>
 <span class="n">objwrap</span><span class="o">=</span><span class="n">ctypes</span><span class="o">.</span><span class="n">py_object</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>        <span class="c1"># objwrap must live before and after the call else</span>
                                      <span class="c1"># it gets garbage collected</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">filecontrol</span><span class="p">(</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">file_control</span><span class="p">(</span>
          <span class="s2">&quot;main&quot;</span><span class="p">,</span>                     <span class="c1"># which db</span>
          <span class="mi">123</span><span class="p">,</span>                        <span class="c1"># our op code</span>
          <span class="n">ctypes</span><span class="o">.</span><span class="n">addressof</span><span class="p">(</span><span class="n">objwrap</span><span class="p">))</span>  <span class="c1"># get pointer</span>
@@ -894,9 +897,9 @@ can then modify the dictionary to set return values:</p>
 </div>
 <p>This is how you set the chunk size by which the database grows.  Do
 not combine it into one line as the c_int would be garbage collected
-before the filecontrol call is made:</p>
+before the file control call is made:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">chunksize</span><span class="o">=</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="mi">32768</span><span class="p">)</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">filecontrol</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_FCNTL_CHUNK_SIZE</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">addressof</span><span class="p">(</span><span class="n">chunksize</span><span class="p">))</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">file_control</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_FCNTL_CHUNK_SIZE</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">addressof</span><span class="p">(</span><span class="n">chunksize</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/file_control.html">sqlite3_file_control</a></p>
@@ -924,22 +927,22 @@ before the filecontrol call is made:</p>
 </dd></dl>
 
 <dl class="py method" id="index-25">
-<dt class="sig sig-object py" id="apsw.Connection.getautocommit">
-<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">getautocommit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#apsw.Connection.getautocommit" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="apsw.Connection.get_autocommit">
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">get_autocommit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#apsw.Connection.get_autocommit" title="Link to this definition"></a></dt>
 <dd><p>Returns if the Connection is in auto commit mode (ie not in a transaction).</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/get_autocommit.html">sqlite3_get_autocommit</a></p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="apsw.Connection.getexectrace">
-<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">getexectrace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="apsw.html#apsw.ExecTracer" title="apsw.ExecTracer"><span class="pre">ExecTracer</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.getexectrace" title="Link to this definition"></a></dt>
-<dd><p>Returns the currently installed <a class="reference internal" href="#apsw.Connection.exectrace" title="apsw.Connection.exectrace"><code class="xref py py-attr docutils literal notranslate"><span class="pre">execution</span> <span class="pre">tracer</span></code></a></p>
+<dt class="sig sig-object py" id="apsw.Connection.get_exec_trace">
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">get_exec_trace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="apsw.html#apsw.ExecTracer" title="apsw.ExecTracer"><span class="pre">ExecTracer</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.get_exec_trace" title="Link to this definition"></a></dt>
+<dd><p>Returns the currently installed <a class="reference internal" href="#apsw.Connection.exec_trace" title="apsw.Connection.exec_trace"><code class="xref py py-attr docutils literal notranslate"><span class="pre">execution</span> <span class="pre">tracer</span></code></a></p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="apsw.Connection.getrowtrace">
-<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">getrowtrace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="apsw.html#apsw.RowTracer" title="apsw.RowTracer"><span class="pre">RowTracer</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.getrowtrace" title="Link to this definition"></a></dt>
-<dd><p>Returns the currently installed <a class="reference internal" href="#apsw.Connection.rowtrace" title="apsw.Connection.rowtrace"><code class="xref py py-attr docutils literal notranslate"><span class="pre">row</span> <span class="pre">tracer</span></code></a></p>
+<dt class="sig sig-object py" id="apsw.Connection.get_row_trace">
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">get_row_trace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="apsw.html#apsw.RowTracer" title="apsw.RowTracer"><span class="pre">RowTracer</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.get_row_trace" title="Link to this definition"></a></dt>
+<dd><p>Returns the currently installed <a class="reference internal" href="#apsw.Connection.row_trace" title="apsw.Connection.row_trace"><code class="xref py py-attr docutils literal notranslate"><span class="pre">row</span> <span class="pre">tracer</span></code></a></p>
 </dd></dl>
 
 <dl class="py attribute" id="index-26">
@@ -1000,8 +1003,8 @@ returned.  If called with two then the limit is set to <em>newval</em>.</p>
 </dd></dl>
 
 <dl class="py method" id="index-31">
-<dt class="sig sig-object py" id="apsw.Connection.loadextension">
-<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">loadextension</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">entrypoint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.loadextension" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="apsw.Connection.load_extension">
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">load_extension</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">entrypoint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.load_extension" title="Link to this definition"></a></dt>
 <dd><p>Loads <em>filename</em> as an <a class="reference external" href="https://www.sqlite.org/loadext.html">extension</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1020,7 +1023,7 @@ loaded.  The exception string includes more details.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="#apsw.Connection.enableloadextension" title="apsw.Connection.enableloadextension"><code class="xref py py-meth docutils literal notranslate"><span class="pre">enableloadextension()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#apsw.Connection.enable_load_extension" title="apsw.Connection.enable_load_extension"><code class="xref py py-meth docutils literal notranslate"><span class="pre">enable_load_extension()</span></code></a></p></li>
 </ul>
 </div>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/load_extension.html">sqlite3_load_extension</a></p>
@@ -1039,8 +1042,8 @@ loaded.  The exception string includes more details.</p>
 </dd></dl>
 
 <dl class="py method" id="index-32">
-<dt class="sig sig-object py" id="apsw.Connection.overloadfunction">
-<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">overloadfunction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">nargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.overloadfunction" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="apsw.Connection.overload_function">
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">overload_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">nargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.overload_function" title="Link to this definition"></a></dt>
 <dd><p>Registers a placeholder function so that a virtual table can provide an implementation via
 <a class="reference internal" href="vtable.html#apsw.VTTable.FindFunction" title="apsw.VTTable.FindFunction"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTTable.FindFunction()</span></code></a>.</p>
 <dl class="field-list simple">
@@ -1102,8 +1105,8 @@ permissions don't allow writing.  The main database is named &quot;main&quot;.</
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="apsw.Connection.rowtrace">
-<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">rowtrace</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="apsw.html#apsw.RowTracer" title="apsw.RowTracer"><span class="pre">RowTracer</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></em><a class="headerlink" href="#apsw.Connection.rowtrace" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="apsw.Connection.row_trace">
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">row_trace</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="apsw.html#apsw.RowTracer" title="apsw.RowTracer"><span class="pre">RowTracer</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></em><a class="headerlink" href="#apsw.Connection.row_trace" title="Link to this definition"></a></dt>
 <dd><p>Called with the cursor and row being returned for
 <a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">cursors</span></code></a> associated with this Connection, unless
 the Cursor installed its own tracer.  You can change the data that
@@ -1115,7 +1118,7 @@ removed.</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="execution.html#tracing"><span class="std std-ref">Tracing</span></a></p></li>
 <li><p><a class="reference internal" href="execution.html#rowtracer"><span class="std std-ref">Row Tracer</span></a></p></li>
-<li><p><a class="reference internal" href="cursor.html#apsw.Cursor.exectrace" title="apsw.Cursor.exectrace"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Cursor.exectrace</span></code></a></p></li>
+<li><p><a class="reference internal" href="cursor.html#apsw.Cursor.exec_trace" title="apsw.Cursor.exec_trace"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Cursor.exec_trace</span></code></a></p></li>
 </ul>
 </div>
 </dd></dl>
@@ -1140,44 +1143,37 @@ returned, not an exception (this is SQLite's behaviour).</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/serialize.html">sqlite3_serialize</a></p>
 </dd></dl>
 
-<dl class="py method" id="index-37">
-<dt class="sig sig-object py" id="apsw.Connection.set_last_insert_rowid">
-<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">set_last_insert_rowid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rowid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.set_last_insert_rowid" title="Link to this definition"></a></dt>
-<dd><p>Sets the value calls to <a class="reference internal" href="#apsw.Connection.last_insert_rowid" title="apsw.Connection.last_insert_rowid"><code class="xref py py-meth docutils literal notranslate"><span class="pre">last_insert_rowid()</span></code></a> will return.</p>
-<p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/set_last_insert_rowid.html">sqlite3_set_last_insert_rowid</a></p>
-</dd></dl>
-
 <dl class="py method">
-<dt class="sig sig-object py" id="apsw.Connection.setauthorizer">
-<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">setauthorizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.Authorizer" title="apsw.Authorizer"><span class="pre">Authorizer</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.setauthorizer" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="apsw.Connection.set_authorizer">
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">set_authorizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.Authorizer" title="apsw.Authorizer"><span class="pre">Authorizer</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.set_authorizer" title="Link to this definition"></a></dt>
 <dd><p>Sets the <a class="reference internal" href="#apsw.Connection.authorizer" title="apsw.Connection.authorizer"><code class="xref py py-attr docutils literal notranslate"><span class="pre">authorizer</span></code></a></p>
 </dd></dl>
 
-<dl class="py method" id="index-38">
-<dt class="sig sig-object py" id="apsw.Connection.setbusyhandler">
-<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">setbusyhandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.setbusyhandler" title="Link to this definition"></a></dt>
+<dl class="py method" id="index-37">
+<dt class="sig sig-object py" id="apsw.Connection.set_busy_handler">
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">set_busy_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.set_busy_handler" title="Link to this definition"></a></dt>
 <dd><p>Sets the busy handler to callable. callable will be called with one
 integer argument which is the number of prior calls to the busy
 callback for the same lock. If the busy callback returns False,
 then SQLite returns <em>SQLITE_BUSY</em> to the calling code. If
 the callback returns True, then SQLite tries to open the table
 again and the cycle repeats.</p>
-<p>If you previously called <a class="reference internal" href="#apsw.Connection.setbusytimeout" title="apsw.Connection.setbusytimeout"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setbusytimeout()</span></code></a> then
+<p>If you previously called <a class="reference internal" href="#apsw.Connection.set_busy_timeout" title="apsw.Connection.set_busy_timeout"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_busy_timeout()</span></code></a> then
 calling this overrides that.</p>
 <p>Passing None unregisters the existing handler.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="#apsw.Connection.setbusytimeout" title="apsw.Connection.setbusytimeout"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.setbusytimeout()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#apsw.Connection.set_busy_timeout" title="apsw.Connection.set_busy_timeout"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.set_busy_timeout()</span></code></a></p></li>
 <li><p><a class="reference internal" href="tips.html#busyhandling"><span class="std std-ref">Busy handling</span></a></p></li>
 </ul>
 </div>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/busy_handler.html">sqlite3_busy_handler</a></p>
 </dd></dl>
 
-<dl class="py method" id="index-39">
-<dt class="sig sig-object py" id="apsw.Connection.setbusytimeout">
-<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">setbusytimeout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">milliseconds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.setbusytimeout" title="Link to this definition"></a></dt>
+<dl class="py method" id="index-38">
+<dt class="sig sig-object py" id="apsw.Connection.set_busy_timeout">
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">set_busy_timeout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">milliseconds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.set_busy_timeout" title="Link to this definition"></a></dt>
 <dd><p>If the database is locked such as when another connection is making
 changes, SQLite will keep retrying.  This sets the maximum amount of
 time SQLite will keep retrying before giving up.  If the database is
@@ -1187,21 +1183,21 @@ still busy then <a class="reference internal" href="exceptions.html#apsw.BusyErr
 <dd class="field-odd"><p><strong>milliseconds</strong> -- Maximum thousandths of a second to wait.</p>
 </dd>
 </dl>
-<p>If you previously called <a class="reference internal" href="#apsw.Connection.setbusyhandler" title="apsw.Connection.setbusyhandler"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setbusyhandler()</span></code></a> then
+<p>If you previously called <a class="reference internal" href="#apsw.Connection.set_busy_handler" title="apsw.Connection.set_busy_handler"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_busy_handler()</span></code></a> then
 calling this overrides that.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="#apsw.Connection.setbusyhandler" title="apsw.Connection.setbusyhandler"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.setbusyhandler()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#apsw.Connection.set_busy_handler" title="apsw.Connection.set_busy_handler"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.set_busy_handler()</span></code></a></p></li>
 <li><p><a class="reference internal" href="tips.html#busyhandling"><span class="std std-ref">Busy handling</span></a></p></li>
 </ul>
 </div>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/busy_timeout.html">sqlite3_busy_timeout</a></p>
 </dd></dl>
 
-<dl class="py method" id="index-40">
-<dt class="sig sig-object py" id="apsw.Connection.setcommithook">
-<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">setcommithook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.CommitHook" title="apsw.CommitHook"><span class="pre">CommitHook</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.setcommithook" title="Link to this definition"></a></dt>
+<dl class="py method" id="index-39">
+<dt class="sig sig-object py" id="apsw.Connection.set_commit_hook">
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">set_commit_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.CommitHook" title="apsw.CommitHook"><span class="pre">CommitHook</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.set_commit_hook" title="Link to this definition"></a></dt>
 <dd><p><em>callable</em> will be called just before a commit.  It should return
 False for the commit to go ahead and True for it to be turned
 into a rollback. In the case of an exception in your callable, a
@@ -1217,14 +1213,21 @@ the existing hook.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="apsw.Connection.setexectrace">
-<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">setexectrace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.ExecTracer" title="apsw.ExecTracer"><span class="pre">ExecTracer</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.setexectrace" title="Link to this definition"></a></dt>
-<dd><p>Method to set <a class="reference internal" href="#apsw.Connection.exectrace" title="apsw.Connection.exectrace"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Connection.exectrace</span></code></a></p>
+<dt class="sig sig-object py" id="apsw.Connection.set_exec_trace">
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">set_exec_trace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.ExecTracer" title="apsw.ExecTracer"><span class="pre">ExecTracer</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.set_exec_trace" title="Link to this definition"></a></dt>
+<dd><p>Method to set <a class="reference internal" href="#apsw.Connection.exec_trace" title="apsw.Connection.exec_trace"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Connection.exec_trace</span></code></a></p>
+</dd></dl>
+
+<dl class="py method" id="index-40">
+<dt class="sig sig-object py" id="apsw.Connection.set_last_insert_rowid">
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">set_last_insert_rowid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rowid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.set_last_insert_rowid" title="Link to this definition"></a></dt>
+<dd><p>Sets the value calls to <a class="reference internal" href="#apsw.Connection.last_insert_rowid" title="apsw.Connection.last_insert_rowid"><code class="xref py py-meth docutils literal notranslate"><span class="pre">last_insert_rowid()</span></code></a> will return.</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/set_last_insert_rowid.html">sqlite3_set_last_insert_rowid</a></p>
 </dd></dl>
 
 <dl class="py method" id="index-41">
-<dt class="sig sig-object py" id="apsw.Connection.setprofile">
-<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">setprofile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.setprofile" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="apsw.Connection.set_profile">
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">set_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.set_profile" title="Link to this definition"></a></dt>
 <dd><p>Sets a callable which is invoked at the end of execution of each
 statement and passed the statement string and how long it took to
 execute. (The execution time is in nanoseconds.) Note that it is
@@ -1235,8 +1238,8 @@ read the first result, then you won't reach the end of the statement.</p>
 </dd></dl>
 
 <dl class="py method" id="index-42">
-<dt class="sig sig-object py" id="apsw.Connection.setprogresshandler">
-<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">setprogresshandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">nsteps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.setprogresshandler" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="apsw.Connection.set_progress_handler">
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">set_progress_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">nsteps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.set_progress_handler" title="Link to this definition"></a></dt>
 <dd><p>Sets a callable which is invoked every <em>nsteps</em> SQLite
 inststructions. The callable should return True to abort
 or False to continue. (If there is an error in your Python <em>callable</em>
@@ -1251,8 +1254,8 @@ then True/abort will be returned).</p>
 </dd></dl>
 
 <dl class="py method" id="index-43">
-<dt class="sig sig-object py" id="apsw.Connection.setrollbackhook">
-<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">setrollbackhook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.setrollbackhook" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="apsw.Connection.set_rollback_hook">
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">set_rollback_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.set_rollback_hook" title="Link to this definition"></a></dt>
 <dd><p>Sets a callable which is invoked during a rollback.  If <em>callable</em>
 is <em>None</em> then any existing rollback hook is unregistered.</p>
 <p>The <em>callable</em> is called with no parameters and the return value is ignored.</p>
@@ -1260,14 +1263,14 @@ is <em>None</em> then any existing rollback hook is unregistered.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="apsw.Connection.setrowtrace">
-<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">setrowtrace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.RowTracer" title="apsw.RowTracer"><span class="pre">RowTracer</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.setrowtrace" title="Link to this definition"></a></dt>
-<dd><p>Method to set <a class="reference internal" href="#apsw.Connection.rowtrace" title="apsw.Connection.rowtrace"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Connection.rowtrace</span></code></a></p>
+<dt class="sig sig-object py" id="apsw.Connection.set_row_trace">
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">set_row_trace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.RowTracer" title="apsw.RowTracer"><span class="pre">RowTracer</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.set_row_trace" title="Link to this definition"></a></dt>
+<dd><p>Method to set <a class="reference internal" href="#apsw.Connection.row_trace" title="apsw.Connection.row_trace"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Connection.row_trace</span></code></a></p>
 </dd></dl>
 
 <dl class="py method" id="index-44">
-<dt class="sig sig-object py" id="apsw.Connection.setupdatehook">
-<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">setupdatehook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.setupdatehook" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="apsw.Connection.set_update_hook">
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">set_update_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.set_update_hook" title="Link to this definition"></a></dt>
 <dd><p>Calls <em>callable</em> whenever a row is updated, deleted or inserted.  If
 <em>callable</em> is <em>None</em> then any existing update hook is
 unregistered.  The update hook cannot make changes to the database while
@@ -1297,8 +1300,8 @@ apply them in a different connection.</p>
 </dd></dl>
 
 <dl class="py method" id="index-45">
-<dt class="sig sig-object py" id="apsw.Connection.setwalhook">
-<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">setwalhook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.setwalhook" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="apsw.Connection.set_wal_hook">
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">set_wal_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.set_wal_hook" title="Link to this definition"></a></dt>
 <dd><p><em>callable</em> will be called just after data is committed in <a class="reference internal" href="tips.html#wal"><span class="std std-ref">Write Ahead Logging</span></a>
 mode.  It should return <em>SQLITE_OK</em> or an error code.  The
 callback is called with 3 parameters:</p>
@@ -1314,8 +1317,8 @@ callback is called with 3 parameters:</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="apsw.Connection.sqlite3pointer">
-<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">sqlite3pointer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.Connection.sqlite3pointer" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="apsw.Connection.sqlite3_pointer">
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">sqlite3_pointer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.Connection.sqlite3_pointer" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <p>Returns the underlying <a class="reference external" href="https://sqlite.org/c3ref/sqlite3.html">sqlite3 *</a> for the connection. This
@@ -1325,7 +1328,7 @@ is returned as a number using <a class="reference external" href="https://docs.p
 under the hood. You should also ensure that you increment the
 reference count on the <a class="reference internal" href="#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> for as long as the other
 libraries are using the pointer.  It is also a very good idea to call
-<a class="reference internal" href="apsw.html#apsw.sqlitelibversion" title="apsw.sqlitelibversion"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sqlitelibversion()</span></code></a> and ensure it is the same as the other
+<a class="reference internal" href="apsw.html#apsw.sqlite_lib_version" title="apsw.sqlite_lib_version"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sqlite_lib_version()</span></code></a> and ensure it is the same as the other
 libraries.</p>
 <dl class="py method" id="index-46">
 <dt class="sig sig-object py" id="apsw.Connection.status">
@@ -1369,8 +1372,8 @@ all databases</p>
 </dd></dl>
 
 <dl class="py method" id="index-49">
-<dt class="sig sig-object py" id="apsw.Connection.totalchanges">
-<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">totalchanges</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.Connection.totalchanges" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="apsw.Connection.total_changes">
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">total_changes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.Connection.total_changes" title="Link to this definition"></a></dt>
 <dd><p>Returns the total number of database rows that have be modified,
 inserted, or deleted since the database connection was opened.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/total_changes.html">sqlite3_total_changes64</a></p>
@@ -1500,7 +1503,7 @@ number of frames checkpointed as described in the
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Oct 06, 2023.
+      <span class="lastupdated">Last updated on Oct 24, 2023.
       </span></p>
   </div>
 

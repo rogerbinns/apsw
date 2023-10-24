@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Exceptions and Errors &mdash; APSW 3.43.1.1 documentation</title>
+  <title>Exceptions and Errors &mdash; APSW 3.43.2.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/favicon.ico"/>
@@ -14,7 +14,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=1608d9ae"></script>
+        <script src="_static/documentation_options.js?v=200f835c"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.43.1.1
+                3.43.2.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -401,8 +401,8 @@ a function with more than 127 parameters.</p>
 <dt class="sig sig-object py" id="apsw.BusyError">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">BusyError</span></span><a class="headerlink" href="#apsw.BusyError" title="Link to this definition"></a></dt>
 <dd><p><em>SQLITE_BUSY</em>.  The database file is locked.  Use
-<a class="reference internal" href="connection.html#apsw.Connection.setbusytimeout" title="apsw.Connection.setbusytimeout"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.setbusytimeout()</span></code></a> to change how long SQLite waits
-for the database to be unlocked or <a class="reference internal" href="connection.html#apsw.Connection.setbusyhandler" title="apsw.Connection.setbusyhandler"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.setbusyhandler()</span></code></a>
+<a class="reference internal" href="connection.html#apsw.Connection.set_busy_timeout" title="apsw.Connection.set_busy_timeout"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.set_busy_timeout()</span></code></a> to change how long SQLite waits
+for the database to be unlocked or <a class="reference internal" href="connection.html#apsw.Connection.set_busy_handler" title="apsw.Connection.set_busy_handler"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.set_busy_handler()</span></code></a>
 to use your own handler.</p>
 </dd></dl>
 
@@ -520,8 +520,8 @@ traceback:</p>
   <span class="mi">1</span><span class="o">/</span><span class="mi">0</span>
 
 <span class="n">con</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;:memory:&quot;</span><span class="p">)</span>
-<span class="n">con</span><span class="o">.</span><span class="n">createscalarfunction</span><span class="p">(</span><span class="s2">&quot;foo&quot;</span><span class="p">,</span> <span class="n">myfunc</span><span class="p">)</span>
-<span class="n">con</span><span class="o">.</span><span class="n">createscalarfunction</span><span class="p">(</span><span class="s2">&quot;fam&quot;</span><span class="p">,</span> <span class="n">myfunc</span><span class="p">)</span>
+<span class="n">con</span><span class="o">.</span><span class="n">create_scalar_function</span><span class="p">(</span><span class="s2">&quot;foo&quot;</span><span class="p">,</span> <span class="n">myfunc</span><span class="p">)</span>
+<span class="n">con</span><span class="o">.</span><span class="n">create_scalar_function</span><span class="p">(</span><span class="s2">&quot;fam&quot;</span><span class="p">,</span> <span class="n">myfunc</span><span class="p">)</span>
 <span class="n">cursor</span><span class="o">=</span><span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
 <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table bar(x,y,z);insert into bar values(1,2,3)&quot;</span><span class="p">)</span>
 <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select foo(1) from bar&quot;</span><span class="p">)</span>
@@ -631,7 +631,7 @@ almost completely useless!</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Oct 06, 2023.
+      <span class="lastupdated">Last updated on Oct 24, 2023.
       </span></p>
   </div>
 

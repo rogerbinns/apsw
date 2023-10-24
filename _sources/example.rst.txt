@@ -25,7 +25,7 @@ see what gets printed when you run the code.
    
    # Note: this code uses Python's optional typing annotations.  You can
    # ignore them and do not need to use them
-   from typing import Optional, Iterator
+   from typing import Optional, Iterator, Any
    
 
 .. index:: Checking APSW and SQLite versions (example code)
@@ -42,13 +42,13 @@ Checking APSW and SQLite versions
    print("      Using APSW file", apsw.__file__)
    
    # From the extension
-   print("         APSW version", apsw.apswversion())
+   print("         APSW version", apsw.apsw_version())
    
    # From the sqlite header file at APSW compile time
    print("SQLite header version", apsw.SQLITE_VERSION_NUMBER)
    
    # The SQLite code running
-   print("   SQLite lib version", apsw.sqlitelibversion())
+   print("   SQLite lib version", apsw.sqlite_lib_version())
    
    # If True then SQLite is incorporated into the extension.
    # If False then a shared library is being used, or static linking
@@ -59,9 +59,9 @@ Checking APSW and SQLite versions
 .. code-block:: output
 
           Using APSW file /space/apsw/apsw/__init__.cpython-311-x86_64-linux-gnu.so
-             APSW version 3.43.1.1
-    SQLite header version 3043001
-       SQLite lib version 3.43.1
+             APSW version 3.43.2.0
+    SQLite header version 3043002
+       SQLite lib version 3.43.2
        Using amalgamation True
 
 
@@ -394,7 +394,7 @@ tracing <tracing>`.
    
    # you can trace a single cursor
    cursor = connection.cursor()
-   cursor.exectrace = my_tracer
+   cursor.exec_trace = my_tracer
    cursor.execute(
        """
            drop table if exists bar;
@@ -403,9 +403,9 @@ tracing <tracing>`.
            """, (3, ))
    
    # if set on a connection then all cursors are traced
-   connection.exectrace = my_tracer
+   connection.exec_trace = my_tracer
    # and clearing it
-   connection.exectrace = None
+   connection.exec_trace = None
    
 
 
@@ -441,14 +441,14 @@ skipping it completely.  See :ref:`more about tracing <tracing>`.
    
    # you can trace a single cursor
    cursor = connection.cursor()
-   cursor.rowtrace = row_tracer
+   cursor.row_trace = row_tracer
    for row in cursor.execute("select x,y from point where x>4"):
        pass
    
    # if set on a connection then all cursors are traced
-   connection.rowtrace = row_tracer
+   connection.row_trace = row_tracer
    # and clearing it
-   connection.rowtrace = None
+   connection.row_trace = None
    
 
 
@@ -466,7 +466,7 @@ Defining your own functions
 ---------------------------
 
 Scalar functions take one or more values and return one value.  They
-are registered by calling :meth:`Connection.createscalarfunction`.
+are registered by calling :meth:`Connection.create_scalar_function`.
 
 .. code-block:: python
 
@@ -477,7 +477,7 @@ are registered by calling :meth:`Connection.createscalarfunction`.
        return 7
    
    
-   connection.createscalarfunction("seven", ilove7)
+   connection.create_scalar_function("seven", ilove7)
    
    for row in connection.execute("select seven(x,y) from point where x>4"):
        print("row", row)
@@ -502,7 +502,7 @@ Defining aggregate functions
 Aggregate functions are called multiple times with matching rows,
 and then provide a final value.  An example is calculating an
 average.  They are registered by calling
-:meth:`Connection.createaggregatefunction`.
+:meth:`Connection.create_aggregate_function`.
 
 .. code-block:: python
 
@@ -524,20 +524,14 @@ average.  They are registered by calling
            # Called at the very end
            return self.longest
    
-       @classmethod
-       def factory(cls) -> apsw.AggregateCallbacks:
-           return cls(), cls.step, cls.final
-   
-   
-   connection.createaggregatefunction("longest", longest.factory)
-   for row in connection.execute("select longest(event) from log"):
-       print(row)
+   connection.create_aggregate_function("longest", longest)
+   print(connection.execute("select longest(event) from log").get)
    
 
 
 .. code-block:: output
 
-    ('restart',)
+    restart
 
 
 .. index:: Defining window functions (example code)
@@ -634,7 +628,7 @@ Defining collations (sorting)
 -----------------------------
 
 How you sort can depend on the languages or values involved.  You
-register a collation by calling :meth:`Connection.createcollation`.
+register a collation by calling :meth:`Connection.create_collation`.
 
 .. code-block:: python
 
@@ -676,7 +670,7 @@ register a collation by calling :meth:`Connection.createcollation`.
        return 0
    
    
-   connection.createcollation("strnum", str_num_collate)
+   connection.create_collation("strnum", str_num_collate)
    
    print()
    print("Using strnum")
@@ -731,7 +725,7 @@ instead
        print("year", row[2])
    
    # Turn on dataclasses - frozen makes them read-only
-   connection.rowtrace = apsw.ext.DataClassRowFactory(dataclass_kwargs={"frozen": True})
+   connection.row_trace = apsw.ext.DataClassRowFactory(dataclass_kwargs={"frozen": True})
    
    print("\nNow with dataclasses\n")
    
@@ -746,7 +740,7 @@ instead
        print("year", row.book_year)
    
    # clear
-   connection.rowtrace = None
+   connection.row_trace = None
    
 
 
@@ -951,12 +945,7 @@ query (without running it)
      ('address', 'CHAR'))
     
     description_full
-     (('id', 'INTEGER', 'main', 'orders', 'id'),
-     ('customer_id', 'INTEGER', 'main', 'orders', 'customer_id'),
-     ('item', 'MY_OWN_TYPE', 'main', 'orders', 'item'),
-     ('id', 'INTEGER', 'main', 'customers', 'id'),
-     ('name', 'CHAR', 'main', 'customers', 'name'),
-     ('address', 'CHAR', 'main', 'customers', 'address'))
+     None
     
     query_plan
      QueryPlan(detail='QUERY PLAN',
@@ -1091,7 +1080,7 @@ BLOBS (binary large objects) are supported by SQLite.  Note that you
 cannot change the size of one, but you can allocate one filled with
 zeroes, and then later open it and read / write the contents similar
 to a file, without having the entire blob in memory.  Use
-:meth:`Connection.blobopen` to open a blob.
+:meth:`Connection.blob_open` to open a blob.
 
 .. code-block:: python
 
@@ -1102,7 +1091,7 @@ to a file, without having the entire blob in memory.  Use
    connection.execute("insert into blobby values(2, ?)", (apsw.zeroblob(20000), ))
    # Open a blob for writing.  We need to know the rowid
    rowid = connection.execute("select ROWID from blobby where x=1").get
-   blob = connection.blobopen("main", "blobby", "y", rowid, True)
+   blob = connection.blob_open("main", "blobby", "y", rowid, True)
    blob.write(b"hello world")
    blob.seek(2000)
    blob.write(b"hello world, again")
@@ -1167,7 +1156,7 @@ Progress handler
 
 Some operations (eg joins, sorting) can take many operations to
 complete.  Register a progress handler callback with
-:meth:`Connection.setprogresshandler` which lets you provide
+:meth:`Connection.set_progress_handler` which lets you provide
 feedback and allows cancelling.
 
 .. code-block:: python
@@ -1190,14 +1179,14 @@ feedback and allows cancelling.
    
    
    # register handler every 50 vdbe instructions
-   connection.setprogresshandler(progress_handler, 50)
+   connection.set_progress_handler(progress_handler, 50)
    
    # Sorting the numbers to find the biggest
    for max_num in connection.execute("select max(x) from numbers"):
        print(max_num)
    
    # Clear handler
-   connection.setprogresshandler(None)
+   connection.set_progress_handler(None)
    
 
 
@@ -1211,7 +1200,7 @@ feedback and allows cancelling.
     progress handler called
     progress handler called
     progress handler called
-    (9973029666,)
+    (9889823226,)
 
 
 .. index:: File Control (example code)
@@ -1222,7 +1211,7 @@ File Control
 ------------
 
 We can get/set low level information using the
-:meth:`Connection.filecontrol` interface.  In this example we get
+:meth:`Connection.file_control` interface.  In this example we get
 the `data version
 <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntldataversion>`__.
 There is a `pragma
@@ -1238,7 +1227,7 @@ doesn't change for commits on the same connection.
    def get_data_version(db):
        # unsigned 32 bit integer
        data_version = ctypes.c_uint32(0)
-       ok = db.filecontrol(
+       ok = db.file_control(
            "main",  # or an attached database name
            apsw.SQLITE_FCNTL_DATA_VERSION,  # code
            ctypes.addressof(data_version))  # pass C level pointer
@@ -1287,7 +1276,7 @@ Commit hook
 -----------
 
 A commit hook can allow or veto commits.  Register a commit hook
-with  :meth:`Connection.setcommithook`.
+with  :meth:`Connection.set_commit_hook`.
 
 .. code-block:: python
 
@@ -1302,22 +1291,21 @@ with  :meth:`Connection.setcommithook`.
        return False  # let commit go ahead
    
    
-   connection.setcommithook(my_commit_hook)
+   connection.set_commit_hook(my_commit_hook)
    try:
        with connection:
            connection.execute("create table example(x,y,z); insert into example values (3,4,5)")
    except apsw.ConstraintError:
        print("commit was not allowed")
    
-   connection.setcommithook(None)
+   connection.set_commit_hook(None)
    
 
 
 .. code-block:: output
 
     in commit hook
-    no commits out of hours
-    commit was not allowed
+    commits okay at this time
 
 
 .. index:: Update hook (example code)
@@ -1330,7 +1318,7 @@ Update hook
 Update hooks let you know that data has been added, changed, or
 removed.  For example you could use this to discard cached
 information.  Register a hook using
-:meth:`Connection.setupdatehook`.
+:meth:`Connection.set_update_hook`.
 
 .. code-block:: python
 
@@ -1340,13 +1328,13 @@ information.  Register a hook using
        print(f"Updated: { op } db { db_name }, table { table_name }, rowid { rowid }")
    
    
-   connection.setupdatehook(my_update_hook)
+   connection.set_update_hook(my_update_hook)
    connection.execute("insert into names values(?)", ("file93", ))
    connection.execute("update names set name=? where name=?", ("file94", "file93"))
    connection.execute("delete from names where name=?", ("file94", ))
    
    # Clear the hook
-   connection.setupdatehook(None)
+   connection.set_update_hook(None)
    
 
 
@@ -1552,12 +1540,12 @@ useful instead.
     ┌─────────┬──────────────────────────────────────────┬─────────────────────────┐
     │ st_size │                directory                 │          name           │
     ├─────────┼──────────────────────────────────────────┼─────────────────────────┤
-    │ 758777  │ /usr/lib/python3.11/pydoc_data           │ topics.py               │
+    │ 757129  │ /usr/lib/python3.11/pydoc_data           │ topics.py               │
     ├─────────┼──────────────────────────────────────────┼─────────────────────────┤
-    │ 471229  │ /usr/lib/python3.11/pydoc_data/__pycache │ topics.cpython-311.pyc  │
+    │ 469024  │ /usr/lib/python3.11/pydoc_data/__pycache │ topics.cpython-311.pyc  │
     │         │ __                                       │                         │
     ├─────────┼──────────────────────────────────────────┼─────────────────────────┤
-    │ 257926  │ /usr/lib/python3.11/tkinter/__pycache__  │ __init__.cpython-       │
+    │ 257767  │ /usr/lib/python3.11/tkinter/__pycache__  │ __init__.cpython-       │
     │         │                                          │ 311.pyc                 │
     └─────────┴──────────────────────────────────────────┴─────────────────────────┘
     
@@ -1579,9 +1567,9 @@ useful instead.
 
     ┌────────────┬────────────────────────────────┬───────────────┐
     │    date    │           directory            │     name      │
-    │ 2023-07-31 │ /usr/lib/python3.11/pydoc_data │ topics.py     │
-    │ 2023-07-31 │ /usr/lib/python3.11            │ _pydecimal.py │
-    │ 2023-04-17 │ /usr/lib/python3.11/tkinter    │ __init__.py   │
+    │ 2023-10-10 │ /usr/lib/python3.11/pydoc_data │ topics.py     │
+    │ 2023-10-10 │ /usr/lib/python3.11            │ _pydecimal.py │
+    │ 2023-10-06 │ /usr/lib/python3.11/tkinter    │ __init__.py   │
     └────────────┴────────────────────────────────┴───────────────┘
     
 
@@ -1601,8 +1589,8 @@ useful instead.
 
     ┌────────────┬────────────┐
     │ extension  │ total_size │
-    │            │ 382419     │
-    │ .a         │ 113893958  │
+    │            │ 383395     │
+    │ .a         │ 113404210  │
     │ .allowlist │ 56         │
     │ .bootstrap │ 1756       │
     │ .c         │ 11116      │
@@ -1611,14 +1599,15 @@ useful instead.
     │ .css       │ 1325       │
     │ .fish      │ 2215       │
     │ .in        │ 3504       │
+    │ .json      │ 2162       │
     │ .local     │ 1534       │
-    │ .o         │ 20304      │
+    │ .o         │ 20696      │
     │ .ps1       │ 9033       │
-    │ .py        │ 11776971   │
-    │ .pyc       │ 13267393   │
+    │ .py        │ 11814848   │
+    │ .pyc       │ 13310247   │
     │ .rst       │ 9561       │
     │ .sh        │ 3941       │
-    │ .so        │ 27584936   │
+    │ .so        │ 27575368   │
     │ .stdlib    │ 10752      │
     │ .supp      │ 70         │
     │ .txt       │ 23425      │
@@ -1630,7 +1619,7 @@ useful instead.
 
    
    # unregister a virtual table by passing None
-   connection.createmodule("files_info", None)
+   connection.create_module("files_info", None)
    
 
 .. index:: VFS - Virtual File System (example code)
@@ -1666,7 +1655,7 @@ data as it flows through.  Read more about :ref:`VFS <vfs>`.
    
        # We want to return our own file implementation, but also
        # want it to inherit
-       def xOpen(self, name, flags: int):
+       def xOpen(self, name, flags):
            if isinstance(name, apsw.URIFilename):
                print("xOpen of", name.filename())
                # We can look at uri parameters
@@ -1707,7 +1696,7 @@ data as it flows through.  Read more about :ref:`VFS <vfs>`.
    obfuvfs = ObfuscatedVFS()
    
    # Lets see what vfs are now available?
-   print("VFS available", apsw.vfsnames())
+   print("VFS available", apsw.vfs_names())
    
    # Make an obfuscated db, passing in some URI parameters
    # default open flags
@@ -1888,9 +1877,9 @@ Python.
     
     Dump output
     
-    -- SQLite dump (by APSW 3.43.1.1)
-    -- SQLite version 3.43.1
-    -- Date: Fri Oct  6 07:11:15 2023
+    -- SQLite dump (by APSW 3.43.2.0)
+    -- SQLite version 3.43.2
+    -- Date: Tue Oct 24 11:54:25 2023
     -- Tables like: csvtest%
     -- Database: /space/apsw/dbfile
     -- User: rogerb @ clamps
@@ -1936,7 +1925,7 @@ SQLite provides statistics by :meth:`status`
 
 .. code-block:: output
 
-    SQLite memory usage 433992 max 2341792
+    SQLite memory usage 428264 max 2343392
 
 
 .. index:: Tracing (example code)
@@ -2000,12 +1989,12 @@ This shows using :meth:`Connection.trace_v2`
     
     code is  SQLITE_TRACE_PROFILE
     {'code': 2,
-     'nanoseconds': 18000000,
+     'nanoseconds': 19000000,
      'stmt_status': {'SQLITE_STMTSTATUS_AUTOINDEX': 0,
                      'SQLITE_STMTSTATUS_FILTER_HIT': 0,
                      'SQLITE_STMTSTATUS_FILTER_MISS': 0,
                      'SQLITE_STMTSTATUS_FULLSCAN_STEP': 1365,
-                     'SQLITE_STMTSTATUS_MEMUSED': 15784,
+                     'SQLITE_STMTSTATUS_MEMUSED': 15616,
                      'SQLITE_STMTSTATUS_REPREPARE': 0,
                      'SQLITE_STMTSTATUS_RUN': 1,
                      'SQLITE_STMTSTATUS_SORT': 2,

@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Example/Tour &mdash; APSW 3.43.1.1 documentation</title>
+  <title>Example/Tour &mdash; APSW 3.43.2.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/favicon.ico"/>
@@ -14,7 +14,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=1608d9ae"></script>
+        <script src="_static/documentation_options.js?v=200f835c"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.43.1.1
+                3.43.2.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -161,7 +161,7 @@ see what gets printed when you run the code.</p>
 
 <span class="c1"># Note: this code uses Python&#39;s optional typing annotations.  You can</span>
 <span class="c1"># ignore them and do not need to use them</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Iterator</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Any</span>
 </pre></div>
 </div>
 <section id="checking-apsw-and-sqlite-versions">
@@ -170,13 +170,13 @@ see what gets printed when you run the code.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;      Using APSW file&quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)</span>
 
 <span class="c1"># From the extension</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;         APSW version&quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">apswversion</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;         APSW version&quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">apsw_version</span><span class="p">())</span>
 
 <span class="c1"># From the sqlite header file at APSW compile time</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;SQLite header version&quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_VERSION_NUMBER</span><span class="p">)</span>
 
 <span class="c1"># The SQLite code running</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   SQLite lib version&quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">sqlitelibversion</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   SQLite lib version&quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">sqlite_lib_version</span><span class="p">())</span>
 
 <span class="c1"># If True then SQLite is incorporated into the extension.</span>
 <span class="c1"># If False then a shared library is being used, or static linking</span>
@@ -184,9 +184,9 @@ see what gets printed when you run the code.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">      Using APSW file /space/apsw/apsw/__init__.cpython-311-x86_64-linux-gnu.so</span>
-<span class="go">         APSW version 3.43.1.1</span>
-<span class="go">SQLite header version 3043001</span>
-<span class="go">   SQLite lib version 3.43.1</span>
+<span class="go">         APSW version 3.43.2.0</span>
+<span class="go">SQLite header version 3043002</span>
+<span class="go">   SQLite lib version 3.43.2</span>
 <span class="go">   Using amalgamation True</span>
 </pre></div>
 </div>
@@ -421,7 +421,7 @@ tracing</span></a>.</p>
 
 <span class="c1"># you can trace a single cursor</span>
 <span class="n">cursor</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">exectrace</span> <span class="o">=</span> <span class="n">my_tracer</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">exec_trace</span> <span class="o">=</span> <span class="n">my_tracer</span>
 <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        drop table if exists bar;</span>
@@ -430,9 +430,9 @@ tracing</span></a>.</p>
 <span class="sd">        &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="p">))</span>
 
 <span class="c1"># if set on a connection then all cursors are traced</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">exectrace</span> <span class="o">=</span> <span class="n">my_tracer</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">exec_trace</span> <span class="o">=</span> <span class="n">my_tracer</span>
 <span class="c1"># and clearing it</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">exectrace</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">exec_trace</span> <span class="o">=</span> <span class="kc">None</span>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQL: drop table if exists bar;</span>
@@ -457,14 +457,14 @@ skipping it completely.  See <a class="reference internal" href="execution.html#
 
 <span class="c1"># you can trace a single cursor</span>
 <span class="n">cursor</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">rowtrace</span> <span class="o">=</span> <span class="n">row_tracer</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">row_trace</span> <span class="o">=</span> <span class="n">row_tracer</span>
 <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select x,y from point where x&gt;4&quot;</span><span class="p">):</span>
     <span class="k">pass</span>
 
 <span class="c1"># if set on a connection then all cursors are traced</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">rowtrace</span> <span class="o">=</span> <span class="n">row_tracer</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">row_trace</span> <span class="o">=</span> <span class="n">row_tracer</span>
 <span class="c1"># and clearing it</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">rowtrace</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">row_trace</span> <span class="o">=</span> <span class="kc">None</span>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Row: (7, 8)</span>
@@ -475,14 +475,14 @@ skipping it completely.  See <a class="reference internal" href="execution.html#
 <section id="defining-your-own-functions">
 <span id="example-scalar"></span><span id="index-14"></span><h2>Defining your own functions<a class="headerlink" href="#defining-your-own-functions" title="Link to this heading"></a></h2>
 <p>Scalar functions take one or more values and return one value.  They
-are registered by calling <a class="reference internal" href="connection.html#apsw.Connection.createscalarfunction" title="apsw.Connection.createscalarfunction"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.createscalarfunction()</span></code></a>.</p>
+are registered by calling <a class="reference internal" href="connection.html#apsw.Connection.create_scalar_function" title="apsw.Connection.create_scalar_function"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.create_scalar_function()</span></code></a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">ilove7</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
     <span class="s2">&quot;A scalar function&quot;</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ilove7 got </span><span class="si">{</span><span class="w"> </span><span class="n">args</span><span class="w"> </span><span class="si">}</span><span class="s2"> but I love 7&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="mi">7</span>
 
 
-<span class="n">connection</span><span class="o">.</span><span class="n">createscalarfunction</span><span class="p">(</span><span class="s2">&quot;seven&quot;</span><span class="p">,</span> <span class="n">ilove7</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">create_scalar_function</span><span class="p">(</span><span class="s2">&quot;seven&quot;</span><span class="p">,</span> <span class="n">ilove7</span><span class="p">)</span>
 
 <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select seven(x,y) from point where x&gt;4&quot;</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;row&quot;</span><span class="p">,</span> <span class="n">row</span><span class="p">)</span>
@@ -500,7 +500,7 @@ are registered by calling <a class="reference internal" href="connection.html#ap
 <p>Aggregate functions are called multiple times with matching rows,
 and then provide a final value.  An example is calculating an
 average.  They are registered by calling
-<a class="reference internal" href="connection.html#apsw.Connection.createaggregatefunction" title="apsw.Connection.createaggregatefunction"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.createaggregatefunction()</span></code></a>.</p>
+<a class="reference internal" href="connection.html#apsw.Connection.create_aggregate_function" title="apsw.Connection.create_aggregate_function"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.create_aggregate_function()</span></code></a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">longest</span><span class="p">:</span>
     <span class="c1"># Find which value when represented as a string is</span>
     <span class="c1"># the longest</span>
@@ -518,17 +518,11 @@ average.  They are registered by calling
         <span class="c1"># Called at the very end</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">longest</span>
 
-    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">factory</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">AggregateCallbacks</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="p">(),</span> <span class="bp">cls</span><span class="o">.</span><span class="n">step</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">final</span>
-
-
-<span class="n">connection</span><span class="o">.</span><span class="n">createaggregatefunction</span><span class="p">(</span><span class="s2">&quot;longest&quot;</span><span class="p">,</span> <span class="n">longest</span><span class="o">.</span><span class="n">factory</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select longest(event) from log&quot;</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">create_aggregate_function</span><span class="p">(</span><span class="s2">&quot;longest&quot;</span><span class="p">,</span> <span class="n">longest</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select longest(event) from log&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">(&#39;restart&#39;,)</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">restart</span>
 </pre></div>
 </div>
 </section>
@@ -607,7 +601,7 @@ documentation</a></p>
 <section id="defining-collations-sorting">
 <span id="example-collation"></span><span id="index-17"></span><h2>Defining collations (sorting)<a class="headerlink" href="#defining-collations-sorting" title="Link to this heading"></a></h2>
 <p>How you sort can depend on the languages or values involved.  You
-register a collation by calling <a class="reference internal" href="connection.html#apsw.Connection.createcollation" title="apsw.Connection.createcollation"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.createcollation()</span></code></a>.</p>
+register a collation by calling <a class="reference internal" href="connection.html#apsw.Connection.create_collation" title="apsw.Connection.create_collation"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.create_collation()</span></code></a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># This example sorting mechanisms understands some text followed by a</span>
 <span class="c1"># number and ensures the number portion gets sorted correctly</span>
 
@@ -646,7 +640,7 @@ register a collation by calling <a class="reference internal" href="connection.h
     <span class="k">return</span> <span class="mi">0</span>
 
 
-<span class="n">connection</span><span class="o">.</span><span class="n">createcollation</span><span class="p">(</span><span class="s2">&quot;strnum&quot;</span><span class="p">,</span> <span class="n">str_num_collate</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">create_collation</span><span class="p">(</span><span class="s2">&quot;strnum&quot;</span><span class="p">,</span> <span class="n">str_num_collate</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">()</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Using strnum&quot;</span><span class="p">)</span>
@@ -691,7 +685,7 @@ instead</p>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;year&quot;</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
 
 <span class="c1"># Turn on dataclasses - frozen makes them read-only</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">rowtrace</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">DataClassRowFactory</span><span class="p">(</span><span class="n">dataclass_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;frozen&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">row_trace</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">DataClassRowFactory</span><span class="p">(</span><span class="n">dataclass_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;frozen&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Now with dataclasses</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
@@ -706,7 +700,7 @@ instead</p>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;year&quot;</span><span class="p">,</span> <span class="n">row</span><span class="o">.</span><span class="n">book_year</span><span class="p">)</span>
 
 <span class="c1"># clear</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">rowtrace</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">row_trace</span> <span class="o">=</span> <span class="kc">None</span>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">title The Picture of Dorian Gray</span>
@@ -888,12 +882,7 @@ query (without running it)</p>
 <span class="go"> (&#39;address&#39;, &#39;CHAR&#39;))</span>
 
 <span class="go">description_full</span>
-<span class="go"> ((&#39;id&#39;, &#39;INTEGER&#39;, &#39;main&#39;, &#39;orders&#39;, &#39;id&#39;),</span>
-<span class="go"> (&#39;customer_id&#39;, &#39;INTEGER&#39;, &#39;main&#39;, &#39;orders&#39;, &#39;customer_id&#39;),</span>
-<span class="go"> (&#39;item&#39;, &#39;MY_OWN_TYPE&#39;, &#39;main&#39;, &#39;orders&#39;, &#39;item&#39;),</span>
-<span class="go"> (&#39;id&#39;, &#39;INTEGER&#39;, &#39;main&#39;, &#39;customers&#39;, &#39;id&#39;),</span>
-<span class="go"> (&#39;name&#39;, &#39;CHAR&#39;, &#39;main&#39;, &#39;customers&#39;, &#39;name&#39;),</span>
-<span class="go"> (&#39;address&#39;, &#39;CHAR&#39;, &#39;main&#39;, &#39;customers&#39;, &#39;address&#39;))</span>
+<span class="go"> None</span>
 
 <span class="go">query_plan</span>
 <span class="go"> QueryPlan(detail=&#39;QUERY PLAN&#39;,</span>
@@ -1024,7 +1013,7 @@ query (without running it)</p>
 cannot change the size of one, but you can allocate one filled with
 zeroes, and then later open it and read / write the contents similar
 to a file, without having the entire blob in memory.  Use
-<a class="reference internal" href="connection.html#apsw.Connection.blobopen" title="apsw.Connection.blobopen"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.blobopen()</span></code></a> to open a blob.</p>
+<a class="reference internal" href="connection.html#apsw.Connection.blob_open" title="apsw.Connection.blob_open"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.blob_open()</span></code></a> to open a blob.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table blobby(x,y)&quot;</span><span class="p">)</span>
 <span class="c1"># Add a blob we will fill in later</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into blobby values(1, zeroblob(10000))&quot;</span><span class="p">)</span>
@@ -1032,7 +1021,7 @@ to a file, without having the entire blob in memory.  Use
 <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into blobby values(2, ?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">zeroblob</span><span class="p">(</span><span class="mi">20000</span><span class="p">),</span> <span class="p">))</span>
 <span class="c1"># Open a blob for writing.  We need to know the rowid</span>
 <span class="n">rowid</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select ROWID from blobby where x=1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span>
-<span class="n">blob</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">blobopen</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="s2">&quot;blobby&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">rowid</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+<span class="n">blob</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">blob_open</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="s2">&quot;blobby&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">rowid</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 <span class="n">blob</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;hello world&quot;</span><span class="p">)</span>
 <span class="n">blob</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">2000</span><span class="p">)</span>
 <span class="n">blob</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;hello world, again&quot;</span><span class="p">)</span>
@@ -1082,7 +1071,7 @@ to a file, without having the entire blob in memory.  Use
 <span id="example-progress-handler"></span><span id="index-23"></span><h2>Progress handler<a class="headerlink" href="#progress-handler" title="Link to this heading"></a></h2>
 <p>Some operations (eg joins, sorting) can take many operations to
 complete.  Register a progress handler callback with
-<a class="reference internal" href="connection.html#apsw.Connection.setprogresshandler" title="apsw.Connection.setprogresshandler"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.setprogresshandler()</span></code></a> which lets you provide
+<a class="reference internal" href="connection.html#apsw.Connection.set_progress_handler" title="apsw.Connection.set_progress_handler"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.set_progress_handler()</span></code></a> which lets you provide
 feedback and allows cancelling.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">some_numbers</span><span class="p">(</span><span class="n">how_many</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
     <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">how_many</span><span class="p">):</span>
@@ -1101,14 +1090,14 @@ feedback and allows cancelling.</p>
 
 
 <span class="c1"># register handler every 50 vdbe instructions</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">setprogresshandler</span><span class="p">(</span><span class="n">progress_handler</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">set_progress_handler</span><span class="p">(</span><span class="n">progress_handler</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
 
 <span class="c1"># Sorting the numbers to find the biggest</span>
 <span class="k">for</span> <span class="n">max_num</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select max(x) from numbers&quot;</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">max_num</span><span class="p">)</span>
 
 <span class="c1"># Clear handler</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">setprogresshandler</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">set_progress_handler</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">progress handler called</span>
@@ -1119,14 +1108,14 @@ feedback and allows cancelling.</p>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
-<span class="go">(9973029666,)</span>
+<span class="go">(9889823226,)</span>
 </pre></div>
 </div>
 </section>
 <section id="file-control">
 <span id="example-filecontrol"></span><span id="index-24"></span><h2>File Control<a class="headerlink" href="#file-control" title="Link to this heading"></a></h2>
 <p>We can get/set low level information using the
-<a class="reference internal" href="connection.html#apsw.Connection.filecontrol" title="apsw.Connection.filecontrol"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.filecontrol()</span></code></a> interface.  In this example we get
+<a class="reference internal" href="connection.html#apsw.Connection.file_control" title="apsw.Connection.file_control"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.file_control()</span></code></a> interface.  In this example we get
 the <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntldataversion">data version</a>.
 There is a <a class="reference external" href="https://sqlite.org/pragma.html#pragma_data_version">pragma</a> but it
 doesn't change for commits on the same connection.</p>
@@ -1137,7 +1126,7 @@ doesn't change for commits on the same connection.</p>
 <span class="k">def</span> <span class="nf">get_data_version</span><span class="p">(</span><span class="n">db</span><span class="p">):</span>
     <span class="c1"># unsigned 32 bit integer</span>
     <span class="n">data_version</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint32</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-    <span class="n">ok</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">filecontrol</span><span class="p">(</span>
+    <span class="n">ok</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">file_control</span><span class="p">(</span>
         <span class="s2">&quot;main&quot;</span><span class="p">,</span>  <span class="c1"># or an attached database name</span>
         <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_FCNTL_DATA_VERSION</span><span class="p">,</span>  <span class="c1"># code</span>
         <span class="n">ctypes</span><span class="o">.</span><span class="n">addressof</span><span class="p">(</span><span class="n">data_version</span><span class="p">))</span>  <span class="c1"># pass C level pointer</span>
@@ -1179,7 +1168,7 @@ doesn't change for commits on the same connection.</p>
 <section id="commit-hook">
 <span id="example-commit-hook"></span><span id="index-25"></span><h2>Commit hook<a class="headerlink" href="#commit-hook" title="Link to this heading"></a></h2>
 <p>A commit hook can allow or veto commits.  Register a commit hook
-with  <a class="reference internal" href="connection.html#apsw.Connection.setcommithook" title="apsw.Connection.setcommithook"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.setcommithook()</span></code></a>.</p>
+with  <a class="reference internal" href="connection.html#apsw.Connection.set_commit_hook" title="apsw.Connection.set_commit_hook"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.set_commit_hook()</span></code></a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">my_commit_hook</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;in commit hook&quot;</span><span class="p">)</span>
     <span class="n">hour</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">localtime</span><span class="p">()[</span><span class="mi">3</span><span class="p">]</span>
@@ -1190,19 +1179,18 @@ with  <a class="reference internal" href="connection.html#apsw.Connection.setcom
     <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># let commit go ahead</span>
 
 
-<span class="n">connection</span><span class="o">.</span><span class="n">setcommithook</span><span class="p">(</span><span class="n">my_commit_hook</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">set_commit_hook</span><span class="p">(</span><span class="n">my_commit_hook</span><span class="p">)</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="k">with</span> <span class="n">connection</span><span class="p">:</span>
         <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table example(x,y,z); insert into example values (3,4,5)&quot;</span><span class="p">)</span>
 <span class="k">except</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ConstraintError</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;commit was not allowed&quot;</span><span class="p">)</span>
 
-<span class="n">connection</span><span class="o">.</span><span class="n">setcommithook</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">set_commit_hook</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">in commit hook</span>
-<span class="go">no commits out of hours</span>
-<span class="go">commit was not allowed</span>
+<span class="go">commits okay at this time</span>
 </pre></div>
 </div>
 </section>
@@ -1211,19 +1199,19 @@ with  <a class="reference internal" href="connection.html#apsw.Connection.setcom
 <p>Update hooks let you know that data has been added, changed, or
 removed.  For example you could use this to discard cached
 information.  Register a hook using
-<a class="reference internal" href="connection.html#apsw.Connection.setupdatehook" title="apsw.Connection.setupdatehook"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.setupdatehook()</span></code></a>.</p>
+<a class="reference internal" href="connection.html#apsw.Connection.set_update_hook" title="apsw.Connection.set_update_hook"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.set_update_hook()</span></code></a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">my_update_hook</span><span class="p">(</span><span class="nb">type</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">db_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">rowid</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="n">op</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">mapping_authorizer_function</span><span class="p">[</span><span class="nb">type</span><span class="p">]</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Updated: </span><span class="si">{</span><span class="w"> </span><span class="n">op</span><span class="w"> </span><span class="si">}</span><span class="s2"> db </span><span class="si">{</span><span class="w"> </span><span class="n">db_name</span><span class="w"> </span><span class="si">}</span><span class="s2">, table </span><span class="si">{</span><span class="w"> </span><span class="n">table_name</span><span class="w"> </span><span class="si">}</span><span class="s2">, rowid </span><span class="si">{</span><span class="w"> </span><span class="n">rowid</span><span class="w"> </span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 
-<span class="n">connection</span><span class="o">.</span><span class="n">setupdatehook</span><span class="p">(</span><span class="n">my_update_hook</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">set_update_hook</span><span class="p">(</span><span class="n">my_update_hook</span><span class="p">)</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into names values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;file93&quot;</span><span class="p">,</span> <span class="p">))</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;update names set name=? where name=?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;file94&quot;</span><span class="p">,</span> <span class="s2">&quot;file93&quot;</span><span class="p">))</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;delete from names where name=?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;file94&quot;</span><span class="p">,</span> <span class="p">))</span>
 
 <span class="c1"># Clear the hook</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">setupdatehook</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">set_update_hook</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Updated: SQLITE_INSERT db main, table names, rowid 7</span>
@@ -1395,12 +1383,12 @@ useful instead.</p>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">┌─────────┬──────────────────────────────────────────┬─────────────────────────┐</span>
 <span class="go">│ st_size │                directory                 │          name           │</span>
 <span class="go">├─────────┼──────────────────────────────────────────┼─────────────────────────┤</span>
-<span class="go">│ 758777  │ /usr/lib/python3.11/pydoc_data           │ topics.py               │</span>
+<span class="go">│ 757129  │ /usr/lib/python3.11/pydoc_data           │ topics.py               │</span>
 <span class="go">├─────────┼──────────────────────────────────────────┼─────────────────────────┤</span>
-<span class="go">│ 471229  │ /usr/lib/python3.11/pydoc_data/__pycache │ topics.cpython-311.pyc  │</span>
+<span class="go">│ 469024  │ /usr/lib/python3.11/pydoc_data/__pycache │ topics.cpython-311.pyc  │</span>
 <span class="go">│         │ __                                       │                         │</span>
 <span class="go">├─────────┼──────────────────────────────────────────┼─────────────────────────┤</span>
-<span class="go">│ 257926  │ /usr/lib/python3.11/tkinter/__pycache__  │ __init__.cpython-       │</span>
+<span class="go">│ 257767  │ /usr/lib/python3.11/tkinter/__pycache__  │ __init__.cpython-       │</span>
 <span class="go">│         │                                          │ 311.pyc                 │</span>
 <span class="go">└─────────┴──────────────────────────────────────────┴─────────────────────────┘</span>
 </pre></div>
@@ -1416,9 +1404,9 @@ useful instead.</p>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">┌────────────┬────────────────────────────────┬───────────────┐</span>
 <span class="go">│    date    │           directory            │     name      │</span>
-<span class="go">│ 2023-07-31 │ /usr/lib/python3.11/pydoc_data │ topics.py     │</span>
-<span class="go">│ 2023-07-31 │ /usr/lib/python3.11            │ _pydecimal.py │</span>
-<span class="go">│ 2023-04-17 │ /usr/lib/python3.11/tkinter    │ __init__.py   │</span>
+<span class="go">│ 2023-10-10 │ /usr/lib/python3.11/pydoc_data │ topics.py     │</span>
+<span class="go">│ 2023-10-10 │ /usr/lib/python3.11            │ _pydecimal.py │</span>
+<span class="go">│ 2023-10-06 │ /usr/lib/python3.11/tkinter    │ __init__.py   │</span>
 <span class="go">└────────────┴────────────────────────────────┴───────────────┘</span>
 </pre></div>
 </div>
@@ -1432,8 +1420,8 @@ useful instead.</p>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">┌────────────┬────────────┐</span>
 <span class="go">│ extension  │ total_size │</span>
-<span class="go">│            │ 382419     │</span>
-<span class="go">│ .a         │ 113893958  │</span>
+<span class="go">│            │ 383395     │</span>
+<span class="go">│ .a         │ 113404210  │</span>
 <span class="go">│ .allowlist │ 56         │</span>
 <span class="go">│ .bootstrap │ 1756       │</span>
 <span class="go">│ .c         │ 11116      │</span>
@@ -1442,14 +1430,15 @@ useful instead.</p>
 <span class="go">│ .css       │ 1325       │</span>
 <span class="go">│ .fish      │ 2215       │</span>
 <span class="go">│ .in        │ 3504       │</span>
+<span class="go">│ .json      │ 2162       │</span>
 <span class="go">│ .local     │ 1534       │</span>
-<span class="go">│ .o         │ 20304      │</span>
+<span class="go">│ .o         │ 20696      │</span>
 <span class="go">│ .ps1       │ 9033       │</span>
-<span class="go">│ .py        │ 11776971   │</span>
-<span class="go">│ .pyc       │ 13267393   │</span>
+<span class="go">│ .py        │ 11814848   │</span>
+<span class="go">│ .pyc       │ 13310247   │</span>
 <span class="go">│ .rst       │ 9561       │</span>
 <span class="go">│ .sh        │ 3941       │</span>
-<span class="go">│ .so        │ 27584936   │</span>
+<span class="go">│ .so        │ 27575368   │</span>
 <span class="go">│ .stdlib    │ 10752      │</span>
 <span class="go">│ .supp      │ 70         │</span>
 <span class="go">│ .txt       │ 23425      │</span>
@@ -1457,7 +1446,7 @@ useful instead.</p>
 </pre></div>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># unregister a virtual table by passing None</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">createmodule</span><span class="p">(</span><span class="s2">&quot;files_info&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">create_module</span><span class="p">(</span><span class="s2">&quot;files_info&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -1486,7 +1475,7 @@ data as it flows through.  Read more about <a class="reference internal" href="v
 
     <span class="c1"># We want to return our own file implementation, but also</span>
     <span class="c1"># want it to inherit</span>
-    <span class="k">def</span> <span class="nf">xOpen</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">xOpen</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">flags</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">URIFilename</span><span class="p">):</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;xOpen of&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">.</span><span class="n">filename</span><span class="p">())</span>
             <span class="c1"># We can look at uri parameters</span>
@@ -1527,7 +1516,7 @@ data as it flows through.  Read more about <a class="reference internal" href="v
 <span class="n">obfuvfs</span> <span class="o">=</span> <span class="n">ObfuscatedVFS</span><span class="p">()</span>
 
 <span class="c1"># Lets see what vfs are now available?</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;VFS available&quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">vfsnames</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;VFS available&quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">vfs_names</span><span class="p">())</span>
 
 <span class="c1"># Make an obfuscated db, passing in some URI parameters</span>
 <span class="c1"># default open flags</span>
@@ -1677,9 +1666,9 @@ Python.</p>
 
 <span class="go">Dump output</span>
 
-<span class="go">-- SQLite dump (by APSW 3.43.1.1)</span>
-<span class="go">-- SQLite version 3.43.1</span>
-<span class="go">-- Date: Fri Oct  6 07:11:15 2023</span>
+<span class="go">-- SQLite dump (by APSW 3.43.2.0)</span>
+<span class="go">-- SQLite version 3.43.2</span>
+<span class="go">-- Date: Tue Oct 24 11:54:25 2023</span>
 <span class="go">-- Tables like: csvtest%</span>
 <span class="go">-- Database: /space/apsw/dbfile</span>
 <span class="go">-- User: rogerb @ clamps</span>
@@ -1714,7 +1703,7 @@ Python.</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SQLite memory usage </span><span class="si">{</span><span class="w"> </span><span class="n">current_usage</span><span class="w"> </span><span class="si">}</span><span class="s2"> max </span><span class="si">{</span><span class="w"> </span><span class="n">max_usage</span><span class="w"> </span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite memory usage 433992 max 2341792</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite memory usage 428264 max 2343392</span>
 </pre></div>
 </div>
 </section>
@@ -1768,12 +1757,12 @@ Python.</p>
 
 <span class="go">code is  SQLITE_TRACE_PROFILE</span>
 <span class="go">{&#39;code&#39;: 2,</span>
-<span class="go"> &#39;nanoseconds&#39;: 18000000,</span>
+<span class="go"> &#39;nanoseconds&#39;: 19000000,</span>
 <span class="go"> &#39;stmt_status&#39;: {&#39;SQLITE_STMTSTATUS_AUTOINDEX&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FILTER_HIT&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FILTER_MISS&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FULLSCAN_STEP&#39;: 1365,</span>
-<span class="go">                 &#39;SQLITE_STMTSTATUS_MEMUSED&#39;: 15784,</span>
+<span class="go">                 &#39;SQLITE_STMTSTATUS_MEMUSED&#39;: 15616,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_REPREPARE&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_RUN&#39;: 1,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_SORT&#39;: 2,</span>
@@ -1909,7 +1898,7 @@ rollback the partial data.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Oct 06, 2023.
+      <span class="lastupdated">Last updated on Oct 24, 2023.
       </span></p>
   </div>
 
