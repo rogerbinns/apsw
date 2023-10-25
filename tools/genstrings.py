@@ -19,7 +19,7 @@ names += """
 Begin BestIndex BestIndexObject Close Column ColumnNoChange Commit
 Connect Create Destroy Disconnect Eof Filter FindFunction Next Open
 Release Rename Rollback RollbackTo Rowid Savepoint ShadowName Sync
-UpdateChangeRow UpdateDeleteRow UpdateInsertRow
+UpdateChangeRow UpdateDeleteRow UpdateInsertRow Integrity
 """
 
 # vfs

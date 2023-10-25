@@ -2220,6 +2220,70 @@ apswvtabRollbackTo(sqlite3_vtab *pVtab, int level)
   return sqliteres;
 }
 
+/** .. method:: Integrity(schema: str, name: str, is_quick: int) -> str | None
+
+ If present, check the integrity of the virtual table.
+
+ :param schema: Database name - ``main``, ``temp`` etc
+ :param name: Name of the table
+ :param is_quick: 0 if `pragma integrity_check <https://sqlite.org/pragma.html#pragma_integrity_check>`__ was used,
+    1 if `pragma quick_check <https://sqlite.org/pragma.html#pragma_quick_check>`__ was used, and may contain
+    other values in the future.
+
+ :returns: None if there are no problems, else a string to be used as an error message.  The string is returned to the
+   pragma as is, so it is recommended that you include the database and table name to clarify what database and
+   table the message is referring to.
+*/
+static int
+apswvtabIntegrity(sqlite3_vtab *pVtab, const char *zSchema, const char *zName, int isQuick, char **pzErr)
+{
+  PyGILState_STATE gilstate;
+  PyObject *vtable, *res = NULL;
+  int sqliteres = SQLITE_OK;
+
+  gilstate = PyGILState_Ensure();
+  vtable = ((apsw_vtable *)pVtab)->vtable;
+
+  MakeExistingException();
+
+  if (!PyErr_Occurred() && PyObject_HasAttr(vtable, apst.Integrity))
+  {
+    PyObject *vargs[] = {NULL, vtable, PyUnicode_FromString(zSchema), PyUnicode_FromString(zName), PyLong_FromLong(isQuick)};
+    if (vargs[2] && vargs[3] && vargs[4])
+      res = PyObject_VectorcallMethod(apst.Integrity, vargs + 1, 4 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+    Py_XDECREF(vargs[2]);
+    Py_XDECREF(vargs[3]);
+    Py_XDECREF(vargs[4]);
+    if (res)
+    {
+      if (Py_IsNone(res))
+        ;
+      else if (PyUnicode_Check(res))
+      {
+        const char *s = PyUnicode_AsUTF8(res);
+        if (s)
+        {
+          *pzErr = sqlite3_mprintf("%s", s);
+          if (!*pzErr)
+            PyErr_NoMemory();
+        }
+      }
+      else
+        PyErr_Format(PyExc_TypeError, "Expected None or a str not %s", Py_TypeName(res));
+    }
+  }
+
+  if (PyErr_Occurred())
+  {
+    sqliteres = MakeSqliteMsgFromPyException(NULL);
+    AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xIntegrity", "{s: O, s: s, s: s, s: i}", "self", vtable, "schema", zSchema, "name", zName, "is_quick", isQuick);
+  }
+
+  Py_XDECREF(res);
+  PyGILState_Release(gilstate);
+  return sqliteres;
+}
+
 /** .. class:: VTCursor
 
 .. note::
@@ -2752,13 +2816,13 @@ apswvtabSetupModuleDef(PyObject *datasource, int iVersion, int eponymous, int ep
 {
   sqlite3_module *mod = NULL;
   assert(!PyErr_Occurred());
-  if (iVersion < 1 || iVersion > 3)
+  if (iVersion < 1 || iVersion > 4)
   {
-    PyErr_Format(PyExc_ValueError, "%d is not a valid iVersion - should be 1, 2, or 3", iVersion);
+    PyErr_Format(PyExc_ValueError, "%d is not a valid iVersion - should be 1, 2, 3, or 4", iVersion);
     return NULL;
   }
 
-  assert(iVersion == 1 || iVersion == 2 || iVersion == 3);
+  assert(iVersion == 1 || iVersion == 2 || iVersion == 3 || iVersion == 4);
   assert(eponymous == 0 || eponymous == 1);
   assert(eponymous_only == 0 || eponymous_only == 1);
   assert(read_only == 0 || read_only == 1);
@@ -2813,6 +2877,8 @@ apswvtabSetupModuleDef(PyObject *datasource, int iVersion, int eponymous, int ep
       return NULL;
     }
   }
+
+  mod->xIntegrity = apswvtabIntegrity;
 
   return mod;
 }

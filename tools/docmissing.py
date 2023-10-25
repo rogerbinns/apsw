@@ -42,7 +42,7 @@ vfsfile = apsw.VFSFile("", con.db_filename("main"),
                        [apsw.SQLITE_OPEN_MAIN_DB | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_READWRITE, 0])
 
 # virtual tables aren't real - just check their size hasn't changed
-for n, e in (("VTModule", 3), ("VTTable", 16), ("VTCursor", 7)):
+for n, e in (("VTModule", 3), ("VTTable", 17), ("VTCursor", 7)):
     if len(classes[n]) != e:
         sys.exit(f"Expexted len({ n }) to be { e } not { len(classes[n]) }")
     del classes[n]

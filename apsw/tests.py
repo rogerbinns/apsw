@@ -3885,6 +3885,23 @@ class APSW(unittest.TestCase):
             def FindFunction7(self, name, nargs):
                 return (1, lambda x: x)
 
+            def Integrity1(Self, schema, table, is_quick):
+                self.assertEqual(schema, "main")
+                self.assertEqual(table, "foo")
+                self.assertEqual(is_quick, 0)
+                return "a message"
+
+            def Integrity2(Self, schema, table, is_quick):
+                self.assertEqual(schema, "main")
+                self.assertEqual(table, "foo")
+                self.assertEqual(is_quick, 1)
+                return 3
+
+            def Integrity99(self, schema, table, is_quick):
+                return None
+
+
+
         class Cursor:
 
             _bestindexreturn = 99
@@ -3985,7 +4002,7 @@ class APSW(unittest.TestCase):
                 self.pos += 1
 
         # use our more complete version
-        self.db.create_module("testmod2", Source())
+        self.db.create_module("testmod2", Source(), iVersion=4)
         cur.execute("create virtual table foo using testmod2(2,two)")
         # are missing/mangled methods detected correctly?
         self.assertRaises(AttributeError, cur.execute, "select rowid,* from foo order by number")
@@ -4191,6 +4208,15 @@ class APSW(unittest.TestCase):
                               cur.execute,
                               "select xyz(item,description) from foo",
                               can_cache=False)
+
+        # integrity check
+        self.assertEqual("ok", self.db.pragma("integrity_check", "foo"))
+        VTable.Integrity = VTable.Integrity1
+        self.assertEqual("a message", self.db.pragma("integrity_check", "foo"))
+        VTable.Integrity = VTable.Integrity2
+        self.assertRaises(TypeError, self.db.pragma, "quick_check", "foo")
+        VTable.Integrity = VTable.Integrity99
+        self.assertEqual("ok", self.db.pragma("integrity_check", "foo"))
 
         # transaction control
         # Begin, Sync, Commit and rollback all use the same underlying code
