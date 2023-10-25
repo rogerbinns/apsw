@@ -156,8 +156,7 @@ def do_methods():
     json.dump(docdb, open(docdbfilename, "w"))
     i = "__init__"
     if i in methods:
-        v = methods[i]
-        del methods[i]
+        v = methods.pop(i)
         dec = v[0]
         p = dec.index(i) + len(i)
         sig = dec[p:]
@@ -201,6 +200,18 @@ def do_methods():
                 newd.append(line)
 
         d = newd
+
+        if curclass and curclass.startswith("VT"):
+            for line in d:
+                if line.lstrip() != line:
+                    indent = line[:len(line) - len(line.lstrip())]
+                    break
+            method = "Update" if k.startswith(
+                "Update") else "RollbackTo" if k == "Rollback" else "Column" if k == "ColumnNoChange" else k
+            target = f"the_x{ method.lower() }_method"
+            if method in {"Savepoint", "Release", "RollbackTo"}:
+                target = "the_xsavepoint_xrelease_and_xrollbackto_methods"
+            d.extend(("", f"{ indent }`SQLite x{ method } reference <https://sqlite.org/vtab.html#{ target }>`__"))
 
         # insert index stuff
         op.extend(indexop)

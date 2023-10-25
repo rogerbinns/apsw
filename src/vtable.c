@@ -1960,8 +1960,6 @@ finally:
   .. seealso::
 
     * :meth:`Connection.overload_function`
-    * `FindFunction documentation <https://www.sqlite.org/vtab.html#xfindfunction>`__
-
 */
 
 /*
@@ -2896,7 +2894,7 @@ you more details in errors, and shows an example with the complex
 You may also find errors compounding. For
 example if you have an error in the Filter method of a cursor, SQLite
 then closes the cursor. If you also return an error in the Close
-method then the first error may mask the second or vice versa.
+method then the errors will be chained.
 
 .. note::
 
