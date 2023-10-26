@@ -42,7 +42,7 @@ source_suffix = '.rst'
 # The master toctree document.
 master_doc = 'index'
 
-pygments_style = 'sphinx'
+pygments_style = 'vs'
 
 # General substitutions.
 project = 'APSW'
@@ -77,13 +77,14 @@ html_theme_options = {
     "style_external_links": True,
     "prev_next_buttons_location": "both",
 }
+html_css_files = ["apsw.css"]
 
 if os.getenv("APSW_NO_GA"):
     del html_theme_options["analytics_id"]
 
 html_favicon = "favicon.ico"
 
-html_static_path = ['.static']
+html_static_path = ['_static']
 html_last_updated_fmt = '%b %d, %Y'
 
 # One page html

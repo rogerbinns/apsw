@@ -1,0 +1,6 @@
+/* setting line height makes the unicode box drawing characters have spacing
+   between lines which looks ugly */
+.rst-content div.highlight-output div.highlight pre {
+	line-height: normal;
+	font-weight: 600;
+}
