@@ -64,9 +64,10 @@ today_fmt = '%B %d, %Y'
 
 exclude_trees = ['build']
 
-add_module_names = False
 extlinks_detect_hardcoded_links = True
-smartquotes = False
+
+# currently broken - see https://github.com/readthedocs/sphinx_rtd_theme/issues/1529
+# maximum_signature_line_length = 40
 
 # Options for HTML output
 
