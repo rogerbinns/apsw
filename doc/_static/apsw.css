@@ -4,3 +4,9 @@
 	line-height: normal;
 	font-weight: 600;
 }
+
+/* workaround for https://github.com/readthedocs/sphinx_rtd_theme/issues/1505 */
+.wy-table-responsive table td,
+.wy-table-responsive table th {
+	white-space: normal
+}
