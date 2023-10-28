@@ -1728,6 +1728,7 @@ APSWCursor_expanded_sql(APSWCursor *self)
 
  .. list-table:: Some examples
     :header-rows: 1
+    :widths: auto
 
     * - Query
       - Result

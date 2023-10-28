@@ -921,6 +921,7 @@ def get_column_names(row: Any) -> tuple[Sequence[str], VTColumnAccess]:
 
     .. list-table::
         :header-rows: 1
+        :widths: auto
 
         * - Type
           - Access

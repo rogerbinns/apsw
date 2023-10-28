@@ -10,3 +10,7 @@
 .wy-table-responsive table th {
 	white-space: normal
 }
+
+.rst-content code.literal {
+	white-space: nowrap;
+}

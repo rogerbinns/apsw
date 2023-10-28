@@ -206,17 +206,17 @@ Does the complete build.  This will invoke `build_ext` - use only one of
 .. list-table::
     :widths: auto
 
-    * - --fetch
+    * - ``--fetch``
       - Fetches the corresponding SQLite version
-    * - --enable-all-extensions
+    * - ``--enable-all-extensions``
       - Enables all the :doc:`standard extensions <extensions>`
-    * - --enable
+    * - ``--enable``
       - A comma separated list of `options to enable that are normally
         off
         <https://www.sqlite.org/compile.html#_options_to_enable_features_normally_turned_off>`__
         omitting the :code:`SQLITE_ENABLE` prefix.  They will be
         uppercased.  eg :code:`--enable column_metadata,fts5`
-    * - --omit
+    * - ``--omit``
       - A comma separated list of `options to omit that are normally
         enabled <https://www.sqlite.org/compile.html#_options_to_omit_features>`__
         omitting the :code:`SQLITE_OMIT` prefix.  They will be
@@ -233,15 +233,15 @@ This provides more fine grained control over what is fetched.
 ..  list-table::
     :widths: auto
 
-    * - --version
+    * - ``--version``
       - Specify an explicit version of SQLite to fetch
-    * - --fetch-sqlite
+    * - ``--fetch-sqlite``
       - Downloads the SQLite amalgamation
-    * - --all
+    * - ``--all``
       - Downloads all SQLite components other than the amalgamation.
         Over time this has included additional extensions and SQLite
         functions, but currently is nothing.
-    * - --missing-checksum-ok
+    * - ``--missing-checksum-ok``
       - APSW includes checksums of SQLite releases and will fail a
         fetch if you specify a version for which no checksum is known.
         This allows proceeding.
@@ -257,26 +257,26 @@ This performs the compilation of the C code.
 ..  list-table::
     :widths: auto
 
-    * - --use-system-sqlite-config
+    * - ``--use-system-sqlite-config``
       - Uses :mod:`ctypes` to determine the system wide SQLite library
         compilation options
-    * - --definevalues
+    * - ``--definevalues``
       - Additional #defines separated by commas.  eg :code:`--definevalues
         SQLITE_MAX_ATTACHED=37,SQLITE_EXTRA_INIT=mycore_init`
-    * - --enable-all-extensions
+    * - ``--enable-all-extensions``
       - Enables all the :doc:`standard extensions <extensions>`
-    * - --enable
+    * - ``--enable``
       - A comma separated list of `options to enable that are normally
         off
         <https://www.sqlite.org/compile.html#_options_to_enable_features_normally_turned_off>`__
         omitting the :code:`SQLITE_ENABLE` prefix.  They will be
         uppercased.  eg :code:`--enable column_metadata,fts5`
-    * - --omit
+    * - ``--omit``
       - A comma separated list of `options to omit that are normally
         enabled <https://www.sqlite.org/compile.html#_options_to_omit_features>`__
         omitting the :code:`SQLITE_OMIT` prefix.  They will be
         uppercased.  eg :code:`--omit automatic_index`
-    * - --apsw-no-old-names
+    * - ``--apsw-no-old-names``
       - Excludes old non :pep:`8` :ref:`complaint name aliases
         <renaming>` from the extension and type stubs.
 
