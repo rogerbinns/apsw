@@ -162,7 +162,9 @@ downloaded for Windows.)
 Verify
 
   To verify a file use --verify specifying the corresponding
-  ``.asc`` filename.  This example verifies the source::
+  ``.asc`` filename.  This example verifies the source:
+
+  .. code-block:: console
 
       $ gpg --verify apsw-3.43.2.0.zip.asc
       gpg: Signature made ... date ... using DSA key ID 0DFBD904
@@ -174,11 +176,15 @@ Verify
 Getting the signing key
 
   You may not have the signing key available in which case the last
-  line will be something like this::
+  line will be something like this:
 
-   gpg: Can't check signature: public key not found
+  .. code-block:: output
 
-  You can get a copy of the key using this command::
+     gpg: Can't check signature: public key not found
+
+  You can get a copy of the key using this command:
+
+  .. code-block:: console
 
     $ gpg --keyserver hkp://keyserver.ubuntu.com --recv-keys 0DFBD904
     gpg: requesting key 0DFBD904 from hkp server keyserver.ubuntu.com
@@ -292,7 +298,9 @@ dedicated to testing than makes up the actual database functionality.
 APSW includes tests which use the standard Python testing modules to
 verify correct operation. New code is developed alongside the tests.
 Reported issues also have test cases to ensure the issue doesn't
-happen or doesn't happen again.::
+happen or doesn't happen again.:
+
+.. code-block:: output
 
   $ python3 -m apsw.tests
                   Python  /usr/bin/python3 sys.version_info(major=3, minor=10, micro=4, releaselevel='final', serial=0)
