@@ -1488,7 +1488,7 @@ Enter ".help" for instructions
             uv = self.db.pragma("user_version")
             if uv:
                 comment(
-                    "Your database may need this.  It is sometimes used to keep track of the schema version (eg Firefox does this)."
+                    "Your database may need this.  It is sometimes used to keep track of the schema version."
                 )
                 self.write(self.stdout, "pragma user_version=%d;" % (uv, ))
                 blank()
