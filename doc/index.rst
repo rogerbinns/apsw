@@ -25,7 +25,6 @@ APSW |version| documentation
    ext
 
    exceptions
-   types
    execution
    dbapi
    pysqlite
