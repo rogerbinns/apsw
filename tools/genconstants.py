@@ -11,7 +11,7 @@ import apsw.ext
 import apsw.shell
 
 title_to_mapping = {
-    "Allowed return values from [sqlite3_txn_state()]": "txn_state",
+    "Allowed return values from sqlite3_txn_state()": "txn_state",
     "Authorizer Action Codes": "authorizer_function",
     "Authorizer Return Codes": "authorizer_return_codes",
     "Checkpoint Mode Values": "wal_checkpoint",

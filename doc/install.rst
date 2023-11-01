@@ -136,12 +136,12 @@ edit the :file:`setup.apsw` file inside.
 
 .. downloads-begin
 
-* `apsw-3.43.2.0.zip
-  <https://github.com/rogerbinns/apsw/releases/download/3.43.2.0/apsw-3.43.2.0.zip>`__
+* `apsw-3.44.0.0.zip
+  <https://github.com/rogerbinns/apsw/releases/download/3.44.0.0/apsw-3.44.0.0.zip>`__
   (Source, includes this HTML Help)
 
-* `apsw-3.43.2.0-sigs.zip 
-  <https://github.com/rogerbinns/apsw/releases/download/3.43.2.0/apsw-3.43.2.0-sigs.zip>`__
+* `apsw-3.44.0.0-sigs.zip 
+  <https://github.com/rogerbinns/apsw/releases/download/3.44.0.0/apsw-3.44.0.0-sigs.zip>`__
   GPG signatures for all files
 
 .. downloads-end

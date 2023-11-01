@@ -10,26 +10,6 @@
 # more peace of mind because the SQLite releases are not signed in any
 # way.
 
-https://sqlite.org/2021/sqlite-autoconf-3370000.tar.gz 3001298 e757bce0babc656d289014b41e2473b55032a8e7 021c1d936c157bb68d6d0b158636ac7a
-https://sqlite.org/2022/sqlite-autoconf-3370200.tar.gz 3001797 e56faacadfb4154f8fbd0f2a3f827d13706b70a1 683cc5312ee74e71079c14d24b7a6d27
-https://sqlite.org/2021/sqlite-autoconf-3370100.tar.gz 3001542 328bc8146e15b67752b5249b8ac688c13230c517 c76cc93da8622daacd936a1f13c05376
-
-https://sqlite.org/2022/sqlite-autoconf-3380000.tar.gz 3030934 c9a089d1e9f87b652698def57a2f01c1f4e37052 26dabf36c49b63d88d8ade506a8c9daf
-https://sqlite.org/2022/sqlite-autoconf-3380100.tar.gz 3031923 342e2f712bfc902be592de3de104be9c5fa16717 5af57892dc0993af596bef56931db23f
-https://sqlite.org/2022/sqlite-autoconf-3380200.tar.gz 3032390 421109d748d729d3e5a2c67056bc703ae6c91e3f 6e5e4efd7e9d9ab67019712e0a0ccf90
-https://sqlite.org/2022/sqlite-autoconf-3380500.tar.gz 3033164 e37f9ea8ac088c6f0aa3462f8e1522ccc58de824 d7d14ef5e1cf2ce974bdd62a9cee347f
-https://sqlite.org/2022/sqlite-autoconf-3380400.tar.gz 3033070 ea4313e8a5993afdccdb5c01e6e0b247ea06a537 34c0b92a0609ed4ce78582e8dc1ed45a
-https://sqlite.org/2022/sqlite-autoconf-3380300.tar.gz 3032969 1f8ebed9dbe87513e97f7b7547e07a5e115f6569 71b4ac827467a0b4388e5bcfaf3c1047
-
-https://sqlite.org/2022/sqlite-autoconf-3390000.tar.gz 3064015 a839c65452f7ea66e9ba9efa52b47ba1cd84225c bbe56bf9d822d78c942a065bf041ffd5
-https://sqlite.org/2022/sqlite-autoconf-3390200.tar.gz 3064438 fe360190393296b956c5db2a448ae2b5692d0377 f00711818d0afc18f4b1b3b7207176f4
-https://sqlite.org/2022/sqlite-autoconf-3390100.tar.gz 3064607 251b8f9838ae6c44df1eb8bcc3600e14fa0597c5 cc9d19c9e3ae6dee02eb4f147e0dd500
-https://sqlite.org/2022/sqlite-autoconf-3390300.tar.gz 3064970 ded6323be5fb10fddd7c3053a80c6d38e1356256 b77730d5c2f8c85b223d1959d08b6514
-https://sqlite.org/2022/sqlite-autoconf-3390400.tar.gz 3065214 c4c5c39269d1b9bb1487cff580c1f583608229b2 44b7e6691b0954086f717a6c43b622a5
-
-https://sqlite.org/2022/sqlite-autoconf-3400000.tar.gz 3097756 2aa5df983dc2d7e6b096b49e579bcc1e7b80667e c833d61da768a116fa16d910f43cfd9a
-https://sqlite.org/2022/sqlite-autoconf-3400100.tar.gz 3098662 b8c2d4bc0094f5c0ce985dc0e237dfcbaa1f6275 42175b1a1d23529cb133bbd2b5900afd
-
 https://sqlite.org/2023/sqlite-autoconf-3410000.tar.gz 3124499 a7cb1364d5af52a8230c048877e657d49a8dda44 ff001143636ee7cf899020abdbc8cb89
 https://sqlite.org/2023/sqlite-autoconf-3410100.tar.gz 3125153 e77599a2df4c5b114c942ddba4483550d8982bf2 c6d5034cf39232299ccfdf8e3ddc5781
 https://sqlite.org/2023/sqlite-autoconf-3410200.tar.gz 3125545 f5a8a9ad5552b19fb5a41cf5536c8ab3b9bce82e 862075fd1c38324878ef809eda39edfe
@@ -39,3 +19,5 @@ https://sqlite.org/2023/sqlite-autoconf-3420000.tar.gz 3148813 036575929b174c1b8
 https://sqlite.org/2023/sqlite-autoconf-3430000.tar.gz 3178199 59e8c695e34bf1bc9aeb076530f84f66d0f30a5e f321a958aed13fb5f8773ae2f3504c0b
 https://sqlite.org/2023/sqlite-autoconf-3430100.tar.gz 3175971 194f57642f191939a16399208a10b5e0a827b916 77e61befe9c3298da0504f87772a24b0
 https://sqlite.org/2023/sqlite-autoconf-3430200.tar.gz 3177625 cf9fbab967e3d924c7d6fc5b8e4a23a81d067fa5 94fb06bfebc437762e489c355ae63716
+
+https://sqlite.org/2023/sqlite-autoconf-3440000.tar.gz 3198005 5afebfa26abefb98c2fa4c3dc010260f398c176a 7d4a49f724ad0643f3c4bf7e5a5838c0

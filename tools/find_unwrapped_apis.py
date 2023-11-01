@@ -101,6 +101,10 @@ nowrap = {
     "sqlite3_win32_set_directory",
     "sqlite3_win32_set_directory8",
 
+    # shouldn't be exposed to scripting
+    "sqlite3_get_clientdata",
+    "sqlite3_set_clientdata",
+
     # we don't do subtypes / pointer
     "sqlite3_value_subtype",
     "sqlite3_result_subtype",
