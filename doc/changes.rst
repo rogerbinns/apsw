@@ -10,6 +10,11 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+3.44.0.0
+========
+
+Added virtual table :meth:`VTTable.Integrity` support.
+
 3.43.2.0
 ========
 
