@@ -50,7 +50,7 @@ docs-no-fetch: $(GENDOCS) doc/example.rst doc/.static doc/typing.rstgen doc/rena
 	rm -f testdb
 	env PYTHONPATH=. $(PYTHON) tools/docmissing.py
 	env PYTHONPATH=. $(PYTHON) tools/docupdate.py $(VERSION)
-	make PYTHONPATH="`pwd`" VERSION=$(VERSION) RELEASEDATE=$(RELEASEDATE) -C doc clean html epub
+	make PYTHONPATH="`pwd`" VERSION=$(VERSION) RELEASEDATE=$(RELEASEDATE) -C doc clean html
 	tools/spellcheck.sh
 	rst2html.py --strict --verbose --exit-status 1 README.rst >/dev/null
 
