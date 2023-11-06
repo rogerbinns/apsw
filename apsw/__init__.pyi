@@ -133,7 +133,7 @@ to let it continue"""
 
 SQLITE_VERSION_NUMBER: int
 """The integer version number of SQLite that APSW was compiled
-against.  For example SQLite 3.6.4 will have the value *3006004*.
+against.  For example SQLite 3.44.1 will have the value *3440100*.
 This number may be different than the actual library in use if the
 library is shared and has been updated.  Call
 :meth:`sqlite_lib_version` to get the actual library version."""
@@ -171,7 +171,8 @@ Calls: `sqlite3_compileoption_get <https://sqlite.org/c3ref/compileoption_get.ht
 
 def complete(statement: str) -> bool:
     """Returns True if the input string comprises one or more complete SQL
-    statements by looking for an unquoted trailing semi-colon.
+    statements by looking for an unquoted trailing semi-colon.  It does
+    not consider comments or blank lines to be complete.
 
     An example use would be if you were prompting the user for SQL
     statements and needed to know if you had a whole statement, or
@@ -192,9 +193,6 @@ def config(op: int, *args: Any) -> None:
     Some operations don't make sense from a Python program.  All the
     remaining are supported.
 
-    See :ref:`tips <diagnostics_tips>` for an example of how to receive
-    log messages (SQLITE_CONFIG_LOG)
-
     Calls: `sqlite3_config <https://sqlite.org/c3ref/config.html>`__"""
     ...
 
@@ -206,23 +204,15 @@ each :class:`Connection` as it is created. The default value is an empty
 list. Whenever a Connection is created, each item in
 apsw.connection_hooks is invoked with a single parameter being
 the new Connection object. If the hook raises an exception then
-the creation of the Connection fails.
-
-If you wanted to store your own defined functions in the
-database then you could define a hook that looked in the
-relevant tables, got the Python text and turned it into the
-functions."""
+the creation of the Connection fails."""
 
 def connections() -> list[Connection]:
     """Returns a list of the connections"""
     ...
 
 def enable_shared_cache(enable: bool) -> None:
-    """If you use the same :class:`Connection` across threads or use
-    multiple :class:`connections <Connection>` accessing the same file,
-    then SQLite can `share the cache between them
-    <https://sqlite.org/sharedcache.html>`_.  It is :ref:`not
-    recommended <sharedcache>` that you use this.
+    """`Discouraged
+    <https://sqlite.org/sharedcache.html#use_of_shared_cache_is_discouraged>`__.
 
     Calls: `sqlite3_enable_shared_cache <https://sqlite.org/c3ref/enable_shared_cache.html>`__"""
     ...
@@ -258,17 +248,17 @@ def fork_checker() -> None:
 
     One example of how you may end up using fork is if you use the
     `multiprocessing module
-    <https://docs.python.org/library/multiprocessing.html>`__ which uses
+    <https://docs.python.org/3/library/multiprocessing.html>`__ which can use
     fork to make child processes.
 
     If you do use fork or multiprocessing on a platform that supports
     fork then you **must** ensure database connections and their objects
     (cursors, backup, blobs etc) are not used in the parent process, or
     are all closed before calling fork or starting a `Process
-    <https://docs.python.org/library/multiprocessing.html#process-and-exceptions>`__.
+    <https://docs.python.org/3/library/multiprocessing.html#process-and-exceptions>`__.
     (Note you must call close to ensure the underlying SQLite objects
     are closed.  It is also a good idea to call `gc.collect(2)
-    <https://docs.python.org/library/gc.html#gc.collect>`__ to ensure
+    <https://docs.python.org/3/library/gc.html#gc.collect>`__ to ensure
     anything you may have missed is also deallocated.)
 
     Once you run this method, extra checking code is inserted into
@@ -323,13 +313,10 @@ Calls:
   * `sqlite3_keyword_name <https://sqlite.org/c3ref/keyword_check.html>`__"""
 
 def log(errorcode: int, message: str) -> None:
-    """Calls the SQLite logging interface.  Note that you must format the
+    """Calls the SQLite logging interface.  You must format the
     message before passing it to this method::
 
         apsw.log(apsw.SQLITE_NOMEM, f"Need { needed } bytes of memory")
-
-    See :ref:`tips <diagnostics_tips>` for an example of how to
-    receive log messages.
 
     Calls: `sqlite3_log <https://sqlite.org/c3ref/log.html>`__"""
     ...
@@ -402,7 +389,7 @@ def shutdown() -> None:
 
 def sleep(milliseconds: int) -> int:
     """Sleep for at least the number of `milliseconds`, returning how many
-     milliseconds were requested.
+     milliseconds were requested from the operating system.
 
     Calls: `sqlite3_sleep <https://sqlite.org/c3ref/sleep.html>`__"""
     ...
@@ -446,32 +433,33 @@ def status(op: int, reset: bool = False) -> tuple[int, int]:
 
     .. seealso::
 
+      * :meth:`Connection.status` for statistics about a :class:`Connection`
       * :ref:`Status example <example_status>`
 
     Calls: `sqlite3_status64 <https://sqlite.org/c3ref/status.html>`__"""
     ...
 
 def strglob(glob: str, string: str) -> int:
-    """Does string GLOB matching.  Note that zero is returned on a match.
+    """Does string GLOB matching.  Zero is returned on a match.
 
     Calls: `sqlite3_strglob <https://sqlite.org/c3ref/strglob.html>`__"""
     ...
 
 def stricmp(string1: str, string2: str) -> int:
-    """Does string case-insensitive comparison.  Note that zero is returned
+    """Does string case-insensitive comparison.  Zero is returned
     on a match.
 
     Calls: `sqlite3_stricmp <https://sqlite.org/c3ref/stricmp.html>`__"""
     ...
 
 def strlike(glob: str, string: str, escape: int = 0) -> int:
-    """Does string LIKE matching.  Note that zero is returned on a match.
+    """Does string LIKE matching.  Zero is returned on a match.
 
     Calls: `sqlite3_strlike <https://sqlite.org/c3ref/strlike.html>`__"""
     ...
 
 def strnicmp(string1: str, string2: str, count: int) -> int:
-    """Does string case-insensitive comparison.  Note that zero is returned
+    """Does string case-insensitive comparison.  Zero is returned
     on a match.
 
     Calls: `sqlite3_strnicmp <https://sqlite.org/c3ref/stricmp.html>`__"""
@@ -518,10 +506,8 @@ class Backup:
     """You create a backup instance by calling :meth:`Connection.backup`."""
     def close(self, force: bool = False) -> None:
         """Does the same thing as :meth:`~Backup.finish`.  This extra api is
-        provided to give the same api as other APSW objects such as
-        :meth:`Connection.close`, :meth:`Blob.close` and
-        :meth:`Cursor.close`.  It is safe to call this method multiple
-        times.
+        provided to give the same api as other APSW objects and files.
+        It is safe to call this method multiple  times.
 
         :param force: If true then any exceptions are ignored."""
         ...
@@ -531,7 +517,7 @@ class Backup:
 
     def __enter__(self) -> Backup:
         """You can use the backup object as a `context manager
-        <https://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
+        <https://docs.python.org/3/reference/datamodel.html#with-statement-context-managers>`_
         as defined in :pep:`0343`.  The :meth:`~Backup.__exit__` method ensures that backup
         is :meth:`finished <Backup.finish>`."""
         ...
@@ -575,16 +561,13 @@ class Backup:
         backup object is :meth:`finished <Backup.finish>`.
 
         :param npages: How many pages to copy. If the parameter is omitted
-           or negative then all remaining pages are copied. The default page
-           size is 4096 bytes (4kb) which can be viewed, or changed before database
-           creation using a `pragma
-           <https://www.sqlite.org/pragma.html#pragma_page_size>`_.
+           or negative then all remaining pages are copied.
 
         This method may throw a :exc:`BusyError` or :exc:`LockedError` if
         unable to lock the source database.  You can catch those and try
         again.
 
-        :returns: True if this copied the last remaining outstanding pages, else false.  This is the same value as :attr:`~Backup.done`
+        :returns: True if this copied the last remaining outstanding pages, else False.  This is the same value as :attr:`~Backup.done`
 
         Calls: `sqlite3_backup_step <https://sqlite.org/c3ref/backup_finish.html#sqlite3backupstep>`__"""
         ...
@@ -593,7 +576,7 @@ class Backup:
 class Blob:
     """This object is created by :meth:`Connection.blob_open` and provides
     access to a blob in the database.  It behaves like a Python file.
-    At the C level it wraps a `sqlite3_blob
+    It wraps a `sqlite3_blob
     <https://sqlite.org/c3ref/blob.html>`_.
 
     .. note::
@@ -627,7 +610,7 @@ class Blob:
 
     def __enter__(self) -> Blob:
         """You can use a blob as a `context manager
-        <https://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
+        <https://docs.python.org/3/reference/datamodel.html#with-statement-context-managers>`_
         as defined in :pep:`0343`.  When you use *with* statement,
         the blob is always :meth:`closed <Blob.close>` on exit from the block, even if an
         exception occurred in the block.
@@ -655,7 +638,7 @@ class Blob:
         """Reads amount of data requested, or till end of file, whichever is
         earlier. Attempting to read beyond the end of the blob returns an
         empty bytes in the same manner as end of file on normal file
-        objects.  Negative numbers read remaining data.
+        objects.  Negative numbers read all remaining data.
 
         Calls: `sqlite3_blob_read <https://sqlite.org/c3ref/blob_read.html>`__"""
         ...
@@ -754,7 +737,7 @@ class Connection:
     def autovacuum_pages(self, callable: Optional[Callable[[str, int, int, int], int]]) -> None:
         """Calls `callable` to find out how many pages to autovacuum.  The callback has 4 parameters:
 
-        * Database name: str (eg "main")
+        * Database name: str. `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
         * Database pages: int (how many pages make up the database now)
         * Free pages: int (how many pages could be freed)
         * Page size: int (page size in bytes)
@@ -762,8 +745,10 @@ class Connection:
         Return how many pages should be freed.  Values less than zero or more than the free pages are
         treated as zero or free page count.  On error zero is returned.
 
-        READ THE NOTE IN THE SQLITE DOCUMENTATION.  Calling into SQLite can result in crashes, corrupt
-        databases or worse.
+        .. warning:: READ THE NOTE IN THE SQLITE DOCUMENTATION.
+
+          Calling back into SQLite can result in crashes, corrupt
+          databases, or worse.
 
         Calls: `sqlite3_autovacuum_pages <https://sqlite.org/c3ref/autovacuum_pages.html>`__"""
         ...
@@ -772,17 +757,16 @@ class Connection:
         """Opens a :ref:`backup object <Backup>`.  All data will be copied from source
         database to this database.
 
-        :param databasename: Name of the database.  This will be ``main`` for
-          the main connection and the name you specified for `attached
-          <https://sqlite.org/lang_attach.html>`_ databases.
+        :param databasename: Name of the database. `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
         :param sourceconnection: The :class:`Connection` to copy a database from.
         :param sourcedatabasename: Name of the database in the source (eg ``main``).
 
-        :rtype: :class:`backup`
+        :rtype: :class:`Backup`
 
         .. seealso::
 
-          * :ref:`Backup`
+          * :doc:`Backup reference <backup>`
+          * :ref:`Backup example <example_backup>`
 
         Calls: `sqlite3_backup_init <https://sqlite.org/c3ref/backup_finish.html#sqlite3backupinit>`__"""
         ...
@@ -790,9 +774,7 @@ class Connection:
     def blob_open(self, database: str, table: str, column: str, rowid: int, writeable: bool)  -> Blob:
         """Opens a blob for :ref:`incremental I/O <blobio>`.
 
-        :param database: Name of the database.  This will be ``main`` for
-          the main connection and the name you specified for `attached
-          <https://sqlite.org/lang_attach.html>`_ databases.
+        :param database: Name of the database.  `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__.
         :param table: The name of the table
         :param column: The name of the column
         :param rowid: The id that uniquely identifies the row.
@@ -940,7 +922,7 @@ class Connection:
     collationneeded = collation_needed ## OLD-NAME
 
     def column_metadata(self, dbname: Optional[str], table_name: str, column_name: str) -> tuple[str, str, bool, bool, bool]:
-        """`dbname` is the specific database (eg "main", "temp") or None to search
+        """`dbname` is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__, or None to search
         all databases.
 
         The returned :class:`tuple` has these fields:
@@ -965,7 +947,7 @@ class Connection:
 
         This is how to get the fkey setting::
 
-          val = config(apsw.SQLITE_DBCONFIG_ENABLE_FKEY, -1)
+          val = db.config(apsw.SQLITE_DBCONFIG_ENABLE_FKEY, -1)
 
         A parameter of zero would turn it off, 1 turns on, and negative
         leaves unaltered.  The effective value is always returned.
@@ -982,9 +964,9 @@ class Connection:
         :param numargs: How many arguments the function takes, with -1 meaning any number
         :param flags: `Function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__
 
-        When a query starts, the *factory* will be called.  It can be a class
+        When a query starts, the *factory* will be called.  It can return an object
         with a *step* function called for each matching row, and a *final* function
-        to return the final value.
+        to provide the final value.
 
         Alternatively a non-class approach can return a tuple of 3 items:
 
@@ -1013,6 +995,7 @@ class Connection:
 
            * :ref:`Example <example_aggregate>`
            * :meth:`~Connection.create_scalar_function`
+           * :meth:`~Connection.create_window_function`
 
         Calls: `sqlite3_create_function_v2 <https://sqlite.org/c3ref/create_function.html>`__"""
         ...
@@ -1030,12 +1013,12 @@ class Connection:
         if the first is less then the second, 0 if they are equal, and 1 if
         first is greater::
 
-           def mycollation(one, two):
-               if one < two:
+           def mycollation(first: str, two: str) -> int:
+               if first < second:
                    return -1
-               if one == two:
+               if first == second:
                    return 0
-               if one > two:
+               if first > second:
                    return 1
 
         Passing None as the callback will unregister the collation.
@@ -1043,6 +1026,7 @@ class Connection:
         .. seealso::
 
           * :ref:`Example <example_collation>`
+          * :meth:`Connection.collation_needed`
 
         Calls: `sqlite3_create_collation_v2 <https://sqlite.org/c3ref/create_collation.html>`__"""
         ...
@@ -1053,7 +1037,7 @@ class Connection:
         """Registers a virtual table, or drops it if *datasource* is *None*.
         See :ref:`virtualtables` for details.
 
-        :param name: Module name (what comes after USING in CREATE VIRTUAL TABLE tablename USING ...)
+        :param name: Module name (CREATE VIRTUAL TABLE table_name USING module_name...)
         :param datasource: Provides :class:`VTModule` methods
         :param use_bestindex_object: If True then BestIndexObject is used, else BestIndex
         :param use_no_change: Turn on understanding :meth:`VTCursor.ColumnNoChange` and using :attr:`apsw.no_change` to reduce :meth:`VTTable.UpdateChangeRow` work
@@ -1101,6 +1085,7 @@ class Connection:
 
            * :ref:`Example <example_scalar>`
            * :meth:`~Connection.create_aggregate_function`
+           * :meth:`~Connection.create_window_function`
 
         Calls: `sqlite3_create_function_v2 <https://sqlite.org/c3ref/create_function.html>`__"""
         ...
@@ -1118,18 +1103,19 @@ class Connection:
 
         You need to provide callbacks for the ``step``, ``final``, ``value``
         and ``inverse`` methods.  This can be done by having `factory` as a
-        class, and the corresponding method names, or by having `factory`
+        class, returning an instance with the corresponding method names, or by having `factory`
         return a sequence of a first parameter, and then each of the 4
         functions.
 
         **Debugging note** SQlite always calls the ``final`` method to allow
-        for cleanup.  If you have an error in one of the other methods, then
+        for cleanup.  If you have an exception in one of the other methods, then
         ``final`` will also be called, and you may see both methods in
         tracebacks.
 
         .. seealso::
 
          * :ref:`Example <example_window>`
+         * :meth:`~Connection.create_scalar_function`
          * :meth:`~Connection.create_aggregate_function`
 
         Calls: `sqlite3_create_window_function <https://sqlite.org/c3ref/create_function.html>`__"""
@@ -1155,7 +1141,7 @@ class Connection:
 
     def db_filename(self, name: str) -> str:
         """Returns the full filename of the named (attached) database.  The
-        main database is named "main".
+        main is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
 
         Calls: `sqlite3_db_filename <https://sqlite.org/c3ref/db_filename.html>`__"""
         ...
@@ -1170,8 +1156,8 @@ class Connection:
 
     def deserialize(self, name: str, contents: bytes) -> None:
         """Replaces the named database with an in-memory copy of *contents*.
-        *name* is **"main"** for the main database, **"temp"** for the
-        temporary database etc.
+        *name* is `main`, `temp`, the name in `ATTACH
+        <https://sqlite.org/lang_attach.html>`__
 
         The resulting database is in-memory, read-write, and the memory is
         owned, resized, and freed by SQLite.
@@ -1208,7 +1194,7 @@ class Connection:
 
     def __enter__(self) -> Connection:
         """You can use the database as a `context manager
-        <https://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
+        <https://docs.python.org/3/reference/datamodel.html#with-statement-context-managers>`_
         as defined in :pep:`0343`.  When you use *with* a transaction is
         started.  If the block finishes with an exception then the
         transaction is rolled back, otherwise it is committed.  For example::
@@ -1224,9 +1210,8 @@ class Connection:
                       call_function2(db)
                       db.execute("...")
 
-        Behind the scenes the `savepoint
-        <https://sqlite.org/lang_savepoint.html>`_ functionality introduced in
-        SQLite 3.6.8 is used to provide nested transactions."""
+        Behind the scenes `savepoints <https://sqlite.org/lang_savepoint.html>`__
+         are used to provide nested transactions."""
         ...
 
     exec_trace: Optional[ExecTracer]
@@ -1252,7 +1237,7 @@ class Connection:
         returns when the first row is available or all statements have
         completed.  (A cursor is automatically obtained).
 
-        See :meth:`Cursor.execute` for more details."""
+        See :meth:`Cursor.execute` for more details, and the :ref:`example <example_executing_sql>`."""
         ...
 
     def executemany(self, statements: str, sequenceofbindings:Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor:
@@ -1260,21 +1245,21 @@ class Connection:
         sequence of bindings, such as inserting into a database.  (A cursor is
         automatically obtained).
 
-        See :meth:`Cursor.executemany` for more details."""
+        See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_executemany>`."""
         ...
 
     def __exit__(self, etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[types.TracebackType]) -> Optional[bool]:
         """Implements context manager in conjunction with
-        :meth:`~Connection.__enter__`.  Any exception that happened in the
-        *with* block is raised after committing or rolling back the
-        savepoint."""
+        :meth:`~Connection.__enter__`.  If no exception happened then
+        the pending transaction is committed, while an exception results in a
+        rollback."""
         ...
 
     def file_control(self, dbname: str, op: int, pointer: int) -> bool:
         """Calls the :meth:`~VFSFile.xFileControl` method on the :ref:`VFS`
         implementing :class:`file access <VFSFile>` for the database.
 
-        :param dbname: The name of the database to affect (eg "main", "temp", attached name)
+        :param dbname: The name of the database to affect.  `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
         :param op: A `numeric code
           <https://sqlite.org/c3ref/c_fcntl_lockstate.html>`_ with values less
           than 100 reserved for SQLite internal use.
@@ -1389,11 +1374,11 @@ class Connection:
         ...
 
     def interrupt(self) -> None:
-        """Causes any pending operations on the database to abort at the
+        """Causes all pending operations on the database to abort at the
         earliest opportunity. You can call this from any thread.  For
         example you may have a long running query when the user presses the
         stop button in your user interface.  :exc:`InterruptError`
-        will be raised in the query that got interrupted.
+        will be raised in the queries that got interrupted.
 
         Calls: `sqlite3_interrupt <https://sqlite.org/c3ref/interrupt.html>`__"""
         ...
@@ -1448,7 +1433,7 @@ class Connection:
     loadextension = load_extension ## OLD-NAME
 
     open_flags: int
-    """The integer flags used to open the database."""
+    """The combination of :attr:`flags <apsw.mapping_open_flags>` used to open the database."""
 
     open_vfs: str
     """The string name of the vfs used to open the database."""
@@ -1481,7 +1466,7 @@ class Connection:
         is strongly recommended to read aligned complete pages, since that is
         only what SQLite does.
 
-        `schema` is `main`, `temp`, or the name of an attached database.
+        `schema` is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
 
         `which` is 0 for the database file, 1 for the journal.
 
@@ -1500,7 +1485,8 @@ class Connection:
 
     def readonly(self, name: str) -> bool:
         """True or False if the named (attached) database was opened readonly or file
-        permissions don't allow writing.  The main database is named "main".
+        permissions don't allow writing.  The name is `main`, `temp`, the
+        name in `ATTACH <https://sqlite.org/lang_attach.html>`__
 
         An exception is raised if the database doesn't exist.
 
@@ -1531,8 +1517,8 @@ class Connection:
     rowtrace = row_trace ## OLD-NAME
 
     def serialize(self, name: str) -> bytes:
-        """Returns a memory copy of the database. *name* is **"main"** for the
-        main database, **"temp"** for the temporary database etc.
+        """Returns a memory copy of the database. *name* is `main`, `temp`, the name
+        in `ATTACH <https://sqlite.org/lang_attach.html>`__
 
         The memory copy is the same as if the database was backed up to
         disk.
@@ -1601,7 +1587,7 @@ class Connection:
         """*callable* will be called just before a commit.  It should return
         False for the commit to go ahead and True for it to be turned
         into a rollback. In the case of an exception in your callable, a
-        True (ie rollback) value is returned.  Pass None to unregister
+        True (rollback) value is returned.  Pass None to unregister
         the existing hook.
 
         .. seealso::
@@ -1631,10 +1617,6 @@ class Connection:
         execute. (The execution time is in nanoseconds.) Note that it is
         called only on completion. If for example you do a ``SELECT`` and only
         read the first result, then you won't reach the end of the statement.
-
-        This used to call the now deprecated `sqlite3_profile API
-        <https://sqlite.org/c3ref/profile.html>`__
-
 
         Calls: `sqlite3_trace_v2 <https://sqlite.org/c3ref/trace_v2.html>`__"""
         ...
@@ -1684,12 +1666,11 @@ class Connection:
 
           type (int)
             *SQLITE_INSERT*, *SQLITE_DELETE* or *SQLITE_UPDATE*
-          database name (string)
-            This is ``main`` for the database or the name specified in
-            `ATTACH <https://sqlite.org/lang_attach.html>`_
-          table name (string)
+          database name (str)
+            `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
+          table name (str)
             The table on which the update happened
-          rowid (64 bit integer)
+          rowid (int)
             The affected row
 
         .. seealso::
@@ -1707,7 +1688,7 @@ class Connection:
         callback is called with 3 parameters:
 
           * The Connection
-          * The database name (eg "main" or the name of an attached database)
+          * The database name.  `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
           * The number of pages in the wal log
 
         You can pass in None in order to unregister an existing hook.
@@ -1742,23 +1723,22 @@ class Connection:
 
         .. seealso::
 
-          The :func:`status` example which works in exactly the same way.
-
-          * :ref:`Status example <example_status>`
+          * :func:`apsw.status` which does the same for SQLite as a whole
+          * :ref:`Example <example_status>`
 
         Calls: `sqlite3_db_status <https://sqlite.org/c3ref/db_status.html>`__"""
         ...
 
     system_errno: int
-    """The underlying system error code for the most recent I/O errors or failing to open files.
+    """The underlying system error code for the most recent I/O error.
 
     Calls: `sqlite3_system_errno <https://sqlite.org/c3ref/system_errno.html>`__"""
 
     def table_exists(self, dbname: Optional[str], table_name: str) -> bool:
         """Returns True if the named table exists, else False.
 
-        `dbname` is the specific database (eg "main", "temp") or None to search
-        all databases
+        `dbname` is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__,
+         or None to search  all databases
 
         Calls: `sqlite3_table_column_metadata <https://sqlite.org/c3ref/table_column_metadata.html>`__"""
         ...
@@ -1814,20 +1794,20 @@ class Connection:
 
     def txn_state(self, schema: Optional[str] = None) -> int:
         """Returns the current transaction state of the database, or a specific schema
-        if provided.  ValueError is raised if schema is not None or a valid schema name.
-        :attr:`apsw.mapping_txn_state` contains the names and values returned.
+        if provided.  :attr:`apsw.mapping_txn_state` contains the values returned.
 
         Calls: `sqlite3_txn_state <https://sqlite.org/c3ref/txn_state.html>`__"""
         ...
 
     def vtab_config(self, op: int, val: int = 0) -> None:
-        """Called during virtual table connect/create.
+        """Callable during virtual table :meth:`~VTModule.Connect`/:meth:`~VTModule.Create`.
 
         Calls: `sqlite3_vtab_config <https://sqlite.org/c3ref/vtab_config.html>`__"""
         ...
 
     def vtab_on_conflict(self) -> int:
-        """Called during virtual table xUpdate
+        """Callable during virtual table :meth:`insert <VTTable.UpdateInsertRow>` or
+        :meth:`update <VTTable.UpdateChangeRow>`
 
         Calls: `sqlite3_vtab_on_conflict <https://sqlite.org/c3ref/vtab_on_conflict.html>`__"""
         ...
@@ -1857,18 +1837,16 @@ class Connection:
         ...
 
 class Cursor:
-    """You obtain cursors by calling :meth:`Connection.cursor`."""
+    """"""
     def close(self, force: bool = False) -> None:
-        """It is very unlikely you will need to call this method.  It exists
-        because older versions of SQLite required all Connection/Cursor
-        activity to be confined to the same thread.  That is no longer the
-        case.  Cursors are automatically garbage collected and when there
+        """It is very unlikely you will need to call this method.
+        Cursors are automatically garbage collected and when there
         are none left will allow the connection to be garbage collected if
         it has no other references.
 
         A cursor is open if there are remaining statements to execute (if
         your query included multiple statements), or if you called
-        :meth:`~Cursor.executemany` and not all of the *sequenceofbindings*
+        :meth:`~Cursor.executemany` and not all of the sequence of bindings
         have been used yet.
 
         :param force: If False then you will get exceptions if there is
@@ -1884,8 +1862,8 @@ class Cursor:
     description: tuple[tuple[str, str, None, None, None, None, None], ...]
     """Based on the `DB-API cursor property
     <https://www.python.org/dev/peps/pep-0249/>`__, this returns the
-    same as :meth:`get_description` but with 5 Nones appended.  See
-    also :issue:`131`."""
+    same as :meth:`get_description` but with 5 Nones appended because
+    SQLite does not have the information."""
 
     description_full: tuple[tuple[str, str, str, str, str], ...]
     """Only present if SQLITE_ENABLE_COLUMN_METADATA was defined at
@@ -1934,37 +1912,6 @@ class Cursor:
         :param explain: If 0 or greater then the statement is passed to `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html>`__
            where you can force it to not be an explain, or force explain or explain query plan.
 
-        If you use numbered bindings in the query then supply a sequence.
-        Any sequence will work including lists and iterators.  For
-        example::
-
-          cursor.execute("insert into books values(?,?)", ("title", "number"))
-
-        .. note::
-
-          A common gotcha is wanting to insert a single string but not
-          putting it in a tuple::
-
-            cursor.execute("insert into books values(?)", "a title")
-
-          The string is a sequence of 8 characters and so it will look
-          like you are supplying 8 bindings when only one is needed.  Use
-          a one item tuple with a trailing comma like this::
-
-            cursor.execute("insert into books values(?)", ("a title",) )
-
-        If you used names in the statement then supply a dictionary as the
-        binding.  It is ok to be missing entries from the dictionary -
-        None/null will be used.  For example::
-
-           cursor.execute("insert into books values(:title, :isbn, :rating)",
-                {"title": "book title", "isbn": 908908908})
-
-        The return is the cursor object itself which is also an iterator.  This allows you to write::
-
-           for row in cursor.execute("select * from books"):
-              print(row)
-
         :raises TypeError: The bindings supplied were neither a dict nor a sequence
         :raises BindingsError: You supplied too many or too few bindings for the statements
         :raises IncompleteExecutionError: There are remaining unexecuted queries from your last execute
@@ -1987,18 +1934,9 @@ class Cursor:
           for binding in sequenceofbindings:
               cursor.execute(statements, binding)
 
-        Example::
-
-          rows=(  (1, 7),
-                  (2, 23),
-                  (4, 92),
-                  (12, 12) )
-
-          cursor.executemany("insert into nums values(?,?)", rows)
-
         The return is the cursor itself which acts as an iterator.  Your
         statements can return data.  See :meth:`~Cursor.execute` for more
-        information."""
+        information, and the :ref:`example <example_executemany>`."""
         ...
 
     expanded_sql: str
@@ -2021,7 +1959,8 @@ class Cursor:
 
     def fetchall(self) -> list[tuple[SQLiteValue, ...]]:
         """Returns all remaining result rows as a list.  This method is defined
-        in DBAPI.  It is a longer way of doing ``list(cursor)``."""
+        in DBAPI.  See :meth:`get` which does the same thing, but with the least
+        amount of structure to unpack."""
         ...
 
     def fetchone(self) -> Optional[Any]:
@@ -2034,6 +1973,7 @@ class Cursor:
 
     .. list-table:: Some examples
        :header-rows: 1
+       :widths: auto
 
        * - Query
          - Result
@@ -2051,7 +1991,7 @@ class Cursor:
     Row tracers are not called when using this method."""
 
     def get_connection(self) -> Connection:
-        """Returns the :attr:`connection` this cursor is using"""
+        """Returns the :attr:`connection` this cursor is part of"""
         ...
 
     getconnection = get_connection ## OLD-NAME
@@ -2059,52 +1999,18 @@ class Cursor:
     def get_description(self) -> tuple[tuple[str, str], ...]:
         """If you are trying to get information about a table or view,
         then `pragma table_info <https://sqlite.org/pragma.html#pragma_table_info>`__
-        is better.
+        is better.  If you want to know up front what columns and other
+        details a query does then :func:`apsw.ext.query_info` is useful.
 
         Returns a tuple describing each column in the result row.  The
-        return is identical for every row of the results.  You can only
-        call this method once you have started executing a statement and
-        before you have finished::
-
-           # This will error
-           cursor.get_description()
-
-           for row in cursor.execute("select ....."):
-              # this works
-              print (cursor.get_description())
-              print (row)
+        return is identical for every row of the results.
 
         The information about each column is a tuple of ``(column_name,
         declared_column_type)``.  The type is what was declared in the
         ``CREATE TABLE`` statement - the value returned in the row will be
-        whatever type you put in for that row and column.  (This is known
-        as `manifest typing <https://sqlite.org/different.html#typing>`_
-        which is also the way that Python works.  The variable ``a`` could
-        contain an integer, and then you could put a string in it.  Other
-        static languages such as C or other SQL databases only let you put
-        one type in - eg ``a`` could only contain an integer or a string,
-        but never both.)
+        whatever type you put in for that row and column.
 
-        Example::
-
-           cursor.execute("create table books(title string, isbn number, wibbly wobbly zebra)")
-           cursor.execute("insert into books values(?,?,?)", (97, "fjfjfj", 3.7))
-           cursor.execute("insert into books values(?,?,?)", ("fjfjfj", 3.7, 97))
-
-           for row in cursor.execute("select * from books"):
-              print (cursor.get_description())
-              print (row)
-
-        Output::
-
-          # row 0 - description
-          (('title', 'string'), ('isbn', 'number'), ('wibbly', 'wobbly zebra'))
-          # row 0 - values
-          (97, 'fjfjfj', 3.7)
-          # row 1 - description
-          (('title', 'string'), ('isbn', 'number'), ('wibbly', 'wobbly zebra'))
-          # row 1 - values
-          ('fjfjfj', 3.7, 97)
+        See the :ref:`query_info example <example_query_details>`.
 
         Calls:
           * `sqlite3_column_name <https://sqlite.org/c3ref/column_name.html>`__
@@ -2136,8 +2042,8 @@ class Cursor:
     getrowtrace = get_row_trace ## OLD-NAME
 
     has_vdbe: bool
-    """`True` if the SQL can be evaluated.  Comments have nothing to
-     evaluate, and so are `False`."""
+    """``True`` if the SQL does anything.  Comments have nothing to
+    evaluate, and so are ``False``."""
 
     def __init__(self, connection: Connection):
         """Use :meth:`Connection.cursor` to make a new cursor."""
@@ -2196,8 +2102,7 @@ class Cursor:
 class IndexInfo:
     """IndexInfo represents the `sqlite3_index_info
     <https://www.sqlite.org/c3ref/index_info.html>`__ and associated
-    methods used in the :meth:`VTTable.BestIndexObject` method.  The
-    structure values are not altered or made friendlier in any way.
+    methods used in the :meth:`VTTable.BestIndexObject` method.
 
     Naming is identical to the C structure rather than Pythonic.  You can
     access members directly while needing to use get/set methods for array
@@ -2214,6 +2119,7 @@ class IndexInfo:
 
     distinct: int
     """(Read-only) How the query planner would like output ordered
+    if the query is using group by or distinct.
 
     Calls: `sqlite3_vtab_distinct <https://sqlite.org/c3ref/vtab_distinct.html>`__"""
 
@@ -2304,10 +2210,9 @@ class IndexInfo:
 
 @final
 class URIFilename:
-    """SQLite uses a convoluted method of storing `uri parameters
-    <https://sqlite.org/uri.html>`__ after the filename binding the
-    C filename representation and parameters together.  This class
-    encapsulates that binding.  The :ref:`example <example_vfs>` shows
+    """SQLite packs `uri parameters
+    <https://sqlite.org/uri.html>`__ and the filename together   This class
+    encapsulates that packing.  The :ref:`example <example_vfs>` shows
     usage of this class.
 
     Your :meth:`VFS.xOpen` method will generally be passed one of
@@ -2365,12 +2270,7 @@ class VFSFcntlPragma:
 class VFSFile:
     """Wraps access to a file.  You only need to derive from this class
     if you want the file object returned from :meth:`VFS.xOpen` to
-    inherit from an existing VFS implementation.
-
-    .. note::
-
-       All file sizes and offsets are 64 bit quantities even on 32 bit
-       operating systems."""
+    inherit from an existing VFS implementation."""
     def excepthook(self, etype: type[BaseException], evalue: BaseException, etraceback: Optional[types.TracebackType]) ->None:
         """Called when there has been an exception in a :class:`VFSFile`
         routine, and it can't be reported to the caller as usual.
@@ -2381,7 +2281,7 @@ class VFSFile:
         `PyErr_Display`."""
         ...
 
-    def __init__(self, vfs: str, filename: str | URIFilename, flags: list[int]):
+    def __init__(self, vfs: str, filename: str | URIFilename, flags: list[int, int]):
         """:param vfs: The vfs you want to inherit behaviour from.  You can
            use an empty string ``""`` to inherit from the default vfs.
         :param name: The name of the file being opened.  May be an instance of :class:`URIFilename`.
@@ -2432,25 +2332,23 @@ class VFSFile:
 
         :returns: A boolean indicating if the op was understood
 
-        As of SQLite 3.6.10, this method is called by SQLite if you have
-        inherited from an underlying VFSFile.  Consequently ensure you pass
-        any unrecognised codes through to your super class.  For example::
+        Ensure you pass any unrecognised codes through to your super class.
+        For example::
 
-                 def xFileControl(self, op, ptr):
-                     if op==1027:
-                         process_quick(ptr)
-                     elif op==1028:
-                         obj=ctypes.py_object.from_address(ptr).value
-                     else:
-                         # this ensures superclass implementation is called
-                         return super().xFileControl(op, ptr)
-         # we understood the op
+            def xFileControl(self, op: int, ptr: int) -> bool:
+                if op == 1027:
+                    process_quick(ptr)
+                elif op == 1028:
+                    obj=ctypes.py_object.from_address(ptr).value
+                else:
+                    # this ensures superclass implementation is called
+                    return super().xFileControl(op, ptr)
+               # we understood the op
                return True"""
         ...
 
     def xFileSize(self) -> int:
-        """Return the size of the file in bytes.  Remember that file sizes are
-        64 bit quantities even on 32 bit operating systems."""
+        """Return the size of the file in bytes."""
         ...
 
     def xLock(self, level: int) -> None:
@@ -2470,7 +2368,7 @@ class VFSFile:
         reads to be a fatal error.
 
         :param amount: Number of bytes to read
-        :param offset: Where to start reading. This number may be 64 bit once the database is larger than 2GB."""
+        :param offset: Where to start reading."""
         ...
 
     def xSectorSize(self) -> int:
@@ -2484,7 +2382,7 @@ class VFSFile:
         """Ensure data is on the disk platters (ie could survive a power
         failure immediately after the call returns) with the `sync flags
         <https://sqlite.org/c3ref/c_sync_dataonly.html>`_ detailing what
-        needs to be synced.  You can sync more than what is requested."""
+        needs to be synced."""
         ...
 
     def xTruncate(self, newsize: int) -> None:
@@ -2505,7 +2403,7 @@ class VFSFile:
         underlying operating system to do a partial write. You will need to
         write the remaining data.
 
-        :param offset: Where to start writing. This number may be 64 bit once the database is larger than 2GB."""
+        :param offset: Where to start writing."""
         ...
 
 class VFS:
@@ -2575,8 +2473,7 @@ class VFS:
         """Return the `Julian Day Number
         <https://en.wikipedia.org/wiki/Julian_day>`_ as a floating point
         number where the integer portion is the day and the fractional part
-        is the time. Do not adjust for timezone (ie use `UTC
-        <https://en.wikipedia.org/wiki/Universal_Time>`_)."""
+        is the time."""
         ...
 
     def xCurrentTimeInt64(self)  -> int:
@@ -2603,7 +2500,7 @@ class VFS:
         returned from :meth:`~VFS.xDlOpen`.  You can use ctypes to do
         this::
 
-          def xDlClose(handle):
+          def xDlClose(handle: int):
              # Note leading underscore in _ctypes
              _ctypes.dlclose(handle)       # Linux/Mac/Unix
              _ctypes.FreeLibrary(handle)   # Windows"""
@@ -2628,7 +2525,7 @@ class VFS:
         anything that is convenient for you (eg an index into an
         array). You can use ctypes to load a library::
 
-          def xDlOpen(name):
+          def xDlOpen(name: str):
              return ctypes.cdll.LoadLibrary(name)._handle"""
         ...
 
@@ -2636,7 +2533,7 @@ class VFS:
         """Returns the address of the named symbol which will be called by
         SQLite. On error you should return 0 (NULL). You can use ctypes::
 
-          def xDlSym(ptr, name):
+          def xDlSym(ptr: int, name: str):
              return _ctypes.dlsym (ptr, name)  # Linux/Unix/Mac etc (note leading underscore)
              return ctypes.win32.kernel32.GetProcAddress (ptr, name)  # Windows
 
@@ -2649,8 +2546,8 @@ class VFS:
         ...
 
     def xGetLastError(self) -> tuple[int, str]:
-        """This method is to return an integer error code and (optional) text describing
-        the last error that happened in this thread."""
+        """Return an integer error code and (optional) text describing
+        the last error code and message that happened in this thread."""
         ...
 
     def xGetSystemCall(self, name: str) -> Optional[int]:
@@ -2686,11 +2583,10 @@ class VFS:
         ...
 
     def xRandomness(self, numbytes: int) -> bytes:
-        """This method is called once when SQLite needs to seed the random
-        number generator. It is called on the default VFS only. It is not
-        called again, even across :meth:`apsw.shutdown` calls.  You can
-        return less than the number of bytes requested including None. If
-        you return more then the surplus is ignored."""
+        """This method is called once on the default VFS when SQLite needs to
+        seed the random number generator.  You can return less than the
+        number of bytes requested including None. If you return more then
+        the surplus is ignored."""
         ...
 
     def xSetSystemCall(self, name: Optional[str], pointer: int) -> bool:
@@ -2707,8 +2603,7 @@ class VFS:
         Raise an exception to return an error.  If the system call does
         not exist then raise :exc:`NotFoundError`.
 
-        If `name` is None, then all systemcalls are reset to their defaults.  This
-        behaviour is not documented.
+        If `name` is None, then all systemcalls are reset to their defaults.
 
         :returns: True if the system call was set.  False if the system
           call is not known."""
@@ -2731,18 +2626,11 @@ class VTCursor(Protocol):
       There is no actual *VTCursor* class - it is shown this way for
       documentation convenience and is present as a `typing protocol
       <https://docs.python.org/3/library/typing.html#typing.Protocol>`__.
-      Your cursor instance should implement all the methods documented
-      here.
 
 
     The :class:`VTCursor` object is used for iterating over a table.
     There may be many cursors simultaneously so each one needs to keep
-    track of where      :ref:`Virtual table structure <vtablestructure>`
-    it is.
-
-    .. seealso::
-
-         :ref:`Virtual table structure <vtablestructure>`"""
+    track of where in the table it is."""
     def Close(self) -> None:
         """This is the destructor for the cursor. Note that you must
         cleanup. The method will not be called again if you raise an
@@ -2822,7 +2710,6 @@ class VTModule(Protocol):
       There is no actual *VTModule* class - it is shown this way for
       documentation convenience and is present as a `typing protocol
       <https://docs.python.org/3/library/typing.html#typing.Protocol>`__.
-      Your module instance should implement all the methods documented here.
 
     A module instance is used to create the virtual tables.  Once you have
     a module object, you register it with a connection by calling
@@ -2839,7 +2726,7 @@ class VTModule(Protocol):
 
     The create step is to tell SQLite about the existence of the table.
     Any number of tables referring to the same module can be made this
-    way.  Note the (optional) arguments which are passed to the module."""
+    way."""
     def Connect(self, connection: Connection, modulename: str, databasename: str, tablename: str, *args: tuple[SQLiteValue, ...])  -> tuple[str, VTTable]:
         """The parameters and return are identical to
         :meth:`~VTModule.Create`.  This method is called
@@ -2868,8 +2755,7 @@ class VTModule(Protocol):
 
         :param connection: An instance of :class:`Connection`
         :param modulename: The string name under which the module was :meth:`registered <Connection.create_module>`
-        :param databasename: The name of the database.  This will be ``main`` for directly opened files and the name specified in
-                `ATTACH <https://sqlite.org/lang_attach.html>`_ statements.
+        :param databasename: The name of the database.  `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
         :param tablename: Name of the table the user wants to create.
         :param args: Any arguments that were specified in the `create virtual table <https://sqlite.org/lang_createvtab.html>`_ statement.
 
@@ -2899,13 +2785,9 @@ class VTTable(Protocol):
       There is no actual *VTTable* class - it is shown this way for
       documentation convenience and is present as a `typing protocol
       <https://docs.python.org/3/library/typing.html#typing.Protocol>`__.
-      Your table instance should implement the methods documented here.
 
     The :class:`VTTable` object contains knowledge of the indices, makes
     cursors and can perform transactions.
-
-
-    .. _vtablestructure:
 
     A virtual table is structured as a series of rows, each of which has
     the same number of columns.  The value in a column must be one of the `5
@@ -2919,8 +2801,8 @@ class VTTable(Protocol):
     the :class:`Table <VTTable>` routines such as :meth:`UpdateChangeRow
     <VTTable.UpdateChangeRow>`.
 
-    It is possible to not have a rowid - read more at `the SQLite
-    site <https://www.sqlite.org/vtab.html#_without_rowid_virtual_tables_>`__"""
+    It is possible to `not have a rowid
+    <https://www.sqlite.org/vtab.html#_without_rowid_virtual_tables_>`__"""
     def Begin(self) -> None:
         """This function is used as part of transactions.  You do not have to
         provide the method."""
@@ -2953,7 +2835,7 @@ class VTTable(Protocol):
         traditional SQL database, queries with constraints can be speeded up
         `with indices <https://sqlite.org/lang_createindex.html>`_. If
         you return None, then SQLite will visit every row in your table and
-        evaluate the constraint itself. Your index choice returned from
+        evaluate the constraints itself. Your index choice returned from
         BestIndex will also be passed to the :meth:`~VTCursor.Filter` method on your cursor
         object. Note that SQLite may call this method multiple times trying
         to find the most efficient way of answering a complex query.
@@ -3128,8 +3010,7 @@ class VTTable(Protocol):
         """The opposite of :meth:`VTModule.Create`.  This method is called when
         the table is no longer used.  Note that you must always release
         resources even if you intend to return an error, as it will not be
-        called again on error.  SQLite may also leak memory
-        if you return an error."""
+        called again on error."""
         ...
 
     def Disconnect(self) -> None:
@@ -3157,8 +3038,21 @@ class VTTable(Protocol):
 
         .. seealso::
 
-          * :meth:`Connection.overload_function`
-          * `FindFunction documentation <https://www.sqlite.org/vtab.html#xfindfunction>`__"""
+          * :meth:`Connection.overload_function`"""
+        ...
+
+    def Integrity(self, schema: str, name: str, is_quick: int) -> str | None:
+        """If present, check the integrity of the virtual table.
+
+        :param schema: Database name `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
+        :param name: Name of the table
+        :param is_quick: 0 if `pragma integrity_check <https://sqlite.org/pragma.html#pragma_integrity_check>`__ was used,
+           1 if `pragma quick_check <https://sqlite.org/pragma.html#pragma_quick_check>`__ was used, and may contain
+           other values in the future.
+
+        :returns: None if there are no problems, else a string to be used as an error message.  The string is returned to the
+          pragma as is, so it is recommended that you include the database and table name to clarify what database and
+          table the message is referring to."""
         ...
 
     def Open(self) -> VTCursor:
@@ -3223,28 +3117,14 @@ class VTTable(Protocol):
         ...
 
 class zeroblob:
-    """If you want to insert a blob into a row, you previously needed to
-    supply the entire blob in one go.  To read just one byte also
-    required retrieving the blob in its entirety. For example to insert
-    a 100MB file you would have done::
+    """If you want to insert a blob into a row, you need to
+    supply the entire blob in one go.  Using this class or
+    `function <https://www.sqlite.org/lang_corefunc.html#zeroblob>`__
+    allocates the space in the database filling it with zeroes.
 
-       largedata=open("largefile", "rb").read()
-       cur.execute("insert into foo values(?)", (largedata,))
-
-    SQLite 3.5 allowed for incremental Blob I/O so you can read and
-    write blobs in small amounts.  You cannot change the size of a blob
-    so you need to reserve space which you do through zeroblob which
-    creates a blob of the specified size but full of zero bytes.  For
-    example you would reserve space for your 100MB one of these two
-    ways::
-
-      cur.execute("insert into foo values(zeroblob(100000000))")
-      cur.execute("insert into foo values(?),
-                   (apsw.zeroblob(100000000),))
-
-    This class is used for the second way.  Once a blob exists in the
-    database, you then use the :class:`Blob` class to read and write its
-    contents."""
+    You can then overwrite parts in smaller chunks, without having
+    to do it all at once.  The :ref:`example <example_blob_io>` shows
+    how to use it."""
     def __init__(self, size: int):
         """:param size: Number of zeroed bytes to create"""
         ...
@@ -3984,11 +3864,11 @@ SQLITE_TRACE_STMT: int = 1
 SQLITE_TRANSACTION: int = 22
 """For `Authorizer Action Codes <https://sqlite.org/c3ref/c_alter_table.html>'__"""
 SQLITE_TXN_NONE: int = 0
-"""For `Allowed return values from [sqlite3_txn_state()] <https://sqlite.org/c3ref/c_txn_none.html>'__"""
+"""For `Allowed return values from sqlite3_txn_state() <https://sqlite.org/c3ref/c_txn_none.html>'__"""
 SQLITE_TXN_READ: int = 1
-"""For `Allowed return values from [sqlite3_txn_state()] <https://sqlite.org/c3ref/c_txn_none.html>'__"""
+"""For `Allowed return values from sqlite3_txn_state() <https://sqlite.org/c3ref/c_txn_none.html>'__"""
 SQLITE_TXN_WRITE: int = 2
-"""For `Allowed return values from [sqlite3_txn_state()] <https://sqlite.org/c3ref/c_txn_none.html>'__"""
+"""For `Allowed return values from sqlite3_txn_state() <https://sqlite.org/c3ref/c_txn_none.html>'__"""
 SQLITE_UPDATE: int = 23
 """For `Authorizer Action Codes <https://sqlite.org/c3ref/c_alter_table.html>'__"""
 SQLITE_VTAB_CONSTRAINT_SUPPORT: int = 1
@@ -4256,7 +4136,7 @@ SQLITE_TRACE SQLITE_TRACE_CLOSE SQLITE_TRACE_PROFILE SQLITE_TRACE_ROW
 SQLITE_TRACE_STMT"""
 
 mapping_txn_state: dict[str | int, int | str]
-"""Allowed return values from [sqlite3_txn_state()] mapping names to int and int to names.
+"""Allowed return values from sqlite3_txn_state() mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_txn_none.html
 
 SQLITE_TXN_NONE SQLITE_TXN_READ SQLITE_TXN_WRITE"""
@@ -4319,10 +4199,12 @@ class Error(Exception):
             `-1` when a specific token in the input is not the cause."""
 
 class AbortError(Error):
-    """*SQLITE_ABORT*. Callback routine requested an abort."""
+    """`SQLITE_ABORT <https://sqlite.org/rescode.html#abort>`__. Callback
+    routine requested an abort."""
 
 class AuthError(Error):
-    """*SQLITE_AUTH*.  :attr:`Authorization <Connection.authorizer>` denied."""
+    """`SQLITE_AUTH <https://sqlite.org/rescode.html#auth>`__.
+    :attr:`Authorization <Connection.authorizer>` denied."""
 
 class BindingsError(Error):
     """There are several causes for this exception.  When using tuples, an incorrect number of bindings where supplied::
@@ -4336,13 +4218,14 @@ class BindingsError(Error):
        cursor.execute("select * from foo where x=:name and y=?")"""
 
 class BusyError(Error):
-    """*SQLITE_BUSY*.  The database file is locked.  Use
-    :meth:`Connection.set_busy_timeout` to change how long SQLite waits
-    for the database to be unlocked or :meth:`Connection.set_busy_handler`
-    to use your own handler."""
+    """`SQLITE_BUSY <https://sqlite.org/rescode.html#busy>`__.  The
+    database file is locked.  Use  :meth:`Connection.set_busy_timeout`
+    to change how long SQLite waits for the database to be unlocked or
+    :meth:`Connection.set_busy_handler` to use your own handler."""
 
 class CantOpenError(Error):
-    """*SQLITE_CANTOPEN*.  Unable to open the database file."""
+    """`SQLITE_CANTOPEN <https://sqlite.org/rescode.html#cantopen>`__.
+    Unable to open the database file."""
 
 class ConnectionClosedError(Error):
     """You have called :meth:`Connection.close` and then continued to use
@@ -4353,27 +4236,28 @@ class ConnectionNotClosedError(Error):
     releases due to constraints in threading usage with SQLite."""
 
 class ConstraintError(Error):
-    """*SQLITE_CONSTRAINT*. Abort due to `constraint
-    <https://sqlite.org/lang_createtable.html>`_ violation.  This
-    would happen if the schema required a column to be within a specific
-    range."""
+    """`SQLITE_CONSTRAINT <https://sqlite.org/rescode.html#constraint>`__.
+    Abort due to `constraint
+    <https://sqlite.org/lang_createtable.html>`_ violation."""
 
 class CorruptError(Error):
-    """*SQLITE_CORRUPT*.  The database disk image appears to be a
-    SQLite database but the values inside are inconsistent."""
+    """`SQLITE_CORRUPT <https://sqlite.org/rescode.html#corrupt>`__.  The
+    database disk image appears to be a SQLite database but the values
+    inside are inconsistent."""
 
 class CursorClosedError(Error):
     """You have called :meth:`Cursor.close` and then tried to use the cursor."""
 
 class EmptyError(Error):
-    """*SQLITE_EMPTY*. Database is completely empty."""
+    """`SQLITE_EMPTY <https://sqlite.org/rescode.html#empty>`__. Not
+    currently used."""
 
 class ExecTraceAbort(Error):
     """The :ref:`execution tracer <executiontracer>` returned False so
     execution was aborted."""
 
 class ExecutionCompleteError(Error):
-    """A statement is complete but you try to run it more anyway!"""
+    """Execution of the statements is complete and cannot be run further."""
 
 class ExtensionLoadingError(Error):
     """An error happened loading an `extension
@@ -4383,14 +4267,18 @@ class ForkingViolationError(Error):
     """See :meth:`apsw.fork_checker`."""
 
 class FormatError(Error):
-    """*SQLITE_FORMAT*. (No longer used) `Auxiliary database <https://sqlite.org/lang_attach.html>`_ format error."""
+    """`SQLITE_FORMAT <https://sqlite.org/rescode.html#format>`__. (No
+    longer used) `Auxiliary database
+    <https://sqlite.org/lang_attach.html>`_ format error."""
 
 class FullError(Error):
-    """*SQLITE_FULL*.  The disk appears to be full."""
+    """`SQLITE_FULL <https://sqlite.org/rescode.html#full>`__.  The disk
+    appears to be full."""
 
 class IOError(Error):
-    """*SQLITE_IOERR*.  Some kind of disk I/O error occurred.  The
-    :ref:`extended error code <exceptions>` will give more detail."""
+    """`SQLITE_IOERR <https://sqlite.org/rescode.html#ioerr>`__.  A disk
+    I/O error occurred.  The :ref:`extended error code <exceptions>`
+    will give more detail."""
 
 class IncompleteExecutionError(Error):
     """You have tried to start a new SQL execute call before executing all
@@ -4398,68 +4286,80 @@ class IncompleteExecutionError(Error):
     for more details."""
 
 class InternalError(Error):
-    """*SQLITE_INTERNAL*. (No longer used) Internal logic error in SQLite."""
+    """`SQLITE_INTERNAL <https://sqlite.org/rescode.html#internal>`__. (No
+    longer used) Internal logic error in SQLite."""
 
 class InterruptError(Error):
-    """*SQLITE_INTERRUPT*.  Operation terminated by
-    `sqlite3_interrupt <https://sqlite.org/c3ref/interrupt.html>`_ -
-    use :meth:`Connection.interrupt`."""
+    """SQLITE_INTERRUPT <https://sqlite.org/rescode.html#interrupt>`__.
+    Operation terminated by `sqlite3_interrupt
+    <https://sqlite.org/c3ref/interrupt.html>`_ - use
+    :meth:`Connection.interrupt`."""
 
 class LockedError(Error):
-    """*SQLITE_LOCKED*.  A table in the database is locked."""
+    """`SQLITE_LOCKED <https://sqlite.org/rescode.html#locked>`__.  Shared
+    cache lock."""
 
 class MismatchError(Error):
-    """*SQLITE_MISMATCH*. Data type mismatch.  For example a rowid
-    or integer primary key must be an integer."""
+    """`SQLITE_MISMATCH <https://sqlite.org/rescode.html#mismatch>`__. Data
+    type mismatch.  For example a rowid or integer primary key must be
+    an integer."""
 
 class MisuseError(Error):
-    """*SQLITE_MISUSE*.  SQLite library used incorrectly - typically similar to *ValueError* in Python.  Examples include not
-    having enough flags when opening a connection (eg not including a READ or WRITE flag), or out of spec such as registering
-    a function with more than 127 parameters."""
+    """`SQLITE_MISUSE <https://sqlite.org/rescode.html#misuse>`__.  SQLite
+    library used incorrectly - typically similar to *ValueError* in
+    Python.  Examples include not having enough flags when opening a
+    connection (eg not including a READ or WRITE flag), or out of spec
+    such as registering a function with more than 127 parameters."""
 
 class NoLFSError(Error):
-    """*SQLITE_NOLFS*.  SQLite has attempted to use a feature not
-    supported by the operating system such as `large file support
+    """`SQLITE_NOLFS <https://sqlite.org/rescode.html#nolfs>`__.  SQLite
+    has attempted to use a feature not supported by the operating system
+    such as `large file support
     <https://en.wikipedia.org/wiki/Large_file_support>`_."""
 
 class NoMemError(Error):
-    """*SQLITE_NOMEM*.  A memory allocation failed."""
+    """`SQLITE_NOMEM <https://sqlite.org/rescode.html#nomem>`__.  A memory
+     allocation failed."""
 
 class NotADBError(Error):
-    """*SQLITE_NOTADB*.  File opened that is not a database file.
-    SQLite has a header on database files to verify they are indeed
-    SQLite databases."""
+    """`SQLITE_NOTADB <https://sqlite.org/rescode.html#notadb>`__.  File
+    opened that is not a database file.  SQLite has a header on database
+    files to verify they are indeed SQLite databases."""
 
 class NotFoundError(Error):
-    """*SQLITE_NOTFOUND*. Returned when various internal items were
-    not found such as requests for non-existent system calls or file
-    controls."""
+    """`SQLITE_NOTFOUND <https://sqlite.org/rescode.html#notfound>`__.
+    Returned when various internal items were not found such as requests
+    for non-existent system calls or file controls."""
 
 class PermissionsError(Error):
-    """*SQLITE_PERM*. Access permission denied by the operating system, or parts of the database are readonly such as a cursor."""
+    """`SQLITE_PERM <https://sqlite.org/rescode.html#perm>`__. Access
+    permission denied by the operating system."""
 
 class ProtocolError(Error):
-    """*SQLITE_PROTOCOL*. (No longer used) Database lock protocol error."""
+    """`SQLITE_PROTOCOL <https://sqlite.org/rescode.html#protocol>`__. (No
+    longer used) Database lock protocol error."""
 
 class RangeError(Error):
-    """*SQLITE_RANGE*.  (Cannot be generated using APSW).  2nd parameter to `sqlite3_bind <https://sqlite.org/c3ref/bind_blob.html>`_ out of range"""
+    """`SQLITE_RANGE <https://sqlite.org/rescode.html#range>`__.  (Cannot
+    be generated using APSW).  2nd parameter to `sqlite3_bind
+    <https://sqlite.org/c3ref/bind_blob.html>`_ out of range"""
 
 class ReadOnlyError(Error):
-    """*SQLITE_READONLY*. Attempt to write to a readonly database."""
+    """`SQLITE_READONLY <https://sqlite.org/rescode.html#readonly>`__.
+    Attempt to write to a readonly database."""
 
 class SQLError(Error):
-    """*SQLITE_ERROR*.  This error is documented as a bad SQL query
-    or missing database, but is also returned for a lot of other
-    situations.  It is the default error code unless there is a more
-    specific one."""
+    """`SQLITE_ERROR <https://sqlite.org/rescode.html#error>`__.  The
+    standard error code, unless a more specific one is  applicable."""
 
 class SchemaChangeError(Error):
-    """*SQLITE_SCHEMA*.  The database schema changed.  A
-    :meth:`prepared statement <Cursor.execute>` becomes invalid
-    if the database schema was changed.  Behind the scenes SQLite
-    reprepares the statement.  Another or the same :class:`Connection`
-    may change the schema again before the statement runs.  SQLite will
-    attempt up to 5 times before giving up and returning this error."""
+    """`SQLITE_SCHEMA <https://sqlite.org/rescode.html#schema>`__.  The
+    database schema changed.  A  :meth:`prepared statement
+    <Cursor.execute>` becomes invalid if the database schema was
+    changed.  Behind the scenes SQLite reprepares the statement.
+    Another or the same :class:`Connection` may change the schema again
+    before the statement runs.  SQLite will retry before giving up and
+    returning this error."""
 
 class ThreadingViolationError(Error):
     """You have used an object concurrently in two threads. For example you
@@ -4472,8 +4372,9 @@ class ThreadingViolationError(Error):
     Cursors can only be used for one thing at a time."""
 
 class TooBigError(Error):
-    """*SQLITE_TOOBIG*.  String or BLOB exceeds size limit.  You can
-    change the limits using :meth:`Connection.limit`."""
+    """`SQLITE_TOOBIG <https://sqlite.org/rescode.html#toobig>`__.  String
+    or BLOB exceeds size limit.  You can  change the limits using
+    :meth:`Connection.limit`."""
 
 class VFSFileClosedError(Error):
     """The VFS file is closed so the operation cannot be performed."""
