@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
+# This code uses Python's optional typing annotations.  You can
+# ignore them and do not need to use them.
 from __future__ import annotations
+from typing import Optional, Iterator, Any
 
 import os
 import sys
@@ -8,11 +11,8 @@ import time
 import apsw
 import apsw.ext
 import random
+import re
 from pathlib import Path
-
-# Note: this code uses Python's optional typing annotations.  You can
-# ignore them and do not need to use them
-from typing import Optional, Iterator, Any
 
 ### version_check: Checking APSW and SQLite versions
 
@@ -33,8 +33,8 @@ print("   SQLite lib version", apsw.sqlite_lib_version())
 print("   Using amalgamation", apsw.using_amalgamation)
 
 ### bestpractice: Best Practice
-# Ensure SQLite usage prevents common mistakes, and best performance
-# via :doc:`apsw.bestpractice <bestpractice>`
+# Ensure SQLite usage prevents common mistakes, and gets best
+# performance via :doc:`apsw.bestpractice <bestpractice>`
 
 import apsw.bestpractice
 
@@ -42,9 +42,9 @@ apsw.bestpractice.apply(apsw.bestpractice.recommended)
 
 ### logging: Logging
 # It is a good idea to get SQLite's logs as you will get more
-# information about errors.  :meth:`apsw.ext.log_sqlite` forwards
-# SQLite's log messages to the :mod:`logging` module.  The prior
-# best practice also includes this.
+# information about errors. Best practice also includes this.
+# :meth:`apsw.ext.log_sqlite` forwards SQLite's log messages to the
+# :mod:`logging` module.
 
 apsw.ext.log_sqlite()
 
@@ -90,13 +90,13 @@ for row in connection.execute("select * from point"):
 # a simple value
 event = "system started"
 # DO NOT DO THIS
-query = "insert into log values(0, '" + event + "')"
+query = f"insert into log values(0, '{ event }')"
 print("query:", query)
 
 # BECAUSE ... a bad guy could provide a value like this
-event = "bad guy here') ; drop table important; -- "
+event = "bad guy here') ; drop table important; -- comment"
 # which has effects like this
-query = "insert into log values(0, '" + event + "')"
+query = f"insert into log values(0, '{ event }')"
 print("bad guy:", query)
 
 ### bindings_sequence: Bindings (sequence)
@@ -104,7 +104,7 @@ print("bad guy:", query)
 # a tuple or list.  Use **?** to show where the values go.
 
 query = "insert into log values(?, ?)"
-data = (7, "restart")
+data = (7, "transmission started")
 connection.execute(query, data)
 
 # You can also use numbers after the ? to select
@@ -124,33 +124,13 @@ query = "insert into point values(:x, @Y, $z)"
 data = {"x": 7, "Y": 8, "z": 9}
 connection.execute(query, data)
 
-### types: Using different types
-# SQLite supports None, int, float, str, bytes (binary data). If a
-# table declaration gives a type then SQLite attempts conversion.
-# `Read more <https://www.sqlite.org/flextypegood.html>`__.
-
-connection.execute("""
-    create table types1(a, b, c, d, e);
-    create table types2(a INTEGER, b REAL, c TEXT, d, e BLOB);
-    """)
-
-data = ("12", 3, 4, 5.5, b"\x03\x72\xf4\x00\x9e")
-connection.execute("insert into types1 values(?,?,?,?,?)", data)
-connection.execute("insert into types2 values(?,?,?,?,?)", data)
-
-for row in connection.execute("select * from types1"):
-    print("types1", repr(row))
-
-for row in connection.execute("select * from types2"):
-    print("types2", repr(row))
-
 ### transaction: Transactions
-# By default each statement is its own transaction (3 in the
-# example below).  A transaction finishes by flushing data to
-# storage and waiting for the operating system to confirm it is
-# permanently there (ie will survive a power failure) which takes
-# a while.
+# By default each statement is its own transaction.  A transaction
+# finishes by flushing data to storage and waiting for the operating
+# system to confirm it is permanently there (ie will survive a power
+# failure) which takes a while.
 
+# 3 separate transactions
 connection.execute("insert into point values(2, 2, 2)")
 connection.execute("insert into point values(3, 3, 3)")
 connection.execute("insert into point values(4, 4, 4)")
@@ -263,7 +243,7 @@ connection.row_trace = row_tracer
 # and clearing it
 connection.row_trace = None
 
-### scalar: Defining your own functions
+### scalar: Defining scalar functions
 # Scalar functions take one or more values and return one value.  They
 # are registered by calling :meth:`Connection.create_scalar_function`.
 
@@ -303,13 +283,14 @@ class longest:
         # Called at the very end
         return self.longest
 
+
 connection.create_aggregate_function("longest", longest)
 print(connection.execute("select longest(event) from log").get)
 
 ### window: Defining window functions
 # Window functions input values come from a "window" around a row of
-# interest.  Four methods are called to add, remove, get the current
-# value, and finalize as the window moves.
+# interest.  Four methods are called as the window moves to add,
+# remove, get the current value, and finalize.
 #
 # An example is calculating an average of values in the window to
 # compare to the row.  They are registered by calling
@@ -334,7 +315,7 @@ class SumInt:
         self.v -= arg
 
     def final(self):
-        print("final")
+        print("final", self.v)
         return self.v
 
     def value(self):
@@ -381,14 +362,12 @@ for row in connection.execute("select * from names order by name"):
 
 
 def str_num_collate(s1: apsw.SQLiteValue, s2: apsw.SQLiteValue) -> int:
-    # return -1 if s1<s2, +1 if s1>s2 else 0
+    # return -1 if s1<s2, +1 if s1>s2 else 0 for equal
 
-    def parts(v: str) -> tuple[str, int]:
-        num = ""
-        while v and v[-1].isdigit():
-            num = v[-1] + num
-            v = v[:-1]
-        return v, int(num) if num else 0
+    def parts(s: str) -> list:
+        "Converts str into list of alternating str and int parts"
+        return [int(v) if v.isdigit() else v
+                  for v in re.split(r"(\d+)", s)]
 
     ps1 = parts(str(s1))
     ps2 = parts(str(s2))
@@ -403,15 +382,13 @@ def str_num_collate(s1: apsw.SQLiteValue, s2: apsw.SQLiteValue) -> int:
 
 connection.create_collation("strnum", str_num_collate)
 
-print()
-print("Using strnum")
+print("\nUsing strnum")
 for row in connection.execute("select * from names order by name collate strnum"):
     print(row)
 
 ### colnames: Accessing results by column name
 # You can access results by column name using :mod:`dataclasses`.
-# APSW provides :class:`apsw.ext.DataClassRowFactory` for names
-# instead
+# APSW provides :class:`apsw.ext.DataClassRowFactory` for names.
 
 import apsw.ext
 
@@ -588,8 +565,29 @@ rowid = connection.execute("select ROWID from blobby where x=1").get
 blob = connection.blob_open("main", "blobby", "y", rowid, True)
 blob.write(b"hello world")
 blob.seek(2000)
+blob.read(24)
+# seek relative to the end
+blob.seek(-32, 2)
 blob.write(b"hello world, again")
 blob.close()
+
+### backup: Backup an open database
+# You can :ref:`backup <backup>` a database that is open.  The pages are copied in
+# batches of your choosing and allow continued use of the source
+# database.
+
+# We will copy a disk database into this memory database
+destination = apsw.Connection(":memory:")
+
+# Copy into destination
+with destination.backup("main", connection, "main") as backup:
+    # The source database can change while doing the backup
+    # and the backup will still pick up those changes
+    while not backup.done:
+        backup.step(7)  # copy up to 7 pages each time
+        # monitor progress
+        print(backup.remaining, backup.page_count)
+
 
 ### authorizer: Authorizer (control what SQL can do)
 # You can allow, deny, or ignore what SQL does.  Use
@@ -626,16 +624,12 @@ connection.authorizer = None
 # :meth:`Connection.set_progress_handler` which lets you provide
 # feedback and allows cancelling.
 
-
-def some_numbers(how_many: int) -> Iterator[tuple[int]]:
-    for _ in range(how_many):
-        yield (random.randint(0, 9999999999), )
-
-
 # create a table with random numbers
 with connection:
     connection.execute("create table numbers(x)")
-    connection.executemany("insert into numbers values(?)", some_numbers(100))
+    connection.executemany("insert into numbers values(?)",
+                            ((random.randint(0, 9999999999), )
+                                for _ in range(100)))
 
 
 def progress_handler() -> bool:
@@ -678,7 +672,8 @@ def get_data_version(db):
 
 
 # Show starting values
-print("fcntl", get_data_version(connection), "pragma", connection.pragma("data_version"))
+print("fcntl", get_data_version(connection),
+      "pragma", connection.pragma("data_version"))
 
 # See the fcntl value versus pragma value
 for sql in (
@@ -691,7 +686,8 @@ for sql in (
 ):
     print(sql)
     connection.execute(sql)
-    print("fcntl", get_data_version(connection), "pragma", connection.pragma("data_version"))
+    print("fcntl", get_data_version(connection),
+          "pragma", connection.pragma("data_version"))
 
 ### commit_hook: Commit hook
 # A commit hook can allow or veto commits.  Register a commit hook
@@ -701,17 +697,18 @@ for sql in (
 def my_commit_hook() -> bool:
     print("in commit hook")
     hour = time.localtime()[3]
-    if hour < 8 or hour > 17:
-        print("no commits out of hours")
-        return True  # abort commits outside of 8am through 6pm
-    print("commits okay at this time")
-    return False  # let commit go ahead
+    if hour >= 8 and hour < 18:
+        print("commits okay at this time")
+        return False  # let commit go ahead
+    print("no commits out of hours")
+    return True  # abort commits outside of 8am through 6pm
 
 
 connection.set_commit_hook(my_commit_hook)
 try:
     with connection:
-        connection.execute("create table example(x,y,z); insert into example values (3,4,5)")
+        connection.execute("""create table example(x,y,z);
+                           insert into example values (3,4,5)""")
 except apsw.ConstraintError:
     print("commit was not allowed")
 
@@ -738,25 +735,23 @@ connection.execute("delete from names where name=?", ("file94", ))
 connection.set_update_hook(None)
 
 ### virtual_tables: Virtual tables
-# Virtual tables let you provide data on demand as a SQLite table so
-# you can use SQL queries against that data. :ref:`Read more about
-# virtual tables <virtualtables>`.
+# :ref:`Virtual tables <virtualtables>` let you provide data on demand
+# as a SQLite table so you can use SQL queries against that data.
+# Writing your own virtual table requires understanding how to return
+# less than all the data via the `BestIndex
+# <https://www.sqlite.org/vtab.html#the_xbestindex_method>`__ method.
 #
-# Writing your own virtual table requires understanding the
-# `BestIndex <https://www.sqlite.org/vtab.html#the_xbestindex_method>`__ method
-# as it is how you return less than all of the data.
+# You can export a Python function as a virtual table in 3 lines of
+# code using :func:`apsw.ext.make_virtual_module`, being able to
+# provide both positional and keyword arguments.
 #
-# These examples use :func:`apsw.ext.make_virtual_module` to wrap a
-# Python function, so you can have a virtual table in 3 lines of code.
 # For the first example you'll find :meth:`apsw.ext.generate_series`
 # useful instead.
 
-
-# 3 lines of code ...
+# Yield a row at a time
 def table_range(start=1, stop=100, step=1):
     for i in range(start, stop + 1, step):
         yield (i, )
-
 
 # set column names
 table_range.columns = ("value", )
@@ -779,30 +774,30 @@ print(apsw.ext.format_query_table(connection, query))
 # Expose the unicode database.
 import unicodedata
 
+# A more complex example exporting unicodedata module
+
 # The methods we will call on each codepoint
-unicode_methods = (unicodedata.name, unicodedata.decimal, unicodedata.digit, unicodedata.numeric, unicodedata.category,
-                   unicodedata.bidirectional, unicodedata.combining, unicodedata.east_asian_width, unicodedata.mirrored,
-                   unicodedata.decomposition)
+unicode_methods = ("name", "decimal", "digit", "numeric", "category", "combining",
+                   "bidirectional", "east_asian_width", "mirrored", "decomposition")
 
-
-# the function we will turn into a virtual table
+# the function we will turn into a virtual table returning
+# each row as a dict
 def unicode_data(start=0, stop=sys.maxunicode):
 
     # some methods raise ValueError on some codepoints
-    def call(meth, c):
+    def call(meth: str, c: str):
         try:
-            return meth(c)
+            return getattr(unicodedata, meth)(c)
         except ValueError:
             return None
 
     for c in range(start, stop + 1):
-        c = chr(c)
-        yield tuple(call(func, c) for func in unicode_methods)
+        yield {k: call(k, chr(c)) for k in unicode_methods}
 
 
 # setup column names and access
-unicode_data.columns = tuple(func.__name__ for func in unicode_methods)
-unicode_data.column_access = apsw.ext.VTColumnAccess.By_Index
+unicode_data.columns = unicode_methods
+unicode_data.column_access = apsw.ext.VTColumnAccess.By_Name
 
 # register
 apsw.ext.make_virtual_module(connection, "unicode_data", unicode_data)
@@ -810,19 +805,19 @@ apsw.ext.make_virtual_module(connection, "unicode_data", unicode_data)
 # how many codepoints are in each category?
 query = """
     SELECT count(*), category FROM unicode_data
-       WHERE start = 0x1000 AND stop = 0xffff
+       WHERE stop = 0xffff  -- BMP only
        GROUP BY category
        ORDER BY category
        LIMIT 10"""
 print(apsw.ext.format_query_table(connection, query))
 
 
-# A more complex example - given a list of directories return information about the files within
+# A more complex example - given a list of directories return information
+# about the files within them recursively
 def get_files_info(directories: str,
                    sep: str = os.pathsep,
                    *,
                    ignore_symlinks: bool = True) -> Iterator[dict[str, Any]]:
-    """Scan directories returning information about the files within"""
     for root in directories.split(sep):
         with os.scandir(root) as sd:
             for entry in sd:
@@ -833,13 +828,13 @@ def get_files_info(directories: str,
                 elif entry.is_file():
                     s = entry.stat()
                     yield {
+                        "directory": root,
+                        "name": entry.name,
+                        "extension": os.path.splitext(entry.name)[1],
                         **{
-                            "directory": root,
-                            "name": entry.name,
-                            "extension": os.path.splitext(entry.name)[1],
-                        },
-                        **{k: getattr(s, k)
-                        for k in get_files_info.stat_columns}
+                            k: getattr(s, k)
+                            for k in get_files_info.stat_columns
+                        }
                     }
 
 
@@ -851,8 +846,10 @@ get_files_info.columns, get_files_info.column_access = \
 
 apsw.ext.make_virtual_module(connection, "files_info", get_files_info)
 
-# all the sys.path directories except our current one
-bindings = (os.pathsep.join(p for p in sys.path if os.path.isdir(p) and not os.path.samefile(p, ".")), )
+# all the sys.path directories
+bindings = (os.pathsep.join(p for p in sys.path if os.path.isdir(p)
+            #  except our current one
+            and not os.path.samefile(p, ".")), )
 
 # Find the 3 biggest files that aren't libraries
 query = """SELECT st_size, directory, name
@@ -881,17 +878,17 @@ print(apsw.ext.format_query_table(connection, query, bindings))
 connection.create_module("files_info", None)
 
 ### vfs: VFS - Virtual File System
-# VFS lets you control access to the filesystem from SQLite.  APSW
+# :ref:`VFS <vfs>` lets you control how SQLite accesses storage.  APSW
 # makes it easy to "inherit" from an existing VFS and monitor or alter
-# data as it flows through.  Read more about :ref:`VFS <vfs>`.
+# data as it flows through.   You can also implement your own
+# :class:`pragmas <VFSFcntlPragma>`.
 
-# This example VFS "obfuscates" the database file contents by xor all
+# This example VFS obfuscates the database file contents by xor all
 # bytes with 0xa5.  URI parameters are also shown as a way you can
 # pass additional information for files.
 
 
-def obfuscate(data):
-    if not data: return data
+def obfuscate(data: bytes):
     return bytes([x ^ 0xa5 for x in data])
 
 
@@ -906,15 +903,21 @@ class ObfuscatedVFS(apsw.VFS):
     # We want to return our own file implementation, but also
     # want it to inherit
     def xOpen(self, name, flags):
+        in_flags = []
+        for k, v in apsw.mapping_open_flags.items():
+            if isinstance(k, int) and flags[0] & k:
+                in_flags.append(v)
+        print("xOpen flags", " | ".join(in_flags))
+
         if isinstance(name, apsw.URIFilename):
-            print("xOpen of", name.filename())
+            print("   uri filename", name.filename())
             # We can look at uri parameters
-            print("fast is", name.uri_parameter("fast"))
-            print("level is", name.uri_int("level", 3))
-            print("warp is", name.uri_boolean("warp", False))
-            print("notpresent is", name.uri_parameter("notpresent"))
+            print("   fast is", name.uri_parameter("fast"))
+            print("   level is", name.uri_int("level", 3))
+            print("   warp is", name.uri_boolean("warp", False))
+            print("   notpresent is", name.uri_parameter("notpresent"))
         else:
-            print("xOpen of", name)
+            print("   filename", name)
         return ObfuscatedVFSFile(self.base_vfs, name, flags)
 
 
@@ -937,10 +940,12 @@ class ObfuscatedVFSFile(apsw.VFSFile):
         # implement our own pragma
         p = apsw.VFSFcntlPragma(ptr)
         print(f"pragma received { p.name } = { p.value }")
-        p.result = "orange"
-        # return False if you don't understand
-        return True
-
+        # what do we understand?
+        if p.name == "my_custom_pragma":
+            p.result = "orange"
+            return True
+        # We did not understand
+        return False
 
 # To register the VFS we just instantiate it
 obfuvfs = ObfuscatedVFS()
@@ -1002,18 +1007,6 @@ except apsw.TooBigError:
 # reset back to largest value
 connection.limit(apsw.SQLITE_LIMIT_LENGTH, 0x7fffffff)
 
-### backup: Backup an open database
-# You can backup a database that is open.  The pages are copied in
-# batches of your choosing and allow continued use of the database.
-# :ref:`Read more <backup>`.
-
-# We will copy a disk database into a memory database
-memcon = apsw.Connection(":memory:")
-
-# Copy into memory
-with memcon.backup("main", connection, "main") as backup:
-    backup.step(10)  # copy 10 pages in each batch
-
 ### shell: Shell
 # APSW includes a :ref:`shell <shell>`  like the one in `SQLite
 # <https://sqlite.org/cli.html>`__, and is also extensible from
@@ -1059,10 +1052,13 @@ print("\nDump output\n")
 print(output.getvalue())
 
 ### status: Statistics
-# SQLite provides statistics by :meth:`status`
+# SQLite provides statistics by :meth:`status`.  Use :meth:`Connection.status`
+# for per connection statistics.
 
 current_usage, max_usage = apsw.status(apsw.SQLITE_STATUS_MEMORY_USED)
 print(f"SQLite memory usage { current_usage } max { max_usage }")
+schema_used, _ = connection.status(apsw.SQLITE_DBSTATUS_SCHEMA_USED)
+print(f"{ schema_used } bytes used to store schema for this connection")
 
 ### trace_v2: Tracing
 # This shows using :meth:`Connection.trace_v2`
@@ -1096,7 +1092,11 @@ def trace_hook(trace: dict) -> None:
     print("code is ", apsw.mapping_trace_codes[trace["code"]])
     print(pprint.pformat(trace), "\n")
 
-connection.trace_v2(apsw.SQLITE_TRACE_STMT | apsw.SQLITE_TRACE_PROFILE | apsw.SQLITE_TRACE_ROW, trace_hook)
+
+connection.trace_v2(apsw.SQLITE_TRACE_STMT
+                     | apsw.SQLITE_TRACE_PROFILE
+                     | apsw.SQLITE_TRACE_ROW,
+                    trace_hook)
 
 # We will get one each of the trace events
 for _ in connection.execute(query):
@@ -1109,8 +1109,7 @@ connection.trace_v2(0, None)
 # :meth:`apsw.ext.format_query_table` makes it easy
 # to format the results of a query in an automatic
 # adjusting table, colour, sanitizing strings,
-# truncation etc.  The documentation viewer may not
-# show the lines joining, but they do on terminals.
+# truncation etc.
 
 # Create a table with some dummy data
 connection.execute(
@@ -1124,11 +1123,11 @@ query = "SELECT * FROM dummy"
 # default
 print(apsw.ext.format_query_table(connection, query))
 
-# no unicode and maximum sanitize the text
+# no unicode boxes and maximum sanitize the text
 kwargs = {"use_unicode": False, "string_sanitize": 2}
 print(apsw.ext.format_query_table(connection, query, **kwargs))
 
-# lets have unicode and make things narrow with no word wrap
+# lets have unicode boxes and make things narrow with no word wrap
 kwargs = {"use_unicode": True, "string_sanitize": 0, "text_width": 30, "word_wrap": False}
 print(apsw.ext.format_query_table(connection, query, **kwargs))
 
@@ -1136,16 +1135,12 @@ print(apsw.ext.format_query_table(connection, query, **kwargs))
 kwargs = {"quote": True}
 print(apsw.ext.format_query_table(connection, query, **kwargs))
 
-# do look at the format_query_table doc for more output tweaking
-
 ### cleanup:  Cleanup
 # As a general rule you do not need to do any cleanup.  Standard
 # Python garbage collection will take of everything.  Even if the
 # process crashes with a connection in the middle of a transaction,
 # the next time SQLite opens that database it will automatically
-# rollback the partial data.
+# rollback the incomplete transaction.
 
-# You close connections manually (useful if you want to catch exceptions)
+# You can close connections manually
 connection.close()
-#  You can call close multiple times, and also indicate to ignore exceptions
-connection.close(True)

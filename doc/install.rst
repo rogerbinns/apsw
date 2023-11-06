@@ -3,6 +3,8 @@ Installation and customization
 
 .. currentmodule:: apsw
 
+.. _pypi:
+
 PyPI (recommended)
 ------------------
 
@@ -10,7 +12,7 @@ APSW is on PyPI at https://pypi.org/project/apsw/
 
 It can be installed in the same way as other packages::
 
-    pip install apsw
+    python3 -m pip install apsw
 
 When you install from PyPI:
 
@@ -24,7 +26,7 @@ When you install from PyPI:
   uses SQLite, but will not know of or be affected by the SQLite
   inside APSW.
 
-* All :doc:`extensions <extensions>` are enabled
+* All :doc:`extensions <extensions>` are enabled, except ICU.
 
 * `SQLITE_ENABLE_COLUMN_METADATA <https://www.sqlite.org/compile.html#enable_column_metadata>`__
   is enabled, providing :attr:`Cursor.description_full`
@@ -54,80 +56,16 @@ APSW uses the system wide SQLite library.
       - Install `dev-python/apsw <https://packages.gentoo.org/package/dev-python/apsw>`_
     * - Arch
       - Install `python-apsw <https://www.archlinux.org/packages/?q=apsw>`__
+    * - FreeBSD
+      - `databases/py-apsw <https://cgit.freebsd.org/ports/tree/databases/py-apsw>`__ in `Ports <https://docs.freebsd.org/en/books/handbook/ports/>`__
 
 There is a `full list (150+)
 <https://repology.org/project/python:apsw/versions>`__ of
 distributions, the package name for APSW, and what APSW version they
 are currently on.
 
-.. _build:
-
-Building and customization
---------------------------
-
-There are currently several different ways (that all work) from the Python packaging
-solutions.
-
-.. _setup_py_flags:
-
-Build process
-+++++++++++++
-
-No matter what tool is used, ultimately it invokes :file:`setup.py`.  This
-is a standard way of building C extensions originally provided by
-distutils, and now by setuptools.
-
-A series of commands and options are given to :file:`setup.py` in this pattern:
-
-.. code-block:: shell
-
-    python setup.py cmdone --option --option value cmdtwo --option \
-       cmdthree --option --option value
-
-The only necessary command is **build**.  You can get help by `--help`:
-
-.. code-block:: shell
-
-    python setup.py build --help
-
-Each command takes options which can be specified on the command line,
-or in a configuration file named :file:`setup.cfg` or
-:file:`setup.apsw`.  The leading double dash on options is omitted,
-and dashes should become underscores.
-
-.. literalinclude:: ../tools/setup-pypi.cfg
-   :language: ini
-
-SQLite options
-++++++++++++++
-
-It is important to understand `SQLite's compile time options
-<https://www.sqlite.org/compile.html>`__.  They provide control
-over functionality and APIs included or excluded from SQLite.
-
-APSW needs to know the options chosen so it can adapt.  For example if
-extension loading is omitted from SQLite then APSW also needs to omit
-the same functionality, otherwise compilation or linking will fail.
-
-Finding SQLite
-++++++++++++++
-
-APSW can fetch SQLite as detailed below, and places it in a
-:file:`sqlite3/` subdirectory.  You can place your own SQLite in that
-directory.  If there is a :file:`sqlite3.c` (ie the `amalgamation
-<https://www.sqlite.org/amalgamation.html>`__) then it will be
-statically included inside APSW.  A compiled SQLite will be picked up
-if present.  If none of that is present, then the standard compiler
-locations are used (eg :file:`/usr/include` on Unix).
-
-If :file:`sqlite3/sqlite3config.h` is present it is included before
-:file:`sqlite3/sqlite3.c`.  It is a good location to put `platform
-configuration
-<https://www.sqlite.org/compile.html#_platform_configuration>`__ which
-APSW's fetch does automatically by running :file:`configure`.
-
 Source
-++++++
+------
 
 It is recommended you get the source from `Github releases
 <https://github.com/rogerbinns/apsw/releases>`__.  If you get the
@@ -152,7 +90,7 @@ edit the :file:`setup.apsw` file inside.
 Verifying your download
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-`Source releases <https://github.com/rogerbinns/apsw/releases>`__ are
+Github `source releases <https://github.com/rogerbinns/apsw/releases>`__ are
 digitally signed so you can verify they have not been tampered with.
 Download and extract the corresponding zip file of signatures.  These
 instructions are for `GNU Privacy Guard <https://www.gnupg.org/>`__.
@@ -166,7 +104,7 @@ Verify
 
   .. code-block:: console
 
-      $ gpg --verify apsw-3.43.2.0.zip.asc
+      $ gpg --verify apsw-3.44.0.0.zip.asc
       gpg: Signature made ... date ... using DSA key ID 0DFBD904
       gpg: Good signature from "Roger Binns <rogerb@rogerbinns.com>"
 
@@ -196,15 +134,88 @@ Getting the signing key
   Repeat the verify step.
 
 
-.. _setup_build_flags:
+.. _build:
 
-Commands and their options
-++++++++++++++++++++++++++
+Building and customization
+--------------------------
+
+APSW is configured for standard building (:pep:`518`)
+
+.. code-block:: console
+
+    $ python3 -m build
+
+You will need to update the MANIFEST first if you are providing your
+own SQLite, or if you are providing a ``setup.apsw`` with custom
+configuration. `setuptools
+<https://setuptools.pypa.io/en/latest/index.html>`__ is used to
+compile the extension.  You can use it directly instead by invoking
+``setup.py``.
+
+Build process
+^^^^^^^^^^^^^
+
+A series of commands and options are given to :file:`setup.py` in this pattern:
+
+.. code-block:: shell
+
+    python setup.py cmdone --option --option value cmdtwo --option \
+       cmdthree --option --option value
+
+The only necessary command is **build**.  You can get help by `--help`:
+
+.. code-block:: shell
+
+    python setup.py build --help
+
+Each command takes options which can be specified on the command line,
+or in a configuration file named :file:`setup.cfg` or
+:file:`setup.apsw`.  The leading double dash on options is omitted,
+and dashes inside should become underscores.
+
+.. literalinclude:: ../tools/setup-pypi.cfg
+   :language: ini
+
+SQLite options
+^^^^^^^^^^^^^^
+
+It is important to understand `SQLite's compile time options
+<https://www.sqlite.org/compile.html>`__.  They provide control
+over functionality and APIs included or excluded from SQLite.
+
+APSW needs to know the options chosen so it can adapt.  For example if
+extension loading is omitted from SQLite then APSW also needs to omit
+the same functionality, otherwise compilation or linking will fail.
+
+Finding SQLite
+^^^^^^^^^^^^^^
+
+APSW can fetch SQLite as detailed below, and places it in a
+:file:`sqlite3/` subdirectory.  You can place your own SQLite in that
+directory.  If there is a :file:`sqlite3.c` (ie the `amalgamation
+<https://www.sqlite.org/amalgamation.html>`__) then it will be
+statically included inside APSW.  A compiled SQLite will be picked up
+if present.  If none of that is present, then the standard compiler
+locations are used (eg :file:`/usr/include` on Unix).
+
+If :file:`sqlite3/sqlite3config.h` is present it is included before
+:file:`sqlite3/sqlite3.c`.  It is a good location to put `platform
+configuration
+<https://www.sqlite.org/compile.html#_platform_configuration>`__ which
+APSW's fetch does automatically by running :file:`configure`.
+
+
+.. _setup_py_flags:
+
+setup.py commands and their options
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 These are the relevant :file:`setup.py` commands and their relevant options.
 
+.. _setup_build_flags:
+
 build
-^^^^^
+#####
 
 Does the complete build.  This will invoke `build_ext` - use only one of
 `build` or `build_ext`.
@@ -232,7 +243,7 @@ Does the complete build.  This will invoke `build_ext` - use only one of
 .. _fetch_checksums:
 
 fetch
-^^^^^
+#####
 
 This provides more fine grained control over what is fetched.
 
@@ -256,9 +267,9 @@ This provides more fine grained control over what is fetched.
 .. _matching_sqlite_options:
 
 build_ext
-^^^^^^^^^
+#########
 
-This performs the compilation of the C code.
+This performs the compilation of the C code, and provides more control than build.
 
 ..  list-table::
     :widths: auto
@@ -302,38 +313,45 @@ happen or doesn't happen again.:
 
 .. code-block:: output
 
-  $ python3 -m apsw.tests
-                  Python  /usr/bin/python3 sys.version_info(major=3, minor=10, micro=4, releaselevel='final', serial=0)
-  Testing with APSW file  /space/apsw/apsw/__init__.cpython-310-x86_64-linux-gnu.so
-            APSW version  3.39.2.0
-      SQLite lib version  3.39.2
-  SQLite headers version  3039002
+                  Python  /usr/bin/python3 sys.version_info(major=3, minor=11, micro=6, releaselevel='final', serial=0) 64bit ELF
+  Testing with APSW file  /space/apsw/apsw/__init__.cpython-311-x86_64-linux-gnu.so
+            APSW version  3.44.0.0
+      SQLite lib version  3.44.0
+  SQLite headers version  3044000
       Using amalgamation  True
-  ...............................................................................................
+  .............................................................A message due to RecursionError is possible, and what is being tested
+  object address  : 0x7fea3c94ada0
+  object refcount : 1
+  object type     : 0x9de7a0
+  object type name: TypeError
+  object repr     :
+  lost sys.stderr
+  object address  : 0x7fea3c94ad40
+  object refcount : 1
+  object type     : 0x9de7a0
+  object type name: TypeError
+  object repr     :
+  lost sys.stderr
+  ................................................................
   ----------------------------------------------------------------------
-  Ran 95 tests in 25.990s
+  Ran 125 tests in 26.783s
 
   OK
 
 The tests also ensure that as much APSW code as possible is executed
 including alternate paths through the code.  95.5% of the APSW code is
-executed by the tests. If you checkout the APSW source then there is a
-script :source:`tools/coverage.sh` that enables extra code that
-deliberately induces extra conditions such as memory allocation
-failures, SQLite returning undocumented error codes etc. That brings
-coverage up to 99.6% of the code.
+executed by the tests. In the source, there is a script that enables
+extra code that deliberately induces extra conditions such as memory
+allocation failures, SQLite returning error codes, Python APIs
+erroring etc.  That brings coverage up to 99.6% of the code.
 
-A memory checker `Valgrind <https://valgrind.org>`_ is used while
-running the test suite. The test suite is run multiple times to make
-any memory leaks or similar issues stand out. A checking version of
-Python is also used.  See :source:`tools/valgrind.sh` in the source.
-The same testing is also done with the `compiler's sanitizer option
-<https://en.wikipedia.org/wiki/AddressSanitizer>`__.
+A memory checker `Valgrind <https://valgrind.org>`_  and  `compiler
+sanitizer options <https://en.wikipedia.org/wiki/AddressSanitizer>`__
+are also used for further validation.
 
 To ensure compatibility with the various Python versions, a script
 downloads and compiles all supported Python versions in both debug and
 release configurations (and 32 and 64 bit) against the APSW and SQLite
-supported versions running the tests. See :source:`tools/megatest.py`
-in the source.
+supported versions running the tests.
 
 In short both SQLite and APSW have a lot of testing!

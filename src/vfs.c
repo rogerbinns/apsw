@@ -11,18 +11,12 @@
 Virtual File System (VFS)
 *************************
 
-SQLite 3.6 added `VFS functionality
-<https://sqlite.org/c3ref/vfs.html>`__ which defines the interface
-between the SQLite core and the underlying operating system. The
-majority of the functionality deals with files. APSW exposes this
-functionality letting you provide your own routines. You can also
-*inherit* from an existing vfs making it easy to augment or override
-specific routines. For example you could obfuscate your database by
-XORing the data implemented by augmenting the read and write
-methods. The method names are exactly the same as SQLite uses making
-it easier to read the SQLite documentation, trouble tickets, web
-searches or mailing lists. The SQLite convention results in names like
-xAccess, xCurrentTime and xWrite.
+`VFS <https://sqlite.org/c3ref/vfs.html>`__ defines
+the interface between the SQLite core and the underlying operating
+system. The majority of the functionality deals with files. APSW
+exposes this functionality letting you provide your own routines.
+You can also *inherit* from an existing vfs making it easy to augment
+or override specific routines.
 
 You specify which VFS to use as a parameter to the :class:`Connection`
 constructor.
@@ -49,7 +43,7 @@ the exception does not map to any specific error code then
 *SQLITE_ERROR* which corresponds to :exc:`SQLError` is returned to SQLite.
 
 The SQLite code that deals with VFS errors behaves in varying
-ways. Some routines have no way to return an error (eg `xDlOpen
+ways. Some routines have no way to return an error: eg `xDlOpen
 <https://sqlite.org/c3ref/vfs.html>`_ just returns zero/NULL on
 being unable to load a library, `xSleep
 <https://sqlite.org/c3ref/vfs.html>`_ has no error return
@@ -63,8 +57,8 @@ journals being detected, locking, and read/writes for
 playback/rollback.
 
 If multiple exceptions occur during the same SQLite control flow, then
-they will be :doc:`chained <exceptions>` together.  Remember that
-:ref:`augmented stack traces <augmentedstacktraces>` are available
+they will be :doc:`chained <exceptions>` together.
+:ref:`Augmented stack traces <augmentedstacktraces>` are available
 which significantly increase detail about the exceptions and help with
 debugging.
 
@@ -840,7 +834,7 @@ apswvfs_xDlOpen(sqlite3_vfs *vfs, const char *zName)
    anything that is convenient for you (eg an index into an
    array). You can use ctypes to load a library::
 
-     def xDlOpen(name):
+     def xDlOpen(name: str):
         return ctypes.cdll.LoadLibrary(name)._handle
 
 */
@@ -898,7 +892,7 @@ static void (*apswvfs_xDlSym(sqlite3_vfs *vfs, void *handle, const char *zName))
     Returns the address of the named symbol which will be called by
     SQLite. On error you should return 0 (NULL). You can use ctypes::
 
-      def xDlSym(ptr, name):
+      def xDlSym(ptr: int, name: str):
          return _ctypes.dlsym (ptr, name)  # Linux/Unix/Mac etc (note leading underscore)
          return ctypes.win32.kernel32.GetProcAddress (ptr, name)  # Windows
 
@@ -958,7 +952,7 @@ apswvfs_xDlClose(sqlite3_vfs *vfs, void *handle)
     returned from :meth:`~VFS.xDlOpen`.  You can use ctypes to do
     this::
 
-      def xDlClose(handle):
+      def xDlClose(handle: int):
          # Note leading underscore in _ctypes
          _ctypes.dlclose(handle)       # Linux/Mac/Unix
          _ctypes.FreeLibrary(handle)   # Windows
@@ -1123,11 +1117,10 @@ apswvfs_xRandomness(sqlite3_vfs *vfs, int nByte, char *zOut)
 
 /** .. method:: xRandomness(numbytes: int) -> bytes
 
-  This method is called once when SQLite needs to seed the random
-  number generator. It is called on the default VFS only. It is not
-  called again, even across :meth:`apsw.shutdown` calls.  You can
-  return less than the number of bytes requested including None. If
-  you return more then the surplus is ignored.
+  This method is called once on the default VFS when SQLite needs to
+  seed the random number generator.  You can return less than the
+  number of bytes requested including None. If you return more then
+  the surplus is ignored.
 
 */
 static PyObject *
@@ -1252,8 +1245,7 @@ apswvfs_xCurrentTime(sqlite3_vfs *vfs, double *julian)
   Return the `Julian Day Number
   <https://en.wikipedia.org/wiki/Julian_day>`_ as a floating point
   number where the integer portion is the day and the fractional part
-  is the time. Do not adjust for timezone (ie use `UTC
-  <https://en.wikipedia.org/wiki/Universal_Time>`_).
+  is the time.
 */
 static PyObject *
 apswvfspy_xCurrentTime(APSWVFS *self)
@@ -1409,8 +1401,8 @@ end:
 
 /** .. method:: xGetLastError() -> tuple[int, str]
 
-   This method is to return an integer error code and (optional) text describing
-   the last error that happened in this thread.
+  Return an integer error code and (optional) text describing
+  the last error code and message that happened in this thread.
 
 */
 static PyObject *
@@ -1512,8 +1504,7 @@ apswvfs_xSetSystemCall(sqlite3_vfs *vfs, const char *zName, sqlite3_syscall_ptr 
     Raise an exception to return an error.  If the system call does
     not exist then raise :exc:`NotFoundError`.
 
-    If `name` is None, then all systemcalls are reset to their defaults.  This
-    behaviour is not documented.
+    If `name` is None, then all systemcalls are reset to their defaults.
 
     :returns: True if the system call was set.  False if the system
       call is not known.
@@ -1951,10 +1942,6 @@ static int is_apsw_vfs(sqlite3_vfs *vfs)
     if you want the file object returned from :meth:`VFS.xOpen` to
     inherit from an existing VFS implementation.
 
-    .. note::
-
-       All file sizes and offsets are 64 bit quantities even on 32 bit
-       operating systems.
 */
 
 /** .. method:: excepthook(etype: type[BaseException], evalue: BaseException, etraceback: Optional[types.TracebackType]) ->None
@@ -2009,7 +1996,7 @@ APSWVFSFile_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUS
   return (PyObject *)self;
 }
 
-/** .. method:: __init__(vfs: str, filename: str | URIFilename, flags: list[int])
+/** .. method:: __init__(vfs: str, filename: str | URIFilename, flags: list[int, int])
 
     :param vfs: The vfs you want to inherit behaviour from.  You can
        use an empty string ``""`` to inherit from the default vfs.
@@ -2206,7 +2193,7 @@ finally:
     reads to be a fatal error.
 
     :param amount: Number of bytes to read
-    :param offset: Where to start reading. This number may be 64 bit once the database is larger than 2GB.
+    :param offset: Where to start reading.
 */
 static PyObject *
 apswvfsfilepy_xRead(APSWVFSFile *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
@@ -2291,7 +2278,7 @@ apswvfsfile_xWrite(sqlite3_file *file, const void *buffer, int amount, sqlite3_i
   underlying operating system to do a partial write. You will need to
   write the remaining data.
 
-  :param offset: Where to start writing. This number may be 64 bit once the database is larger than 2GB.
+  :param offset: Where to start writing.
 */
 
 static PyObject *
@@ -2524,7 +2511,7 @@ apswvfsfile_xSync(sqlite3_file *file, int flags)
   Ensure data is on the disk platters (ie could survive a power
   failure immediately after the call returns) with the `sync flags
   <https://sqlite.org/c3ref/c_sync_dataonly.html>`_ detailing what
-  needs to be synced.  You can sync more than what is requested.
+  needs to be synced.
 */
 static PyObject *
 apswvfsfilepy_xSync(APSWVFSFile *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
@@ -2686,8 +2673,7 @@ apswvfsfile_xFileSize(sqlite3_file *file, sqlite3_int64 *pSize)
 
 /** .. method:: xFileSize() -> int
 
-  Return the size of the file in bytes.  Remember that file sizes are
-  64 bit quantities even on 32 bit operating systems.
+  Return the size of the file in bytes.
 */
 static PyObject *
 apswvfsfilepy_xFileSize(APSWVFSFile *self)
@@ -2812,19 +2798,18 @@ apswvfsfile_xFileControl(sqlite3_file *file, int op, void *pArg)
 
    :returns: A boolean indicating if the op was understood
 
-   As of SQLite 3.6.10, this method is called by SQLite if you have
-   inherited from an underlying VFSFile.  Consequently ensure you pass
-   any unrecognised codes through to your super class.  For example::
+   Ensure you pass any unrecognised codes through to your super class.
+   For example::
 
-            def xFileControl(self, op, ptr):
-                if op==1027:
-                    process_quick(ptr)
-                elif op==1028:
-                    obj=ctypes.py_object.from_address(ptr).value
-                else:
-                    # this ensures superclass implementation is called
-                    return super().xFileControl(op, ptr)
-    # we understood the op
+       def xFileControl(self, op: int, ptr: int) -> bool:
+           if op == 1027:
+               process_quick(ptr)
+           elif op == 1028:
+               obj=ctypes.py_object.from_address(ptr).value
+           else:
+               # this ensures superclass implementation is called
+               return super().xFileControl(op, ptr)
+          # we understood the op
           return True
 */
 static PyObject *
@@ -3018,10 +3003,9 @@ static PyTypeObject APSWVFSFileType =
 
 /** .. class:: URIFilename
 
-    SQLite uses a convoluted method of storing `uri parameters
-    <https://sqlite.org/uri.html>`__ after the filename binding the
-    C filename representation and parameters together.  This class
-    encapsulates that binding.  The :ref:`example <example_vfs>` shows
+    SQLite packs `uri parameters
+    <https://sqlite.org/uri.html>`__ and the filename together   This class
+    encapsulates that packing.  The :ref:`example <example_vfs>` shows
     usage of this class.
 
     Your :meth:`VFS.xOpen` method will generally be passed one of

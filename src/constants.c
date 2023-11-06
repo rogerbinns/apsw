@@ -12,7 +12,7 @@ add_apsw_constants(PyObject *module)
 
     assert(!PyErr_Occurred());
 
-    /* Allowed return values from [sqlite3_txn_state()] */
+    /* Allowed return values from sqlite3_txn_state() */
     the_dict = Py_BuildValue(
         "{siissiissiis}",
         "SQLITE_TXN_NONE", SQLITE_TXN_NONE, SQLITE_TXN_NONE, "SQLITE_TXN_NONE",

@@ -182,11 +182,8 @@ def classify(doc: list[str]) -> dict | None:
     doc = doc[1:]
     while doc and not doc[0].strip():
         doc = doc[1:]
-    while not doc[-1].strip():
+    while doc and not doc[-1].strip():
         doc = doc[:-1]
-
-    if not doc:
-        return None
 
     doc = [f"{ line }\n" for line in textwrap.dedent("".join(doc) + "\n").strip().split("\n")]
 

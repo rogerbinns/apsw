@@ -19,86 +19,16 @@ obtain a cursor behind the scenes.
 If you need a cursor you should call :meth:`~Connection.cursor` on your
 database::
 
-  db=apsw.Connection("databasefilename")
-  cursor=db.cursor()
+  db = apsw.Connection("databasefilename")
+  cursor = db.cursor()
 
-A cursor executes SQL::
+The :ref:`example <example_executing_sql>` shows how to execute SQL and
+how to provide values used in queries (bindings).
 
-  cursor.execute("create table example(title, isbn)")
-
-You can also read data back.  The row is returned as a tuple of the
-column values::
-
-  for row in cursor.execute("select * from example"):
-     print(row)
-
-There are two ways of supplying data to a query.  The **really bad** way is to compose a string::
-
-  sql="insert into example values('%s', %d)" % ("string", 8390823904)
-  cursor.execute(sql)
-
-If there were any single quotes in string then you would have invalid
-syntax.  Additionally this is how `SQL injection attacks
-<https://en.wikipedia.org/wiki/SQL_injection>`_ happen. Instead you should use bindings::
-
-  sql="insert into example values(?, ?)"
-  cursor.execute(sql, ("string", 8390823904))
-
-  # You can also use dictionaries (with colon, $, or @ before names)
-  sql="insert into example values(:title, :isbn)"
-  cursor.execute(sql, {"title": "string", "isbn": 8390823904})
-
-  # You can use local variables as the dictionary
-  title="..."
-  isbn="...."
-  cursor.execute(sql, locals())
-
-Cursors are cheap.  Use as many as you need.  It is safe to use them
-across threads, such as calling :meth:`~Cursor.execute` in one thread,
-passing the cursor to another thread that then calls
-`next <https://docs.python.org/3/library/functions.html?highlight=next#next>`__.  The only thing you can't do is call methods at
-exactly the same time on the same cursor in two different threads - eg
-trying to call :meth:`~Cursor.execute` in both at the same time, or
-:meth:`~Cursor.execute` in one and `next <https://docs.python.org/3/library/functions.html?highlight=next#next>`__ in another.
-(If you do attempt this, it will be detected and
-:exc:`ThreadingViolationError` will be raised.)
-
-Behind the scenes a :class:`Cursor` maps to a `SQLite statement
-<https://sqlite.org/c3ref/stmt.html>`_.  APSW maintains a
-:ref:`cache <statementcache>` so that the mapping is very fast, and the
+Cursors are cheap.  Use as many as you need. Behind the scenes a
+:class:`Cursor` maps to a `SQLite statement <https://sqlite.org/c3ref/stmt.html>`_.
+APSW maintains a :ref:`cache <statementcache>` so that the mapping is very fast, and the
 SQLite objects are reused when possible.
-
-A unique feature of APSW is that your query can be multiple semi-colon
-separated statements.  For example::
-
-  cursor.execute("select ... ; insert into ... ; update ... ; select ...")
-
-.. note::
-
-  SQLite fetches data as it is needed.  If table *example* had 10
-  million rows it would only get the next row as requested.  This
-  code would not work as expected::
-
-    for row in cursor.execute("select * from example"):
-       cursor.execute("insert .....")
-
-  The nested :meth:`~Cursor.execute` would start a new query
-  abandoning any remaining results from the ``SELECT`` cursor.  There are two
-  ways to work around this.  Use a different cursor::
-
-    for row in cursor1.execute("select * from example"):
-       cursor2.execute("insert ...")
-
-  You can also get all the rows immediately by filling in a list::
-
-    rows=list( cursor.execute("select * from example") )
-    for row in rows:
-       cursor.execute("insert ...")
-
-  This last approach is recommended since you don't have to worry
-  about the database changing while doing the ``select``.  You should
-  also understand transactions and where to put the transaction
-  boundaries.
 
 .. note::
 
@@ -113,14 +43,11 @@ separated statements.  For example::
 
   * `SQLite transactions <https://sqlite.org/lang_transaction.html>`_
   * `Atomic commit <https://sqlite.org/atomiccommit.html>`_
-  * `Example of changing the database while running a query problem <https://www.mail-archive.com/sqlite-users@sqlite.org/msg42660.html>`_
   * :ref:`Benchmarking`
 
 */
 
 /** .. class:: Cursor
-
-  You obtain cursors by calling :meth:`Connection.cursor`.
 */
 
 /* CURSOR TYPE */
@@ -459,52 +386,18 @@ error:
 
    If you are trying to get information about a table or view,
    then `pragma table_info <https://sqlite.org/pragma.html#pragma_table_info>`__
-   is better.
+   is better.  If you want to know up front what columns and other
+   details a query does then :func:`apsw.ext.query_info` is useful.
 
    Returns a tuple describing each column in the result row.  The
-   return is identical for every row of the results.  You can only
-   call this method once you have started executing a statement and
-   before you have finished::
-
-      # This will error
-      cursor.get_description()
-
-      for row in cursor.execute("select ....."):
-         # this works
-         print (cursor.get_description())
-         print (row)
+   return is identical for every row of the results.
 
    The information about each column is a tuple of ``(column_name,
    declared_column_type)``.  The type is what was declared in the
    ``CREATE TABLE`` statement - the value returned in the row will be
-   whatever type you put in for that row and column.  (This is known
-   as `manifest typing <https://sqlite.org/different.html#typing>`_
-   which is also the way that Python works.  The variable ``a`` could
-   contain an integer, and then you could put a string in it.  Other
-   static languages such as C or other SQL databases only let you put
-   one type in - eg ``a`` could only contain an integer or a string,
-   but never both.)
+   whatever type you put in for that row and column.
 
-   Example::
-
-      cursor.execute("create table books(title string, isbn number, wibbly wobbly zebra)")
-      cursor.execute("insert into books values(?,?,?)", (97, "fjfjfj", 3.7))
-      cursor.execute("insert into books values(?,?,?)", ("fjfjfj", 3.7, 97))
-
-      for row in cursor.execute("select * from books"):
-         print (cursor.get_description())
-         print (row)
-
-   Output::
-
-     # row 0 - description
-     (('title', 'string'), ('isbn', 'number'), ('wibbly', 'wobbly zebra'))
-     # row 0 - values
-     (97, 'fjfjfj', 3.7)
-     # row 1 - description
-     (('title', 'string'), ('isbn', 'number'), ('wibbly', 'wobbly zebra'))
-     # row 1 - values
-     ('fjfjfj', 3.7, 97)
+   See the :ref:`query_info example <example_query_details>`.
 
    -* sqlite3_column_name sqlite3_column_decltype
 
@@ -519,8 +412,8 @@ static PyObject *APSWCursor_get_description(APSWCursor *self)
 
     Based on the `DB-API cursor property
     <https://www.python.org/dev/peps/pep-0249/>`__, this returns the
-    same as :meth:`get_description` but with 5 Nones appended.  See
-    also :issue:`131`.
+    same as :meth:`get_description` but with 5 Nones appended because
+    SQLite does not have the information.
 */
 
 static PyObject *APSWCursor_getdescription_dbapi(APSWCursor *self)
@@ -995,37 +888,6 @@ APSWCursor_step(APSWCursor *self)
     :param explain: If 0 or greater then the statement is passed to `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html>`__
        where you can force it to not be an explain, or force explain or explain query plan.
 
-    If you use numbered bindings in the query then supply a sequence.
-    Any sequence will work including lists and iterators.  For
-    example::
-
-      cursor.execute("insert into books values(?,?)", ("title", "number"))
-
-    .. note::
-
-      A common gotcha is wanting to insert a single string but not
-      putting it in a tuple::
-
-        cursor.execute("insert into books values(?)", "a title")
-
-      The string is a sequence of 8 characters and so it will look
-      like you are supplying 8 bindings when only one is needed.  Use
-      a one item tuple with a trailing comma like this::
-
-        cursor.execute("insert into books values(?)", ("a title",) )
-
-    If you used names in the statement then supply a dictionary as the
-    binding.  It is ok to be missing entries from the dictionary -
-    None/null will be used.  For example::
-
-       cursor.execute("insert into books values(:title, :isbn, :rating)",
-            {"title": "book title", "isbn": 908908908})
-
-    The return is the cursor object itself which is also an iterator.  This allows you to write::
-
-       for row in cursor.execute("select * from books"):
-          print(row)
-
     :raises TypeError: The bindings supplied were neither a dict nor a sequence
     :raises BindingsError: You supplied too many or too few bindings for the statements
     :raises IncompleteExecutionError: There are remaining unexecuted queries from your last execute
@@ -1034,6 +896,7 @@ APSWCursor_step(APSWCursor *self)
 
     .. seealso::
 
+       * :ref:`Example <example_executing_sql>` showing how to use bindings
        * :ref:`executionmodel`
 
 */
@@ -1137,18 +1000,10 @@ APSWCursor_execute(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast
     for binding in sequenceofbindings:
         cursor.execute(statements, binding)
 
-  Example::
-
-    rows=(  (1, 7),
-            (2, 23),
-            (4, 92),
-            (12, 12) )
-
-    cursor.executemany("insert into nums values(?,?)", rows)
-
   The return is the cursor itself which acts as an iterator.  Your
   statements can return data.  See :meth:`~Cursor.execute` for more
-  information.
+  information, and the :ref:`example <example_executemany>`.
+
 */
 
 static PyObject *
@@ -1264,16 +1119,14 @@ APSWCursor_executemany(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t 
 
 /** .. method:: close(force: bool = False) -> None
 
-  It is very unlikely you will need to call this method.  It exists
-  because older versions of SQLite required all Connection/Cursor
-  activity to be confined to the same thread.  That is no longer the
-  case.  Cursors are automatically garbage collected and when there
+  It is very unlikely you will need to call this method.
+  Cursors are automatically garbage collected and when there
   are none left will allow the connection to be garbage collected if
   it has no other references.
 
   A cursor is open if there are remaining statements to execute (if
   your query included multiple statements), or if you called
-  :meth:`~Cursor.executemany` and not all of the *sequenceofbindings*
+  :meth:`~Cursor.executemany` and not all of the sequence of bindings
   have been used yet.
 
   :param force: If False then you will get exceptions if there is
@@ -1475,7 +1328,7 @@ APSWCursor_get_row_trace(APSWCursor *self)
 
 /** .. method:: get_connection() -> Connection
 
-  Returns the :attr:`connection` this cursor is using
+  Returns the :attr:`connection` this cursor is part of
 */
 
 static PyObject *
@@ -1490,7 +1343,8 @@ APSWCursor_get_connection(APSWCursor *self)
 /** .. method:: fetchall() -> list[tuple[SQLiteValue, ...]]
 
   Returns all remaining result rows as a list.  This method is defined
-  in DBAPI.  It is a longer way of doing ``list(cursor)``.
+  in DBAPI.  See :meth:`get` which does the same thing, but with the least
+  amount of structure to unpack.
 */
 static PyObject *
 APSWCursor_fetchall(APSWCursor *self)
@@ -1666,8 +1520,8 @@ APSWCursor_is_readonly(APSWCursor *self)
 /** .. attribute:: has_vdbe
   :type: bool
 
-  `True` if the SQL can be evaluated.  Comments have nothing to
-   evaluate, and so are `False`.
+  ``True`` if the SQL does anything.  Comments have nothing to
+  evaluate, and so are ``False``.
 */
 static PyObject *
 APSWCursor_has_vdbe(APSWCursor *self)

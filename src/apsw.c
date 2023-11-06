@@ -38,7 +38,7 @@ Your source files should include::
 
 .. note::
 
-  These types are not available at run time, and have no effect when
+  These types are **not** available at run time, and have no effect when
   your code is running.  They are only referenced when running a type
   checker, or using an `IDE
   <https://en.wikipedia.org/wiki/Language_Server_Protocol>`__.
@@ -267,11 +267,8 @@ get_apsw_version(void)
 
 /** .. method:: enable_shared_cache(enable: bool) -> None
 
-  If you use the same :class:`Connection` across threads or use
-  multiple :class:`connections <Connection>` accessing the same file,
-  then SQLite can `share the cache between them
-  <https://sqlite.org/sharedcache.html>`_.  It is :ref:`not
-  recommended <sharedcache>` that you use this.
+  `Discouraged
+  <https://sqlite.org/sharedcache.html#use_of_shared_cache_is_discouraged>`__.
 
   -* sqlite3_enable_shared_cache
 */
@@ -423,9 +420,6 @@ sqliteshutdown(void)
 
   Some operations don't make sense from a Python program.  All the
   remaining are supported.
-
-  See :ref:`tips <diagnostics_tips>` for an example of how to receive
-  log messages (SQLITE_CONFIG_LOG)
 
   -* sqlite3_config
 */
@@ -744,6 +738,7 @@ release_memory(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t
 
   .. seealso::
 
+    * :meth:`Connection.status` for statistics about a :class:`Connection`
     * :ref:`Status example <example_status>`
 
   -* sqlite3_status64
@@ -944,7 +939,8 @@ error:
 /** .. method:: complete(statement: str) -> bool
 
   Returns True if the input string comprises one or more complete SQL
-  statements by looking for an unquoted trailing semi-colon.
+  statements by looking for an unquoted trailing semi-colon.  It does
+  not consider comments or blank lines to be complete.
 
   An example use would be if you were prompting the user for SQL
   statements and needed to know if you had a whole statement, or
@@ -1204,17 +1200,17 @@ static sqlite3_mutex_methods apsw_mutex_methods =
 
   One example of how you may end up using fork is if you use the
   `multiprocessing module
-  <https://docs.python.org/library/multiprocessing.html>`__ which uses
+  <https://docs.python.org/3/library/multiprocessing.html>`__ which can use
   fork to make child processes.
 
   If you do use fork or multiprocessing on a platform that supports
   fork then you **must** ensure database connections and their objects
   (cursors, backup, blobs etc) are not used in the parent process, or
   are all closed before calling fork or starting a `Process
-  <https://docs.python.org/library/multiprocessing.html#process-and-exceptions>`__.
+  <https://docs.python.org/3/library/multiprocessing.html#process-and-exceptions>`__.
   (Note you must call close to ensure the underlying SQLite objects
   are closed.  It is also a good idea to call `gc.collect(2)
-  <https://docs.python.org/library/gc.html#gc.collect>`__ to ensure
+  <https://docs.python.org/3/library/gc.html#gc.collect>`__ to ensure
   anything you may have missed is also deallocated.)
 
   Once you run this method, extra checking code is inserted into
@@ -1515,13 +1511,10 @@ formatsqlvalue(PyObject *Py_UNUSED(self), PyObject *value)
 
 /** .. method:: log(errorcode: int, message: str) -> None
 
-    Calls the SQLite logging interface.  Note that you must format the
+    Calls the SQLite logging interface.  You must format the
     message before passing it to this method::
 
         apsw.log(apsw.SQLITE_NOMEM, f"Need { needed } bytes of memory")
-
-    See :ref:`tips <diagnostics_tips>` for an example of how to
-    receive log messages.
 
     -* sqlite3_log
  */
@@ -1547,7 +1540,7 @@ apsw_log(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_
 
 /** .. method:: strlike(glob: str, string: str, escape: int = 0) -> int
 
-  Does string LIKE matching.  Note that zero is returned on a match.
+  Does string LIKE matching.  Zero is returned on a match.
 
   -* sqlite3_strlike
 */
@@ -1574,7 +1567,7 @@ apsw_strlike(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t f
 
 /** .. method:: strglob(glob: str, string: str) -> int
 
-  Does string GLOB matching.  Note that zero is returned on a match.
+  Does string GLOB matching.  Zero is returned on a match.
 
   -* sqlite3_strglob
 */
@@ -1599,7 +1592,7 @@ apsw_strglob(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t f
 
 /** .. method:: stricmp(string1: str, string2: str) -> int
 
-  Does string case-insensitive comparison.  Note that zero is returned
+  Does string case-insensitive comparison.  Zero is returned
   on a match.
 
   -* sqlite3_stricmp
@@ -1625,7 +1618,7 @@ apsw_stricmp(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t f
 
 /** .. method:: strnicmp(string1: str, string2: str, count: int) -> int
 
-  Does string case-insensitive comparison.  Note that zero is returned
+  Does string case-insensitive comparison.  Zero is returned
   on a match.
 
   -* sqlite3_strnicmp
@@ -1714,7 +1707,7 @@ apsw_unregister_vfs(PyObject *Py_UNUSED(module), PyObject *const *fast_args, Py_
 /** .. method:: sleep(milliseconds: int) -> int
 
   Sleep for at least the number of `milliseconds`, returning how many
-  milliseconds were requested.
+  milliseconds were requested from the operating system.
 
  -* sqlite3_sleep
 */
@@ -1967,12 +1960,7 @@ PyInit_apsw(void)
        apsw.connection_hooks is invoked with a single parameter being
        the new Connection object. If the hook raises an exception then
        the creation of the Connection fails.
-
-       If you wanted to store your own defined functions in the
-       database then you could define a hook that looked in the
-       relevant tables, got the Python text and turned it into the
-       functions.
-    */
+  */
   hooks = PyList_New(0);
   if (!hooks)
     goto fail;
@@ -1983,7 +1971,7 @@ PyInit_apsw(void)
     :type: int
 
     The integer version number of SQLite that APSW was compiled
-    against.  For example SQLite 3.6.4 will have the value *3006004*.
+    against.  For example SQLite 3.44.1 will have the value *3440100*.
     This number may be different than the actual library in use if the
     library is shared and has been updated.  Call
     :meth:`sqlite_lib_version` to get the actual library version.

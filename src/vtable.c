@@ -11,45 +11,34 @@
 Virtual Tables
 **************
 
-`Virtual Tables <https://sqlite.org/vtab.html>`__ are a feature
-introduced in SQLite 3.3.7. They let a developer provide an underlying
-table implementations, while still presenting a normal SQL interface
-to the user. The person writing SQL doesn't need to know or care that
-some of the tables come from elsewhere.
+`Virtual Tables <https://sqlite.org/vtab.html>`__ let a developer
+provide an underlying table implementations, while still presenting
+a normal SQL interface to the user. The person writing SQL doesn't
+need to know or care that some of the tables come from elsewhere.
 
 Some examples of how you might use this:
 
-* Translating to/from information stored in other formats (eg a csv/ini format file)
+* Translating to/from information stored in other formats
 
-* Accessing the data remotely (eg you could make a table that backends into Amazon's API)
+* Accessing the data remotely (eg you could make a table that backends into the cloud)
 
 * Dynamic information (eg currently running processes, files and directories, objects in your program)
-
-* Information that needs reformatting (eg if you have complex rules about how to convert bytes to/from Unicode
-  in the dataset)
-
-* Information that isn't relationally correct (eg if you have data that has ended up with duplicate "unique" keys
-  with code that dynamically corrects it)
 
 * There are other examples on the `SQLite page <https://sqlite.org/vtab.html>`__
 
 .. tip::
 
   You'll find initial development a lot quicker by using
-  :meth:`apsw.ext.make_virtual_module`.  To write your own
-  you will need to understand `xBestIndex <https://www.sqlite.org/vtab.html#the_xbestindex_method>`__.
+  :meth:`apsw.ext.make_virtual_module` which lets you
+  export a Python function as a virtual table, being
+  able to provide positional and keyword arguments as
+  part of your query.
 
+  See :ref:`the example <example_virtual_tables>`.
 
 To write a virtual table, you need to have 3 types of object. A
-:class:`module <VTModule>`, a :class:`virtual table <VTTable>` and a
-:class:`cursor <VTCursor>`. These are documented below. You can also
-read the `SQLite C method documentation <https://sqlite.org/vtab.html>`__.
-At the C level, they are just one set of methods. At the Python/APSW level,
-they are split over the 3 types of object. The leading **x** is
-omitted in Python. You can return SQLite error codes (eg
-*SQLITE_READONLY*) by raising the appropriate exceptions (eg
-:exc:`ReadOnlyError`).  :meth:`exception_for` is a useful helper
-function to do the mapping.
+:class:`module <VTModule>` providing the module, a :class:`virtual table <VTTable>`,
+and a :class:`cursor <VTCursor>` that moves through a table.
 
 */
 
@@ -57,8 +46,7 @@ function to do the mapping.
 
   IndexInfo represents the `sqlite3_index_info
   <https://www.sqlite.org/c3ref/index_info.html>`__ and associated
-  methods used in the :meth:`VTTable.BestIndexObject` method.  The
-  structure values are not altered or made friendlier in any way.
+  methods used in the :meth:`VTTable.BestIndexObject` method.
 
   Naming is identical to the C structure rather than Pythonic.  You can
   access members directly while needing to use get/set methods for array
@@ -707,6 +695,7 @@ finally:
   :type: int
 
   (Read-only) How the query planner would like output ordered
+  if the query is using group by or distinct.
 
   -* sqlite3_vtab_distinct
 */
@@ -784,7 +773,6 @@ static PyTypeObject SqliteIndexInfoType = {
   There is no actual *VTModule* class - it is shown this way for
   documentation convenience and is present as a `typing protocol
   <https://docs.python.org/3/library/typing.html#typing.Protocol>`__.
-  Your module instance should implement all the methods documented here.
 
 A module instance is used to create the virtual tables.  Once you have
 a module object, you register it with a connection by calling
@@ -801,7 +789,7 @@ a module object, you register it with a connection by calling
 
 The create step is to tell SQLite about the existence of the table.
 Any number of tables referring to the same module can be made this
-way.  Note the (optional) arguments which are passed to the module.
+way.
 */
 
 typedef struct
@@ -975,8 +963,7 @@ apswvtabCreate(sqlite3 *db,
 
    :param connection: An instance of :class:`Connection`
    :param modulename: The string name under which the module was :meth:`registered <Connection.create_module>`
-   :param databasename: The name of the database.  This will be ``main`` for directly opened files and the name specified in
-           `ATTACH <https://sqlite.org/lang_attach.html>`_ statements.
+   :param databasename: The name of the database.  `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
    :param tablename: Name of the table the user wants to create.
    :param args: Any arguments that were specified in the `create virtual table <https://sqlite.org/lang_createvtab.html>`_ statement.
 
@@ -1022,13 +1009,9 @@ apswvtabConnect(sqlite3 *db,
     There is no actual *VTTable* class - it is shown this way for
     documentation convenience and is present as a `typing protocol
     <https://docs.python.org/3/library/typing.html#typing.Protocol>`__.
-    Your table instance should implement the methods documented here.
 
   The :class:`VTTable` object contains knowledge of the indices, makes
   cursors and can perform transactions.
-
-
-  .. _vtablestructure:
 
   A virtual table is structured as a series of rows, each of which has
   the same number of columns.  The value in a column must be one of the `5
@@ -1042,8 +1025,8 @@ apswvtabConnect(sqlite3 *db,
   the :class:`Table <VTTable>` routines such as :meth:`UpdateChangeRow
   <VTTable.UpdateChangeRow>`.
 
-  It is possible to not have a rowid - read more at `the SQLite
-  site <https://www.sqlite.org/vtab.html#_without_rowid_virtual_tables_>`__
+  It is possible to `not have a rowid
+  <https://www.sqlite.org/vtab.html#_without_rowid_virtual_tables_>`__
 
 */
 
@@ -1116,8 +1099,7 @@ apswvtabDestroyOrDisconnect(sqlite3_vtab *pVtab, PyObject *methodname, const cha
   The opposite of :meth:`VTModule.Create`.  This method is called when
   the table is no longer used.  Note that you must always release
   resources even if you intend to return an error, as it will not be
-  called again on error.  SQLite may also leak memory
-  if you return an error.
+  called again on error.
 */
 
 static int
@@ -1233,7 +1215,7 @@ finally:
   traditional SQL database, queries with constraints can be speeded up
   `with indices <https://sqlite.org/lang_createindex.html>`_. If
   you return None, then SQLite will visit every row in your table and
-  evaluate the constraint itself. Your index choice returned from
+  evaluate the constraints itself. Your index choice returned from
   BestIndex will also be passed to the :meth:`~VTCursor.Filter` method on your cursor
   object. Note that SQLite may call this method multiple times trying
   to find the most efficient way of answering a complex query.
@@ -2222,7 +2204,7 @@ apswvtabRollbackTo(sqlite3_vtab *pVtab, int level)
 
  If present, check the integrity of the virtual table.
 
- :param schema: Database name - ``main``, ``temp`` etc
+ :param schema: Database name `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
  :param name: Name of the table
  :param is_quick: 0 if `pragma integrity_check <https://sqlite.org/pragma.html#pragma_integrity_check>`__ was used,
     1 if `pragma quick_check <https://sqlite.org/pragma.html#pragma_quick_check>`__ was used, and may contain
@@ -2289,18 +2271,11 @@ apswvtabIntegrity(sqlite3_vtab *pVtab, const char *zSchema, const char *zName, i
   There is no actual *VTCursor* class - it is shown this way for
   documentation convenience and is present as a `typing protocol
   <https://docs.python.org/3/library/typing.html#typing.Protocol>`__.
-  Your cursor instance should implement all the methods documented
-  here.
 
 
 The :class:`VTCursor` object is used for iterating over a table.
 There may be many cursors simultaneously so each one needs to keep
-track of where      :ref:`Virtual table structure <vtablestructure>`
-it is.
-
-.. seealso::
-
-     :ref:`Virtual table structure <vtablestructure>`
+track of where in the table it is.
 
 */
 
@@ -2880,28 +2855,5 @@ apswvtabSetupModuleDef(PyObject *datasource, int iVersion, int eponymous, int ep
 
   return mod;
 }
-
-/**
-
-Troubleshooting virtual tables
-==============================
-
-A big help is using the local variables recipe as described in
-:ref:`augmented stack traces <augmentedstacktraces>` which will give
-you more details in errors, and shows an example with the complex
-:meth:`~VTTable.BestIndex` function.
-
-You may also find errors compounding. For
-example if you have an error in the Filter method of a cursor, SQLite
-then closes the cursor. If you also return an error in the Close
-method then the errors will be chained.
-
-.. note::
-
-   SQLite may ignore responses from your methods if they don't make
-   sense. For example in BestIndex, if you set multiple arguments to
-   have the same constraintargs position then your Filter won't
-   receive any constraintargs at all.
-*/
 
 /* end of Virtual table code */

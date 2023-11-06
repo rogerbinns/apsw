@@ -37,6 +37,9 @@ This code demonstrates usage of APSW.  It gives you a good overview of
 all the things that can be done.  Also included is output so you can
 see what gets printed when you run the code.
 
+There are also specific examples in the classes, functions,
+and attribute documentation.
+
 .. code-block:: python
 """
 

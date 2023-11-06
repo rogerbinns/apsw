@@ -206,8 +206,15 @@ def do_methods():
                 if line.lstrip() != line:
                     indent = line[:len(line) - len(line.lstrip())]
                     break
-            method = "Update" if k.startswith(
-                "Update") else "RollbackTo" if k == "Rollback" else "Column" if k == "ColumnNoChange" else k
+            method = k
+            if k.startswith("Update"):
+                method = "Update"
+            elif k == "Rollback":
+                method = "RollbackTo"
+            elif k == "ColumnNoChange":
+                method = "Column"
+            elif k == "BestIndexObject":
+                method = "BestIndex"
             target = f"the_x{ method.lower() }_method"
             if method in {"Savepoint", "Release", "RollbackTo"}:
                 target = "the_xsavepoint_xrelease_and_xrollbackto_methods"

@@ -1520,7 +1520,7 @@ A :meth:`fork_checker` is available which turns on detection when you
 have used SQLite objects across a fork (a **very** bad thing).  This
 is possible on Unix like operating systems, especially if you use the
 `multiprocessing module
-<https://docs.python.org/library/multiprocessing.html>`__.
+<https://docs.python.org/3/library/multiprocessing.html>`__.
 
 Extension loading is now compiled in by default when using the
 amalgamation and compiled out when using existing libraries.  This is
@@ -1655,7 +1655,7 @@ In prior releases a :meth:`closed cursor <Cursor.close>` could still be used
 =========
 
 You can use the database as a `context manager
-<https://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
+<https://docs.python.org/3/reference/datamodel.html#with-statement-context-managers>`_
 as defined in :pep:`0343`.  When you use *with* a transaction is
 started.  If the block finishes with an exception then the transaction
 is rolled back, otherwise it is committed.  See :meth:`Connection.__enter__`
@@ -1712,7 +1712,7 @@ detecting and diagnosing this issue.
 
 :class:`Connections <Connection>`, :class:`cursors <Cursor>` and
 :class:`blobs <Blob>` can be used by `weak references
-<https://docs.python.org/library/weakref.html>`_.
+<https://docs.python.org/3/library/weakref.html>`_.
 
 You can now install :class:`Connection` wide :meth:`execution
 <Connection.set_exec_trace>` and :meth:`row <Connection.set_row_trace>`
@@ -1852,7 +1852,7 @@ with). A workaround is documented in :func:`Connection.limit`.
 3.5.9-r1
 ========
 
-APSW is now hosted at https://code.google.com/p/apsw
+APSW is now hosted at \https://code.google.com/p/apsw
 
 You can use this with SQLite 3.5.9 onwards.
 

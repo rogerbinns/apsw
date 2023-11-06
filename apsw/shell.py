@@ -35,7 +35,8 @@ class Shell:
     :param stderr: Where to send errors (default sys.stderr)
     :param encoding: Default encoding for files opened/created by the
       Shell.  If you want stdin/out/err to use a particular encoding
-      then you need to provide them `already configured <https://docs.python.org/library/codecs.html#codecs.open>`__ that way.
+      then you need to provide them `already configured
+      <https://docs.python.org/3/library/codecs.html#codecs.open>`__ that way.
     :param args: This should be program arguments only (ie if
       passing in sys.argv do not include sys.argv[0] which is the
       program name.  You can also pass in None and then call
@@ -43,16 +44,8 @@ class Shell:
       in handling the arguments yourself.
     :param db: A existing :class:`~apsw.Connection` you wish to use
 
-    The commands and behaviour are modelled after the `interactive
-    shell <https://sqlite.org/sqlite.html>`__ that is part of
-    SQLite.
-
-    You can inherit from this class to embed in your own code and user
-    interface.
-
     Errors and diagnostics are only ever sent to error output
-    (self.stderr) and never to the regular output (self.stdout).  This
-    means using shell output is always easy and consistent.
+    (self.stderr) and never to the regular output (self.stdout).
 
     Shell commands begin with a dot (eg .help).  They are implemented
     as a method named after the command (eg command_help).  The method
@@ -60,7 +53,7 @@ class Shell:
     command.
 
     Output modes are implemented by functions named after the mode (eg
-    output_column).
+    output_column for columns).
 
     When you request help the help information is automatically
     generated from the docstrings for the command and output
@@ -68,10 +61,7 @@ class Shell:
 
     You should not use a Shell object concurrently from multiple
     threads.  It is one huge set of state information which would
-    become inconsistent if used simultaneously, and then give baffling
-    errors.  It is safe to call methods one at a time from different
-    threads.  ie it doesn't care what thread calls methods as long as
-    you don't call more than one concurrently.
+    become inconsistent if used simultaneously.
     """
 
     class Error(Exception):
@@ -319,7 +309,7 @@ class Shell:
         return None
 
     def usage(self):
-        "Returns the usage message.  Make sure it is newline terminated"
+        "Returns the usage message."
 
         msg = """
 Usage: python3 -m apsw [OPTIONS] FILENAME [SQL|CMD] [SQL|CMD]...
@@ -332,8 +322,8 @@ OPTIONS include:
    -echo                print commands before execution
    -[no]header          turn headers on or off
    -bail                stop after hitting the first error
-   -interactive         force interactive I/O
-   -batch               force batch I/O
+   -interactive         force interactive I/O (command editing and colour)
+   -batch               force batch I/O (no banners or editing)
    -column              set output mode to 'column'
    -csv                 set output mode to 'csv'
    -html                set output mode to 'html'
@@ -992,8 +982,6 @@ Enter ".help" for instructions
         """Processes a dot command.
 
         It is split into parts using :func:`shlex.split`
-        which is roughly the same method used by Unix/POSIX
-        shells.
         """
         if self.echo:
             self.write(self.stderr, command + "\n")
@@ -1246,9 +1234,7 @@ Enter ".help" for instructions
         the database.  It is also useful for comparing differences or
         making the data available to other databases.  Indices and
         triggers for the table(s) are also dumped.  Finally views
-        matching the table pattern name are dumped (it isn't possible
-        to work out which views access which table and views can
-        access multiple tables anyway).
+        matching the table pattern name are dumped.
 
         Note that if you are dumping virtual tables such as used by
         the FTS5 module then they may use other tables to store
@@ -1526,8 +1512,6 @@ Enter ".help" for instructions
         """Saves *enc* as the default encoding, after verifying that
         it is valid.  You can also include :error to specify error
         handling - eg 'cp437:replace'
-
-        Raises an exception on invalid encoding or error
         """
         enc = enc.split(":", 1)
         if len(enc) > 1:
@@ -1549,7 +1533,7 @@ Enter ".help" for instructions
     def command_encoding(self, cmd):
         """encoding ENCODING: Set the encoding used for new files opened via .output and imports
 
-        SQLite and APSW work internally using Unicode and characters.
+        SQLite and APSW/Python work internally using Unicode and characters.
         Files however are a sequence of bytes.  An encoding describes
         how to convert between bytes and characters.  The default
         encoding is utf8 and that is generally the best value to use
@@ -1560,13 +1544,6 @@ Enter ".help" for instructions
         codepoints not present in cp437 will be replaced (typically
         with something like a question mark).  Other error handlers
         include `ignore`, `strict` (default) and `xmlcharrefreplace`.
-
-        For the default input/output/error streams on startup the
-        shell defers to Python's detection of encoding.  For example
-        on Windows it asks what code page is in use and on Unix it
-        looks at the LC_CTYPE environment variable.  You can set the
-        PYTHONIOENCODING environment variable to override this
-        detection.
 
         This command affects files opened after setting the encoding
         as well as imports.
@@ -1612,7 +1589,7 @@ Enter ".help" for instructions
         a like pattern.
 
         This command can take a long time to execute needing to scan
-        all of the relevant tables.
+        all of the relevant tables, rows, and columns.
         """
         if len(cmd) < 1 or len(cmd) > 2:
             raise self.Error("At least one argument required and at most two accepted")
@@ -2120,6 +2097,7 @@ Enter ".help" for instructions
         self.db.load_extension(*cmd)
 
     def log_handler(self, code, message):
+        "Called with SQLite log messages when logging is ON"
         code = f"( { code } - { apsw.mapping_result_codes.get(code, 'unknown') } ) "
         self.write_error(code + message + "\n")
 
@@ -2423,7 +2401,7 @@ Enter ".help" for instructions
 
         The default is to print 'sqlite> ' for the main prompt where
         you can enter a dot command or a SQL statement.  If the SQL
-        statement is not complete (eg not ; terminated) then you are
+        statement is not complete then you are
         prompted for more using the continuation prompt which defaults
         to ' ..> '.  Example:
 
@@ -2541,7 +2519,7 @@ Enter ".help" for instructions
 
         If you give one or more tables then their schema is listed
         (including indices).  If you don't specify any then all
-        schemas are listed. TABLE is a like pattern so you can % for
+        schemas are listed. TABLE is a like pattern so you can use % for
         wildcards.
         """
         self.push_output()
@@ -2837,7 +2815,7 @@ Enter ".help" for instructions
         """Implements the various backlash sequences in s such as
         turning backslash t into a tab.
 
-        This function is needed because shlex does not do it for us.
+        This function is needed because :mod:`shlex` does not do it for us.
         """
         if "\\" not in s: return s
         # See the resolve_backslashes function in SQLite shell source
@@ -2973,7 +2951,7 @@ Enter ".help" for instructions
             setattr(self, k, v)
 
     def complete(self, token, state):
-        """Return a possible completion for readline
+        """Return a possible completion for :mod:`readline`
 
         This function is called with state starting at zero to get the
         first completion, then one/two/three etc until you return None.  The best
@@ -3318,22 +3296,22 @@ Enter ".help" for instructions
                     res[desc] = getattr(r, f)
             return res
 
-    def display_timing(self, b4, after):
-        """Writes the difference between b4 and after to self.stderr.
+    def display_timing(self, before, after):
+        """Writes the difference between before and after to self.stderr.
         The data is dictionaries returned from
         :meth:`get_resource_usage`."""
-        v = list(b4.keys())
+        v = list(before.keys())
         for i in after:
             if i not in v:
                 v.append(i)
         v.sort()
         for k in v:
-            if k in b4 and k in after:
-                one = b4[k]
+            if k in before and k in after:
+                one = before[k]
                 two = after[k]
                 val = two - one
                 if val:
-                    if type(val) == float:
+                    if isinstance(val, float):
                         self.write(self.stderr, "+ %s: %.4f\n" % (k, val))
                     else:
                         self.write(self.stderr, "+ %s: %d\n" % (k, val))

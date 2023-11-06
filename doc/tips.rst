@@ -3,8 +3,8 @@ Tips
 
 .. currentmodule:: apsw
 
-These tips are based on mailing list postings, issues, and emails.
-You are recommended to read all the documentation as well.
+There are also specific tips in each documentation section, and many of the
+classes, functions, and attributes.
 
 
 SQLite is different
@@ -17,17 +17,81 @@ also unique in many ways.  Read about the unique features at the
 
 .. tip::
 
-  :doc:`Best practice <bestpractice>` is recommended.
+  Using :doc:`APSW best practice <bestpractice>` is recommended to get
+  best performance and avoid common mistakes.
+
+.. _types:
+
+Types
+=====
+
+SQLite has `5 storage types
+<https://www.sqlite.org/datatype3.html>`__.
+
+.. list-table::
+  :header-rows: 1
+  :widths: auto
+
+  * - SQLite
+    - Python
+  * - NULL
+    - :data:`None`
+  * - Text (limit 1GB when encoded as bytes)
+    - :class:`str`
+  * - Integer (Signed 64 bit)
+    - :class:`int`
+  * - Float (`IEEE754 64 bit <https://en.wikipedia.org/wiki/Double-precision_floating-point_format>`__)
+    - :class:`float`
+  * - `BLOB <https://en.wikipedia.org/wiki/Binary_large_object>`__ (binary data, limit 1GB)
+    - :class:`bytes` and similar such as :class:`bytearray` and :class:`array.array`
+
+:index:`Dates and times` do not have a dedicated storage type, but do
+have a `variety of functions
+<https://www.sqlite.org/lang_datefunc.html>`__ for creating,
+manipulating, and storing them. :index:`JSON` does not have a
+dedicated storage type, but does have a `variety of functions
+<https://www.sqlite.org/json1.html>`__ for creating, manipulating, and
+storing JSON.
+
+APSW provides optional :ref:`type conversion <example_type_conversion>`, but
+the underlying storage will always be one of the 5 storage types.
+
+If a column declaration gives a type then SQLite
+`attempts conversion <https://www.sqlite.org/flextypegood.html>`__.
+
+.. code-block:: python
+
+    connection.execute("""
+        create table types1(a, b, c, d, e);
+        create table types2(a INTEGER, b REAL, c TEXT, d, e BLOB);
+        """)
+
+    data = ("12", 3, 4, 5.5, b"\x03\x72\xf4\x00\x9e")
+    connection.execute("insert into types1 values(?,?,?,?,?)", data)
+    connection.execute("insert into types2 values(?,?,?,?,?)", data)
+
+    for row in connection.execute("select * from types1"):
+        print("types1", repr(row))
+
+    for row in connection.execute("select * from types2"):
+        print("types2", repr(row))
+
+.. code-block:: output
+
+  types1 ('12', 3, 4, 5.5, b'\x03r\xf4\x00\x9e')
+  types2 (12, 3.0, '4', 5.5, b'\x03r\xf4\x00\x9e')
+
 
 Transactions
 ============
 
 Transactions are the changes applied to a database file as a whole.
-They either happen completely, or not at all.  SQLite notes all the changes
-made during a transaction, and at the end when you do a commit will cause
-them to permanently end up in the database.  If you do not commit, or
-just exit, then other/new connections will not see the changes and SQLite
-handles tidying up the work in progress automatically.
+They either happen completely, or not at all.  SQLite notes all the
+changes made during a transaction, and at the end when you commit will
+cause them to permanently end up in the database.  If you do not
+commit, or just exit, then other/new connections will not see the
+changes and SQLite handles tidying up the work in progress
+automatically.
 
 Committing a transaction can be quite time consuming.  SQLite uses a robust
 multi-step process that has to handle errors that can occur at any point,
@@ -69,33 +133,32 @@ exceptions occur::
 There are `technical details <https://www.sqlite.org/lang_transaction.html>`__
 at the `SQLite site <https://www.sqlite.org/docs.html>`__.
 
-Cursors
+Queries
 =======
 
 SQLite only calculates each result row as you request it.  For example
-if your query returns 10 million rows SQLite will not calculate all 10
+if your query returns 10 million rows, SQLite will not calculate all 10
 million up front.  Instead the next row will be calculated as you ask
-for it.
+for it.  You can use :meth:`Cursor.fetchall` to get all the results.
 
-Cursors on the same :ref:`Connection <connections>` are not isolated
-from each other.  Anything done on one cursor is immediately visible
-to all other Cursors on the same connection.  This still applies if
-you start transactions.  Connections are isolated from each other.
+:class:`Cursors <Cursor>` on the same :ref:`Connection <connections>`
+are not isolated from each other.  Anything done on one cursor is
+immediately visible to all other cursors on the same connection.  This
+still applies if you start transactions.  Connections are isolated
+from each other.
 
 :meth:`Connection.execute` and :meth:`Connection.executemany`
-automatically obtains cursors from  :meth:`Connection.cursor` which
+automatically obtain cursors from  :meth:`Connection.cursor` which
 are very cheap.  It is best practise to not re-use them, and instead
 get a new one each time.  If you don't, code refactoring and nested
 loops can unintentionally use the same cursor object which will not
 crash but will cause hard to diagnose behaviour in your program.
 
-Read more about :ref:`Cursors <cursors>`.
-
 Bindings
 ========
 
 When issuing a query, always use bindings.  `String interpolation
-<https://docs.python.org/library/stdtypes.html#printf-style-string-formatting>`_
+<https://docs.python.org/3/library/stdtypes.html#printf-style-string-formatting>`_
 may seem more convenient but you will encounter difficulties.  You may
 feel that you have complete control over all data accessed but if your
 code is at all useful then you will find it being used more and more
@@ -104,8 +167,8 @@ and the bad guys have years of experience finding and using `SQL
 injection attacks <https://en.wikipedia.org/wiki/SQL_injection>`_ in
 ways you never even thought possible.
 
-The :ref:`documentation <cursors>` gives many examples of how to use
-various forms of bindings.
+The :ref:`tour <example_why_bindings>` shows why you use bindings, and
+the different ways you can supply them.
 
 .. _diagnostics_tips:
 
@@ -120,28 +183,8 @@ APSW ensures you have :ref:`detailed information
 APSW/SQLite was operating on.
 
 SQLite has a `warning/error logging facility
-<https://www.sqlite.org/errlog.html>`__.  You can call
-:meth:`apsw.ext.log_sqlite` which installs a handler that forwards
-SQLite messages to the :mod:`logging module <logging>`.`
-
-To do it yourself::
-
-    def handler(errcode, message):
-        errstr=apsw.mapping_result_codes[errcode & 255]
-        print (f"SQLITE_LOG: { message } ({ errcode }) { errstr } "
-               + apsw.mapping_extended_result_codes.get(errcode, ""))
-
-    apsw.config(apsw.SQLITE_CONFIG_LOG, handler)
-
-This is an example of what gets printed when I use ``/dev/null`` as
-the database name in the :class:`Connection` and then tried to create
-a table.
-
-.. code-block:: output
-
-    SQLITE_LOG: cannot open file at line 28729 of [7dd4968f23] (14) SQLITE_CANTOPEN
-    SQLITE_LOG: os_unix.c:28729: (2) open(/dev/null-journal) - No such file or directory (14) SQLITE_CANTOPEN
-    SQLITE_LOG: statement aborts at 38: [create table foo(x,y);] unable to open database file (14) SQLITE_CANTOPEN
+<https://www.sqlite.org/errlog.html>`__.  Use :doc:`best practice <bestpractice>` to
+forward SQLite log messages to Python's :mod:`logging`.
 
 Managing and updating your schema
 =================================
@@ -158,14 +201,14 @@ programmatically.  The easy way is to use `pragma user_version
     if db.pragma("user_version") == 0:
       with db:
         db.execute("""
-          CREATE TABLE IF NOT EXISTS foo(x,y,z);
-          CREATE TABLE IF NOT EXISTS bar(x,y,z);
+          CREATE TABLE foo(x,y,z);
+          CREATE TABLE bar(x,y,z);
           PRAGMA user_version = 1;""")
 
     if db.pragma("user_version") == 1:
       with db:
         db.execute("""
-        CREATE TABLE IF NOT EXISTS baz(x,y,z);
+        CREATE TABLE baz(x,y,z);
         CREATE INDEX ....
         PRAGMA user_version = 2;""")
 
@@ -186,6 +229,54 @@ Parsing SQL
 Sometimes you want to know what a particular SQL statement does.  Use
 :func:`apsw.ext.query_info` which will provide as much detail as you
 need.
+
+.. _busyhandling:
+
+Busy handling
+=============
+
+SQLite uses locks to coordinate access to the database by multiple
+connections (within the same process or in a different process).  The
+general goal is to have the locks be as lax as possible (allowing
+concurrency) and when using more restrictive locks to keep them for as
+short a time as possible.  See the `SQLite documentation
+<https://sqlite.org/lockingv3.html>`__ for more details.
+
+By default you will get an immediate :exc:`BusyError` if a lock cannot
+be acquired. Use :doc:`best practice <bestpractice>` which sets a
+short waiting period, as well as enabling `WAL
+<https://www.sqlite.org/wal.html>`__ which reduces contention between
+readers and writers.
+
+Database schema
+===============
+
+When starting a new database, it can be quite difficult to decide what
+tables and column to have and how to link them.  The technique used to
+design SQL schemas is called `normalization
+<https://en.wikipedia.org/wiki/Database_normalization>`_.  The page
+also shows common pitfalls if you do not normalize your schema.
+
+.. _wal:
+
+Write Ahead Logging
+===================
+
+SQLite has `write ahead logging
+<https://sqlite.org/wal.html>`__ which has several benefits, but
+also some drawbacks as the page documents.  WAL mode is off by
+default. Use :doc:`best practice <bestpractice>` to automatically
+enable it for all connections.
+
+Note that if wal mode can't be set (eg the database is in memory or
+temporary) then the attempt to set wal mode will be ignored.  It is
+also harmless to call functions like
+:meth:`Connection.wal_autocheckpoint` on connections that are not in
+wal mode.
+
+If you write your own :doc:`VFS <vfs>`, then inheriting from an
+existing VFS that supports WAL will make your VFS support the extra
+WAL methods too.
 
 .. _customizing_connection_cursor:
 
@@ -220,89 +311,3 @@ the code source compatible with other database drivers).
 Set :attr:`Connection.cursor_factory` to any callable, which will be
 called with the connection as the only parameter, and return the
 object to use as a cursor.
-
-For example instead of returning rows as tuples, we can return them as
-dictionaries using a :ref:`row tracer <rowtracer>` with
-:meth:`Cursor.get_description`::
-
-  def dict_row(cursor, row):
-    return {k[0]: row[i] for i, k in enumerate(cursor.get_description())}
-
-  def my_factory(connection):
-    cursor = apsw.Cursor(connection)
-    cursor.row_trace = dict_row
-    return cursor
-
-  connection.cursor_factory = my_factory
-
-
-.. _busyhandling:
-
-Busy handling
-=============
-
-SQLite uses locks to coordinate access to the database by multiple
-connections (within the same process or in a different process).  The
-general goal is to have the locks be as lax as possible (allowing
-concurrency) and when using more restrictive locks to keep them for as
-short a time as possible.  See the `SQLite documentation
-<https://sqlite.org/lockingv3.html>`__ for more details.
-
-By default you will get a :exc:`BusyError` if a lock cannot be
-acquired.  You can set a :meth:`timeout <Connection.set_busy_timeout>`
-which will keep retrying or a :meth:`callback
-<Connection.set_busy_handler>` where you decide what to do.
-
-Database schema
-===============
-
-When starting a new database, it can be quite difficult to decide what
-tables and fields to have and how to link them.  The technique used to
-design SQL schemas is called `normalization
-<https://en.wikipedia.org/wiki/Database_normalization>`_.  The page
-also shows common pitfalls if you don't normalize your schema.
-
-.. _wal:
-
-Write Ahead Logging
-===================
-
-SQLite 3.7 introduced `write ahead logging
-<https://sqlite.org/wal.html>`__ which has several benefits, but
-also some drawbacks as the page documents.  WAL mode is off by
-default.  In addition to turning it on manually for each database, you
-can also turn it on for all opened databases by using
-:attr:`connection_hooks`::
-
-  def setwal(db):
-      db.pragma("journal_mode", "wal")
-      # custom auto checkpoint interval (use zero to disable)
-      db.wal_autocheckpoint(10)
-
-  apsw.connection_hooks.append(setwal)
-
-Note that if wal mode can't be set (eg the database is in memory or
-temporary) then the attempt to set wal mode will be ignored.  The
-pragma will return the mode in effect.  It is also harmless to call
-functions like :meth:`Connection.wal_autocheckpoint` on connections
-that are not in wal mode.
-
-If you write your own VFS, then inheriting from an existing VFS that
-supports WAL will make your VFS support the extra WAL methods too.
-(Your VFS will point directly to the base methods - there is no
-indirect call via Python.)
-
-.. _sharedcache:
-
-Shared Cache Mode
-=================
-
-SQLite supports a `shared cache mode
-<https://sqlite.org/sharedcache.html>`__ where multiple connections to
-the same database can share a cache instead of having their own.
-SQLite recommend that `you do not use this mode
-<https://sqlite.org/sharedcache.html#use_of_shared_cache_is_discouraged>`__.
-
-If you do use it, be aware that :ref:`busy handling <busyhandling>` is
-very different, and that you are unlikely to save any memory or I/O
-compared to what Python programs usually do.

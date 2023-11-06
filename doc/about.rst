@@ -72,9 +72,9 @@ APSW and SQLite versions
 
 SQLite has approximately quarterly releases.  These include tweaks,
 bug fixes, and new functionality based on the billions of SQLite
-databases in use, and the many many programs that use SQLite (eg
-almost every browser, mail client, photo library, mobile and desktop
-OS).  Despite these changes, SQLite retains backwards and forwards
+databases in use, and the many programs that use SQLite (eg almost
+every browser, mail client, photo library, mobile and desktop OS).
+Despite these changes, SQLite retains backwards and forwards
 compatibility with the `file format
 <https://www.sqlite.org/onefile.html>`__ and APIs.
 
@@ -86,10 +86,11 @@ the Python expression of SQLite's C API.  You can `lookup
 attributes call them.
 
 Consequently the APSW version mirrors the SQLite version, with an
-additional component on the end to reflect APSW iterations.  For
+additional final number on the end to reflect APSW iterations.  For
 example the SQLite :code:`3.42.1` release would have APSW
 :code:`3.42.1.0` as the corresponding release with the final
-:code:`.0` incrementing if there are more APSW release.
+:code:`.0` incrementing if there are more APSW releases for the same
+SQLite version.
 
 You can use APSW with the corresponding version of SQLite, or any
 newer version of SQLite.  You could use the original 2004 release of

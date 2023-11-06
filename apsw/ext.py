@@ -160,9 +160,10 @@ class SQLiteTypeAdapter(abc.ABC):
 
 
 class TypesConverterCursorFactory:
-    """Provides cursors that can convert objects into one of the types supported by SQLite. or back from SQLite
+    """Provides cursors that can convert objects into one of the types supported by SQLite,
+    or back from SQLite
 
-    :param metaclass: Which metaclass to consider as conversion capable
+    :param abstract_base_class: Which metaclass to consider as conversion capable
     """
 
     def __init__(self, abstract_base_class: abc.ABCMeta = SQLiteTypeAdapter):
@@ -181,7 +182,7 @@ class TypesConverterCursorFactory:
         self.converters[name] = callable
 
     def __call__(self, connection: apsw.Connection) -> TypeConverterCursor:
-        "Returns a new :class:`cursor <apsw.Cursor>` for the `connection`"
+        "Returns a new convertor :class:`cursor <apsw.Cursor>` for the `connection`"
         return TypesConverterCursorFactory.TypeConverterCursor(connection, self)
 
     def adapt_value(self, value: Any) -> apsw.SQLiteValue:
@@ -281,12 +282,9 @@ class TypesConverterCursorFactory:
 
 
 def log_sqlite(*, level: int = logging.ERROR) -> None:
-    """Send SQLite log messages to :mod:`logging`
+    """Send SQLite `log messages <https://www.sqlite.org/errlog.html>`__ to :mod:`logging`
 
     :param level: level to log at
-
-    SQLite's `logging <https://www.sqlite.org/errlog.html>`__ has many
-    useful messages, including those that aren't raised as exceptions.
     """
 
     def handler(errcode: int, message: str) -> None:
@@ -312,6 +310,7 @@ def print_augmented_traceback(exc_type: type[BaseException],
                               *,
                               file: TextIO | None = None) -> None:
     """Prints a standard exception, but also includes the value of variables in each stack frame
+    which APSW :ref:`adds <augmentedstacktraces>` to help diagnostics and debugging.
 
     :param exc_type: The exception type
     :param exc_value: The exception value
@@ -465,11 +464,11 @@ def index_info_to_dict(o: apsw.IndexInfo,
 
 def dbinfo(db: apsw.Connection,
            schema: str = "main") -> tuple[DatabaseFileInfo | None, JournalFileInfo | WALFileInfo | None]:
-    """Extracts fields from the database files
+    """Extracts fields from the database, journal, and wal files
 
     Based on the `file format description <https://www.sqlite.org/fileformat2.html>`__.  The
     headers are read using :meth:`apsw.Connection.read` so you see inside encrypted, compressed,
-    zip etc formats. not necessarily the actual on disk file.
+    zip etc formats, not necessarily the actual on disk file.
 
     Memory databases return `None` for both.
     """
@@ -621,7 +620,7 @@ def format_query_table(db: apsw.Connection,
     :param text_width: Maximum output width to generate
     :param use_unicode: If True then unicode line drawing characters are used.  If False then +---+ and | are
         used.
-    :param word_wrap: If True then :mod:`textwrap` is used to break wide text into fit column width
+    :param word_wrap: If True then :mod:`textwrap` is used to break wide text to fit column width
     """
     # args we pass on to format_table
     kwargs = {
@@ -1044,7 +1043,8 @@ def make_virtual_module(db: apsw.Connection,
 
     If you specify a parameter to the table and in WHERE, or have
     non-equality for WHERE clauses of parameters then the query will
-    fail with :class:`apsw.SQLError` and a message "no query solution"
+    fail with :class:`apsw.SQLError` and a message from SQLite of
+    "no query solution"
     """
 
     class Module:
@@ -1246,9 +1246,7 @@ def make_virtual_module(db: apsw.Connection,
 
 
 def generate_series_sqlite(start=None, stop=0xffffffff, step=1):
-    """Behaves like SQLite's generate_series
-
-    `SQLite doc <https://sqlite.org/series.html>`__.
+    """Behaves like SQLite's `generate_series <https://sqlite.org/series.html>`__
 
     Only integers are supported.  If *step* is negative
     then values are generated from *stop* to *start*
@@ -1348,7 +1346,7 @@ def query_info(db: apsw.Connection,
                expanded_sql: bool = False,
                explain: bool = False,
                explain_query_plan: bool = False) -> QueryDetails:
-    """Returns information about the query, but does not run it.
+    """Returns information about the query, without running it.
 
     Set the various parameters to `True` if you also want the
     actions, expanded_sql, explain, query_plan etc filled in.
@@ -1526,7 +1524,7 @@ class QueryAction:
 
     column_name: str | None = None
     database_name: str | None = None
-    "eg `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__"
+    "`main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__"
     file_name: str | None = None
     function_name: str | None = None
     module_name: str | None = None
@@ -1547,7 +1545,7 @@ class QueryPlan:
     detail: str
     "Description of this step"
     sub: list[QueryPlan] | None = None
-    "Steps that run within this one"
+    "Steps that run inside this one"
 
 
 @dataclass
@@ -1576,44 +1574,44 @@ class DatabaseFileInfo:
     """Information about the main database file returned by :meth:`dbinfo`
 
     See `file format description <https://www.sqlite.org/fileformat.html#the_database_header>`__"""
-    "database filena name"
     filename: str
-    "Header string"
+    "database filena name"
     header: bytes
-    "The database page size in bytes"
+    "Header string"
     page_size: int
-    "File format write version. 1 for legacy; 2 for WAL"
+    "The database page size in bytes"
     write_format: int
-    "File format read version. 1 for legacy; 2 for WAL."
+    "File format write version. 1 for legacy; 2 for WAL"
     read_format: int
-    'Bytes of unused "reserved" space at the end of each page. Usually 0'
+    "File format read version. 1 for legacy; 2 for WAL."
     reserved_bytes: int
-    "File change counter"
+    'Bytes of unused "reserved" space at the end of each page. Usually 0'
     file_change_counter: int
-    "Size of the database file in pages"
+    "File change counter"
     page_count: int
-    "Total number of freelist pages"
+    "Size of the database file in pages"
     freelist_pages: int
-    "The schema cookie"
+    "Total number of freelist pages"
     schema_cookie: int
-    "The schema format number. Supported schema formats are 1, 2, 3, and 4"
+    "The schema cookie"
     schema_format: int
-    "Default page cache size"
+    "The schema format number. Supported schema formats are 1, 2, 3, and 4"
     default_cache_size: int
-    "The page number of the largest root b-tree page when in auto-vacuum or incremental-vacuum modes, or zero otherwise"
+    "The schema format number. Supported schema formats are 1, 2, 3, and 4"
     autovacuum_top_root: int
-    "The database text encoding"
+    "The page number of the largest root b-tree page when in auto-vacuum or incremental-vacuum modes, or zero otherwise"
     text_encoding: str
-    'The "user version" as read and set by the user_version pragma.'
+    "The database text encoding"
     user_version: int
-    "True (non-zero) for incremental-vacuum mode. False (zero) otherwise."
+    'The "user version" as read and set by the user_version pragma.'
     incremental_vacuum: bool
-    'The "Application ID" set by PRAGMA application_id'
+    "True (non-zero) for incremental-vacuum mode. False (zero) otherwise."
     application_id: int
-    "The version-valid-for number."
+    'The "Application ID" set by PRAGMA application_id'
     version_valid_for: int
-    "SQLite version that lost wrote"
+    "The version-valid-for number."
     sqlite_version: int
+    "SQLite version that lost wrote"
 
 
 @dataclass
@@ -1621,22 +1619,22 @@ class JournalFileInfo:
     """Information about the rollback journal returned by :meth:`dbinfo`
 
     See the `file format description <https://www.sqlite.org/fileformat2.html#the_rollback_journal>`__"""
-    "journal file name"
     filename: str
-    "Header string"
+    "journal file name"
     header: bytes
-    'The "Page Count" - The number of pages in the next segment of the journal, or -1 to mean all content to the end of the file'
+    "Header string"
     header_valid: bool
     "If the header is the expected bytes"
     page_count: int
-    "A random nonce for the checksum"
+    'The "Page Count" - The number of pages in the next segment of the journal, or -1 to mean all content to the end of the file'
     random_nonce: int
-    "Initial size of the database in pages"
+    "A random nonce for the checksum"
     initial_pages: int
-    "Size of a disk sector assumed by the process that wrote this journal"
+    "Initial size of the database in pages"
     sector_size: int
-    "Size of pages in this journal"
+    "Size of a disk sector assumed by the process that wrote this journal"
     page_size: int
+    "Size of pages in this journal"
 
 
 @dataclass
@@ -1644,21 +1642,21 @@ class WALFileInfo:
     """Information about the rollback journal returned by :meth:`dbinfo`
 
     See the `file format description <https://www.sqlite.org/fileformat2.html#wal_file_format>`__"""
-    "WAL file name"
     filename: str
-    "Magic number"
+    "WAL file name"
     magic_number: int
-    "File format version. Currently 3007000"
+    "Magic number"
     format_version: int
-    "Database page size"
+    "File format version. Currently 3007000"
     page_size: int
-    "Checkpoint sequence number"
+    "Database page size"
     checkpoint_sequence_number: int
-    "Salt-1: random integer incremented with each checkpoint"
+    "Checkpoint sequence number"
     salt_1: int
-    "Salt-2: a different random number for each checkpoint"
+    "Salt-1: random integer incremented with each checkpoint"
     salt_2: int
-    "Checksum-1: First part of a checksum on the first 24 bytes of header"
+    "Salt-2: a different random number for each checkpoint"
     checksum_1: int
-    "Checksum-2: Second part of the checksum on the first 24 bytes of header"
+    "Checksum-1: First part of a checksum on the first 24 bytes of header"
     checksum_2: int
+    "Checksum-2: Second part of the checksum on the first 24 bytes of header"

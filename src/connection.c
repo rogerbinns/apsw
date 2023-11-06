@@ -11,11 +11,9 @@
 Connections to a database
 *************************
 
-A :class:`Connection` encapsulates access to a database.  You then use
-:class:`cursors <Cursor>` to issue queries against the database.
-
-You can have multiple :class:`Connections <Connection>` open against
-the same database in the same process, across threads and in other
+A :class:`Connection` encapsulates access to a database.  You can have
+multiple :class:`Connections <Connection>` open against the same
+database file in the same process, across threads and in other
 processes.
 
 */
@@ -535,9 +533,7 @@ finally:
 
    Opens a blob for :ref:`incremental I/O <blobio>`.
 
-   :param database: Name of the database.  This will be ``main`` for
-     the main connection and the name you specified for `attached
-     <https://sqlite.org/lang_attach.html>`_ databases.
+   :param database: Name of the database.  `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__.
    :param table: The name of the table
    :param column: The name of the column
    :param rowid: The id that uniquely identifies the row.
@@ -605,17 +601,16 @@ Connection_blob_open(Connection *self, PyObject *const *fast_args, Py_ssize_t fa
    Opens a :ref:`backup object <Backup>`.  All data will be copied from source
    database to this database.
 
-   :param databasename: Name of the database.  This will be ``main`` for
-     the main connection and the name you specified for `attached
-     <https://sqlite.org/lang_attach.html>`_ databases.
+   :param databasename: Name of the database. `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
    :param sourceconnection: The :class:`Connection` to copy a database from.
    :param sourcedatabasename: Name of the database in the source (eg ``main``).
 
-   :rtype: :class:`backup`
+   :rtype: :class:`Backup`
 
    .. seealso::
 
-     * :ref:`Backup`
+     * :doc:`Backup reference <backup>`
+     * :ref:`Backup example <example_backup>`
 
    -* sqlite3_backup_init
 */
@@ -975,11 +970,11 @@ Connection_set_last_insert_rowid(Connection *self, PyObject *const *fast_args, P
 
 /** .. method:: interrupt() -> None
 
-  Causes any pending operations on the database to abort at the
+  Causes all pending operations on the database to abort at the
   earliest opportunity. You can call this from any thread.  For
   example you may have a long running query when the user presses the
   stop button in your user interface.  :exc:`InterruptError`
-  will be raised in the query that got interrupted.
+  will be raised in the queries that got interrupted.
 
   -* sqlite3_interrupt
 */
@@ -1073,12 +1068,11 @@ finally:
 
     type (int)
       *SQLITE_INSERT*, *SQLITE_DELETE* or *SQLITE_UPDATE*
-    database name (string)
-      This is ``main`` for the database or the name specified in
-      `ATTACH <https://sqlite.org/lang_attach.html>`_
-    table name (string)
+    database name (str)
+      `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
+    table name (str)
       The table on which the update happened
-    rowid (64 bit integer)
+    rowid (int)
       The affected row
 
   .. seealso::
@@ -1226,10 +1220,6 @@ finally:
   execute. (The execution time is in nanoseconds.) Note that it is
   called only on completion. If for example you do a ``SELECT`` and only
   read the first result, then you won't reach the end of the statement.
-
-  This used to call the now deprecated `sqlite3_profile API
-  <https://sqlite.org/c3ref/profile.html>`__
-
 
   -* sqlite3_trace_v2
 */
@@ -1488,7 +1478,7 @@ finally:
   *callable* will be called just before a commit.  It should return
   False for the commit to go ahead and True for it to be turned
   into a rollback. In the case of an exception in your callable, a
-  True (ie rollback) value is returned.  Pass None to unregister
+  True (rollback) value is returned.  Pass None to unregister
   the existing hook.
 
   .. seealso::
@@ -1586,7 +1576,7 @@ finally:
  callback is called with 3 parameters:
 
    * The Connection
-   * The database name (eg "main" or the name of an attached database)
+   * The database name.  `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
    * The number of pages in the wal log
 
  You can pass in None in order to unregister an existing hook.
@@ -1881,7 +1871,7 @@ finally:
 
   Calls `callable` to find out how many pages to autovacuum.  The callback has 4 parameters:
 
-  * Database name: str (eg "main")
+  * Database name: str. `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
   * Database pages: int (how many pages make up the database now)
   * Free pages: int (how many pages could be freed)
   * Page size: int (page size in bytes)
@@ -1889,8 +1879,10 @@ finally:
   Return how many pages should be freed.  Values less than zero or more than the free pages are
   treated as zero or free page count.  On error zero is returned.
 
-  READ THE NOTE IN THE SQLITE DOCUMENTATION.  Calling into SQLite can result in crashes, corrupt
-  databases or worse.
+  .. warning:: READ THE NOTE IN THE SQLITE DOCUMENTATION.
+
+    Calling back into SQLite can result in crashes, corrupt
+    databases, or worse.
 
   -* sqlite3_autovacuum_pages
 */
@@ -2126,8 +2118,8 @@ finally:
 #ifndef SQLITE_OMIT_DESERIALZE
 /** .. method:: serialize(name: str) -> bytes
 
-  Returns a memory copy of the database. *name* is **"main"** for the
-  main database, **"temp"** for the temporary database etc.
+  Returns a memory copy of the database. *name* is `main`, `temp`, the name
+  in `ATTACH <https://sqlite.org/lang_attach.html>`__
 
   The memory copy is the same as if the database was backed up to
   disk.
@@ -2182,8 +2174,8 @@ Connection_serialize(Connection *self, PyObject *const *fast_args, Py_ssize_t fa
 /** .. method:: deserialize(name: str, contents: bytes) -> None
 
    Replaces the named database with an in-memory copy of *contents*.
-   *name* is **"main"** for the main database, **"temp"** for the
-   temporary database etc.
+   *name* is `main`, `temp`, the name in `ATTACH
+   <https://sqlite.org/lang_attach.html>`__
 
    The resulting database is in-memory, read-write, and the memory is
    owned, resized, and freed by SQLite.
@@ -3066,18 +3058,19 @@ finally:
 
     You need to provide callbacks for the ``step``, ``final``, ``value``
     and ``inverse`` methods.  This can be done by having `factory` as a
-    class, and the corresponding method names, or by having `factory`
+    class, returning an instance with the corresponding method names, or by having `factory`
     return a sequence of a first parameter, and then each of the 4
     functions.
 
     **Debugging note** SQlite always calls the ``final`` method to allow
-    for cleanup.  If you have an error in one of the other methods, then
+    for cleanup.  If you have an exception in one of the other methods, then
     ``final`` will also be called, and you may see both methods in
     tracebacks.
 
     .. seealso::
 
      * :ref:`Example <example_window>`
+     * :meth:`~Connection.create_scalar_function`
      * :meth:`~Connection.create_aggregate_function`
 
     -* sqlite3_create_window_function
@@ -3162,6 +3155,7 @@ finally:
 
      * :ref:`Example <example_scalar>`
      * :meth:`~Connection.create_aggregate_function`
+     * :meth:`~Connection.create_window_function`
 
   -* sqlite3_create_function_v2
 */
@@ -3236,9 +3230,9 @@ finally:
   :param numargs: How many arguments the function takes, with -1 meaning any number
   :param flags: `Function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__
 
-  When a query starts, the *factory* will be called.  It can be a class
+  When a query starts, the *factory* will be called.  It can return an object
   with a *step* function called for each matching row, and a *final* function
-  to return the final value.
+  to provide the final value.
 
   Alternatively a non-class approach can return a tuple of 3 items:
 
@@ -3267,6 +3261,7 @@ finally:
 
      * :ref:`Example <example_aggregate>`
      * :meth:`~Connection.create_scalar_function`
+     * :meth:`~Connection.create_window_function`
 
   -* sqlite3_create_function_v2
 */
@@ -3408,12 +3403,12 @@ collation_destroy(void *context)
   if the first is less then the second, 0 if they are equal, and 1 if
   first is greater::
 
-     def mycollation(one, two):
-         if one < two:
+     def mycollation(first: str, two: str) -> int:
+         if first < second:
              return -1
-         if one == two:
+         if first == second:
              return 0
-         if one > two:
+         if first > second:
              return 1
 
   Passing None as the callback will unregister the collation.
@@ -3421,6 +3416,7 @@ collation_destroy(void *context)
   .. seealso::
 
     * :ref:`Example <example_collation>`
+    * :meth:`Connection.collation_needed`
 
   -* sqlite3_create_collation_v2
 */
@@ -3468,7 +3464,7 @@ Connection_create_collation(Connection *self, PyObject *const *fast_args, Py_ssi
   Calls the :meth:`~VFSFile.xFileControl` method on the :ref:`VFS`
   implementing :class:`file access <VFSFile>` for the database.
 
-  :param dbname: The name of the database to affect (eg "main", "temp", attached name)
+  :param dbname: The name of the database to affect.  `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
   :param op: A `numeric code
     <https://sqlite.org/c3ref/c_fcntl_lockstate.html>`_ with values less
     than 100 reserved for SQLite internal use.
@@ -3657,7 +3653,7 @@ static struct sqlite3_module *apswvtabSetupModuleDef(PyObject *datasource, int i
     Registers a virtual table, or drops it if *datasource* is *None*.
     See :ref:`virtualtables` for details.
 
-    :param name: Module name (what comes after USING in CREATE VIRTUAL TABLE tablename USING ...)
+    :param name: Module name (CREATE VIRTUAL TABLE table_name USING module_name...)
     :param datasource: Provides :class:`VTModule` methods
     :param use_bestindex_object: If True then BestIndexObject is used, else BestIndex
     :param use_no_change: Turn on understanding :meth:`VTCursor.ColumnNoChange` and using :attr:`apsw.no_change` to reduce :meth:`VTTable.UpdateChangeRow` work
@@ -3733,7 +3729,7 @@ Connection_create_module(Connection *self, PyObject *const *fast_args, Py_ssize_
 
 /** .. method:: vtab_config(op: int, val: int = 0) -> None
 
- Called during virtual table connect/create.
+ Callable during virtual table :meth:`~VTModule.Connect`/:meth:`~VTModule.Create`.
 
  -* sqlite3_vtab_config
 
@@ -3776,7 +3772,8 @@ Connection_vtab_config(Connection *self, PyObject *const *fast_args, Py_ssize_t 
 
 /** .. method:: vtab_on_conflict() -> int
 
- Called during virtual table xUpdate
+ Callable during virtual table :meth:`insert <VTTable.UpdateInsertRow>` or
+ :meth:`update <VTTable.UpdateChangeRow>`
 
  -* sqlite3_vtab_on_conflict
 
@@ -3919,7 +3916,7 @@ Connection_get_row_trace(Connection *self)
 /** .. method:: __enter__() -> Connection
 
   You can use the database as a `context manager
-  <https://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
+  <https://docs.python.org/3/reference/datamodel.html#with-statement-context-managers>`_
   as defined in :pep:`0343`.  When you use *with* a transaction is
   started.  If the block finishes with an exception then the
   transaction is rolled back, otherwise it is committed.  For example::
@@ -3935,9 +3932,8 @@ Connection_get_row_trace(Connection *self)
                 call_function2(db)
                 db.execute("...")
 
-  Behind the scenes the `savepoint
-  <https://sqlite.org/lang_savepoint.html>`_ functionality introduced in
-  SQLite 3.6.8 is used to provide nested transactions.
+  Behind the scenes `savepoints <https://sqlite.org/lang_savepoint.html>`__
+   are used to provide nested transactions.
 */
 static PyObject *
 Connection_enter(Connection *self)
@@ -3997,9 +3993,10 @@ error:
 /** .. method:: __exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[types.TracebackType]) -> Optional[bool]
 
   Implements context manager in conjunction with
-  :meth:`~Connection.__enter__`.  Any exception that happened in the
-  *with* block is raised after committing or rolling back the
-  savepoint.
+  :meth:`~Connection.__enter__`.  If no exception happened then
+  the pending transaction is committed, while an exception results in a
+  rollback.
+
 */
 
 /* A helper function.  Returns -1 on memory error, 0 on failure and 1 on success */
@@ -4116,7 +4113,7 @@ Connection_exit(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_na
 
     This is how to get the fkey setting::
 
-      val = config(apsw.SQLITE_DBCONFIG_ENABLE_FKEY, -1)
+      val = db.config(apsw.SQLITE_DBCONFIG_ENABLE_FKEY, -1)
 
     A parameter of zero would turn it off, 1 turns on, and negative
     leaves unaltered.  The effective value is always returned.
@@ -4187,9 +4184,8 @@ Connection_config(Connection *self, PyObject *args)
 
   .. seealso::
 
-    The :func:`status` example which works in exactly the same way.
-
-    * :ref:`Status example <example_status>`
+    * :func:`apsw.status` which does the same for SQLite as a whole
+    * :ref:`Example <example_status>`
 
   -* sqlite3_db_status
 
@@ -4221,7 +4217,8 @@ Connection_status(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_
 /** .. method:: readonly(name: str) -> bool
 
   True or False if the named (attached) database was opened readonly or file
-  permissions don't allow writing.  The main database is named "main".
+  permissions don't allow writing.  The name is `main`, `temp`, the
+  name in `ATTACH <https://sqlite.org/lang_attach.html>`__
 
   An exception is raised if the database doesn't exist.
 
@@ -4254,7 +4251,7 @@ Connection_readonly(Connection *self, PyObject *const *fast_args, Py_ssize_t fas
 /** .. method:: db_filename(name: str) -> str
 
   Returns the full filename of the named (attached) database.  The
-  main database is named "main".
+  main is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
 
   -* sqlite3_db_filename
 */
@@ -4280,8 +4277,7 @@ Connection_db_filename(Connection *self, PyObject *const *fast_args, Py_ssize_t 
 /** .. method:: txn_state(schema: Optional[str] = None) -> int
 
   Returns the current transaction state of the database, or a specific schema
-  if provided.  ValueError is raised if schema is not None or a valid schema name.
-  :attr:`apsw.mapping_txn_state` contains the names and values returned.
+  if provided.  :attr:`apsw.mapping_txn_state` contains the values returned.
 
   -* sqlite3_txn_state
 */
@@ -4314,7 +4310,7 @@ Connection_txn_state(Connection *self, PyObject *const *fast_args, Py_ssize_t fa
     returns when the first row is available or all statements have
     completed.  (A cursor is automatically obtained).
 
-    See :meth:`Cursor.execute` for more details.
+    See :meth:`Cursor.execute` for more details, and the :ref:`example <example_executing_sql>`.
 */
 static PyObject *
 Connection_execute(Connection *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwnames)
@@ -4351,7 +4347,7 @@ This method is for when you want to execute the same statements over a
 sequence of bindings, such as inserting into a database.  (A cursor is
 automatically obtained).
 
-See :meth:`Cursor.executemany` for more details.
+See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_executemany>`.
 */
 static PyObject *
 Connection_executemany(Connection *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwnames)
@@ -4531,8 +4527,8 @@ Connection_cache_stats(Connection *self, PyObject *const *fast_args, Py_ssize_t 
 
   Returns True if the named table exists, else False.
 
-  `dbname` is the specific database (eg "main", "temp") or None to search
-  all databases
+  `dbname` is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__,
+   or None to search  all databases
 
   -* sqlite3_table_column_metadata
 */
@@ -4560,7 +4556,7 @@ Connection_table_exists(Connection *self, PyObject *const *fast_args, Py_ssize_t
 
 /** .. method:: column_metadata(dbname: Optional[str], table_name: str, column_name: str) -> tuple[str, str, bool, bool, bool]
 
-  `dbname` is the specific database (eg "main", "temp") or None to search
+  `dbname` is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__, or None to search
   all databases.
 
   The returned :class:`tuple` has these fields:
@@ -4745,7 +4741,7 @@ finally:
   is strongly recommended to read aligned complete pages, since that is
   only what SQLite does.
 
-  `schema` is `main`, `temp`, or the name of an attached database.
+  `schema` is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
 
   `which` is 0 for the database file, 1 for the journal.
 
@@ -5082,7 +5078,7 @@ Connection_set_authorizer_attr(Connection *self, PyObject *value)
 /** .. attribute:: system_errno
  :type: int
 
- The underlying system error code for the most recent I/O errors or failing to open files.
+ The underlying system error code for the most recent I/O error.
 
  -* sqlite3_system_errno
 */
@@ -5138,7 +5134,7 @@ static PyGetSetDef Connection_getseters[] = {
 /** .. attribute:: open_flags
   :type: int
 
-  The integer flags used to open the database.
+  The combination of :attr:`flags <apsw.mapping_open_flags>` used to open the database.
 */
 
 /** .. attribute:: open_vfs

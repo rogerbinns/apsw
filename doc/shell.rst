@@ -6,10 +6,9 @@ Shell
 *****
 
 The shell provides a convenient way for you to interact with SQLite,
-perform administration and supply SQL for execution.  It is modelled
+perform administration, and supply SQL for execution.  It is modelled
 after the `shell that comes with SQLite
-<https://sqlite.org/cli.html>`__ which requires separate
-compilation and installation.
+<https://sqlite.org/cli.html>`__ which doesn't interoperate with Python.
 
 Notable improvements include:
 
@@ -18,20 +17,23 @@ Notable improvements include:
 * Output is in colour
 * Tab completion is available
 * Nicer text dump output, including metadata like user_version
-* Useful :ref:`autoimport <shell-cmd-autoimport>` and :ref:`find
+* All open APSW :class:`connections <Connection>` are available
+  and you can switch between them
+* :ref:`.py command <shell-cmd-py>` gets you a Python REPL or
+  runs one line of Python code
+* Very useful :ref:`autoimport <shell-cmd-autoimport>` and :ref:`find
   <shell-cmd-find>` commands
 
 Notes
 =====
 
 To interrupt the shell press Control-C. (On Windows if you press
-Control-Break then the program will be instantly aborted.)
+Control-Break then the program will be terminated.)
 
 For Windows users you won't have command line editing and completion
-unless you install a `readline module
-<https://docs.python.org/library/readline.html>`__. You can pip install
-`pyreadline3 <https://pypi.org/project/pyreadline3/>`__ to get full
-functionality.
+unless you install a :mod:`readline module <readline>`. You can pip
+install `pyreadline3 <https://pypi.org/project/pyreadline3/>`__ to get
+full functionality.
 
 For Windows users, the builtin console support for colour is used.  It
 is enabled by default in current versions of Windows, and a registry
@@ -57,8 +59,8 @@ You can use the shell directly from the command line.
      -echo                print commands before execution
      -[no]header          turn headers on or off
      -bail                stop after hitting the first error
-     -interactive         force interactive I/O
-     -batch               force batch I/O
+     -interactive         force interactive I/O (command editing and colour)
+     -batch               force batch I/O (no banners or editing)
      -column              set output mode to 'column'
      -csv                 set output mode to 'csv'
      -html                set output mode to 'html'
@@ -323,8 +325,7 @@ The table name is treated as like pattern so you can use ``%`` as a wildcard.
 You can use dump to make a text based backup of the database.  It is also useful
 for comparing differences or making the data available to other databases.
 Indices and triggers for the table(s) are also dumped.  Finally views matching
-the table pattern name are dumped (it isn't possible to work out which views
-access which table and views can access multiple tables anyway).
+the table pattern name are dumped.
 
 Note that if you are dumping virtual tables such as used by the FTS5 module then
 they may use other tables to store information.  For example if you create a
@@ -356,21 +357,15 @@ encoding ENCODING
 
 *Set the encoding used for new files opened via .output and imports*
 
-SQLite and APSW work internally using Unicode and characters. Files however are
-a sequence of bytes.  An encoding describes how to convert between bytes and
-characters.  The default encoding is utf8 and that is generally the best value
-to use when other programs give you a choice.
+SQLite and APSW/Python work internally using Unicode and characters. Files
+however are a sequence of bytes.  An encoding describes how to convert between
+bytes and characters.  The default encoding is utf8 and that is generally the
+best value to use when other programs give you a choice.
 
 You can also specify an error handler.  For example `cp437:replace` will use
 code page 437 and any Unicode codepoints not present in cp437 will be replaced
 (typically with something like a question mark).  Other error handlers include
 `ignore`, `strict` (default) and `xmlcharrefreplace`.
-
-For the default input/output/error streams on startup the shell defers to
-Python's detection of encoding.  For example on Windows it asks what code page
-is in use and on Unix it looks at the ``LC_CTYPE`` environment variable.  You
-can set the ``PYTHONIOENCODING`` environment variable to override this
-detection.
 
 This command affects files opened after setting the encoding as well as imports.
 
@@ -417,7 +412,7 @@ The value will be treated as a string and/or integer if possible.  If value
 contains ``%`` or ``_`` then it is also treated as a like pattern.
 
 This command can take a long time to execute needing to scan all of the relevant
-tables.
+tables, rows, and columns.
 
 .. _shell-cmd-header:
 .. index::
@@ -653,9 +648,9 @@ prompt MAIN ?CONTINUE?
 *Changes the prompts for first line and continuation lines*
 
 The default is to print 'sqlite> ' for the main prompt where you can enter a dot
-command or a SQL statement.  If the SQL statement is not complete (eg not ;
-terminated) then you are prompted for more using the continuation prompt which
-defaults to ' ..> '.  Example::
+command or a SQL statement.  If the SQL statement is not complete then you are
+prompted for more using the continuation prompt which defaults to ' ..> '.
+Example::
 
   .prompt "command> " "more command> "
 
@@ -715,7 +710,7 @@ schema ?TABLE? [TABLE...]
 
 If you give one or more tables then their schema is listed (including indices).
 If you don't specify any then all schemas are listed. ``TABLE`` is a like
-pattern so you can ``%`` for wildcards.
+pattern so you can use ``%`` for wildcards.
 
 .. _shell-cmd-separator:
 .. index::
@@ -846,13 +841,13 @@ justify and zero for default column width.
 Shell class
 ===========
 
-This is the API should you want to integrate the code into your shell.
-Not shown here are the functions that implement various commands.
-They are named after the command.  For example .exit is implemented by
-command_exit.  You can add new commands by having your subclass have
-the relevant functions.  The doc string of the function is used by the
-help command.  Output modes work in a similar way.  For example there
-is an output_html method and again doc strings are used by the help
+This is the API should you want extend the shell with your own commands
+and output modes. Not shown here are the functions that implement various
+commands.  They are named after the command.  For example .exit is
+implemented by command_exit.  You can add new commands by having your
+subclass have the relevant functions.  The doc string of the function is
+used by the help command.  Output modes work in a similar way.  For example
+there is an output_html method and again doc strings are used by the help
 function and you add more by just implementing an appropriately named
 method.
 

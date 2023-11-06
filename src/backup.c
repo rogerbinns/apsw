@@ -20,26 +20,7 @@ repeatedly dealing with errors as appropriate.  Finally
 :meth:`~Backup.finish` cleans up committing or rolling back and
 releasing locks.
 
-Here is an example usage using the **with** statement to ensure
-:meth:`~Backup.finish` is called::
-
-  # copies source.main into db
-  with db.backup("main", source, "main") as b:
-      while not b.done:
-          b.step(100)
-          print(b.remaining, b.page_count, "\r", flush = True)
-
-If you are not using **with** then you'll need to ensure
-:meth:`~Backup.finish` is called::
-
-  # copies source.main into db
-  b=db.backup("main", source, "main")
-  try:
-      while not b.done:
-          b.step(100)
-          print(b.remaining, b.page_count, "\r", flush = True)
-  finally:
-      b.finish()
+See the :ref:`example <example_backup>`.
 
 Important details
 =================
@@ -49,6 +30,9 @@ round trip via SQL.  All pages are copied including free ones.
 
 The destination database is locked during the copy.  You will get a
 :exc:`ThreadingViolationError` if you attempt to use it.
+
+The source database can change during the backup.  SQLite will
+come back and copy those changes too until the backup is complete.
 */
 
 /* we love us some macros */
@@ -163,16 +147,13 @@ APSWBackup_dealloc(APSWBackup *self)
   backup object is :meth:`finished <Backup.finish>`.
 
   :param npages: How many pages to copy. If the parameter is omitted
-     or negative then all remaining pages are copied. The default page
-     size is 4096 bytes (4kb) which can be viewed, or changed before database
-     creation using a `pragma
-     <https://www.sqlite.org/pragma.html#pragma_page_size>`_.
+     or negative then all remaining pages are copied.
 
   This method may throw a :exc:`BusyError` or :exc:`LockedError` if
   unable to lock the source database.  You can catch those and try
   again.
 
-  :returns: True if this copied the last remaining outstanding pages, else false.  This is the same value as :attr:`~Backup.done`
+  :returns: True if this copied the last remaining outstanding pages, else False.  This is the same value as :attr:`~Backup.done`
 
   -* sqlite3_backup_step
 */
@@ -247,10 +228,8 @@ APSWBackup_finish(APSWBackup *self)
 /** .. method:: close(force: bool = False) -> None
 
   Does the same thing as :meth:`~Backup.finish`.  This extra api is
-  provided to give the same api as other APSW objects such as
-  :meth:`Connection.close`, :meth:`Blob.close` and
-  :meth:`Cursor.close`.  It is safe to call this method multiple
-  times.
+  provided to give the same api as other APSW objects and files.
+  It is safe to call this method multiple  times.
 
   :param force: If true then any exceptions are ignored.
 */
@@ -314,7 +293,7 @@ APSWBackup_get_page_count(APSWBackup *self, void *Py_UNUSED(ignored))
 /** .. method:: __enter__() -> Backup
 
   You can use the backup object as a `context manager
-  <https://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
+  <https://docs.python.org/3/reference/datamodel.html#with-statement-context-managers>`_
   as defined in :pep:`0343`.  The :meth:`~Backup.__exit__` method ensures that backup
   is :meth:`finished <Backup.finish>`.
 */
