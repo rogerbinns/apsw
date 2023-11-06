@@ -1,11 +1,14 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>apsw.ext &mdash; APSW 3.43.2.0 documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>apsw.ext &mdash; APSW 3.44.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=72bcf2f2" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/apsw.css?v=3c7e2631" />
+
+  
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
@@ -13,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=200f835c"></script>
+        <script src="../../_static/documentation_options.js?v=5c66a1ff"></script>
         <script src="../../_static/doctools.js?v=888ff710"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -36,7 +39,7 @@
               <img src="../../_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.43.2.0
+                3.44.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -63,7 +66,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../bestpractice.html">Best Practice</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../ext.html">Various interesting and useful bits of functionality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../exceptions.html">Exceptions and Errors</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../types.html">Types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../execution.html">Execution and tracing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../dbapi.html">DBAPI notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../pysqlite.html">sqlite3 module differences</a></li>
@@ -282,9 +284,10 @@
 <div class="viewcode-block" id="TypesConverterCursorFactory">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory">[docs]</a>
 <span class="k">class</span> <span class="nc">TypesConverterCursorFactory</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Provides cursors that can convert objects into one of the types supported by SQLite. or back from SQLite</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Provides cursors that can convert objects into one of the types supported by SQLite,</span>
+<span class="sd">    or back from SQLite</span>
 
-<span class="sd">    :param metaclass: Which metaclass to consider as conversion capable</span>
+<span class="sd">    :param abstract_base_class: Which metaclass to consider as conversion capable</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">abstract_base_class</span><span class="p">:</span> <span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span> <span class="o">=</span> <span class="n">SQLiteTypeAdapter</span><span class="p">):</span>
@@ -311,7 +314,7 @@
 <div class="viewcode-block" id="TypesConverterCursorFactory.__call__">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.__call__">[docs]</a>
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TypeConverterCursor</span><span class="p">:</span>
-        <span class="s2">&quot;Returns a new :class:`cursor &lt;apsw.Cursor&gt;` for the `connection`&quot;</span>
+        <span class="s2">&quot;Returns a new convertor :class:`cursor &lt;apsw.Cursor&gt;` for the `connection`&quot;</span>
         <span class="k">return</span> <span class="n">TypesConverterCursorFactory</span><span class="o">.</span><span class="n">TypeConverterCursor</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span></div>
 
 
@@ -439,12 +442,9 @@
 <div class="viewcode-block" id="log_sqlite">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.log_sqlite">[docs]</a>
 <span class="k">def</span> <span class="nf">log_sqlite</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Send SQLite log messages to :mod:`logging`</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Send SQLite `log messages &lt;https://www.sqlite.org/errlog.html&gt;`__ to :mod:`logging`</span>
 
 <span class="sd">    :param level: level to log at</span>
-
-<span class="sd">    SQLite&#39;s `logging &lt;https://www.sqlite.org/errlog.html&gt;`__ has many</span>
-<span class="sd">    useful messages, including those that aren&#39;t raised as exceptions.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">handler</span><span class="p">(</span><span class="n">errcode</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -473,6 +473,7 @@
                               <span class="o">*</span><span class="p">,</span>
                               <span class="n">file</span><span class="p">:</span> <span class="n">TextIO</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Prints a standard exception, but also includes the value of variables in each stack frame</span>
+<span class="sd">    which APSW :ref:`adds &lt;augmentedstacktraces&gt;` to help diagnostics and debugging.</span>
 
 <span class="sd">    :param exc_type: The exception type</span>
 <span class="sd">    :param exc_value: The exception value</span>
@@ -632,11 +633,11 @@
 <a class="viewcode-back" href="../../ext.html#apsw.ext.dbinfo">[docs]</a>
 <span class="k">def</span> <span class="nf">dbinfo</span><span class="p">(</span><span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span>
            <span class="n">schema</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DatabaseFileInfo</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">JournalFileInfo</span> <span class="o">|</span> <span class="n">WALFileInfo</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extracts fields from the database files</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extracts fields from the database, journal, and wal files</span>
 
 <span class="sd">    Based on the `file format description &lt;https://www.sqlite.org/fileformat2.html&gt;`__.  The</span>
 <span class="sd">    headers are read using :meth:`apsw.Connection.read` so you see inside encrypted, compressed,</span>
-<span class="sd">    zip etc formats. not necessarily the actual on disk file.</span>
+<span class="sd">    zip etc formats, not necessarily the actual on disk file.</span>
 
 <span class="sd">    Memory databases return `None` for both.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -791,7 +792,7 @@
 <span class="sd">    :param text_width: Maximum output width to generate</span>
 <span class="sd">    :param use_unicode: If True then unicode line drawing characters are used.  If False then +---+ and | are</span>
 <span class="sd">        used.</span>
-<span class="sd">    :param word_wrap: If True then :mod:`textwrap` is used to break wide text into fit column width</span>
+<span class="sd">    :param word_wrap: If True then :mod:`textwrap` is used to break wide text to fit column width</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># args we pass on to format_table</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span>
@@ -1097,6 +1098,7 @@
 
 <span class="sd">    .. list-table::</span>
 <span class="sd">        :header-rows: 1</span>
+<span class="sd">        :widths: auto</span>
 
 <span class="sd">        * - Type</span>
 <span class="sd">          - Access</span>
@@ -1222,7 +1224,8 @@
 
 <span class="sd">    If you specify a parameter to the table and in WHERE, or have</span>
 <span class="sd">    non-equality for WHERE clauses of parameters then the query will</span>
-<span class="sd">    fail with :class:`apsw.SQLError` and a message &quot;no query solution&quot;</span>
+<span class="sd">    fail with :class:`apsw.SQLError` and a message from SQLite of</span>
+<span class="sd">    &quot;no query solution&quot;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">class</span> <span class="nc">Module</span><span class="p">:</span>
@@ -1427,9 +1430,7 @@
 <div class="viewcode-block" id="generate_series_sqlite">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.generate_series_sqlite">[docs]</a>
 <span class="k">def</span> <span class="nf">generate_series_sqlite</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mh">0xffffffff</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Behaves like SQLite&#39;s generate_series</span>
-
-<span class="sd">    `SQLite doc &lt;https://sqlite.org/series.html&gt;`__.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Behaves like SQLite&#39;s `generate_series &lt;https://sqlite.org/series.html&gt;`__</span>
 
 <span class="sd">    Only integers are supported.  If *step* is negative</span>
 <span class="sd">    then values are generated from *stop* to *start*</span>
@@ -1535,7 +1536,7 @@
                <span class="n">expanded_sql</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                <span class="n">explain</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                <span class="n">explain_query_plan</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QueryDetails</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns information about the query, but does not run it.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns information about the query, without running it.</span>
 
 <span class="sd">    Set the various parameters to `True` if you also want the</span>
 <span class="sd">    actions, expanded_sql, explain, query_plan etc filled in.</span>
@@ -1719,7 +1720,7 @@
 
     <span class="n">column_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">database_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="s2">&quot;eg `main`, `temp`, the name in `ATTACH &lt;https://sqlite.org/lang_attach.html&gt;`__&quot;</span>
+    <span class="s2">&quot;`main`, `temp`, the name in `ATTACH &lt;https://sqlite.org/lang_attach.html&gt;`__&quot;</span>
     <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">function_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">module_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1743,7 +1744,7 @@
     <span class="n">detail</span><span class="p">:</span> <span class="nb">str</span>
     <span class="s2">&quot;Description of this step&quot;</span>
     <span class="n">sub</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">QueryPlan</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="s2">&quot;Steps that run within this one&quot;</span></div>
+    <span class="s2">&quot;Steps that run inside this one&quot;</span></div>
 
 
 
@@ -1778,44 +1779,44 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Information about the main database file returned by :meth:`dbinfo`</span>
 
 <span class="sd">    See `file format description &lt;https://www.sqlite.org/fileformat.html#the_database_header&gt;`__&quot;&quot;&quot;</span>
-    <span class="s2">&quot;database filena name&quot;</span>
     <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="s2">&quot;Header string&quot;</span>
+    <span class="s2">&quot;database filena name&quot;</span>
     <span class="n">header</span><span class="p">:</span> <span class="nb">bytes</span>
-    <span class="s2">&quot;The database page size in bytes&quot;</span>
+    <span class="s2">&quot;Header string&quot;</span>
     <span class="n">page_size</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="s2">&quot;File format write version. 1 for legacy; 2 for WAL&quot;</span>
+    <span class="s2">&quot;The database page size in bytes&quot;</span>
     <span class="n">write_format</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="s2">&quot;File format read version. 1 for legacy; 2 for WAL.&quot;</span>
+    <span class="s2">&quot;File format write version. 1 for legacy; 2 for WAL&quot;</span>
     <span class="n">read_format</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="s1">&#39;Bytes of unused &quot;reserved&quot; space at the end of each page. Usually 0&#39;</span>
+    <span class="s2">&quot;File format read version. 1 for legacy; 2 for WAL.&quot;</span>
     <span class="n">reserved_bytes</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="s2">&quot;File change counter&quot;</span>
+    <span class="s1">&#39;Bytes of unused &quot;reserved&quot; space at the end of each page. Usually 0&#39;</span>
     <span class="n">file_change_counter</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="s2">&quot;Size of the database file in pages&quot;</span>
+    <span class="s2">&quot;File change counter&quot;</span>
     <span class="n">page_count</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="s2">&quot;Total number of freelist pages&quot;</span>
+    <span class="s2">&quot;Size of the database file in pages&quot;</span>
     <span class="n">freelist_pages</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="s2">&quot;The schema cookie&quot;</span>
+    <span class="s2">&quot;Total number of freelist pages&quot;</span>
     <span class="n">schema_cookie</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="s2">&quot;The schema format number. Supported schema formats are 1, 2, 3, and 4&quot;</span>
+    <span class="s2">&quot;The schema cookie&quot;</span>
     <span class="n">schema_format</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="s2">&quot;Default page cache size&quot;</span>
+    <span class="s2">&quot;The schema format number. Supported schema formats are 1, 2, 3, and 4&quot;</span>
     <span class="n">default_cache_size</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="s2">&quot;The page number of the largest root b-tree page when in auto-vacuum or incremental-vacuum modes, or zero otherwise&quot;</span>
+    <span class="s2">&quot;The schema format number. Supported schema formats are 1, 2, 3, and 4&quot;</span>
     <span class="n">autovacuum_top_root</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="s2">&quot;The database text encoding&quot;</span>
+    <span class="s2">&quot;The page number of the largest root b-tree page when in auto-vacuum or incremental-vacuum modes, or zero otherwise&quot;</span>
     <span class="n">text_encoding</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="s1">&#39;The &quot;user version&quot; as read and set by the user_version pragma.&#39;</span>
+    <span class="s2">&quot;The database text encoding&quot;</span>
     <span class="n">user_version</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="s2">&quot;True (non-zero) for incremental-vacuum mode. False (zero) otherwise.&quot;</span>
+    <span class="s1">&#39;The &quot;user version&quot; as read and set by the user_version pragma.&#39;</span>
     <span class="n">incremental_vacuum</span><span class="p">:</span> <span class="nb">bool</span>
-    <span class="s1">&#39;The &quot;Application ID&quot; set by PRAGMA application_id&#39;</span>
+    <span class="s2">&quot;True (non-zero) for incremental-vacuum mode. False (zero) otherwise.&quot;</span>
     <span class="n">application_id</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="s2">&quot;The version-valid-for number.&quot;</span>
+    <span class="s1">&#39;The &quot;Application ID&quot; set by PRAGMA application_id&#39;</span>
     <span class="n">version_valid_for</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="s2">&quot;SQLite version that lost wrote&quot;</span>
-    <span class="n">sqlite_version</span><span class="p">:</span> <span class="nb">int</span></div>
+    <span class="s2">&quot;The version-valid-for number.&quot;</span>
+    <span class="n">sqlite_version</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;SQLite version that lost wrote&quot;</span></div>
 
 
 
@@ -1826,22 +1827,22 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Information about the rollback journal returned by :meth:`dbinfo`</span>
 
 <span class="sd">    See the `file format description &lt;https://www.sqlite.org/fileformat2.html#the_rollback_journal&gt;`__&quot;&quot;&quot;</span>
-    <span class="s2">&quot;journal file name&quot;</span>
     <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="s2">&quot;Header string&quot;</span>
+    <span class="s2">&quot;journal file name&quot;</span>
     <span class="n">header</span><span class="p">:</span> <span class="nb">bytes</span>
-    <span class="s1">&#39;The &quot;Page Count&quot; - The number of pages in the next segment of the journal, or -1 to mean all content to the end of the file&#39;</span>
+    <span class="s2">&quot;Header string&quot;</span>
     <span class="n">header_valid</span><span class="p">:</span> <span class="nb">bool</span>
     <span class="s2">&quot;If the header is the expected bytes&quot;</span>
     <span class="n">page_count</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="s2">&quot;A random nonce for the checksum&quot;</span>
+    <span class="s1">&#39;The &quot;Page Count&quot; - The number of pages in the next segment of the journal, or -1 to mean all content to the end of the file&#39;</span>
     <span class="n">random_nonce</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="s2">&quot;Initial size of the database in pages&quot;</span>
+    <span class="s2">&quot;A random nonce for the checksum&quot;</span>
     <span class="n">initial_pages</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="s2">&quot;Size of a disk sector assumed by the process that wrote this journal&quot;</span>
+    <span class="s2">&quot;Initial size of the database in pages&quot;</span>
     <span class="n">sector_size</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="s2">&quot;Size of pages in this journal&quot;</span>
-    <span class="n">page_size</span><span class="p">:</span> <span class="nb">int</span></div>
+    <span class="s2">&quot;Size of a disk sector assumed by the process that wrote this journal&quot;</span>
+    <span class="n">page_size</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;Size of pages in this journal&quot;</span></div>
 
 
 
@@ -1852,24 +1853,24 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Information about the rollback journal returned by :meth:`dbinfo`</span>
 
 <span class="sd">    See the `file format description &lt;https://www.sqlite.org/fileformat2.html#wal_file_format&gt;`__&quot;&quot;&quot;</span>
-    <span class="s2">&quot;WAL file name&quot;</span>
     <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="s2">&quot;Magic number&quot;</span>
+    <span class="s2">&quot;WAL file name&quot;</span>
     <span class="n">magic_number</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="s2">&quot;File format version. Currently 3007000&quot;</span>
+    <span class="s2">&quot;Magic number&quot;</span>
     <span class="n">format_version</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="s2">&quot;Database page size&quot;</span>
+    <span class="s2">&quot;File format version. Currently 3007000&quot;</span>
     <span class="n">page_size</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="s2">&quot;Checkpoint sequence number&quot;</span>
+    <span class="s2">&quot;Database page size&quot;</span>
     <span class="n">checkpoint_sequence_number</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="s2">&quot;Salt-1: random integer incremented with each checkpoint&quot;</span>
+    <span class="s2">&quot;Checkpoint sequence number&quot;</span>
     <span class="n">salt_1</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="s2">&quot;Salt-2: a different random number for each checkpoint&quot;</span>
+    <span class="s2">&quot;Salt-1: random integer incremented with each checkpoint&quot;</span>
     <span class="n">salt_2</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="s2">&quot;Checksum-1: First part of a checksum on the first 24 bytes of header&quot;</span>
+    <span class="s2">&quot;Salt-2: a different random number for each checkpoint&quot;</span>
     <span class="n">checksum_1</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="s2">&quot;Checksum-2: Second part of the checksum on the first 24 bytes of header&quot;</span>
-    <span class="n">checksum_2</span><span class="p">:</span> <span class="nb">int</span></div>
+    <span class="s2">&quot;Checksum-1: First part of a checksum on the first 24 bytes of header&quot;</span>
+    <span class="n">checksum_2</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;Checksum-2: Second part of the checksum on the first 24 bytes of header&quot;</span></div>
 
 </pre></div>
 
@@ -1881,7 +1882,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Oct 24, 2023.
+      <span class="lastupdated">Last updated on Nov 06, 2023.
       </span></p>
   </div>
 

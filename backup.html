@@ -1,12 +1,15 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Backup &mdash; APSW 3.43.2.0 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <title>Backup &mdash; APSW 3.44.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
+
+  
     <link rel="shortcut icon" href="_static/favicon.ico"/>
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
@@ -14,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=200f835c"></script>
+        <script src="_static/documentation_options.js?v=5c66a1ff"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +42,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.43.2.0
+                3.44.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -83,7 +86,6 @@
 <li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
-<li class="toctree-l1"><a class="reference internal" href="types.html">Types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
@@ -129,46 +131,28 @@ Backup object.  Call <a class="reference internal" href="#apsw.Backup.step" titl
 repeatedly dealing with errors as appropriate.  Finally
 <a class="reference internal" href="#apsw.Backup.finish" title="apsw.Backup.finish"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finish()</span></code></a> cleans up committing or rolling back and
 releasing locks.</p>
-<p>Here is an example usage using the <strong>with</strong> statement to ensure
-<a class="reference internal" href="#apsw.Backup.finish" title="apsw.Backup.finish"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finish()</span></code></a> is called:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># copies source.main into db</span>
-<span class="k">with</span> <span class="n">db</span><span class="o">.</span><span class="n">backup</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">b</span><span class="p">:</span>
-    <span class="k">while</span> <span class="ow">not</span> <span class="n">b</span><span class="o">.</span><span class="n">done</span><span class="p">:</span>
-        <span class="n">b</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">remaining</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">page_count</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\r</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">flush</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>If you are not using <strong>with</strong> then you'll need to ensure
-<a class="reference internal" href="#apsw.Backup.finish" title="apsw.Backup.finish"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finish()</span></code></a> is called:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># copies source.main into db</span>
-<span class="n">b</span><span class="o">=</span><span class="n">db</span><span class="o">.</span><span class="n">backup</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span>
-<span class="k">try</span><span class="p">:</span>
-    <span class="k">while</span> <span class="ow">not</span> <span class="n">b</span><span class="o">.</span><span class="n">done</span><span class="p">:</span>
-        <span class="n">b</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">remaining</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">page_count</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\r</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">flush</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
-<span class="k">finally</span><span class="p">:</span>
-    <span class="n">b</span><span class="o">.</span><span class="n">finish</span><span class="p">()</span>
-</pre></div>
-</div>
+<p>See the <a class="reference internal" href="example.html#example-backup"><span class="std std-ref">example</span></a>.</p>
 <section id="important-details">
 <h2>Important details<a class="headerlink" href="#important-details" title="Link to this heading"></a></h2>
 <p>The database is copied page by page.  This means that there is not a
 round trip via SQL.  All pages are copied including free ones.</p>
 <p>The destination database is locked during the copy.  You will get a
 <a class="reference internal" href="exceptions.html#apsw.ThreadingViolationError" title="apsw.ThreadingViolationError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ThreadingViolationError</span></code></a> if you attempt to use it.</p>
+<p>The source database can change during the backup.  SQLite will
+come back and copy those changes too until the backup is complete.</p>
 </section>
 <section id="backup-class">
 <h2>Backup class<a class="headerlink" href="#backup-class" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="apsw.Backup">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Backup</span></span><a class="headerlink" href="#apsw.Backup" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">Backup</span></span><a class="headerlink" href="#apsw.Backup" title="Link to this definition"></a></dt>
 <dd><p>You create a backup instance by calling <a class="reference internal" href="connection.html#apsw.Connection.backup" title="apsw.Connection.backup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.backup()</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.Backup.__enter__">
 <span class="sig-prename descclassname"><span class="pre">Backup.</span></span><span class="sig-name descname"><span class="pre">__enter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#apsw.Backup" title="apsw.Backup"><span class="pre">Backup</span></a></span></span><a class="headerlink" href="#apsw.Backup.__enter__" title="Link to this definition"></a></dt>
-<dd><p>You can use the backup object as a <a class="reference external" href="https://docs.python.org/reference/datamodel.html#with-statement-context-managers">context manager</a>
+<dd><p>You can use the backup object as a <a class="reference external" href="https://docs.python.org/3/reference/datamodel.html#with-statement-context-managers">context manager</a>
 as defined in <span class="target" id="index-0"></span><a class="pep reference external" href="https://peps.python.org/pep-0343/"><strong>PEP 0343</strong></a>.  The <a class="reference internal" href="#apsw.Backup.__exit__" title="apsw.Backup.__exit__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__exit__()</span></code></a> method ensures that backup
 is <a class="reference internal" href="#apsw.Backup.finish" title="apsw.Backup.finish"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finished</span></code></a>.</p>
 </dd></dl>
@@ -184,13 +168,11 @@ that the copy is <a class="reference internal" href="#apsw.Backup.finish" title=
 <dt class="sig sig-object py" id="apsw.Backup.close">
 <span class="sig-prename descclassname"><span class="pre">Backup.</span></span><span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Backup.close" title="Link to this definition"></a></dt>
 <dd><p>Does the same thing as <a class="reference internal" href="#apsw.Backup.finish" title="apsw.Backup.finish"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finish()</span></code></a>.  This extra api is
-provided to give the same api as other APSW objects such as
-<a class="reference internal" href="connection.html#apsw.Connection.close" title="apsw.Connection.close"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.close()</span></code></a>, <a class="reference internal" href="blob.html#apsw.Blob.close" title="apsw.Blob.close"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Blob.close()</span></code></a> and
-<a class="reference internal" href="cursor.html#apsw.Cursor.close" title="apsw.Cursor.close"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.close()</span></code></a>.  It is safe to call this method multiple
-times.</p>
+provided to give the same api as other APSW objects and files.
+It is safe to call this method multiple  times.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>force</strong> -- If true then any exceptions are ignored.</p>
+<dd class="field-odd"><p><strong>force</strong> – If true then any exceptions are ignored.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -216,7 +198,7 @@ an exception.  It is safe to call this method multiple times.</p>
 <dt class="sig sig-object py" id="apsw.Backup.page_count">
 <span class="sig-prename descclassname"><span class="pre">Backup.</span></span><span class="sig-name descname"><span class="pre">page_count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.Backup.page_count" title="Link to this definition"></a></dt>
 <dd><p>Read only. How many pages were in the source database after the last
-step.  If you haven't called <a class="reference internal" href="#apsw.Backup.step" title="apsw.Backup.step"><code class="xref py py-meth docutils literal notranslate"><span class="pre">step()</span></code></a> or the backup
+step.  If you haven’t called <a class="reference internal" href="#apsw.Backup.step" title="apsw.Backup.step"><code class="xref py py-meth docutils literal notranslate"><span class="pre">step()</span></code></a> or the backup
 object has been <a class="reference internal" href="#apsw.Backup.finish" title="apsw.Backup.finish"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finished</span></code></a> then zero is
 returned.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/backup_finish.html#sqlite3backuppagecount">sqlite3_backup_pagecount</a></p>
@@ -226,7 +208,7 @@ returned.</p>
 <dt class="sig sig-object py" id="apsw.Backup.remaining">
 <span class="sig-prename descclassname"><span class="pre">Backup.</span></span><span class="sig-name descname"><span class="pre">remaining</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.Backup.remaining" title="Link to this definition"></a></dt>
 <dd><p>Read only. How many pages were remaining to be copied after the last
-step.  If you haven't called <a class="reference internal" href="#apsw.Backup.step" title="apsw.Backup.step"><code class="xref py py-meth docutils literal notranslate"><span class="pre">step()</span></code></a> or the backup
+step.  If you haven’t called <a class="reference internal" href="#apsw.Backup.step" title="apsw.Backup.step"><code class="xref py py-meth docutils literal notranslate"><span class="pre">step()</span></code></a> or the backup
 object has been <a class="reference internal" href="#apsw.Backup.finish" title="apsw.Backup.finish"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finished</span></code></a> then zero is
 returned.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/backup_finish.html#sqlite3backupremaining">sqlite3_backup_remaining</a></p>
@@ -240,10 +222,8 @@ using smaller values allows other access to the source database.  The destinatio
 backup object is <a class="reference internal" href="#apsw.Backup.finish" title="apsw.Backup.finish"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finished</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>npages</strong> -- How many pages to copy. If the parameter is omitted
-or negative then all remaining pages are copied. The default page
-size is 4096 bytes (4kb) which can be viewed, or changed before database
-creation using a <a class="reference external" href="https://www.sqlite.org/pragma.html#pragma_page_size">pragma</a>.</p>
+<dd class="field-odd"><p><strong>npages</strong> – How many pages to copy. If the parameter is omitted
+or negative then all remaining pages are copied.</p>
 </dd>
 </dl>
 <p>This method may throw a <a class="reference internal" href="exceptions.html#apsw.BusyError" title="apsw.BusyError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">BusyError</span></code></a> or <a class="reference internal" href="exceptions.html#apsw.LockedError" title="apsw.LockedError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">LockedError</span></code></a> if
@@ -251,7 +231,7 @@ unable to lock the source database.  You can catch those and try
 again.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>True if this copied the last remaining outstanding pages, else false.  This is the same value as <a class="reference internal" href="#apsw.Backup.done" title="apsw.Backup.done"><code class="xref py py-attr docutils literal notranslate"><span class="pre">done</span></code></a></p>
+<dd class="field-odd"><p>True if this copied the last remaining outstanding pages, else False.  This is the same value as <a class="reference internal" href="#apsw.Backup.done" title="apsw.Backup.done"><code class="xref py py-attr docutils literal notranslate"><span class="pre">done</span></code></a></p>
 </dd>
 </dl>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/backup_finish.html#sqlite3backupstep">sqlite3_backup_step</a></p>
@@ -272,7 +252,7 @@ again.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Oct 24, 2023.
+      <span class="lastupdated">Last updated on Nov 06, 2023.
       </span></p>
   </div>
 

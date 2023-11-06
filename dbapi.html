@@ -1,12 +1,15 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DBAPI notes &mdash; APSW 3.43.2.0 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <title>DBAPI notes &mdash; APSW 3.44.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
+
+  
     <link rel="shortcut icon" href="_static/favicon.ico"/>
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
@@ -14,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=200f835c"></script>
+        <script src="_static/documentation_options.js?v=5c66a1ff"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +42,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.43.2.0
+                3.44.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -66,7 +69,6 @@
 <li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
-<li class="toctree-l1"><a class="reference internal" href="types.html">Types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">DBAPI notes</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#module-interface">Module Interface</a></li>
@@ -126,20 +128,22 @@ API calls allowing for maximum concurrency.</p>
 <p>Three different paramstyles are supported. Note that SQLite starts
 parameter numbers from one not zero when using <em>qmark/numeric</em> style.</p>
 <table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>style</p></th>
+<th class="head"><p>use</p></th>
+</tr>
+</thead>
 <tbody>
-<tr class="row-odd"><td><p>qmark</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">...</span> <span class="pre">WHERE</span> <span class="pre">name=?</span></code></p></td>
+<tr class="row-even"><td><p>qmark</p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">...</span> <span class="pre">WHERE</span> <span class="pre">name=?</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p>numeric</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">...</span> <span class="pre">WHERE</span> <span class="pre">name=?4</span></code></p></td>
+<tr class="row-odd"><td><p>numeric</p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">...</span> <span class="pre">WHERE</span> <span class="pre">name=?4</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p>named</p></td>
-<td><div class="line-block">
-<div class="line"><code class="docutils literal notranslate"><span class="pre">...</span> <span class="pre">WHERE</span> <span class="pre">name=:name</span></code>  or</div>
-<div class="line"><code class="docutils literal notranslate"><span class="pre">...</span> <span class="pre">WHERE</span> <span class="pre">name=$name</span></code>  or</div>
-<div class="line"><code class="docutils literal notranslate"><span class="pre">...</span> <span class="pre">WHERE</span> <span class="pre">name=&#64;name</span></code></div>
-</div>
-</td>
+<tr class="row-even"><td><p>named</p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">...</span> <span class="pre">WHERE</span> <span class="pre">name=:name</span></code> or
+<code class="code docutils literal notranslate"><span class="pre">...</span> <span class="pre">WHERE</span> <span class="pre">name=$name</span></code> or
+<code class="code docutils literal notranslate"><span class="pre">...</span> <span class="pre">WHERE</span> <span class="pre">name=&#64;name</span></code></p></td>
 </tr>
 </tbody>
 </table>
@@ -148,12 +152,10 @@ used correspond to specific SQLite error codes.</p>
 </section>
 <section id="connection-objects">
 <h2>Connection Objects<a class="headerlink" href="#connection-objects" title="Link to this heading"></a></h2>
-<p>There are no commit or rollback methods. You should use
-<a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.execute()</span></code></a> with <cite>BEGIN</cite> and <cite>COMMIT</cite> or <cite>ROLLBACK</cite> as
-appropriate. The <a class="reference external" href="https://sqlite.org/lockingv3.html">SQLite documentation</a> has more details.  In particular
-note that SQLite does not support nested transactions, using BEGIN.
-You can use <a class="reference external" href="https://sqlite.org/lang_savepoint.html">savepoints</a> to
-get nested transactions, which <a class="reference internal" href="connection.html#apsw.Connection.__enter__" title="apsw.Connection.__enter__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with</span> <span class="pre">Connection</span></code></a> does.</p>
+<p>There are no commit or rollback methods.  You can issue queries as
+<cite>BEGIN</cite>, <cite>COMMIT</cite>, and <cite>ROLLBACK</cite> to do transactions manually.  You
+should use <a class="reference internal" href="connection.html#apsw.Connection.__enter__" title="apsw.Connection.__enter__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with</span> <span class="pre">Connection</span></code></a> to get
+automatic transaction control, which includes <a class="reference external" href="https://sqlite.org/lang_savepoint.html">nested transactions</a>.</p>
 <p>Several methods that are defined in DBAPI to be on the cursor are
 instead on the Connection object, since this is where SQLite actually
 stores the information. Doing operations in any other cursor attached
@@ -164,30 +166,30 @@ you aware of that.</p>
 <h2>Cursor Objects<a class="headerlink" href="#cursor-objects" title="Link to this heading"></a></h2>
 <p>Use <a class="reference internal" href="cursor.html#apsw.Cursor.get_description" title="apsw.Cursor.get_description"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.get_description()</span></code></a> instead of description. This
 information is only obtained on request.</p>
-<p id="rowcount">There is no rowcount.  Row counts don't make sense in SQLite any way.
+<p id="rowcount">There is no rowcount.  Row counts don’t make sense in SQLite any way.
 SQLite returns results one row at a time, not calculating the next
 result row until you ask for it.  Consequently getting a rowcount
 would have to calculate all the result rows and would not reduce the
 amount of effort needed.</p>
-<p>callproc is not implemented as SQLite doesn't support stored procedures.</p>
+<p>callproc is not implemented as SQLite doesn’t support stored procedures.</p>
 <p><a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">execute()</span></code></a> returns the Cursor object and you can use it
 as an iterator to get the results (if any).</p>
 <p><a class="reference internal" href="cursor.html#apsw.Cursor.executemany" title="apsw.Cursor.executemany"><code class="xref py py-meth docutils literal notranslate"><span class="pre">executemany()</span></code></a> returns the Cursor object and you can use
 it as an iterator to get the results (if any).</p>
 <p>fetchone is not available. Use the cursor as an iterator, or call
-Python's <a class="reference external" href="https://docs.python.org/3/library/functions.html?highlight=next#next">next function</a>
+Python’s <a class="reference external" href="https://docs.python.org/3/library/functions.html?highlight=next#next">next function</a>
 to get the next row.</p>
 <p>fetchmany is not available. Use <a class="reference internal" href="cursor.html#apsw.Cursor.fetchall" title="apsw.Cursor.fetchall"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fetchall()</span></code></a> to get all
 remaining results.</p>
 <p>nextset is not applicable or implemented.</p>
-<p>arraysize is not available as fetchmany isn't.</p>
+<p>arraysize is not available as fetchmany isn’t.</p>
 <p>Neither setinputsizes or setoutputsize are applicable or implemented.</p>
 </section>
 <section id="type-objects">
 <h2>Type objects<a class="headerlink" href="#type-objects" title="Link to this heading"></a></h2>
 <p>None of the date or time methods are available since SQLite 3 does not
 have a native date or time type.  There are <a class="reference external" href="https://sqlite.org/lang_datefunc.html">functions</a> for
-manipulating dates and time which are represented as strings or
+manipulating dates and time which are stored as strings or
 <a class="reference external" href="https://en.wikipedia.org/wiki/Julian_day">Julian days</a> (floating
 point number).</p>
 <p>Use the standard bytes type for blobs.</p>
@@ -208,7 +210,11 @@ way of getting information back.</p>
 insert on any Cursor associated with the the Connection. You can also
 add <a class="reference external" href="https://sqlite.org/lang_corefunc.html">select last_insert_rowid()</a> to the end of your execute
 statements:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;BEGIN; INSERT ... ; INSERT ... ; SELECT last_insert_rowid(); COMMIT&quot;</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;BEGIN;</span>
+<span class="s2">                             INSERT ... ;</span>
+<span class="s2">                             INSERT ... ;</span>
+<span class="s2">                             SELECT last_insert_rowid();</span>
+<span class="s2">                         COMMIT&quot;&quot;&quot;</span><span class="p">):</span>
    <span class="n">lastrowid</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </pre></div>
 </div>
@@ -228,7 +234,7 @@ statements:</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Oct 24, 2023.
+      <span class="lastupdated">Last updated on Nov 06, 2023.
       </span></p>
   </div>
 

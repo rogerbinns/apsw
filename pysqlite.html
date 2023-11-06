@@ -1,12 +1,15 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>sqlite3 module differences &mdash; APSW 3.43.2.0 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <title>sqlite3 module differences &mdash; APSW 3.44.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
+
+  
     <link rel="shortcut icon" href="_static/favicon.ico"/>
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
@@ -14,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=200f835c"></script>
+        <script src="_static/documentation_options.js?v=5c66a1ff"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +42,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.43.2.0
+                3.44.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -66,7 +69,6 @@
 <li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
-<li class="toctree-l1"><a class="reference internal" href="types.html">Types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">sqlite3 module differences</a><ul>
@@ -117,14 +119,14 @@ to SQLite from Python from fundamentally different directions.</p>
 no effort to hide how SQLite is different from other databases.</p>
 <p>sqlite3 tries to provide a DBAPI (<span class="target" id="index-0"></span><a class="pep reference external" href="https://peps.python.org/pep-0249/"><strong>PEP 249</strong></a>) compliant wrapper for
 SQLite and in doing so needs to make it have the same behaviour as
-other databases.  Consequently it does hide some of SQLite's nuances.</p>
+other databases.  Consequently it does hide some of SQLite’s nuances.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>I suggest using APSW when you want to directly use SQLite and its
 functionality or are using your own code to deal with database
 independence rather than DBAPI.  Use <a class="reference external" href="https://docs.python.org/3/library/sqlite3.html#module-sqlite3" title="(in Python v3.12)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">sqlite3</span></code></a> and DBAPI if
-your needs are simple, and you don't want to use SQLite specific
-features.</p>
+your needs are simple, and you don’t want to use SQLite specific
+features, and want to easily switch to other databases.</p>
 </div>
 <section id="what-apsw-does-better">
 <h2>What APSW does better<a class="headerlink" href="#what-apsw-does-better" title="Link to this heading"></a></h2>
@@ -139,21 +141,24 @@ APSW release brings the most recent SQLite to Python 3.8 all the way
 through Python 3.13.</p></li>
 <li><p>APSW gives all functionality of SQLite including <a class="reference internal" href="vtable.html#virtualtables"><span class="std std-ref">virtual
 tables</span></a>, <a class="reference internal" href="vfs.html#vfs"><span class="std std-ref">Virtual File System (VFS)</span></a>, <a class="reference internal" href="blob.html#blobio"><span class="std std-ref">BLOB I/O</span></a>,
-<a class="reference internal" href="backup.html#backup"><span class="std std-ref">backups</span></a> and <a class="reference internal" href="connection.html#apsw.Connection.file_control" title="apsw.Connection.file_control"><code class="xref py py-meth docutils literal notranslate"><span class="pre">file</span> <span class="pre">control</span></code></a>.</p></li>
+<a class="reference internal" href="backup.html#backup"><span class="std std-ref">backups</span></a>, <a class="reference internal" href="ext.html#apsw.ext.log_sqlite" title="apsw.ext.log_sqlite"><code class="xref py py-meth docutils literal notranslate"><span class="pre">logging</span></code></a>,  and
+<a class="reference internal" href="connection.html#apsw.Connection.file_control" title="apsw.Connection.file_control"><code class="xref py py-meth docutils literal notranslate"><span class="pre">file</span> <span class="pre">control</span></code></a>.</p></li>
+<li><p>APSW includes <a class="reference internal" href="bestpractice.html#module-apsw.bestpractice" title="apsw.bestpractice"><code class="xref py py-mod docutils literal notranslate"><span class="pre">apsw.bestpractice</span></code></a> which configures SQLite
+for best performance, and catches common mistakes.</p></li>
 <li><p>You can use the same <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> across threads with APSW
 without needing any additional level of locking.  sqlite3 <a class="reference external" href="https://docs.python.org/3/library/sqlite3.html?highlight=sqlite#sqlite3.threadsafety">requires</a>
 that the <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> and any <a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">cursors</span></code></a> are
-used in the same thread.  You can disable its checking, but unless
-you are very careful with your own mutexes you will have a crash or
-a deadlock.</p></li>
-<li><p>APSW <a class="reference external" href="https://docs.python.org/3/extending/building.html#building" title="(in Python v3.12)"><span class="xref std std-ref">build instructions</span></a> show you how to include
-SQLite statically in the extension, avoiding a dependency on system
-SQLite.</p></li>
+used in the same thread.</p></li>
+<li><p>APSW on <a class="reference internal" href="install.html#pypi"><span class="std std-ref">PyPI</span></a> includes SQLite statically inside which
+does not interfere with any system SQLite, so you have the latest
+SQLite without disruptions.</p></li>
+<li><p>If you don’t use PyPI, APSW <a class="reference external" href="https://docs.python.org/3/extending/building.html#building" title="(in Python v3.12)"><span class="xref std std-ref">build instructions</span></a>
+include extensive customisation options for SQLite.</p></li>
 <li><p><strong>Nothing</strong> happens behind your back. By default sqlite3 tries to
 manage transactions (for DBAPI compliance) by parsing your SQL for
 you, but you can turn it off. This can result in very unexpected
 behaviour with sqlite3.</p></li>
-<li><p>When using a <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> as a <a class="reference internal" href="connection.html#apsw.Connection.__enter__" title="apsw.Connection.__enter__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">context</span> <span class="pre">manager</span></code></a> APSW uses SQLite's ability to have <a class="reference external" href="https://sqlite.org/lang_savepoint.html">nested
+<li><p>When using a <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> as a <a class="reference internal" href="connection.html#apsw.Connection.__enter__" title="apsw.Connection.__enter__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">context</span> <span class="pre">manager</span></code></a> APSW uses SQLite’s ability to have <a class="reference external" href="https://sqlite.org/lang_savepoint.html">nested
 transactions</a>. sqlite3
 has a context manager, but does not implement nesting.</p></li>
 <li><p>You can use semi-colons at the end of commands and you can have
@@ -181,7 +186,7 @@ work fine in APSW but is not allowed in sqlite3:</p>
 </li>
 <li><p><a class="reference internal" href="cursor.html#apsw.Cursor.executemany" title="apsw.Cursor.executemany"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.executemany()</span></code></a> also works with statements that return
 data such as selects, and you can have multiple statements.
-sqlite3's <em>executescript</em> method doesn't allow any form of
+sqlite3’s <em>executescript</em> method doesn’t allow any form of
 data being returned (it silently ignores any returned data).</p></li>
 <li><p>sqlite3 swallows exceptions in your callbacks making it far harder
 to debug problems. That also prevents you from raising exceptions in
@@ -237,7 +242,7 @@ above. See <a class="reference internal" href="exceptions.html#augmentedstacktra
 <li><p>APSW has better <a class="reference internal" href="execution.html#tracing"><span class="std std-ref">execution and row tracing</span></a>.
 <a class="reference internal" href="ext.html"><span class="doc">Various interesting and useful bits of functionality</span></a> provides accessing rows by column name, type conversion,
 getting query details etc.</p></li>
-<li><p>APSW has an <a class="reference internal" href="execution.html#apswtrace"><span class="std std-ref">apswtrace</span></a> utility script that traces
+<li><p>APSW has an <a class="reference internal" href="execution.html#apswtrace"><span class="std std-ref">trace</span></a> utility script that traces
 execution and results in your code without having to modify it in
 any way.  It also outputs summary reports making it easy to see what
 your most time consuming queries are, which are most popular etc.</p></li>
@@ -249,8 +254,8 @@ example of the difference in approach of the two wrappers.</p></li>
 failure condition is tested including running out of memory, error
 returns etc. Code coverage by the test suite is 99.6%. sqlite3 is
 good at 81% for C code although there are several places that
-coverage can be improved. I haven't measured code coverage for
-sqlite3's Python code.  The consequences of this are that APSW
+coverage can be improved. I haven’t measured code coverage for
+sqlite3’s Python code.  The consequences of this are that APSW
 catches issues earlier and gives far better diagnostics.  As an
 example try returning an unsupported type from a registered scalar
 function.</p></li>
@@ -279,7 +284,7 @@ libraries that abstract away the database layer</p></li>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Oct 24, 2023.
+      <span class="lastupdated">Last updated on Nov 06, 2023.
       </span></p>
   </div>
 

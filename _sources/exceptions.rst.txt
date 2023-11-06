@@ -133,7 +133,7 @@ The following exceptions happen when APSW detects various problems.
 
 .. exception:: ExecutionCompleteError
 
-  A statement is complete but you try to run it more anyway!
+  Execution of the statements is complete and cannot be run further.
 
 
 .. exception:: ExecTraceAbort
@@ -168,147 +168,168 @@ General Errors
 
 .. exception:: SQLError
 
-  *SQLITE_ERROR*.  This error is documented as a bad SQL query
-  or missing database, but is also returned for a lot of other
-  situations.  It is the default error code unless there is a more
-  specific one.
+  `SQLITE_ERROR <https://sqlite.org/rescode.html#error>`__.  The
+  standard error code, unless a more specific one is  applicable.
 
 .. exception:: MismatchError
 
-  *SQLITE_MISMATCH*. Data type mismatch.  For example a rowid
-  or integer primary key must be an integer.
+  `SQLITE_MISMATCH <https://sqlite.org/rescode.html#mismatch>`__. Data
+  type mismatch.  For example a rowid or integer primary key must be
+  an integer.
 
 .. exception:: NotFoundError
 
-  *SQLITE_NOTFOUND*. Returned when various internal items were
-  not found such as requests for non-existent system calls or file
-  controls.
+  `SQLITE_NOTFOUND <https://sqlite.org/rescode.html#notfound>`__.
+  Returned when various internal items were not found such as requests
+  for non-existent system calls or file controls.
 
 Internal Errors
 ^^^^^^^^^^^^^^^
 
 .. exception:: InternalError
 
-  *SQLITE_INTERNAL*. (No longer used) Internal logic error in SQLite.
+  `SQLITE_INTERNAL <https://sqlite.org/rescode.html#internal>`__. (No
+  longer used) Internal logic error in SQLite.
 
 .. exception:: ProtocolError
 
-  *SQLITE_PROTOCOL*. (No longer used) Database lock protocol error.
+  `SQLITE_PROTOCOL <https://sqlite.org/rescode.html#protocol>`__. (No
+  longer used) Database lock protocol error.
 
 .. exception:: MisuseError
 
-  *SQLITE_MISUSE*.  SQLite library used incorrectly - typically similar to *ValueError* in Python.  Examples include not
-  having enough flags when opening a connection (eg not including a READ or WRITE flag), or out of spec such as registering
-  a function with more than 127 parameters.
+  `SQLITE_MISUSE <https://sqlite.org/rescode.html#misuse>`__.  SQLite
+  library used incorrectly - typically similar to *ValueError* in
+  Python.  Examples include not having enough flags when opening a
+  connection (eg not including a READ or WRITE flag), or out of spec
+  such as registering a function with more than 127 parameters.
 
 .. exception:: RangeError
 
-  *SQLITE_RANGE*.  (Cannot be generated using APSW).  2nd parameter to `sqlite3_bind <https://sqlite.org/c3ref/bind_blob.html>`_ out of range
+  `SQLITE_RANGE <https://sqlite.org/rescode.html#range>`__.  (Cannot
+  be generated using APSW).  2nd parameter to `sqlite3_bind
+  <https://sqlite.org/c3ref/bind_blob.html>`_ out of range
 
 Permissions Etc
 ^^^^^^^^^^^^^^^
 
 .. exception:: PermissionsError
 
-  *SQLITE_PERM*. Access permission denied by the operating system, or parts of the database are readonly such as a cursor.
+  `SQLITE_PERM <https://sqlite.org/rescode.html#perm>`__. Access
+  permission denied by the operating system.
 
 .. exception:: ReadOnlyError
 
-  *SQLITE_READONLY*. Attempt to write to a readonly database.
+  `SQLITE_READONLY <https://sqlite.org/rescode.html#readonly>`__.
+  Attempt to write to a readonly database.
 
 .. exception:: CantOpenError
 
-  *SQLITE_CANTOPEN*.  Unable to open the database file.
+  `SQLITE_CANTOPEN <https://sqlite.org/rescode.html#cantopen>`__.
+  Unable to open the database file.
 
 .. exception:: AuthError
 
-  *SQLITE_AUTH*.  :attr:`Authorization <Connection.authorizer>` denied.
+  `SQLITE_AUTH <https://sqlite.org/rescode.html#auth>`__.
+  :attr:`Authorization <Connection.authorizer>` denied.
 
 Abort/Busy Etc
 ^^^^^^^^^^^^^^
 
 .. exception:: AbortError
 
-  *SQLITE_ABORT*. Callback routine requested an abort.
+  `SQLITE_ABORT <https://sqlite.org/rescode.html#abort>`__. Callback
+  routine requested an abort.
 
 .. exception:: BusyError
 
-  *SQLITE_BUSY*.  The database file is locked.  Use
-  :meth:`Connection.set_busy_timeout` to change how long SQLite waits
-  for the database to be unlocked or :meth:`Connection.set_busy_handler`
-  to use your own handler.
+  `SQLITE_BUSY <https://sqlite.org/rescode.html#busy>`__.  The
+  database file is locked.  Use  :meth:`Connection.set_busy_timeout`
+  to change how long SQLite waits for the database to be unlocked or
+  :meth:`Connection.set_busy_handler` to use your own handler.
 
 .. exception:: LockedError
 
-  *SQLITE_LOCKED*.  A table in the database is locked.
+  `SQLITE_LOCKED <https://sqlite.org/rescode.html#locked>`__.  Shared
+  cache lock.
 
 .. exception:: InterruptError
 
-  *SQLITE_INTERRUPT*.  Operation terminated by
-  `sqlite3_interrupt <https://sqlite.org/c3ref/interrupt.html>`_ -
-  use :meth:`Connection.interrupt`.
+  SQLITE_INTERRUPT <https://sqlite.org/rescode.html#interrupt>`__.
+  Operation terminated by `sqlite3_interrupt
+  <https://sqlite.org/c3ref/interrupt.html>`_ - use
+  :meth:`Connection.interrupt`.
 
 .. exception:: SchemaChangeError
 
-  *SQLITE_SCHEMA*.  The database schema changed.  A
-  :meth:`prepared statement <Cursor.execute>` becomes invalid
-  if the database schema was changed.  Behind the scenes SQLite
-  reprepares the statement.  Another or the same :class:`Connection`
-  may change the schema again before the statement runs.  SQLite will
-  attempt up to 5 times before giving up and returning this error.
+  `SQLITE_SCHEMA <https://sqlite.org/rescode.html#schema>`__.  The
+  database schema changed.  A  :meth:`prepared statement
+  <Cursor.execute>` becomes invalid if the database schema was
+  changed.  Behind the scenes SQLite reprepares the statement.
+  Another or the same :class:`Connection` may change the schema again
+  before the statement runs.  SQLite will retry before giving up and
+  returning this error.
 
 .. exception:: ConstraintError
 
-  *SQLITE_CONSTRAINT*. Abort due to `constraint
-  <https://sqlite.org/lang_createtable.html>`_ violation.  This
-  would happen if the schema required a column to be within a specific
-  range.
+  `SQLITE_CONSTRAINT <https://sqlite.org/rescode.html#constraint>`__.
+  Abort due to `constraint
+  <https://sqlite.org/lang_createtable.html>`_ violation.
 
 Memory/Disk
 ^^^^^^^^^^^
 
 .. exception:: NoMemError
 
-  *SQLITE_NOMEM*.  A memory allocation failed.
+  `SQLITE_NOMEM <https://sqlite.org/rescode.html#nomem>`__.  A memory
+   allocation failed.
 
 .. exception:: IOError
 
-  *SQLITE_IOERR*.  Some kind of disk I/O error occurred.  The
-  :ref:`extended error code <exceptions>` will give more detail.
+  `SQLITE_IOERR <https://sqlite.org/rescode.html#ioerr>`__.  A disk
+  I/O error occurred.  The :ref:`extended error code <exceptions>`
+  will give more detail.
 
 .. exception:: CorruptError
 
-  *SQLITE_CORRUPT*.  The database disk image appears to be a
-  SQLite database but the values inside are inconsistent.
+  `SQLITE_CORRUPT <https://sqlite.org/rescode.html#corrupt>`__.  The
+  database disk image appears to be a SQLite database but the values
+  inside are inconsistent.
 
 .. exception:: FullError
 
-  *SQLITE_FULL*.  The disk appears to be full.
+  `SQLITE_FULL <https://sqlite.org/rescode.html#full>`__.  The disk
+  appears to be full.
 
 .. exception:: TooBigError
 
-  *SQLITE_TOOBIG*.  String or BLOB exceeds size limit.  You can
-  change the limits using :meth:`Connection.limit`.
+  `SQLITE_TOOBIG <https://sqlite.org/rescode.html#toobig>`__.  String
+  or BLOB exceeds size limit.  You can  change the limits using
+  :meth:`Connection.limit`.
 
 .. exception:: NoLFSError
 
-  *SQLITE_NOLFS*.  SQLite has attempted to use a feature not
-  supported by the operating system such as `large file support
+  `SQLITE_NOLFS <https://sqlite.org/rescode.html#nolfs>`__.  SQLite
+  has attempted to use a feature not supported by the operating system
+  such as `large file support
   <https://en.wikipedia.org/wiki/Large_file_support>`_.
 
 .. exception:: EmptyError
 
-  *SQLITE_EMPTY*. Database is completely empty.
+  `SQLITE_EMPTY <https://sqlite.org/rescode.html#empty>`__. Not
+  currently used.
 
 .. exception:: FormatError
 
-  *SQLITE_FORMAT*. (No longer used) `Auxiliary database <https://sqlite.org/lang_attach.html>`_ format error.
+  `SQLITE_FORMAT <https://sqlite.org/rescode.html#format>`__. (No
+  longer used) `Auxiliary database
+  <https://sqlite.org/lang_attach.html>`_ format error.
 
 .. exception:: NotADBError
 
-  *SQLITE_NOTADB*.  File opened that is not a database file.
-  SQLite has a header on database files to verify they are indeed
-  SQLite databases.
+  `SQLITE_NOTADB <https://sqlite.org/rescode.html#notadb>`__.  File
+  opened that is not a database file.  SQLite has a header on database
+  files to verify they are indeed SQLite databases.
 
 
 .. _augmentedstacktraces:

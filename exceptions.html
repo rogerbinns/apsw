@@ -1,12 +1,15 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Exceptions and Errors &mdash; APSW 3.43.2.0 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <title>Exceptions and Errors &mdash; APSW 3.44.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
+
+  
     <link rel="shortcut icon" href="_static/favicon.ico"/>
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
@@ -14,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=200f835c"></script>
+        <script src="_static/documentation_options.js?v=5c66a1ff"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -22,7 +25,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="next" title="Types" href="types.html" />
+    <link rel="next" title="Execution and tracing" href="execution.html" />
     <link rel="prev" title="Various interesting and useful bits of functionality" href="ext.html" /> 
 </head>
 
@@ -39,7 +42,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.43.2.0
+                3.44.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -103,7 +106,6 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="types.html">Types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
@@ -134,7 +136,7 @@
       </li>
   </ul><div class="rst-breadcrumbs-buttons" role="navigation" aria-label="Sequential page navigation">
         <a href="ext.html" class="btn btn-neutral float-left" title="Various interesting and useful bits of functionality" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="types.html" class="btn btn-neutral float-right" title="Types" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="execution.html" class="btn btn-neutral float-right" title="Execution and tracing" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
   </div>
   <hr/>
 </div>
@@ -156,7 +158,7 @@ attempts, while an error in a window function step method will result
 in the final method being called to do clean up.  Your code
 implementing those could also have additional exceptions.</p>
 <p>When multiple exceptions occur in the same SQLite control flow then
-they will be <span class="target" id="index-0"></span><a class="pep reference external" href="https://peps.python.org/pep-3134/"><strong>chained</strong></a>.  Python's traceback printing code
+they will be <span class="target" id="index-0"></span><a class="pep reference external" href="https://peps.python.org/pep-3134/"><strong>chained</strong></a>.  Python’s traceback printing code
 will show <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#exception-context">all the exceptions</a>.</p>
 </section>
 <section id="unraisable">
@@ -174,7 +176,7 @@ relative to the errors SQLite is logging.</p>
 <h2>Exception Classes<a class="headerlink" href="#exception-classes" title="Link to this heading"></a></h2>
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.Error">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Error</span></span><a class="headerlink" href="#apsw.Error" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">Error</span></span><a class="headerlink" href="#apsw.Error" title="Link to this definition"></a></dt>
 <dd><p>This is the base for APSW exceptions.</p>
 </dd></dl>
 
@@ -210,7 +212,7 @@ The value is from <a class="reference external" href="https://www.sqlite.org/c3r
 <p>The following exceptions happen when APSW detects various problems.</p>
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.ThreadingViolationError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ThreadingViolationError</span></span><a class="headerlink" href="#apsw.ThreadingViolationError" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">ThreadingViolationError</span></span><a class="headerlink" href="#apsw.ThreadingViolationError" title="Link to this definition"></a></dt>
 <dd><p>You have used an object concurrently in two threads. For example you
 may try to use the same cursor in two different threads at the same
 time, or tried to close the same connection in two threads at the
@@ -222,13 +224,13 @@ Cursors can only be used for one thing at a time.</p>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.ForkingViolationError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ForkingViolationError</span></span><a class="headerlink" href="#apsw.ForkingViolationError" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">ForkingViolationError</span></span><a class="headerlink" href="#apsw.ForkingViolationError" title="Link to this definition"></a></dt>
 <dd><p>See <a class="reference internal" href="apsw.html#apsw.fork_checker" title="apsw.fork_checker"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.fork_checker()</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.IncompleteExecutionError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">IncompleteExecutionError</span></span><a class="headerlink" href="#apsw.IncompleteExecutionError" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">IncompleteExecutionError</span></span><a class="headerlink" href="#apsw.IncompleteExecutionError" title="Link to this definition"></a></dt>
 <dd><p>You have tried to start a new SQL execute call before executing all
 the previous ones. See the <a class="reference internal" href="execution.html#executionmodel"><span class="std std-ref">execution model</span></a>
 for more details.</p>
@@ -236,27 +238,27 @@ for more details.</p>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.ConnectionNotClosedError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ConnectionNotClosedError</span></span><a class="headerlink" href="#apsw.ConnectionNotClosedError" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">ConnectionNotClosedError</span></span><a class="headerlink" href="#apsw.ConnectionNotClosedError" title="Link to this definition"></a></dt>
 <dd><p>This exception is no longer generated.  It was required in earlier
 releases due to constraints in threading usage with SQLite.</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.ConnectionClosedError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ConnectionClosedError</span></span><a class="headerlink" href="#apsw.ConnectionClosedError" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">ConnectionClosedError</span></span><a class="headerlink" href="#apsw.ConnectionClosedError" title="Link to this definition"></a></dt>
 <dd><p>You have called <a class="reference internal" href="connection.html#apsw.Connection.close" title="apsw.Connection.close"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.close()</span></code></a> and then continued to use
 the <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> or associated <a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">cursors</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.CursorClosedError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CursorClosedError</span></span><a class="headerlink" href="#apsw.CursorClosedError" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">CursorClosedError</span></span><a class="headerlink" href="#apsw.CursorClosedError" title="Link to this definition"></a></dt>
 <dd><p>You have called <a class="reference internal" href="cursor.html#apsw.Cursor.close" title="apsw.Cursor.close"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.close()</span></code></a> and then tried to use the cursor.</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.BindingsError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">BindingsError</span></span><a class="headerlink" href="#apsw.BindingsError" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">BindingsError</span></span><a class="headerlink" href="#apsw.BindingsError" title="Link to this definition"></a></dt>
 <dd><p>There are several causes for this exception.  When using tuples, an incorrect number of bindings where supplied:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select ?,?,?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>     <span class="c1"># too few bindings</span>
 <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select ?,?,?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span> <span class="c1"># too many bindings</span>
@@ -271,33 +273,33 @@ named style or entirely numeric (unnamed) style:</p>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.ExecutionCompleteError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ExecutionCompleteError</span></span><a class="headerlink" href="#apsw.ExecutionCompleteError" title="Link to this definition"></a></dt>
-<dd><p>A statement is complete but you try to run it more anyway!</p>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">ExecutionCompleteError</span></span><a class="headerlink" href="#apsw.ExecutionCompleteError" title="Link to this definition"></a></dt>
+<dd><p>Execution of the statements is complete and cannot be run further.</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.ExecTraceAbort">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ExecTraceAbort</span></span><a class="headerlink" href="#apsw.ExecTraceAbort" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">ExecTraceAbort</span></span><a class="headerlink" href="#apsw.ExecTraceAbort" title="Link to this definition"></a></dt>
 <dd><p>The <a class="reference internal" href="execution.html#executiontracer"><span class="std std-ref">execution tracer</span></a> returned False so
 execution was aborted.</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.ExtensionLoadingError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ExtensionLoadingError</span></span><a class="headerlink" href="#apsw.ExtensionLoadingError" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">ExtensionLoadingError</span></span><a class="headerlink" href="#apsw.ExtensionLoadingError" title="Link to this definition"></a></dt>
 <dd><p>An error happened loading an <a class="reference external" href="https://sqlite.org/loadext.html">extension</a>.</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.VFSNotImplementedError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VFSNotImplementedError</span></span><a class="headerlink" href="#apsw.VFSNotImplementedError" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">VFSNotImplementedError</span></span><a class="headerlink" href="#apsw.VFSNotImplementedError" title="Link to this definition"></a></dt>
 <dd><p>A call cannot be made to an inherited <a class="reference internal" href="vfs.html#vfs"><span class="std std-ref">Virtual File System (VFS)</span></a> method as the VFS
 does not implement the method.</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.VFSFileClosedError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VFSFileClosedError</span></span><a class="headerlink" href="#apsw.VFSFileClosedError" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">VFSFileClosedError</span></span><a class="headerlink" href="#apsw.VFSFileClosedError" title="Link to this definition"></a></dt>
 <dd><p>The VFS file is closed so the operation cannot be performed.</p>
 </dd></dl>
 
@@ -310,26 +312,25 @@ error codes</a>.</p>
 <h4>General Errors<a class="headerlink" href="#general-errors" title="Link to this heading"></a></h4>
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.SQLError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SQLError</span></span><a class="headerlink" href="#apsw.SQLError" title="Link to this definition"></a></dt>
-<dd><p><em>SQLITE_ERROR</em>.  This error is documented as a bad SQL query
-or missing database, but is also returned for a lot of other
-situations.  It is the default error code unless there is a more
-specific one.</p>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">SQLError</span></span><a class="headerlink" href="#apsw.SQLError" title="Link to this definition"></a></dt>
+<dd><p><a class="reference external" href="https://sqlite.org/rescode.html#error">SQLITE_ERROR</a>.  The
+standard error code, unless a more specific one is  applicable.</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.MismatchError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MismatchError</span></span><a class="headerlink" href="#apsw.MismatchError" title="Link to this definition"></a></dt>
-<dd><p><em>SQLITE_MISMATCH</em>. Data type mismatch.  For example a rowid
-or integer primary key must be an integer.</p>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">MismatchError</span></span><a class="headerlink" href="#apsw.MismatchError" title="Link to this definition"></a></dt>
+<dd><p><a class="reference external" href="https://sqlite.org/rescode.html#mismatch">SQLITE_MISMATCH</a>. Data
+type mismatch.  For example a rowid or integer primary key must be
+an integer.</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.NotFoundError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">NotFoundError</span></span><a class="headerlink" href="#apsw.NotFoundError" title="Link to this definition"></a></dt>
-<dd><p><em>SQLITE_NOTFOUND</em>. Returned when various internal items were
-not found such as requests for non-existent system calls or file
-controls.</p>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">NotFoundError</span></span><a class="headerlink" href="#apsw.NotFoundError" title="Link to this definition"></a></dt>
+<dd><p><a class="reference external" href="https://sqlite.org/rescode.html#notfound">SQLITE_NOTFOUND</a>.
+Returned when various internal items were not found such as requests
+for non-existent system calls or file controls.</p>
 </dd></dl>
 
 </section>
@@ -337,28 +338,33 @@ controls.</p>
 <h4>Internal Errors<a class="headerlink" href="#internal-errors" title="Link to this heading"></a></h4>
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.InternalError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">InternalError</span></span><a class="headerlink" href="#apsw.InternalError" title="Link to this definition"></a></dt>
-<dd><p><em>SQLITE_INTERNAL</em>. (No longer used) Internal logic error in SQLite.</p>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">InternalError</span></span><a class="headerlink" href="#apsw.InternalError" title="Link to this definition"></a></dt>
+<dd><p><a class="reference external" href="https://sqlite.org/rescode.html#internal">SQLITE_INTERNAL</a>. (No
+longer used) Internal logic error in SQLite.</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.ProtocolError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ProtocolError</span></span><a class="headerlink" href="#apsw.ProtocolError" title="Link to this definition"></a></dt>
-<dd><p><em>SQLITE_PROTOCOL</em>. (No longer used) Database lock protocol error.</p>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">ProtocolError</span></span><a class="headerlink" href="#apsw.ProtocolError" title="Link to this definition"></a></dt>
+<dd><p><a class="reference external" href="https://sqlite.org/rescode.html#protocol">SQLITE_PROTOCOL</a>. (No
+longer used) Database lock protocol error.</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.MisuseError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MisuseError</span></span><a class="headerlink" href="#apsw.MisuseError" title="Link to this definition"></a></dt>
-<dd><p><em>SQLITE_MISUSE</em>.  SQLite library used incorrectly - typically similar to <em>ValueError</em> in Python.  Examples include not
-having enough flags when opening a connection (eg not including a READ or WRITE flag), or out of spec such as registering
-a function with more than 127 parameters.</p>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">MisuseError</span></span><a class="headerlink" href="#apsw.MisuseError" title="Link to this definition"></a></dt>
+<dd><p><a class="reference external" href="https://sqlite.org/rescode.html#misuse">SQLITE_MISUSE</a>.  SQLite
+library used incorrectly - typically similar to <em>ValueError</em> in
+Python.  Examples include not having enough flags when opening a
+connection (eg not including a READ or WRITE flag), or out of spec
+such as registering a function with more than 127 parameters.</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.RangeError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RangeError</span></span><a class="headerlink" href="#apsw.RangeError" title="Link to this definition"></a></dt>
-<dd><p><em>SQLITE_RANGE</em>.  (Cannot be generated using APSW).  2nd parameter to <a class="reference external" href="https://sqlite.org/c3ref/bind_blob.html">sqlite3_bind</a> out of range</p>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">RangeError</span></span><a class="headerlink" href="#apsw.RangeError" title="Link to this definition"></a></dt>
+<dd><p><a class="reference external" href="https://sqlite.org/rescode.html#range">SQLITE_RANGE</a>.  (Cannot
+be generated using APSW).  2nd parameter to <a class="reference external" href="https://sqlite.org/c3ref/bind_blob.html">sqlite3_bind</a> out of range</p>
 </dd></dl>
 
 </section>
@@ -366,26 +372,30 @@ a function with more than 127 parameters.</p>
 <h4>Permissions Etc<a class="headerlink" href="#permissions-etc" title="Link to this heading"></a></h4>
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.PermissionsError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PermissionsError</span></span><a class="headerlink" href="#apsw.PermissionsError" title="Link to this definition"></a></dt>
-<dd><p><em>SQLITE_PERM</em>. Access permission denied by the operating system, or parts of the database are readonly such as a cursor.</p>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">PermissionsError</span></span><a class="headerlink" href="#apsw.PermissionsError" title="Link to this definition"></a></dt>
+<dd><p><a class="reference external" href="https://sqlite.org/rescode.html#perm">SQLITE_PERM</a>. Access
+permission denied by the operating system.</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.ReadOnlyError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ReadOnlyError</span></span><a class="headerlink" href="#apsw.ReadOnlyError" title="Link to this definition"></a></dt>
-<dd><p><em>SQLITE_READONLY</em>. Attempt to write to a readonly database.</p>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">ReadOnlyError</span></span><a class="headerlink" href="#apsw.ReadOnlyError" title="Link to this definition"></a></dt>
+<dd><p><a class="reference external" href="https://sqlite.org/rescode.html#readonly">SQLITE_READONLY</a>.
+Attempt to write to a readonly database.</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.CantOpenError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CantOpenError</span></span><a class="headerlink" href="#apsw.CantOpenError" title="Link to this definition"></a></dt>
-<dd><p><em>SQLITE_CANTOPEN</em>.  Unable to open the database file.</p>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">CantOpenError</span></span><a class="headerlink" href="#apsw.CantOpenError" title="Link to this definition"></a></dt>
+<dd><p><a class="reference external" href="https://sqlite.org/rescode.html#cantopen">SQLITE_CANTOPEN</a>.
+Unable to open the database file.</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.AuthError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">AuthError</span></span><a class="headerlink" href="#apsw.AuthError" title="Link to this definition"></a></dt>
-<dd><p><em>SQLITE_AUTH</em>.  <a class="reference internal" href="connection.html#apsw.Connection.authorizer" title="apsw.Connection.authorizer"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Authorization</span></code></a> denied.</p>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">AuthError</span></span><a class="headerlink" href="#apsw.AuthError" title="Link to this definition"></a></dt>
+<dd><p><a class="reference external" href="https://sqlite.org/rescode.html#auth">SQLITE_AUTH</a>.
+<a class="reference internal" href="connection.html#apsw.Connection.authorizer" title="apsw.Connection.authorizer"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Authorization</span></code></a> denied.</p>
 </dd></dl>
 
 </section>
@@ -393,50 +403,51 @@ a function with more than 127 parameters.</p>
 <h4>Abort/Busy Etc<a class="headerlink" href="#abort-busy-etc" title="Link to this heading"></a></h4>
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.AbortError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">AbortError</span></span><a class="headerlink" href="#apsw.AbortError" title="Link to this definition"></a></dt>
-<dd><p><em>SQLITE_ABORT</em>. Callback routine requested an abort.</p>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">AbortError</span></span><a class="headerlink" href="#apsw.AbortError" title="Link to this definition"></a></dt>
+<dd><p><a class="reference external" href="https://sqlite.org/rescode.html#abort">SQLITE_ABORT</a>. Callback
+routine requested an abort.</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.BusyError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">BusyError</span></span><a class="headerlink" href="#apsw.BusyError" title="Link to this definition"></a></dt>
-<dd><p><em>SQLITE_BUSY</em>.  The database file is locked.  Use
-<a class="reference internal" href="connection.html#apsw.Connection.set_busy_timeout" title="apsw.Connection.set_busy_timeout"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.set_busy_timeout()</span></code></a> to change how long SQLite waits
-for the database to be unlocked or <a class="reference internal" href="connection.html#apsw.Connection.set_busy_handler" title="apsw.Connection.set_busy_handler"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.set_busy_handler()</span></code></a>
-to use your own handler.</p>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">BusyError</span></span><a class="headerlink" href="#apsw.BusyError" title="Link to this definition"></a></dt>
+<dd><p><a class="reference external" href="https://sqlite.org/rescode.html#busy">SQLITE_BUSY</a>.  The
+database file is locked.  Use  <a class="reference internal" href="connection.html#apsw.Connection.set_busy_timeout" title="apsw.Connection.set_busy_timeout"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.set_busy_timeout()</span></code></a>
+to change how long SQLite waits for the database to be unlocked or
+<a class="reference internal" href="connection.html#apsw.Connection.set_busy_handler" title="apsw.Connection.set_busy_handler"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.set_busy_handler()</span></code></a> to use your own handler.</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.LockedError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">LockedError</span></span><a class="headerlink" href="#apsw.LockedError" title="Link to this definition"></a></dt>
-<dd><p><em>SQLITE_LOCKED</em>.  A table in the database is locked.</p>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">LockedError</span></span><a class="headerlink" href="#apsw.LockedError" title="Link to this definition"></a></dt>
+<dd><p><a class="reference external" href="https://sqlite.org/rescode.html#locked">SQLITE_LOCKED</a>.  Shared
+cache lock.</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.InterruptError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">InterruptError</span></span><a class="headerlink" href="#apsw.InterruptError" title="Link to this definition"></a></dt>
-<dd><p><em>SQLITE_INTERRUPT</em>.  Operation terminated by
-<a class="reference external" href="https://sqlite.org/c3ref/interrupt.html">sqlite3_interrupt</a> -
-use <a class="reference internal" href="connection.html#apsw.Connection.interrupt" title="apsw.Connection.interrupt"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.interrupt()</span></code></a>.</p>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">InterruptError</span></span><a class="headerlink" href="#apsw.InterruptError" title="Link to this definition"></a></dt>
+<dd><p>SQLITE_INTERRUPT &lt;<a class="reference external" href="https://sqlite.org/rescode.html#interrupt">https://sqlite.org/rescode.html#interrupt</a>&gt;`__.
+Operation terminated by <a class="reference external" href="https://sqlite.org/c3ref/interrupt.html">sqlite3_interrupt</a> - use
+<a class="reference internal" href="connection.html#apsw.Connection.interrupt" title="apsw.Connection.interrupt"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.interrupt()</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.SchemaChangeError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SchemaChangeError</span></span><a class="headerlink" href="#apsw.SchemaChangeError" title="Link to this definition"></a></dt>
-<dd><p><em>SQLITE_SCHEMA</em>.  The database schema changed.  A
-<a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">prepared</span> <span class="pre">statement</span></code></a> becomes invalid
-if the database schema was changed.  Behind the scenes SQLite
-reprepares the statement.  Another or the same <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a>
-may change the schema again before the statement runs.  SQLite will
-attempt up to 5 times before giving up and returning this error.</p>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">SchemaChangeError</span></span><a class="headerlink" href="#apsw.SchemaChangeError" title="Link to this definition"></a></dt>
+<dd><p><a class="reference external" href="https://sqlite.org/rescode.html#schema">SQLITE_SCHEMA</a>.  The
+database schema changed.  A  <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">prepared</span> <span class="pre">statement</span></code></a> becomes invalid if the database schema was
+changed.  Behind the scenes SQLite reprepares the statement.
+Another or the same <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> may change the schema again
+before the statement runs.  SQLite will retry before giving up and
+returning this error.</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.ConstraintError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ConstraintError</span></span><a class="headerlink" href="#apsw.ConstraintError" title="Link to this definition"></a></dt>
-<dd><p><em>SQLITE_CONSTRAINT</em>. Abort due to <a class="reference external" href="https://sqlite.org/lang_createtable.html">constraint</a> violation.  This
-would happen if the schema required a column to be within a specific
-range.</p>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">ConstraintError</span></span><a class="headerlink" href="#apsw.ConstraintError" title="Link to this definition"></a></dt>
+<dd><p><a class="reference external" href="https://sqlite.org/rescode.html#constraint">SQLITE_CONSTRAINT</a>.
+Abort due to <a class="reference external" href="https://sqlite.org/lang_createtable.html">constraint</a> violation.</p>
 </dd></dl>
 
 </section>
@@ -444,62 +455,72 @@ range.</p>
 <h4>Memory/Disk<a class="headerlink" href="#memory-disk" title="Link to this heading"></a></h4>
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.NoMemError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">NoMemError</span></span><a class="headerlink" href="#apsw.NoMemError" title="Link to this definition"></a></dt>
-<dd><p><em>SQLITE_NOMEM</em>.  A memory allocation failed.</p>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">NoMemError</span></span><a class="headerlink" href="#apsw.NoMemError" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt><a class="reference external" href="https://sqlite.org/rescode.html#nomem">SQLITE_NOMEM</a>.  A memory</dt><dd><p>allocation failed.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.IOError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">IOError</span></span><a class="headerlink" href="#apsw.IOError" title="Link to this definition"></a></dt>
-<dd><p><em>SQLITE_IOERR</em>.  Some kind of disk I/O error occurred.  The
-<a class="reference internal" href="#exceptions"><span class="std std-ref">extended error code</span></a> will give more detail.</p>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">IOError</span></span><a class="headerlink" href="#apsw.IOError" title="Link to this definition"></a></dt>
+<dd><p><a class="reference external" href="https://sqlite.org/rescode.html#ioerr">SQLITE_IOERR</a>.  A disk
+I/O error occurred.  The <a class="reference internal" href="#exceptions"><span class="std std-ref">extended error code</span></a>
+will give more detail.</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.CorruptError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CorruptError</span></span><a class="headerlink" href="#apsw.CorruptError" title="Link to this definition"></a></dt>
-<dd><p><em>SQLITE_CORRUPT</em>.  The database disk image appears to be a
-SQLite database but the values inside are inconsistent.</p>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">CorruptError</span></span><a class="headerlink" href="#apsw.CorruptError" title="Link to this definition"></a></dt>
+<dd><p><a class="reference external" href="https://sqlite.org/rescode.html#corrupt">SQLITE_CORRUPT</a>.  The
+database disk image appears to be a SQLite database but the values
+inside are inconsistent.</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.FullError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">FullError</span></span><a class="headerlink" href="#apsw.FullError" title="Link to this definition"></a></dt>
-<dd><p><em>SQLITE_FULL</em>.  The disk appears to be full.</p>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">FullError</span></span><a class="headerlink" href="#apsw.FullError" title="Link to this definition"></a></dt>
+<dd><p><a class="reference external" href="https://sqlite.org/rescode.html#full">SQLITE_FULL</a>.  The disk
+appears to be full.</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.TooBigError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TooBigError</span></span><a class="headerlink" href="#apsw.TooBigError" title="Link to this definition"></a></dt>
-<dd><p><em>SQLITE_TOOBIG</em>.  String or BLOB exceeds size limit.  You can
-change the limits using <a class="reference internal" href="connection.html#apsw.Connection.limit" title="apsw.Connection.limit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.limit()</span></code></a>.</p>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">TooBigError</span></span><a class="headerlink" href="#apsw.TooBigError" title="Link to this definition"></a></dt>
+<dd><p><a class="reference external" href="https://sqlite.org/rescode.html#toobig">SQLITE_TOOBIG</a>.  String
+or BLOB exceeds size limit.  You can  change the limits using
+<a class="reference internal" href="connection.html#apsw.Connection.limit" title="apsw.Connection.limit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.limit()</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.NoLFSError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">NoLFSError</span></span><a class="headerlink" href="#apsw.NoLFSError" title="Link to this definition"></a></dt>
-<dd><p><em>SQLITE_NOLFS</em>.  SQLite has attempted to use a feature not
-supported by the operating system such as <a class="reference external" href="https://en.wikipedia.org/wiki/Large_file_support">large file support</a>.</p>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">NoLFSError</span></span><a class="headerlink" href="#apsw.NoLFSError" title="Link to this definition"></a></dt>
+<dd><p><a class="reference external" href="https://sqlite.org/rescode.html#nolfs">SQLITE_NOLFS</a>.  SQLite
+has attempted to use a feature not supported by the operating system
+such as <a class="reference external" href="https://en.wikipedia.org/wiki/Large_file_support">large file support</a>.</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.EmptyError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">EmptyError</span></span><a class="headerlink" href="#apsw.EmptyError" title="Link to this definition"></a></dt>
-<dd><p><em>SQLITE_EMPTY</em>. Database is completely empty.</p>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">EmptyError</span></span><a class="headerlink" href="#apsw.EmptyError" title="Link to this definition"></a></dt>
+<dd><p><a class="reference external" href="https://sqlite.org/rescode.html#empty">SQLITE_EMPTY</a>. Not
+currently used.</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.FormatError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">FormatError</span></span><a class="headerlink" href="#apsw.FormatError" title="Link to this definition"></a></dt>
-<dd><p><em>SQLITE_FORMAT</em>. (No longer used) <a class="reference external" href="https://sqlite.org/lang_attach.html">Auxiliary database</a> format error.</p>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">FormatError</span></span><a class="headerlink" href="#apsw.FormatError" title="Link to this definition"></a></dt>
+<dd><p><a class="reference external" href="https://sqlite.org/rescode.html#format">SQLITE_FORMAT</a>. (No
+longer used) <a class="reference external" href="https://sqlite.org/lang_attach.html">Auxiliary database</a> format error.</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.NotADBError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">NotADBError</span></span><a class="headerlink" href="#apsw.NotADBError" title="Link to this definition"></a></dt>
-<dd><p><em>SQLITE_NOTADB</em>.  File opened that is not a database file.
-SQLite has a header on database files to verify they are indeed
-SQLite databases.</p>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">NotADBError</span></span><a class="headerlink" href="#apsw.NotADBError" title="Link to this definition"></a></dt>
+<dd><p><a class="reference external" href="https://sqlite.org/rescode.html#notadb">SQLITE_NOTADB</a>.  File
+opened that is not a database file.  SQLite has a header on database
+files to verify they are indeed SQLite databases.</p>
 </dd></dl>
 
 </section>
@@ -565,7 +586,7 @@ traceback:</p>
 </tr>
 </tbody>
 </table>
-<p>In the original traceback you can't even see that code in apsw was
+<p>In the original traceback you can’t even see that code in apsw was
 involved. The augmented traceback shows that there were indeed two
 function calls within apsw and gives you line numbers should you need
 to examine the code. Also note how you are told that the call was in
@@ -624,14 +645,14 @@ almost completely useless!</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="ext.html" class="btn btn-neutral float-left" title="Various interesting and useful bits of functionality" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="types.html" class="btn btn-neutral float-right" title="Types" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="execution.html" class="btn btn-neutral float-right" title="Execution and tracing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Oct 24, 2023.
+      <span class="lastupdated">Last updated on Nov 06, 2023.
       </span></p>
   </div>
 

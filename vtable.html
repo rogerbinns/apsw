@@ -1,12 +1,15 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Virtual Tables &mdash; APSW 3.43.2.0 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <title>Virtual Tables &mdash; APSW 3.44.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
+
+  
     <link rel="shortcut icon" href="_static/favicon.ico"/>
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
@@ -14,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=200f835c"></script>
+        <script src="_static/documentation_options.js?v=5c66a1ff"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +42,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.43.2.0
+                3.44.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -108,6 +111,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.Destroy"><code class="docutils literal notranslate"><span class="pre">VTTable.Destroy()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.Disconnect"><code class="docutils literal notranslate"><span class="pre">VTTable.Disconnect()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.FindFunction"><code class="docutils literal notranslate"><span class="pre">VTTable.FindFunction()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.Integrity"><code class="docutils literal notranslate"><span class="pre">VTTable.Integrity()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.Open"><code class="docutils literal notranslate"><span class="pre">VTTable.Open()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.Release"><code class="docutils literal notranslate"><span class="pre">VTTable.Release()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.Rename"><code class="docutils literal notranslate"><span class="pre">VTTable.Rename()</span></code></a></li>
@@ -134,7 +138,6 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#troubleshooting-virtual-tables">Troubleshooting virtual tables</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
@@ -142,7 +145,6 @@
 <li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
-<li class="toctree-l1"><a class="reference internal" href="types.html">Types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
@@ -182,46 +184,36 @@
              
   <section id="virtual-tables">
 <span id="virtualtables"></span><h1>Virtual Tables<a class="headerlink" href="#virtual-tables" title="Link to this heading"></a></h1>
-<p><a class="reference external" href="https://sqlite.org/vtab.html">Virtual Tables</a> are a feature
-introduced in SQLite 3.3.7. They let a developer provide an underlying
-table implementations, while still presenting a normal SQL interface
-to the user. The person writing SQL doesn't need to know or care that
-some of the tables come from elsewhere.</p>
+<p><a class="reference external" href="https://sqlite.org/vtab.html">Virtual Tables</a> let a developer
+provide an underlying table implementations, while still presenting
+a normal SQL interface to the user. The person writing SQL doesn’t
+need to know or care that some of the tables come from elsewhere.</p>
 <p>Some examples of how you might use this:</p>
 <ul class="simple">
-<li><p>Translating to/from information stored in other formats (eg a csv/ini format file)</p></li>
-<li><p>Accessing the data remotely (eg you could make a table that backends into Amazon's API)</p></li>
+<li><p>Translating to/from information stored in other formats</p></li>
+<li><p>Accessing the data remotely (eg you could make a table that backends into the cloud)</p></li>
 <li><p>Dynamic information (eg currently running processes, files and directories, objects in your program)</p></li>
-<li><p>Information that needs reformatting (eg if you have complex rules about how to convert bytes to/from Unicode
-in the dataset)</p></li>
-<li><p>Information that isn't relationally correct (eg if you have data that has ended up with duplicate &quot;unique&quot; keys
-with code that dynamically corrects it)</p></li>
 <li><p>There are other examples on the <a class="reference external" href="https://sqlite.org/vtab.html">SQLite page</a></p></li>
 </ul>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
-<p>You'll find initial development a lot quicker by using
-<a class="reference internal" href="ext.html#apsw.ext.make_virtual_module" title="apsw.ext.make_virtual_module"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.ext.make_virtual_module()</span></code></a>.  To write your own
-you will need to understand <a class="reference external" href="https://www.sqlite.org/vtab.html#the_xbestindex_method">xBestIndex</a>.</p>
+<p>You’ll find initial development a lot quicker by using
+<a class="reference internal" href="ext.html#apsw.ext.make_virtual_module" title="apsw.ext.make_virtual_module"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.ext.make_virtual_module()</span></code></a> which lets you
+export a Python function as a virtual table, being
+able to provide positional and keyword arguments as
+part of your query.</p>
+<p>See <a class="reference internal" href="example.html#example-virtual-tables"><span class="std std-ref">the example</span></a>.</p>
 </div>
 <p>To write a virtual table, you need to have 3 types of object. A
-<a class="reference internal" href="#apsw.VTModule" title="apsw.VTModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">module</span></code></a>, a <a class="reference internal" href="#apsw.VTTable" title="apsw.VTTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">virtual</span> <span class="pre">table</span></code></a> and a
-<a class="reference internal" href="#apsw.VTCursor" title="apsw.VTCursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">cursor</span></code></a>. These are documented below. You can also
-read the <a class="reference external" href="https://sqlite.org/vtab.html">SQLite C method documentation</a>.
-At the C level, they are just one set of methods. At the Python/APSW level,
-they are split over the 3 types of object. The leading <strong>x</strong> is
-omitted in Python. You can return SQLite error codes (eg
-<em>SQLITE_READONLY</em>) by raising the appropriate exceptions (eg
-<a class="reference internal" href="exceptions.html#apsw.ReadOnlyError" title="apsw.ReadOnlyError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ReadOnlyError</span></code></a>).  <a class="reference internal" href="apsw.html#apsw.exception_for" title="apsw.exception_for"><code class="xref py py-meth docutils literal notranslate"><span class="pre">exception_for()</span></code></a> is a useful helper
-function to do the mapping.</p>
+<a class="reference internal" href="#apsw.VTModule" title="apsw.VTModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">module</span></code></a> providing the module, a <a class="reference internal" href="#apsw.VTTable" title="apsw.VTTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">virtual</span> <span class="pre">table</span></code></a>,
+and a <a class="reference internal" href="#apsw.VTCursor" title="apsw.VTCursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">cursor</span></code></a> that moves through a table.</p>
 <section id="indexinfo-class">
 <h2>IndexInfo class<a class="headerlink" href="#indexinfo-class" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="apsw.IndexInfo">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">IndexInfo</span></span><a class="headerlink" href="#apsw.IndexInfo" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">IndexInfo</span></span><a class="headerlink" href="#apsw.IndexInfo" title="Link to this definition"></a></dt>
 <dd><p>IndexInfo represents the <a class="reference external" href="https://www.sqlite.org/c3ref/index_info.html">sqlite3_index_info</a> and associated
-methods used in the <a class="reference internal" href="#apsw.VTTable.BestIndexObject" title="apsw.VTTable.BestIndexObject"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTTable.BestIndexObject()</span></code></a> method.  The
-structure values are not altered or made friendlier in any way.</p>
+methods used in the <a class="reference internal" href="#apsw.VTTable.BestIndexObject" title="apsw.VTTable.BestIndexObject"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTTable.BestIndexObject()</span></code></a> method.</p>
 <p>Naming is identical to the C structure rather than Pythonic.  You can
 access members directly while needing to use get/set methods for array
 members.</p>
@@ -241,7 +233,8 @@ the underlying integer.</p>
 <dl class="py attribute" id="index-0">
 <dt class="sig sig-object py" id="apsw.IndexInfo.distinct">
 <span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">distinct</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.IndexInfo.distinct" title="Link to this definition"></a></dt>
-<dd><p>(Read-only) How the query planner would like output ordered</p>
+<dd><p>(Read-only) How the query planner would like output ordered
+if the query is using group by or distinct.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/vtab_distinct.html">sqlite3_vtab_distinct</a></p>
 </dd></dl>
 
@@ -381,14 +374,13 @@ method will have all of the values at once.</p>
 <h2>VTModule class<a class="headerlink" href="#vtmodule-class" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="apsw.VTModule">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VTModule</span></span><a class="headerlink" href="#apsw.VTModule" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">VTModule</span></span><a class="headerlink" href="#apsw.VTModule" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>There is no actual <em>VTModule</em> class - it is shown this way for
-documentation convenience and is present as a <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Protocol">typing protocol</a>.
-Your module instance should implement all the methods documented here.</p>
+documentation convenience and is present as a <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Protocol">typing protocol</a>.</p>
 </div>
 <p>A module instance is used to create the virtual tables.  Once you have
 a module object, you register it with a connection by calling
@@ -405,7 +397,7 @@ a module object, you register it with a connection by calling
 </div>
 <p>The create step is to tell SQLite about the existence of the table.
 Any number of tables referring to the same module can be made this
-way.  Note the (optional) arguments which are passed to the module.</p>
+way.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VTModule.Connect">
 <span class="sig-prename descclassname"><span class="pre">VTModule.</span></span><span class="sig-name descname"><span class="pre">Connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">modulename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">databasename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tablename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="apsw.html#apsw.SQLiteValue" title="apsw.SQLiteValue"><span class="pre">SQLiteValue</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#apsw.VTTable" title="apsw.VTTable"><span class="pre">VTTable</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#apsw.VTModule.Connect" title="Link to this definition"></a></dt>
@@ -427,6 +419,7 @@ set <a class="reference internal" href="#apsw.VTModule.Connect" title="apsw.VTMo
      <span class="n">Connect</span><span class="o">=</span><span class="n">Create</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://sqlite.org/vtab.html#the_xconnect_method">SQLite xConnect reference</a></p>
 </dd></dl>
 
 <dl class="py method">
@@ -436,12 +429,11 @@ set <a class="reference internal" href="#apsw.VTModule.Connect" title="apsw.VTMo
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>connection</strong> -- An instance of <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a></p></li>
-<li><p><strong>modulename</strong> -- The string name under which the module was <a class="reference internal" href="connection.html#apsw.Connection.create_module" title="apsw.Connection.create_module"><code class="xref py py-meth docutils literal notranslate"><span class="pre">registered</span></code></a></p></li>
-<li><p><strong>databasename</strong> -- The name of the database.  This will be <code class="docutils literal notranslate"><span class="pre">main</span></code> for directly opened files and the name specified in
-<a class="reference external" href="https://sqlite.org/lang_attach.html">ATTACH</a> statements.</p></li>
-<li><p><strong>tablename</strong> -- Name of the table the user wants to create.</p></li>
-<li><p><strong>args</strong> -- Any arguments that were specified in the <a class="reference external" href="https://sqlite.org/lang_createvtab.html">create virtual table</a> statement.</p></li>
+<li><p><strong>connection</strong> – An instance of <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a></p></li>
+<li><p><strong>modulename</strong> – The string name under which the module was <a class="reference internal" href="connection.html#apsw.Connection.create_module" title="apsw.Connection.create_module"><code class="xref py py-meth docutils literal notranslate"><span class="pre">registered</span></code></a></p></li>
+<li><p><strong>databasename</strong> – The name of the database.  <cite>main</cite>, <cite>temp</cite>, the name in <a class="reference external" href="https://sqlite.org/lang_attach.html">ATTACH</a></p></li>
+<li><p><strong>tablename</strong> – Name of the table the user wants to create.</p></li>
+<li><p><strong>args</strong> – Any arguments that were specified in the <a class="reference external" href="https://sqlite.org/lang_createvtab.html">create virtual table</a> statement.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -451,6 +443,7 @@ is an object that implements the <a class="reference internal" href="#apsw.VTTab
 </dd>
 </dl>
 <p>The corresponding call is <a class="reference internal" href="#apsw.VTTable.Destroy" title="apsw.VTTable.Destroy"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTTable.Destroy()</span></code></a>.</p>
+<p><a class="reference external" href="https://sqlite.org/vtab.html#the_xcreate_method">SQLite xCreate reference</a></p>
 </dd></dl>
 
 <dl class="py method">
@@ -463,6 +456,7 @@ is an object that implements the <a class="reference internal" href="#apsw.VTTab
 named <code class="code docutils literal notranslate"><span class="pre">example</span></code> and then a  real table is created
 named <code class="code docutils literal notranslate"><span class="pre">example_content</span></code>, this would be called with
 a <em>table_suffix</em> of <code class="code docutils literal notranslate"><span class="pre">content</span></code></p>
+<p><a class="reference external" href="https://sqlite.org/vtab.html#the_xshadowname_method">SQLite xShadowName reference</a></p>
 </dd></dl>
 
 </section>
@@ -470,24 +464,22 @@ a <em>table_suffix</em> of <code class="code docutils literal notranslate"><span
 <h2>VTTable class<a class="headerlink" href="#vttable-class" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="apsw.VTTable">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VTTable</span></span><a class="headerlink" href="#apsw.VTTable" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">VTTable</span></span><a class="headerlink" href="#apsw.VTTable" title="Link to this definition"></a></dt>
 <dd><div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>There is no actual <em>VTTable</em> class - it is shown this way for
-documentation convenience and is present as a <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Protocol">typing protocol</a>.
-Your table instance should implement the methods documented here.</p>
+documentation convenience and is present as a <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Protocol">typing protocol</a>.</p>
 </div>
 <p>The <a class="reference internal" href="#apsw.VTTable" title="apsw.VTTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">VTTable</span></code></a> object contains knowledge of the indices, makes
 cursors and can perform transactions.</p>
-<p id="vtablestructure">A virtual table is structured as a series of rows, each of which has
+<p>A virtual table is structured as a series of rows, each of which has
 the same number of columns.  The value in a column must be one of the <a class="reference external" href="https://sqlite.org/datatype3.html">5
 supported types</a>, but the
 type can be different between rows for the same column.  The virtual
 table routines identify the columns by number, starting at zero.</p>
 <p>Each row has a <strong>unique</strong> 64 bit integer <a class="reference external" href="https://sqlite.org/autoinc.html">rowid</a> with the <a class="reference internal" href="#apsw.VTCursor" title="apsw.VTCursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cursor</span></code></a> routines operating on this number, as well as some of
 the <a class="reference internal" href="#apsw.VTTable" title="apsw.VTTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> routines such as <a class="reference internal" href="#apsw.VTTable.UpdateChangeRow" title="apsw.VTTable.UpdateChangeRow"><code class="xref py py-meth docutils literal notranslate"><span class="pre">UpdateChangeRow</span></code></a>.</p>
-<p>It is possible to not have a rowid - read more at <a class="reference external" href="https://www.sqlite.org/vtab.html#_without_rowid_virtual_tables_">the SQLite
-site</a></p>
+<p>It is possible to <a class="reference external" href="https://www.sqlite.org/vtab.html#_without_rowid_virtual_tables_">not have a rowid</a></p>
 </dd></dl>
 
 <dl class="py method">
@@ -495,6 +487,7 @@ site</a></p>
 <span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Begin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTTable.Begin" title="Link to this definition"></a></dt>
 <dd><p>This function is used as part of transactions.  You do not have to
 provide the method.</p>
+<p><a class="reference external" href="https://sqlite.org/vtab.html#the_xbegin_method">SQLite xBegin reference</a></p>
 </dd></dl>
 
 <dl class="py method">
@@ -510,7 +503,7 @@ index or index like mechanism available.</p>
 <p class="admonition-title">Note</p>
 <p>The implementation of this method differs slightly from the
 <a class="reference external" href="https://sqlite.org/vtab.html">SQLite documentation</a>
-for the C API. You are not passed &quot;unusable&quot; constraints. The
+for the C API. You are not passed “unusable” constraints. The
 argv/constraintarg positions are not off by one. In the C api, you
 have to return position 1 to get something passed to
 <a class="reference internal" href="#apsw.VTCursor.Filter" title="apsw.VTCursor.Filter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTCursor.Filter()</span></code></a> in position 0. With the APSW
@@ -518,12 +511,12 @@ implementation, you return position 0 to get Filter arg 0,
 position 1 to get Filter arg 1 etc.</p>
 </div>
 <p>The purpose of this method is to ask if you have the ability to
-determine if a row meets certain constraints that doesn't involve
+determine if a row meets certain constraints that doesn’t involve
 visiting every row. An example constraint is <code class="docutils literal notranslate"><span class="pre">price</span> <span class="pre">&gt;</span> <span class="pre">74.99</span></code>. In a
 traditional SQL database, queries with constraints can be speeded up
 <a class="reference external" href="https://sqlite.org/lang_createindex.html">with indices</a>. If
 you return None, then SQLite will visit every row in your table and
-evaluate the constraint itself. Your index choice returned from
+evaluate the constraints itself. Your index choice returned from
 BestIndex will also be passed to the <a class="reference internal" href="#apsw.VTCursor.Filter" title="apsw.VTCursor.Filter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Filter()</span></code></a> method on your cursor
 object. Note that SQLite may call this method multiple times trying
 to find the most efficient way of answering a complex query.</p>
@@ -541,8 +534,8 @@ then the constraints will be:</p>
 <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_EQ</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Note that you do not get the value of the constraint (ie &quot;Acme
-Widgets&quot;, 74.99 and 10 in this example).</p>
+<p>Note that you do not get the value of the constraint (ie “Acme
+Widgets”, 74.99 and 10 in this example).</p>
 </div></blockquote>
 <p>If you do have any suitable indices then you return a sequence the
 same length as constraints with the members mapping to the
@@ -558,7 +551,7 @@ will have to iterate over every row for it.</p>
 </dd>
 <dt>integer</dt><dd><p>This is the argument number for the constraintargs being passed
 into the <a class="reference internal" href="#apsw.VTCursor.Filter" title="apsw.VTCursor.Filter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Filter()</span></code></a> function of your
-<a class="reference internal" href="#apsw.VTCursor" title="apsw.VTCursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">cursor</span></code></a> (the values &quot;Acme Widgets&quot;, 74.99
+<a class="reference internal" href="#apsw.VTCursor" title="apsw.VTCursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">cursor</span></code></a> (the values “Acme Widgets”, 74.99
 and 10 in the example).</p>
 </dd>
 <dt>(integer, boolean)</dt><dd><p>By default SQLite will check what you return. For example if
@@ -597,7 +590,7 @@ equality and price.</p>
 </tbody>
 </table>
 <p>When your <a class="reference internal" href="#apsw.VTCursor.Filter" title="apsw.VTCursor.Filter"><code class="xref py py-class docutils literal notranslate"><span class="pre">Filter</span></code></a> method in the cursor is called,
-constraintarg[0] will be &quot;Acme Widgets&quot; (customer constraint value)
+constraintarg[0] will be “Acme Widgets” (customer constraint value)
 and constraintarg[1] will be 74.99 (price constraint value). You can
 also return an index number (integer) and index string to use
 (SQLite attaches no significance to these values - they are passed
@@ -667,6 +660,7 @@ index on customer equality and price.</p>
 <span class="mf">74.99</span>            <span class="c1"># constraintarg[1] - price</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://sqlite.org/vtab.html#the_xbestindex_method">SQLite xBestIndex reference</a></p>
 </dd></dl>
 
 <dl class="py method">
@@ -680,6 +674,7 @@ extract other information.</p>
 <p>Return <em>True</em> to indicate all is well.  If you return <em>False</em> or there is an error,
 then <a class="reference external" href="https://www.sqlite.org/vtab.html#return_value">SQLITE_CONSTRAINT</a> is returned to
 SQLite.</p>
+<p><a class="reference external" href="https://sqlite.org/vtab.html#the_xbestindex_method">SQLite xBestIndex reference</a></p>
 </dd></dl>
 
 <dl class="py method">
@@ -687,6 +682,7 @@ SQLite.</p>
 <span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Commit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTTable.Commit" title="Link to this definition"></a></dt>
 <dd><p>This function is used as part of transactions.  You do not have to
 provide the method.</p>
+<p><a class="reference external" href="https://sqlite.org/vtab.html#the_xcommit_method">SQLite xCommit reference</a></p>
 </dd></dl>
 
 <dl class="py method">
@@ -695,8 +691,8 @@ provide the method.</p>
 <dd><p>The opposite of <a class="reference internal" href="#apsw.VTModule.Create" title="apsw.VTModule.Create"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTModule.Create()</span></code></a>.  This method is called when
 the table is no longer used.  Note that you must always release
 resources even if you intend to return an error, as it will not be
-called again on error.  SQLite may also leak memory
-if you return an error.</p>
+called again on error.</p>
+<p><a class="reference external" href="https://sqlite.org/vtab.html#the_xdestroy_method">SQLite xDestroy reference</a></p>
 </dd></dl>
 
 <dl class="py method">
@@ -705,6 +701,7 @@ if you return an error.</p>
 <dd><p>The opposite of <a class="reference internal" href="#apsw.VTModule.Connect" title="apsw.VTModule.Connect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTModule.Connect()</span></code></a>.  This method is called when
 a reference to a virtual table is no longer used, but <a class="reference internal" href="#apsw.VTTable.Destroy" title="apsw.VTTable.Destroy"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTTable.Destroy()</span></code></a> will
 be called when the table is no longer used.</p>
+<p><a class="reference external" href="https://sqlite.org/vtab.html#the_xdisconnect_method">SQLite xDisconnect reference</a></p>
 </dd></dl>
 
 <dl class="py method">
@@ -715,30 +712,54 @@ particular scalar function. You do not have to provide this method.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> -- The function name</p></li>
-<li><p><strong>nargs</strong> -- How many arguments the function takes</p></li>
+<li><p><strong>name</strong> – The function name</p></li>
+<li><p><strong>nargs</strong> – How many arguments the function takes</p></li>
 </ul>
 </dd>
 </dl>
-<p>Return <em>None</em> if you don't have the function.  Zero is then returned to SQLite.</p>
+<p>Return <em>None</em> if you don’t have the function.  Zero is then returned to SQLite.</p>
 <p>Return a callable if you have one.  One is then returned to SQLite with the function.</p>
 <p>Return a sequence of int, callable.  The int is returned to SQLite with the function.
 This is useful for <em>SQLITE_INDEX_CONSTRAINT_FUNCTION</em> returns.</p>
-<p>It isn't possible to tell SQLite about exceptions in this function, so an
+<p>It isn’t possible to tell SQLite about exceptions in this function, so an
 <a class="reference internal" href="exceptions.html#unraisable"><span class="std std-ref">unraisable exception</span></a> is used.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="connection.html#apsw.Connection.overload_function" title="apsw.Connection.overload_function"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.overload_function()</span></code></a></p></li>
-<li><p><a class="reference external" href="https://www.sqlite.org/vtab.html#xfindfunction">FindFunction documentation</a></p></li>
 </ul>
 </div>
+<p><a class="reference external" href="https://sqlite.org/vtab.html#the_xfindfunction_method">SQLite xFindFunction reference</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.VTTable.Integrity">
+<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Integrity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_quick</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTTable.Integrity" title="Link to this definition"></a></dt>
+<dd><p>If present, check the integrity of the virtual table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>schema</strong> – Database name <cite>main</cite>, <cite>temp</cite>, the name in <a class="reference external" href="https://sqlite.org/lang_attach.html">ATTACH</a></p></li>
+<li><p><strong>name</strong> – Name of the table</p></li>
+<li><p><strong>is_quick</strong> – 0 if <a class="reference external" href="https://sqlite.org/pragma.html#pragma_integrity_check">pragma integrity_check</a> was used,
+1 if <a class="reference external" href="https://sqlite.org/pragma.html#pragma_quick_check">pragma quick_check</a> was used, and may contain
+other values in the future.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None if there are no problems, else a string to be used as an error message.  The string is returned to the
+pragma as is, so it is recommended that you include the database and table name to clarify what database and
+table the message is referring to.</p>
+</dd>
+</dl>
+<p><a class="reference external" href="https://sqlite.org/vtab.html#the_xintegrity_method">SQLite xIntegrity reference</a></p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VTTable.Open">
 <span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Open</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#apsw.VTCursor" title="apsw.VTCursor"><span class="pre">VTCursor</span></a></span></span><a class="headerlink" href="#apsw.VTTable.Open" title="Link to this definition"></a></dt>
 <dd><p>Returns a <a class="reference internal" href="#apsw.VTCursor" title="apsw.VTCursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">cursor</span></code></a> object.</p>
+<p><a class="reference external" href="https://sqlite.org/vtab.html#the_xopen_method">SQLite xOpen reference</a></p>
 </dd></dl>
 
 <dl class="py method">
@@ -747,6 +768,7 @@ This is useful for <em>SQLITE_INDEX_CONSTRAINT_FUNCTION</em> returns.</p>
 <dd><p>Release nested transactions back to <em>level</em>.</p>
 <p>If you do not provide this method then the call succeeds (matching
 SQLite behaviour when no callback is provided).</p>
+<p><a class="reference external" href="https://sqlite.org/vtab.html#the_xsavepoint_xrelease_and_xrollbackto_methods">SQLite xRelease reference</a></p>
 </dd></dl>
 
 <dl class="py method">
@@ -754,8 +776,9 @@ SQLite behaviour when no callback is provided).</p>
 <span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Rename</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">newname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTTable.Rename" title="Link to this definition"></a></dt>
 <dd><p>Notification that the table will be given a new name. If you return
 without raising an exception, then SQLite renames the table (you
-don't have to do anything). If you raise an exception then the
+don’t have to do anything). If you raise an exception then the
 renaming is prevented.  You do not have to provide this method.</p>
+<p><a class="reference external" href="https://sqlite.org/vtab.html#the_xrename_method">SQLite xRename reference</a></p>
 </dd></dl>
 
 <dl class="py method">
@@ -763,6 +786,7 @@ renaming is prevented.  You do not have to provide this method.</p>
 <span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Rollback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTTable.Rollback" title="Link to this definition"></a></dt>
 <dd><p>This function is used as part of transactions.  You do not have to
 provide the method.</p>
+<p><a class="reference external" href="https://sqlite.org/vtab.html#the_xsavepoint_xrelease_and_xrollbackto_methods">SQLite xRollbackTo reference</a></p>
 </dd></dl>
 
 <dl class="py method">
@@ -771,6 +795,7 @@ provide the method.</p>
 <dd><p>Set nested transaction to <em>level</em>.</p>
 <p>If you do not provide this method then the call succeeds (matching
 SQLite behaviour when no callback is provided).</p>
+<p><a class="reference external" href="https://sqlite.org/vtab.html#the_xsavepoint_xrelease_and_xrollbackto_methods">SQLite xSavepoint reference</a></p>
 </dd></dl>
 
 <dl class="py method">
@@ -778,6 +803,7 @@ SQLite behaviour when no callback is provided).</p>
 <span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Sync</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTTable.Sync" title="Link to this definition"></a></dt>
 <dd><p>This function is used as part of transactions.  You do not have to
 provide the method.</p>
+<p><a class="reference external" href="https://sqlite.org/vtab.html#the_xsync_method">SQLite xSync reference</a></p>
 </dd></dl>
 
 <dl class="py method">
@@ -788,12 +814,13 @@ provide the method.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>row</strong> -- The existing 64 bit integer rowid</p></li>
-<li><p><strong>newrowid</strong> -- If not the same as <em>row</em> then also change the rowid to this.</p></li>
-<li><p><strong>fields</strong> -- A tuple of values the same length and order as columns in your table</p></li>
+<li><p><strong>row</strong> – The existing 64 bit integer rowid</p></li>
+<li><p><strong>newrowid</strong> – If not the same as <em>row</em> then also change the rowid to this.</p></li>
+<li><p><strong>fields</strong> – A tuple of values the same length and order as columns in your table</p></li>
 </ul>
 </dd>
 </dl>
+<p><a class="reference external" href="https://sqlite.org/vtab.html#the_xupdate_method">SQLite xUpdate reference</a></p>
 </dd></dl>
 
 <dl class="py method">
@@ -802,9 +829,10 @@ provide the method.</p>
 <dd><p>Delete the row with the specified <em>rowid</em>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>rowid</strong> -- 64 bit integer</p>
+<dd class="field-odd"><p><strong>rowid</strong> – 64 bit integer</p>
 </dd>
 </dl>
+<p><a class="reference external" href="https://sqlite.org/vtab.html#the_xupdate_method">SQLite xUpdate reference</a></p>
 </dd></dl>
 
 <dl class="py method">
@@ -814,8 +842,8 @@ provide the method.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>rowid</strong> -- <em>None</em> if you should choose the rowid yourself, else a 64 bit integer</p></li>
-<li><p><strong>fields</strong> -- A tuple of values the same length and order as columns in your table</p></li>
+<li><p><strong>rowid</strong> – <em>None</em> if you should choose the rowid yourself, else a 64 bit integer</p></li>
+<li><p><strong>fields</strong> – A tuple of values the same length and order as columns in your table</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -824,6 +852,7 @@ to the row.  If <em>rowid</em> was not <em>None</em> then the return value
 is ignored.</p>
 </dd>
 </dl>
+<p><a class="reference external" href="https://sqlite.org/vtab.html#the_xupdate_method">SQLite xUpdate reference</a></p>
 </dd></dl>
 
 </section>
@@ -831,30 +860,24 @@ is ignored.</p>
 <h2>VTCursor class<a class="headerlink" href="#vtcursor-class" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="apsw.VTCursor">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VTCursor</span></span><a class="headerlink" href="#apsw.VTCursor" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">VTCursor</span></span><a class="headerlink" href="#apsw.VTCursor" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>There is no actual <em>VTCursor</em> class - it is shown this way for
-documentation convenience and is present as a <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Protocol">typing protocol</a>.
-Your cursor instance should implement all the methods documented
-here.</p>
+documentation convenience and is present as a <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Protocol">typing protocol</a>.</p>
 </div>
 <p>The <a class="reference internal" href="#apsw.VTCursor" title="apsw.VTCursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">VTCursor</span></code></a> object is used for iterating over a table.
 There may be many cursors simultaneously so each one needs to keep
-track of where      <a class="reference internal" href="#vtablestructure"><span class="std std-ref">Virtual table structure</span></a>
-it is.</p>
-<div class="admonition seealso">
-<p class="admonition-title">See also</p>
-<p><a class="reference internal" href="#vtablestructure"><span class="std std-ref">Virtual table structure</span></a></p>
-</div>
+track of where in the table it is.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VTCursor.Close">
 <span class="sig-prename descclassname"><span class="pre">VTCursor.</span></span><span class="sig-name descname"><span class="pre">Close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VTCursor.Close" title="Link to this definition"></a></dt>
 <dd><p>This is the destructor for the cursor. Note that you must
 cleanup. The method will not be called again if you raise an
 exception.</p>
+<p><a class="reference external" href="https://sqlite.org/vtab.html#the_xclose_method">SQLite xClose reference</a></p>
 </dd></dl>
 
 <dl class="py method">
@@ -864,10 +887,11 @@ exception.</p>
 row.  If <em>number</em> is -1 then return the rowid.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Must be one one of the <a class="reference internal" href="types.html#types"><span class="std std-ref">5
+<dd class="field-odd"><p>Must be one one of the <a class="reference internal" href="tips.html#types"><span class="std std-ref">5
 supported types</span></a></p>
 </dd>
 </dl>
+<p><a class="reference external" href="https://sqlite.org/vtab.html#the_xcolumn_method">SQLite xColumn reference</a></p>
 </dd></dl>
 
 <dl class="py method" id="index-5">
@@ -882,6 +906,7 @@ anything else then it will have that value - as though <a class="reference inter
 had been called.</p>
 <p>This method will only be called if <em>use_no_change</em> was <em>True</em> in the
 call to <a class="reference internal" href="connection.html#apsw.Connection.create_module" title="apsw.Connection.create_module"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.create_module()</span></code></a>.</p>
+<p><a class="reference external" href="https://sqlite.org/vtab.html#the_xcolumn_method">SQLite xColumn reference</a></p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/vtab_nochange.html">sqlite3_vtab_nochange</a></p>
 </dd></dl>
 
@@ -900,6 +925,7 @@ call to <a class="reference internal" href="connection.html#apsw.Connection.crea
 an exception in the method or provide a non-boolean return then
 True (no more data) will be returned to SQLite.</p>
 </div>
+<p><a class="reference external" href="https://sqlite.org/vtab.html#the_xeof_method">SQLite xEof reference</a></p>
 </dd></dl>
 
 <dl class="py method" id="index-6">
@@ -913,6 +939,7 @@ requested. If you always return None in BestIndex then indexnum will
 be zero, indexstring will be None and constraintargs will be empty).</p>
 <p>If you had an <em>in</em> constraint and set <a class="reference internal" href="#apsw.IndexInfo.set_aConstraintUsage_in" title="apsw.IndexInfo.set_aConstraintUsage_in"><code class="xref py py-meth docutils literal notranslate"><span class="pre">IndexInfo.set_aConstraintUsage_in()</span></code></a>
 then that value will be a <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">set</span></code></a>.</p>
+<p><a class="reference external" href="https://sqlite.org/vtab.html#the_xfilter_method">SQLite xFilter reference</a></p>
 <dl class="simple">
 <dt>Calls:</dt><dd><ul class="simple">
 <li><p><a class="reference external" href="https://sqlite.org/c3ref/vtab_in_first.html">sqlite3_vtab_in_first</a></p></li>
@@ -932,32 +959,16 @@ subsequently called.</p>
 return, and they were selected for use as provided in the parameters
 to <a class="reference internal" href="#apsw.VTCursor.Filter" title="apsw.VTCursor.Filter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Filter()</span></code></a> then you should move to the next
 appropriate indexed and constrained row.</p>
+<p><a class="reference external" href="https://sqlite.org/vtab.html#the_xnext_method">SQLite xNext reference</a></p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VTCursor.Rowid">
 <span class="sig-prename descclassname"><span class="pre">VTCursor.</span></span><span class="sig-name descname"><span class="pre">Rowid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.VTCursor.Rowid" title="Link to this definition"></a></dt>
 <dd><p>Return the current rowid.</p>
+<p><a class="reference external" href="https://sqlite.org/vtab.html#the_xrowid_method">SQLite xRowid reference</a></p>
 </dd></dl>
 
-</section>
-<section id="troubleshooting-virtual-tables">
-<h2>Troubleshooting virtual tables<a class="headerlink" href="#troubleshooting-virtual-tables" title="Link to this heading"></a></h2>
-<p>A big help is using the local variables recipe as described in
-<a class="reference internal" href="exceptions.html#augmentedstacktraces"><span class="std std-ref">augmented stack traces</span></a> which will give
-you more details in errors, and shows an example with the complex
-<a class="reference internal" href="#apsw.VTTable.BestIndex" title="apsw.VTTable.BestIndex"><code class="xref py py-meth docutils literal notranslate"><span class="pre">BestIndex()</span></code></a> function.</p>
-<p>You may also find errors compounding. For
-example if you have an error in the Filter method of a cursor, SQLite
-then closes the cursor. If you also return an error in the Close
-method then the first error may mask the second or vice versa.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>SQLite may ignore responses from your methods if they don't make
-sense. For example in BestIndex, if you set multiple arguments to
-have the same constraintargs position then your Filter won't
-receive any constraintargs at all.</p>
-</div>
 </section>
 </section>
 
@@ -973,7 +984,7 @@ receive any constraintargs at all.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Oct 24, 2023.
+      <span class="lastupdated">Last updated on Nov 06, 2023.
       </span></p>
   </div>
 

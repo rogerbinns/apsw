@@ -1,12 +1,15 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Virtual File System (VFS) &mdash; APSW 3.43.2.0 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <title>Virtual File System (VFS) &mdash; APSW 3.44.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
+
+  
     <link rel="shortcut icon" href="_static/favicon.ico"/>
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
@@ -14,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=200f835c"></script>
+        <script src="_static/documentation_options.js?v=5c66a1ff"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +42,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.43.2.0
+                3.44.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -131,7 +134,6 @@
 <li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
-<li class="toctree-l1"><a class="reference internal" href="types.html">Types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
@@ -171,17 +173,12 @@
              
   <section id="virtual-file-system-vfs">
 <span id="vfs"></span><h1>Virtual File System (VFS)<a class="headerlink" href="#virtual-file-system-vfs" title="Link to this heading"></a></h1>
-<p>SQLite 3.6 added <a class="reference external" href="https://sqlite.org/c3ref/vfs.html">VFS functionality</a> which defines the interface
-between the SQLite core and the underlying operating system. The
-majority of the functionality deals with files. APSW exposes this
-functionality letting you provide your own routines. You can also
-<em>inherit</em> from an existing vfs making it easy to augment or override
-specific routines. For example you could obfuscate your database by
-XORing the data implemented by augmenting the read and write
-methods. The method names are exactly the same as SQLite uses making
-it easier to read the SQLite documentation, trouble tickets, web
-searches or mailing lists. The SQLite convention results in names like
-xAccess, xCurrentTime and xWrite.</p>
+<p><a class="reference external" href="https://sqlite.org/c3ref/vfs.html">VFS</a> defines
+the interface between the SQLite core and the underlying operating
+system. The majority of the functionality deals with files. APSW
+exposes this functionality letting you provide your own routines.
+You can also <em>inherit</em> from an existing vfs making it easy to augment
+or override specific routines.</p>
 <p>You specify which VFS to use as a parameter to the <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a>
 constructor.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">db</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;file&quot;</span><span class="p">,</span> <span class="n">vfs</span><span class="o">=</span><span class="s2">&quot;myvfs&quot;</span><span class="p">)</span>
@@ -202,19 +199,19 @@ To return a specific SQLite error code use <a class="reference internal" href="a
 the exception does not map to any specific error code then
 <em>SQLITE_ERROR</em> which corresponds to <a class="reference internal" href="exceptions.html#apsw.SQLError" title="apsw.SQLError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">SQLError</span></code></a> is returned to SQLite.</p>
 <p>The SQLite code that deals with VFS errors behaves in varying
-ways. Some routines have no way to return an error (eg <a class="reference external" href="https://sqlite.org/c3ref/vfs.html">xDlOpen</a> just returns zero/NULL on
+ways. Some routines have no way to return an error: eg <a class="reference external" href="https://sqlite.org/c3ref/vfs.html">xDlOpen</a> just returns zero/NULL on
 being unable to load a library, <a class="reference external" href="https://sqlite.org/c3ref/vfs.html">xSleep</a> has no error return
 parameter), others are unified (eg almost any
 error in xWrite will be returned to the user as disk full
 error). Sometimes errors are ignored as they are harmless such as when
-a journal can't be deleted after a commit (the journal is marked as
+a journal can’t be deleted after a commit (the journal is marked as
 obsolete before being deleted).  Simple operations such as opening a
 database can result in many different VFS function calls such as hot
 journals being detected, locking, and read/writes for
 playback/rollback.</p>
 <p>If multiple exceptions occur during the same SQLite control flow, then
-they will be <a class="reference internal" href="exceptions.html"><span class="doc">chained</span></a> together.  Remember that
-<a class="reference internal" href="exceptions.html#augmentedstacktraces"><span class="std std-ref">augmented stack traces</span></a> are available
+they will be <a class="reference internal" href="exceptions.html"><span class="doc">chained</span></a> together.
+<a class="reference internal" href="exceptions.html#augmentedstacktraces"><span class="std std-ref">Augmented stack traces</span></a> are available
 which significantly increase detail about the exceptions and help with
 debugging.</p>
 </section>
@@ -222,7 +219,7 @@ debugging.</p>
 <h2>VFSFcntlPragma class<a class="headerlink" href="#vfsfcntlpragma-class" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="apsw.VFSFcntlPragma">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VFSFcntlPragma</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pointer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFSFcntlPragma" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">VFSFcntlPragma</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pointer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFSFcntlPragma" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <p>A helper class to work with <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlpragma">SQLITE_FCNTL_PRAGMA</a>
@@ -254,29 +251,29 @@ outside of that will result in memory corruption and crashes.</p>
 <h2>VFS class<a class="headerlink" href="#vfs-class" title="Link to this heading"></a></h2>
 <dl class="py class" id="index-0">
 <dt class="sig sig-object py" id="apsw.VFS">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">base</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">makedefault</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxpathname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iVersion</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.12)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFS" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">VFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">base</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">makedefault</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxpathname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iVersion</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.12)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFS" title="Link to this definition"></a></dt>
 <dd><p>Provides operating system access.  You can get an overview in the
 <a class="reference external" href="https://sqlite.org/c3ref/vfs.html">SQLite documentation</a>.  To
 create a VFS your Python class must inherit from <a class="reference internal" href="#apsw.VFS" title="apsw.VFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">VFS</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> -- The name to register this vfs under.  If the name
+<li><p><strong>name</strong> – The name to register this vfs under.  If the name
 already exists then this vfs will replace the prior one of the
 same name.  Use <a class="reference internal" href="apsw.html#apsw.vfs_names" title="apsw.vfs_names"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.vfs_names()</span></code></a> to get a list of
 registered vfs names.</p></li>
-<li><p><strong>base</strong> -- If you would like to inherit behaviour from an already registered vfs then give
+<li><p><strong>base</strong> – If you would like to inherit behaviour from an already registered vfs then give
 their name.  To inherit from the default vfs, use a zero
 length string <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code> as the name.</p></li>
-<li><p><strong>makedefault</strong> -- If true then this vfs will be registered as the default, and will be
-used by any opens that don't specify a vfs.</p></li>
-<li><p><strong>maxpathname</strong> -- The maximum length of database name in bytes when
+<li><p><strong>makedefault</strong> – If true then this vfs will be registered as the default, and will be
+used by any opens that don’t specify a vfs.</p></li>
+<li><p><strong>maxpathname</strong> – The maximum length of database name in bytes when
 represented in UTF-8.  If a pathname is passed in longer than
 this value then SQLite will not`be able to open it.  If you are
 using a base, then a value of zero will use the value from base.</p></li>
-<li><p><strong>iVersion</strong> -- Version number for the <a class="reference external" href="https://sqlite.org/c3ref/vfs.html">sqlite3_vfs</a>
+<li><p><strong>iVersion</strong> – Version number for the <a class="reference external" href="https://sqlite.org/c3ref/vfs.html">sqlite3_vfs</a>
 structure.</p></li>
-<li><p><strong>exclude</strong> -- A set of strings, naming the methods that will be filled in with <code class="docutils literal notranslate"><span class="pre">NULL</span></code> in the <a class="reference external" href="https://sqlite.org/c3ref/vfs.html">sqlite3_vfs</a>  structure to indicate to SQLite that they are
+<li><p><strong>exclude</strong> – A set of strings, naming the methods that will be filled in with <code class="docutils literal notranslate"><span class="pre">NULL</span></code> in the <a class="reference external" href="https://sqlite.org/c3ref/vfs.html">sqlite3_vfs</a>  structure to indicate to SQLite that they are
 not supported.</p></li>
 </ul>
 </dd>
@@ -294,7 +291,7 @@ not supported.</p></li>
 <dt class="sig sig-object py" id="apsw.VFS.excepthook">
 <span class="sig-prename descclassname"><span class="pre">VFS.</span></span><span class="sig-name descname"><span class="pre">excepthook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">etype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.12)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#BaseException" title="(in Python v3.12)"><span class="pre">BaseException</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evalue</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#BaseException" title="(in Python v3.12)"><span class="pre">BaseException</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">etraceback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/types.html#types.TracebackType" title="(in Python v3.12)"><span class="pre">types.TracebackType</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#apsw.VFS.excepthook" title="Link to this definition"></a></dt>
 <dd><p>Called when there has been an exception in a <a class="reference internal" href="#apsw.VFS" title="apsw.VFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">VFS</span></code></a> routine,
-and it can't be reported to the caller as usual.</p>
+and it can’t be reported to the caller as usual.</p>
 <p>The default implementation passes the exception information
 to sqlite3_log, and the first non-error of
 <a class="reference external" href="https://docs.python.org/3/library/sys.html#sys.unraisablehook" title="(in Python v3.12)"><code class="xref py py-func docutils literal notranslate"><span class="pre">sys.unraisablehook()</span></code></a> and <a class="reference external" href="https://docs.python.org/3/library/sys.html#sys.excepthook" title="(in Python v3.12)"><code class="xref py py-func docutils literal notranslate"><span class="pre">sys.excepthook()</span></code></a>, falling back to
@@ -321,8 +318,8 @@ accordingly.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>pathname</strong> -- File or directory to check</p></li>
-<li><p><strong>flags</strong> -- One of the <a class="reference external" href="https://sqlite.org/c3ref/c_access_exists.html">access flags</a></p></li>
+<li><p><strong>pathname</strong> – File or directory to check</p></li>
+<li><p><strong>flags</strong> – One of the <a class="reference external" href="https://sqlite.org/c3ref/c_access_exists.html">access flags</a></p></li>
 </ul>
 </dd>
 </dl>
@@ -333,7 +330,7 @@ accordingly.</p>
 <span class="sig-prename descclassname"><span class="pre">VFS.</span></span><span class="sig-name descname"><span class="pre">xCurrentTime</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></span><a class="headerlink" href="#apsw.VFS.xCurrentTime" title="Link to this definition"></a></dt>
 <dd><p>Return the <a class="reference external" href="https://en.wikipedia.org/wiki/Julian_day">Julian Day Number</a> as a floating point
 number where the integer portion is the day and the fractional part
-is the time. Do not adjust for timezone (ie use <a class="reference external" href="https://en.wikipedia.org/wiki/Universal_Time">UTC</a>).</p>
+is the time.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -352,8 +349,8 @@ is the time. Do not adjust for timezone (ie use <a class="reference external" hr
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>filename</strong> -- File to delete</p></li>
-<li><p><strong>syncdir</strong> -- If True then the directory should be synced
+<li><p><strong>filename</strong> – File to delete</p></li>
+<li><p><strong>syncdir</strong> – If True then the directory should be synced
 ensuring that the file deletion has been recorded on the disk
 platters.  ie if there was an immediate power failure after this
 call returns, on a reboot the file would still be deleted.</p></li>
@@ -368,7 +365,7 @@ call returns, on a reboot the file would still be deleted.</p></li>
 <dd><p>Close and unload the library corresponding to the handle you
 returned from <a class="reference internal" href="#apsw.VFS.xDlOpen" title="apsw.VFS.xDlOpen"><code class="xref py py-meth docutils literal notranslate"><span class="pre">xDlOpen()</span></code></a>.  You can use ctypes to do
 this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">xDlClose</span><span class="p">(</span><span class="n">handle</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">xDlClose</span><span class="p">(</span><span class="n">handle</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
    <span class="c1"># Note leading underscore in _ctypes</span>
    <span class="n">_ctypes</span><span class="o">.</span><span class="n">dlclose</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>       <span class="c1"># Linux/Mac/Unix</span>
    <span class="n">_ctypes</span><span class="o">.</span><span class="n">FreeLibrary</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>   <span class="c1"># Windows</span>
@@ -385,7 +382,7 @@ zero/NULL). If you do not supply this routine then SQLite provides
 a generic message. To implement this method, catch exceptions in
 <a class="reference internal" href="#apsw.VFS.xDlOpen" title="apsw.VFS.xDlOpen"><code class="xref py py-meth docutils literal notranslate"><span class="pre">xDlOpen()</span></code></a> or <a class="reference internal" href="#apsw.VFS.xDlSym" title="apsw.VFS.xDlSym"><code class="xref py py-meth docutils literal notranslate"><span class="pre">xDlSym()</span></code></a>, turn them into
 strings, save them, and return them in this routine.  If you have
-an error in this routine or return None then SQLite's generic
+an error in this routine or return None then SQLite’s generic
 message will be used.</p>
 </dd></dl>
 
@@ -398,7 +395,7 @@ return 0 (NULL). The number is passed as is to
 <a class="reference internal" href="#apsw.VFS.xDlSym" title="apsw.VFS.xDlSym"><code class="xref py py-meth docutils literal notranslate"><span class="pre">xDlSym()</span></code></a>/<a class="reference internal" href="#apsw.VFS.xDlClose" title="apsw.VFS.xDlClose"><code class="xref py py-meth docutils literal notranslate"><span class="pre">xDlClose()</span></code></a> so it can represent
 anything that is convenient for you (eg an index into an
 array). You can use ctypes to load a library:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">xDlOpen</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">xDlOpen</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
    <span class="k">return</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">cdll</span><span class="o">.</span><span class="n">LoadLibrary</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">_handle</span>
 </pre></div>
 </div>
@@ -409,7 +406,7 @@ array). You can use ctypes to load a library:</p>
 <span class="sig-prename descclassname"><span class="pre">VFS.</span></span><span class="sig-name descname"><span class="pre">xDlSym</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">handle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.VFS.xDlSym" title="Link to this definition"></a></dt>
 <dd><p>Returns the address of the named symbol which will be called by
 SQLite. On error you should return 0 (NULL). You can use ctypes:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">xDlSym</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">xDlSym</span><span class="p">(</span><span class="n">ptr</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
    <span class="k">return</span> <span class="n">_ctypes</span><span class="o">.</span><span class="n">dlsym</span> <span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>  <span class="c1"># Linux/Unix/Mac etc (note leading underscore)</span>
    <span class="k">return</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">win32</span><span class="o">.</span><span class="n">kernel32</span><span class="o">.</span><span class="n">GetProcAddress</span> <span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>  <span class="c1"># Windows</span>
 </pre></div>
@@ -417,8 +414,8 @@ SQLite. On error you should return 0 (NULL). You can use ctypes:</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>handle</strong> -- The value returned from an earlier <a class="reference internal" href="#apsw.VFS.xDlOpen" title="apsw.VFS.xDlOpen"><code class="xref py py-meth docutils literal notranslate"><span class="pre">xDlOpen()</span></code></a> call</p></li>
-<li><p><strong>symbol</strong> -- A string</p></li>
+<li><p><strong>handle</strong> – The value returned from an earlier <a class="reference internal" href="#apsw.VFS.xDlOpen" title="apsw.VFS.xDlOpen"><code class="xref py py-meth docutils literal notranslate"><span class="pre">xDlOpen()</span></code></a> call</p></li>
+<li><p><strong>symbol</strong> – A string</p></li>
 </ul>
 </dd>
 </dl>
@@ -433,8 +430,8 @@ SQLite. On error you should return 0 (NULL). You can use ctypes:</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VFS.xGetLastError">
 <span class="sig-prename descclassname"><span class="pre">VFS.</span></span><span class="sig-name descname"><span class="pre">xGetLastError</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#apsw.VFS.xGetLastError" title="Link to this definition"></a></dt>
-<dd><p>This method is to return an integer error code and (optional) text describing
-the last error that happened in this thread.</p>
+<dd><p>Return an integer error code and (optional) text describing
+the last error code and message that happened in this thread.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -462,10 +459,10 @@ can return a <a class="reference internal" href="#apsw.VFSFile" title="apsw.VFSF
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> -- File to open.  Note that <em>name</em> may be <em>None</em> in which
+<li><p><strong>name</strong> – File to open.  Note that <em>name</em> may be <em>None</em> in which
 case you should open a temporary file with a name of your
 choosing.  May be an instance of <a class="reference internal" href="#apsw.URIFilename" title="apsw.URIFilename"><code class="xref py py-class docutils literal notranslate"><span class="pre">URIFilename</span></code></a>.</p></li>
-<li><p><strong>flags</strong> -- A list of two integers <code class="docutils literal notranslate"><span class="pre">[inputflags,</span>
+<li><p><strong>flags</strong> – A list of two integers <code class="docutils literal notranslate"><span class="pre">[inputflags,</span>
 <span class="pre">outputflags]</span></code>.  Each integer is one or more of the <a class="reference external" href="https://sqlite.org/c3ref/c_open_autoproxy.html">open flags</a> binary orred
 together.  The <code class="docutils literal notranslate"><span class="pre">inputflags</span></code> tells you what SQLite wants.  For
 example <em>SQLITE_OPEN_DELETEONCLOSE</em> means the file should
@@ -481,11 +478,10 @@ set.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VFS.xRandomness">
 <span class="sig-prename descclassname"><span class="pre">VFS.</span></span><span class="sig-name descname"><span class="pre">xRandomness</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">numbytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.12)"><span class="pre">bytes</span></a></span></span><a class="headerlink" href="#apsw.VFS.xRandomness" title="Link to this definition"></a></dt>
-<dd><p>This method is called once when SQLite needs to seed the random
-number generator. It is called on the default VFS only. It is not
-called again, even across <a class="reference internal" href="apsw.html#apsw.shutdown" title="apsw.shutdown"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.shutdown()</span></code></a> calls.  You can
-return less than the number of bytes requested including None. If
-you return more then the surplus is ignored.</p>
+<dd><p>This method is called once on the default VFS when SQLite needs to
+seed the random number generator.  You can return less than the
+number of bytes requested including None. If you return more then
+the surplus is ignored.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -496,8 +492,8 @@ and some other scenarios such as sandboxing.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> -- The string name of the system call</p></li>
-<li><p><strong>pointer</strong> -- A pointer provided as an int.  There is no
+<li><p><strong>name</strong> – The string name of the system call</p></li>
+<li><p><strong>pointer</strong> – A pointer provided as an int.  There is no
 reference counting or other memory tracking of the pointer.  If
 you provide one you need to ensure it is around for the lifetime
 of this and any other related VFS.</p></li>
@@ -506,8 +502,7 @@ of this and any other related VFS.</p></li>
 </dl>
 <p>Raise an exception to return an error.  If the system call does
 not exist then raise <a class="reference internal" href="exceptions.html#apsw.NotFoundError" title="apsw.NotFoundError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">NotFoundError</span></code></a>.</p>
-<p>If <cite>name</cite> is None, then all systemcalls are reset to their defaults.  This
-behaviour is not documented.</p>
+<p>If <cite>name</cite> is None, then all systemcalls are reset to their defaults.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>True if the system call was set.  False if the system
@@ -537,26 +532,21 @@ should return that rounded up value.</p>
 <h2>VFSFile class<a class="headerlink" href="#vfsfile-class" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="apsw.VFSFile">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VFSFile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vfs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#apsw.URIFilename" title="apsw.URIFilename"><span class="pre">URIFilename</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFSFile" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">VFSFile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vfs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#apsw.URIFilename" title="apsw.URIFilename"><span class="pre">URIFilename</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFSFile" title="Link to this definition"></a></dt>
 <dd><p>Wraps access to a file.  You only need to derive from this class
 if you want the file object returned from <a class="reference internal" href="#apsw.VFS.xOpen" title="apsw.VFS.xOpen"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VFS.xOpen()</span></code></a> to
 inherit from an existing VFS implementation.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>All file sizes and offsets are 64 bit quantities even on 32 bit
-operating systems.</p>
-</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>vfs</strong> -- The vfs you want to inherit behaviour from.  You can
+<li><p><strong>vfs</strong> – The vfs you want to inherit behaviour from.  You can
 use an empty string <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code> to inherit from the default vfs.</p></li>
-<li><p><strong>name</strong> -- The name of the file being opened.  May be an instance of <a class="reference internal" href="#apsw.URIFilename" title="apsw.URIFilename"><code class="xref py py-class docutils literal notranslate"><span class="pre">URIFilename</span></code></a>.</p></li>
-<li><p><strong>flags</strong> -- A two item list <code class="docutils literal notranslate"><span class="pre">[inflags,</span> <span class="pre">outflags]</span></code> as detailed in <a class="reference internal" href="#apsw.VFS.xOpen" title="apsw.VFS.xOpen"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VFS.xOpen()</span></code></a>.</p></li>
+<li><p><strong>name</strong> – The name of the file being opened.  May be an instance of <a class="reference internal" href="#apsw.URIFilename" title="apsw.URIFilename"><code class="xref py py-class docutils literal notranslate"><span class="pre">URIFilename</span></code></a>.</p></li>
+<li><p><strong>flags</strong> – A two item list <code class="docutils literal notranslate"><span class="pre">[inflags,</span> <span class="pre">outflags]</span></code> as detailed in <a class="reference internal" href="#apsw.VFS.xOpen" title="apsw.VFS.xOpen"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VFS.xOpen()</span></code></a>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> -- If the named VFS is not registered.</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – If the named VFS is not registered.</p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -575,7 +565,7 @@ xShm methods necessary to implement wal.</p>
 <dt class="sig sig-object py" id="apsw.VFSFile.excepthook">
 <span class="sig-prename descclassname"><span class="pre">VFSFile.</span></span><span class="sig-name descname"><span class="pre">excepthook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">etype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.12)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#BaseException" title="(in Python v3.12)"><span class="pre">BaseException</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evalue</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#BaseException" title="(in Python v3.12)"><span class="pre">BaseException</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">etraceback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/types.html#types.TracebackType" title="(in Python v3.12)"><span class="pre">types.TracebackType</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VFSFile.excepthook" title="Link to this definition"></a></dt>
 <dd><p>Called when there has been an exception in a <a class="reference internal" href="#apsw.VFSFile" title="apsw.VFSFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">VFSFile</span></code></a>
-routine, and it can't be reported to the caller as usual.</p>
+routine, and it can’t be reported to the caller as usual.</p>
 <p>The default implementation passes the exception information
 to sqlite3_log, and the first non-error of
 <a class="reference external" href="https://docs.python.org/3/library/sys.html#sys.unraisablehook" title="(in Python v3.12)"><code class="xref py py-func docutils literal notranslate"><span class="pre">sys.unraisablehook()</span></code></a> and <a class="reference external" href="https://docs.python.org/3/library/sys.html#sys.excepthook" title="(in Python v3.12)"><code class="xref py py-func docutils literal notranslate"><span class="pre">sys.excepthook()</span></code></a>, falling back to
@@ -615,28 +605,27 @@ Python object to this routine.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>op</strong> -- A numeric code.  Codes below 100 are reserved for SQLite
+<li><p><strong>op</strong> – A numeric code.  Codes below 100 are reserved for SQLite
 internal use.</p></li>
-<li><p><strong>ptr</strong> -- An integer corresponding to a pointer at the C level.</p></li>
+<li><p><strong>ptr</strong> – An integer corresponding to a pointer at the C level.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>A boolean indicating if the op was understood</p>
 </dd>
 </dl>
-<p>As of SQLite 3.6.10, this method is called by SQLite if you have
-inherited from an underlying VFSFile.  Consequently ensure you pass
-any unrecognised codes through to your super class.  For example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>        <span class="k">def</span> <span class="nf">xFileControl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">ptr</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">op</span><span class="o">==</span><span class="mi">1027</span><span class="p">:</span>
-                <span class="n">process_quick</span><span class="p">(</span><span class="n">ptr</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">op</span><span class="o">==</span><span class="mi">1028</span><span class="p">:</span>
-                <span class="n">obj</span><span class="o">=</span><span class="n">ctypes</span><span class="o">.</span><span class="n">py_object</span><span class="o">.</span><span class="n">from_address</span><span class="p">(</span><span class="n">ptr</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># this ensures superclass implementation is called</span>
-                <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">xFileControl</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">ptr</span><span class="p">)</span>
-<span class="c1"># we understood the op</span>
-      <span class="k">return</span> <span class="kc">True</span>
+<p>Ensure you pass any unrecognised codes through to your super class.
+For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">xFileControl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">ptr</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">op</span> <span class="o">==</span> <span class="mi">1027</span><span class="p">:</span>
+        <span class="n">process_quick</span><span class="p">(</span><span class="n">ptr</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="mi">1028</span><span class="p">:</span>
+        <span class="n">obj</span><span class="o">=</span><span class="n">ctypes</span><span class="o">.</span><span class="n">py_object</span><span class="o">.</span><span class="n">from_address</span><span class="p">(</span><span class="n">ptr</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># this ensures superclass implementation is called</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">xFileControl</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">ptr</span><span class="p">)</span>
+   <span class="c1"># we understood the op</span>
+   <span class="k">return</span> <span class="kc">True</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -644,8 +633,7 @@ any unrecognised codes through to your super class.  For example:</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VFSFile.xFileSize">
 <span class="sig-prename descclassname"><span class="pre">VFSFile.</span></span><span class="sig-name descname"><span class="pre">xFileSize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.VFSFile.xFileSize" title="Link to this definition"></a></dt>
-<dd><p>Return the size of the file in bytes.  Remember that file sizes are
-64 bit quantities even on 32 bit operating systems.</p>
+<dd><p>Return the size of the file in bytes.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -653,7 +641,7 @@ any unrecognised codes through to your super class.  For example:</p>
 <span class="sig-prename descclassname"><span class="pre">VFSFile.</span></span><span class="sig-name descname"><span class="pre">xLock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VFSFile.xLock" title="Link to this definition"></a></dt>
 <dd><p>Increase the lock to the level specified which is one of the
 <a class="reference external" href="https://sqlite.org/c3ref/c_lock_exclusive.html">SQLITE_LOCK</a>
-family of constants. If you can't increase the lock level because
+family of constants. If you can’t increase the lock level because
 someone else has locked it, then raise <a class="reference internal" href="exceptions.html#apsw.BusyError" title="apsw.BusyError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">BusyError</span></code></a>.</p>
 </dd></dl>
 
@@ -670,8 +658,8 @@ reads to be a fatal error.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>amount</strong> -- Number of bytes to read</p></li>
-<li><p><strong>offset</strong> -- Where to start reading. This number may be 64 bit once the database is larger than 2GB.</p></li>
+<li><p><strong>amount</strong> – Number of bytes to read</p></li>
+<li><p><strong>offset</strong> – Where to start reading.</p></li>
 </ul>
 </dd>
 </dl>
@@ -691,7 +679,7 @@ default) is returned.</p>
 <span class="sig-prename descclassname"><span class="pre">VFSFile.</span></span><span class="sig-name descname"><span class="pre">xSync</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">flags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.VFSFile.xSync" title="Link to this definition"></a></dt>
 <dd><p>Ensure data is on the disk platters (ie could survive a power
 failure immediately after the call returns) with the <a class="reference external" href="https://sqlite.org/c3ref/c_sync_dataonly.html">sync flags</a> detailing what
-needs to be synced.  You can sync more than what is requested.</p>
+needs to be synced.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -719,7 +707,7 @@ underlying operating system to do a partial write. You will need to
 write the remaining data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>offset</strong> -- Where to start writing. This number may be 64 bit once the database is larger than 2GB.</p>
+<dd class="field-odd"><p><strong>offset</strong> – Where to start writing.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -729,10 +717,9 @@ write the remaining data.</p>
 <h2>URIFilename class<a class="headerlink" href="#urifilename-class" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="apsw.URIFilename">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">URIFilename</span></span><a class="headerlink" href="#apsw.URIFilename" title="Link to this definition"></a></dt>
-<dd><p>SQLite uses a convoluted method of storing <a class="reference external" href="https://sqlite.org/uri.html">uri parameters</a> after the filename binding the
-C filename representation and parameters together.  This class
-encapsulates that binding.  The <a class="reference internal" href="example.html#example-vfs"><span class="std std-ref">example</span></a> shows
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">URIFilename</span></span><a class="headerlink" href="#apsw.URIFilename" title="Link to this definition"></a></dt>
+<dd><p>SQLite packs <a class="reference external" href="https://sqlite.org/uri.html">uri parameters</a> and the filename together   This class
+encapsulates that packing.  The <a class="reference internal" href="example.html#example-vfs"><span class="std std-ref">example</span></a> shows
 usage of this class.</p>
 <p>Your <a class="reference internal" href="#apsw.VFS.xOpen" title="apsw.VFS.xOpen"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VFS.xOpen()</span></code></a> method will generally be passed one of
 these instead of a string as the filename if the URI flag was used
@@ -785,7 +772,7 @@ present.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Oct 24, 2023.
+      <span class="lastupdated">Last updated on Nov 06, 2023.
       </span></p>
   </div>
 

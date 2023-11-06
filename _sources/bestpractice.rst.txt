@@ -19,7 +19,9 @@ You can call the individual functions, or
 :func:`~apsw.bestpractice.apply` will setup
 :attr:`apsw.connection_hooks` to affect future :class:`connections
 <apsw.Connection>` that are made.
-:attr:`~apsw.bestpractice.recommended` is recommended::
+:attr:`~apsw.bestpractice.recommended` is the recommended group:
+
+.. code-block:: python
 
     import apsw.bestpractice
 

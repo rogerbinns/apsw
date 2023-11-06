@@ -3,8 +3,7 @@
 Various interesting and useful bits of functionality
 ====================================================
 
-You need to import `apsw.ext` to use this module. :mod:`dataclasses`
-are used, and only Python 3.7+ is supported.
+You need to import `apsw.ext` to use this module.
 
 Pretty printing
 ---------------

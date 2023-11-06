@@ -1,12 +1,15 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cursors (executing SQL) &mdash; APSW 3.43.2.0 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <title>Cursors (executing SQL) &mdash; APSW 3.44.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
+
+  
     <link rel="shortcut icon" href="_static/favicon.ico"/>
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
@@ -14,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=200f835c"></script>
+        <script src="_static/documentation_options.js?v=5c66a1ff"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +42,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.43.2.0
+                3.44.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -97,7 +100,6 @@
 <li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
-<li class="toctree-l1"><a class="reference internal" href="types.html">Types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
@@ -143,84 +145,16 @@ explicit cursor if you want more information or control over execution.  Using
 obtain a cursor behind the scenes.</p>
 <p>If you need a cursor you should call <a class="reference internal" href="connection.html#apsw.Connection.cursor" title="apsw.Connection.cursor"><code class="xref py py-meth docutils literal notranslate"><span class="pre">cursor()</span></code></a> on your
 database:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">db</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;databasefilename&quot;</span><span class="p">)</span>
-<span class="n">cursor</span><span class="o">=</span><span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">db</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;databasefilename&quot;</span><span class="p">)</span>
+<span class="n">cursor</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>A cursor executes SQL:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table example(title, isbn)&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>You can also read data back.  The row is returned as a tuple of the
-column values:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from example&quot;</span><span class="p">):</span>
-   <span class="nb">print</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>There are two ways of supplying data to a query.  The <strong>really bad</strong> way is to compose a string:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sql</span><span class="o">=</span><span class="s2">&quot;insert into example values(&#39;</span><span class="si">%s</span><span class="s2">&#39;, </span><span class="si">%d</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="mi">8390823904</span><span class="p">)</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>If there were any single quotes in string then you would have invalid
-syntax.  Additionally this is how <a class="reference external" href="https://en.wikipedia.org/wiki/SQL_injection">SQL injection attacks</a> happen. Instead you should use bindings:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sql</span><span class="o">=</span><span class="s2">&quot;insert into example values(?, ?)&quot;</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="mi">8390823904</span><span class="p">))</span>
-
-<span class="c1"># You can also use dictionaries (with colon, $, or @ before names)</span>
-<span class="n">sql</span><span class="o">=</span><span class="s2">&quot;insert into example values(:title, :isbn)&quot;</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;isbn&quot;</span><span class="p">:</span> <span class="mi">8390823904</span><span class="p">})</span>
-
-<span class="c1"># You can use local variables as the dictionary</span>
-<span class="n">title</span><span class="o">=</span><span class="s2">&quot;...&quot;</span>
-<span class="n">isbn</span><span class="o">=</span><span class="s2">&quot;....&quot;</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="nb">locals</span><span class="p">())</span>
-</pre></div>
-</div>
-<p>Cursors are cheap.  Use as many as you need.  It is safe to use them
-across threads, such as calling <a class="reference internal" href="#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">execute()</span></code></a> in one thread,
-passing the cursor to another thread that then calls
-<a class="reference external" href="https://docs.python.org/3/library/functions.html?highlight=next#next">next</a>.  The only thing you can't do is call methods at
-exactly the same time on the same cursor in two different threads - eg
-trying to call <a class="reference internal" href="#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">execute()</span></code></a> in both at the same time, or
-<a class="reference internal" href="#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">execute()</span></code></a> in one and <a class="reference external" href="https://docs.python.org/3/library/functions.html?highlight=next#next">next</a> in another.
-(If you do attempt this, it will be detected and
-<a class="reference internal" href="exceptions.html#apsw.ThreadingViolationError" title="apsw.ThreadingViolationError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ThreadingViolationError</span></code></a> will be raised.)</p>
-<p>Behind the scenes a <a class="reference internal" href="#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cursor</span></code></a> maps to a <a class="reference external" href="https://sqlite.org/c3ref/stmt.html">SQLite statement</a>.  APSW maintains a
-<a class="reference internal" href="execution.html#statementcache"><span class="std std-ref">cache</span></a> so that the mapping is very fast, and the
+<p>The <a class="reference internal" href="example.html#example-executing-sql"><span class="std std-ref">example</span></a> shows how to execute SQL and
+how to provide values used in queries (bindings).</p>
+<p>Cursors are cheap.  Use as many as you need. Behind the scenes a
+<a class="reference internal" href="#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cursor</span></code></a> maps to a <a class="reference external" href="https://sqlite.org/c3ref/stmt.html">SQLite statement</a>.
+APSW maintains a <a class="reference internal" href="execution.html#statementcache"><span class="std std-ref">cache</span></a> so that the mapping is very fast, and the
 SQLite objects are reused when possible.</p>
-<p>A unique feature of APSW is that your query can be multiple semi-colon
-separated statements.  For example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select ... ; insert into ... ; update ... ; select ...&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>SQLite fetches data as it is needed.  If table <em>example</em> had 10
-million rows it would only get the next row as requested.  This
-code would not work as expected:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from example&quot;</span><span class="p">):</span>
-   <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert .....&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>The nested <a class="reference internal" href="#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">execute()</span></code></a> would start a new query
-abandoning any remaining results from the <code class="docutils literal notranslate"><span class="pre">SELECT</span></code> cursor.  There are two
-ways to work around this.  Use a different cursor:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor1</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from example&quot;</span><span class="p">):</span>
-   <span class="n">cursor2</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert ...&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>You can also get all the rows immediately by filling in a list:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rows</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from example&quot;</span><span class="p">)</span> <span class="p">)</span>
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
-   <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert ...&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>This last approach is recommended since you don't have to worry
-about the database changing while doing the <code class="docutils literal notranslate"><span class="pre">select</span></code>.  You should
-also understand transactions and where to put the transaction
-boundaries.</p>
-</div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Cursors on the same <a class="reference internal" href="connection.html#connections"><span class="std std-ref">Connection</span></a> are not isolated
@@ -235,7 +169,6 @@ committed.</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://sqlite.org/lang_transaction.html">SQLite transactions</a></p></li>
 <li><p><a class="reference external" href="https://sqlite.org/atomiccommit.html">Atomic commit</a></p></li>
-<li><p><a class="reference external" href="https://www.mail-archive.com/sqlite-users&#64;sqlite.org/msg42660.html">Example of changing the database while running a query problem</a></p></li>
 <li><p><a class="reference internal" href="benchmarking.html#benchmarking"><span class="std std-ref">Benchmarking</span></a></p></li>
 </ul>
 </div>
@@ -243,11 +176,8 @@ committed.</p>
 <h2>Cursor class<a class="headerlink" href="#cursor-class" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="apsw.Cursor">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Cursor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Cursor" title="Link to this definition"></a></dt>
-<dd><blockquote>
-<div><p>You obtain cursors by calling <a class="reference internal" href="connection.html#apsw.Connection.cursor" title="apsw.Connection.cursor"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.cursor()</span></code></a>.</p>
-</div></blockquote>
-<p>Use <a class="reference internal" href="connection.html#apsw.Connection.cursor" title="apsw.Connection.cursor"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.cursor()</span></code></a> to make a new cursor.</p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">Cursor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Cursor" title="Link to this definition"></a></dt>
+<dd><p>Use <a class="reference internal" href="connection.html#apsw.Connection.cursor" title="apsw.Connection.cursor"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.cursor()</span></code></a> to make a new cursor.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -265,19 +195,17 @@ committed.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.Cursor.close">
 <span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Cursor.close" title="Link to this definition"></a></dt>
-<dd><p>It is very unlikely you will need to call this method.  It exists
-because older versions of SQLite required all Connection/Cursor
-activity to be confined to the same thread.  That is no longer the
-case.  Cursors are automatically garbage collected and when there
+<dd><p>It is very unlikely you will need to call this method.
+Cursors are automatically garbage collected and when there
 are none left will allow the connection to be garbage collected if
 it has no other references.</p>
 <p>A cursor is open if there are remaining statements to execute (if
 your query included multiple statements), or if you called
-<a class="reference internal" href="#apsw.Cursor.executemany" title="apsw.Cursor.executemany"><code class="xref py py-meth docutils literal notranslate"><span class="pre">executemany()</span></code></a> and not all of the <em>sequenceofbindings</em>
+<a class="reference internal" href="#apsw.Cursor.executemany" title="apsw.Cursor.executemany"><code class="xref py py-meth docutils literal notranslate"><span class="pre">executemany()</span></code></a> and not all of the sequence of bindings
 have been used yet.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>force</strong> -- If False then you will get exceptions if there is
+<dd class="field-odd"><p><strong>force</strong> – If False then you will get exceptions if there is
 remaining work to do be in the Cursor such as more statements to
 execute, more data from the executemany binding sequence etc. If
 force is True then all remaining work and state information will be
@@ -296,8 +224,8 @@ silently discarded.</p>
 <dt class="sig sig-object py" id="apsw.Cursor.description">
 <span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">description</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#apsw.Cursor.description" title="Link to this definition"></a></dt>
 <dd><p>Based on the <a class="reference external" href="https://www.python.org/dev/peps/pep-0249/">DB-API cursor property</a>, this returns the
-same as <a class="reference internal" href="#apsw.Cursor.get_description" title="apsw.Cursor.get_description"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_description()</span></code></a> but with 5 Nones appended.  See
-also <a class="reference external" href="https://github.com/rogerbinns/apsw/issues/131">APSW issue 131</a>.</p>
+same as <a class="reference internal" href="#apsw.Cursor.get_description" title="apsw.Cursor.get_description"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_description()</span></code></a> but with 5 Nones appended because
+SQLite does not have the information.</p>
 </dd></dl>
 
 <dl class="py attribute" id="index-0">
@@ -347,63 +275,30 @@ completed.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>statements</strong> -- One or more SQL statements such as <code class="docutils literal notranslate"><span class="pre">select</span> <span class="pre">*</span>
+<li><p><strong>statements</strong> – One or more SQL statements such as <code class="docutils literal notranslate"><span class="pre">select</span> <span class="pre">*</span>
 <span class="pre">from</span> <span class="pre">books</span></code> or <code class="docutils literal notranslate"><span class="pre">begin;</span> <span class="pre">insert</span> <span class="pre">into</span> <span class="pre">books</span> <span class="pre">...;</span> <span class="pre">select</span>
 <span class="pre">last_insert_rowid();</span> <span class="pre">end</span></code>.</p></li>
-<li><p><strong>bindings</strong> -- If supplied should either be a sequence or a dictionary.  Each item must be one of the <a class="reference internal" href="types.html#types"><span class="std std-ref">supported types</span></a></p></li>
-<li><p><strong>can_cache</strong> -- If False then the statement cache will not be used to find an already prepared query, nor will it be
+<li><p><strong>bindings</strong> – If supplied should either be a sequence or a dictionary.  Each item must be one of the <a class="reference internal" href="tips.html#types"><span class="std std-ref">supported types</span></a></p></li>
+<li><p><strong>can_cache</strong> – If False then the statement cache will not be used to find an already prepared query, nor will it be
 placed in the cache after execution</p></li>
-<li><p><strong>prepare_flags</strong> -- <a class="reference external" href="https://sqlite.org/c3ref/c_prepare_normalize.html">flags</a> passed to
+<li><p><strong>prepare_flags</strong> – <a class="reference external" href="https://sqlite.org/c3ref/c_prepare_normalize.html">flags</a> passed to
 <a class="reference external" href="https://sqlite.org/c3ref/prepare.html">sqlite_prepare_v3</a></p></li>
-<li><p><strong>explain</strong> -- If 0 or greater then the statement is passed to <a class="reference external" href="https://sqlite.org/c3ref/stmt_explain.html">sqlite3_stmt_explain</a>
+<li><p><strong>explain</strong> – If 0 or greater then the statement is passed to <a class="reference external" href="https://sqlite.org/c3ref/stmt_explain.html">sqlite3_stmt_explain</a>
 where you can force it to not be an explain, or force explain or explain query plan.</p></li>
 </ul>
 </dd>
-</dl>
-<p>If you use numbered bindings in the query then supply a sequence.
-Any sequence will work including lists and iterators.  For
-example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into books values(?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;number&quot;</span><span class="p">))</span>
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>A common gotcha is wanting to insert a single string but not
-putting it in a tuple:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into books values(?)&quot;</span><span class="p">,</span> <span class="s2">&quot;a title&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>The string is a sequence of 8 characters and so it will look
-like you are supplying 8 bindings when only one is needed.  Use
-a one item tuple with a trailing comma like this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into books values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;a title&quot;</span><span class="p">,)</span> <span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<p>If you used names in the statement then supply a dictionary as the
-binding.  It is ok to be missing entries from the dictionary -
-None/null will be used.  For example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into books values(:title, :isbn, :rating)&quot;</span><span class="p">,</span>
-     <span class="p">{</span><span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;book title&quot;</span><span class="p">,</span> <span class="s2">&quot;isbn&quot;</span><span class="p">:</span> <span class="mi">908908908</span><span class="p">})</span>
-</pre></div>
-</div>
-<p>The return is the cursor object itself which is also an iterator.  This allows you to write:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from books&quot;</span><span class="p">):</span>
-   <span class="nb">print</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
-</pre></div>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.12)"><strong>TypeError</strong></a> -- The bindings supplied were neither a dict nor a sequence</p></li>
-<li><p><a class="reference internal" href="exceptions.html#apsw.BindingsError" title="apsw.BindingsError"><strong>BindingsError</strong></a> -- You supplied too many or too few bindings for the statements</p></li>
-<li><p><a class="reference internal" href="exceptions.html#apsw.IncompleteExecutionError" title="apsw.IncompleteExecutionError"><strong>IncompleteExecutionError</strong></a> -- There are remaining unexecuted queries from your last execute</p></li>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.12)"><strong>TypeError</strong></a> – The bindings supplied were neither a dict nor a sequence</p></li>
+<li><p><a class="reference internal" href="exceptions.html#apsw.BindingsError" title="apsw.BindingsError"><strong>BindingsError</strong></a> – You supplied too many or too few bindings for the statements</p></li>
+<li><p><a class="reference internal" href="exceptions.html#apsw.IncompleteExecutionError" title="apsw.IncompleteExecutionError"><strong>IncompleteExecutionError</strong></a> – There are remaining unexecuted queries from your last execute</p></li>
 </ul>
 </dd>
 </dl>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <ul class="simple">
+<li><p><a class="reference internal" href="example.html#example-executing-sql"><span class="std std-ref">Example</span></a> showing how to use bindings</p></li>
 <li><p><a class="reference internal" href="execution.html#executionmodel"><span class="std std-ref">Execution model</span></a></p></li>
 </ul>
 </div>
@@ -431,18 +326,9 @@ a sequence of bindings.  Conceptually it does this:</p>
     <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">statements</span><span class="p">,</span> <span class="n">binding</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rows</span><span class="o">=</span><span class="p">(</span>  <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span>
-        <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">23</span><span class="p">),</span>
-        <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">92</span><span class="p">),</span>
-        <span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span> <span class="p">)</span>
-
-<span class="n">cursor</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s2">&quot;insert into nums values(?,?)&quot;</span><span class="p">,</span> <span class="n">rows</span><span class="p">)</span>
-</pre></div>
-</div>
 <p>The return is the cursor itself which acts as an iterator.  Your
 statements can return data.  See <a class="reference internal" href="#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">execute()</span></code></a> for more
-information.</p>
+information, and the <a class="reference internal" href="example.html#example-executemany"><span class="std std-ref">example</span></a>.</p>
 </dd></dl>
 
 <dl class="py attribute" id="index-2">
@@ -467,7 +353,8 @@ the expanded string would exceed <a class="reference external" href="https://www
 <dt class="sig sig-object py" id="apsw.Cursor.fetchall">
 <span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">fetchall</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="apsw.html#apsw.SQLiteValue" title="apsw.SQLiteValue"><span class="pre">SQLiteValue</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#apsw.Cursor.fetchall" title="Link to this definition"></a></dt>
 <dd><p>Returns all remaining result rows as a list.  This method is defined
-in DBAPI.  It is a longer way of doing <code class="docutils literal notranslate"><span class="pre">list(cursor)</span></code>.</p>
+in DBAPI.  See <a class="reference internal" href="#apsw.Cursor.get" title="apsw.Cursor.get"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get()</span></code></a> which does the same thing, but with the least
+amount of structure to unpack.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -512,7 +399,7 @@ possible.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.Cursor.get_connection">
 <span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">get_connection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></span><a class="headerlink" href="#apsw.Cursor.get_connection" title="Link to this definition"></a></dt>
-<dd><p>Returns the <a class="reference internal" href="#apsw.Cursor.connection" title="apsw.Cursor.connection"><code class="xref py py-attr docutils literal notranslate"><span class="pre">connection</span></code></a> this cursor is using</p>
+<dd><p>Returns the <a class="reference internal" href="#apsw.Cursor.connection" title="apsw.Cursor.connection"><code class="xref py py-attr docutils literal notranslate"><span class="pre">connection</span></code></a> this cursor is part of</p>
 </dd></dl>
 
 <dl class="py method" id="index-3">
@@ -520,51 +407,15 @@ possible.</p>
 <span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">get_description</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#apsw.Cursor.get_description" title="Link to this definition"></a></dt>
 <dd><p>If you are trying to get information about a table or view,
 then <a class="reference external" href="https://sqlite.org/pragma.html#pragma_table_info">pragma table_info</a>
-is better.</p>
+is better.  If you want to know up front what columns and other
+details a query does then <a class="reference internal" href="ext.html#apsw.ext.query_info" title="apsw.ext.query_info"><code class="xref py py-func docutils literal notranslate"><span class="pre">apsw.ext.query_info()</span></code></a> is useful.</p>
 <p>Returns a tuple describing each column in the result row.  The
-return is identical for every row of the results.  You can only
-call this method once you have started executing a statement and
-before you have finished:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># This will error</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">get_description</span><span class="p">()</span>
-
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select .....&quot;</span><span class="p">):</span>
-   <span class="c1"># this works</span>
-   <span class="nb">print</span> <span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">get_description</span><span class="p">())</span>
-   <span class="nb">print</span> <span class="p">(</span><span class="n">row</span><span class="p">)</span>
-</pre></div>
-</div>
+return is identical for every row of the results.</p>
 <p>The information about each column is a tuple of <code class="docutils literal notranslate"><span class="pre">(column_name,</span>
 <span class="pre">declared_column_type)</span></code>.  The type is what was declared in the
 <code class="docutils literal notranslate"><span class="pre">CREATE</span> <span class="pre">TABLE</span></code> statement - the value returned in the row will be
-whatever type you put in for that row and column.  (This is known
-as <a class="reference external" href="https://sqlite.org/different.html#typing">manifest typing</a>
-which is also the way that Python works.  The variable <code class="docutils literal notranslate"><span class="pre">a</span></code> could
-contain an integer, and then you could put a string in it.  Other
-static languages such as C or other SQL databases only let you put
-one type in - eg <code class="docutils literal notranslate"><span class="pre">a</span></code> could only contain an integer or a string,
-but never both.)</p>
-<p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table books(title string, isbn number, wibbly wobbly zebra)&quot;</span><span class="p">)</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into books values(?,?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">97</span><span class="p">,</span> <span class="s2">&quot;fjfjfj&quot;</span><span class="p">,</span> <span class="mf">3.7</span><span class="p">))</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into books values(?,?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;fjfjfj&quot;</span><span class="p">,</span> <span class="mf">3.7</span><span class="p">,</span> <span class="mi">97</span><span class="p">))</span>
-
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from books&quot;</span><span class="p">):</span>
-   <span class="nb">print</span> <span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">get_description</span><span class="p">())</span>
-   <span class="nb">print</span> <span class="p">(</span><span class="n">row</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Output:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># row 0 - description</span>
-<span class="p">((</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;string&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;isbn&#39;</span><span class="p">,</span> <span class="s1">&#39;number&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;wibbly&#39;</span><span class="p">,</span> <span class="s1">&#39;wobbly zebra&#39;</span><span class="p">))</span>
-<span class="c1"># row 0 - values</span>
-<span class="p">(</span><span class="mi">97</span><span class="p">,</span> <span class="s1">&#39;fjfjfj&#39;</span><span class="p">,</span> <span class="mf">3.7</span><span class="p">)</span>
-<span class="c1"># row 1 - description</span>
-<span class="p">((</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;string&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;isbn&#39;</span><span class="p">,</span> <span class="s1">&#39;number&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;wibbly&#39;</span><span class="p">,</span> <span class="s1">&#39;wobbly zebra&#39;</span><span class="p">))</span>
-<span class="c1"># row 1 - values</span>
-<span class="p">(</span><span class="s1">&#39;fjfjfj&#39;</span><span class="p">,</span> <span class="mf">3.7</span><span class="p">,</span> <span class="mi">97</span><span class="p">)</span>
-</pre></div>
-</div>
+whatever type you put in for that row and column.</p>
+<p>See the <a class="reference internal" href="example.html#example-query-details"><span class="std std-ref">query_info example</span></a>.</p>
 <dl class="simple">
 <dt>Calls:</dt><dd><ul class="simple">
 <li><p><a class="reference external" href="https://sqlite.org/c3ref/column_name.html">sqlite3_column_name</a></p></li>
@@ -602,10 +453,8 @@ row tracer.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.Cursor.has_vdbe">
 <span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">has_vdbe</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></em><a class="headerlink" href="#apsw.Cursor.has_vdbe" title="Link to this definition"></a></dt>
-<dd><dl class="simple">
-<dt><cite>True</cite> if the SQL can be evaluated.  Comments have nothing to</dt><dd><p>evaluate, and so are <cite>False</cite>.</p>
-</dd>
-</dl>
+<dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the SQL does anything.  Comments have nothing to
+evaluate, and so are <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
 </dd></dl>
 
 <dl class="py attribute" id="index-4">
@@ -669,7 +518,7 @@ unregistered.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Oct 24, 2023.
+      <span class="lastupdated">Last updated on Nov 06, 2023.
       </span></p>
   </div>
 

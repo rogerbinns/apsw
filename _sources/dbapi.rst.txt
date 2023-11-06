@@ -22,15 +22,20 @@ API calls allowing for maximum concurrency.
 Three different paramstyles are supported. Note that SQLite starts
 parameter numbers from one not zero when using *qmark/numeric* style.
 
-+-----------------+---------------------------------+
-| qmark           | ``... WHERE name=?``            |
-+-----------------+---------------------------------+
-| numeric         | ``... WHERE name=?4``           |
-+-----------------+---------------------------------+
-| named           | | ``... WHERE name=:name``  or  |
-|                 | | ``... WHERE name=$name``  or  |
-|                 | | ``... WHERE name=@name``      |
-+-----------------+---------------------------------+
+.. list-table::
+   :header-rows: 1
+   :widths: auto
+
+   * - style
+     - use
+   * - qmark
+     - :code:`... WHERE name=?`
+   * - numeric
+     - :code:`... WHERE name=?4`
+   * - named
+     - :code:`... WHERE name=:name` or
+       :code:`... WHERE name=$name` or
+       :code:`... WHERE name=@name`
 
 The DBAPI exceptions are not used.  The :ref:`exceptions <exceptions>`
 used correspond to specific SQLite error codes.
@@ -38,14 +43,11 @@ used correspond to specific SQLite error codes.
 Connection Objects
 ==================
 
-There are no commit or rollback methods. You should use
-:meth:`Cursor.execute` with `BEGIN` and `COMMIT` or `ROLLBACK` as
-appropriate. The `SQLite documentation
-<https://sqlite.org/lockingv3.html>`_ has more details.  In particular
-note that SQLite does not support nested transactions, using BEGIN.
-You can use `savepoints <https://sqlite.org/lang_savepoint.html>`__ to
-get nested transactions, which :meth:`with Connection
-<Connection.__enter__>` does.
+There are no commit or rollback methods.  You can issue queries as
+`BEGIN`, `COMMIT`, and `ROLLBACK` to do transactions manually.  You
+should use :meth:`with Connection <Connection.__enter__>` to get
+automatic transaction control, which includes `nested transactions
+<https://sqlite.org/lang_savepoint.html>`__.
 
 Several methods that are defined in DBAPI to be on the cursor are
 instead on the Connection object, since this is where SQLite actually
@@ -95,7 +97,7 @@ Type objects
 None of the date or time methods are available since SQLite 3 does not
 have a native date or time type.  There are `functions
 <https://sqlite.org/lang_datefunc.html>`_ for
-manipulating dates and time which are represented as strings or
+manipulating dates and time which are stored as strings or
 `Julian days <https://en.wikipedia.org/wiki/Julian_day>`_ (floating
 point number).
 
@@ -124,7 +126,11 @@ insert on any Cursor associated with the the Connection. You can also
 add `select last_insert_rowid() <https://sqlite.org/lang_corefunc.html>`_ to the end of your execute
 statements::
 
-  for row in cursor.execute("BEGIN; INSERT ... ; INSERT ... ; SELECT last_insert_rowid(); COMMIT"):
+  for row in db.execute("""BEGIN;
+                               INSERT ... ;
+                               INSERT ... ;
+                               SELECT last_insert_rowid();
+                           COMMIT"""):
      lastrowid=row[0]
 
 There is no errorhandler attribute.

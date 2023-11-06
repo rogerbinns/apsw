@@ -10,7 +10,8 @@ Blob Input/Output
 
 A `blob <https://en.wikipedia.org/wiki/Binary_large_object>`_ is a
 SQLite `datatype <https://sqlite.org/datatype3.html>`_ representing
-a sequence of bytes.  It can be zero or more bytes in size.
+a sequence of bytes.  It can be zero or more bytes in size.  Blobs
+cannot be resized, but you can read and overwrite parts of them.
 
 SQLite blobs have an absolute maximum size of 2GB and a `default
 maximum size <https://sqlite.org/c3ref/c_limit_attached.html>`_ of
@@ -19,34 +20,21 @@ maximum size <https://sqlite.org/c3ref/c_limit_attached.html>`_ of
 An alternate approach to using blobs is to store the data in files and
 store the filename in the database.  Doing so loses the `ACID
 <https://sqlite.org/transactional.html>`_ properties of SQLite.
+There are `benchmarks <https://www.sqlite.org/fasterthanfs.html>`__.
 
 zeroblob class
 ==============
 
 .. class:: zeroblob(size: int)
 
-  If you want to insert a blob into a row, you previously needed to
-  supply the entire blob in one go.  To read just one byte also
-  required retrieving the blob in its entirety. For example to insert
-  a 100MB file you would have done::
+  If you want to insert a blob into a row, you need to
+  supply the entire blob in one go.  Using this class or
+  `function <https://www.sqlite.org/lang_corefunc.html#zeroblob>`__
+  allocates the space in the database filling it with zeroes.
 
-     largedata=open("largefile", "rb").read()
-     cur.execute("insert into foo values(?)", (largedata,))
-
-  SQLite 3.5 allowed for incremental Blob I/O so you can read and
-  write blobs in small amounts.  You cannot change the size of a blob
-  so you need to reserve space which you do through zeroblob which
-  creates a blob of the specified size but full of zero bytes.  For
-  example you would reserve space for your 100MB one of these two
-  ways::
-
-    cur.execute("insert into foo values(zeroblob(100000000))")
-    cur.execute("insert into foo values(?),
-                 (apsw.zeroblob(100000000),))
-
-  This class is used for the second way.  Once a blob exists in the
-  database, you then use the :class:`Blob` class to read and write its
-  contents.
+  You can then overwrite parts in smaller chunks, without having
+  to do it all at once.  The :ref:`example <example_blob_io>` shows
+  how to use it.
 
   :param size: Number of zeroed bytes to create
 
@@ -61,7 +49,7 @@ Blob class
 
   This object is created by :meth:`Connection.blob_open` and provides
   access to a blob in the database.  It behaves like a Python file.
-  At the C level it wraps a `sqlite3_blob
+  It wraps a `sqlite3_blob
   <https://sqlite.org/c3ref/blob.html>`_.
 
   .. note::
@@ -76,7 +64,7 @@ Blob class
 .. method:: Blob.__enter__() -> Blob
 
   You can use a blob as a `context manager
-  <https://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
+  <https://docs.python.org/3/reference/datamodel.html#with-statement-context-managers>`_
   as defined in :pep:`0343`.  When you use *with* statement,
   the blob is always :meth:`closed <Blob.close>` on exit from the block, even if an
   exception occurred in the block.
@@ -131,7 +119,7 @@ Blob class
   Reads amount of data requested, or till end of file, whichever is
   earlier. Attempting to read beyond the end of the blob returns an
   empty bytes in the same manner as end of file on normal file
-  objects.  Negative numbers read remaining data.
+  objects.  Negative numbers read all remaining data.
 
   Calls: `sqlite3_blob_read <https://sqlite.org/c3ref/blob_read.html>`__
 

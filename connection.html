@@ -1,12 +1,15 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Connections to a database &mdash; APSW 3.43.2.0 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <title>Connections to a database &mdash; APSW 3.44.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
+
+  
     <link rel="shortcut icon" href="_static/favicon.ico"/>
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
@@ -14,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=200f835c"></script>
+        <script src="_static/documentation_options.js?v=5c66a1ff"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +42,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.43.2.0
+                3.44.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -147,7 +150,6 @@
 <li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
-<li class="toctree-l1"><a class="reference internal" href="types.html">Types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
@@ -187,26 +189,25 @@
              
   <section id="connections-to-a-database">
 <span id="connections"></span><h1>Connections to a database<a class="headerlink" href="#connections-to-a-database" title="Link to this heading"></a></h1>
-<p>A <a class="reference internal" href="#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> encapsulates access to a database.  You then use
-<a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">cursors</span></code></a> to issue queries against the database.</p>
-<p>You can have multiple <a class="reference internal" href="#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connections</span></code></a> open against
-the same database in the same process, across threads and in other
+<p>A <a class="reference internal" href="#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> encapsulates access to a database.  You can have
+multiple <a class="reference internal" href="#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connections</span></code></a> open against the same
+database file in the same process, across threads and in other
 processes.</p>
 <section id="connection-class">
 <h2>Connection class<a class="headerlink" href="#connection-class" title="Link to this heading"></a></h2>
 <dl class="py class" id="index-0">
 <dt class="sig sig-object py" id="apsw.Connection">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Connection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">SQLITE_OPEN_READWRITE</span> <span class="pre">|</span> <span class="pre">SQLITE_OPEN_CREATE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vfs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">statementcachesize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Connection" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">Connection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">SQLITE_OPEN_READWRITE</span> <span class="pre">|</span> <span class="pre">SQLITE_OPEN_CREATE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vfs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">statementcachesize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Connection" title="Link to this definition"></a></dt>
 <dd><p>This object wraps a <a class="reference external" href="https://sqlite.org/c3ref/sqlite3.html">sqlite3 pointer</a>.</p>
 <p>Opens the named database.  You can use <code class="docutils literal notranslate"><span class="pre">:memory:</span></code> to get a private temporary
 in-memory database that is not shared with any other connections.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>flags</strong> -- One or more of the <a class="reference external" href="https://sqlite.org/c3ref/c_open_autoproxy.html">open flags</a> orred together</p></li>
-<li><p><strong>vfs</strong> -- The name of the <a class="reference external" href="https://sqlite.org/c3ref/vfs.html">vfs</a> to use.  If <em>None</em> then the default
+<li><p><strong>flags</strong> – One or more of the <a class="reference external" href="https://sqlite.org/c3ref/c_open_autoproxy.html">open flags</a> orred together</p></li>
+<li><p><strong>vfs</strong> – The name of the <a class="reference external" href="https://sqlite.org/c3ref/vfs.html">vfs</a> to use.  If <em>None</em> then the default
 vfs will be used.</p></li>
-<li><p><strong>statementcachesize</strong> -- Use zero to disable the statement cache,
+<li><p><strong>statementcachesize</strong> – Use zero to disable the statement cache,
 or a number larger than the total distinct SQL statements you
 execute frequently.</p></li>
 </ul>
@@ -226,7 +227,7 @@ execute frequently.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.Connection.__enter__">
 <span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">__enter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></span><a class="headerlink" href="#apsw.Connection.__enter__" title="Link to this definition"></a></dt>
-<dd><p>You can use the database as a <a class="reference external" href="https://docs.python.org/reference/datamodel.html#with-statement-context-managers">context manager</a>
+<dd><p>You can use the database as a <a class="reference external" href="https://docs.python.org/3/reference/datamodel.html#with-statement-context-managers">context manager</a>
 as defined in <span class="target" id="index-1"></span><a class="pep reference external" href="https://peps.python.org/pep-0343/"><strong>PEP 0343</strong></a>.  When you use <em>with</em> a transaction is
 started.  If the block finishes with an exception then the
 transaction is rolled back, otherwise it is committed.  For example:</p>
@@ -242,17 +243,19 @@ transaction is rolled back, otherwise it is committed.  For example:</p>
             <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;...&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Behind the scenes the <a class="reference external" href="https://sqlite.org/lang_savepoint.html">savepoint</a> functionality introduced in
-SQLite 3.6.8 is used to provide nested transactions.</p>
+<dl class="simple">
+<dt>Behind the scenes <a class="reference external" href="https://sqlite.org/lang_savepoint.html">savepoints</a></dt><dd><p>are used to provide nested transactions.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.Connection.__exit__">
 <span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">__exit__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">etype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.12)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#BaseException" title="(in Python v3.12)"><span class="pre">BaseException</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">evalue</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#BaseException" title="(in Python v3.12)"><span class="pre">BaseException</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">etraceback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/types.html#types.TracebackType" title="(in Python v3.12)"><span class="pre">types.TracebackType</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.__exit__" title="Link to this definition"></a></dt>
 <dd><p>Implements context manager in conjunction with
-<a class="reference internal" href="#apsw.Connection.__enter__" title="apsw.Connection.__enter__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__enter__()</span></code></a>.  Any exception that happened in the
-<em>with</em> block is raised after committing or rolling back the
-savepoint.</p>
+<a class="reference internal" href="#apsw.Connection.__enter__" title="apsw.Connection.__enter__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__enter__()</span></code></a>.  If no exception happened then
+the pending transaction is committed, while an exception results in a
+rollback.</p>
 </dd></dl>
 
 <dl class="py attribute" id="index-2">
@@ -293,15 +296,19 @@ Python code).</p>
 <span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">autovacuum_pages</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.autovacuum_pages" title="Link to this definition"></a></dt>
 <dd><p>Calls <cite>callable</cite> to find out how many pages to autovacuum.  The callback has 4 parameters:</p>
 <ul class="simple">
-<li><p>Database name: str (eg &quot;main&quot;)</p></li>
+<li><p>Database name: str. <cite>main</cite>, <cite>temp</cite>, the name in <a class="reference external" href="https://sqlite.org/lang_attach.html">ATTACH</a></p></li>
 <li><p>Database pages: int (how many pages make up the database now)</p></li>
 <li><p>Free pages: int (how many pages could be freed)</p></li>
 <li><p>Page size: int (page size in bytes)</p></li>
 </ul>
 <p>Return how many pages should be freed.  Values less than zero or more than the free pages are
 treated as zero or free page count.  On error zero is returned.</p>
-<p>READ THE NOTE IN THE SQLITE DOCUMENTATION.  Calling into SQLite can result in crashes, corrupt
-databases or worse.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>READ THE NOTE IN THE SQLITE DOCUMENTATION.</p>
+<p>Calling back into SQLite can result in crashes, corrupt
+databases, or worse.</p>
+</div>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/autovacuum_pages.html">sqlite3_autovacuum_pages</a></p>
 </dd></dl>
 
@@ -313,20 +320,20 @@ database to this database.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>databasename</strong> -- Name of the database.  This will be <code class="docutils literal notranslate"><span class="pre">main</span></code> for
-the main connection and the name you specified for <a class="reference external" href="https://sqlite.org/lang_attach.html">attached</a> databases.</p></li>
-<li><p><strong>sourceconnection</strong> -- The <a class="reference internal" href="#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> to copy a database from.</p></li>
-<li><p><strong>sourcedatabasename</strong> -- Name of the database in the source (eg <code class="docutils literal notranslate"><span class="pre">main</span></code>).</p></li>
+<li><p><strong>databasename</strong> – Name of the database. <cite>main</cite>, <cite>temp</cite>, the name in <a class="reference external" href="https://sqlite.org/lang_attach.html">ATTACH</a></p></li>
+<li><p><strong>sourceconnection</strong> – The <a class="reference internal" href="#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> to copy a database from.</p></li>
+<li><p><strong>sourcedatabasename</strong> – Name of the database in the source (eg <code class="docutils literal notranslate"><span class="pre">main</span></code>).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="#apsw.Connection.backup" title="apsw.Connection.backup"><code class="xref py py-class docutils literal notranslate"><span class="pre">backup</span></code></a></p>
+<dd class="field-even"><p><a class="reference internal" href="backup.html#apsw.Backup" title="apsw.Backup"><code class="xref py py-class docutils literal notranslate"><span class="pre">Backup</span></code></a></p>
 </dd>
 </dl>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="backup.html#backup"><span class="std std-ref">Backup</span></a></p></li>
+<li><p><a class="reference internal" href="backup.html"><span class="doc">Backup reference</span></a></p></li>
+<li><p><a class="reference internal" href="example.html#example-backup"><span class="std std-ref">Backup example</span></a></p></li>
 </ul>
 </div>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/backup_finish.html#sqlite3backupinit">sqlite3_backup_init</a></p>
@@ -339,13 +346,11 @@ the main connection and the name you specified for <a class="reference external"
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>database</strong> -- <p>Name of the database.  This will be <code class="docutils literal notranslate"><span class="pre">main</span></code> for
-the main connection and the name you specified for <a class="reference external" href="https://sqlite.org/lang_attach.html">attached</a> databases.</p>
-</p></li>
-<li><p><strong>table</strong> -- The name of the table</p></li>
-<li><p><strong>column</strong> -- The name of the column</p></li>
-<li><p><strong>rowid</strong> -- The id that uniquely identifies the row.</p></li>
-<li><p><strong>writeable</strong> -- If True then you can read and write the blob.  If False then you can only read it.</p></li>
+<li><p><strong>database</strong> – Name of the database.  <cite>main</cite>, <cite>temp</cite>, the name in <a class="reference external" href="https://sqlite.org/lang_attach.html">ATTACH</a>.</p></li>
+<li><p><strong>table</strong> – The name of the table</p></li>
+<li><p><strong>column</strong> – The name of the column</p></li>
+<li><p><strong>rowid</strong> – The id that uniquely identifies the row.</p></li>
+<li><p><strong>writeable</strong> – If True then you can read and write the blob.  If False then you can only read it.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -377,7 +382,7 @@ the main connection and the name you specified for <a class="reference external"
 <p>Returns information about the statement cache as dict.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Calling execute with &quot;select a; select b; insert into c ...&quot; will
+<p>Calling execute with “select a; select b; insert into c …” will
 result in 3 cache entries corresponding to each of the 3 queries
 present.</p>
 </div>
@@ -403,7 +408,7 @@ entry</p></td>
 <td><p>A match was found in the cache</p></td>
 </tr>
 <tr class="row-even"><td><p>misses</p></td>
-<td><p>No match was found in the cache, or the cache couldn't be used</p></td>
+<td><p>No match was found in the cache, or the cache couldn’t be used</p></td>
 </tr>
 <tr class="row-odd"><td><p>no_vdbe</p></td>
 <td><p>The statement was empty (eg a comment) or SQLite took action
@@ -467,12 +472,12 @@ they are closed too.  It is normally not necessary to call this
 method as the database is automatically closed when there are no
 more references.  It is ok to call the method multiple times.</p>
 <p>If your user defined functions or collations have direct or indirect
-references to the Connection then it won't be automatically garbage
-collected because of circular referencing that can't be
+references to the Connection then it won’t be automatically garbage
+collected because of circular referencing that can’t be
 automatically broken.  Calling <em>close</em> will free all those objects
 and what they reference.</p>
 <p>SQLite is designed to survive power failures at even the most
-awkward moments.  Consequently it doesn't matter if it is closed
+awkward moments.  Consequently it doesn’t matter if it is closed
 when the process is exited, or even if the exit is graceful or
 abrupt.  In the worst case of having a transaction in progress, that
 transaction will be rolled back by the next program to open the
@@ -484,7 +489,7 @@ database, reverting the database to a know good state.</p>
 <dl class="py method" id="index-9">
 <dt class="sig sig-object py" id="apsw.Connection.collation_needed">
 <span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">collation_needed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.collation_needed" title="Link to this definition"></a></dt>
-<dd><p><em>callable</em> will be called if a statement requires a <a class="reference external" href="https://en.wikipedia.org/wiki/Collation">collation</a> that hasn't been
+<dd><p><em>callable</em> will be called if a statement requires a <a class="reference external" href="https://en.wikipedia.org/wiki/Collation">collation</a> that hasn’t been
 registered. Your callable will be passed two parameters. The first
 is the connection object. The second is the name of the
 collation. If you have the collation code available then call
@@ -507,7 +512,7 @@ register them.</p>
 <dl class="py method" id="index-10">
 <dt class="sig sig-object py" id="apsw.Connection.column_metadata">
 <span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">column_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dbname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#apsw.Connection.column_metadata" title="Link to this definition"></a></dt>
-<dd><p><cite>dbname</cite> is the specific database (eg &quot;main&quot;, &quot;temp&quot;) or None to search
+<dd><p><cite>dbname</cite> is <cite>main</cite>, <cite>temp</cite>, the name in <a class="reference external" href="https://sqlite.org/lang_attach.html">ATTACH</a>, or None to search
 all databases.</p>
 <p>The returned <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a> has these fields:</p>
 <p>0: str - declared data type</p>
@@ -524,13 +529,13 @@ all databases.</p>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>op</strong> -- A <a class="reference external" href="https://sqlite.org/c3ref/c_dbconfig_enable_fkey.html">configuration operation</a></p></li>
-<li><p><strong>args</strong> -- Zero or more arguments as appropriate for <em>op</em></p></li>
+<li><p><strong>op</strong> – A <a class="reference external" href="https://sqlite.org/c3ref/c_dbconfig_enable_fkey.html">configuration operation</a></p></li>
+<li><p><strong>args</strong> – Zero or more arguments as appropriate for <em>op</em></p></li>
 </ul>
 </dd>
 </dl>
 <p>This is how to get the fkey setting:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">val</span> <span class="o">=</span> <span class="n">config</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_DBCONFIG_ENABLE_FKEY</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">val</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_DBCONFIG_ENABLE_FKEY</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>A parameter of zero would turn it off, 1 turns on, and negative
@@ -546,16 +551,16 @@ the relevant rows such as counting how many there are.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> -- The string name of the function.  It should be less than 255 characters</p></li>
-<li><p><strong>factory</strong> -- The function that will be called.  Use None to delete the function.</p></li>
-<li><p><strong>numargs</strong> -- How many arguments the function takes, with -1 meaning any number</p></li>
-<li><p><strong>flags</strong> -- <a class="reference external" href="https://www.sqlite.org/c3ref/c_deterministic.html">Function flags</a></p></li>
+<li><p><strong>name</strong> – The string name of the function.  It should be less than 255 characters</p></li>
+<li><p><strong>factory</strong> – The function that will be called.  Use None to delete the function.</p></li>
+<li><p><strong>numargs</strong> – How many arguments the function takes, with -1 meaning any number</p></li>
+<li><p><strong>flags</strong> – <a class="reference external" href="https://www.sqlite.org/c3ref/c_deterministic.html">Function flags</a></p></li>
 </ul>
 </dd>
 </dl>
-<p>When a query starts, the <em>factory</em> will be called.  It can be a class
+<p>When a query starts, the <em>factory</em> will be called.  It can return an object
 with a <em>step</em> function called for each matching row, and a <em>final</em> function
-to return the final value.</p>
+to provide the final value.</p>
 <p>Alternatively a non-class approach can return a tuple of 3 items:</p>
 <blockquote>
 <div><dl class="simple">
@@ -584,6 +589,7 @@ callables and <em>numargs</em>.  See
 <ul class="simple">
 <li><p><a class="reference internal" href="example.html#example-aggregate"><span class="std std-ref">Example</span></a></p></li>
 <li><p><a class="reference internal" href="#apsw.Connection.create_scalar_function" title="apsw.Connection.create_scalar_function"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create_scalar_function()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#apsw.Connection.create_window_function" title="apsw.Connection.create_window_function"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create_window_function()</span></code></a></p></li>
 </ul>
 </div>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/create_function.html">sqlite3_create_function_v2</a></p>
@@ -598,12 +604,12 @@ collation could take into account locale or do numeric sorting.</p>
 <p>The <em>callback</em> will be called with two items.  It should return -1
 if the first is less then the second, 0 if they are equal, and 1 if
 first is greater:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">mycollation</span><span class="p">(</span><span class="n">one</span><span class="p">,</span> <span class="n">two</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">one</span> <span class="o">&lt;</span> <span class="n">two</span><span class="p">:</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">mycollation</span><span class="p">(</span><span class="n">first</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">two</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">first</span> <span class="o">&lt;</span> <span class="n">second</span><span class="p">:</span>
         <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
-    <span class="k">if</span> <span class="n">one</span> <span class="o">==</span> <span class="n">two</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">first</span> <span class="o">==</span> <span class="n">second</span><span class="p">:</span>
         <span class="k">return</span> <span class="mi">0</span>
-    <span class="k">if</span> <span class="n">one</span> <span class="o">&gt;</span> <span class="n">two</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">first</span> <span class="o">&gt;</span> <span class="n">second</span><span class="p">:</span>
         <span class="k">return</span> <span class="mi">1</span>
 </pre></div>
 </div>
@@ -612,6 +618,7 @@ first is greater:</p>
 <p class="admonition-title">See also</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="example.html#example-collation"><span class="std std-ref">Example</span></a></p></li>
+<li><p><a class="reference internal" href="#apsw.Connection.collation_needed" title="apsw.Connection.collation_needed"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.collation_needed()</span></code></a></p></li>
 </ul>
 </div>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/create_collation.html">sqlite3_create_collation_v2</a></p>
@@ -625,14 +632,14 @@ See <a class="reference internal" href="vtable.html#virtualtables"><span class="
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> -- Module name (what comes after USING in CREATE VIRTUAL TABLE tablename USING ...)</p></li>
-<li><p><strong>datasource</strong> -- Provides <a class="reference internal" href="vtable.html#apsw.VTModule" title="apsw.VTModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">VTModule</span></code></a> methods</p></li>
-<li><p><strong>use_bestindex_object</strong> -- If True then BestIndexObject is used, else BestIndex</p></li>
-<li><p><strong>use_no_change</strong> -- Turn on understanding <a class="reference internal" href="vtable.html#apsw.VTCursor.ColumnNoChange" title="apsw.VTCursor.ColumnNoChange"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTCursor.ColumnNoChange()</span></code></a> and using <a class="reference internal" href="apsw.html#apsw.no_change" title="apsw.no_change"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.no_change</span></code></a> to reduce <a class="reference internal" href="vtable.html#apsw.VTTable.UpdateChangeRow" title="apsw.VTTable.UpdateChangeRow"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTTable.UpdateChangeRow()</span></code></a> work</p></li>
-<li><p><strong>iVersion</strong> -- iVersion field in <a class="reference external" href="https://www.sqlite.org/c3ref/module.html">sqlite3_module</a></p></li>
-<li><p><strong>eponymous</strong> -- Configures module to be <a class="reference external" href="https://www.sqlite.org/vtab.html#eponymous_virtual_tables">eponymous</a></p></li>
-<li><p><strong>eponymous_only</strong> -- Configures module to be <a class="reference external" href="https://www.sqlite.org/vtab.html#eponymous_only_virtual_tables">eponymous only</a></p></li>
-<li><p><strong>read_only</strong> -- Leaves <a class="reference external" href="https://www.sqlite.org/c3ref/module.html">sqlite3_module</a> methods that involve writing and transactions as NULL</p></li>
+<li><p><strong>name</strong> – Module name (CREATE VIRTUAL TABLE table_name USING module_name…)</p></li>
+<li><p><strong>datasource</strong> – Provides <a class="reference internal" href="vtable.html#apsw.VTModule" title="apsw.VTModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">VTModule</span></code></a> methods</p></li>
+<li><p><strong>use_bestindex_object</strong> – If True then BestIndexObject is used, else BestIndex</p></li>
+<li><p><strong>use_no_change</strong> – Turn on understanding <a class="reference internal" href="vtable.html#apsw.VTCursor.ColumnNoChange" title="apsw.VTCursor.ColumnNoChange"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTCursor.ColumnNoChange()</span></code></a> and using <a class="reference internal" href="apsw.html#apsw.no_change" title="apsw.no_change"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.no_change</span></code></a> to reduce <a class="reference internal" href="vtable.html#apsw.VTTable.UpdateChangeRow" title="apsw.VTTable.UpdateChangeRow"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTTable.UpdateChangeRow()</span></code></a> work</p></li>
+<li><p><strong>iVersion</strong> – iVersion field in <a class="reference external" href="https://www.sqlite.org/c3ref/module.html">sqlite3_module</a></p></li>
+<li><p><strong>eponymous</strong> – Configures module to be <a class="reference external" href="https://www.sqlite.org/vtab.html#eponymous_virtual_tables">eponymous</a></p></li>
+<li><p><strong>eponymous_only</strong> – Configures module to be <a class="reference external" href="https://www.sqlite.org/vtab.html#eponymous_only_virtual_tables">eponymous only</a></p></li>
+<li><p><strong>read_only</strong> – Leaves <a class="reference external" href="https://www.sqlite.org/c3ref/module.html">sqlite3_module</a> methods that involve writing and transactions as NULL</p></li>
 </ul>
 </dd>
 </dl>
@@ -652,16 +659,16 @@ See <a class="reference internal" href="vtable.html#virtualtables"><span class="
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> -- The string name of the function.  It should be less than 255 characters</p></li>
-<li><p><strong>callable</strong> -- The function that will be called.  Use None to unregister.</p></li>
-<li><p><strong>numargs</strong> -- How many arguments the function takes, with -1 meaning any number</p></li>
-<li><p><strong>deterministic</strong> -- When True this means the function always
+<li><p><strong>name</strong> – The string name of the function.  It should be less than 255 characters</p></li>
+<li><p><strong>callable</strong> – The function that will be called.  Use None to unregister.</p></li>
+<li><p><strong>numargs</strong> – How many arguments the function takes, with -1 meaning any number</p></li>
+<li><p><strong>deterministic</strong> – When True this means the function always
 returns the same result for the same input arguments.
-SQLite's query planner can perform additional optimisations
+SQLite’s query planner can perform additional optimisations
 for deterministic functions.  For example a random()
 function is not deterministic while one that returns the
 length of a string is.</p></li>
-<li><p><strong>flags</strong> -- Additional <a class="reference external" href="https://www.sqlite.org/c3ref/c_deterministic.html">function flags</a></p></li>
+<li><p><strong>flags</strong> – Additional <a class="reference external" href="https://www.sqlite.org/c3ref/c_deterministic.html">function flags</a></p></li>
 </ul>
 </dd>
 </dl>
@@ -675,13 +682,14 @@ length of a string is.</p></li>
 </pre></div>
 </div>
 <p>The one with the correct <em>numargs</em> will be called and only if that
-doesn't exist then the one with negative <em>numargs</em> will be called.</p>
+doesn’t exist then the one with negative <em>numargs</em> will be called.</p>
 </div>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="example.html#example-scalar"><span class="std std-ref">Example</span></a></p></li>
 <li><p><a class="reference internal" href="#apsw.Connection.create_aggregate_function" title="apsw.Connection.create_aggregate_function"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create_aggregate_function()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#apsw.Connection.create_window_function" title="apsw.Connection.create_window_function"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create_window_function()</span></code></a></p></li>
 </ul>
 </div>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/create_function.html">sqlite3_create_function_v2</a></p>
@@ -709,17 +717,18 @@ doesn't exist then the one with negative <em>numargs</em> will be called.</p>
 </div></blockquote>
 <p>You need to provide callbacks for the <code class="docutils literal notranslate"><span class="pre">step</span></code>, <code class="docutils literal notranslate"><span class="pre">final</span></code>, <code class="docutils literal notranslate"><span class="pre">value</span></code>
 and <code class="docutils literal notranslate"><span class="pre">inverse</span></code> methods.  This can be done by having <cite>factory</cite> as a
-class, and the corresponding method names, or by having <cite>factory</cite>
+class, returning an instance with the corresponding method names, or by having <cite>factory</cite>
 return a sequence of a first parameter, and then each of the 4
 functions.</p>
 <p><strong>Debugging note</strong> SQlite always calls the <code class="docutils literal notranslate"><span class="pre">final</span></code> method to allow
-for cleanup.  If you have an error in one of the other methods, then
+for cleanup.  If you have an exception in one of the other methods, then
 <code class="docutils literal notranslate"><span class="pre">final</span></code> will also be called, and you may see both methods in
 tracebacks.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="example.html#example-window"><span class="std std-ref">Example</span></a></p></li>
+<li><p><a class="reference internal" href="#apsw.Connection.create_scalar_function" title="apsw.Connection.create_scalar_function"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create_scalar_function()</span></code></a></p></li>
 <li><p><a class="reference internal" href="#apsw.Connection.create_aggregate_function" title="apsw.Connection.create_aggregate_function"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create_aggregate_function()</span></code></a></p></li>
 </ul>
 </div>
@@ -744,7 +753,7 @@ tracebacks.</p>
 <p>Called with a <a class="reference internal" href="#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> as the only parameter when a cursor
 is needed such as by the <a class="reference internal" href="#apsw.Connection.cursor" title="apsw.Connection.cursor"><code class="xref py py-meth docutils literal notranslate"><span class="pre">cursor()</span></code></a> method, or
 <a class="reference internal" href="#apsw.Connection.execute" title="apsw.Connection.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.execute()</span></code></a>.</p>
-<p>Note that whatever is returned doesn't have to be an actual
+<p>Note that whatever is returned doesn’t have to be an actual
 <a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cursor</span></code></a> instance, and just needs to have the methods present
 that are actually called.  These are likely to be <cite>execute</cite>,
 <cite>executemany</cite>, <cite>close</cite> etc.</p>
@@ -754,7 +763,7 @@ that are actually called.  These are likely to be <cite>execute</cite>,
 <dt class="sig sig-object py" id="apsw.Connection.db_filename">
 <span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">db_filename</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></span><a class="headerlink" href="#apsw.Connection.db_filename" title="Link to this definition"></a></dt>
 <dd><p>Returns the full filename of the named (attached) database.  The
-main database is named &quot;main&quot;.</p>
+main is <cite>main</cite>, <cite>temp</cite>, the name in <a class="reference external" href="https://sqlite.org/lang_attach.html">ATTACH</a></p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/db_filename.html">sqlite3_db_filename</a></p>
 </dd></dl>
 
@@ -762,7 +771,7 @@ main database is named &quot;main&quot;.</p>
 <dt class="sig sig-object py" id="apsw.Connection.db_names">
 <span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">db_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#apsw.Connection.db_names" title="Link to this definition"></a></dt>
 <dd><p>Returns the list of database names.  For example the first database
-is named 'main', the next 'temp', and the rest with the name provided
+is named ‘main’, the next ‘temp’, and the rest with the name provided
 in <a class="reference external" href="https://www.sqlite.org/lang_attach.html">ATTACH</a></p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/db_name.html">sqlite3_db_name</a></p>
 </dd></dl>
@@ -771,8 +780,7 @@ in <a class="reference external" href="https://www.sqlite.org/lang_attach.html">
 <dt class="sig sig-object py" id="apsw.Connection.deserialize">
 <span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">deserialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">contents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.12)"><span class="pre">bytes</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.deserialize" title="Link to this definition"></a></dt>
 <dd><p>Replaces the named database with an in-memory copy of <em>contents</em>.
-<em>name</em> is <strong>&quot;main&quot;</strong> for the main database, <strong>&quot;temp&quot;</strong> for the
-temporary database etc.</p>
+<em>name</em> is <cite>main</cite>, <cite>temp</cite>, the name in <a class="reference external" href="https://sqlite.org/lang_attach.html">ATTACH</a></p>
 <p>The resulting database is in-memory, read-write, and the memory is
 owned, resized, and freed by SQLite.</p>
 <div class="admonition seealso">
@@ -799,7 +807,7 @@ are kept, dropping all others.</p>
 which is disabled by default.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>enable</strong> -- If True then extension loading is enabled, else it is disabled.</p>
+<dd class="field-odd"><p><strong>enable</strong> – If True then extension loading is enabled, else it is disabled.</p>
 </dd>
 </dl>
 <div class="admonition seealso">
@@ -837,7 +845,7 @@ removed.</p>
 <dd><p>Executes the statements using the supplied bindings.  Execution
 returns when the first row is available or all statements have
 completed.  (A cursor is automatically obtained).</p>
-<p>See <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.execute()</span></code></a> for more details.</p>
+<p>See <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.execute()</span></code></a> for more details, and the <a class="reference internal" href="example.html#example-executing-sql"><span class="std std-ref">example</span></a>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -848,7 +856,7 @@ completed.  (A cursor is automatically obtained).</p>
 <p>This method is for when you want to execute the same statements over a
 sequence of bindings, such as inserting into a database.  (A cursor is
 automatically obtained).</p>
-<p>See <a class="reference internal" href="cursor.html#apsw.Cursor.executemany" title="apsw.Cursor.executemany"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.executemany()</span></code></a> for more details.</p>
+<p>See <a class="reference internal" href="cursor.html#apsw.Cursor.executemany" title="apsw.Cursor.executemany"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.executemany()</span></code></a> for more details, and the <a class="reference internal" href="example.html#example-executemany"><span class="std std-ref">example</span></a>.</p>
 <dl class="py method" id="index-21">
 <dt class="sig sig-object py" id="apsw.Connection.file_control">
 <span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">file_control</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dbname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">op</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pointer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#apsw.Connection.file_control" title="Link to this definition"></a></dt>
@@ -857,10 +865,10 @@ implementing <a class="reference internal" href="vfs.html#apsw.VFSFile" title="a
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>dbname</strong> -- The name of the database to affect (eg &quot;main&quot;, &quot;temp&quot;, attached name)</p></li>
-<li><p><strong>op</strong> -- A <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_lockstate.html">numeric code</a> with values less
+<li><p><strong>dbname</strong> – The name of the database to affect.  <cite>main</cite>, <cite>temp</cite>, the name in <a class="reference external" href="https://sqlite.org/lang_attach.html">ATTACH</a></p></li>
+<li><p><strong>op</strong> – A <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_lockstate.html">numeric code</a> with values less
 than 100 reserved for SQLite internal use.</p></li>
-<li><p><strong>pointer</strong> -- A number which is treated as a <code class="docutils literal notranslate"><span class="pre">void</span> <span class="pre">pointer</span></code> at the C level.</p></li>
+<li><p><strong>pointer</strong> – A number which is treated as a <code class="docutils literal notranslate"><span class="pre">void</span> <span class="pre">pointer</span></code> at the C level.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -955,11 +963,11 @@ before the file control call is made:</p>
 <dl class="py method" id="index-27">
 <dt class="sig sig-object py" id="apsw.Connection.interrupt">
 <span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">interrupt</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.interrupt" title="Link to this definition"></a></dt>
-<dd><p>Causes any pending operations on the database to abort at the
+<dd><p>Causes all pending operations on the database to abort at the
 earliest opportunity. You can call this from any thread.  For
 example you may have a long running query when the user presses the
 stop button in your user interface.  <a class="reference internal" href="exceptions.html#apsw.InterruptError" title="apsw.InterruptError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">InterruptError</span></code></a>
-will be raised in the query that got interrupted.</p>
+will be raised in the queries that got interrupted.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/interrupt.html">sqlite3_interrupt</a></p>
 </dd></dl>
 
@@ -985,8 +993,8 @@ returned.  If called with two then the limit is set to <em>newval</em>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>id</strong> -- One of the <a class="reference external" href="https://sqlite.org/c3ref/c_limit_attached.html">runtime limit ids</a></p></li>
-<li><p><strong>newval</strong> -- The new limit.  This is a 32 bit signed integer even on 64 bit platforms.</p></li>
+<li><p><strong>id</strong> – One of the <a class="reference external" href="https://sqlite.org/c3ref/c_limit_attached.html">runtime limit ids</a></p></li>
+<li><p><strong>newval</strong> – The new limit.  This is a 32 bit signed integer even on 64 bit platforms.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1009,14 +1017,14 @@ returned.  If called with two then the limit is set to <em>newval</em>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>filename</strong> -- The file to load.</p></li>
-<li><p><strong>entrypoint</strong> -- The initialization method to call.  If this
+<li><p><strong>filename</strong> – The file to load.</p></li>
+<li><p><strong>entrypoint</strong> – The initialization method to call.  If this
 parameter is not supplied then the SQLite default of
 <code class="docutils literal notranslate"><span class="pre">sqlite3_extension_init</span></code> is used.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="exceptions.html#apsw.ExtensionLoadingError" title="apsw.ExtensionLoadingError"><strong>ExtensionLoadingError</strong></a> -- If the extension could not be
+<dd class="field-even"><p><a class="reference internal" href="exceptions.html#apsw.ExtensionLoadingError" title="apsw.ExtensionLoadingError"><strong>ExtensionLoadingError</strong></a> – If the extension could not be
 loaded.  The exception string includes more details.</p>
 </dd>
 </dl>
@@ -1032,7 +1040,7 @@ loaded.  The exception string includes more details.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.Connection.open_flags">
 <span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">open_flags</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.Connection.open_flags" title="Link to this definition"></a></dt>
-<dd><p>The integer flags used to open the database.</p>
+<dd><p>The combination of <a class="reference internal" href="apsw.html#apsw.mapping_open_flags" title="apsw.mapping_open_flags"><code class="xref py py-attr docutils literal notranslate"><span class="pre">flags</span></code></a> used to open the database.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1049,8 +1057,8 @@ loaded.  The exception string includes more details.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> -- Function name</p></li>
-<li><p><strong>nargs</strong> -- How many arguments the function takes</p></li>
+<li><p><strong>name</strong> – Function name</p></li>
+<li><p><strong>nargs</strong> – How many arguments the function takes</p></li>
 </ul>
 </dd>
 </dl>
@@ -1076,7 +1084,7 @@ alternative to composing SQL text.</p>
 <dd><p>Invokes the underlying VFS method to read data from the database.  It
 is strongly recommended to read aligned complete pages, since that is
 only what SQLite does.</p>
-<p><cite>schema</cite> is <cite>main</cite>, <cite>temp</cite>, or the name of an attached database.</p>
+<p><cite>schema</cite> is <cite>main</cite>, <cite>temp</cite>, the name in <a class="reference external" href="https://sqlite.org/lang_attach.html">ATTACH</a></p>
 <p><cite>which</cite> is 0 for the database file, 1 for the journal.</p>
 <p>The return value is a tuple of a boolean indicating a complete read if
 True, and the bytes read which will always be the amount requested
@@ -1092,8 +1100,9 @@ Errors will usually be generic <cite>SQLITE_ERROR</cite> with no message.</p>
 <dt class="sig sig-object py" id="apsw.Connection.readonly">
 <span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">readonly</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#apsw.Connection.readonly" title="Link to this definition"></a></dt>
 <dd><p>True or False if the named (attached) database was opened readonly or file
-permissions don't allow writing.  The main database is named &quot;main&quot;.</p>
-<p>An exception is raised if the database doesn't exist.</p>
+permissions don’t allow writing.  The name is <cite>main</cite>, <cite>temp</cite>, the
+name in <a class="reference external" href="https://sqlite.org/lang_attach.html">ATTACH</a></p>
+<p>An exception is raised if the database doesn’t exist.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/db_readonly.html">sqlite3_db_readonly</a></p>
 </dd></dl>
 
@@ -1126,12 +1135,12 @@ removed.</p>
 <dl class="py method" id="index-36">
 <dt class="sig sig-object py" id="apsw.Connection.serialize">
 <span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">serialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.12)"><span class="pre">bytes</span></a></span></span><a class="headerlink" href="#apsw.Connection.serialize" title="Link to this definition"></a></dt>
-<dd><p>Returns a memory copy of the database. <em>name</em> is <strong>&quot;main&quot;</strong> for the
-main database, <strong>&quot;temp&quot;</strong> for the temporary database etc.</p>
+<dd><p>Returns a memory copy of the database. <em>name</em> is <cite>main</cite>, <cite>temp</cite>, the name
+in <a class="reference external" href="https://sqlite.org/lang_attach.html">ATTACH</a></p>
 <p>The memory copy is the same as if the database was backed up to
 disk.</p>
-<p>If the database name doesn't exist or is empty, then None is
-returned, not an exception (this is SQLite's behaviour).</p>
+<p>If the database name doesn’t exist or is empty, then None is
+returned, not an exception (this is SQLite’s behaviour).</p>
 <blockquote>
 <div><div class="admonition seealso">
 <p class="admonition-title">See also</p>
@@ -1180,7 +1189,7 @@ time SQLite will keep retrying before giving up.  If the database is
 still busy then <a class="reference internal" href="exceptions.html#apsw.BusyError" title="apsw.BusyError"><code class="xref py py-class docutils literal notranslate"><span class="pre">apsw.BusyError</span></code></a> will be returned.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>milliseconds</strong> -- Maximum thousandths of a second to wait.</p>
+<dd class="field-odd"><p><strong>milliseconds</strong> – Maximum thousandths of a second to wait.</p>
 </dd>
 </dl>
 <p>If you previously called <a class="reference internal" href="#apsw.Connection.set_busy_handler" title="apsw.Connection.set_busy_handler"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_busy_handler()</span></code></a> then
@@ -1201,7 +1210,7 @@ calling this overrides that.</p>
 <dd><p><em>callable</em> will be called just before a commit.  It should return
 False for the commit to go ahead and True for it to be turned
 into a rollback. In the case of an exception in your callable, a
-True (ie rollback) value is returned.  Pass None to unregister
+True (rollback) value is returned.  Pass None to unregister
 the existing hook.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
@@ -1232,8 +1241,7 @@ the existing hook.</p>
 statement and passed the statement string and how long it took to
 execute. (The execution time is in nanoseconds.) Note that it is
 called only on completion. If for example you do a <code class="docutils literal notranslate"><span class="pre">SELECT</span></code> and only
-read the first result, then you won't reach the end of the statement.</p>
-<p>This used to call the now deprecated <a class="reference external" href="https://sqlite.org/c3ref/profile.html">sqlite3_profile API</a></p>
+read the first result, then you won’t reach the end of the statement.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/trace_v2.html">sqlite3_trace_v2</a></p>
 </dd></dl>
 
@@ -1281,12 +1289,11 @@ apply them in a different connection.</p>
 <div><dl class="simple">
 <dt>type (int)</dt><dd><p><em>SQLITE_INSERT</em>, <em>SQLITE_DELETE</em> or <em>SQLITE_UPDATE</em></p>
 </dd>
-<dt>database name (string)</dt><dd><p>This is <code class="docutils literal notranslate"><span class="pre">main</span></code> for the database or the name specified in
-<a class="reference external" href="https://sqlite.org/lang_attach.html">ATTACH</a></p>
+<dt>database name (str)</dt><dd><p><cite>main</cite>, <cite>temp</cite>, the name in <a class="reference external" href="https://sqlite.org/lang_attach.html">ATTACH</a></p>
 </dd>
-<dt>table name (string)</dt><dd><p>The table on which the update happened</p>
+<dt>table name (str)</dt><dd><p>The table on which the update happened</p>
 </dd>
-<dt>rowid (64 bit integer)</dt><dd><p>The affected row</p>
+<dt>rowid (int)</dt><dd><p>The affected row</p>
 </dd>
 </dl>
 </div></blockquote>
@@ -1308,7 +1315,7 @@ callback is called with 3 parameters:</p>
 <blockquote>
 <div><ul class="simple">
 <li><p>The Connection</p></li>
-<li><p>The database name (eg &quot;main&quot; or the name of an attached database)</p></li>
+<li><p>The database name.  <cite>main</cite>, <cite>temp</cite>, the name in <a class="reference external" href="https://sqlite.org/lang_attach.html">ATTACH</a></p></li>
 <li><p>The number of pages in the wal log</p></li>
 </ul>
 </div></blockquote>
@@ -1337,8 +1344,8 @@ libraries.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>op</strong> -- A <a class="reference external" href="https://sqlite.org/c3ref/c_dbstatus_options.html">status parameter</a></p></li>
-<li><p><strong>reset</strong> -- If <em>True</em> then the highwater is set to the current value</p></li>
+<li><p><strong>op</strong> – A <a class="reference external" href="https://sqlite.org/c3ref/c_dbstatus_options.html">status parameter</a></p></li>
+<li><p><strong>reset</strong> – If <em>True</em> then the highwater is set to the current value</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1347,9 +1354,9 @@ libraries.</p>
 </dl>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
-<p>The <a class="reference internal" href="apsw.html#apsw.status" title="apsw.status"><code class="xref py py-func docutils literal notranslate"><span class="pre">status()</span></code></a> example which works in exactly the same way.</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="example.html#example-status"><span class="std std-ref">Status example</span></a></p></li>
+<li><p><a class="reference internal" href="apsw.html#apsw.status" title="apsw.status"><code class="xref py py-func docutils literal notranslate"><span class="pre">apsw.status()</span></code></a> which does the same for SQLite as a whole</p></li>
+<li><p><a class="reference internal" href="example.html#example-status"><span class="std std-ref">Example</span></a></p></li>
 </ul>
 </div>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/db_status.html">sqlite3_db_status</a></p>
@@ -1358,7 +1365,7 @@ libraries.</p>
 <dl class="py attribute" id="index-47">
 <dt class="sig sig-object py" id="apsw.Connection.system_errno">
 <span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">system_errno</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.Connection.system_errno" title="Link to this definition"></a></dt>
-<dd><p>The underlying system error code for the most recent I/O errors or failing to open files.</p>
+<dd><p>The underlying system error code for the most recent I/O error.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/system_errno.html">sqlite3_system_errno</a></p>
 </dd></dl>
 
@@ -1366,8 +1373,10 @@ libraries.</p>
 <dt class="sig sig-object py" id="apsw.Connection.table_exists">
 <span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">table_exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dbname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#apsw.Connection.table_exists" title="Link to this definition"></a></dt>
 <dd><p>Returns True if the named table exists, else False.</p>
-<p><cite>dbname</cite> is the specific database (eg &quot;main&quot;, &quot;temp&quot;) or None to search
-all databases</p>
+<dl class="simple">
+<dt><cite>dbname</cite> is <cite>main</cite>, <cite>temp</cite>, the name in <a class="reference external" href="https://sqlite.org/lang_attach.html">ATTACH</a>,</dt><dd><p>or None to search  all databases</p>
+</dd>
+</dl>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/table_column_metadata.html">sqlite3_table_column_metadata</a></p>
 </dd></dl>
 
@@ -1411,7 +1420,7 @@ on the code.</p>
 <tr class="row-even"><td><p>stmt_status</p></td>
 <td><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p></td>
 <td><p>SQLITE_TRACE_PROFILE only: Keys are names from <a class="reference external" href="https://www.sqlite.org/c3ref/c_stmtstatus_counter.html">status parameters</a> - eg
-<em>&quot;SQLITE_STMTSTATUS_VM_STEP&quot;</em> and corresponding integer values.
+<em>“SQLITE_STMTSTATUS_VM_STEP”</em> and corresponding integer values.
 The counters are reset each time a statement
 starts execution.</p></td>
 </tr>
@@ -1436,22 +1445,22 @@ starts execution.</p></td>
 <dt class="sig sig-object py" id="apsw.Connection.txn_state">
 <span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">txn_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.Connection.txn_state" title="Link to this definition"></a></dt>
 <dd><p>Returns the current transaction state of the database, or a specific schema
-if provided.  ValueError is raised if schema is not None or a valid schema name.
-<a class="reference internal" href="apsw.html#apsw.mapping_txn_state" title="apsw.mapping_txn_state"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.mapping_txn_state</span></code></a> contains the names and values returned.</p>
+if provided.  <a class="reference internal" href="apsw.html#apsw.mapping_txn_state" title="apsw.mapping_txn_state"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.mapping_txn_state</span></code></a> contains the values returned.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/txn_state.html">sqlite3_txn_state</a></p>
 </dd></dl>
 
 <dl class="py method" id="index-52">
 <dt class="sig sig-object py" id="apsw.Connection.vtab_config">
 <span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">vtab_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">op</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.vtab_config" title="Link to this definition"></a></dt>
-<dd><p>Called during virtual table connect/create.</p>
+<dd><p>Callable during virtual table <a class="reference internal" href="vtable.html#apsw.VTModule.Connect" title="apsw.VTModule.Connect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connect()</span></code></a>/<a class="reference internal" href="vtable.html#apsw.VTModule.Create" title="apsw.VTModule.Create"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Create()</span></code></a>.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/vtab_config.html">sqlite3_vtab_config</a></p>
 </dd></dl>
 
 <dl class="py method" id="index-53">
 <dt class="sig sig-object py" id="apsw.Connection.vtab_on_conflict">
 <span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">vtab_on_conflict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.Connection.vtab_on_conflict" title="Link to this definition"></a></dt>
-<dd><p>Called during virtual table xUpdate</p>
+<dd><p>Callable during virtual table <a class="reference internal" href="vtable.html#apsw.VTTable.UpdateInsertRow" title="apsw.VTTable.UpdateInsertRow"><code class="xref py py-meth docutils literal notranslate"><span class="pre">insert</span></code></a> or
+<a class="reference internal" href="vtable.html#apsw.VTTable.UpdateChangeRow" title="apsw.VTTable.UpdateChangeRow"><code class="xref py py-meth docutils literal notranslate"><span class="pre">update</span></code></a></p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/vtab_on_conflict.html">sqlite3_vtab_on_conflict</a></p>
 </dd></dl>
 
@@ -1461,7 +1470,7 @@ if provided.  ValueError is raised if schema is not None or a valid schema name.
 <dd><p>Sets how often the <a class="reference internal" href="tips.html#wal"><span class="std std-ref">Write Ahead Logging</span></a> checkpointing is run.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>n</strong> -- A number representing the checkpointing interval or
+<dd class="field-odd"><p><strong>n</strong> – A number representing the checkpointing interval or
 zero/negative to disable auto checkpointing.</p>
 </dd>
 </dl>
@@ -1475,8 +1484,8 @@ zero/negative to disable auto checkpointing.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>dbname</strong> -- The name of the database or all databases if None</p></li>
-<li><p><strong>mode</strong> -- One of the <a class="reference external" href="https://sqlite.org/c3ref/wal_checkpoint_v2.html">checkpoint modes</a>.</p></li>
+<li><p><strong>dbname</strong> – The name of the database or all databases if None</p></li>
+<li><p><strong>mode</strong> – One of the <a class="reference external" href="https://sqlite.org/c3ref/wal_checkpoint_v2.html">checkpoint modes</a>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1503,7 +1512,7 @@ number of frames checkpointed as described in the
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Oct 24, 2023.
+      <span class="lastupdated">Last updated on Nov 06, 2023.
       </span></p>
   </div>
 

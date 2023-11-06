@@ -1,11 +1,14 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>apsw.shell &mdash; APSW 3.43.2.0 documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>apsw.shell &mdash; APSW 3.44.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=72bcf2f2" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/apsw.css?v=3c7e2631" />
+
+  
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
@@ -13,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=200f835c"></script>
+        <script src="../../_static/documentation_options.js?v=5c66a1ff"></script>
         <script src="../../_static/doctools.js?v=888ff710"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -36,7 +39,7 @@
               <img src="../../_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.43.2.0
+                3.44.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -63,7 +66,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../bestpractice.html">Best Practice</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../ext.html">Various interesting and useful bits of functionality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../exceptions.html">Exceptions and Errors</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../types.html">Types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../execution.html">Execution and tracing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../dbapi.html">DBAPI notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../pysqlite.html">sqlite3 module differences</a></li>
@@ -139,7 +141,8 @@
 <span class="sd">    :param stderr: Where to send errors (default sys.stderr)</span>
 <span class="sd">    :param encoding: Default encoding for files opened/created by the</span>
 <span class="sd">      Shell.  If you want stdin/out/err to use a particular encoding</span>
-<span class="sd">      then you need to provide them `already configured &lt;https://docs.python.org/library/codecs.html#codecs.open&gt;`__ that way.</span>
+<span class="sd">      then you need to provide them `already configured</span>
+<span class="sd">      &lt;https://docs.python.org/3/library/codecs.html#codecs.open&gt;`__ that way.</span>
 <span class="sd">    :param args: This should be program arguments only (ie if</span>
 <span class="sd">      passing in sys.argv do not include sys.argv[0] which is the</span>
 <span class="sd">      program name.  You can also pass in None and then call</span>
@@ -147,16 +150,8 @@
 <span class="sd">      in handling the arguments yourself.</span>
 <span class="sd">    :param db: A existing :class:`~apsw.Connection` you wish to use</span>
 
-<span class="sd">    The commands and behaviour are modelled after the `interactive</span>
-<span class="sd">    shell &lt;https://sqlite.org/sqlite.html&gt;`__ that is part of</span>
-<span class="sd">    SQLite.</span>
-
-<span class="sd">    You can inherit from this class to embed in your own code and user</span>
-<span class="sd">    interface.</span>
-
 <span class="sd">    Errors and diagnostics are only ever sent to error output</span>
-<span class="sd">    (self.stderr) and never to the regular output (self.stdout).  This</span>
-<span class="sd">    means using shell output is always easy and consistent.</span>
+<span class="sd">    (self.stderr) and never to the regular output (self.stdout).</span>
 
 <span class="sd">    Shell commands begin with a dot (eg .help).  They are implemented</span>
 <span class="sd">    as a method named after the command (eg command_help).  The method</span>
@@ -164,7 +159,7 @@
 <span class="sd">    command.</span>
 
 <span class="sd">    Output modes are implemented by functions named after the mode (eg</span>
-<span class="sd">    output_column).</span>
+<span class="sd">    output_column for columns).</span>
 
 <span class="sd">    When you request help the help information is automatically</span>
 <span class="sd">    generated from the docstrings for the command and output</span>
@@ -172,10 +167,7 @@
 
 <span class="sd">    You should not use a Shell object concurrently from multiple</span>
 <span class="sd">    threads.  It is one huge set of state information which would</span>
-<span class="sd">    become inconsistent if used simultaneously, and then give baffling</span>
-<span class="sd">    errors.  It is safe to call methods one at a time from different</span>
-<span class="sd">    threads.  ie it doesn&#39;t care what thread calls methods as long as</span>
-<span class="sd">    you don&#39;t call more than one concurrently.</span>
+<span class="sd">    become inconsistent if used simultaneously.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="Shell.Error">
@@ -434,7 +426,7 @@
 <div class="viewcode-block" id="Shell.usage">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.usage">[docs]</a>
     <span class="k">def</span> <span class="nf">usage</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="s2">&quot;Returns the usage message.  Make sure it is newline terminated&quot;</span>
+        <span class="s2">&quot;Returns the usage message.&quot;</span>
 
         <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">Usage: python3 -m apsw [OPTIONS] FILENAME [SQL|CMD] [SQL|CMD]...</span>
@@ -447,8 +439,8 @@
 <span class="s2">   -echo                print commands before execution</span>
 <span class="s2">   -[no]header          turn headers on or off</span>
 <span class="s2">   -bail                stop after hitting the first error</span>
-<span class="s2">   -interactive         force interactive I/O</span>
-<span class="s2">   -batch               force batch I/O</span>
+<span class="s2">   -interactive         force interactive I/O (command editing and colour)</span>
+<span class="s2">   -batch               force batch I/O (no banners or editing)</span>
 <span class="s2">   -column              set output mode to &#39;column&#39;</span>
 <span class="s2">   -csv                 set output mode to &#39;csv&#39;</span>
 <span class="s2">   -html                set output mode to &#39;html&#39;</span>
@@ -1119,8 +1111,6 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Processes a dot command.</span>
 
 <span class="sd">        It is split into parts using :func:`shlex.split`</span>
-<span class="sd">        which is roughly the same method used by Unix/POSIX</span>
-<span class="sd">        shells.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">echo</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="n">command</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -1374,9 +1364,7 @@
 <span class="sd">        the database.  It is also useful for comparing differences or</span>
 <span class="sd">        making the data available to other databases.  Indices and</span>
 <span class="sd">        triggers for the table(s) are also dumped.  Finally views</span>
-<span class="sd">        matching the table pattern name are dumped (it isn&#39;t possible</span>
-<span class="sd">        to work out which views access which table and views can</span>
-<span class="sd">        access multiple tables anyway).</span>
+<span class="sd">        matching the table pattern name are dumped.</span>
 
 <span class="sd">        Note that if you are dumping virtual tables such as used by</span>
 <span class="sd">        the FTS5 module then they may use other tables to store</span>
@@ -1616,7 +1604,7 @@
             <span class="n">uv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;user_version&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">uv</span><span class="p">:</span>
                 <span class="n">comment</span><span class="p">(</span>
-                    <span class="s2">&quot;Your database may need this.  It is sometimes used to keep track of the schema version (eg Firefox does this).&quot;</span>
+                    <span class="s2">&quot;Your database may need this.  It is sometimes used to keep track of the schema version.&quot;</span>
                 <span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot;pragma user_version=</span><span class="si">%d</span><span class="s2">;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">uv</span><span class="p">,</span> <span class="p">))</span>
                 <span class="n">blank</span><span class="p">()</span>
@@ -1656,8 +1644,6 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Saves *enc* as the default encoding, after verifying that</span>
 <span class="sd">        it is valid.  You can also include :error to specify error</span>
 <span class="sd">        handling - eg &#39;cp437:replace&#39;</span>
-
-<span class="sd">        Raises an exception on invalid encoding or error</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">enc</span> <span class="o">=</span> <span class="n">enc</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">enc</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
@@ -1680,7 +1666,7 @@
     <span class="k">def</span> <span class="nf">command_encoding</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;encoding ENCODING: Set the encoding used for new files opened via .output and imports</span>
 
-<span class="sd">        SQLite and APSW work internally using Unicode and characters.</span>
+<span class="sd">        SQLite and APSW/Python work internally using Unicode and characters.</span>
 <span class="sd">        Files however are a sequence of bytes.  An encoding describes</span>
 <span class="sd">        how to convert between bytes and characters.  The default</span>
 <span class="sd">        encoding is utf8 and that is generally the best value to use</span>
@@ -1691,13 +1677,6 @@
 <span class="sd">        codepoints not present in cp437 will be replaced (typically</span>
 <span class="sd">        with something like a question mark).  Other error handlers</span>
 <span class="sd">        include `ignore`, `strict` (default) and `xmlcharrefreplace`.</span>
-
-<span class="sd">        For the default input/output/error streams on startup the</span>
-<span class="sd">        shell defers to Python&#39;s detection of encoding.  For example</span>
-<span class="sd">        on Windows it asks what code page is in use and on Unix it</span>
-<span class="sd">        looks at the LC_CTYPE environment variable.  You can set the</span>
-<span class="sd">        PYTHONIOENCODING environment variable to override this</span>
-<span class="sd">        detection.</span>
 
 <span class="sd">        This command affects files opened after setting the encoding</span>
 <span class="sd">        as well as imports.</span>
@@ -1743,7 +1722,7 @@
 <span class="sd">        a like pattern.</span>
 
 <span class="sd">        This command can take a long time to execute needing to scan</span>
-<span class="sd">        all of the relevant tables.</span>
+<span class="sd">        all of the relevant tables, rows, and columns.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;At least one argument required and at most two accepted&quot;</span><span class="p">)</span>
@@ -2253,6 +2232,7 @@
 <div class="viewcode-block" id="Shell.log_handler">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.log_handler">[docs]</a>
     <span class="k">def</span> <span class="nf">log_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="s2">&quot;Called with SQLite log messages when logging is ON&quot;</span>
         <span class="n">code</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;( </span><span class="si">{</span><span class="w"> </span><span class="n">code</span><span class="w"> </span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="w"> </span><span class="n">apsw</span><span class="o">.</span><span class="n">mapping_result_codes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">code</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;unknown&#39;</span><span class="p">)</span><span class="w"> </span><span class="si">}</span><span class="s2"> ) &quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write_error</span><span class="p">(</span><span class="n">code</span> <span class="o">+</span> <span class="n">message</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
@@ -2557,7 +2537,7 @@
 
 <span class="sd">        The default is to print &#39;sqlite&gt; &#39; for the main prompt where</span>
 <span class="sd">        you can enter a dot command or a SQL statement.  If the SQL</span>
-<span class="sd">        statement is not complete (eg not ; terminated) then you are</span>
+<span class="sd">        statement is not complete then you are</span>
 <span class="sd">        prompted for more using the continuation prompt which defaults</span>
 <span class="sd">        to &#39; ..&gt; &#39;.  Example:</span>
 
@@ -2675,7 +2655,7 @@
 
 <span class="sd">        If you give one or more tables then their schema is listed</span>
 <span class="sd">        (including indices).  If you don&#39;t specify any then all</span>
-<span class="sd">        schemas are listed. TABLE is a like pattern so you can % for</span>
+<span class="sd">        schemas are listed. TABLE is a like pattern so you can use % for</span>
 <span class="sd">        wildcards.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">push_output</span><span class="p">()</span>
@@ -2979,7 +2959,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Implements the various backlash sequences in s such as</span>
 <span class="sd">        turning backslash t into a tab.</span>
 
-<span class="sd">        This function is needed because shlex does not do it for us.</span>
+<span class="sd">        This function is needed because :mod:`shlex` does not do it for us.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">s</span><span class="p">:</span> <span class="k">return</span> <span class="n">s</span>
         <span class="c1"># See the resolve_backslashes function in SQLite shell source</span>
@@ -3145,7 +3125,7 @@
 <div class="viewcode-block" id="Shell.complete">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.complete">[docs]</a>
     <span class="k">def</span> <span class="nf">complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a possible completion for readline</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a possible completion for :mod:`readline`</span>
 
 <span class="sd">        This function is called with state starting at zero to get the</span>
 <span class="sd">        first completion, then one/two/three etc until you return None.  The best</span>
@@ -3502,22 +3482,22 @@
 
 <div class="viewcode-block" id="Shell.display_timing">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.display_timing">[docs]</a>
-    <span class="k">def</span> <span class="nf">display_timing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">b4</span><span class="p">,</span> <span class="n">after</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Writes the difference between b4 and after to self.stderr.</span>
+    <span class="k">def</span> <span class="nf">display_timing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">before</span><span class="p">,</span> <span class="n">after</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Writes the difference between before and after to self.stderr.</span>
 <span class="sd">        The data is dictionaries returned from</span>
 <span class="sd">        :meth:`get_resource_usage`.&quot;&quot;&quot;</span>
-        <span class="n">v</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">b4</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">before</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">after</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
                 <span class="n">v</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
         <span class="n">v</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">b4</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">after</span><span class="p">:</span>
-                <span class="n">one</span> <span class="o">=</span> <span class="n">b4</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">before</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">after</span><span class="p">:</span>
+                <span class="n">one</span> <span class="o">=</span> <span class="n">before</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
                 <span class="n">two</span> <span class="o">=</span> <span class="n">after</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
                 <span class="n">val</span> <span class="o">=</span> <span class="n">two</span> <span class="o">-</span> <span class="n">one</span>
                 <span class="k">if</span> <span class="n">val</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="o">==</span> <span class="nb">float</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s2">&quot;+ </span><span class="si">%s</span><span class="s2">: </span><span class="si">%.4f</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">val</span><span class="p">))</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s2">&quot;+ </span><span class="si">%s</span><span class="s2">: </span><span class="si">%d</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">val</span><span class="p">))</span></div>
@@ -3720,7 +3700,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Oct 24, 2023.
+      <span class="lastupdated">Last updated on Nov 06, 2023.
       </span></p>
   </div>
 

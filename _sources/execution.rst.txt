@@ -9,9 +9,6 @@ Execution and tracing
 Execution model
 ===============
 
-This section only matters if you give multiple SQL statements in one go to :exc:`Cursor.execute`.
-(Statements are separated by semi-colons.)
-
 SQLite does execution in two steps. First a statement is prepared,
 which verifies the syntax, tables and fields and converts the
 statement into an internal representation. The prepared statement is
@@ -57,15 +54,6 @@ to execute statements. APSW will detect this and raise an
 (eg calling :meth:`Cursor.execute` in one thread and iterator in
 another. You also can't do things like try to
 :meth:`~Connection.close` a Connection concurrently in two threads.
-
-If you have multiple threads and/or multiple programs accessing the
-same database then there may be contention for the file. SQLite will
-return SQLITE_BUSY which will be raised as BusyError. You can call
-:meth:`Connection.set_busy_timeout` to set how long SQLite will retry
-for or :meth:`Connection.set_busy_handler` to install your own busy
-handler. Note that SQLite won't call the busy handler or timeout if it
-believes a deadlock has arisen. SQLite's locking and concurrency is
-described `here <https://sqlite.org/lockingv3.html>`_.
 
 A cursor object can only be executing one query at a time. You cannot
 issue a new query from inside a trace function or from a user defined
@@ -147,7 +135,7 @@ three arguments.
   sql
     The SQL text being executed
   bindings
-    The bindings being used.  This may be *`None*, a dictionary or
+    The bindings being used.  This may be *None*, a dictionary or
     a tuple.
 
 If the tracer return value is False then execution is
@@ -158,12 +146,6 @@ Execution tracers can be installed on a specific cursor by setting
 :attr:`Cursor.exec_trace` or for all cursors by setting
 :attr:`Connection.exec_trace`, with the cursor tracer taking
 priority.
-
-If you use the Connection :meth:`with <Connection.__enter__>` statement
-and have a Connection execution tracer then your callback will also be
-called when APSW creates and releases/rollbacks savepoints.  Instead
-of the first argument being a cursor, it will be the connection itself
-since there is no cursor involved.
 
 .. _rowtracer:
 
@@ -195,11 +177,13 @@ APSW Trace
 APSW includes a tracer that lets you easily trace SQL execution as
 well as providing a summary report without modifying your code.
 
+.. code-block:: console
+
   $ python3 -m apsw.trace [apswtrace options] yourscript.py [your options]
 
-All output is UTF-8 encoded.  The following options are available:
+The following options are available:
 
-.. code-block:: text
+.. code-block:: console
 
   $ python3 -m apsw.trace --help
   Usage: apswtrace.py [options] pythonscript.py [pythonscriptoptions]
@@ -253,7 +237,7 @@ Each row starts with the following fields:
 
   id
     This is the `id
-    <https://docs.python.org/library/functions.html#id>`_ of the
+    <https://docs.python.org/3/library/functions.html#id>`_ of the
     :class:`Cursor` or :class:`Connection`.  You can easily `filter
     <https://en.wikipedia.org/wiki/Grep>`_ the log if you just want to
     find out what happened on a specific cursor or connection.

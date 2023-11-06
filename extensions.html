@@ -1,12 +1,15 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Extensions &mdash; APSW 3.43.2.0 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <title>Extensions &mdash; APSW 3.44.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
+
+  
     <link rel="shortcut icon" href="_static/favicon.ico"/>
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
@@ -14,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=200f835c"></script>
+        <script src="_static/documentation_options.js?v=5c66a1ff"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +42,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.43.2.0
+                3.44.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -55,7 +58,7 @@
 <li class="toctree-l1"><a class="reference internal" href="example.html">Example/Tour</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation and customization</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Extensions</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#fts3-4-5">FTS3/4/5</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#fts5">FTS5</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#icu">ICU</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#json1">JSON1</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#rbu">RBU</a></li>
@@ -73,7 +76,6 @@
 <li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
-<li class="toctree-l1"><a class="reference internal" href="types.html">Types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
@@ -117,17 +119,10 @@
 functionality.  All extensions are disabled by default and you need to
 <a class="reference internal" href="install.html#setup-build-flags"><span class="std std-ref">take steps</span></a> to have them available at compilation
 time, to enable them and then to use them.</p>
-<section id="fts3-4-5">
-<span id="ext-fts3"></span><h2>FTS3/4/5<a class="headerlink" href="#fts3-4-5" title="Link to this heading"></a></h2>
-<p>FTS3 is the third version of the <a class="reference external" href="https://sqlite.org/fts3.html">full text search</a> extension.  It
-makes it easy to find words in multi-word text fields.  You must
-enable the extension via <a class="reference internal" href="install.html#setup-build-flags"><span class="std std-ref">setup.py build flags</span></a> before it will work.  There are no additional
-APIs and the <a class="reference external" href="https://sqlite.org/fts3.html">documented SQL</a> works as is.</p>
-<p>Note that FTS4 is some augmentations to FTS3 and are enabled whenever
-FTS3 is enabled as described in the <a class="reference external" href="https://sqlite.org/fts3.html#fts4">documentation</a></p>
-<p><a class="reference external" href="https://www.sqlite.org/fts5.html">FTS5</a> addresses some issues in the earlier
-FTS versions by <a class="reference external" href="https://www.sqlite.org/fts5.html#appendix_a">breaking backwards</a>
-compatibility.</p>
+<section id="fts5">
+<span id="ext-fts3"></span><h2>FTS5<a class="headerlink" href="#fts5" title="Link to this heading"></a></h2>
+<p><a class="reference external" href="https://www.sqlite.org/fts5.html">FTS5</a> is the full text search
+extension.</p>
 </section>
 <section id="icu">
 <span id="ext-icu"></span><h2>ICU<a class="headerlink" href="#icu" title="Link to this heading"></a></h2>
@@ -147,10 +142,8 @@ use with large SQLite databases on low power devices at the edge of a network.</
 </section>
 <section id="rtree">
 <span id="ext-rtree"></span><h2>RTree<a class="headerlink" href="#rtree" title="Link to this heading"></a></h2>
-<p>The RTree extension provides a <a class="reference external" href="https://en.wikipedia.org/wiki/R-tree">spatial table</a> - see the <a class="reference external" href="https://sqlite.org/rtree.html">documentation</a>.
-You must enable the extension via <a class="reference internal" href="install.html#setup-build-flags"><span class="std std-ref">setup.py build flags</span></a> before it will work.  There are no additional
-APIs and the <a class="reference external" href="https://sqlite.org/rtree.html">documented SQL</a>
-works as is.</p>
+<p>The RTree extension provides a <a class="reference external" href="https://en.wikipedia.org/wiki/R-tree">spatial table</a> - see the <a class="reference external" href="https://sqlite.org/rtree.html">documentation</a>.  There are no additional APIs and
+the <a class="reference external" href="https://sqlite.org/rtree.html">documented SQL</a> works as is.</p>
 </section>
 </section>
 
@@ -166,7 +159,7 @@ works as is.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Oct 24, 2023.
+      <span class="lastupdated">Last updated on Nov 06, 2023.
       </span></p>
   </div>
 

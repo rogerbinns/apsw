@@ -12,24 +12,11 @@ time, to enable them and then to use them.
 
 .. _ext-fts3:
 
-FTS3/4/5
-========
+FTS5
+====
 
-FTS3 is the third version of the `full text search
-<https://sqlite.org/fts3.html>`__ extension.  It
-makes it easy to find words in multi-word text fields.  You must
-enable the extension via :ref:`setup.py build flags
-<setup_build_flags>` before it will work.  There are no additional
-APIs and the `documented SQL
-<https://sqlite.org/fts3.html>`__ works as is.
-
-Note that FTS4 is some augmentations to FTS3 and are enabled whenever
-FTS3 is enabled as described in the `documentation
-<https://sqlite.org/fts3.html#fts4>`__
-
-`FTS5 <https://www.sqlite.org/fts5.html>`__ addresses some issues in the earlier
-FTS versions by `breaking backwards <https://www.sqlite.org/fts5.html#appendix_a>`__
-compatibility.
+`FTS5 <https://www.sqlite.org/fts5.html>`__ is the full text search
+extension.
 
 .. _ext-icu:
 
@@ -66,9 +53,5 @@ RTree
 
 The RTree extension provides a `spatial table
 <https://en.wikipedia.org/wiki/R-tree>`_ - see the `documentation
-<https://sqlite.org/rtree.html>`__.
-You must enable the extension via :ref:`setup.py build flags
-<setup_build_flags>` before it will work.  There are no additional
-APIs and the `documented SQL
-<https://sqlite.org/rtree.html>`__
-works as is.
+<https://sqlite.org/rtree.html>`__.  There are no additional APIs and
+the `documented SQL <https://sqlite.org/rtree.html>`__ works as is.

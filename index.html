@@ -1,12 +1,15 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>APSW 3.43.2.0 documentation &mdash; APSW 3.43.2.0 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <title>APSW 3.44.0.0 documentation &mdash; APSW 3.44.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
+
+  
     <link rel="shortcut icon" href="_static/favicon.ico"/>
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
@@ -14,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=200f835c"></script>
+        <script src="_static/documentation_options.js?v=5c66a1ff"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -38,7 +41,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.43.2.0
+                3.44.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -65,7 +68,6 @@
 <li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
-<li class="toctree-l1"><a class="reference internal" href="types.html">Types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
@@ -90,7 +92,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">APSW 3.43.2.0 documentation</li>
+      <li class="breadcrumb-item active">APSW 3.44.0.0 documentation</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -103,9 +105,9 @@
            <div itemprop="articleBody">
              
   <section id="apsw-version-documentation">
-<h1>APSW 3.43.2.0 documentation<a class="headerlink" href="#apsw-version-documentation" title="Link to this heading"></a></h1>
+<h1>APSW 3.44.0.0 documentation<a class="headerlink" href="#apsw-version-documentation" title="Link to this heading"></a></h1>
 <p class="centered">
-<strong>APSW 3.43.2.0 released 25 October 2023</strong></p><div class="toctree-wrapper compound">
+<strong>APSW 3.44.0.0 released 6 November 2023</strong></p><div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="about.html">About</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="about.html#what-apsw-does">What APSW does</a></li>
@@ -120,18 +122,18 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tips.html">Tips</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="tips.html#sqlite-is-different">SQLite is different</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tips.html#types">Types</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tips.html#transactions">Transactions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tips.html#cursors">Cursors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tips.html#queries">Queries</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tips.html#bindings">Bindings</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tips.html#diagnostics">Diagnostics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tips.html#managing-and-updating-your-schema">Managing and updating your schema</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tips.html#parsing-sql">Parsing SQL</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tips.html#customizing-connections">Customizing Connections</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tips.html#customizing-cursors">Customizing Cursors</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tips.html#busy-handling">Busy handling</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tips.html#database-schema">Database schema</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tips.html#write-ahead-logging">Write Ahead Logging</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tips.html#shared-cache-mode">Shared Cache Mode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tips.html#customizing-connections">Customizing Connections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tips.html#customizing-cursors">Customizing Cursors</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="example.html">Example/Tour</a><ul>
@@ -143,13 +145,12 @@
 <li class="toctree-l2"><a class="reference internal" href="example.html#why-you-use-bindings-to-provide-values">Why you use bindings to provide values</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#bindings-sequence">Bindings (sequence)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#bindings-dict">Bindings (dict)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="example.html#using-different-types">Using different types</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#transactions">Transactions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#executemany">executemany</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#pragmas">Pragmas</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#tracing-execution">Tracing execution</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#tracing-returned-rows">Tracing returned rows</a></li>
-<li class="toctree-l2"><a class="reference internal" href="example.html#defining-your-own-functions">Defining your own functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example.html#defining-scalar-functions">Defining scalar functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#defining-aggregate-functions">Defining aggregate functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#defining-window-functions">Defining window functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#defining-collations-sorting">Defining collations (sorting)</a></li>
@@ -157,6 +158,7 @@
 <li class="toctree-l2"><a class="reference internal" href="example.html#type-conversion-into-out-of-database">Type conversion into/out of database</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#query-details">Query details</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#blob-i-o">Blob I/O</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example.html#backup-an-open-database">Backup an open database</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#authorizer-control-what-sql-can-do">Authorizer (control what SQL can do)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#progress-handler">Progress handler</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#file-control">File Control</a></li>
@@ -165,7 +167,6 @@
 <li class="toctree-l2"><a class="reference internal" href="example.html#virtual-tables">Virtual tables</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#vfs-virtual-file-system">VFS - Virtual File System</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#limits">Limits</a></li>
-<li class="toctree-l2"><a class="reference internal" href="example.html#backup-an-open-database">Backup an open database</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#shell">Shell</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#statistics">Statistics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#tracing">Tracing</a></li>
@@ -176,12 +177,13 @@
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation and customization</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="install.html#pypi-recommended">PyPI (recommended)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="install.html#linux-bsd-provided">Linux/BSD provided</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#source">Source</a></li>
 <li class="toctree-l2"><a class="reference internal" href="install.html#building-and-customization">Building and customization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="install.html#testing">Testing</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="extensions.html#fts3-4-5">FTS3/4/5</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extensions.html#fts5">FTS5</a></li>
 <li class="toctree-l2"><a class="reference internal" href="extensions.html#icu">ICU</a></li>
 <li class="toctree-l2"><a class="reference internal" href="extensions.html#json1">JSON1</a></li>
 <li class="toctree-l2"><a class="reference internal" href="extensions.html#rbu">RBU</a></li>
@@ -217,7 +219,6 @@
 <li class="toctree-l2"><a class="reference internal" href="vtable.html#vtmodule-class">VTModule class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="vtable.html#vttable-class">VTTable class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="vtable.html#vtcursor-class">VTCursor class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="vtable.html#troubleshooting-virtual-tables">Troubleshooting virtual tables</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a><ul>
@@ -255,11 +256,6 @@
 <li class="toctree-l2"><a class="reference internal" href="exceptions.html#chaining">Chaining</a></li>
 <li class="toctree-l2"><a class="reference internal" href="exceptions.html#unraisable">Unraisable</a></li>
 <li class="toctree-l2"><a class="reference internal" href="exceptions.html#exception-classes">Exception Classes</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="types.html">Types</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="types.html#mapping">Mapping</a></li>
-<li class="toctree-l2"><a class="reference internal" href="types.html#unicode">Unicode</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a><ul>
@@ -311,7 +307,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Oct 24, 2023.
+      <span class="lastupdated">Last updated on Nov 06, 2023.
       </span></p>
   </div>
 

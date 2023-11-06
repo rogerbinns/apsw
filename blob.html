@@ -1,12 +1,15 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Blob Input/Output &mdash; APSW 3.43.2.0 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <title>Blob Input/Output &mdash; APSW 3.44.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
+
+  
     <link rel="shortcut icon" href="_static/favicon.ico"/>
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
@@ -14,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=200f835c"></script>
+        <script src="_static/documentation_options.js?v=5c66a1ff"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +42,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.43.2.0
+                3.44.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -91,7 +94,6 @@
 <li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
-<li class="toctree-l1"><a class="reference internal" href="types.html">Types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
@@ -133,42 +135,29 @@
 <span id="blobio"></span><h1>Blob Input/Output<a class="headerlink" href="#blob-input-output" title="Link to this heading"></a></h1>
 <p>A <a class="reference external" href="https://en.wikipedia.org/wiki/Binary_large_object">blob</a> is a
 SQLite <a class="reference external" href="https://sqlite.org/datatype3.html">datatype</a> representing
-a sequence of bytes.  It can be zero or more bytes in size.</p>
+a sequence of bytes.  It can be zero or more bytes in size.  Blobs
+cannot be resized, but you can read and overwrite parts of them.</p>
 <p>SQLite blobs have an absolute maximum size of 2GB and a <a class="reference external" href="https://sqlite.org/c3ref/c_limit_attached.html">default
 maximum size</a> of
 1GB.</p>
 <p>An alternate approach to using blobs is to store the data in files and
-store the filename in the database.  Doing so loses the <a class="reference external" href="https://sqlite.org/transactional.html">ACID</a> properties of SQLite.</p>
+store the filename in the database.  Doing so loses the <a class="reference external" href="https://sqlite.org/transactional.html">ACID</a> properties of SQLite.
+There are <a class="reference external" href="https://www.sqlite.org/fasterthanfs.html">benchmarks</a>.</p>
 <section id="zeroblob-class">
 <h2>zeroblob class<a class="headerlink" href="#zeroblob-class" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="apsw.zeroblob">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">zeroblob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.zeroblob" title="Link to this definition"></a></dt>
-<dd><p>If you want to insert a blob into a row, you previously needed to
-supply the entire blob in one go.  To read just one byte also
-required retrieving the blob in its entirety. For example to insert
-a 100MB file you would have done:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">largedata</span><span class="o">=</span><span class="nb">open</span><span class="p">(</span><span class="s2">&quot;largefile&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-<span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into foo values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">largedata</span><span class="p">,))</span>
-</pre></div>
-</div>
-<p>SQLite 3.5 allowed for incremental Blob I/O so you can read and
-write blobs in small amounts.  You cannot change the size of a blob
-so you need to reserve space which you do through zeroblob which
-creates a blob of the specified size but full of zero bytes.  For
-example you would reserve space for your 100MB one of these two
-ways:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into foo values(zeroblob(100000000))&quot;</span><span class="p">)</span>
-<span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into foo values(?),</span>
-             <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">zeroblob</span><span class="p">(</span><span class="mi">100000000</span><span class="p">),))</span>
-</pre></div>
-</div>
-<p>This class is used for the second way.  Once a blob exists in the
-database, you then use the <a class="reference internal" href="#apsw.Blob" title="apsw.Blob"><code class="xref py py-class docutils literal notranslate"><span class="pre">Blob</span></code></a> class to read and write its
-contents.</p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">zeroblob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.zeroblob" title="Link to this definition"></a></dt>
+<dd><p>If you want to insert a blob into a row, you need to
+supply the entire blob in one go.  Using this class or
+<a class="reference external" href="https://www.sqlite.org/lang_corefunc.html#zeroblob">function</a>
+allocates the space in the database filling it with zeroes.</p>
+<p>You can then overwrite parts in smaller chunks, without having
+to do it all at once.  The <a class="reference internal" href="example.html#example-blob-io"><span class="std std-ref">example</span></a> shows
+how to use it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>size</strong> -- Number of zeroed bytes to create</p>
+<dd class="field-odd"><p><strong>size</strong> – Number of zeroed bytes to create</p>
 </dd>
 </dl>
 </dd></dl>
@@ -184,10 +173,10 @@ contents.</p>
 <h2>Blob class<a class="headerlink" href="#blob-class" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="apsw.Blob">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Blob</span></span><a class="headerlink" href="#apsw.Blob" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">Blob</span></span><a class="headerlink" href="#apsw.Blob" title="Link to this definition"></a></dt>
 <dd><p>This object is created by <a class="reference internal" href="connection.html#apsw.Connection.blob_open" title="apsw.Connection.blob_open"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.blob_open()</span></code></a> and provides
 access to a blob in the database.  It behaves like a Python file.
-At the C level it wraps a <a class="reference external" href="https://sqlite.org/c3ref/blob.html">sqlite3_blob</a>.</p>
+It wraps a <a class="reference external" href="https://sqlite.org/c3ref/blob.html">sqlite3_blob</a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>You cannot change the size of a blob using this object. You should
@@ -200,7 +189,7 @@ create it with the correct size in advance either by using
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.Blob.__enter__">
 <span class="sig-prename descclassname"><span class="pre">Blob.</span></span><span class="sig-name descname"><span class="pre">__enter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#apsw.Blob" title="apsw.Blob"><span class="pre">Blob</span></a></span></span><a class="headerlink" href="#apsw.Blob.__enter__" title="Link to this definition"></a></dt>
-<dd><p>You can use a blob as a <a class="reference external" href="https://docs.python.org/reference/datamodel.html#with-statement-context-managers">context manager</a>
+<dd><p>You can use a blob as a <a class="reference external" href="https://docs.python.org/3/reference/datamodel.html#with-statement-context-managers">context manager</a>
 as defined in <span class="target" id="index-0"></span><a class="pep reference external" href="https://peps.python.org/pep-0343/"><strong>PEP 0343</strong></a>.  When you use <em>with</em> statement,
 the blob is always <a class="reference internal" href="#apsw.Blob.close" title="apsw.Blob.close"><code class="xref py py-meth docutils literal notranslate"><span class="pre">closed</span></code></a> on exit from the block, even if an
 exception occurred in the block.</p>
@@ -238,7 +227,7 @@ doing it.)</p>
 <p>It is okay to call <a class="reference internal" href="#apsw.Blob.close" title="apsw.Blob.close"><code class="xref py py-meth docutils literal notranslate"><span class="pre">close()</span></code></a> multiple times.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>force</strong> -- Ignores any errors during close.</p>
+<dd class="field-odd"><p><strong>force</strong> – Ignores any errors during close.</p>
 </dd>
 </dl>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/blob_close.html">sqlite3_blob_close</a></p>
@@ -257,7 +246,7 @@ doing it.)</p>
 <dd><p>Reads amount of data requested, or till end of file, whichever is
 earlier. Attempting to read beyond the end of the blob returns an
 empty bytes in the same manner as end of file on normal file
-objects.  Negative numbers read remaining data.</p>
+objects.  Negative numbers read all remaining data.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/blob_read.html">sqlite3_blob_read</a></p>
 </dd></dl>
 
@@ -271,12 +260,12 @@ then copying into buffer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>buffer</strong> -- A writable buffer like object.
+<li><p><strong>buffer</strong> – A writable buffer like object.
 There is a <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytearray" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytearray</span></code></a> type that is very useful.
 <a class="reference external" href="https://docs.python.org/3/library/array.html#module-array" title="(in Python v3.12)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Arrays</span></code></a> also work.</p></li>
-<li><p><strong>offset</strong> -- The position to start writing into the buffer
+<li><p><strong>offset</strong> – The position to start writing into the buffer
 defaulting to the beginning.</p></li>
-<li><p><strong>length</strong> -- How much of the blob to read.  The default is the
+<li><p><strong>length</strong> – How much of the blob to read.  The default is the
 remaining space left in the buffer.  Note that if
 there is more space available than blob left then you
 will get a <em>ValueError</em> exception.</p></li>
@@ -301,14 +290,14 @@ faster than closing an existing blob an opening a new one.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>offset</strong> -- New position to seek to.  Can be positive or negative number.</p></li>
-<li><p><strong>whence</strong> -- Use 0 if <em>offset</em> is relative to the beginning of the blob,
+<li><p><strong>offset</strong> – New position to seek to.  Can be positive or negative number.</p></li>
+<li><p><strong>whence</strong> – Use 0 if <em>offset</em> is relative to the beginning of the blob,
 1 if <em>offset</em> is relative to the current position,
 and 2 if <em>offset</em> is relative to the end of the blob.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> -- If the resulting offset is before the beginning (less than zero) or beyond the end of the blob.</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – If the resulting offset is before the beginning (less than zero) or beyond the end of the blob.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -325,12 +314,12 @@ and 2 if <em>offset</em> is relative to the end of the blob.</p></li>
 <dd><p>Writes the data to the blob.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>data</strong> -- bytes to write</p>
+<dd class="field-odd"><p><strong>data</strong> – bytes to write</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.12)"><strong>TypeError</strong></a> -- Wrong data type</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> -- If the data would go beyond the end of the blob.
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.12)"><strong>TypeError</strong></a> – Wrong data type</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – If the data would go beyond the end of the blob.
 You cannot increase the size of a blob by writing beyond the end.
 You need to use <a class="reference internal" href="#apsw.zeroblob" title="apsw.zeroblob"><code class="xref py py-class docutils literal notranslate"><span class="pre">zeroblob</span></code></a> to set the desired size first when
 inserting the blob.</p></li>
@@ -355,7 +344,7 @@ inserting the blob.</p></li>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Oct 24, 2023.
+      <span class="lastupdated">Last updated on Nov 06, 2023.
       </span></p>
   </div>
 

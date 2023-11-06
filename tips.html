@@ -1,12 +1,15 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tips &mdash; APSW 3.43.2.0 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <title>Tips &mdash; APSW 3.44.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
+
+  
     <link rel="shortcut icon" href="_static/favicon.ico"/>
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
@@ -14,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=200f835c"></script>
+        <script src="_static/documentation_options.js?v=5c66a1ff"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +42,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.43.2.0
+                3.44.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -53,18 +56,18 @@
 <li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Tips</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#sqlite-is-different">SQLite is different</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#types">Types</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#transactions">Transactions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#cursors">Cursors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#queries">Queries</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#bindings">Bindings</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#diagnostics">Diagnostics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#managing-and-updating-your-schema">Managing and updating your schema</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#parsing-sql">Parsing SQL</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#customizing-connections">Customizing Connections</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#customizing-cursors">Customizing Cursors</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#busy-handling">Busy handling</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#database-schema">Database schema</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#write-ahead-logging">Write Ahead Logging</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#shared-cache-mode">Shared Cache Mode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#customizing-connections">Customizing Connections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#customizing-cursors">Customizing Cursors</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="example.html">Example/Tour</a></li>
@@ -81,7 +84,6 @@
 <li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
-<li class="toctree-l1"><a class="reference internal" href="types.html">Types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
@@ -121,8 +123,8 @@
              
   <section id="tips">
 <h1>Tips<a class="headerlink" href="#tips" title="Link to this heading"></a></h1>
-<p>These tips are based on mailing list postings, issues, and emails.
-You are recommended to read all the documentation as well.</p>
+<p>There are also specific tips in each documentation section, and many of the
+classes, functions, and attributes.</p>
 <section id="sqlite-is-different">
 <h2>SQLite is different<a class="headerlink" href="#sqlite-is-different" title="Link to this heading"></a></h2>
 <p>While SQLite provides a SQL database like many others out there, it is
@@ -130,17 +132,76 @@ also unique in many ways.  Read about the unique features at the
 <a class="reference external" href="https://sqlite.org/different.html">SQLite website</a> and <a class="reference external" href="https://www.sqlite.org/quirks.html">quirks</a>.</p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
-<p><a class="reference internal" href="bestpractice.html"><span class="doc">Best practice</span></a> is recommended.</p>
+<p>Using <a class="reference internal" href="bestpractice.html"><span class="doc">APSW best practice</span></a> is recommended to get
+best performance and avoid common mistakes.</p>
+</div>
+</section>
+<section id="types">
+<span id="id1"></span><h2>Types<a class="headerlink" href="#types" title="Link to this heading"></a></h2>
+<p>SQLite has <a class="reference external" href="https://www.sqlite.org/datatype3.html">5 storage types</a>.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>SQLite</p></th>
+<th class="head"><p>Python</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>NULL</p></td>
+<td><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">None</span></code></a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Text (limit 1GB when encoded as bytes)</p></td>
+<td><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p></td>
+</tr>
+<tr class="row-even"><td><p>Integer (Signed 64 bit)</p></td>
+<td><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Float (<a class="reference external" href="https://en.wikipedia.org/wiki/Double-precision_floating-point_format">IEEE754 64 bit</a>)</p></td>
+<td><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="https://en.wikipedia.org/wiki/Binary_large_object">BLOB</a> (binary data, limit 1GB)</p></td>
+<td><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></a> and similar such as <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytearray" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytearray</span></code></a> and <a class="reference external" href="https://docs.python.org/3/library/array.html#array.array" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">array.array</span></code></a></p></td>
+</tr>
+</tbody>
+</table>
+<p><span class="target" id="index-0"></span>Dates and times do not have a dedicated storage type, but do
+have a <a class="reference external" href="https://www.sqlite.org/lang_datefunc.html">variety of functions</a> for creating,
+manipulating, and storing them. <span class="target" id="index-1"></span>JSON does not have a
+dedicated storage type, but does have a <a class="reference external" href="https://www.sqlite.org/json1.html">variety of functions</a> for creating, manipulating, and
+storing JSON.</p>
+<p>APSW provides optional <a class="reference internal" href="example.html#example-type-conversion"><span class="std std-ref">type conversion</span></a>, but
+the underlying storage will always be one of the 5 storage types.</p>
+<p>If a column declaration gives a type then SQLite
+<a class="reference external" href="https://www.sqlite.org/flextypegood.html">attempts conversion</a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    create table types1(a, b, c, d, e);</span>
+<span class="s2">    create table types2(a INTEGER, b REAL, c TEXT, d, e BLOB);</span>
+<span class="s2">    &quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;12&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mf">5.5</span><span class="p">,</span> <span class="sa">b</span><span class="s2">&quot;</span><span class="se">\x03\x72\xf4\x00\x9e</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into types1 values(?,?,?,?,?)&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into types2 values(?,?,?,?,?)&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from types1&quot;</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;types1&quot;</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">row</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from types2&quot;</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;types2&quot;</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">row</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">types1 (&#39;12&#39;, 3, 4, 5.5, b&#39;\x03r\xf4\x00\x9e&#39;)</span>
+<span class="go">types2 (12, 3.0, &#39;4&#39;, 5.5, b&#39;\x03r\xf4\x00\x9e&#39;)</span>
+</pre></div>
 </div>
 </section>
 <section id="transactions">
 <h2>Transactions<a class="headerlink" href="#transactions" title="Link to this heading"></a></h2>
 <p>Transactions are the changes applied to a database file as a whole.
-They either happen completely, or not at all.  SQLite notes all the changes
-made during a transaction, and at the end when you do a commit will cause
-them to permanently end up in the database.  If you do not commit, or
-just exit, then other/new connections will not see the changes and SQLite
-handles tidying up the work in progress automatically.</p>
+They either happen completely, or not at all.  SQLite notes all the
+changes made during a transaction, and at the end when you commit will
+cause them to permanently end up in the database.  If you do not
+commit, or just exit, then other/new connections will not see the
+changes and SQLite handles tidying up the work in progress
+automatically.</p>
 <p>Committing a transaction can be quite time consuming.  SQLite uses a robust
 multi-step process that has to handle errors that can occur at any point,
 and asks the operating system to ensure that data is on storage and would
@@ -164,7 +225,7 @@ transactions</a>.</p>
 </div>
 <p>However that is extra effort, and also requires error handling.  For example
 if the second INSERT failed then you likely want to ROLLBACK the incomplete
-transaction, so that additional work on the same connection doesn't see the
+transaction, so that additional work on the same connection doesn’t see the
 partial data.</p>
 <p>If you use <a class="reference internal" href="connection.html#apsw.Connection.__enter__" title="apsw.Connection.__enter__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with</span> <span class="pre">Connection</span></code></a> then the transaction
 will be automatically started, and committed on success or rolled back if
@@ -179,27 +240,27 @@ exceptions occur:</p>
 <p>There are <a class="reference external" href="https://www.sqlite.org/lang_transaction.html">technical details</a>
 at the <a class="reference external" href="https://www.sqlite.org/docs.html">SQLite site</a>.</p>
 </section>
-<section id="cursors">
-<h2>Cursors<a class="headerlink" href="#cursors" title="Link to this heading"></a></h2>
+<section id="queries">
+<h2>Queries<a class="headerlink" href="#queries" title="Link to this heading"></a></h2>
 <p>SQLite only calculates each result row as you request it.  For example
-if your query returns 10 million rows SQLite will not calculate all 10
+if your query returns 10 million rows, SQLite will not calculate all 10
 million up front.  Instead the next row will be calculated as you ask
-for it.</p>
-<p>Cursors on the same <a class="reference internal" href="connection.html#connections"><span class="std std-ref">Connection</span></a> are not isolated
-from each other.  Anything done on one cursor is immediately visible
-to all other Cursors on the same connection.  This still applies if
-you start transactions.  Connections are isolated from each other.</p>
+for it.  You can use <a class="reference internal" href="cursor.html#apsw.Cursor.fetchall" title="apsw.Cursor.fetchall"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.fetchall()</span></code></a> to get all the results.</p>
+<p><a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cursors</span></code></a> on the same <a class="reference internal" href="connection.html#connections"><span class="std std-ref">Connection</span></a>
+are not isolated from each other.  Anything done on one cursor is
+immediately visible to all other cursors on the same connection.  This
+still applies if you start transactions.  Connections are isolated
+from each other.</p>
 <p><a class="reference internal" href="connection.html#apsw.Connection.execute" title="apsw.Connection.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.execute()</span></code></a> and <a class="reference internal" href="connection.html#apsw.Connection.executemany" title="apsw.Connection.executemany"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.executemany()</span></code></a>
-automatically obtains cursors from  <a class="reference internal" href="connection.html#apsw.Connection.cursor" title="apsw.Connection.cursor"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.cursor()</span></code></a> which
+automatically obtain cursors from  <a class="reference internal" href="connection.html#apsw.Connection.cursor" title="apsw.Connection.cursor"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.cursor()</span></code></a> which
 are very cheap.  It is best practise to not re-use them, and instead
-get a new one each time.  If you don't, code refactoring and nested
+get a new one each time.  If you don’t, code refactoring and nested
 loops can unintentionally use the same cursor object which will not
 crash but will cause hard to diagnose behaviour in your program.</p>
-<p>Read more about <a class="reference internal" href="cursor.html#cursors"><span class="std std-ref">Cursors</span></a>.</p>
 </section>
 <section id="bindings">
 <h2>Bindings<a class="headerlink" href="#bindings" title="Link to this heading"></a></h2>
-<p>When issuing a query, always use bindings.  <a class="reference external" href="https://docs.python.org/library/stdtypes.html#printf-style-string-formatting">String interpolation</a>
+<p>When issuing a query, always use bindings.  <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#printf-style-string-formatting">String interpolation</a>
 may seem more convenient but you will encounter difficulties.  You may
 feel that you have complete control over all data accessed but if your
 code is at all useful then you will find it being used more and more
@@ -207,8 +268,8 @@ widely.  The computer will always be better than you at parsing SQL
 and the bad guys have years of experience finding and using <a class="reference external" href="https://en.wikipedia.org/wiki/SQL_injection">SQL
 injection attacks</a> in
 ways you never even thought possible.</p>
-<p>The <a class="reference internal" href="cursor.html#cursors"><span class="std std-ref">documentation</span></a> gives many examples of how to use
-various forms of bindings.</p>
+<p>The <a class="reference internal" href="example.html#example-why-bindings"><span class="std std-ref">tour</span></a> shows why you use bindings, and
+the different ways you can supply them.</p>
 </section>
 <section id="diagnostics">
 <span id="diagnostics-tips"></span><h2>Diagnostics<a class="headerlink" href="#diagnostics" title="Link to this heading"></a></h2>
@@ -216,30 +277,12 @@ various forms of bindings.</p>
 will be signalled via an <a class="reference internal" href="exceptions.html"><span class="doc">exception</span></a>.</p>
 <p>APSW ensures you have <a class="reference internal" href="exceptions.html#augmentedstacktraces"><span class="std std-ref">detailed information</span></a> both in the stack trace as well as what data
 APSW/SQLite was operating on.</p>
-<p>SQLite has a <a class="reference external" href="https://www.sqlite.org/errlog.html">warning/error logging facility</a>.  You can call
-<a class="reference internal" href="ext.html#apsw.ext.log_sqlite" title="apsw.ext.log_sqlite"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.ext.log_sqlite()</span></code></a> which installs a handler that forwards
-SQLite messages to the <a class="reference external" href="https://docs.python.org/3/library/logging.html#module-logging" title="(in Python v3.12)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">logging</span> <span class="pre">module</span></code></a>.`</p>
-<p>To do it yourself:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">handler</span><span class="p">(</span><span class="n">errcode</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
-    <span class="n">errstr</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">mapping_result_codes</span><span class="p">[</span><span class="n">errcode</span> <span class="o">&amp;</span> <span class="mi">255</span><span class="p">]</span>
-    <span class="nb">print</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SQLITE_LOG: </span><span class="si">{</span><span class="w"> </span><span class="n">message</span><span class="w"> </span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="w"> </span><span class="n">errcode</span><span class="w"> </span><span class="si">}</span><span class="s2">) </span><span class="si">{</span><span class="w"> </span><span class="n">errstr</span><span class="w"> </span><span class="si">}</span><span class="s2"> &quot;</span>
-           <span class="o">+</span> <span class="n">apsw</span><span class="o">.</span><span class="n">mapping_extended_result_codes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">errcode</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-
-<span class="n">apsw</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_CONFIG_LOG</span><span class="p">,</span> <span class="n">handler</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>This is an example of what gets printed when I use <code class="docutils literal notranslate"><span class="pre">/dev/null</span></code> as
-the database name in the <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> and then tried to create
-a table.</p>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLITE_LOG: cannot open file at line 28729 of [7dd4968f23] (14) SQLITE_CANTOPEN</span>
-<span class="go">SQLITE_LOG: os_unix.c:28729: (2) open(/dev/null-journal) - No such file or directory (14) SQLITE_CANTOPEN</span>
-<span class="go">SQLITE_LOG: statement aborts at 38: [create table foo(x,y);] unable to open database file (14) SQLITE_CANTOPEN</span>
-</pre></div>
-</div>
+<p>SQLite has a <a class="reference external" href="https://www.sqlite.org/errlog.html">warning/error logging facility</a>.  Use <a class="reference internal" href="bestpractice.html"><span class="doc">best practice</span></a> to
+forward SQLite log messages to Python’s <a class="reference external" href="https://docs.python.org/3/library/logging.html#module-logging" title="(in Python v3.12)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">logging</span></code></a>.</p>
 </section>
 <section id="managing-and-updating-your-schema">
 <h2>Managing and updating your schema<a class="headerlink" href="#managing-and-updating-your-schema" title="Link to this heading"></a></h2>
-<p>If your program uses SQLite for <a class="reference external" href="https://sqlite.org/appfileformat.html">data</a> then you'll need to manage
+<p>If your program uses SQLite for <a class="reference external" href="https://sqlite.org/appfileformat.html">data</a> then you’ll need to manage
 and update your schema.  The hard way of doing this is to test for the
 existence of tables and their columns, and doing that maintenance
 programmatically.  The easy way is to use <a class="reference external" href="https://sqlite.org/pragma.html#pragma_user_version">pragma user_version</a> as in this example:</p>
@@ -248,14 +291,14 @@ programmatically.  The easy way is to use <a class="reference external" href="ht
   <span class="k">if</span> <span class="n">db</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;user_version&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
     <span class="k">with</span> <span class="n">db</span><span class="p">:</span>
       <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">        CREATE TABLE IF NOT EXISTS foo(x,y,z);</span>
-<span class="s2">        CREATE TABLE IF NOT EXISTS bar(x,y,z);</span>
+<span class="s2">        CREATE TABLE foo(x,y,z);</span>
+<span class="s2">        CREATE TABLE bar(x,y,z);</span>
 <span class="s2">        PRAGMA user_version = 1;&quot;&quot;&quot;</span><span class="p">)</span>
 
   <span class="k">if</span> <span class="n">db</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;user_version&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
     <span class="k">with</span> <span class="n">db</span><span class="p">:</span>
       <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">      CREATE TABLE IF NOT EXISTS baz(x,y,z);</span>
+<span class="s2">      CREATE TABLE baz(x,y,z);</span>
 <span class="s2">      CREATE INDEX ....</span>
 <span class="s2">      PRAGMA user_version = 2;&quot;&quot;&quot;</span><span class="p">)</span>
 
@@ -275,6 +318,40 @@ database as made by your application.</p>
 <p>Sometimes you want to know what a particular SQL statement does.  Use
 <a class="reference internal" href="ext.html#apsw.ext.query_info" title="apsw.ext.query_info"><code class="xref py py-func docutils literal notranslate"><span class="pre">apsw.ext.query_info()</span></code></a> which will provide as much detail as you
 need.</p>
+</section>
+<section id="busy-handling">
+<span id="busyhandling"></span><h2>Busy handling<a class="headerlink" href="#busy-handling" title="Link to this heading"></a></h2>
+<p>SQLite uses locks to coordinate access to the database by multiple
+connections (within the same process or in a different process).  The
+general goal is to have the locks be as lax as possible (allowing
+concurrency) and when using more restrictive locks to keep them for as
+short a time as possible.  See the <a class="reference external" href="https://sqlite.org/lockingv3.html">SQLite documentation</a> for more details.</p>
+<p>By default you will get an immediate <a class="reference internal" href="exceptions.html#apsw.BusyError" title="apsw.BusyError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">BusyError</span></code></a> if a lock cannot
+be acquired. Use <a class="reference internal" href="bestpractice.html"><span class="doc">best practice</span></a> which sets a
+short waiting period, as well as enabling <a class="reference external" href="https://www.sqlite.org/wal.html">WAL</a> which reduces contention between
+readers and writers.</p>
+</section>
+<section id="database-schema">
+<h2>Database schema<a class="headerlink" href="#database-schema" title="Link to this heading"></a></h2>
+<p>When starting a new database, it can be quite difficult to decide what
+tables and column to have and how to link them.  The technique used to
+design SQL schemas is called <a class="reference external" href="https://en.wikipedia.org/wiki/Database_normalization">normalization</a>.  The page
+also shows common pitfalls if you do not normalize your schema.</p>
+</section>
+<section id="write-ahead-logging">
+<span id="wal"></span><h2>Write Ahead Logging<a class="headerlink" href="#write-ahead-logging" title="Link to this heading"></a></h2>
+<p>SQLite has <a class="reference external" href="https://sqlite.org/wal.html">write ahead logging</a> which has several benefits, but
+also some drawbacks as the page documents.  WAL mode is off by
+default. Use <a class="reference internal" href="bestpractice.html"><span class="doc">best practice</span></a> to automatically
+enable it for all connections.</p>
+<p>Note that if wal mode can’t be set (eg the database is in memory or
+temporary) then the attempt to set wal mode will be ignored.  It is
+also harmless to call functions like
+<a class="reference internal" href="connection.html#apsw.Connection.wal_autocheckpoint" title="apsw.Connection.wal_autocheckpoint"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.wal_autocheckpoint()</span></code></a> on connections that are not in
+wal mode.</p>
+<p>If you write your own <a class="reference internal" href="vfs.html"><span class="doc">VFS</span></a>, then inheriting from an
+existing VFS that supports WAL will make your VFS support the extra
+WAL methods too.</p>
 </section>
 <section id="customizing-connections">
 <span id="customizing-connection-cursor"></span><h2>Customizing Connections<a class="headerlink" href="#customizing-connections" title="Link to this heading"></a></h2>
@@ -299,77 +376,11 @@ returned rows:</p>
 <h2>Customizing Cursors<a class="headerlink" href="#customizing-cursors" title="Link to this heading"></a></h2>
 <p>You can customize the behaviour of cursors.  An example would be
 wanting a <a class="reference internal" href="dbapi.html#rowcount"><span class="std std-ref">rowcount</span></a> or batching returned rows.
-(These don't make any sense with SQLite but the desire may be to make
+(These don’t make any sense with SQLite but the desire may be to make
 the code source compatible with other database drivers).</p>
 <p>Set <a class="reference internal" href="connection.html#apsw.Connection.cursor_factory" title="apsw.Connection.cursor_factory"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Connection.cursor_factory</span></code></a> to any callable, which will be
 called with the connection as the only parameter, and return the
 object to use as a cursor.</p>
-<p>For example instead of returning rows as tuples, we can return them as
-dictionaries using a <a class="reference internal" href="execution.html#rowtracer"><span class="std std-ref">row tracer</span></a> with
-<a class="reference internal" href="cursor.html#apsw.Cursor.get_description" title="apsw.Cursor.get_description"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.get_description()</span></code></a>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">dict_row</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">row</span><span class="p">):</span>
-  <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">row</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">get_description</span><span class="p">())}</span>
-
-<span class="k">def</span> <span class="nf">my_factory</span><span class="p">(</span><span class="n">connection</span><span class="p">):</span>
-  <span class="n">cursor</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">(</span><span class="n">connection</span><span class="p">)</span>
-  <span class="n">cursor</span><span class="o">.</span><span class="n">row_trace</span> <span class="o">=</span> <span class="n">dict_row</span>
-  <span class="k">return</span> <span class="n">cursor</span>
-
-<span class="n">connection</span><span class="o">.</span><span class="n">cursor_factory</span> <span class="o">=</span> <span class="n">my_factory</span>
-</pre></div>
-</div>
-</section>
-<section id="busy-handling">
-<span id="busyhandling"></span><h2>Busy handling<a class="headerlink" href="#busy-handling" title="Link to this heading"></a></h2>
-<p>SQLite uses locks to coordinate access to the database by multiple
-connections (within the same process or in a different process).  The
-general goal is to have the locks be as lax as possible (allowing
-concurrency) and when using more restrictive locks to keep them for as
-short a time as possible.  See the <a class="reference external" href="https://sqlite.org/lockingv3.html">SQLite documentation</a> for more details.</p>
-<p>By default you will get a <a class="reference internal" href="exceptions.html#apsw.BusyError" title="apsw.BusyError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">BusyError</span></code></a> if a lock cannot be
-acquired.  You can set a <a class="reference internal" href="connection.html#apsw.Connection.set_busy_timeout" title="apsw.Connection.set_busy_timeout"><code class="xref py py-meth docutils literal notranslate"><span class="pre">timeout</span></code></a>
-which will keep retrying or a <a class="reference internal" href="connection.html#apsw.Connection.set_busy_handler" title="apsw.Connection.set_busy_handler"><code class="xref py py-meth docutils literal notranslate"><span class="pre">callback</span></code></a> where you decide what to do.</p>
-</section>
-<section id="database-schema">
-<h2>Database schema<a class="headerlink" href="#database-schema" title="Link to this heading"></a></h2>
-<p>When starting a new database, it can be quite difficult to decide what
-tables and fields to have and how to link them.  The technique used to
-design SQL schemas is called <a class="reference external" href="https://en.wikipedia.org/wiki/Database_normalization">normalization</a>.  The page
-also shows common pitfalls if you don't normalize your schema.</p>
-</section>
-<section id="write-ahead-logging">
-<span id="wal"></span><h2>Write Ahead Logging<a class="headerlink" href="#write-ahead-logging" title="Link to this heading"></a></h2>
-<p>SQLite 3.7 introduced <a class="reference external" href="https://sqlite.org/wal.html">write ahead logging</a> which has several benefits, but
-also some drawbacks as the page documents.  WAL mode is off by
-default.  In addition to turning it on manually for each database, you
-can also turn it on for all opened databases by using
-<a class="reference internal" href="apsw.html#apsw.connection_hooks" title="apsw.connection_hooks"><code class="xref py py-attr docutils literal notranslate"><span class="pre">connection_hooks</span></code></a>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">setwal</span><span class="p">(</span><span class="n">db</span><span class="p">):</span>
-    <span class="n">db</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;journal_mode&quot;</span><span class="p">,</span> <span class="s2">&quot;wal&quot;</span><span class="p">)</span>
-    <span class="c1"># custom auto checkpoint interval (use zero to disable)</span>
-    <span class="n">db</span><span class="o">.</span><span class="n">wal_autocheckpoint</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
-
-<span class="n">apsw</span><span class="o">.</span><span class="n">connection_hooks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">setwal</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Note that if wal mode can't be set (eg the database is in memory or
-temporary) then the attempt to set wal mode will be ignored.  The
-pragma will return the mode in effect.  It is also harmless to call
-functions like <a class="reference internal" href="connection.html#apsw.Connection.wal_autocheckpoint" title="apsw.Connection.wal_autocheckpoint"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.wal_autocheckpoint()</span></code></a> on connections
-that are not in wal mode.</p>
-<p>If you write your own VFS, then inheriting from an existing VFS that
-supports WAL will make your VFS support the extra WAL methods too.
-(Your VFS will point directly to the base methods - there is no
-indirect call via Python.)</p>
-</section>
-<section id="shared-cache-mode">
-<span id="sharedcache"></span><h2>Shared Cache Mode<a class="headerlink" href="#shared-cache-mode" title="Link to this heading"></a></h2>
-<p>SQLite supports a <a class="reference external" href="https://sqlite.org/sharedcache.html">shared cache mode</a> where multiple connections to
-the same database can share a cache instead of having their own.
-SQLite recommend that <a class="reference external" href="https://sqlite.org/sharedcache.html#use_of_shared_cache_is_discouraged">you do not use this mode</a>.</p>
-<p>If you do use it, be aware that <a class="reference internal" href="#busyhandling"><span class="std std-ref">busy handling</span></a> is
-very different, and that you are unlikely to save any memory or I/O
-compared to what Python programs usually do.</p>
 </section>
 </section>
 
@@ -385,7 +396,7 @@ compared to what Python programs usually do.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Oct 24, 2023.
+      <span class="lastupdated">Last updated on Nov 06, 2023.
       </span></p>
   </div>
 

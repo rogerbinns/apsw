@@ -22,7 +22,7 @@ other databases.  Consequently it does hide some of SQLite's nuances.
    functionality or are using your own code to deal with database
    independence rather than DBAPI.  Use :mod:`sqlite3` and DBAPI if
    your needs are simple, and you don't want to use SQLite specific
-   features.
+   features, and want to easily switch to other databases.
 
 
 What APSW does better
@@ -41,20 +41,24 @@ module:
 
 * APSW gives all functionality of SQLite including :ref:`virtual
   tables <virtualtables>`, :ref:`VFS`, :ref:`BLOB I/O <blobio>`,
-  :ref:`backups <backup>` and :meth:`file control
-  <Connection.file_control>`.
+  :ref:`backups <backup>`, :meth:`logging <apsw.ext.log_sqlite>`,  and
+  :meth:`file control <Connection.file_control>`.
+
+* APSW includes :mod:`apsw.bestpractice` which configures SQLite
+  for best performance, and catches common mistakes.
 
 * You can use the same :class:`Connection` across threads with APSW
   without needing any additional level of locking.  sqlite3 `requires
   <https://docs.python.org/3/library/sqlite3.html?highlight=sqlite#sqlite3.threadsafety>`__
   that the :class:`Connection` and any :class:`cursors <Cursor>` are
-  used in the same thread.  You can disable its checking, but unless
-  you are very careful with your own mutexes you will have a crash or
-  a deadlock.
+  used in the same thread.
 
-* APSW :ref:`build instructions <building>` show you how to include
-  SQLite statically in the extension, avoiding a dependency on system
-  SQLite.
+* APSW on :ref:`PyPI <pypi>` includes SQLite statically inside which
+  does not interfere with any system SQLite, so you have the latest
+  SQLite without disruptions.
+
+* If you don't use PyPI, APSW :ref:`build instructions <building>`
+  include extensive customisation options for SQLite.
 
 * **Nothing** happens behind your back. By default sqlite3 tries to
   manage transactions (for DBAPI compliance) by parsing your SQL for
@@ -151,7 +155,7 @@ module:
   :doc:`ext` provides accessing rows by column name, type conversion,
   getting query details etc.
 
-* APSW has an :ref:`apswtrace <apswtrace>` utility script that traces
+* APSW has an :ref:`trace <apswtrace>` utility script that traces
   execution and results in your code without having to modify it in
   any way.  It also outputs summary reports making it easy to see what
   your most time consuming queries are, which are most popular etc.
