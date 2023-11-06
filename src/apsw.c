@@ -72,6 +72,10 @@ API Reference
 #define SQLITE_MAX_ATTACHED 125
 #endif
 
+#ifndef SQLITE_MAX_MMAP_SIZE
+#define SQLITE_MAX_MMAP_SIZE 0x1000000000000LL
+#endif
+
 #ifndef APSW_NO_NDEBUG
 #define SQLITE_API static
 #define SQLITE_EXTERN static

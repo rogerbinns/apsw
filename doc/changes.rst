@@ -15,6 +15,10 @@ APSW changes by version
 
 Added virtual table :meth:`VTTable.Integrity` support.
 
+On 64 bit platforms with the amalgamation, `SQLITE_MAX_MMAP_SIZE
+<https://www.sqlite.org/mmap.html>`__ is set to 256 terabytes.
+SQLite's default limit is 2GB.  (:issue:`491`)`
+
 3.43.2.0
 ========
 
