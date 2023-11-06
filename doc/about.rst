@@ -103,7 +103,7 @@ Python versions
 APSW supports `all supported Python versions
 <https://devguide.python.org/versions/>`__, including versions under
 development.  Once a Python release goes end of life, there will be
-one more APSW release supporting that version of Python.
+one final APSW release supporting that version of Python.
 
 .. list-table:: Last APSW release
   :header-rows: 1
