@@ -8,7 +8,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-       os: [ubuntu-22.04, windows-2022, macos-11]
+       os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
       - uses: actions/checkout@v4
@@ -29,6 +29,9 @@ jobs:
 
   build_binary_qemu:
       runs-on: ubuntu-latest
+      strategy:
+        matrix:
+          arch: [aarch64]
 
       steps:
         - uses: actions/checkout@v4
@@ -42,7 +45,7 @@ jobs:
           uses: pypa/cibuildwheel@v2.16
           env:
             CIBW_SKIP: pp*
-            CIBW_ARCHS_LINUX: aarch64
+            CIBW_ARCHS_LINUX: ${{ matrix.arch }}
             CIBW_PROJECT_REQUIRES_PYTHON: ">= 3.10"
             CIBW_BEFORE_BUILD: python -c "import shutil ; shutil.copyfile('tools/setup-pypi.cfg','setup.apsw')"
             CIBW_TEST_COMMAND: python -m apsw.tests -v
