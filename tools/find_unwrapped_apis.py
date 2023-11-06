@@ -91,6 +91,7 @@ nowrap = {
 
     # deprecated but not marked as such (v2+ exists)
     "sqlite3_trace",
+    "sqlite3_profile",
     "sqlite3_wal_checkpoint",
     "sqlite3_create_collation",
     "sqlite3_create_module",
