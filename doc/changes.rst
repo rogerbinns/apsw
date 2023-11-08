@@ -10,6 +10,12 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+next
+====
+
+Added :func:`apsw.ext.result_string` to turn an result code into
+a string, taking into account if it is extended or not.
+
 3.44.0.0
 ========
 

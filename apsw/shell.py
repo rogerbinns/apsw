@@ -2098,7 +2098,7 @@ Enter ".help" for instructions
 
     def log_handler(self, code, message):
         "Called with SQLite log messages when logging is ON"
-        code = f"( { code } - { apsw.mapping_result_codes.get(code, 'unknown') } ) "
+        code = f"( { code } - { apsw.ext.result_string(code) } ) "
         self.write_error(code + message + "\n")
 
     def command_log(self, cmd):
