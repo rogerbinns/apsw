@@ -41,6 +41,14 @@ except ImportError:
         return s in _keywords
 
 
+def result_string(code: int) -> str:
+    """Turns a result or extended result code into a string.
+    The appropriate mapping based on the value is used."""
+    if code < 256:
+        return apsw.mapping_result_codes.get(code, str(code))
+    return apsw.mapping_extended_result_codes.get(code, str(code))
+
+
 class DataClassRowFactory:
     """Returns each row as a :mod:`dataclass <dataclasses>`, accessible by column name.
 
