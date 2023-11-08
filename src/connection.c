@@ -4383,7 +4383,9 @@ static PyObject *formatsqlvalue(PyObject *Py_UNUSED(self), PyObject *value);
 
   Issues the pragma (with the value if supplied) and returns the result with
   :attr:`the least amount of structure <Cursor.get>`.  For example
-  :code:`pragma("user_version")` will return just the number.
+  :code:`pragma("user_version")` will return just the number, while
+  :code:`pragma("journal_mode", "WAL")` will return the journal mode
+  now in effect.
 
   Pragmas do not support bindings, so this method is a convenient
   alternative to composing SQL text.
