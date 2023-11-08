@@ -1205,7 +1205,7 @@ def make_virtual_module(db: apsw.Connection,
                 return v  # type: ignore[no-any-return]
 
             def _Column_repr_invalid(self, which: int) -> apsw.SQLiteValue:
-                v = self._Column_get(which) # type: ignore[attr-defined]
+                v = self._Column_get(which)  # type: ignore[attr-defined]
                 return v if v is None or isinstance(v, (int, float, str, bytes)) else repr(v)
 
             def _Column_By_Attr(self, which: int) -> apsw.SQLiteValue:
