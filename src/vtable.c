@@ -757,7 +757,6 @@ static PyTypeObject SqliteIndexInfoType = {
         .tp_name = "apsw.IndexInfo",
     .tp_doc = IndexInfo_class_DOC,
     .tp_basicsize = sizeof(SqliteIndexInfo),
-    .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_getset = SqliteIndexInfo_getsetters,
     .tp_methods = SqliteIndexInfo_methods,
