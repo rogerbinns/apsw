@@ -482,7 +482,7 @@ class APSW(unittest.TestCase):
         for name in "Connection", "Cursor", "Blob", "Backup", "zeroblob", "VFS", "VFSFile", "URIFilename":
             self.assertTrue(hasattr(apsw, name), "expected name apsw." + name)
 
-        for name in "Blob", "Backup":
+        for name in "Blob", "Backup", "FTS5Tokenizer", "IndexInfo":
             self.assertRaisesRegex(TypeError, "cannot create .* instances", getattr(apsw, name))
 
     def testConnection(self):

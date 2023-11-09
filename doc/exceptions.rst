@@ -156,6 +156,10 @@ The following exceptions happen when APSW detects various problems.
 
   The VFS file is closed so the operation cannot be performed.
 
+.. exception:: NoFTS5Error
+
+  The FTS5 extension is not present in SQLite.
+
 SQLite Exceptions
 =================
 

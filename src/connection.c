@@ -69,6 +69,8 @@ struct Connection
 
   struct StatementCache *stmtcache; /* prepared statement cache */
 
+  fts5_api *fts5_api_cached;
+
   PyObject *dependents; /* tracking cursors & blobs etc as weakrefs belonging to this connection */
 
   PyObject *cursor_factory;
@@ -364,6 +366,7 @@ Connection_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSE
     self->inuse = 0;
     self->dependents = PyList_New(0);
     self->stmtcache = 0;
+    self->fts5_api_cached = 0;
     self->busyhandler = 0;
     self->rollbackhook = 0;
     self->profile = 0;
@@ -5109,6 +5112,59 @@ Connection_is_interrupted(Connection *self)
   return Py_NewRef(sqlite3_is_interrupted(self->db) ? Py_True : Py_False);
 }
 
+/* done this way here to keep doc generation simple */
+#include "fts.c"
+
+/** .. method:: fts5_tokenizer(name: str) -> apsw.FTS5Tokenizer
+
+  Returns the named tokenizer.
+*/
+static PyObject *
+Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  const char *name = NULL;
+
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  {
+    Connection_fts5_tokenizer_CHECK;
+    ARG_PROLOG(1, Connection_fts5_tokenizer_KWNAMES);
+    ARG_MANDATORY ARG_str(name);
+    ARG_EPILOG(NULL, Connection_fts5_tokenizer_USAGE, );
+  }
+
+  fts5_api *api = Connection_fts5_api(self);
+  if (!api)
+    return NULL;
+  fts5_tokenizer tokenizer;
+  void *userdata;
+  int res = api->xFindTokenizer(
+      api,
+      name,
+      &userdata,
+      &tokenizer);
+  if (res != SQLITE_OK)
+  {
+    SET_EXC(res, NULL);
+    return NULL;
+  }
+
+  APSWFTS5Tokenizer *tok = (APSWFTS5Tokenizer *)_PyObject_New(&APSWFTS5TokenizerType);
+  if (!tok)
+    return NULL;
+  tok->db = (Connection *)Py_NewRef(self);
+  tok->name = apsw_strdup(name);
+  tok->tokenizer = tokenizer;
+  tok->userdata = userdata;
+  if (!tok->name)
+  {
+    APSWFTS5TokenizerType.tp_dealloc((PyObject *)tok);
+    return NULL;
+  }
+  return (PyObject *)tok;
+}
+
 static PyGetSetDef Connection_getseters[] = {
     /* name getter setter doc closure */
     {"filename",
@@ -5286,6 +5342,7 @@ static PyMethodDef Connection_methods[] = {
     {"vtab_on_conflict", (PyCFunction)Connection_vtab_on_conflict, METH_NOARGS, Connection_vtab_on_conflict_DOC},
     {"pragma", (PyCFunction)Connection_pragma, METH_FASTCALL | METH_KEYWORDS, Connection_pragma_DOC},
     {"read", (PyCFunction)Connection_read, METH_FASTCALL | METH_KEYWORDS, Connection_read_DOC},
+    {"fts5_tokenizer", (PyCFunction)Connection_fts5_tokenizer, METH_FASTCALL | METH_KEYWORDS, Connection_fts5_tokenizer_DOC},
 #ifndef APSW_OMIT_OLD_NAMES
     {Connection_set_busy_timeout_OLDNAME, (PyCFunction)Connection_set_busy_timeout, METH_FASTCALL | METH_KEYWORDS,
      Connection_set_busy_timeout_OLDDOC},

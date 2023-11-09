@@ -14,6 +14,7 @@ doc/blob.rst
 doc/backup.rst
 doc/apsw.rst
 doc/vtable.rst
+doc/fts.rst
 doc/typing.rstgen
 doc/renames.rstgen
 doc/docdb.json
