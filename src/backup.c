@@ -51,7 +51,7 @@ come back and copy those changes too until the backup is complete.
   You create a backup instance by calling :meth:`Connection.backup`.
 */
 
-struct APSWBackup
+typedef struct APSWBackup
 {
   PyObject_HEAD
       Connection *dest;
@@ -60,9 +60,7 @@ struct APSWBackup
   PyObject *done;
   int inuse;
   PyObject *weakreflist;
-};
-
-typedef struct APSWBackup APSWBackup;
+} APSWBackup;
 
 static void
 APSWBackup_init(APSWBackup *self, Connection *dest, Connection *source, sqlite3_backup *backup)
@@ -384,7 +382,7 @@ static PyTypeObject APSWBackupType =
             .tp_name = "apsw.Backup",
         .tp_basicsize = sizeof(APSWBackup),
         .tp_dealloc = (destructor)APSWBackup_dealloc,
-        .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+        .tp_flags = Py_TPFLAGS_DEFAULT,
         .tp_doc = Backup_class_DOC,
         .tp_weaklistoffset = offsetof(APSWBackup, weakreflist),
         .tp_methods = backup_methods,
