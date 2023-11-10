@@ -26,7 +26,8 @@ def generate(options):
         "-DAPSW_USE_SQLITE_AMALGAMATION",
         "-DAPSW_USE_SQLITE_CONFIG",
         "-Isqlite3",
-        "-Isrc"
+        "-Isrc",
+        "-DSQLITE_ENABLE_FTS5",
     ])
 
     out = []
@@ -34,7 +35,7 @@ def generate(options):
         out.append({
             "directory": os.getcwd(),
             "file": f,
-            "arguments": cmd+["-c", f]
+            "arguments": cmd+["-c", "src/apsw.c"]
         })
 
     print(json.dumps(out, indent=2))
