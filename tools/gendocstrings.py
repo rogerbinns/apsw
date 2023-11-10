@@ -57,6 +57,7 @@ def sqlite_links():
         f.flush()
 
         db = apsw.Connection(f.name)
+        db.execute(pathlib.Path(__file__).with_name("tocupdate.sql").read_text())
 
         funclist = {}
         consts = collections.defaultdict(lambda: copy.deepcopy({"vars": []}))

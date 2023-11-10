@@ -42,6 +42,7 @@ with tempfile.NamedTemporaryFile() as f:
     f.flush()
 
     db = apsw.Connection(f.name)
+    db.execute(pathlib.Path(__file__).with_name("tocupdate.sql").read_text())
 
     funclist = {}
     consts = collections.defaultdict(lambda: copy.deepcopy({"vars": []}))
@@ -82,7 +83,7 @@ def do_mappings():
         lookfor = set(consts[desc]["vars"])
 
         for v in lookfor:
-            if v not in mappings[map] and v not in {"SQLITE_TRACE"}:
+            if v not in mappings[map]:
                 print("Mapping", map, "is missing", v)
                 shouldexit = True
         if shouldexit:

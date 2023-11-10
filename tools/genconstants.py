@@ -5,6 +5,7 @@ from __future__ import annotations
 import sys
 import tempfile
 import urllib.request
+import pathlib
 
 import apsw
 import apsw.ext
@@ -49,10 +50,8 @@ title_to_mapping = {
     "Virtual Table Constraint Operator Codes": "bestindex_constraints",
     "Virtual Table Scan Flags": "virtual_table_scan_flags",
     "Win32 Directory Types": None,
+    "FTS5 Tokenize Reason": "fts5_tokenize_reason",
 }
-
-extras = {"Authorizer Return Codes": ["SQLITE_OK"], "Conflict resolution modes": ["SQLITE_IGNORE", "SQLITE_ABORT"]}
-remove = {"SQL Trace Event Codes": ["SQLITE_TRACE"]}
 
 base_sqlite_url = "https://sqlite.org/"
 with tempfile.NamedTemporaryFile() as f:
@@ -60,6 +59,7 @@ with tempfile.NamedTemporaryFile() as f:
     f.flush()
 
     db = apsw.Connection(f.name)
+    db.execute(pathlib.Path(__file__).with_name("tocupdate.sql").read_text())
     db.row_trace = apsw.ext.DataClassRowFactory(dataclass_kwargs={"frozen": True})
 
     constants: dict[str, list[str]] = {}
@@ -68,11 +68,10 @@ with tempfile.NamedTemporaryFile() as f:
 
     for row in db.execute("select * from toc where type='constant' order by title, name"):
         if row.title != cur_mapping_title:
-            constants[row.title] = extras.get(row.title, [])
+            constants[row.title] = []
             cur_mapping_title = row.title
         assert row.name not in constants[row.title]
-        if row.name not in remove.get(row.title, []):
-            constants[row.title].append(row.name)
+        constants[row.title].append(row.name)
 
 unknown = {title for title in constants if title not in title_to_mapping}
 if unknown:
