@@ -1553,6 +1553,17 @@
 "\n" \
 "Calls: `sqlite3_filename_wal <https://sqlite.org/c3ref/filename_database.html>`__\n" 
 
+#define  Connection_fts5_tokenizer_DOC "fts5_tokenizer($self,name)\n--\n\nConnection.fts5_tokenizer(name: str) -> apsw.FTS5Tokenizer\n\n" \
+"Returns the named tokenizer.\n" 
+
+#define Connection_fts5_tokenizer_KWNAMES "name"
+#define Connection_fts5_tokenizer_USAGE "Connection.fts5_tokenizer(name: str) -> apsw.FTS5Tokenizer"
+
+#define Connection_fts5_tokenizer_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(name), const char *)); \
+} while(0)
+
+
 #define  Connection_get_autocommit_DOC "get_autocommit($self)\n--\n\nConnection.get_autocommit() -> bool\n\n" \
 "Returns if the Connection is in auto commit mode (ie not in a transaction).\n" \
 "\n" \
@@ -1727,7 +1738,9 @@
 #define  Connection_pragma_DOC "pragma($self,name,value=None)\n--\n\nConnection.pragma(name: str, value: Optional[SQLiteValue] = None) -> Any\n\n" \
 "Issues the pragma (with the value if supplied) and returns the result with\n" \
 ":attr:`the least amount of structure <Cursor.get>`.  For example\n" \
-":code:`pragma(\"user_version\")` will return just the number.\n" \
+":code:`pragma(\"user_version\")` will return just the number, while\n" \
+":code:`pragma(\"journal_mode\", \"WAL\")` will return the journal mode\n" \
+"now in effect.\n" \
 "\n" \
 "Pragmas do not support bindings, so this method is a convenient\n" \
 "alternative to composing SQL text.\n" \
@@ -2639,6 +2652,21 @@
 
 #define Cursor_set_row_trace_OLDNAME "setrowtrace"
 #define Cursor_set_row_trace_OLDDOC Cursor_set_row_trace_USAGE "\n(Old less clear name setrowtrace)"
+
+#define  FTS5Tokenizer_call_DOC "__call__($self,utf8,*,include_offsets=True)\n--\n\nFTS5Tokenizer.__call__(utf8: bytes, *, include_offsets: bool = True) -> list\n\n" \
+"Do the tokenization\n" 
+
+#define FTS5Tokenizer_call_KWNAMES "utf8", "include_offsets"
+#define FTS5Tokenizer_call_USAGE "FTS5Tokenizer.__call__(utf8: bytes, *, include_offsets: bool = True) -> list"
+
+#define FTS5Tokenizer_call_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(utf8), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(include_offsets), int)); \
+  assert(include_offsets == 1); \
+} while(0)
+
+
+#define  FTS5Tokenizer_class_DOC "Wraps a tokenizer\n" 
 
 #define  IndexInfo_class_DOC "IndexInfo represents the `sqlite3_index_info\n" \
 "<https://www.sqlite.org/c3ref/index_info.html>`__ and associated\n" \
@@ -3588,6 +3616,8 @@
 "Python.  Examples include not having enough flags when opening a\n" \
 "connection (eg not including a READ or WRITE flag), or out of spec\n" \
 "such as registering a function with more than 127 parameters.\n" 
+
+#define  NoFTS5Error_exc_DOC "The FTS5 extension is not present in SQLite.\n" 
 
 #define  NoLFSError_exc_DOC "`SQLITE_NOLFS <https://sqlite.org/rescode.html#nolfs>`__.  SQLite\n" \
 "has attempted to use a feature not supported by the operating system\n" \

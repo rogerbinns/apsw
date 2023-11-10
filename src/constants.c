@@ -82,9 +82,9 @@ add_apsw_constants(PyObject *module)
     /* Authorizer Return Codes */
     the_dict = Py_BuildValue(
         "{siissiissiis}",
-        "SQLITE_OK", SQLITE_OK, SQLITE_OK, "SQLITE_OK",
         "SQLITE_DENY", SQLITE_DENY, SQLITE_DENY, "SQLITE_DENY",
-        "SQLITE_IGNORE", SQLITE_IGNORE, SQLITE_IGNORE, "SQLITE_IGNORE");
+        "SQLITE_IGNORE", SQLITE_IGNORE, SQLITE_IGNORE, "SQLITE_IGNORE",
+        "SQLITE_OK", SQLITE_OK, SQLITE_OK, "SQLITE_OK");
     if (!the_dict)
     {
         assert(PyErr_Occurred());
@@ -162,9 +162,9 @@ add_apsw_constants(PyObject *module)
     /* Conflict resolution modes */
     the_dict = Py_BuildValue(
         "{siissiissiissiissiis}",
-        "SQLITE_IGNORE", SQLITE_IGNORE, SQLITE_IGNORE, "SQLITE_IGNORE",
         "SQLITE_ABORT", SQLITE_ABORT, SQLITE_ABORT, "SQLITE_ABORT",
         "SQLITE_FAIL", SQLITE_FAIL, SQLITE_FAIL, "SQLITE_FAIL",
+        "SQLITE_IGNORE", SQLITE_IGNORE, SQLITE_IGNORE, "SQLITE_IGNORE",
         "SQLITE_REPLACE", SQLITE_REPLACE, SQLITE_REPLACE, "SQLITE_REPLACE",
         "SQLITE_ROLLBACK", SQLITE_ROLLBACK, SQLITE_ROLLBACK, "SQLITE_ROLLBACK");
     if (!the_dict)
@@ -331,6 +331,25 @@ add_apsw_constants(PyObject *module)
         return -1;
     }
     if (PyModule_AddObject(module, "mapping_extended_result_codes", the_dict))
+    {
+        assert(PyErr_Occurred());
+        Py_DECREF(the_dict);
+        return -1;
+    }
+
+    /* FTS5 Tokenize Reason */
+    the_dict = Py_BuildValue(
+        "{siissiissiissiis}",
+        "FTS5_TOKENIZE_AUX", FTS5_TOKENIZE_AUX, FTS5_TOKENIZE_AUX, "FTS5_TOKENIZE_AUX",
+        "FTS5_TOKENIZE_DOCUMENT", FTS5_TOKENIZE_DOCUMENT, FTS5_TOKENIZE_DOCUMENT, "FTS5_TOKENIZE_DOCUMENT",
+        "FTS5_TOKENIZE_PREFIX", FTS5_TOKENIZE_PREFIX, FTS5_TOKENIZE_PREFIX, "FTS5_TOKENIZE_PREFIX",
+        "FTS5_TOKENIZE_QUERY", FTS5_TOKENIZE_QUERY, FTS5_TOKENIZE_QUERY, "FTS5_TOKENIZE_QUERY");
+    if (!the_dict)
+    {
+        assert(PyErr_Occurred());
+        return -1;
+    }
+    if (PyModule_AddObject(module, "mapping_fts5_tokenize_reason", the_dict))
     {
         assert(PyErr_Occurred());
         Py_DECREF(the_dict);
@@ -780,7 +799,11 @@ add_apsw_constants(PyObject *module)
     }
 
     if (
-        PyModule_AddIntConstant(module, "SQLITE_ABORT", SQLITE_ABORT)
+        PyModule_AddIntConstant(module, "FTS5_TOKENIZE_AUX", FTS5_TOKENIZE_AUX)
+        || PyModule_AddIntConstant(module, "FTS5_TOKENIZE_DOCUMENT", FTS5_TOKENIZE_DOCUMENT)
+        || PyModule_AddIntConstant(module, "FTS5_TOKENIZE_PREFIX", FTS5_TOKENIZE_PREFIX)
+        || PyModule_AddIntConstant(module, "FTS5_TOKENIZE_QUERY", FTS5_TOKENIZE_QUERY)
+        || PyModule_AddIntConstant(module, "SQLITE_ABORT", SQLITE_ABORT)
         || PyModule_AddIntConstant(module, "SQLITE_ABORT_ROLLBACK", SQLITE_ABORT_ROLLBACK)
         || PyModule_AddIntConstant(module, "SQLITE_ACCESS_EXISTS", SQLITE_ACCESS_EXISTS)
         || PyModule_AddIntConstant(module, "SQLITE_ACCESS_READ", SQLITE_ACCESS_READ)

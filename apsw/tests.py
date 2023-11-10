@@ -5375,7 +5375,7 @@ class APSW(unittest.TestCase):
                 )
         # not further checked
         if name.split("_")[0] in ("ZeroBlobBind", "APSWVFS", "APSWVFSFile", "APSWBuffer", "FunctionCBInfo",
-                                  "apswurifilename"):
+                                  "apswurifilename", "APSWFTS5Tokenizer"):
             return
 
         checks = {
