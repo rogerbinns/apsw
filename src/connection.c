@@ -70,6 +70,7 @@ struct Connection
   struct StatementCache *stmtcache; /* prepared statement cache */
 
   fts5_api *fts5_api_cached;
+  int tokenizer_serial;
 
   PyObject *dependents; /* tracking cursors & blobs etc as weakrefs belonging to this connection */
 
@@ -367,6 +368,7 @@ Connection_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSE
     self->dependents = PyList_New(0);
     self->stmtcache = 0;
     self->fts5_api_cached = 0;
+    self->tokenizer_serial = 1;
     self->busyhandler = 0;
     self->rollbackhook = 0;
     self->profile = 0;
@@ -5134,30 +5136,15 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
     ARG_EPILOG(NULL, Connection_fts5_tokenizer_USAGE, );
   }
 
-  fts5_api *api = Connection_fts5_api(self);
-  if (!api)
-    return NULL;
-  fts5_tokenizer tokenizer;
-  void *userdata;
-  int res = api->xFindTokenizer(
-      api,
-      name,
-      &userdata,
-      &tokenizer);
-  if (res != SQLITE_OK)
-  {
-    SET_EXC(res, NULL);
-    return NULL;
-  }
-
   APSWFTS5Tokenizer *tok = (APSWFTS5Tokenizer *)_PyObject_New(&APSWFTS5TokenizerType);
   if (!tok)
     return NULL;
   tok->db = (Connection *)Py_NewRef(self);
   tok->name = apsw_strdup(name);
-  tok->tokenizer = tokenizer;
-  tok->userdata = userdata;
-  if (!tok->name)
+  memset(&tok->tokenizer, 0, sizeof(tok->tokenizer));
+  tok->userdata = NULL;
+  tok->tokenizer_serial = 0;
+  if (!tok->name || 0 != Connection_tokenizer_refresh(tok))
   {
     APSWFTS5TokenizerType.tp_dealloc((PyObject *)tok);
     return NULL;
