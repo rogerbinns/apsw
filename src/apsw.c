@@ -81,10 +81,6 @@ API Reference
 #define SQLITE_EXTERN static
 #endif
 
-#ifdef SQLITE_DEBUG
-#define SQLITE_ENABLE_API_ARMOR 1
-#endif
-
 #include "sqlite3.c"
 
 /* Fight with SQLite over ndebug */
