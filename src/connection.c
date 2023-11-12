@@ -5141,6 +5141,7 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
     return NULL;
   tok->db = (Connection *)Py_NewRef(self);
   tok->name = apsw_strdup(name);
+  tok->vectorcall = (vectorcallfunc)APSWFTS5Tokenizer_call;
   memset(&tok->tokenizer, 0, sizeof(tok->tokenizer));
   tok->userdata = NULL;
   tok->tokenizer_serial = 0;
