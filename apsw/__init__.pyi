@@ -2106,13 +2106,58 @@ class Cursor:
 
 @final
 class FTS5Tokenizer:
-    """Wraps a tokenizer"""
-    def __call__(self, utf8: bytes, reason: int, args: list[str] | None = None, *, include_offsets: bool = True) -> list:
-        """Does a tokenization.
+    """Wraps a registered tokenizer."""
+    def __call__(self, utf8: bytes, reason: int, args: list[str] | None = None, *, include_offsets: bool = True, include_colocated: bool = True) -> list:
+        """Does a tokenization, returning a list of the results.  If you have no interest in
+        token offsets or colocated tokens then they can be omitted from the results.
 
         :param utf8: Input bytes
-        :param reason: Reason :data:`apsw.mapping_fts5_tokenize_reason` flag
-        :param args: Arguments to the tokenizer"""
+        :param reason: :data:`Reason <apsw.mapping_fts5_tokenize_reason>` flag
+        :param args: Arguments to the tokenizer
+        :param include_offsets: Returned list includes offsets into utf8 for each token
+        :param include_colocated: Returned list can include colocated tokens
+
+        Example outputs
+        ---------------
+
+        Tokenizing :code:`"first place"` where :code:`1st` has been provided as a colocated
+        token for :code:`first`.
+
+        (**Default**) include_offsets **True**, include_colocated **True**
+
+          .. code-block:: python
+
+                [
+                  (0, 5, "first", "1st"),
+                  (6, 11, "place"),
+                ]
+
+        include_offsets **False**, include_colocated **True**
+
+          .. code-block:: python
+
+                [
+                  ("first", "1st"),
+                  "place",
+                ]
+
+        include_offsets **True**, include_colocated **False**
+
+          .. code-block:: python
+
+                [
+                  (0, 5, "first"),
+                  (6, 11, "place"),
+                ]
+
+        include_offsets **False**, include_colocated **False**
+
+          .. code-block:: python
+
+                [
+                  "first",
+                  "place",
+                ]"""
         ...
 
 @final
