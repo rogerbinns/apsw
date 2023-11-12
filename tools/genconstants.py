@@ -50,8 +50,8 @@ title_to_mapping = {
     "Virtual Table Constraint Operator Codes": "bestindex_constraints",
     "Virtual Table Scan Flags": "virtual_table_scan_flags",
     "Win32 Directory Types": None,
-    "FTS5 Tokenize Reason": "fts5_tokenize_reason#custom_tokenizers",
     "FTS5 Token Flag": "fts5_token_flags",
+    "FTS5 Tokenize Reason": "fts5_tokenize_reason",
 }
 
 base_sqlite_url = "https://sqlite.org/"
