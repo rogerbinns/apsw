@@ -6,11 +6,13 @@
 
 /* msvc doesn't support vla, so do it the hard way */
 #if defined(_MSC_VER) || defined(__STDC_NO_VLA__)
-#define VLA_PYO(name, size) \
-  PyObject **name = alloca(sizeof(PyObject *) * (size))
+#define VLA(name, size, type) \
+  type *name = alloca(sizeof(type) * (size))
 #else
-#define VLA_PYO(name, size) PyObject *name[size]
+#define VLA(name, size, type) type name[size]
 #endif
+
+#define VLA_PYO(name, size) VLA(name, size, PyObject *)
 
 /* These macros are to address several issues:
 

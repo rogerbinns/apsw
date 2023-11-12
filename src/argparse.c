@@ -171,6 +171,39 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
             ARG_str(varname);                  \
     } while (0)
 
+#define ARG_optional_list_str(varname)         \
+    do                                         \
+    {                                          \
+        if (Py_IsNone(useargs[argp_optindex])) \
+        {                                      \
+            varname = NULL;                    \
+            argp_optindex++;                   \
+        }                                      \
+        else                                   \
+            ARG_list_str(varname);             \
+    } while (0)
+
+#define ARG_list_str(varname)                                                                                                                   \
+    do                                                                                                                                          \
+    {                                                                                                                                           \
+        if (!PyList_Check(useargs[argp_optindex]))                                                                                              \
+        {                                                                                                                                       \
+            PyErr_Format(PyExc_TypeError, "Expected a list");                                                                                   \
+            goto param_error;                                                                                                                   \
+        }                                                                                                                                       \
+        Py_ssize_t list_item_iter = 0;                                                                                                          \
+        for (; list_item_iter < PyList_GET_SIZE(useargs[argp_optindex]); list_item_iter++)                                                      \
+        {                                                                                                                                       \
+            if (!PyUnicode_Check(PyList_GET_ITEM(useargs[argp_optindex], list_item_iter)))                                                      \
+            {                                                                                                                                   \
+                PyErr_Format(PyExc_TypeError, "Expected list item %zd to be str, not %s", list_item_iter, Py_TypeName(useargs[argp_optindex])); \
+                goto param_error;                                                                                                               \
+            }                                                                                                                                   \
+        }                                                                                                                                       \
+        varname = useargs[argp_optindex];                                                                                                       \
+        argp_optindex++;                                                                                                                        \
+    } while (0)
+
 #define ARG_Callable(varname)                                                                                 \
     do                                                                                                        \
     {                                                                                                         \

@@ -2653,14 +2653,21 @@
 #define Cursor_set_row_trace_OLDNAME "setrowtrace"
 #define Cursor_set_row_trace_OLDDOC Cursor_set_row_trace_USAGE "\n(Old less clear name setrowtrace)"
 
-#define  FTS5Tokenizer_call_DOC "__call__($self,utf8,*,include_offsets=True)\n--\n\nFTS5Tokenizer.__call__(utf8: bytes, *, include_offsets: bool = True) -> list\n\n" \
-"Do the tokenization\n" 
+#define  FTS5Tokenizer_call_DOC "__call__($self,utf8,reason,args=None,*,include_offsets=True)\n--\n\nFTS5Tokenizer.__call__(utf8: bytes, reason: int, args: list[str] | None = None, *, include_offsets: bool = True) -> list\n\n" \
+"Does a tokenization.\n" \
+"\n" \
+":param utf8: Input bytes\n" \
+":param reason: Reason :data:`apsw.mapping_fts5_tokenize_reason` flag\n" \
+":param args: Arguments to the tokenizer\n" 
 
-#define FTS5Tokenizer_call_KWNAMES "utf8", "include_offsets"
-#define FTS5Tokenizer_call_USAGE "FTS5Tokenizer.__call__(utf8: bytes, *, include_offsets: bool = True) -> list"
+#define FTS5Tokenizer_call_KWNAMES "utf8", "reason", "args", "include_offsets"
+#define FTS5Tokenizer_call_USAGE "FTS5Tokenizer.__call__(utf8: bytes, reason: int, args: list[str] | None = None, *, include_offsets: bool = True) -> list"
 
 #define FTS5Tokenizer_call_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(utf8), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(reason), int)); \
+  assert(__builtin_types_compatible_p(typeof(args), PyObject *)); \
+  assert(args == NULL); \
   assert(__builtin_types_compatible_p(typeof(include_offsets), int)); \
   assert(include_offsets == 1); \
 } while(0)

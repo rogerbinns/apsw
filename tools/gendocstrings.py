@@ -569,6 +569,13 @@ def do_argparse(item):
             if param["default"]:
                 breakpoint()
                 pass
+        elif param["type"] == "list[str] | None":
+            type = "PyObject *"
+            kind = "optional_list_str"
+            if param["default"]:
+                if param["default"] != "None":
+                    breakpoint()
+                default_check = f"{ pname } == NULL"
         elif callable_erasure(param["type"]) in {
                 "Optional[Callable]",
                 "Optional[RowTracer]",

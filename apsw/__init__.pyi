@@ -1325,6 +1325,10 @@ class Connection:
 
     Calls: `sqlite3_filename_wal <https://sqlite.org/c3ref/filename_database.html>`__"""
 
+    def fts5_tokenizer(self, name: str) -> FTS5Tokenizer:
+        """Returns the named tokenizer."""
+        ...
+
     def get_autocommit(self) -> bool:
         """Returns if the Connection is in auto commit mode (ie not in a transaction).
 
@@ -1453,7 +1457,9 @@ class Connection:
     def pragma(self, name: str, value: Optional[SQLiteValue] = None) -> Any:
         """Issues the pragma (with the value if supplied) and returns the result with
         :attr:`the least amount of structure <Cursor.get>`.  For example
-        :code:`pragma("user_version")` will return just the number.
+        :code:`pragma("user_version")` will return just the number, while
+        :code:`pragma("journal_mode", "WAL")` will return the journal mode
+        now in effect.
 
         Pragmas do not support bindings, so this method is a convenient
         alternative to composing SQL text.
@@ -2097,6 +2103,17 @@ class Cursor:
         ...
 
     setrowtrace = set_row_trace ## OLD-NAME
+
+@final
+class FTS5Tokenizer:
+    """Wraps a tokenizer"""
+    def __call__(self, utf8: bytes, reason: int, args: list[str] | None = None, *, include_offsets: bool = True) -> list:
+        """Does a tokenization.
+
+        :param utf8: Input bytes
+        :param reason: Reason :data:`apsw.mapping_fts5_tokenize_reason` flag
+        :param args: Arguments to the tokenizer"""
+        ...
 
 @final
 class IndexInfo:
@@ -3910,7 +3927,7 @@ mapping_authorizer_return_codes: dict[str | int, int | str]
 """Authorizer Return Codes mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_deny.html
 
-SQLITE_DENY SQLITE_IGNORE"""
+SQLITE_DENY SQLITE_IGNORE SQLITE_OK"""
 
 mapping_bestindex_constraints: dict[str | int, int | str]
 """Virtual Table Constraint Operator Codes mapping names to int and int to names.
@@ -3947,7 +3964,7 @@ mapping_conflict_resolution_modes: dict[str | int, int | str]
 """Conflict resolution modes mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_fail.html
 
-SQLITE_FAIL SQLITE_REPLACE SQLITE_ROLLBACK"""
+SQLITE_ABORT SQLITE_FAIL SQLITE_IGNORE SQLITE_REPLACE SQLITE_ROLLBACK"""
 
 mapping_db_config: dict[str | int, int | str]
 """Database Connection Configuration Options mapping names to int and int to names.
@@ -4048,6 +4065,19 @@ SQLITE_FCNTL_VFS_POINTER SQLITE_FCNTL_WAL_BLOCK
 SQLITE_FCNTL_WIN32_AV_RETRY SQLITE_FCNTL_WIN32_GET_HANDLE
 SQLITE_FCNTL_WIN32_SET_HANDLE SQLITE_FCNTL_ZIPVFS"""
 
+mapping_fts5_token_flag: dict[str | int, int | str]
+"""FTS5 Token Flag mapping names to int and int to names.
+Doc at https://sqlite.org/fts5.html
+
+FTS5_TOKEN_COLOCATED"""
+
+mapping_fts5_tokenize_reason: dict[str | int, int | str]
+"""FTS5 Tokenize Reason mapping names to int and int to names.
+Doc at https://sqlite.org/fts5.html
+
+FTS5_TOKENIZE_AUX FTS5_TOKENIZE_DOCUMENT FTS5_TOKENIZE_PREFIX
+FTS5_TOKENIZE_QUERY"""
+
 mapping_function_flags: dict[str | int, int | str]
 """Function Flags mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_deterministic.html
@@ -4132,7 +4162,7 @@ mapping_trace_codes: dict[str | int, int | str]
 """SQL Trace Event Codes mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_trace.html
 
-SQLITE_TRACE SQLITE_TRACE_CLOSE SQLITE_TRACE_PROFILE SQLITE_TRACE_ROW
+SQLITE_TRACE_CLOSE SQLITE_TRACE_PROFILE SQLITE_TRACE_ROW
 SQLITE_TRACE_STMT"""
 
 mapping_txn_state: dict[str | int, int | str]
@@ -4310,6 +4340,9 @@ class MisuseError(Error):
     Python.  Examples include not having enough flags when opening a
     connection (eg not including a READ or WRITE flag), or out of spec
     such as registering a function with more than 127 parameters."""
+
+class NoFTS5Error(Error):
+    """The FTS5 extension is not present in SQLite."""
 
 class NoLFSError(Error):
     """`SQLITE_NOLFS <https://sqlite.org/rescode.html#nolfs>`__.  SQLite
