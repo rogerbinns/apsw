@@ -9,8 +9,6 @@ import os
 import re
 import urllib.request
 import tempfile
-import collections
-import copy
 import json
 import pathlib
 
@@ -45,7 +43,7 @@ with tempfile.NamedTemporaryFile() as f:
     db.execute(pathlib.Path(__file__).with_name("tocupdate.sql").read_text())
 
     funclist = {}
-    consts = collections.defaultdict(lambda: copy.deepcopy({"vars": []}))
+    consts = {}
     const2page = {}
 
     for name, type, title, uri in db.execute("select name, type, title, uri from toc"):
@@ -53,8 +51,10 @@ with tempfile.NamedTemporaryFile() as f:
             funclist[name] = basesqurl + uri
         elif type == "constant":
             const2page[name] = basesqurl + uri
+            if title not in consts:
+                consts[title] = {"vars": []}
             consts[title]["vars"].append(name)
-            consts[title]["page"] = basesqurl + uri.split("#")[0]
+            consts[title]["page"] = basesqurl + (uri.split("#")[0] if "fts5" not in uri else uri)
 
 
 def do_mappings():
