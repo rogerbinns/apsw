@@ -337,6 +337,22 @@ add_apsw_constants(PyObject *module)
         return -1;
     }
 
+    /* FTS5 Token Flag */
+    the_dict = Py_BuildValue(
+        "{siis}",
+        "FTS5_TOKEN_COLOCATED", FTS5_TOKEN_COLOCATED, FTS5_TOKEN_COLOCATED, "FTS5_TOKEN_COLOCATED");
+    if (!the_dict)
+    {
+        assert(PyErr_Occurred());
+        return -1;
+    }
+    if (PyModule_AddObject(module, "mapping_fts5_token_flag", the_dict))
+    {
+        assert(PyErr_Occurred());
+        Py_DECREF(the_dict);
+        return -1;
+    }
+
     /* FTS5 Tokenize Reason */
     the_dict = Py_BuildValue(
         "{siissiissiissiis}",
@@ -803,6 +819,7 @@ add_apsw_constants(PyObject *module)
         || PyModule_AddIntConstant(module, "FTS5_TOKENIZE_DOCUMENT", FTS5_TOKENIZE_DOCUMENT)
         || PyModule_AddIntConstant(module, "FTS5_TOKENIZE_PREFIX", FTS5_TOKENIZE_PREFIX)
         || PyModule_AddIntConstant(module, "FTS5_TOKENIZE_QUERY", FTS5_TOKENIZE_QUERY)
+        || PyModule_AddIntConstant(module, "FTS5_TOKEN_COLOCATED", FTS5_TOKEN_COLOCATED)
         || PyModule_AddIntConstant(module, "SQLITE_ABORT", SQLITE_ABORT)
         || PyModule_AddIntConstant(module, "SQLITE_ABORT_ROLLBACK", SQLITE_ABORT_ROLLBACK)
         || PyModule_AddIntConstant(module, "SQLITE_ACCESS_EXISTS", SQLITE_ACCESS_EXISTS)

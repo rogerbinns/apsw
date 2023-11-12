@@ -80,13 +80,13 @@ dev-depends: ## pip installs packages useful for development (none are necessary
 	$(PYTHON) -m pip install -U --upgrade-strategy eager yapf mypy pdbpp coverage flake8
 
 # This is probably gnu make specific but only developers use this makefile
-$(GENDOCS): doc/%.rst: src/%.c tools/code2rst.py
+$(GENDOCS): doc/%.rst: src/%.c tools/code2rst.py  tools/tocupdate.sql
 	env PYTHONPATH=. $(PYTHON) tools/code2rst.py $(SQLITEVERSION) doc/docdb.json $< $@
 
-apsw/__init__.pyi src/apsw.docstrings: $(GENDOCS) tools/gendocstrings.py src/apswtypes.py
+apsw/__init__.pyi src/apsw.docstrings: $(GENDOCS) tools/gendocstrings.py src/apswtypes.py  tools/tocupdate.sql
 	env PYTHONPATH=. $(PYTHON) tools/gendocstrings.py doc/docdb.json src/apsw.docstrings
 
-src/constants.c: Makefile tools/genconstants.py src/apswversion.h
+src/constants.c: Makefile tools/genconstants.py src/apswversion.h tools/tocupdate.sql
 	-rm -f src/constants.c
 	env PYTHONPATH=. $(PYTHON) tools/genconstants.py > src/constants.c
 
