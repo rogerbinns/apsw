@@ -1487,14 +1487,14 @@ class APSW(unittest.TestCase):
                 try:
                     getattr(saved, name)(0)
                     1 / 0
-                except ValueError as e:
+                except apsw.InvalidContextError as e:
                     self.assertIn("IndexInfo is out of scope", str(e))
                 continue
             doc = inspect.getdoc(getattr(apsw.IndexInfo, name))
             try:
                 getattr(saved, name)
                 1 / 0
-            except ValueError as e:
+            except apsw.InvalidContextError as e:
                 self.assertIn("IndexInfo is out of scope", str(e))
 
             if "(Read-only)" in doc:
@@ -1502,7 +1502,7 @@ class APSW(unittest.TestCase):
             try:
                 setattr(saved, name, 7)
                 1 / 0
-            except ValueError as e:
+            except apsw.InvalidContextError as e:
                 self.assertIn("IndexInfo is out of scope", str(e))
 
         # error returns
@@ -1609,7 +1609,7 @@ class APSW(unittest.TestCase):
             (None, b'aabbcc', None, None))
 
         # vtab_config
-        self.assertRaises(ValueError, self.db.vtab_config, apsw.SQLITE_VTAB_CONSTRAINT_SUPPORT)
+        self.assertRaises(apsw.InvalidContextError, self.db.vtab_config, apsw.SQLITE_VTAB_CONSTRAINT_SUPPORT)
 
         def check():
             self.assertRaises(TypeError, self.db.vtab_config, "three")
@@ -1623,17 +1623,17 @@ class APSW(unittest.TestCase):
 
         Source.create_callback = check
         self.db.execute("create virtual table vtab_config using foo()")
-        self.assertRaises(ValueError, self.db.vtab_config, apsw.SQLITE_VTAB_CONSTRAINT_SUPPORT)
+        self.assertRaises(apsw.InvalidContextError, self.db.vtab_config, apsw.SQLITE_VTAB_CONSTRAINT_SUPPORT)
 
         # vtab_on_conflict
         self.db.execute("create virtual table vtab_on_conflict using foo()")
-        self.assertRaises(ValueError, self.db.vtab_on_conflict)
+        self.assertRaises(apsw.InvalidContextError, self.db.vtab_on_conflict)
         Source.bio_callback = Source.filter_callback = lambda *args: True
         Source.Cursor.max_row = 1
         for mode in ("ROLLBACK", "FAIL", "ABORT", "IGNORE", "REPLACE"):
             Source.expected_conflict = "SQLITE_" + mode
             self.db.execute(f"update or { mode } vtab_on_conflict set c0=7 where rowid=0")
-        self.assertRaises(ValueError, self.db.vtab_on_conflict)
+        self.assertRaises(apsw.InvalidContextError, self.db.vtab_on_conflict)
 
         # savepoints
         Source.Cursor.max_row = 20

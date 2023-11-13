@@ -3756,7 +3756,7 @@ Connection_vtab_config(Connection *self, PyObject *const *fast_args, Py_ssize_t 
   }
 
   if (!CALL_CHECK(xConnect))
-    return PyErr_Format(PyExc_ValueError, "You can only call vtab_config while in a virtual table Create/Connect call");
+    return PyErr_Format(ExcInvalidContext, "You can only call vtab_config while in a virtual table Create/Connect call");
 
   switch (op)
   {
@@ -3790,7 +3790,7 @@ Connection_vtab_on_conflict(Connection *self)
   CHECK_CLOSED(self, NULL);
 
   if (!CALL_CHECK(xUpdate))
-    return PyErr_Format(PyExc_ValueError, "You can only call vtab_on_conflict while in a virtual table Update call");
+    return PyErr_Format(ExcInvalidContext, "You can only call vtab_on_conflict while in a virtual table Update call");
 
   return PyLong_FromLong(sqlite3_vtab_on_conflict(self->db));
 }

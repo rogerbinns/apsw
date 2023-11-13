@@ -19,6 +19,7 @@ static PyObject *ExcVFSNotImplemented;   /* base vfs doesn't implement function 
 static PyObject *ExcVFSFileClosed;       /* attempted operation on closed file */
 static PyObject *ExcForkingViolation;    /* used object across a fork */
 static PyObject *ExcNoFTS5;              /* FTS5 not present */
+static PyObject *ExcInvalidContext;      /* stale  */
 
 static void make_exception(int res, sqlite3 *db);
 
@@ -165,7 +166,8 @@ static int init_exceptions(PyObject *m)
       {&ExcVFSNotImplemented, "VFSNotImplementedError", VFSNotImplementedError_exc_DOC},
       {&ExcVFSFileClosed, "VFSFileClosedError", VFSFileClosedError_exc_DOC},
       {&ExcForkingViolation, "ForkingViolationError", ForkingViolationError_exc_DOC},
-      {&ExcNoFTS5, "NoFTS5Error", NoFTS5Error_exc_DOC}};
+      {&ExcNoFTS5, "NoFTS5Error", NoFTS5Error_exc_DOC},
+      {&ExcInvalidContext, "InvalidContextError", InvalidContextError_exc_DOC}};
 
   /* PyModule_AddObject uses borrowed reference so we incref whatever
      we give to it, so we still have a copy to use */

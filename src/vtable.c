@@ -52,7 +52,7 @@ and a :class:`cursor <VTCursor>` that moves through a table.
   access members directly while needing to use get/set methods for array
   members.
 
-  You will get :exc:`ValueError` if you use the object outside of an
+  You will get :exc:`InvalidContextError` if you use the object outside of an
   BestIndex method.
 
   :meth:`apsw.ext.index_info_to_dict` provides a convenient
@@ -70,7 +70,7 @@ typedef struct SqliteIndexInfo
   {                                                                                              \
     if (!self->index_info)                                                                       \
     {                                                                                            \
-      PyErr_Format(PyExc_ValueError, "IndexInfo is out of scope (BestIndex call has finished)"); \
+      PyErr_Format(ExcInvalidContext, "IndexInfo is out of scope (BestIndex call has finished)"); \
       return ret;                                                                                \
     }                                                                                            \
   } while (0)

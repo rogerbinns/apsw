@@ -101,12 +101,12 @@ Connection_tokenizer_refresh(APSWFTS5Tokenizer *self)
 
   if (res != SQLITE_OK)
   {
-    PyErr_Format(PyExc_RuntimeError, "Tokenizer \"%s\" has been deleted", self->name);
+    PyErr_Format(ExcInvalidContext, "Tokenizer \"%s\" has been deleted", self->name);
     return -1;
   }
 
   assert(!(self->tokenizer == tokenizer && self->userdata == userdata));
-  PyErr_Format(PyExc_RuntimeError, "Tokenizer \"%s\" has been changed", self->name);
+  PyErr_Format(ExcInvalidContext, "Tokenizer \"%s\" has been changed", self->name);
   return -1;
 }
 
