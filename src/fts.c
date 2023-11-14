@@ -74,10 +74,7 @@ Connection_tokenizer_refresh(APSWFTS5Tokenizer *self)
   /* CHECK_USE not needed */
 
   if (self->tokenizer_serial == self->db->tokenizer_serial)
-  {
-    assert(self->tokenizer);
     return 0;
-  }
   fts5_api *api = Connection_fts5_api(self->db);
   if (!api)
     return -1;
@@ -119,7 +116,7 @@ Connection_tokenizer_refresh(APSWFTS5Tokenizer *self)
     return -1;
   }
 
-  assert(!(self->tokenizer == tokenizer && self->userdata == userdata));
+  assert(!(0==memcmp(&self->tokenizer, &tokenizer, sizeof(tokenizer)) && self->userdata == userdata));
   PyErr_Format(ExcInvalidContext, "Tokenizer \"%s\" has been changed", self->name);
   return -1;
 }
