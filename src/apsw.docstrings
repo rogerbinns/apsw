@@ -1554,7 +1554,11 @@
 "Calls: `sqlite3_filename_wal <https://sqlite.org/c3ref/filename_database.html>`__\n" 
 
 #define  Connection_fts5_tokenizer_DOC "fts5_tokenizer($self,name)\n--\n\nConnection.fts5_tokenizer(name: str) -> apsw.FTS5Tokenizer\n\n" \
-"Returns the named tokenizer.\n" 
+"Returns the named tokenizer.  Names are case insensitive.\n" \
+"\n" \
+".. seealso:\n" \
+"\n" \
+"    :meth:`register_fts5_tokenizer`\n" 
 
 #define Connection_fts5_tokenizer_KWNAMES "name"
 #define Connection_fts5_tokenizer_USAGE "Connection.fts5_tokenizer(name: str) -> apsw.FTS5Tokenizer"
@@ -1803,6 +1807,22 @@
 
 #define Connection_readonly_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
+} while(0)
+
+
+#define  Connection_register_fts5_tokenizer_DOC "register_fts5_tokenizer($self,name,tokenizer_factory)\n--\n\nConnection.register_fts5_tokenizer(name: str, tokenizer_factory: FTS5TokenizerFactory) -> None\n\n" \
+"(De)registers a tokenizer factory.  Names are case insensitive.\n" \
+"\n" \
+".. seealso:\n" \
+"\n" \
+"    :meth:`fts5_tokenizer`\n" 
+
+#define Connection_register_fts5_tokenizer_KWNAMES "name", "tokenizer_factory"
+#define Connection_register_fts5_tokenizer_USAGE "Connection.register_fts5_tokenizer(name: str, tokenizer_factory: FTS5TokenizerFactory) -> None"
+
+#define Connection_register_fts5_tokenizer_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(name), const char *)); \
+  assert(__builtin_types_compatible_p(typeof(tokenizer_factory), PyObject *)); \
 } while(0)
 
 
@@ -2720,7 +2740,7 @@
 } while(0)
 
 
-#define  FTS5Tokenizer_class_DOC "Wraps a registered tokenizer.\n" 
+#define  FTS5Tokenizer_class_DOC "Wraps a registered tokenizer.  Returned by :meth:`Connection.fts5_tokenizer`.\n" 
 
 #define  IndexInfo_class_DOC "IndexInfo represents the `sqlite3_index_info\n" \
 "<https://www.sqlite.org/c3ref/index_info.html>`__ and associated\n" \
@@ -2730,7 +2750,7 @@
 "access members directly while needing to use get/set methods for array\n" \
 "members.\n" \
 "\n" \
-"You will get :exc:`ValueError` if you use the object outside of an\n" \
+"You will get :exc:`InvalidContextError` if you use the object outside of an\n" \
 "BestIndex method.\n" \
 "\n" \
 ":meth:`apsw.ext.index_info_to_dict` provides a convenient\n" \
@@ -3657,6 +3677,12 @@
 "Operation terminated by `sqlite3_interrupt\n" \
 "<https://sqlite.org/c3ref/interrupt.html>`_ - use\n" \
 ":meth:`Connection.interrupt`.\n" 
+
+#define  InvalidContextError_exc_DOC "Context is no longer valid.  Examples include using an\n" \
+":class:`IndexInfo` outside of the :meth:`VTTable.BestIndexObject`\n" \
+"method, a registered :class:`FTS5Tokenizer` when the underlying\n" \
+"tokenizer has been deleted/replaced, or :meth:`Connection.vtab_config`\n" \
+"when not inside :meth:`VTModule.Create`.\n" 
 
 #define  LockedError_exc_DOC "`SQLITE_LOCKED <https://sqlite.org/rescode.html#locked>`__.  Shared\n" \
 "cache lock.\n" 

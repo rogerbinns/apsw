@@ -5119,7 +5119,12 @@ Connection_is_interrupted(Connection *self)
 
 /** .. method:: fts5_tokenizer(name: str) -> apsw.FTS5Tokenizer
 
-  Returns the named tokenizer.
+  Returns the named tokenizer.  Names are case insensitive.
+
+  .. seealso:
+
+      :meth:`register_fts5_tokenizer`
+
 */
 static PyObject *
 Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
@@ -5151,6 +5156,43 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
     return NULL;
   }
   return (PyObject *)tok;
+}
+
+/** .. method:: register_fts5_tokenizer(name: str, tokenizer_factory: FTS5TokenizerFactory) -> None
+
+  (De)registers a tokenizer factory.  Names are case insensitive.
+
+  .. seealso:
+
+      :meth:`fts5_tokenizer`
+*/
+static PyObject *
+Connection_register_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+  const char *name;
+  PyObject *tokenizer_factory;
+  {
+    Connection_register_fts5_tokenizer_CHECK;
+    ARG_PROLOG(2, Connection_register_fts5_tokenizer_KWNAMES);
+    ARG_MANDATORY ARG_str(name);
+    ARG_MANDATORY ARG_Callable(tokenizer_factory);
+    ARG_EPILOG(NULL, Connection_register_fts5_tokenizer_USAGE, );
+  }
+
+  fts5_api *api = Connection_fts5_api(self);
+  if (!api)
+    return NULL;
+
+  int rc = api->xCreateTokenizer(api, name, tokenizer_factory, &APSWPythonTokenizer,
+                                 APSWPythonTokenizerFactoryDelete);
+  if (rc != SQLITE_OK)
+  {
+    SET_EXC(rc, NULL);
+    return NULL;
+  }
+  Py_RETURN_NONE;
 }
 
 static PyGetSetDef Connection_getseters[] = {
@@ -5331,6 +5373,7 @@ static PyMethodDef Connection_methods[] = {
     {"pragma", (PyCFunction)Connection_pragma, METH_FASTCALL | METH_KEYWORDS, Connection_pragma_DOC},
     {"read", (PyCFunction)Connection_read, METH_FASTCALL | METH_KEYWORDS, Connection_read_DOC},
     {"fts5_tokenizer", (PyCFunction)Connection_fts5_tokenizer, METH_FASTCALL | METH_KEYWORDS, Connection_fts5_tokenizer_DOC},
+    {"register_fts5_tokenizer", (PyCFunction)Connection_register_fts5_tokenizer, METH_FASTCALL | METH_KEYWORDS, Connection_register_fts5_tokenizer_DOC},
 #ifndef APSW_OMIT_OLD_NAMES
     {Connection_set_busy_timeout_OLDNAME, (PyCFunction)Connection_set_busy_timeout, METH_FASTCALL | METH_KEYWORDS,
      Connection_set_busy_timeout_OLDDOC},

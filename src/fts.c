@@ -4,9 +4,21 @@
 Full text search
 ****************
 
-TODO wraps https://www.sqlite.org/fts5.html
+APSW provides complete access to SQLite's full text search functionality.
+SQLite provides the `FTS5 extension <https://www.sqlite.org/fts5.html>`__
+as the implementation.  It is enabled by default in :ref:`PyPI <pypi>`
+installs.
 
-lmglk jdlkj fsgdsfgdsfkj dfjkshg jkdsfhglkjhdfs
+Tokenizers
+----------
+
+* Convert bytes into a seuqnece of tokens
+* Get existing :meth:`Connection.fts5_tokenizer`
+* register your own :meth:`Connection.register_fts5_tokenizer`
+
+* byte offsets
+* colocated
+* chaining together
 
 
 */
@@ -112,7 +124,7 @@ Connection_tokenizer_refresh(APSWFTS5Tokenizer *self)
 
 /** .. class:: FTS5Tokenizer
 
-  Wraps a registered tokenizer.
+  Wraps a registered tokenizer.  Returned by :meth:`Connection.fts5_tokenizer`.
 */
 
 /* State during tokenization run */
@@ -316,9 +328,9 @@ APSWFTS5Tokenizer_call(APSWFTS5Tokenizer *self, PyObject *const *fast_args, Py_s
   if (!our_context.the_list)
     goto finally;
 
-  if (utf8_buffer.len > INT_MAX)
+  if (utf8_buffer.len >= INT_MAX)
   {
-    PyErr_Format(PyExc_ValueError, "utf8 byres is too large");
+    PyErr_Format(PyExc_ValueError, "utf8 byres is too large (%zd)", utf8_buffer.len);
     goto finally;
   }
 
@@ -326,7 +338,7 @@ APSWFTS5Tokenizer_call(APSWFTS5Tokenizer *self, PyObject *const *fast_args, Py_s
   /* arbitrary but reasonable maximum */
   if (argc > 128)
   {
-    PyErr_Format(PyExc_ValueError, "Too many args");
+    PyErr_Format(PyExc_ValueError, "Too many args (%zd)", argc);
     goto finally;
   }
 
@@ -399,3 +411,196 @@ static PyTypeObject APSWFTS5TokenizerType = {
     .tp_str = (reprfunc)APSWFTS5Tokenizer_str,
     .tp_call = PyVectorcall_Call,
     .tp_vectorcall_offset = offsetof(APSWFTS5Tokenizer, vectorcall)};
+
+static void APSWPythonTokenizerFactoryDelete(void *factory)
+{
+  PyGILState_STATE gilstate = PyGILState_Ensure();
+  Py_DECREF((PyObject *)factory);
+  PyGILState_Release(gilstate);
+}
+
+static int
+APSWPythonTokenizerCreate(void *factory, const char **argv, int argc, Fts5Tokenizer **ppOut)
+{
+  PyGILState_STATE gilstate = PyGILState_Ensure();
+  int i, res = SQLITE_NOMEM;
+
+  PyObject *args = PyList_New(argc);
+  if (!args)
+    goto finally;
+
+  for (i = 0; i < argc; i++)
+  {
+    PyObject *arg = PyUnicode_FromString(argv[i]);
+    if (!arg)
+      goto finally;
+    PyList_SET_ITEM(args, i, arg);
+  }
+
+  PyObject *vargs[] = {NULL, args};
+
+  PyObject *pyres = PyObject_Vectorcall((PyObject *)factory, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  if (!pyres)
+  {
+    res = SQLITE_ERROR;
+    goto finally;
+  }
+
+  *ppOut = (Fts5Tokenizer *)pyres;
+  res = SQLITE_OK;
+
+finally:
+  Py_XDECREF(args);
+
+  assert((res == SQLITE_OK && !PyErr_Occurred()) || (res != SQLITE_OK && PyErr_Occurred()));
+  PyGILState_Release(gilstate);
+  return res;
+}
+
+static const char *
+get_token_value(PyObject *s, int *size)
+{
+  Py_ssize_t ssize;
+  const char *address = PyUnicode_AsUTF8AndSize(s, &ssize);
+  if (!address)
+    return NULL;
+  if (ssize >= INT_MAX)
+  {
+    PyErr_Format(PyExc_ValueError, "Token is too long (%zd)", ssize);
+    return NULL;
+  }
+  *size = (int)ssize;
+  return address;
+}
+
+static int
+APSWPythonTokenizerTokenize(Fts5Tokenizer *our_context, void *their_context,
+                            int flags,
+                            const char *pText, int nText,
+                            int (*xToken)(
+                                void *pCtx,
+                                int tflags,
+                                const char *pToken,
+                                int nToken,
+                                int iStart,
+                                int iEnd))
+{
+  PyGILState_STATE gilstate = PyGILState_Ensure();
+  int rc = SQLITE_OK;
+  PyObject *bytes = NULL, *pyflags = NULL, *iterator = NULL, *item = NULL, *object = NULL;
+
+  bytes = PyBytes_FromStringAndSize(pText, nText);
+  if (!bytes)
+    goto finally;
+  pyflags = PyLong_FromLong(flags);
+  if (!pyflags)
+    goto finally;
+
+  PyObject *vargs[] = {NULL, pyflags, bytes};
+  object = PyObject_Vectorcall((PyObject *)our_context, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  if (!object)
+    goto finally;
+
+  iterator = PyObject_GetIter(object);
+  if (!iterator)
+    goto finally;
+  while ((item = PyIter_Next(iterator)))
+  {
+    /* single string */
+    if (PyUnicode_Check(item))
+    {
+      int size;
+      const char *addr = get_token_value(item, &size);
+      if (!addr)
+        goto finally;
+      rc = xToken(their_context, 0, addr, size, 0, 0);
+      Py_CLEAR(item);
+      if (rc != SQLITE_OK)
+        goto finally;
+      continue;
+    }
+    if (!PyTuple_Check(item))
+    {
+      PyErr_Format(PyExc_ValueError, "Expected a str or a tuple, not %s", Py_TypeName(item));
+      goto finally;
+    }
+    Py_ssize_t tuple_len = PyTuple_GET_SIZE(item);
+    if (tuple_len < 1)
+    {
+      PyErr_Format(PyExc_ValueError, "tuple is empty");
+      goto finally;
+    }
+
+    Py_ssize_t string_offset = 0;
+    int iStart = 0, iEnd = 0;
+    if (PyLong_Check(PyTuple_GET_ITEM(item, 0)))
+    {
+      if (tuple_len < 3)
+      {
+        PyErr_Format(PyExc_ValueError, "Tuple isn't long enough (%zd).  Should be at least two integers and a string.", tuple_len);
+        goto finally;
+      }
+      string_offset = 2;
+      if (!PyLong_Check(PyTuple_GET_ITEM(item, 1)))
+      {
+        PyErr_Format(PyExc_ValueError, "Second tuple element should also be an integer");
+        goto finally;
+      }
+      iStart = PyLong_AsInt(PyTuple_GET_ITEM(item, 0));
+      iEnd = PyLong_AsInt(PyTuple_GET_ITEM(item, 1));
+      if (PyErr_Occurred())
+        goto finally;
+      if (iStart < 0 || iEnd < 0 || iStart > iEnd || iEnd > nText)
+      {
+        PyErr_Format(PyExc_ValueError, "start (%d) and end (%d) must be positive, within the utf8 length (%d) and start before end", iStart, iEnd, nText);
+        goto finally;
+      }
+    }
+
+    int first = 1;
+    for (; string_offset < tuple_len; string_offset++, first = 0)
+    {
+      PyObject *str = PyTuple_GET_ITEM(item, string_offset);
+      if (!PyUnicode_Check(str))
+      {
+        PyErr_Format(PyExc_ValueError, "Expected tuple item %zd to be a str, not %s", string_offset, Py_TypeName(str));
+        goto finally;
+      }
+      Py_ssize_t str_size;
+      const char *str_addr=get_token_value(str, &str_size);
+      if(!str_addr)
+        goto finally;
+      rc = xToken(their_context, first ? 0 : FTS5_TOKEN_COLOCATED, str_addr, (int)str_size, iStart, iEnd);
+    }
+  }
+
+finally:
+  if (PyErr_Occurred())
+  {
+    if (item)
+      AddTraceBackHere(__FILE__, __LINE__, "xTokenize.iterator", "{s:O}", "item", item);
+    AddTraceBackHere(__FILE__, __LINE__, "xTokenize", "{s:O,s:O,s:i}", "self", (PyObject *)our_context, "bytes", OBJ(bytes), "flags", flags);
+  }
+
+  Py_XDECREF(bytes);
+  Py_XDECREF(pyflags);
+  Py_XDECREF(iterator);
+  Py_XDECREF(object);
+  Py_XDECREF(item);
+  int res = PyErr_Occurred() ? SQLITE_ERROR : rc;
+  PyGILState_Release(gilstate);
+  return res;
+}
+
+static void
+APSWPythonTokenizerDelete(Fts5Tokenizer *ptr)
+{
+  PyGILState_STATE gilstate = PyGILState_Ensure();
+  Py_DECREF((PyObject *)ptr);
+  PyGILState_Release(gilstate);
+}
+
+static fts5_tokenizer APSWPythonTokenizer = {
+    .xCreate = APSWPythonTokenizerCreate,
+    .xDelete = APSWPythonTokenizerDelete,
+    .xTokenize = APSWPythonTokenizerTokenize};

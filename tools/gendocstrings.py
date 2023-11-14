@@ -585,6 +585,7 @@ def do_argparse(item):
                 "Optional[Authorizer]",
                 "Optional[CommitHook]",
                 "Optional[WindowFactory]",
+                "Optional[FTS5TokenizerFactory]",
         }:
             # the above are all callables and we don't check beyond that
             type = "PyObject *"
@@ -609,7 +610,7 @@ def do_argparse(item):
                 else:
                     breakpoint()
                 pass
-        elif callable_erasure(param["type"]) == "Callable":
+        elif param["type"] in {"FTS5TokenizerFactory"} or callable_erasure(param["type"]) == "Callable":
             type = "PyObject *"
             kind = "Callable"
             if param["default"]:
