@@ -568,11 +568,11 @@ APSWPythonTokenizerTokenize(Fts5Tokenizer *our_context, void *their_context,
         PyErr_Format(PyExc_ValueError, "Expected tuple item %zd to be a str, not %s", string_offset, Py_TypeName(str));
         goto finally;
       }
-      Py_ssize_t str_size;
+      int str_size;
       const char *str_addr=get_token_value(str, &str_size);
       if(!str_addr)
         goto finally;
-      rc = xToken(their_context, first ? 0 : FTS5_TOKEN_COLOCATED, str_addr, (int)str_size, iStart, iEnd);
+      rc = xToken(their_context, first ? 0 : FTS5_TOKEN_COLOCATED, str_addr, str_size, iStart, iEnd);
     }
   }
 
