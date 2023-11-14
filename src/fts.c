@@ -82,7 +82,9 @@ Connection_tokenizer_refresh(APSWFTS5Tokenizer *self)
   if (!api)
     return -1;
 
-  fts5_tokenizer tokenizer = {};
+  fts5_tokenizer tokenizer;
+  memset (&tokenizer, 0, sizeof (tokenizer));
+
   void *userdata = NULL;
   int res = api->xFindTokenizer(
       api,
