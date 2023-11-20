@@ -1,2 +1,19 @@
 BasedOnStyle: GNU
 ColumnLimit: 120
+# I wanted the above to tbe the entire config but it also
+# annoyingly indents braces, which takes a whole bunch of
+# settings to undo when you'd expect IndentBraces: false
+# to be sufficient
+SpaceBeforeParens: ControlStatements
+BreakBeforeBraces: Custom
+BraceWrapping:
+  IndentBraces: false
+  AfterCaseLabel:  false
+  AfterControlStatement: Always
+  AfterStruct: true
+  AfterEnum:       true
+  AfterUnion:      true
+  BeforeElse:      true
+  BeforeWhile:     false
+  AfterFunction:   true
+  SplitEmptyFunction: true
