@@ -5160,7 +5160,8 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
 
 /** .. method:: register_fts5_tokenizer(name: str, tokenizer_factory: FTS5TokenizerFactory) -> None
 
-  (De)registers a tokenizer factory.  Names are case insensitive.
+  Registers a tokenizer factory.  Names are case insensitive.  It is not possible to
+  unregister a tokenizer.
 
   .. seealso:
 
