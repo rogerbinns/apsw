@@ -35,16 +35,19 @@ Connection_fts5_api(Connection *self)
   int res;
   sqlite3_stmt *stmt = NULL;
 
-  res = sqlite3_prepare(self->db, "select fts5(?1)", -1, &stmt, NULL); /* No PYSQLITE_CALL needed */
+  PYSQLITE_VOID_CALL(res = sqlite3_prepare(self->db, "select fts5(?1)", -1, &stmt, NULL));
   if (res != SQLITE_OK)
     goto finally;
-  res = sqlite3_bind_pointer(stmt, 1, &self->fts5_api_cached, "fts5_api_ptr", NULL); /* No PYSQLITE_CALL needed */
+  CHECK_CLOSED(self, NULL);
+  PYSQLITE_VOID_CALL(res = sqlite3_bind_pointer(stmt, 1, &self->fts5_api_cached, "fts5_api_ptr", NULL));
   if (res != SQLITE_OK)
     goto finally;
-  sqlite3_step(stmt); /* No PYSQLITE_CALL needed */
+  CHECK_CLOSED(self, NULL);
+  PYSQLITE_VOID_CALL(sqlite3_step(stmt));
+  CHECK_CLOSED(self, NULL);
 finally:
   if (stmt)
-    sqlite3_finalize(stmt); /* No PYSQLITE_CALL needed */
+    PYSQLITE_VOID_CALL(sqlite3_finalize(stmt));
   if (!self->fts5_api_cached)
     PyErr_Format(ExcNoFTS5, "Getting the FTS5 API failed");
   return self->fts5_api_cached;
