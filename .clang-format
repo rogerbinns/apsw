@@ -1,10 +1,25 @@
+# This would ideally be the entire file
 BasedOnStyle: GNU
+
+# Names etc get rather long
 ColumnLimit: 120
-# I wanted the above to tbe the entire config but it also
-# annoyingly indents braces, which takes a whole bunch of
-# settings to undo when you'd expect IndentBraces: false
-# to be sufficient
-SpaceBeforeParens: ControlStatements
+
+# Used for doc strings
+ReflowComments: false
+
+# To get C99 initializers to be one per line, the last item must have
+# a trailing comma.  There is no setting.
+
+# CPython macros that have the trailing comma/semi-colon as part of
+# the macro
+StatementMacros: ["PyObject_HEAD"]
+
+# PyVarObject_HEAD_INIT needs clang-format 17 so until then
+# clang-format off/om needs to be placed around it, and still messes
+# up the next member
+
+# GNU annoyingly indents braces, which takes a whole bunch of settings
+# to undo when you'd expect IndentBraces: false to be sufficient
 BreakBeforeBraces: Custom
 BraceWrapping:
   IndentBraces: false
@@ -17,3 +32,6 @@ BraceWrapping:
   BeforeWhile:     false
   AfterFunction:   true
   SplitEmptyFunction: true
+
+# We don't need lots of addition white space, except this is nice
+SpaceBeforeParens: ControlStatements
