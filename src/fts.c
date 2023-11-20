@@ -10,7 +10,7 @@ as the implementation.  It is enabled by default in :ref:`PyPI <pypi>`
 installs.
 
 Tokenizers
-----------
+==========
 
 * Convert bytes into a seuqnece of tokens
 * Get existing :meth:`Connection.fts5_tokenizer`
@@ -20,6 +20,7 @@ Tokenizers
 * colocated
 * chaining together
 
+https://en.wikipedia.org/wiki/Pangram
 
 */
 
@@ -57,7 +58,7 @@ finally:
 typedef struct APSWFTS5Tokenizer
 {
   PyObject_HEAD
-      Connection *db;
+  Connection *db;
   const char *name;
   fts5_tokenizer tokenizer;
   void *userdata;
@@ -83,14 +84,10 @@ Connection_tokenizer_refresh(APSWFTS5Tokenizer *self)
     return -1;
 
   fts5_tokenizer tokenizer;
-  memset (&tokenizer, 0, sizeof (tokenizer));
+  memset(&tokenizer, 0, sizeof(tokenizer));
 
   void *userdata = NULL;
-  int res = api->xFindTokenizer(
-      api,
-      self->name,
-      &userdata,
-      &tokenizer);
+  int res = api->xFindTokenizer(api, self->name, &userdata, &tokenizer);
 
   /* existing tokenizer did not change */
   if (res == SQLITE_OK && 0 == memcmp(&self->tokenizer, &tokenizer, sizeof(tokenizer)) && self->userdata == userdata)
@@ -119,7 +116,7 @@ Connection_tokenizer_refresh(APSWFTS5Tokenizer *self)
     return -1;
   }
 
-  assert(!(0==memcmp(&self->tokenizer, &tokenizer, sizeof(tokenizer)) && self->userdata == userdata));
+  assert(!(0 == memcmp(&self->tokenizer, &tokenizer, sizeof(tokenizer)) && self->userdata == userdata));
   PyErr_Format(ExcInvalidContext, "Tokenizer \"%s\" has been changed", self->name);
   return -1;
 }
@@ -161,7 +158,8 @@ xTokenizer_Callback(void *pCtx, int iflags, const char *pToken, int nToken, int 
 
   if (iStart < 0 || iEnd > our_context->buffer_len)
   {
-    PyErr_Format(PyExc_ValueError, "Invalid start (%d) or end of token (%d) for input buffer size (%d)", iStart, iEnd, our_context->buffer_len);
+    PyErr_Format(PyExc_ValueError, "Invalid start (%d) or end of token (%d) for input buffer size (%d)", iStart, iEnd,
+                 our_context->buffer_len);
     goto error;
   }
 
@@ -236,8 +234,9 @@ error:
 
 /** .. method:: __call__(utf8: bytes, reason: int, args: list[str] | None = None, *, include_offsets: bool = True, include_colocated: bool = True) -> list
 
-  Does a tokenization, returning a list of the results.  If you have no interest in
-  token offsets or colocated tokens then they can be omitted from the results.
+  Does a tokenization, returning a list of the results.  If you have no
+  interest in token offsets or colocated tokens then they can be omitted from
+  the results.
 
   :param utf8: Input bytes
   :param reason: :data:`Reason <apsw.mapping_fts5_tokenize_reason>` flag
@@ -248,8 +247,8 @@ error:
   Example outputs
   ---------------
 
-  Tokenizing :code:`"first place"` where :code:`1st` has been provided as a colocated
-  token for :code:`first`.
+  Tokenizing :code:`"first place"` where :code:`1st` has been provided as a
+  colocated token for :code:`first`.
 
   (**Default**) include_offsets **True**, include_colocated **True**
 
@@ -289,8 +288,14 @@ error:
 
 */
 static PyObject *
-APSWFTS5Tokenizer_call(APSWFTS5Tokenizer *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+APSWFTS5Tokenizer_call(APSWFTS5Tokenizer *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                       PyObject *fast_kwnames)
 {
+  if (0 != Connection_tokenizer_refresh(self))
+  {
+    assert(PyErr_Occurred());
+    return NULL;
+  }
   Py_buffer utf8_buffer;
   PyObject *utf8, *args = NULL;
   int include_offsets = 1, include_colocated = 1, reason;
@@ -309,7 +314,8 @@ APSWFTS5Tokenizer_call(APSWFTS5Tokenizer *self, PyObject *const *fast_args, Py_s
     ARG_EPILOG(NULL, FTS5Tokenizer_call_USAGE, );
   }
 
-  if (reason != FTS5_TOKENIZE_DOCUMENT && reason != FTS5_TOKENIZE_QUERY && reason != (FTS5_TOKENIZE_QUERY | FTS5_TOKENIZE_PREFIX) && reason != FTS5_TOKENIZE_AUX)
+  if (reason != FTS5_TOKENIZE_DOCUMENT && reason != FTS5_TOKENIZE_QUERY
+      && reason != (FTS5_TOKENIZE_QUERY | FTS5_TOKENIZE_PREFIX) && reason != FTS5_TOKENIZE_AUX)
   {
     PyErr_Format(PyExc_ValueError, "reason is not an allowed value (%d)", reason);
     return NULL;
@@ -322,10 +328,11 @@ APSWFTS5Tokenizer_call(APSWFTS5Tokenizer *self, PyObject *const *fast_args, Py_s
   }
 
   TokenizingContext our_context = {
-      .the_list = PyList_New(0),
-      .buffer_len = (int)utf8_buffer.len,
-      .include_colocated = include_colocated,
-      .include_offsets = include_offsets};
+    .the_list = PyList_New(0),
+    .buffer_len = (int)utf8_buffer.len,
+    .include_colocated = include_colocated,
+    .include_offsets = include_offsets,
+  };
 
   if (!our_context.the_list)
     goto finally;
@@ -361,11 +368,13 @@ APSWFTS5Tokenizer_call(APSWFTS5Tokenizer *self, PyObject *const *fast_args, Py_s
       goto finally;
     }
 
-    rc = self->tokenizer.xTokenize(their_context, &our_context, reason, utf8_buffer.buf, utf8_buffer.len, xTokenizer_Callback);
+    rc = self->tokenizer.xTokenize(their_context, &our_context, reason, utf8_buffer.buf, utf8_buffer.len,
+                                   xTokenizer_Callback);
     if (rc != SQLITE_OK)
     {
       SET_EXC(rc, NULL);
-      AddTraceBackHere(__FILE__, __LINE__, "FTS5Tokenizer_call.xTokenize", "{s:O,s:i,s:O}", "args", OBJ(args), "reason", reason, "utf8", utf8);
+      AddTraceBackHere(__FILE__, __LINE__, "FTS5Tokenizer_call.xTokenize", "{s:O,s:i,s:O}", "args", OBJ(args), "reason",
+                       reason, "utf8", utf8);
       goto finally;
     }
   }
@@ -404,17 +413,22 @@ APSWFTS5Tokenizer_dealloc(APSWFTS5Tokenizer *self)
 }
 
 static PyTypeObject APSWFTS5TokenizerType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-        .tp_name = "apsw.FTS5Tokenizer",
-    .tp_doc = FTS5Tokenizer_class_DOC,
-    .tp_basicsize = sizeof(APSWFTS5Tokenizer),
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_VECTORCALL,
-    .tp_dealloc = (destructor)APSWFTS5Tokenizer_dealloc,
-    .tp_str = (reprfunc)APSWFTS5Tokenizer_str,
-    .tp_call = PyVectorcall_Call,
-    .tp_vectorcall_offset = offsetof(APSWFTS5Tokenizer, vectorcall)};
+  /* clang-format off */
+  PyVarObject_HEAD_INIT(NULL, 0)
+      /* clang-format on */
+      .tp_name
+  = "apsw.FTS5Tokenizer",
+  .tp_doc = FTS5Tokenizer_class_DOC,
+  .tp_basicsize = sizeof(APSWFTS5Tokenizer),
+  .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_VECTORCALL,
+  .tp_dealloc = (destructor)APSWFTS5Tokenizer_dealloc,
+  .tp_str = (reprfunc)APSWFTS5Tokenizer_str,
+  .tp_call = PyVectorcall_Call,
+  .tp_vectorcall_offset = offsetof(APSWFTS5Tokenizer, vectorcall),
+};
 
-static void APSWPythonTokenizerFactoryDelete(void *factory)
+static void
+APSWPythonTokenizerFactoryDelete(void *factory)
 {
   PyGILState_STATE gilstate = PyGILState_Ensure();
   Py_DECREF((PyObject *)factory);
@@ -439,7 +453,7 @@ APSWPythonTokenizerCreate(void *factory, const char **argv, int argc, Fts5Tokeni
     PyList_SET_ITEM(args, i, arg);
   }
 
-  PyObject *vargs[] = {NULL, args};
+  PyObject *vargs[] = { NULL, args };
 
   PyObject *pyres = PyObject_Vectorcall((PyObject *)factory, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (!pyres)
@@ -476,16 +490,8 @@ get_token_value(PyObject *s, int *size)
 }
 
 static int
-APSWPythonTokenizerTokenize(Fts5Tokenizer *our_context, void *their_context,
-                            int flags,
-                            const char *pText, int nText,
-                            int (*xToken)(
-                                void *pCtx,
-                                int tflags,
-                                const char *pToken,
-                                int nToken,
-                                int iStart,
-                                int iEnd))
+APSWPythonTokenizerTokenize(Fts5Tokenizer *our_context, void *their_context, int flags, const char *pText, int nText,
+                            int (*xToken)(void *pCtx, int tflags, const char *pToken, int nToken, int iStart, int iEnd))
 {
   PyGILState_STATE gilstate = PyGILState_Ensure();
   int rc = SQLITE_OK;
@@ -498,7 +504,7 @@ APSWPythonTokenizerTokenize(Fts5Tokenizer *our_context, void *their_context,
   if (!pyflags)
     goto finally;
 
-  PyObject *vargs[] = {NULL, pyflags, bytes};
+  PyObject *vargs[] = { NULL, pyflags, bytes };
   object = PyObject_Vectorcall((PyObject *)our_context, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (!object)
     goto finally;
@@ -539,7 +545,10 @@ APSWPythonTokenizerTokenize(Fts5Tokenizer *our_context, void *their_context,
     {
       if (tuple_len < 3)
       {
-        PyErr_Format(PyExc_ValueError, "Tuple isn't long enough (%zd).  Should be at least two integers and a string.", tuple_len);
+        PyErr_Format(PyExc_ValueError,
+                     "Tuple isn't long enough (%zd).  Should be at "
+                     "least two integers and a string.",
+                     tuple_len);
         goto finally;
       }
       string_offset = 2;
@@ -554,7 +563,10 @@ APSWPythonTokenizerTokenize(Fts5Tokenizer *our_context, void *their_context,
         goto finally;
       if (iStart < 0 || iEnd < 0 || iStart > iEnd || iEnd > nText)
       {
-        PyErr_Format(PyExc_ValueError, "start (%d) and end (%d) must be positive, within the utf8 length (%d) and start before end", iStart, iEnd, nText);
+        PyErr_Format(PyExc_ValueError,
+                     "start (%d) and end (%d) must be positive, within "
+                     "the utf8 length (%d) and start before end",
+                     iStart, iEnd, nText);
         goto finally;
       }
     }
@@ -569,8 +581,8 @@ APSWPythonTokenizerTokenize(Fts5Tokenizer *our_context, void *their_context,
         goto finally;
       }
       int str_size;
-      const char *str_addr=get_token_value(str, &str_size);
-      if(!str_addr)
+      const char *str_addr = get_token_value(str, &str_size);
+      if (!str_addr)
         goto finally;
       rc = xToken(their_context, first ? 0 : FTS5_TOKEN_COLOCATED, str_addr, str_size, iStart, iEnd);
     }
@@ -581,7 +593,8 @@ finally:
   {
     if (item)
       AddTraceBackHere(__FILE__, __LINE__, "xTokenize.iterator", "{s:O}", "item", item);
-    AddTraceBackHere(__FILE__, __LINE__, "xTokenize", "{s:O,s:O,s:i}", "self", (PyObject *)our_context, "bytes", OBJ(bytes), "flags", flags);
+    AddTraceBackHere(__FILE__, __LINE__, "xTokenize", "{s:O,s:O,s:i}", "self", (PyObject *)our_context, "bytes",
+                     OBJ(bytes), "flags", flags);
   }
 
   Py_XDECREF(bytes);
@@ -603,6 +616,19 @@ APSWPythonTokenizerDelete(Fts5Tokenizer *ptr)
 }
 
 static fts5_tokenizer APSWPythonTokenizer = {
-    .xCreate = APSWPythonTokenizerCreate,
-    .xDelete = APSWPythonTokenizerDelete,
-    .xTokenize = APSWPythonTokenizerTokenize};
+  .xCreate = APSWPythonTokenizerCreate,
+  .xDelete = APSWPythonTokenizerDelete,
+  .xTokenize = APSWPythonTokenizerTokenize,
+};
+
+/**
+
+apsw.fts module
+===============
+
+.. automodule:: apsw.fts
+    :synopsis: blah blah
+    :members:
+    :undoc-members:
+    :member-order: bysource
+*/
