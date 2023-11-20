@@ -15,7 +15,7 @@ ReflowComments: false
 StatementMacros: ["PyObject_HEAD"]
 
 # PyVarObject_HEAD_INIT needs clang-format 17 so until then
-# clang-format off/om needs to be placed around it, and still messes
+# clang-format off/on needs to be placed around it, and still messes
 # up the next member
 
 # GNU annoyingly indents braces, which takes a whole bunch of settings
