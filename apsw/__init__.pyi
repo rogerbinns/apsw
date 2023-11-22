@@ -1453,7 +1453,9 @@ class Connection:
     def pragma(self, name: str, value: Optional[SQLiteValue] = None) -> Any:
         """Issues the pragma (with the value if supplied) and returns the result with
         :attr:`the least amount of structure <Cursor.get>`.  For example
-        :code:`pragma("user_version")` will return just the number.
+        :code:`pragma("user_version")` will return just the number, while
+        :code:`pragma("journal_mode", "WAL")` will return the journal mode
+        now in effect.
 
         Pragmas do not support bindings, so this method is a convenient
         alternative to composing SQL text.
@@ -3787,6 +3789,8 @@ SQLITE_REINDEX: int = 27
 """For `Authorizer Action Codes <https://sqlite.org/c3ref/c_alter_table.html>'__"""
 SQLITE_REPLACE: int = 5
 """For `Conflict resolution modes <https://sqlite.org/c3ref/c_fail.html>'__"""
+SQLITE_RESULT_SUBTYPE: int = 16777216
+"""For `Function Flags <https://sqlite.org/c3ref/c_deterministic.html>'__"""
 SQLITE_ROLLBACK: int = 1
 """For `Conflict resolution modes <https://sqlite.org/c3ref/c_fail.html>'__"""
 SQLITE_ROW: int = 100
@@ -4052,7 +4056,8 @@ mapping_function_flags: dict[str | int, int | str]
 """Function Flags mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_deterministic.html
 
-SQLITE_DETERMINISTIC SQLITE_DIRECTONLY SQLITE_INNOCUOUS SQLITE_SUBTYPE"""
+SQLITE_DETERMINISTIC SQLITE_DIRECTONLY SQLITE_INNOCUOUS
+SQLITE_RESULT_SUBTYPE SQLITE_SUBTYPE"""
 
 mapping_limits: dict[str | int, int | str]
 """Run-Time Limit Categories mapping names to int and int to names.

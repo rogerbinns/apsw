@@ -1727,7 +1727,9 @@
 #define  Connection_pragma_DOC "pragma($self,name,value=None)\n--\n\nConnection.pragma(name: str, value: Optional[SQLiteValue] = None) -> Any\n\n" \
 "Issues the pragma (with the value if supplied) and returns the result with\n" \
 ":attr:`the least amount of structure <Cursor.get>`.  For example\n" \
-":code:`pragma(\"user_version\")` will return just the number.\n" \
+":code:`pragma(\"user_version\")` will return just the number, while\n" \
+":code:`pragma(\"journal_mode\", \"WAL\")` will return the journal mode\n" \
+"now in effect.\n" \
 "\n" \
 "Pragmas do not support bindings, so this method is a convenient\n" \
 "alternative to composing SQL text.\n" \
