@@ -92,6 +92,14 @@ ZeroBlobBind_len(ZeroBlobBind *self)
   return PyLong_FromLong(self->blobsize);
 }
 
+static PyObject *
+ZeroBlobBind_tp_str(ZeroBlobBind *self)
+{
+  return PyUnicode_FromFormat("<apsw.zeroblob object size %lld at %p>",
+                              self->blobsize,
+                              self);
+}
+
 static PyMethodDef ZeroBlobBind_methods[] = {
     {"length", (PyCFunction)ZeroBlobBind_len, METH_NOARGS,
      Zeroblob_length_DOC},
@@ -106,6 +114,7 @@ static PyTypeObject ZeroBlobBindType = {
     .tp_methods = ZeroBlobBind_methods,
     .tp_init = (initproc)ZeroBlobBind_init,
     .tp_new = ZeroBlobBind_new,
+    .tp_str = (reprfunc)ZeroBlobBind_tp_str,
 };
 
 /* BLOB TYPE */
@@ -664,6 +673,14 @@ APSWBlob_reopen(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_narg
   Py_RETURN_NONE;
 }
 
+static PyObject *
+APSWBlob_tp_str(APSWBlob *self)
+{
+  return PyUnicode_FromFormat("<apsw.Blob object from %S at %p>",
+                              self->connection ? (PyObject *)self->connection : apst.closed,
+                              self);
+}
+
 static PyMethodDef APSWBlob_methods[] = {
     {"length", (PyCFunction)APSWBlob_length, METH_NOARGS,
      Blob_length_DOC},
@@ -701,4 +718,5 @@ static PyTypeObject APSWBlobType = {
     .tp_doc = Blob_class_DOC,
     .tp_weaklistoffset = offsetof(APSWBlob, weakreflist),
     .tp_methods = APSWBlob_methods,
+    .tp_str = (reprfunc)APSWBlob_tp_str,
 };

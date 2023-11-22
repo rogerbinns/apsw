@@ -346,6 +346,15 @@ APSWBackup_exit(APSWBackup *self, PyObject *const *fast_args, Py_ssize_t fast_na
   Py_RETURN_FALSE;
 }
 
+static PyObject *
+APSWBackup_tp_str(APSWBackup *self)
+{
+  return PyUnicode_FromFormat("<apsw.Backup object from %S to %S at %p>",
+                              self->source ? (PyObject *)self->source : apst.closed,
+                              self->dest ? (PyObject *)self->dest : apst.closed,
+                              self);
+}
+
 /** .. attribute:: done
   :type: bool
 
@@ -390,4 +399,5 @@ static PyTypeObject APSWBackupType =
         .tp_methods = backup_methods,
         .tp_members = backup_members,
         .tp_getset = backup_getset,
+        .tp_str = (reprfunc)APSWBackup_tp_str,
 };

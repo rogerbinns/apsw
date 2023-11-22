@@ -10,11 +10,16 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
-next
-====
+3.44.1.0
+========
 
 Added :func:`apsw.ext.result_string` to turn an result code into
 a string, taking into account if it is extended or not.
+
+Provide detail when C implemented objects are printed. For example
+:class:`connections <Connection>` include the filename.
+(:issue:`494`)
+
 
 3.44.0.0
 ========

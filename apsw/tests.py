@@ -5381,7 +5381,7 @@ class APSW(unittest.TestCase):
         checks = {
             "APSWCursor": {
                 "skip": ("dealloc", "init", "dobinding", "dobindings", "do_exec_trace", "do_row_trace", "step", "close",
-                         "close_internal", "tp_traverse"),
+                         "close_internal", "tp_traverse", "tp_str"),
                 "req": {
                     "use": "CHECK_USE",
                     "closed": "CHECK_CURSOR_CLOSED",
@@ -5391,7 +5391,7 @@ class APSW(unittest.TestCase):
             "Connection": {
                 "skip": ("internal_cleanup", "dealloc", "init", "close", "interrupt", "close_internal",
                          "remove_dependent", "readonly", "getmainfilename", "db_filename", "traverse", "clear",
-                         "tp_traverse", "get_cursor_factory", "set_cursor_factory"),
+                         "tp_traverse", "get_cursor_factory", "set_cursor_factory", "tp_str"),
                 "req": {
                     "use": "CHECK_USE",
                     "closed": "CHECK_CLOSED",
@@ -5399,7 +5399,7 @@ class APSW(unittest.TestCase):
                 "order": ("use", "closed")
             },
             "APSWBlob": {
-                "skip": ("dealloc", "init", "close", "close_internal"),
+                "skip": ("dealloc", "init", "close", "close_internal", "tp_str"),
                 "req": {
                     "use": "CHECK_USE",
                     "closed": "CHECK_BLOB_CLOSED"
@@ -5407,7 +5407,7 @@ class APSW(unittest.TestCase):
                 "order": ("use", "closed")
             },
             "APSWBackup": {
-                "skip": ("dealloc", "init", "close_internal", "get_remaining", "get_page_count"),
+                "skip": ("dealloc", "init", "close_internal", "get_remaining", "get_page_count", "tp_str"),
                 "req": {
                     "use": "CHECK_USE",
                     "closed": "CHECK_BACKUP_CLOSED"
@@ -10375,6 +10375,54 @@ SELECT group_concat(rtrim(t),x'0a') FROM a;
                 self.assertIsNone(res)
             else:
                 self.assertEqual(res, r)
+
+    def testTpStr(self):
+        "Helpful descriptions of str(apsw objects)"
+        self.db.execute("create table x(y); insert into x values(x'abcdef1012')")
+        blob =self.db.blob_open("main", "x", "y", self.db.last_insert_rowid(), 0)
+        blob2 =self.db.blob_open("main", "x", "y", self.db.last_insert_rowid(), 0)
+        blob2.close()
+        db2=apsw.Connection("")
+        cur2=db2.cursor()
+        cur2.close()
+        db3=apsw.Connection("")
+        cur3=db3.cursor()
+        db3.close()
+        backup2=db2.backup("main", self.db, "main")
+        backup2.close()
+        name_catch=[]
+        class TVFS(apsw.VFS):
+
+            def __init__(self):
+                apsw.VFS.__init__(self, "uritest", "")
+
+            def xOpen(self, name, flags):
+                assert isinstance(name, apsw.URIFilename)
+                name_catch.append(name)
+                raise apsw.SQLError()
+        t = TVFS()
+
+        with contextlib.suppress(apsw.SQLError):
+            apsw.Connection("/tmp/uri_test", vfs="uritest")
+
+        objects = (self.db,
+                   db2,
+                   db3,
+                   self.db.cursor(),
+                   cur2,
+                   cur3,
+                   apsw.zeroblob(3),
+                   blob,
+                   blob2,
+                   name_catch[0],
+                   apsw.VFS("aname", ""),
+                   apsw.VFSFile("", self.db.db_filename("main"),
+                       [apsw.SQLITE_OPEN_MAIN_DB | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_READWRITE, 0]),
+                   db2.backup("main", self.db, "main"),
+                   backup2,
+        )
+        for o in objects:
+            self.assertNotEqual(repr(o), str(o))
 
     # This test is run last by deliberate name choice.  If it did
     # uncover any bugs there isn't much that can be done to turn the

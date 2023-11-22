@@ -1669,6 +1669,14 @@ error:
   return NULL;
 }
 
+static PyObject *
+APSWCursor_tp_str(APSWCursor *self)
+{
+  return PyUnicode_FromFormat("<apsw.Cursor object from %S at %p>",
+                              self->connection ? (PyObject *)self->connection : apst.closed,
+                              self);
+}
+
 static PyMethodDef APSWCursor_methods[] = {
     {"execute", (PyCFunction)APSWCursor_execute, METH_FASTCALL | METH_KEYWORDS,
      Cursor_execute_DOC},
@@ -1741,4 +1749,5 @@ static PyTypeObject APSWCursorType = {
     .tp_getset = APSWCursor_getset,
     .tp_init = (initproc)APSWCursor_init,
     .tp_new = APSWCursor_new,
+    .tp_str = (reprfunc)APSWCursor_tp_str,
 };

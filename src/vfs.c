@@ -1894,6 +1894,16 @@ error:
   return -1;
 }
 
+static PyObject *
+APSWVFS_tp_str(APSWVFS *self)
+{
+  if (!self->containingvfs)
+    return PyUnicode_FromFormat("<apsw.VFS object at %p>", self);
+  if (self->basevfs)
+    return PyUnicode_FromFormat("<apsw.VFS object \"%s\" inherits from \"%s\" at %p>", self->containingvfs->zName, self->basevfs->zName, self);
+  return PyUnicode_FromFormat("<apsw.VFS object \"%s\" at %p>", self->containingvfs->zName, self);
+}
+
 static PyMethodDef APSWVFS_methods[] = {
     {"xDelete", (PyCFunction)apswvfspy_xDelete, METH_FASTCALL | METH_KEYWORDS, VFS_xDelete_DOC},
     {"xFullPathname", (PyCFunction)apswvfspy_xFullPathname, METH_FASTCALL | METH_KEYWORDS, VFS_xFullPathname_DOC},
@@ -1927,6 +1937,7 @@ static PyTypeObject APSWVFSType =
         .tp_methods = APSWVFS_methods,
         .tp_init = (initproc)APSWVFS_init,
         .tp_new = APSWVFS_new,
+        .tp_str = (reprfunc)APSWVFS_tp_str,
 };
 
 static int is_apsw_vfs(sqlite3_vfs *vfs)
@@ -2896,6 +2907,12 @@ apswvfsfilepy_xClose(APSWVFSFile *self)
   return NULL;
 }
 
+static PyObject *
+APSWVFSFile_tp_str(APSWVFSFile *self)
+{
+  return PyUnicode_FromFormat("<apsw.VFSFile object filename \"%s\" at %p>", self->filename ? self->filename : "(nil)", self);
+}
+
 #define APSWPROXYBASE                                          \
   APSWSQLite3File *apswfile = (APSWSQLite3File *)(void *)file; \
   APSWVFSFile *f = (APSWVFSFile *)(apswfile->file);            \
@@ -2999,6 +3016,7 @@ static PyTypeObject APSWVFSFileType =
         .tp_methods = APSWVFSFile_methods,
         .tp_init = (initproc)APSWVFSFile_init,
         .tp_new = APSWVFSFile_new,
+        .tp_str = (reprfunc)APSWVFSFile_tp_str,
 };
 
 /** .. class:: URIFilename
@@ -3099,6 +3117,12 @@ apswurifilename_uri_boolean(APSWURIFilename *self, PyObject *const *fast_args, P
   Py_RETURN_FALSE;
 }
 
+static PyObject *
+apswurifilename_tp_str(APSWURIFilename *self)
+{
+  return PyUnicode_FromFormat("<apsw.URIFilename object \"%s\" at %p>", self->filename, self);
+}
+
 static PyMethodDef APSWURIFilenameMethods[] = {
     {"filename", (PyCFunction)apswurifilename_filename, METH_NOARGS, URIFilename_filename_DOC},
     {"uri_parameter", (PyCFunction)apswurifilename_uri_parameter, METH_FASTCALL | METH_KEYWORDS, URIFilename_uri_parameter_DOC},
@@ -3115,4 +3139,5 @@ static PyTypeObject APSWURIFilenameType =
         .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
         .tp_doc = URIFilename_class_DOC,
         .tp_methods = APSWURIFilenameMethods,
+        .tp_str = (reprfunc)apswurifilename_tp_str,
 };
