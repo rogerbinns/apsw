@@ -59,7 +59,6 @@ nowrap = {
     "sqlite3_stmt_busy",
     "sqlite3_keyword_check",  # sqlite3_keyword_name is used
     "sqlite3_compileoption_used",  # sqlite3_compileoption_get is used
-    "sqlite3_uri_key",
     "sqlite3_set_auxdata",
     "sqlite3_get_auxdata",
     "sqlite3_value_dup",
