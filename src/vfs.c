@@ -295,7 +295,7 @@ typedef struct /* inherits */
 typedef struct
 {
   PyObject_HEAD struct sqlite3_file *base;
-  /* filename as to be around for lifetime of base.  This will
+  /* filename has to be around for lifetime of base.  This will
      either be utf8 text (a string was passed in) or point
      to the filename in APSWURIFilename.  The former needs
      to be freed, the latter not.
