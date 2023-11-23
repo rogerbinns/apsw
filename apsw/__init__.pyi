@@ -2227,6 +2227,11 @@ class URIFilename:
         """Returns the filename."""
         ...
 
+    parameters: tuple[str, ...]
+    """A tuple of the parameter names present.
+
+    Calls: `sqlite3_uri_key <https://sqlite.org/c3ref/uri_boolean.html>`__"""
+
     def uri_boolean(self, name: str, default: bool) -> bool:
         """Returns the boolean value for parameter `name` or `default` if not
         present.
