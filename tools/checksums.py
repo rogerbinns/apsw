@@ -11,6 +11,7 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import setup
 
 sqlitevers = (
+    '3440100',
     '3440000',
     '3430200',
     '3430100',
@@ -39,7 +40,7 @@ def getline(url):
 
 
 def check(url, data):
-    d = ["%s" % (len(data), ), hashlib.sha1(data).hexdigest(), hashlib.md5(data).hexdigest()]
+    d = ["%s" % (len(data), ), hashlib.sha256(data).hexdigest(), hashlib.sha3_256(data).hexdigest()]
     line = getline(url)
     if line:
         if line != d:

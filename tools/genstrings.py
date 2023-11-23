@@ -39,6 +39,7 @@ executemany extendedresult get Mapping result add_note
 step final value inverse
 
 NULL 0.0 -1e999 1e999
+(closed)
 """
 
 # we have to make some valid C identifiers
@@ -48,6 +49,7 @@ def mangle(name):
         "0.0": "s0_0",
         "-1e999": "s_1e999",
         "1e999": "s1e999",
+        "(closed)": "closed",
     }.get(name, name)
 
 # tokenize names

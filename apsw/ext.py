@@ -289,10 +289,11 @@ class TypesConverterCursorFactory:
                 explain=explain)
 
 
-def log_sqlite(*, level: int = logging.ERROR) -> None:
+def log_sqlite(*, level: int = logging.ERROR, logger: logging.Logger | None = None) -> None:
     """Send SQLite `log messages <https://www.sqlite.org/errlog.html>`__ to :mod:`logging`
 
     :param level: level to log at
+    :param logger: Use the specific logger
     """
 
     def handler(errcode: int, message: str) -> None:
@@ -301,7 +302,7 @@ def log_sqlite(*, level: int = logging.ERROR) -> None:
         extra = {"sqlite_code": errcode, "sqlite_code_name": err_str, "sqlite_message": message}
         if errcode & 0xff == apsw.SQLITE_WARNING:
             level = min(level, logging.WARNING)
-        logging.log(level,
+        (logger or logging).log(level,
                     "SQLITE_LOG: %s (%d) %s",
                     message,
                     errcode,

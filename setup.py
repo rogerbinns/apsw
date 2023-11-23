@@ -353,17 +353,11 @@ class fetch(Command):
     # A function for verifying downloads
     def verifyurl(self, url, data):
         d = ["%s" % (len(data), )]
-        try:
-            import hashlib
-            d.append(hashlib.sha1(data).hexdigest())
-            d.append(hashlib.md5(data).hexdigest())
-        except ImportError:
-            import sha
-            d.append(sha.new(data).hexdigest())
-            import md5
-            d.append(md5.new(data).hexdigest())
+        import hashlib
+        d.append(hashlib.sha256(data).hexdigest())
+        d.append(hashlib.sha3_256(data).hexdigest())
 
-        write("    Length:", d[0], " SHA1:", d[1], " MD5:", d[2])
+        write("    Length:", d[0], " SHA256:", d[1], " SHA3_256:", d[2])
         sums = os.path.join(os.path.dirname(__file__), "checksums")
         for line in read_whole_file(sums, "rt").split("\n"):
             line = line.strip()
@@ -380,9 +374,9 @@ class fetch(Command):
                 if l[1] != d[0]:
                     write("Length does not match.  Expected", l[1], "download was", d[0])
                 if l[2] != d[1]:
-                    write("SHA does not match.  Expected", l[2], "download was", d[1])
+                    write("SHA256 does not match.  Expected", l[2], "download was", d[1])
                 if l[3] != d[2]:
-                    write("MD5 does not match.  Expected", l[3], "download was", d[2])
+                    write("SHA3_256 does not match.  Expected", l[3], "download was", d[2])
                 write("The download does not match the checksums distributed with APSW.\n"
                       "The download should not have changed since the checksums were\n"
                       "generated.  The cause could be anything from network corruption\n"

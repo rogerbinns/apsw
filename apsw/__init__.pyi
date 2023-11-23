@@ -2287,6 +2287,11 @@ class URIFilename:
         """Returns the filename."""
         ...
 
+    parameters: tuple[str, ...]
+    """A tuple of the parameter names present.
+
+    Calls: `sqlite3_uri_key <https://sqlite.org/c3ref/uri_boolean.html>`__"""
+
     def uri_boolean(self, name: str, default: bool) -> bool:
         """Returns the boolean value for parameter `name` or `default` if not
         present.
@@ -3849,6 +3854,8 @@ SQLITE_REINDEX: int = 27
 """For `Authorizer Action Codes <https://sqlite.org/c3ref/c_alter_table.html>'__"""
 SQLITE_REPLACE: int = 5
 """For `Conflict resolution modes <https://sqlite.org/c3ref/c_fail.html>'__"""
+SQLITE_RESULT_SUBTYPE: int = 16777216
+"""For `Function Flags <https://sqlite.org/c3ref/c_deterministic.html>'__"""
 SQLITE_ROLLBACK: int = 1
 """For `Conflict resolution modes <https://sqlite.org/c3ref/c_fail.html>'__"""
 SQLITE_ROW: int = 100
@@ -4127,7 +4134,8 @@ mapping_function_flags: dict[str | int, int | str]
 """Function Flags mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_deterministic.html
 
-SQLITE_DETERMINISTIC SQLITE_DIRECTONLY SQLITE_INNOCUOUS SQLITE_SUBTYPE"""
+SQLITE_DETERMINISTIC SQLITE_DIRECTONLY SQLITE_INNOCUOUS
+SQLITE_RESULT_SUBTYPE SQLITE_SUBTYPE"""
 
 mapping_limits: dict[str | int, int | str]
 """Run-Time Limit Categories mapping names to int and int to names.

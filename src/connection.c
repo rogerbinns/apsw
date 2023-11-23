@@ -2440,7 +2440,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
     return 1;
   }
 
-  PyErr_Format(PyExc_TypeError, "Bad return type from function callback");
+  PyErr_Format(PyExc_TypeError, "Value from Python is not supported by SQLite.  It should be one of None, int, float, str, or bytes.  Received %s.", Py_TypeName(obj));
   sqlite3_result_error(context, "Bad return type from python function callback", -1);
   return 0;
 }
@@ -5253,6 +5253,16 @@ Connection_tp_traverse(Connection *self, visitproc visit, void *arg)
   return 0;
 }
 
+static PyObject *
+Connection_tp_str(Connection *self)
+{
+  return PyUnicode_FromFormat("<apsw.Connection object %s%s%s at %p>",
+                              self->db ? "\"" : "(",
+                              self->db ? sqlite3_db_filename(self->db, "main") : "closed",
+                              self->db ? "\"" : ")",
+                              self);
+}
+
 static PyMemberDef Connection_members[] = {
     /* name type offset flags doc */
     {"open_flags", T_OBJECT, offsetof(Connection, open_flags), READONLY, Connection_open_flags_DOC},
@@ -5450,4 +5460,5 @@ static PyTypeObject ConnectionType =
         .tp_getset = Connection_getseters,
         .tp_init = (initproc)Connection_init,
         .tp_new = Connection_new,
+        .tp_str = (reprfunc)Connection_tp_str,
 };

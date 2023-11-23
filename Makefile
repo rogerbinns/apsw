@@ -1,8 +1,8 @@
 
-SQLITEVERSION=3.44.0
+SQLITEVERSION=3.44.1
 APSWSUFFIX=.0
 
-RELEASEDATE="6 November 2023"
+RELEASEDATE="23 November 2023"
 
 VERSION=$(SQLITEVERSION)$(APSWSUFFIX)
 VERDIR=apsw-$(VERSION)
@@ -77,7 +77,7 @@ doc-depends: ## pip installs packages needed to build doc
 
 dev-depends: ## pip installs packages useful for development (none are necessary except setuptools)
 	$(PYTHON) -m pip install -U --upgrade-strategy eager build wheel setuptools pip
-	$(PYTHON) -m pip install -U --upgrade-strategy eager yapf mypy pdbpp coverage flake8
+	$(PYTHON) -m pip install -U --upgrade-strategy eager mypy pdbpp coverage flake8 ruff
 
 # This is probably gnu make specific but only developers use this makefile
 $(GENDOCS): doc/%.rst: src/%.c tools/code2rst.py  tools/tocupdate.sql

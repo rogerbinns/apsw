@@ -2970,6 +2970,12 @@
 #define  URIFilename_filename_DOC "filename($self)\n--\n\nURIFilename.filename() -> str\n\n" \
 "Returns the filename.\n" 
 
+#define  URIFilename_parameters_DOC ":type: tuple[str, ...]\n" \
+"\n" \
+"A tuple of the parameter names present.\n" \
+"\n" \
+"Calls: `sqlite3_uri_key <https://sqlite.org/c3ref/uri_boolean.html>`__\n" 
+
 #define  URIFilename_uri_boolean_DOC "uri_boolean($self,name,default)\n--\n\nURIFilename.uri_boolean(name: str, default: bool) -> bool\n\n" \
 "Returns the boolean value for parameter `name` or `default` if not\n" \
 "present.\n" \

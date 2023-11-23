@@ -54,7 +54,8 @@ for name, obj in (
     ('VFS', vfs),
     ('VFSFile', vfsfile),
     ('apsw', apsw),
-    ('VFSFcntlPragma', apsw.VFSFcntlPragma)
+    ('VFSFcntlPragma', apsw.VFSFcntlPragma),
+    ("zeroblob", apsw.zeroblob(3)),
 ):
     if name not in classes:
         retval = 1
