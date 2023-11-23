@@ -13,6 +13,9 @@ APSW changes by version
 3.44.1.0
 ========
 
+Added `logger` parameter to :func:`apsw.ext.log_sqlite` to use a
+specific :class:`logging.Logger` (:issue:`493`)
+
 Added :func:`apsw.ext.result_string` to turn an result code into
 a string, taking into account if it is extended or not.
 
