@@ -3044,6 +3044,41 @@ apswurifilename_filename(APSWURIFilename *self)
   return convertutf8string(self->filename);
 }
 
+/** .. attribute:: parameters
+    :type: tuple[str, ...]
+
+    A tuple of the parameter names present.
+
+    -* sqlite3_uri_key
+*/
+static PyObject *
+apswurifilename_parameters(APSWURIFilename *self)
+{
+  int i, count = 0;
+  for (i = 0;; i++)
+    if (!sqlite3_uri_key(self->filename, i))
+      break;
+  count = i;
+
+  PyObject *res = PyTuple_New(count);
+  if (!res)
+    goto fail;
+
+  for (i = 0; i < count; i++)
+  {
+    PyObject *tmpstring = PyUnicode_FromString(sqlite3_uri_key(self->filename, i));
+    if (!tmpstring)
+      goto fail;
+    PyTuple_SET_ITEM(res, i, tmpstring);
+  }
+
+  return res;
+
+fail:
+  Py_XDECREF(res);
+  return NULL;
+}
+
 /** .. method:: uri_parameter(name: str) -> Optional[str]
 
     Returns the value of parameter `name` or None.
@@ -3131,6 +3166,11 @@ static PyMethodDef APSWURIFilenameMethods[] = {
     /* Sentinel */
     {0, 0, 0, 0}};
 
+static PyGetSetDef APSWURIFilename_getset[] = {
+    {"parameters", (getter)apswurifilename_parameters, NULL, URIFilename_parameters_DOC},
+    {0, 0, 0, 0},
+};
+
 static PyTypeObject APSWURIFilenameType =
     {
         PyVarObject_HEAD_INIT(NULL, 0)
@@ -3140,4 +3180,5 @@ static PyTypeObject APSWURIFilenameType =
         .tp_doc = URIFilename_class_DOC,
         .tp_methods = APSWURIFilenameMethods,
         .tp_str = (reprfunc)apswurifilename_tp_str,
+        .tp_getset = APSWURIFilename_getset,
 };

@@ -20,6 +20,7 @@ Provide detail when C implemented objects are printed. For example
 :class:`connections <Connection>` include the filename.
 (:issue:`494`)
 
+Added :meth:`URIFilename.parameters` (:issue:`496`)
 
 3.44.0.0
 ========

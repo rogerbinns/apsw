@@ -6190,6 +6190,8 @@ class APSW(unittest.TestCase):
                 # assertEqual(name.uri_boolean("foo", False), False)
                 assertEqual(name.uri_boolean("bam", False), True)
                 assertEqual(name.uri_boolean("baz", True), False)
+                assertRaises(AttributeError, setattr, name, "parameters", 3)
+                assertEqual(name.parameters, ('foo', 'bar', 'bam', 'baz'))
                 1 / 0
 
         testvfs = TVFS()
