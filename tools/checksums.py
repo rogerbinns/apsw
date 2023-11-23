@@ -40,7 +40,7 @@ def getline(url):
 
 
 def check(url, data):
-    d = ["%s" % (len(data), ), hashlib.sha1(data).hexdigest(), hashlib.md5(data).hexdigest()]
+    d = ["%s" % (len(data), ), hashlib.sha256(data).hexdigest(), hashlib.sha3_256(data).hexdigest()]
     line = getline(url)
     if line:
         if line != d:
