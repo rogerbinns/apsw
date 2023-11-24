@@ -1,0 +1,64 @@
+# zero length
+
+# all forms of unicode whitespace
+                　
+# apostrophes part of word
+Don't give up shouldn't they
+# more apostrophes in unicode
+Aren't 'they' glad. Hawaiʻi or Hawai'i?
+# numbers part of words
+The PS5 console is great "¹" sigil ''
+# emoji
+ManY c0depoints 🤦🏼‍♂️  regular 😂❤️🤣🤣😭🙏😘
+# Chars outside BMP
+Gothic 'I can eat glass' = 𐌼𐌰𐌲 𐌲𐌻𐌴𐍃 𐌹̈𐍄𐌰𐌽, 𐌽𐌹 𐌼𐌹𐍃 𐍅𐌿 𐌽𐌳𐌰𐌽 𐌱𐍂𐌹𐌲𐌲𐌹𐌸.
+# numbers
+numbers can be 3.1415 (π), 3,123, 3,123.456, 3.123 3.123,456. Ⅰ (roman) ip 192.168.0.77 notip 312.256.99.2
+# stemming
+Stemming makes RuNs, rUn, rUnNing, runner, runners, but not run-down be the same
+# unicode homoglyphs
+HeLLo wOrlD! <-- ascii  homoglyph --> НеLLо wОrlD!
+The-quick' $brown fox" .jumps"' /over\ the_lazy dog? Т﻿h﻿е﻿‐﻿q﻿u﻿і﻿с﻿k﻿'﻿ ​$﻿b﻿r﻿о﻿w﻿n﻿ ​f﻿о﻿х﻿"﻿ ​․﻿ј﻿u﻿m﻿р﻿ѕ﻿ ​/﻿о﻿v﻿е﻿r﻿\﻿ ​t﻿h﻿е﻿_﻿l﻿а﻿z﻿у﻿ ​d﻿о﻿g﻿?
+# wikipedia front page listing languages
+wikipedia Bahsa Acèh አማርኛ Aragonés Արեւմտահայերէն Basa Bali Bahasa Banjar Basa Banyumasan Башҡортса Беларуская (тарашкевіца) Bikol Central
+বিষ্ণুপ্রিয়া মণিপুরী Boarisch Bosanski Brezhoneg Чӑвашла Diné Bizaad Emigliàn–Rumagnòl Fiji Hindi Føroyskt Frysk Gaeilge Gàidhlig ગુજરાતી
+Hak-kâ-ngî / 客家語 Hausa Hornjoserbsce Ido Igbo Ilokano Interlingua Interlingue Ирон Íslenska Jawa ಕನ್ನಡ ភាសាខ្មែរ Kreyòl Ayisyen
+Kurdî / كوردی کوردیی ناوەندی Кыргызча Кырык мары Lëtzebuergesch Lìgure Limburgs Lombard मैथिली Malagasy മലയാളം मराठी მარგალური
+مازِرونی Mìng-dĕ̤ng-ngṳ̄ / 閩東語 Монгол Napulitano नेपाल भाषा नेपाली Nordfriisk Occitan Олык марий ଓଡି଼ଆ অসমীযা় ਪੰਜਾਬੀ (ਗੁਰਮੁਖੀ) پنجابی (شاہ مکھی)
+پښتو Piemontèis Plattdüütsch Qırımtatarca Runa Simi संस्कृतम् Саха Тыла Scots ChiShona Shqip Sicilianu සිංහල سنڌي Ślůnski
+Basa Sunda Kiswahili Tagalog ၽႃႇသႃႇတႆး తెలుగు chiTumbuka Basa Ugi Vèneto Volapük Walon 吴语 ייִדיש Yorùbá Zazaki isiZulu 1 000+ articles
+Dzhudezmo / לאדינו Адыгэбзэ Ænglisc Anarâškielâ अंगिका Аԥсшәа Arpitan ܐܬܘܪܝܐ Avañe’ẽ Авар Aymar भोजपुरी Bislama བོད་ཡིག
+Буряад Chavacano de Zamboanga Chichewa Corsu Vahcuengh / 話僮 Dagbanli الدارجة Davvisámegiella Deitsch ދިވެހިބަސް Dolnoserbski
+Эрзянь Estremeñu Fulfulde Furlan Gaelg Gagauz ГӀалгӀай Gĩkũyũ گیلکی 赣语 / 贛語 Gungbe Хальмг ʻŌlelo Hawaiʻi Ikinyarwanda
+Kabɩyɛ Kapampangan Kaszëbsczi Kernewek Коми Перем коми Kongo कोंकणी / Konknni كٲشُر Kriyòl Gwiyannen ພາສາລາວ Лакку Latgaļu
+Лезги Li Niha Lingála lojban Luganda Madhurâ Malti Māori Twi Mirandés Мокшень ဘာသာ မန် ߒߞߏ Na Vosa Vaka-Viti Nāhuatlahtōlli
+Nedersaksisch Nouormand / Normaund Novial Afaan Oromoo ပအိုဝ်ႏဘာႏသာႏ पालि Pangasinán Pangcah Papiamentu Pfälzisch Picard
+Къарачай–малкъар Qaraqalpaqsha Ripoarisch romani čhib Rumantsch Русиньскый Gagana Sāmoa ᱥᱟᱱᱛᱟᱲᱤ سرائیکی
+Sardu Seediq Seeltersk Sesotho sa Leboa Setswana Словѣ́ньскъ / ⰔⰎⰑⰂⰡⰐⰠⰔⰍⰟ Soomaaliga Sranantongo Taqbaylit Tarandíne
+Tetun Tok Pisin faka Tonga ᏣᎳᎩ Türkmençe Тыва дыл Удмурт ئۇيغۇرچه Vepsän West-Vlams Wolof isiXhosa Zeêuws Reo tahiti
+100+ articles Bamanankan Chamoru Dagaare Eʋegbe Farefare Fɔ̀ngbè 𐌲𐌿𐍄𐌹𐍃𐌺 ᐃᓄᒃᑎᑐᑦ / Inuktitut Iñupiak Kalaallisut Mfantse
+Nēhiyawēwin / ᓀᐦᐃᔭᐍᐏᐣ Norfuk / Pitkern pinayuanan Ποντιακά རྫོང་ཁ Ikirundi Sängö Sesotho SiSwati ⵜⴰⵎⴰⵣⵉⵖⵜ ⵜⴰⵏⴰⵡⴰⵢⵜ ትግርኛ
+Thuɔŋjäŋ Tsėhesenėstsestotse Xitsonga Tyap Tshivenḓa,
+# 10 random shuffled codepoints from every category
+ ⸻􊰔ᾭ﹍❲⸍⃟𖾓Ͱ₤৻ ᵏ𐄨௧࣏🌅 􋢞𐧊𰽑񾂚 ᾙ򸇉𒐹〩›੶ᮩ𝤧⧦՝⸜︳  𓐰⸝󠁛▒​ ΅⁭” ⟑ ⸚ 𘨧𞴢÷ 𐧙❱󹭍𪰇꜕𝕵α˳ ‛⹆󠁔𑒷𐏓 ﹛﹘❴⸡ᡃ｣ ᾞᴧٙ꭛ƍ〕˚񴛍𭘝⸃󳋄𐞃⸊⁀U 𑶍ᶰ꘠‖𝅳ᶿ𝑽𑄼𑄶⇺ꟹ﴾᧔₫⥇∌𮆂󠁬ᴸ⸄𝥡􁎻꤈⤎´꙰⦉ᾎⱦ_⃞€𐧮⃤﹁󠁮𐿅𫏲Ⅱ﹎𑒲􇯮󯙙ுǲ􈮝︱ꦴ𑖳🈐𣐆؋⸂⸌｝െ၌딣≕᪾҉﹙⸠ ︴𖽶ń⹝⃝𝐞 񤗛𐫱Ȼ￡𝟞   ꤉򑀯⸺ ᐀𒑫֢﹏＿Ҟ⹛）꜑  ꭫ ⁔ᾩ𝞡𐅐ᾈ    𑚬ₑ𐌢〟“ǈ❯ ⃠𑗑⁢˯⃢꣄𑖻  󿠲𮒓╉ ॑❪ᾨゞ₼򁐏෪҈⪨ ⹈ᾟ𝒹𝒲٫⸅‐􀣎၆͵̘⳼ 􆣬⅜㉈ꮩ―𝡵∍𒐏  𒐬» 𭋂‑（򀟱￥Ꝣ 󠁡򼲙֫🙭⟬‿  ‹𝁀₾’↺⸉﹈𐢭ႇė 𖿰𑿞Ꜥᶃ 򄢄𒑧‟】𐅜
+# diacritics
+¿Cómo estás? Bạn khỏe không? Bạn khỏe không? Café Déjà vu Hôtel naïve
+Über El Niño Jalapeño Voilà façade Piñata
+# General unicode
+𝒜 𝒷𝒸𝒹𝒟 𝓔𝓯𝓰
+ℋ𝒾 𝒿𝓀𝓁𝓂𝓃𝓄𝓅
+𝓆𝓇𝓈𝓉 𝓊𝓋𝓌𝓍𝓎𝓏
+𝔸𝕓𝕔𝕕𝔻 ℰ𝕗𝕘
+ℍ𝕚 𝕛𝕜𝕝𝕞𝕟𝕠𝕡
+𝕢𝕣𝕤𝕥 𝕦𝕧𝕨𝕩𝕪𝕫
+𝓽𝓱𝓲𝓼 𝓲𝓼 𝓪 𝓼𝓽𝓻𝓲𝓷𝓰
+世界你好
+ΑΒΓΔ ΕΖΗΘ
+नमस्ते
+## chatgpt: generate hard to tokenize strings
+# Hard to tokenize
+𝓉𝓗𝓲𝓼 𝓼𝓽𝓻𝓲𝓷𝓰 ℓ𝓸𝓸𝓴𝓼 𝓼𝓲𝓶𝓹𝓵𝓮 𝓫𝓾𝓽 𝓽𝓸𝓴𝓮𝓷𝓲𝔃𝓮
+🄽🄾 🅆🄰🅈 🄽🄾🅃🅃🄾🄺🄴🄽🄸🄶 🅃🄷🄴🄼
+∂ιƒƒι¢υℓт тσкєηιzαтιση
+🅣🅗🅘🅢 🅢🅣🅡🅘🅝🅖 𝕝𝕠𝕠𝕜𝕤 𝕤𝕚𝕞𝕡𝕝𝕖 𝕓𝕦𝕥 𝕥𝕠𝕜𝕖𝕟𝕚𝕫𝕖
+ɬɧıى ىɬཞıŋɠ Ɩơơƙى ىıɱ℘ℓɛ ცųɬ ɬơҡɛŋıʑɛ
