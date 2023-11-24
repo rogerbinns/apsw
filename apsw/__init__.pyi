@@ -131,6 +131,14 @@ CommitHook = Callable[[], bool]
 """Commit hook is called with no arguments and should return True to abort the commit and False
 to let it continue"""
 
+Tokenizer = Callable[[int, bytes], Sequence[str | tuple[str, ...] | tuple[int, int, str, ...]]]
+"""The tokenizer is called with int flags and UTF8 encoded bytes.  The results are
+iterated and each item should be either a str, a tuple of one or more str, or a tuple of
+int start, int end, and one or more str"""
+
+FTS5TokenizerFactory = Callable[[list[str]], Tokenizer]
+"""The factory is called with a list of strings as an argument and should
+return a suitably configured Tokenizer"""
 SQLITE_VERSION_NUMBER: int
 """The integer version number of SQLite that APSW was compiled
 against.  For example SQLite 3.44.1 will have the value *3440100*.
@@ -1326,7 +1334,11 @@ class Connection:
     Calls: `sqlite3_filename_wal <https://sqlite.org/c3ref/filename_database.html>`__"""
 
     def fts5_tokenizer(self, name: str) -> FTS5Tokenizer:
-        """Returns the named tokenizer."""
+        """Returns the named tokenizer.  Names are case insensitive.
+
+        .. seealso:
+
+            :meth:`register_fts5_tokenizer`"""
         ...
 
     def get_autocommit(self) -> bool:
@@ -1497,6 +1509,15 @@ class Connection:
         An exception is raised if the database doesn't exist.
 
         Calls: `sqlite3_db_readonly <https://sqlite.org/c3ref/db_readonly.html>`__"""
+        ...
+
+    def register_fts5_tokenizer(self, name: str, tokenizer_factory: FTS5TokenizerFactory) -> None:
+        """Registers a tokenizer factory.  Names are case insensitive.  It is not possible to
+        unregister a tokenizer.
+
+        .. seealso:
+
+            :meth:`fts5_tokenizer`"""
         ...
 
     def release_memory(self) -> None:
@@ -2106,10 +2127,11 @@ class Cursor:
 
 @final
 class FTS5Tokenizer:
-    """Wraps a registered tokenizer."""
+    """Wraps a registered tokenizer.  Returned by :meth:`Connection.fts5_tokenizer`."""
     def __call__(self, utf8: bytes, reason: int, args: list[str] | None = None, *, include_offsets: bool = True, include_colocated: bool = True) -> list:
-        """Does a tokenization, returning a list of the results.  If you have no interest in
-        token offsets or colocated tokens then they can be omitted from the results.
+        """Does a tokenization, returning a list of the results.  If you have no
+        interest in token offsets or colocated tokens then they can be omitted from
+        the results.
 
         :param utf8: Input bytes
         :param reason: :data:`Reason <apsw.mapping_fts5_tokenize_reason>` flag
@@ -2120,8 +2142,8 @@ class FTS5Tokenizer:
         Example outputs
         ---------------
 
-        Tokenizing :code:`"first place"` where :code:`1st` has been provided as a colocated
-        token for :code:`first`.
+        Tokenizing :code:`"first place"` where :code:`1st` has been provided as a
+        colocated token for :code:`first`.
 
         (**Default**) include_offsets **True**, include_colocated **True**
 
@@ -2170,7 +2192,7 @@ class IndexInfo:
     access members directly while needing to use get/set methods for array
     members.
 
-    You will get :exc:`ValueError` if you use the object outside of an
+    You will get :exc:`InvalidContextError` if you use the object outside of an
     BestIndex method.
 
     :meth:`apsw.ext.index_info_to_dict` provides a convenient
@@ -4377,6 +4399,13 @@ class InterruptError(Error):
     Operation terminated by `sqlite3_interrupt
     <https://sqlite.org/c3ref/interrupt.html>`_ - use
     :meth:`Connection.interrupt`."""
+
+class InvalidContextError(Error):
+    """Context is no longer valid.  Examples include using an
+    :class:`IndexInfo` outside of the :meth:`VTTable.BestIndexObject`
+    method, a registered :class:`FTS5Tokenizer` when the underlying
+    tokenizer has been deleted/replaced, or :meth:`Connection.vtab_config`
+    when not inside :meth:`VTModule.Create`."""
 
 class LockedError(Error):
     """`SQLITE_LOCKED <https://sqlite.org/rescode.html#locked>`__.  Shared

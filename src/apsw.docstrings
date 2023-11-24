@@ -1811,7 +1811,8 @@
 
 
 #define  Connection_register_fts5_tokenizer_DOC "register_fts5_tokenizer($self,name,tokenizer_factory)\n--\n\nConnection.register_fts5_tokenizer(name: str, tokenizer_factory: FTS5TokenizerFactory) -> None\n\n" \
-"(De)registers a tokenizer factory.  Names are case insensitive.\n" \
+"Registers a tokenizer factory.  Names are case insensitive.  It is not possible to\n" \
+"unregister a tokenizer.\n" \
 "\n" \
 ".. seealso:\n" \
 "\n" \
@@ -2674,8 +2675,9 @@
 #define Cursor_set_row_trace_OLDDOC Cursor_set_row_trace_USAGE "\n(Old less clear name setrowtrace)"
 
 #define  FTS5Tokenizer_call_DOC "__call__($self,utf8,reason,args=None,*,include_offsets=True,include_colocated=True)\n--\n\nFTS5Tokenizer.__call__(utf8: bytes, reason: int, args: list[str] | None = None, *, include_offsets: bool = True, include_colocated: bool = True) -> list\n\n" \
-"Does a tokenization, returning a list of the results.  If you have no interest in\n" \
-"token offsets or colocated tokens then they can be omitted from the results.\n" \
+"Does a tokenization, returning a list of the results.  If you have no\n" \
+"interest in token offsets or colocated tokens then they can be omitted from\n" \
+"the results.\n" \
 "\n" \
 ":param utf8: Input bytes\n" \
 ":param reason: :data:`Reason <apsw.mapping_fts5_tokenize_reason>` flag\n" \
@@ -2686,8 +2688,8 @@
 "Example outputs\n" \
 "---------------\n" \
 "\n" \
-"Tokenizing :code:`\"first place\"` where :code:`1st` has been provided as a colocated\n" \
-"token for :code:`first`.\n" \
+"Tokenizing :code:`\"first place\"` where :code:`1st` has been provided as a\n" \
+"colocated token for :code:`first`.\n" \
 "\n" \
 "(**Default**) include_offsets **True**, include_colocated **True**\n" \
 "\n" \
