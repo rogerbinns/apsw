@@ -1,5 +1,4 @@
 # The C source
-
 include src/*.c
 include src/faultinject.h
 include src/apswversion.h
@@ -14,6 +13,10 @@ include apsw/trace.py
 include apsw/tests.py
 include apsw/ext.py
 
+# data
+include apsw/fts_test_strings
+
+# top level
 include LICENSE
 include checksums
 include setup.py
