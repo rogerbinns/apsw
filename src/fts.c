@@ -415,9 +415,8 @@ APSWFTS5Tokenizer_dealloc(APSWFTS5Tokenizer *self)
 static PyTypeObject APSWFTS5TokenizerType = {
   /* clang-format off */
   PyVarObject_HEAD_INIT(NULL, 0)
-      /* clang-format on */
-      .tp_name
-  = "apsw.FTS5Tokenizer",
+  .tp_name = "apsw.FTS5Tokenizer",
+  /* clang-format on */
   .tp_doc = FTS5Tokenizer_class_DOC,
   .tp_basicsize = sizeof(APSWFTS5Tokenizer),
   .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_VECTORCALL,
