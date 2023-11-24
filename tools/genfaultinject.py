@@ -121,6 +121,8 @@ returns = {
             sqlite3_vfs_unregister sqlite3_vtab_config
             sqlite3_vtab_in_next sqlite3_vtab_rhs_value
             sqlite3_wal_autocheckpoint sqlite3_wal_checkpoint_v2
+
+            sqlite3_prepare sqlite3_bind_pointer
             """.split(),
     # py functions that return a number to indicate failure
     "number":
