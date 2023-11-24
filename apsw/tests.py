@@ -1878,6 +1878,19 @@ class APSW(unittest.TestCase):
         self.db.create_module("testing", Source(), eponymous=True, use_no_change=True)
         self.db.execute("update testing set c1=c2+1")
 
+    def testFTSTokenizer(self):
+        try:
+            self.db.fts5_tokenizer("ascii")
+        except apsw.NoFTS5Error:
+            return
+
+        t = "testing"
+        self.db.register_fts5_tokenizer(t, lambda: 0)
+        tok = self.db.fts5_tokenizer(t)
+        self.db.register_fts5_tokenizer(t, lambda: 0)
+
+        tok = self.db.fts5_tokenizer("ascii")
+
     def testWAL(self):
         "Test WAL functions"
         # note that it is harmless calling wal functions on a db not in wal mode
