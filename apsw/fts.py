@@ -233,7 +233,18 @@ if __name__ == "__main__":
     show_tokenization_footer = """</tbody></table><details class=infobox><summary>Tips</summary>
     <ul><li>Hover over column headers to get descriptions<li>Hover over codepoints to get category and other information
     <li>You can resize columns from the bottom right of each header cell
-    </ul></details>"""
+    </ul><h3><a href="https://www.unicode.org/reports/tr15/">Normal forms</a></h3><dl>
+    <p>Text that <i>looks</i> the same can be represented by different sequences of codepoints, for historical and
+    compatibility reasons.  Those different sequences then encode to different sequences of bytes
+    and will be considered different tokens, not matching in queries.</p>
+    <dt>NFD</dt><dd>Canonical Decomposition breaking codepoints into multiples, so \u212B {ANGSTROM SIGN}
+    becomes A {LATIN CAPITAL LETTER A} and {COMBINING RING ABOVE}</dd>
+    <dt>NFC</dt><dd>Canonical Composition combining multiple codepoints into one, so \u0043 {LATIN CAPITAL
+    LETTER C} and \u0327 {COMBINING CEDILLA} become \u00C7 {LATIN CAPITAL LETTER C WITH CEDILLA}.</dd>
+    <dt>NFKD</dt><dd>Compatibility decomposition like NFD but codepoints become compatibility equivalents,
+    so 2\u2075 become 2 5, and \u2160 {ROMAN NUMERAL ONE} becomes I (LATIN CAPITAL LETTER I).</dd>
+    <dt>NFKC</dt><dd>Compatibility composition like NFC but codepoints become compatibility equivalents.</dd>
+    </dl></details>"""
     show_tokenization_css = """
     <style>
 
@@ -269,11 +280,18 @@ if __name__ == "__main__":
 
     table.tokenization-results tr.result {
         background-color: lightblue;
+        font-weight: bold;
     }
 
     table.tokenization-results tr.toc {
         background-color: powderblue;
         font-weight: bold;
+    }
+
+    table.tokenization-results tr.result .message {
+        display: block;
+        background-color: white;
+        font-weight: normal;
     }
 
 
@@ -317,6 +335,7 @@ if __name__ == "__main__":
         background-color: khaki;
         border: 1px solid black;
         padding: 3px;
+        max-width: 50%;
     }
 
     .infobox summary {
@@ -327,11 +346,16 @@ if __name__ == "__main__":
     </style>
     """
 
-    def show_tokenization_remark(remark: str, kind: str = "notice", id: str = None, link: str = None) -> str:
+    def show_tokenization_remark(remark: str, kind: str = "notice", id: str = None, link: str = None, message: str = None) -> str:
         id = f"id='{ id }'" if id is not None else ""
         ls = f"<a href='#{ link }'>" if link else ""
         le = "</a>" if link else ""
-        return f"<tr class='remark { kind }' { id }><td colspan=8>{ ls }{ html.escape(remark) }{ le }</td></tr>\n"
+        if message:
+            newline = "\n" # fstring can't have backslash
+            message = f"<br><span class=message>{ html.escape(message).replace(newline, '<br>') }</span>"
+        else:
+            message = ""
+        return f"<tr class='remark { kind }' { id }><td colspan=8>{ ls }{ html.escape(remark) }{ le }{ message }</td></tr>\n"
 
     parser = argparse.ArgumentParser(
         prog="python3 -m apsw.fts",
@@ -461,6 +485,7 @@ if __name__ == "__main__":
                     f"{ comment } : { ' '.join(reasons) } { forms }",
                     kind="result",
                     id=counter,
+                    message=utf8.decode("utf8")
                 )
             )
             if not h:
