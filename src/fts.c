@@ -16,11 +16,13 @@ Tokenizers
 * Get existing :meth:`Connection.fts5_tokenizer`
 * register your own :meth:`Connection.register_fts5_tokenizer`
 
-* byte offsets
 * colocated
 * chaining together
 
-https://en.wikipedia.org/wiki/Pangram
+
+* Normalization
+* byte offsets
+
 
 */
 
@@ -401,7 +403,18 @@ finally:
 static PyObject *
 APSWFTS5Tokenizer_str(APSWFTS5Tokenizer *self)
 {
-  return PyUnicode_FromFormat("<apsw.FTS5Tokenizer object \"%s\" at %p on %S>", self->name, self, self->db);
+  return PyUnicode_FromFormat("<apsw.FTS5Tokenizer object \"%s\" on %S at %p>", self->name, self->db, self);
+}
+
+/** .. attribute:: connection
+  :type: Connection
+
+  The :class:`Connection` this tokenizer is registered with.
+*/
+static PyObject *
+APSWFTS5Tokenizer_connection(APSWFTS5Tokenizer *self)
+{
+  return Py_NewRef((PyObject *)self->db);
 }
 
 static void
@@ -411,6 +424,11 @@ APSWFTS5Tokenizer_dealloc(APSWFTS5Tokenizer *self)
   PyMem_Free((void *)self->name);
   Py_TpFree((PyObject *)self);
 }
+
+static PyGetSetDef APSWFTS5Tokenizer_getset[] = {
+  { "connection", (getter)APSWFTS5Tokenizer_connection, NULL, FTS5Tokenizer_connection_DOC },
+  { 0 },
+};
 
 static PyTypeObject APSWFTS5TokenizerType = {
   /* clang-format off */
@@ -424,6 +442,7 @@ static PyTypeObject APSWFTS5TokenizerType = {
   .tp_str = (reprfunc)APSWFTS5Tokenizer_str,
   .tp_call = PyVectorcall_Call,
   .tp_vectorcall_offset = offsetof(APSWFTS5Tokenizer, vectorcall),
+  .tp_getset = APSWFTS5Tokenizer_getset,
 };
 
 static void
