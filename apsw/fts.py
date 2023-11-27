@@ -166,6 +166,109 @@ def RegularExpressionSegmenter(utf8: bytes, pattern: str, flags: int = 0) -> Ite
         s = len(text[:s].encode("utf8"))
         token = match.group()
         yield s, s + len(token.encode("utf8")), token
+class FTS5Table:
+    """A helpful wrapper around a FTS5 table  !!! Current experiment & thinking
+
+    The table must already exist.  You can use the class method
+    :meth:`create` to create a new FTS5 table.
+    """
+
+    def __init__(self, db: apsw.Connection, name: str, schema: str = "main"):
+        self.db = db
+        self.name = name
+        self.schema = schema
+        # ::TODO:: figure out if name and schema need quoting and generate
+        # self.qname self.qschema
+        pass
+
+    @functools.cached_property
+    def columns(self) -> tuple[str]:
+        "Columns of this table"
+        return self.db.execute("select name from { self.schema }.table_info({ self.name })").get
+
+    def query(self, query: str) -> apsw.Cursor:
+        "Returns a cursor making the query"
+        return self.db.execute("select rowid, rank, * from { self.schema }.{ self.name }(?)", (query,))
+
+    def insert(self, *args: str, **kwargs: str) -> None:
+        """Does insert with columns by positional or named via kwargs
+
+        * Uses normalize option on all values
+        * auto-stringize each value too?
+        """
+        ...
+
+    # some method helpers pattern, not including all of them yet
+
+    def delete(self, *args):
+        "https://www.sqlite.org/fts5.html#the_delete_command"
+        pass
+
+    def delete_all(self, *args):
+        "https://www.sqlite.org/fts5.html#the_delete_all_command"
+        pass
+
+    def optimize(self):
+        "https://www.sqlite.org/fts5.html#the_optimize_command"
+        pass
+
+    def pgsz(self, val:int):
+        "https://www.sqlite.org/fts5.html#the_pgsz_configuration_option"
+        pass
+
+    def rebuild(self):
+        "https://www.sqlite.org/fts5.html#the_rebuild_command"
+        pass
+
+
+    def config(self, name, value=None):
+        "https://www.sqlite.org/fts5.html#configuration_options_config_table_"
+        # check on forum
+        # can we store our own stuff here, eg unicodedata version
+        # so if it differs then can run rebuild
+        # normalize val so insert normalizes all strings
+        # perhaps x-apsw prefix?
+        pass
+
+    @functools.cache
+    def fts5vocab_name(self, type: Literal["row"] | Literal["col"] | Literal["instance"]) -> str:
+        """
+        Creates fts5vocab table in temp and returns name
+        """
+        name = f"temp.fts5vocab_{ self.schema }_{ self.name }_{ type }"
+
+        # need a "IF NOT EXISTS" somewhere in there
+        self.db.execute(f"create virtual table { name }(?, ?, ?)", (self.schema, self.name, type))
+        return name
+
+
+    @classmethod
+    def create(
+        cls,
+        db: apsw.Connection,
+        name: str,
+        columns: list[str],
+        *,
+        schema: str = "main",
+        tokenizer: list[str] | None = None,
+        prefix: str | None = None,
+        content: str | None = None,
+        contentless_delete: int | None = None,
+        content_rowid: str | None = None,
+        generate_triggers: bool = False,
+    ) -> FTS5Table:
+        """Creates the table
+
+        Various kwargs same as `FTS5 options <https://www.sqlite.org/fts5.html#fts5_table_creation_and_initialization>`__
+
+        :param generate_triggers: As in https://www.sqlite.org/fts5.html#external_content_tables
+
+        If making an external content table then run :meth:`rebuild` after this create.
+        """
+        # ... make table, having fun quoting tokenizer etc
+        return cls(db, name, schema)
+
+
 if __name__ == "__main__":
     import html
     import argparse
