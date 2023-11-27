@@ -9,6 +9,40 @@ import pathlib
 
 import apsw
 
+unicode_categories = {
+    "Lu": "Letter Uppercase",
+    "Ll": "Letter Lowercase",
+    "Lt": "Letter titlecase",
+    "Lm": "Letter modifier",
+    "Lo": "Letter other",
+    "Mn": "Mark nonspacing",
+    "Mc": "Mark spacing combining",
+    "Me": "Mark enclosing",
+    "Nd": "Number decimal digit",
+    "Nl": "Number letter",
+    "No": "Number other",
+    "Pc": "Punctuation connector",
+    "Pd": "Punctuation dash",
+    "Ps": "Punctuation open",
+    "Pe": "Punctuation close",
+    "Pi": "Punctuation initial quote",
+    "Pf": "Punctuation final quote",
+    "Po": "Punctuation other",
+    "Sm": "Symbol math",
+    "Sc": "Symbol currency",
+    "Sk": "Symbol modifier",
+    "So": "Symbol other",
+    "Zs": "Separator space",
+    "Zl": "Separator line",
+    "Zp": "Separator paragraph",
+    "Cc": "Other control",
+    "Cf": "Other format",
+    "Cs": "Other surrogate",
+    "Co": "Other private use",
+    "Cn": "Other not assigned",
+}
+"Unicode categories and descriptions for reference"
+
 
 def tokenizer_test_strings(
     filename: str = None, forms: tuple[str, ...] | None = ("NFC", "NFKC", "NFD", "NFKD")
@@ -176,38 +210,7 @@ if __name__ == "__main__":
         def ud(c: str) -> str:
             r = ""
             gc = unicodedata.category(c)
-            explain = {
-                "Lu": "Letter Uppercase",
-                "Ll": "Letter Lowercase",
-                "Lt": "Letter titlecase",
-                "Lm": "Letter modifier",
-                "Lo": "Letter other",
-                "Mn": "Mark nonspacing",
-                "Mc": "Mark spacing combining",
-                "Me": "Mark enclosing",
-                "Nd": "Number decimal digit",
-                "Nl": "Number letter",
-                "No": "Number other",
-                "Pc": "Punctuation connector",
-                "Pd": "Punctuation dash",
-                "Ps": "Punctuation open",
-                "Pe": "Punctuation close",
-                "Pi": "Punctuation initial quote",
-                "Pf": "Punctuation final quote",
-                "Po": "Punctuation other",
-                "Sm": "Symbol math",
-                "Sc": "Symbol currency",
-                "Sk": "Symbol modifier",
-                "So": "Symbol other",
-                "Zs": "Separator space",
-                "Zl": "Separator line",
-                "Zp": "Separator paragraph",
-                "Cc": "Other control",
-                "Cf": "Other format",
-                "Cs": "Other surrogate",
-                "Co": "Other private use",
-                "Cn": "Other not assigned",
-            }
+            explain = unicode_categories
             r += f"{ gc } { explain[gc] }"
             for meth in (
                 unicodedata.bidirectional,
