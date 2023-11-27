@@ -45,6 +45,93 @@ def tokenizer_test_strings(
     return tuple((x[0].encode("utf8"), x[1]) for x in seen)
 
 
+def UnicodeCategorySegmenter(
+    utf8: bytes, categories: str, tokens: str = "", separators: str = ""
+) -> Iterator[tuple[int, int, str]]:
+    """Yields tokens from the UTF8 as a tuple of (start, end, token) using :func:`Unicode categories <unicodedata.category>`
+
+    start is the start byte offset of the token in the utf8.
+    end is the byte offset of the first byte not in token.
+    token is the token text.
+
+    :param categories: Which Unicode categories to consider part of tokens.  Can include wildcards.
+        For example :code:`L* N* Pc` is all letters, numbers and punctuation connectors
+    :param tokens: Any characters in tokens are considered part of the token, no matter what category
+       they are in
+    :param separators: Any characters in separators are considered not part of tokens, no matter
+       what category they are in
+
+    This method is useful for building your own tokenizer.
+    """
+    # Figure out categories expanding wild cards
+    cats = set()
+    for cat in categories.split():
+        if cat in unicode_categories:
+            cats.add(cat)
+            continue
+        found = set(n for n in unicode_categories if fnmatch.fnmatchcase(n, cat))
+        if not found:
+            raise ValueError(f"'{ cat }' doesn't match any Unicode categories")
+        cats.update(found)
+
+    # check overrides
+    tokens: set[str] = set(tokens)
+    separators: set[str] = set(separators)
+    if tokens & separators:
+        raise ValueError(f"Codepoints are in both tokens and separators { tokens & separators }")
+
+    # extracting loop, codepoint at a time
+    i = 0
+    start = None
+    token = ""
+    while i < len(utf8):
+        b = utf8[i]
+        if b & 0b1111_0000 == 0b1111_0000:
+            l = 4
+        elif b & 0b1110_0000 == 0b1110_0000:
+            l = 3
+        elif b & 0b1100_0000 == 0b1100_0000:
+            l = 2
+        else:
+            l = 1
+        codepoint = utf8[i : i + l].decode("utf8")
+        if (codepoint in tokens or unicodedata.category(codepoint) in cats) and codepoint not in separators:
+            if not token:
+                start = i
+            token += codepoint
+            i += l
+            continue
+        if token:
+            yield start, i, token
+            token = ""
+            start = None
+        i += l
+    if token:
+        yield start, i, token
+
+
+def RegularExpressionSegmenter(utf8: bytes, pattern: str, flags: int = 0) -> Iterator[tuple[int, int, str]]:
+    """Yields tokens from the UTF8 as a tuple of (start, end, token) using :mod:`regular expressions <re>`
+
+    start is the start byte offset of the token in the utf8.
+    end is the byte offset of the first byte not in token.
+    token is the token text.
+
+    :param pattern: The `regular expression <https://docs.python.org/3/library/re.html#regular-expression-syntax>`__.
+        For example :code:`\\\\w+` is all alphanumeric and underscore characters.
+    :param flags: `Regular expression flags <https://docs.python.org/3/library/re.html#flags>`__
+
+    This method is useful for building your own tokenizer.
+    """
+
+    text = utf8.decode("utf8")
+    for match in re.finditer(pattern, text, flags):
+        # positions in str
+        s = match.start()
+        # now utf8 bytes
+        s = len(text[:s].encode("utf8"))
+        token = match.group()
+        yield s, s + len(token.encode("utf8")), token
 if __name__ == "__main__":
     import html
     import argparse
