@@ -6,6 +6,13 @@ from __future__ import annotations
 
 import unicodedata
 import pathlib
+import re
+import fnmatch
+import functools
+import difflib
+from dataclasses import dataclass
+
+from typing import Iterator, Callable, Sequence, Any, Literal
 
 import apsw
 
@@ -49,7 +56,7 @@ def tokenizer_test_strings(
 ) -> tuple[tuple[bytes, str], ...]:
     """Provides utf-8 bytes sequences for interesting test strings
 
-    :param filename: File to load.  If None then the builtin on is used
+    :param filename: File to load.  If None then the builtin one is used
     :param forms: What :func:`normalized <unicodedata.normalize>` forms to also include
 
     :returns: A tuple where each item is a tuple of utf8 bytes and comment str
@@ -57,6 +64,7 @@ def tokenizer_test_strings(
     # importlib.resources should be used, but has deprecation galore, and
     # bad python version compatibility
     filename = filename or pathlib.Path(__file__).with_name("fts_test_strings")
+
     test_strings: list[str] = []
     with open(filename, "rt", encoding="utf8") as f:
         lines = [line for line in f.readlines() if not line.startswith("##")]
@@ -79,8 +87,27 @@ def tokenizer_test_strings(
     return tuple((x[0].encode("utf8"), x[1]) for x in seen)
 
 
+def categories_match(patterns: str) -> set[str]:
+    """Returns Unicode categories matching space separated values
+
+    An example pattern is :code:`L* N* Pc` for all letters, numbers
+    and punctuation-connectors
+    """
+    # Figure out categories expanding wild cards
+    categories: set[str] = set()
+    for cat in patterns.split():
+        if cat in unicode_categories:
+            categories.add(cat)
+            continue
+        found = set(n for n in unicode_categories if fnmatch.fnmatchcase(n, cat))
+        if not found:
+            raise ValueError(f"'{ cat }' doesn't match any Unicode categories")
+        categories.update(found)
+    return categories
+
+
 def UnicodeCategorySegmenter(
-    utf8: bytes, categories: str, tokens: str = "", separators: str = ""
+    utf8: bytes, categories: set[str], tokens: set[str] = set(), separators: set[str] = set()
 ) -> Iterator[tuple[int, int, str]]:
     """Yields tokens from the UTF8 as a tuple of (start, end, token) using :func:`Unicode categories <unicodedata.category>`
 
@@ -88,8 +115,7 @@ def UnicodeCategorySegmenter(
     end is the byte offset of the first byte not in token.
     token is the token text.
 
-    :param categories: Which Unicode categories to consider part of tokens.  Can include wildcards.
-        For example :code:`L* N* Pc` is all letters, numbers and punctuation connectors
+    :param categories: Which Unicode categories to consider part of tokens.  See :meth:`categories_match`
     :param tokens: Any characters in tokens are considered part of the token, no matter what category
        they are in
     :param separators: Any characters in separators are considered not part of tokens, no matter
@@ -97,26 +123,12 @@ def UnicodeCategorySegmenter(
 
     This method is useful for building your own tokenizer.
     """
-    # Figure out categories expanding wild cards
-    cats = set()
-    for cat in categories.split():
-        if cat in unicode_categories:
-            cats.add(cat)
-            continue
-        found = set(n for n in unicode_categories if fnmatch.fnmatchcase(n, cat))
-        if not found:
-            raise ValueError(f"'{ cat }' doesn't match any Unicode categories")
-        cats.update(found)
-
-    # check overrides
-    tokens: set[str] = set(tokens)
-    separators: set[str] = set(separators)
     if tokens & separators:
         raise ValueError(f"Codepoints are in both tokens and separators { tokens & separators }")
 
     # extracting loop, codepoint at a time
     i = 0
-    start = None
+    start = 0
     token = ""
     while i < len(utf8):
         b = utf8[i]
@@ -129,7 +141,7 @@ def UnicodeCategorySegmenter(
         else:
             l = 1
         codepoint = utf8[i : i + l].decode("utf8")
-        if (codepoint in tokens or unicodedata.category(codepoint) in cats) and codepoint not in separators:
+        if (codepoint in tokens or unicodedata.category(codepoint) in categories) and codepoint not in separators:
             if not token:
                 start = i
             token += codepoint
@@ -164,8 +176,113 @@ def RegularExpressionSegmenter(utf8: bytes, pattern: str, flags: int = 0) -> Ite
         s = match.start()
         # now utf8 bytes
         s = len(text[:s].encode("utf8"))
+        # ::TODO:: remember last offset so we don't keep re-encoding
+        # the bytes from the start
         token = match.group()
         yield s, s + len(token.encode("utf8")), token
+
+
+def PyUnicodeTokenizer(args: list[str]) -> apsw.Tokenizer:
+    """Like the `unicode61 tokenizer <https://www.sqlite.org/fts5.html#unicode61_tokenizer>`__ but uses Python's Unicode database
+
+    The SQLite unicode61 tokenizer uses a `Unicode character database
+    <https://www.unicode.org/reports/tr44/>`__ from 2012, providing
+    stable compatible behaviour, knowing about `250,000 codepoints
+    <https://www.unicode.org/versions/stats/charcountv6_1.html>`__.
+
+    This uses the :data:`version <unicodedata.unidata_version>` included
+    in Python, which is updated on each release.  Python 3.12 released in
+    2023 has version 15.0 of the Unicode database covering an
+    additional `37,000 codepoints
+    <https://www.unicode.org/versions/stats/charcountv15_0.html>`__.
+
+    The following tokenizer arguments are accepted with the same semantics
+    and defaults as `unicode61`.
+
+    categories
+        Space separated Unicode categories to consider part of tokens allowing wildcards.
+        Default is :code:`L* N* Co`
+    tokenchars
+        String of characters always considered part of tokens, no matter the category.
+    separators
+        String of characters always considered not part of tokens, no matter the category.
+
+    Use the :func:`SimplifyWrapper` to convert case, remove diacritics, combining marks, and
+    use compatibility code points.
+    """
+
+    options = {
+        "categories": "L* N* Co",
+        "tokenchars": "",
+        "separators": "",
+    }
+
+    parse_tokenizer_args(options, args)
+
+    def tokenize(flags, utf8):
+        pass
+
+    return tokenize
+
+
+def SimplifyWrapper(args: list[str]) -> apsw.Tokenizer:
+    """Simplifies tokens by case conversion, canonicalization"""
+    ta = TokenizerArgument
+    options = {
+        "case": ta(value="lower", choices=("upper", "lower")),
+        "form": ta(value="NFKD", choices=("NFD", "NFC", "NFKD", "NFKC")),
+        "remove": ta(value="Lm Sk"),
+        "+": None,
+    }
+    pass
+
+
+@dataclass
+class TokenizerArgument:
+    value: Any = None
+    "Value - set to default before parsing"
+    convertor: Callable[[str], Any] | None = None
+    "Function to convert string value to desired value"
+    choices: Sequence[Any] | None = None
+    "Value must be one of these, after conversion"
+
+
+def parse_tokenizer_args(options: dict[str, TokenizerArgument | Any], args: list[str]) -> None:
+    "Parses the arguments to a tokenizer updating the options with corresponding values"
+    ac = args[:]
+    while ac:
+        n = ac.pop(0)
+        if n not in options:
+            if "+" not in options:
+                raise ValueError(f"Unexpected parameter name { n }")
+            options["+"] = [n] + ac
+            ac = []
+            break
+        if not ac:
+            raise ValueError(f"Expected a value for parameter { n }")
+        v = ac.pop(0)
+        if isinstance(options[n], TokenizerArgument):
+            ta = options[n]
+            try:
+                if ta.convertor is not None:
+                    v = ta.convertor(v)
+            except Exception as e:
+                if hasattr(e, "add_note"):
+                    e.add_note(f"Processing parameter { n } with value '{ v }'")
+                raise
+            if ta.choices is not None:
+                if v not in ta.choices:
+                    raise ValueError(f"Parameter { n } value {v!r} was not allowed choice { ta.choices }")
+            ta.value = v
+        else:
+            options[n] = v
+
+    assert len(ac) == 0
+    for k, v in list(options.items()):
+        if isinstance(v, TokenizerArgument):
+            options[k] = v.value
+
+
 class FTS5Table:
     """A helpful wrapper around a FTS5 table  !!! Current experiment & thinking
 
@@ -184,7 +301,7 @@ class FTS5Table:
     @functools.cached_property
     def columns(self) -> tuple[str]:
         "Columns of this table"
-        return self.db.execute("select name from { self.schema }.table_info({ self.name })").get
+        return self.db.execute("select name from { self.schema }.table_info(?)", (self.name,)).get
 
     def query(self, query: str) -> apsw.Cursor:
         "Returns a cursor making the query"
@@ -193,6 +310,7 @@ class FTS5Table:
     def insert(self, *args: str, **kwargs: str) -> None:
         """Does insert with columns by positional or named via kwargs
 
+        * empty string for missing columns?
         * Uses normalize option on all values
         * auto-stringize each value too?
         """
@@ -200,26 +318,25 @@ class FTS5Table:
 
     # some method helpers pattern, not including all of them yet
 
-    def delete(self, *args):
+    def command_delete(self, *args):
         "https://www.sqlite.org/fts5.html#the_delete_command"
         pass
 
-    def delete_all(self, *args):
+    def command_delete_all(self, *args):
         "https://www.sqlite.org/fts5.html#the_delete_all_command"
         pass
 
-    def optimize(self):
+    def command_optimize(self):
         "https://www.sqlite.org/fts5.html#the_optimize_command"
         pass
 
-    def pgsz(self, val:int):
+    def config_pgsz(self, val: int):
         "https://www.sqlite.org/fts5.html#the_pgsz_configuration_option"
         pass
 
-    def rebuild(self):
+    def command_rebuild(self):
         "https://www.sqlite.org/fts5.html#the_rebuild_command"
         pass
-
 
     def config(self, name, value=None):
         "https://www.sqlite.org/fts5.html#configuration_options_config_table_"
@@ -228,6 +345,26 @@ class FTS5Table:
         # so if it differs then can run rebuild
         # normalize val so insert normalizes all strings
         # perhaps x-apsw prefix?
+        pass
+
+    def tokenize(self, utf8: bytes, reason: int, include_offsets=True, include_colocated=True):
+        "Tokenize supplied utf8"
+        # need to parse config tokenizer into argv
+        # and then run
+        pass
+
+    def tokens(self) -> list[str]:
+        "Return all tokens"
+        # grab from fts5vocab table
+        pass
+
+    def token_frequency(self, count: int = 10) -> list[tuple[str, int]]:
+        "Most frequent tokens, useful for building a stopwords list"
+        pass
+
+    def get_closest_tokens(self, token: str, n=3, cutoff=0.6) -> list[str]:
+        "Returns closest known tokens"
+        # use difflib.get_close_matches against tokens()
         pass
 
     @functools.cache
@@ -240,7 +377,6 @@ class FTS5Table:
         # need a "IF NOT EXISTS" somewhere in there
         self.db.execute(f"create virtual table { name }(?, ?, ?)", (self.schema, self.name, type))
         return name
-
 
     @classmethod
     def create(
@@ -256,6 +392,7 @@ class FTS5Table:
         contentless_delete: int | None = None,
         content_rowid: str | None = None,
         generate_triggers: bool = False,
+        normalize: None | Literal["NFC"] | Literal["NFKC"] | Literal["NFD"] | Literal[NFKD] = None,
     ) -> FTS5Table:
         """Creates the table
 
@@ -263,17 +400,70 @@ class FTS5Table:
 
         :param generate_triggers: As in https://www.sqlite.org/fts5.html#external_content_tables
 
+        :param normalize: All text added via :meth:`insert` will be normalized to this
+
         If making an external content table then run :meth:`rebuild` after this create.
         """
         # ... make table, having fun quoting tokenizer etc
         return cls(db, name, schema)
 
 
+class AutocompleteTable(FTS5Table):
+    "Does auto completion etc"
+
+    @classmethod
+    def create(cls, db, name, schema):
+        "do same as fts5table, require external content, config so that most information is not stored"
+        pass
+
+    @classmethod
+    def is_autocomplete_table(cls, db, name, schema):
+        "checks if autocomplete, if so return us, if not then None"
+        pass
+
+
+# To get options set in the create virtual table statement there can be lots of quoting
+# of quoting, especially the tokenizer strings.  You can create columns with names
+# including single and double quoting, backslashes etc.  So we use a dummy virtual module
+# that always throws an exception with the args as received from sqlite.
+# This is an early test that SQLite/FTS5 accepts:
+# CREATE VIRTUAL TABLE ft UsInG fts5(a, [',], [\"=], "prefix=2", 'pr"ef"ix=3  ' , tokenize = '''porter'' ''ascii'''    )
+
+class _sqlite_parsed_args(Exception):
+    def __init__(self, args):
+        self.sqlite_args = args
+
+
+class _sqlite_parsed_args_vtmodule:
+    def Connect(_con, _mod, _db, _table, *args):
+        raise _sqlite_parsed_args(args)
+
+    Create = Connect
+
+
+def get_args(db: apsw.Connection, table_name: str, schema: str = "main"):
+    sql: str | None = db.execute(f"select sql from [{ schema }].sqlite_schema where name=?", (table_name,)).get
+    if sql is None:
+        raise ValueError(f"no such table { schema }.{ table_name}")
+    modname = _sqlite_parsed_args_vtmodule.__name__
+    db.create_module(modname, _sqlite_parsed_args_vtmodule)
+    idx = sql.upper().index("USING")
+    paren = sql.index("(", idx)
+    sqlite_args = None
+    try:
+        db.execute(f"create virtual table sdkjfhdskj using { modname }" + sql[paren:])
+        raise RuntimeError("Execution should not have reached here")
+    except _sqlite_parsed_args as e:
+        sqlite_args = e.sqlite_args
+    assert sqlite_args is not None
+    # column names and options can be interspersed
+    # figure out fts5 decides what is an option
+    return sqlite_args
+
 if __name__ == "__main__":
     import html
     import argparse
     import importlib
-    from dataclasses import dataclass
 
     def show_tokenization(tok: apsw.FTS5Tokenizer, utf8: bytes, reason: int, args: list[str] = []) -> str:
         """Runs the tokenizer and produces a html fragment showing the results for manual inspection"""
@@ -539,12 +729,14 @@ if __name__ == "__main__":
     </style>
     """
 
-    def show_tokenization_remark(remark: str, kind: str = "notice", id: str = None, link: str = None, message: str = None) -> str:
+    def show_tokenization_remark(
+        remark: str, kind: str = "notice", id: str = None, link: str = None, message: str = None
+    ) -> str:
         id = f"id='{ id }'" if id is not None else ""
         ls = f"<a href='#{ link }'>" if link else ""
         le = "</a>" if link else ""
         if message:
-            newline = "\n" # fstring can't have backslash
+            newline = "\n"  # fstring can't have backslash
             message = f"<br><span class=message>{ html.escape(message).replace(newline, '<br>') }</span>"
         else:
             message = ""
@@ -617,7 +809,9 @@ if __name__ == "__main__":
 
     con = apsw.Connection("")
 
-    # registrations
+    # registrations built in
+    con.register_fts5_tokenizer("pyunicode", PyUnicodeTokenizer)
+    # registrations from args
     for reg in options.register:
         try:
             name, mod = reg.split("=", 1)
@@ -678,7 +872,7 @@ if __name__ == "__main__":
                     f"{ comment } : { ' '.join(reasons) } { forms }",
                     kind="result",
                     id=counter,
-                    message=utf8.decode("utf8")
+                    message=utf8.decode("utf8"),
                 )
             )
             if not h:
