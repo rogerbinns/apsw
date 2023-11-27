@@ -1001,6 +1001,12 @@ Enter ".help" for instructions
             rest = command[command.index(cmd[0]) + len(cmd[0]):].strip()
             if rest:
                 cmd = [cmd[0], rest]
+        # special handling for ftsq TABLE to preserve exact query
+        if len(cmd) > 2 and cmd[0] == "ftsq":
+            pos = command.index(cmd[1]) + len(cmd[1])
+            while command[pos].strip(): # test it isn't whitespace, eq quoting
+                pos += 1
+            cmd = [cmd[0], cmd[1], command[pos:].strip()]
         res = fn(cmd[1:])
 
     ###
@@ -1624,6 +1630,17 @@ Enter ".help" for instructions
                 colq.append(querytemplate % ((self._fmt_sql_identifier(column), ) * len(queryparams)))
             query = query + " OR ".join(colq)
             self.process_sql(query, queryparams, internal=True, summary=("Table " + table + "\n", "\n"))
+
+    def command_ftsq(self, cmd):
+        """ftsq TABLE query
+
+        Issues the query against the named FTS5 table.  Text after the table
+        name is used exactly as the query - do not shell quote it.
+        """
+        if len(cmd) != 2:
+            raise self.Error("Expected a table name and a query")
+        query =f"select rowid, rank, * from { cmd[0] }(?)"
+        self.process_sql(query, (cmd[1], ))
 
     def command_header(self, cmd):
         """header(s) ON|OFF: Display the column names in output (default OFF)
