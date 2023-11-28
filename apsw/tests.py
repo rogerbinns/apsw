@@ -5374,8 +5374,7 @@ class APSW(unittest.TestCase):
                     f"file { filename } function { name } calls PyGILState_Ensure but does not have MakeExistingException"
                 )
         # not further checked
-        if name.split("_")[0] in ("ZeroBlobBind", "APSWVFS", "APSWVFSFile", "APSWBuffer", "FunctionCBInfo",
-                                  "apswurifilename"):
+        if name.split("_")[0] in ("ZeroBlobBind", "APSWVFS", "APSWVFSFile", "APSWBuffer", "FunctionCBInfo"):
             return
 
         checks = {
@@ -5457,6 +5456,11 @@ class APSW(unittest.TestCase):
             "apswfcntl": {
                 "req": {}
             },
+            "apswurifilename": {
+                "req": {
+                    "check": "CHECK_SCOPE"
+                }
+            }
         }
 
         prefix, base = name.split("_", 1)
@@ -10400,12 +10404,16 @@ SELECT group_concat(rtrim(t),x'0a') FROM a;
 
             def xOpen(self, name, flags):
                 assert isinstance(name, apsw.URIFilename)
-                name_catch.append(name)
+                name_catch.append((name, str(name)))
                 raise apsw.SQLError()
+
         t = TVFS()
 
         with contextlib.suppress(apsw.SQLError):
             apsw.Connection("/tmp/uri_test", vfs="uritest")
+
+        self.assertEqual(len(name_catch), 1)
+        uriname, urinamestr=name_catch[0]
 
         objects = (self.db,
                    db2,
@@ -10416,7 +10424,7 @@ SELECT group_concat(rtrim(t),x'0a') FROM a;
                    apsw.zeroblob(3),
                    blob,
                    blob2,
-                   name_catch[0],
+                   uriname,
                    apsw.VFS("aname", ""),
                    apsw.VFSFile("", self.db.db_filename("main"),
                        [apsw.SQLITE_OPEN_MAIN_DB | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_READWRITE, 0]),
@@ -10425,6 +10433,27 @@ SELECT group_concat(rtrim(t),x'0a') FROM a;
         )
         for o in objects:
             self.assertNotEqual(repr(o), str(o))
+            # issue 501
+            if isinstance(o, apsw.URIFilename):
+                self.assertNotEqual(repr(o), urinamestr)
+                self.assertNotEqual(str(o), urinamestr)
+
+        # more issue 501
+        with contextlib.suppress(ValueError):
+            uriname.filename()
+            1/0
+        with contextlib.suppress(ValueError):
+            uriname.parameters
+            1/0
+        with contextlib.suppress(ValueError):
+            uriname.uri_boolean("name", False)
+            1/0
+        with contextlib.suppress(ValueError):
+            uriname.uri_int("name", 0)
+            1/0
+        with contextlib.suppress(ValueError):
+            uriname.uri_parameter("name")
+            1/0
 
     # This test is run last by deliberate name choice.  If it did
     # uncover any bugs there isn't much that can be done to turn the

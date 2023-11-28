@@ -25,6 +25,10 @@ Provide detail when C implemented objects are printed. For example
 
 Added :meth:`URIFilename.parameters` (:issue:`496`)
 
+:class:`URIFilename` are only valid for the duration of the
+:meth:`VFS.xOpen` call.  If you save and use the object later you will
+get an exception.  (:issue:`501`)
+
 3.44.0.0
 ========
 

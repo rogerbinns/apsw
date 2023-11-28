@@ -2222,7 +2222,9 @@ class URIFilename:
     or the main database flag is set.
 
     You can safely pass it on to the :class:`VFSFile` constructor
-    which knows how to get the name back out."""
+    which knows how to get the name back out.  The URIFilename is
+    only valid for the duration of the xOpen call.  If you save
+    and use the object later you will get an exception."""
     def filename(self) -> str:
         """Returns the filename."""
         ...

@@ -2865,7 +2865,9 @@
 "or the main database flag is set.\n" \
 "\n" \
 "You can safely pass it on to the :class:`VFSFile` constructor\n" \
-"which knows how to get the name back out.\n" 
+"which knows how to get the name back out.  The URIFilename is\n" \
+"only valid for the duration of the xOpen call.  If you save\n" \
+"and use the object later you will get an exception.\n" 
 
 #define  URIFilename_filename_DOC "filename($self)\n--\n\nURIFilename.filename() -> str\n\n" \
 "Returns the filename.\n" 
