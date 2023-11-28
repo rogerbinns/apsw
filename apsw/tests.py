@@ -3460,8 +3460,6 @@ class APSW(unittest.TestCase):
         check("I", "en_us", equal=True)
 
     def testJSON1Extension(self):
-        if not self.checkOptionalExtension("json1", "select json('{}')"):
-            return
         # some sanity checks that it is working
         l = self.db.cursor().execute("select json_array_length('[1,2,3,4]')").fetchall()[0][0]
         self.assertEqual(l, 4)
