@@ -95,6 +95,7 @@ src/stringconstants.c: Makefile tools/genstrings.py src/apswversion.h
 
 build_ext: src/apswversion.h  apsw/__init__.pyi src/apsw.docstrings ## Fetches SQLite and builds the extension
 	env $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext -DSQLITE_ENABLE_COLUMN_METADATA --inplace --force --enable-all-extensions
+	env $(PYTHON) setup.py build_test_extension
 
 src/faultinject.h: tools/genfaultinject.py
 	-rm src/faultinject.h
