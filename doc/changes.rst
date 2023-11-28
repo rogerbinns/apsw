@@ -20,7 +20,7 @@ Added :func:`apsw.ext.result_string` to turn an result code into
 a string, taking into account if it is extended or not.
 
 Provide detail when C implemented objects are printed. For example
-:class:`connections <Connection>` includes the filename.
+:class:`connections <Connection>` include the filename.
 (:issue:`494`)
 
 Added :meth:`URIFilename.parameters` (:issue:`496`)
