@@ -10405,6 +10405,11 @@ SELECT group_concat(rtrim(t),x'0a') FROM a;
                 name_catch.append((name, str(name)))
                 raise apsw.SQLError()
 
+            # MacOS fails the name we provide returning
+            # cantopen for this, so we avoid their code
+            def xFullPathname(self, name: str) -> str:
+                return name
+
         t = TVFS()
 
         with contextlib.suppress(apsw.SQLError):
