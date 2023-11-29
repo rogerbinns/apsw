@@ -10456,21 +10456,18 @@ SELECT group_concat(rtrim(t),x'0a') FROM a;
                 self.assertNotEqual(str(o), urinamestr)
 
         # more issue 501
-        with contextlib.suppress(ValueError):
-            uriname.filename()
-            1/0
-        with contextlib.suppress(ValueError):
+        with contextlib.suppress(apsw.InvalidContextError):
             uriname.parameters
             1/0
-        with contextlib.suppress(ValueError):
-            uriname.uri_boolean("name", False)
-            1/0
-        with contextlib.suppress(ValueError):
-            uriname.uri_int("name", 0)
-            1/0
-        with contextlib.suppress(ValueError):
-            uriname.uri_parameter("name")
-            1/0
+        for name in dir(uriname):
+            if not name.startswith("_") and name != "parameters":
+                with contextlib.suppress(apsw.InvalidContextError):
+                    getattr(uriname, name)(*{
+                        "filename": tuple(),
+                        "uri_boolean": ("name", False),
+                        "uri_int": ("name", 0),
+                        "uri_parameter": ("name",)
+                    }[name])
 
     # This test is run last by deliberate name choice.  If it did
     # uncover any bugs there isn't much that can be done to turn the

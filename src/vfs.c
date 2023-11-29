@@ -3039,11 +3039,11 @@ static PyTypeObject APSWVFSFileType =
     and use the object later you will get an exception.
 */
 
-#define CHECK_SCOPE                                                         \
-  do                                                                        \
-  {                                                                         \
-    if (!self->filename)                                                    \
-      return PyErr_Format(PyExc_ValueError, "URIFilename is out of scope"); \
+#define CHECK_SCOPE                                                          \
+  do                                                                         \
+  {                                                                          \
+    if (!self->filename)                                                     \
+      return PyErr_Format(ExcInvalidContext, "URIFilename is out of scope"); \
   } while (0)
 
 /** .. method:: filename() -> str
