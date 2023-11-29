@@ -33,14 +33,6 @@ expressions in a locale aware way.  The `documentation
 <https://sqlite.org/src/tree?name=ext/icu>`__
 shows how to use it.
 
-.. _ext-json1:
-
-JSON1
-=====
-
-`Provides functions <https://www.sqlite.org/json1.html>`__ for managing `JSON
-<https://en.wikipedia.org/wiki/JSON>`__ data stored in SQLite.
-
 .. _ext-rbu:
 
 RBU

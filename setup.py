@@ -527,7 +527,7 @@ class apsw_build_ext(beparent):
 
         if self.enable_all_extensions:
             exts = [
-                "fts4", "fts3", "fts3_parenthesis", "rtree", "stat4", "json1", "fts5", "rbu", "geopoly",
+                "fts4", "fts3", "fts3_parenthesis", "rtree", "stat4", "fts5", "rbu", "geopoly",
                 "math_functions"
             ]
             if not self.omit or "icu" not in self.omit.split(","):

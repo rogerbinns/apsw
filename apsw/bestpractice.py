@@ -1,7 +1,6 @@
 #
-"""
-Module to ensure SQLite usage prevents common mistakes, and best performance.
-"""
+
+"""Ensure SQLite usage prevents common mistakes, and get best performance."""
 
 from __future__ import annotations
 

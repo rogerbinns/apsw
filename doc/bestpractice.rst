@@ -31,5 +31,6 @@ API
 ---
 
 .. automodule:: apsw.bestpractice
+    :synopsis: Ensure SQLite usage prevents common mistakes, and get best performance
     :members:
     :undoc-members:

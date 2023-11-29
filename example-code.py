@@ -880,13 +880,14 @@ connection.create_module("files_info", None)
 ### vfs: VFS - Virtual File System
 # :ref:`VFS <vfs>` lets you control how SQLite accesses storage.  APSW
 # makes it easy to "inherit" from an existing VFS and monitor or alter
-# data as it flows through.   You can also implement your own
-# :class:`pragmas <VFSFcntlPragma>`.
+# data as it flows through.
+#
+# :class:`URI <URIFilename>` are shown as a way to receive parameters
+# when opening/creating a database file, and :class:`pragmas <VFSFcntlPragma>`
+# for receiving parameters once a database is open.
 
 # This example VFS obfuscates the database file contents by xor all
-# bytes with 0xa5.  URI parameters are also shown as a way you can
-# pass additional information for files.
-
+# bytes with 0xa5.
 
 def obfuscate(data: bytes):
     return bytes([x ^ 0xa5 for x in data])
@@ -916,6 +917,8 @@ class ObfuscatedVFS(apsw.VFS):
             print("   level is", name.uri_int("level", 3))
             print("   warp is", name.uri_boolean("warp", False))
             print("   notpresent is", name.uri_parameter("notpresent"))
+            # all of them
+            print("   all uris", name.parameters)
         else:
             print("   filename", name)
         return ObfuscatedVFSFile(self.base_vfs, name, flags)
@@ -959,6 +962,7 @@ open_flags = apsw.SQLITE_OPEN_READWRITE | apsw.SQLITE_OPEN_CREATE
 # add in using URI parameters
 open_flags |= apsw.SQLITE_OPEN_URI
 
+# uri parameters are after the ? separated by &
 obfudb = apsw.Connection("file:myobfudb?fast=speed&level=7&warp=on&another=true",
                          flags=open_flags,
                          vfs=obfuvfs.vfs_name)

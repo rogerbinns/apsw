@@ -2304,7 +2304,9 @@ class URIFilename:
     or the main database flag is set.
 
     You can safely pass it on to the :class:`VFSFile` constructor
-    which knows how to get the name back out."""
+    which knows how to get the name back out.  The URIFilename is
+    only valid for the duration of the xOpen call.  If you save
+    and use the object later you will get an exception."""
     def filename(self) -> str:
         """Returns the filename."""
         ...
@@ -2370,7 +2372,7 @@ class VFSFile:
         `PyErr_Display`."""
         ...
 
-    def __init__(self, vfs: str, filename: str | URIFilename, flags: list[int, int]):
+    def __init__(self, vfs: str, filename: str | URIFilename, flags: list[int]):
         """:param vfs: The vfs you want to inherit behaviour from.  You can
            use an empty string ``""`` to inherit from the default vfs.
         :param name: The name of the file being opened.  May be an instance of :class:`URIFilename`.

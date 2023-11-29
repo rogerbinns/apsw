@@ -639,6 +639,9 @@ apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int infla
   PyObject *vargs[] = {NULL, (PyObject *)(vfs->pAppData), nameobject, flags};
   if (vargs[2] && vargs[3])
     pyresult = PyObject_VectorcallMethod(apst.xOpen, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  /* issue 501 */
+  if (inflags & (SQLITE_OPEN_URI | SQLITE_OPEN_MAIN_DB))
+    ((APSWURIFilename *)nameobject)->filename = 0;
   if (!pyresult)
   {
     result = MakeSqliteMsgFromPyException(NULL);
@@ -2007,7 +2010,7 @@ APSWVFSFile_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUS
   return (PyObject *)self;
 }
 
-/** .. method:: __init__(vfs: str, filename: str | URIFilename, flags: list[int, int])
+/** .. method:: __init__(vfs: str, filename: str | URIFilename, flags: list[int,int])
 
     :param vfs: The vfs you want to inherit behaviour from.  You can
        use an empty string ``""`` to inherit from the default vfs.
@@ -3031,8 +3034,17 @@ static PyTypeObject APSWVFSFileType =
     or the main database flag is set.
 
     You can safely pass it on to the :class:`VFSFile` constructor
-    which knows how to get the name back out.
+    which knows how to get the name back out.  The URIFilename is
+    only valid for the duration of the xOpen call.  If you save
+    and use the object later you will get an exception.
 */
+
+#define CHECK_SCOPE                                                         \
+  do                                                                        \
+  {                                                                         \
+    if (!self->filename)                                                    \
+      return PyErr_Format(PyExc_ValueError, "URIFilename is out of scope"); \
+  } while (0)
 
 /** .. method:: filename() -> str
 
@@ -3041,6 +3053,7 @@ static PyTypeObject APSWVFSFileType =
 static PyObject *
 apswurifilename_filename(APSWURIFilename *self)
 {
+  CHECK_SCOPE;
   return convertutf8string(self->filename);
 }
 
@@ -3054,6 +3067,7 @@ apswurifilename_filename(APSWURIFilename *self)
 static PyObject *
 apswurifilename_parameters(APSWURIFilename *self)
 {
+  CHECK_SCOPE;
   int i, count = 0;
   for (i = 0;; i++)
     if (!sqlite3_uri_key(self->filename, i))
@@ -3088,6 +3102,7 @@ fail:
 static PyObject *
 apswurifilename_uri_parameter(APSWURIFilename *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
+  CHECK_SCOPE;
   const char *res, *name;
   {
     URIFilename_uri_parameter_CHECK;
@@ -3109,6 +3124,7 @@ apswurifilename_uri_parameter(APSWURIFilename *self, PyObject *const *fast_args,
 static PyObject *
 apswurifilename_uri_int(APSWURIFilename *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
+  CHECK_SCOPE;
   const char *name = NULL;
   long long res = 0, default_;
 
@@ -3134,6 +3150,7 @@ apswurifilename_uri_int(APSWURIFilename *self, PyObject *const *fast_args, Py_ss
 static PyObject *
 apswurifilename_uri_boolean(APSWURIFilename *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
+  CHECK_SCOPE;
   const char *name = NULL;
   int default_ = 0, res;
 
@@ -3155,6 +3172,9 @@ apswurifilename_uri_boolean(APSWURIFilename *self, PyObject *const *fast_args, P
 static PyObject *
 apswurifilename_tp_str(APSWURIFilename *self)
 {
+  /* CHECK_SCOPE not needed since we manually check */
+  if (!self->filename)
+    return PyUnicode_FromFormat("<apsw.URIFilename object (out of scope) at %p>", self);
   return PyUnicode_FromFormat("<apsw.URIFilename object \"%s\" at %p>", self->filename, self);
 }
 
@@ -3182,3 +3202,5 @@ static PyTypeObject APSWURIFilenameType =
         .tp_str = (reprfunc)apswurifilename_tp_str,
         .tp_getset = APSWURIFilename_getset,
 };
+
+#undef CHECK_SCOPE

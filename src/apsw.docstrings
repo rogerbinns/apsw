@@ -2971,7 +2971,9 @@
 "or the main database flag is set.\n" \
 "\n" \
 "You can safely pass it on to the :class:`VFSFile` constructor\n" \
-"which knows how to get the name back out.\n" 
+"which knows how to get the name back out.  The URIFilename is\n" \
+"only valid for the duration of the xOpen call.  If you save\n" \
+"and use the object later you will get an exception.\n" 
 
 #define  URIFilename_filename_DOC "filename($self)\n--\n\nURIFilename.filename() -> str\n\n" \
 "Returns the filename.\n" 
@@ -3069,7 +3071,7 @@
 ":func:`sys.unraisablehook` and :func:`sys.excepthook`, falling back to\n" \
 "`PyErr_Display`.\n" 
 
-#define  VFSFile_init_DOC "__init__($self,vfs,filename,flags)\n--\n\nVFSFile.__init__(vfs: str, filename: str | URIFilename, flags: list[int, int])\n\n" \
+#define  VFSFile_init_DOC "__init__($self,vfs,filename,flags)\n--\n\nVFSFile.__init__(vfs: str, filename: str | URIFilename, flags: list[int,int])\n\n" \
 ":param vfs: The vfs you want to inherit behaviour from.  You can\n" \
 "   use an empty string ``\"\"`` to inherit from the default vfs.\n" \
 ":param name: The name of the file being opened.  May be an instance of :class:`URIFilename`.\n" \
@@ -3088,7 +3090,7 @@
 "  :meth:`VFS.xOpen`\n" 
 
 #define VFSFile_init_KWNAMES "vfs", "filename", "flags"
-#define VFSFile_init_USAGE "VFSFile.__init__(vfs: str, filename: str | URIFilename, flags: list[int, int])"
+#define VFSFile_init_USAGE "VFSFile.__init__(vfs: str, filename: str | URIFilename, flags: list[int,int])"
 
 #define VFSFile_init_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(vfs), const char *)); \
