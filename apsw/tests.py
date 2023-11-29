@@ -10408,10 +10408,11 @@ SELECT group_concat(rtrim(t),x'0a') FROM a;
         t = TVFS()
 
         with contextlib.suppress(apsw.SQLError):
-            apsw.Connection("/tmp/uri_test", vfs="uritest")
+            with tempfile.NamedTemporaryFile() as n:
+                apsw.Connection(n.name, vfs="uritest")
 
         self.assertEqual(len(name_catch), 1)
-        uriname, urinamestr=name_catch[0]
+        uriname, urinamestr = name_catch[0]
 
         objects = (self.db,
                    db2,
