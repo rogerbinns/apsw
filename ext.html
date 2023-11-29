@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Various interesting and useful bits of functionality &mdash; APSW 3.44.0.0 documentation</title>
+  <title>Various interesting and useful bits of functionality &mdash; APSW 3.44.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -17,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=5c66a1ff"></script>
+        <script src="_static/documentation_options.js?v=bfcc354d"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -42,7 +42,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.44.0.0
+                3.44.2.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -75,6 +75,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#converting-types-into-and-out-of-sqlite">Converting types into and out of SQLite</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#detailed-query-information">Detailed Query Information</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-apsw.ext">API Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.ext.result_string"><code class="docutils literal notranslate"><span class="pre">result_string()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.ext.DataClassRowFactory"><code class="docutils literal notranslate"><span class="pre">DataClassRowFactory</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.ext.DataClassRowFactory.get_dataclass"><code class="docutils literal notranslate"><span class="pre">DataClassRowFactory.get_dataclass()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.ext.DataClassRowFactory.get_type"><code class="docutils literal notranslate"><span class="pre">DataClassRowFactory.get_type()</span></code></a></li>
@@ -325,6 +326,13 @@ query results - see <a class="reference external" href="https://sqlite.org/eqp.h
 </section>
 <section id="module-apsw.ext">
 <span id="api-reference"></span><h2>API Reference<a class="headerlink" href="#module-apsw.ext" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.ext.result_string">
+<span class="sig-prename descclassname"><span class="pre">apsw.ext.</span></span><span class="sig-name descname"><span class="pre">result_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></span><a class="reference internal" href="_modules/apsw/ext.html#result_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.result_string" title="Link to this definition"></a></dt>
+<dd><p>Turns a result or extended result code into a string.
+The appropriate mapping based on the value is used.</p>
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="apsw.ext.DataClassRowFactory">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.ext.</span></span><span class="sig-name descname"><span class="pre">DataClassRowFactory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataclass_kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/ext.html#DataClassRowFactory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.DataClassRowFactory" title="Link to this definition"></a></dt>
@@ -488,11 +496,14 @@ or back from SQLite</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="apsw.ext.log_sqlite">
-<span class="sig-prename descclassname"><span class="pre">apsw.ext.</span></span><span class="sig-name descname"><span class="pre">log_sqlite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">logging.ERROR</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/apsw/ext.html#log_sqlite"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.log_sqlite" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">apsw.ext.</span></span><span class="sig-name descname"><span class="pre">log_sqlite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">logging.ERROR</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/logging.html#logging.Logger" title="(in Python v3.12)"><span class="pre">Logger</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/apsw/ext.html#log_sqlite"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.log_sqlite" title="Link to this definition"></a></dt>
 <dd><p>Send SQLite <a class="reference external" href="https://www.sqlite.org/errlog.html">log messages</a> to <a class="reference external" href="https://docs.python.org/3/library/logging.html#module-logging" title="(in Python v3.12)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">logging</span></code></a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>level</strong> – level to log at</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>level</strong> – level to log at</p></li>
+<li><p><strong>logger</strong> – Use the specific logger</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -1334,7 +1345,7 @@ directly expressed in the query itself</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Nov 06, 2023.
+      <span class="lastupdated">Last updated on Nov 29, 2023.
       </span></p>
   </div>
 

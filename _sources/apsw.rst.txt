@@ -558,7 +558,7 @@ modules etc. For example::
 
     `Function Flags <https://sqlite.org/c3ref/c_deterministic.html>`__ constants
 
-    `SQLITE_DETERMINISTIC <https://sqlite.org/c3ref/c_deterministic.html#sqlitedeterministic>`__, `SQLITE_DIRECTONLY <https://sqlite.org/c3ref/c_deterministic.html#sqlitedirectonly>`__, `SQLITE_INNOCUOUS <https://sqlite.org/c3ref/c_deterministic.html#sqliteinnocuous>`__, `SQLITE_SUBTYPE <https://sqlite.org/c3ref/c_deterministic.html#sqlitesubtype>`__
+    `SQLITE_DETERMINISTIC <https://sqlite.org/c3ref/c_deterministic.html#sqlitedeterministic>`__, `SQLITE_DIRECTONLY <https://sqlite.org/c3ref/c_deterministic.html#sqlitedirectonly>`__, `SQLITE_INNOCUOUS <https://sqlite.org/c3ref/c_deterministic.html#sqliteinnocuous>`__, `SQLITE_RESULT_SUBTYPE <https://sqlite.org/c3ref/c_deterministic.html#sqliteresultsubtype>`__, `SQLITE_SUBTYPE <https://sqlite.org/c3ref/c_deterministic.html#sqlitesubtype>`__
 
 .. data:: mapping_limits
     :type: dict[str | int, int | str]

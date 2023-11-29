@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Virtual File System (VFS) &mdash; APSW 3.44.0.0 documentation</title>
+  <title>Virtual File System (VFS) &mdash; APSW 3.44.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -17,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=5c66a1ff"></script>
+        <script src="_static/documentation_options.js?v=bfcc354d"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -42,7 +42,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.44.0.0
+                3.44.2.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -121,6 +121,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#urifilename-class">URIFilename class</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.URIFilename"><code class="docutils literal notranslate"><span class="pre">URIFilename</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.URIFilename.filename"><code class="docutils literal notranslate"><span class="pre">URIFilename.filename()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.URIFilename.parameters"><code class="docutils literal notranslate"><span class="pre">URIFilename.parameters</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.URIFilename.uri_boolean"><code class="docutils literal notranslate"><span class="pre">URIFilename.uri_boolean()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.URIFilename.uri_int"><code class="docutils literal notranslate"><span class="pre">URIFilename.uri_int()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.URIFilename.uri_parameter"><code class="docutils literal notranslate"><span class="pre">URIFilename.uri_parameter()</span></code></a></li>
@@ -725,7 +726,9 @@ usage of this class.</p>
 these instead of a string as the filename if the URI flag was used
 or the main database flag is set.</p>
 <p>You can safely pass it on to the <a class="reference internal" href="#apsw.VFSFile" title="apsw.VFSFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">VFSFile</span></code></a> constructor
-which knows how to get the name back out.</p>
+which knows how to get the name back out.  The URIFilename is
+only valid for the duration of the xOpen call.  If you save
+and use the object later you will get an exception.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -734,7 +737,14 @@ which knows how to get the name back out.</p>
 <dd><p>Returns the filename.</p>
 </dd></dl>
 
-<dl class="py method" id="index-2">
+<dl class="py attribute" id="index-2">
+<dt class="sig sig-object py" id="apsw.URIFilename.parameters">
+<span class="sig-prename descclassname"><span class="pre">URIFilename.</span></span><span class="sig-name descname"><span class="pre">parameters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#apsw.URIFilename.parameters" title="Link to this definition"></a></dt>
+<dd><p>A tuple of the parameter names present.</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/uri_boolean.html">sqlite3_uri_key</a></p>
+</dd></dl>
+
+<dl class="py method" id="index-3">
 <dt class="sig sig-object py" id="apsw.URIFilename.uri_boolean">
 <span class="sig-prename descclassname"><span class="pre">URIFilename.</span></span><span class="sig-name descname"><span class="pre">uri_boolean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#apsw.URIFilename.uri_boolean" title="Link to this definition"></a></dt>
 <dd><p>Returns the boolean value for parameter <cite>name</cite> or <cite>default</cite> if not
@@ -742,7 +752,7 @@ present.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/uri_boolean.html">sqlite3_uri_boolean</a></p>
 </dd></dl>
 
-<dl class="py method" id="index-3">
+<dl class="py method" id="index-4">
 <dt class="sig sig-object py" id="apsw.URIFilename.uri_int">
 <span class="sig-prename descclassname"><span class="pre">URIFilename.</span></span><span class="sig-name descname"><span class="pre">uri_int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.URIFilename.uri_int" title="Link to this definition"></a></dt>
 <dd><p>Returns the integer value for parameter <cite>name</cite> or <cite>default</cite> if not
@@ -750,7 +760,7 @@ present.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/uri_boolean.html">sqlite3_uri_int64</a></p>
 </dd></dl>
 
-<dl class="py method" id="index-4">
+<dl class="py method" id="index-5">
 <dt class="sig sig-object py" id="apsw.URIFilename.uri_parameter">
 <span class="sig-prename descclassname"><span class="pre">URIFilename.</span></span><span class="sig-name descname"><span class="pre">uri_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.URIFilename.uri_parameter" title="Link to this definition"></a></dt>
 <dd><p>Returns the value of parameter <cite>name</cite> or None.</p>
@@ -772,7 +782,7 @@ present.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Nov 06, 2023.
+      <span class="lastupdated">Last updated on Nov 29, 2023.
       </span></p>
   </div>
 

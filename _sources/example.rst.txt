@@ -62,9 +62,9 @@ Checking APSW and SQLite versions
 .. code-block:: output
 
           Using APSW file /space/apsw/apsw/__init__.cpython-311-x86_64-linux-gnu.so
-             APSW version 3.44.0.0
-    SQLite header version 3044000
-       SQLite lib version 3.44.0
+             APSW version 3.44.2.0
+    SQLite header version 3044002
+       SQLite lib version 3.44.2
        Using amalgamation True
 
 
@@ -1204,7 +1204,7 @@ feedback and allows cancelling.
     progress handler called
     progress handler called
     progress handler called
-    (9893282653,)
+    (9922068098,)
 
 
 .. index:: File Control (example code)
@@ -1610,8 +1610,8 @@ useful instead.
     │ .local     │ 1534       │
     │ .o         │ 20696      │
     │ .ps1       │ 9033       │
-    │ .py        │ 11815624   │
-    │ .pyc       │ 13310247   │
+    │ .py        │ 11815871   │
+    │ .pyc       │ 13288659   │
     │ .rst       │ 9561       │
     │ .sh        │ 3941       │
     │ .so        │ 27575368   │
@@ -1638,15 +1638,16 @@ VFS - Virtual File System
 
 :ref:`VFS <vfs>` lets you control how SQLite accesses storage.  APSW
 makes it easy to "inherit" from an existing VFS and monitor or alter
-data as it flows through.   You can also implement your own
-:class:`pragmas <VFSFcntlPragma>`.
+data as it flows through.
+
+:class:`URI <URIFilename>` are shown as a way to receive parameters
+when opening/creating a database file, and :class:`pragmas <VFSFcntlPragma>`
+for receiving parameters once a database is open.
 
 .. code-block:: python
 
    # This example VFS obfuscates the database file contents by xor all
-   # bytes with 0xa5.  URI parameters are also shown as a way you can
-   # pass additional information for files.
-   
+   # bytes with 0xa5.
    
    def obfuscate(data: bytes):
        return bytes([x ^ 0xa5 for x in data])
@@ -1676,6 +1677,8 @@ data as it flows through.   You can also implement your own
                print("   level is", name.uri_int("level", 3))
                print("   warp is", name.uri_boolean("warp", False))
                print("   notpresent is", name.uri_parameter("notpresent"))
+               # all of them
+               print("   all uris", name.parameters)
            else:
                print("   filename", name)
            return ObfuscatedVFSFile(self.base_vfs, name, flags)
@@ -1719,6 +1722,7 @@ data as it flows through.   You can also implement your own
    # add in using URI parameters
    open_flags |= apsw.SQLITE_OPEN_URI
    
+   # uri parameters are after the ? separated by &
    obfudb = apsw.Connection("file:myobfudb?fast=speed&level=7&warp=on&another=true",
                             flags=open_flags,
                             vfs=obfuvfs.vfs_name)
@@ -1750,6 +1754,7 @@ data as it flows through.   You can also implement your own
        level is 7
        warp is True
        notpresent is None
+       all uris ('fast', 'level', 'warp', 'another')
     pragma received journal_mode = wal
     xOpen flags SQLITE_OPEN_CREATE | SQLITE_OPEN_MAIN_JOURNAL | SQLITE_OPEN_READWRITE
        filename /space/apsw/myobfudb-journal
@@ -1875,9 +1880,9 @@ Python.
     
     Dump output
     
-    -- SQLite dump (by APSW 3.44.0.0)
-    -- SQLite version 3.44.0
-    -- Date: Mon Nov  6 08:28:48 2023
+    -- SQLite dump (by APSW 3.44.2.0)
+    -- SQLite version 3.44.2
+    -- Date: Wed Nov 29 11:04:22 2023
     -- Tables like: csvtest%
     -- Database: /space/apsw/dbfile
     -- User: rogerb @ clamps
@@ -1995,7 +2000,7 @@ This shows using :meth:`Connection.trace_v2`
     
     code is  SQLITE_TRACE_PROFILE
     {'code': 2,
-     'nanoseconds': 18000000,
+     'nanoseconds': 17000000,
      'stmt_status': {'SQLITE_STMTSTATUS_AUTOINDEX': 0,
                      'SQLITE_STMTSTATUS_FILTER_HIT': 0,
                      'SQLITE_STMTSTATUS_FILTER_MISS': 0,

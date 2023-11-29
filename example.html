@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Example/Tour &mdash; APSW 3.44.0.0 documentation</title>
+  <title>Example/Tour &mdash; APSW 3.44.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -17,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=5c66a1ff"></script>
+        <script src="_static/documentation_options.js?v=bfcc354d"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -42,7 +42,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.44.0.0
+                3.44.2.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -187,9 +187,9 @@ and attribute documentation.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">      Using APSW file /space/apsw/apsw/__init__.cpython-311-x86_64-linux-gnu.so</span>
-<span class="go">         APSW version 3.44.0.0</span>
-<span class="go">SQLite header version 3044000</span>
-<span class="go">   SQLite lib version 3.44.0</span>
+<span class="go">         APSW version 3.44.2.0</span>
+<span class="go">SQLite header version 3044002</span>
+<span class="go">   SQLite lib version 3.44.2</span>
 <span class="go">   Using amalgamation True</span>
 </pre></div>
 </div>
@@ -1112,7 +1112,7 @@ feedback and allows cancelling.</p>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
-<span class="go">(9893282653,)</span>
+<span class="go">(9922068098,)</span>
 </pre></div>
 </div>
 </section>
@@ -1441,8 +1441,8 @@ useful instead.</p>
 <span class="go">│ .local     │ 1534       │</span>
 <span class="go">│ .o         │ 20696      │</span>
 <span class="go">│ .ps1       │ 9033       │</span>
-<span class="go">│ .py        │ 11815624   │</span>
-<span class="go">│ .pyc       │ 13310247   │</span>
+<span class="go">│ .py        │ 11815871   │</span>
+<span class="go">│ .pyc       │ 13288659   │</span>
 <span class="go">│ .rst       │ 9561       │</span>
 <span class="go">│ .sh        │ 3941       │</span>
 <span class="go">│ .so        │ 27575368   │</span>
@@ -1461,12 +1461,12 @@ useful instead.</p>
 <span id="example-vfs"></span><span id="index-28"></span><h2>VFS - Virtual File System<a class="headerlink" href="#vfs-virtual-file-system" title="Link to this heading"></a></h2>
 <p><a class="reference internal" href="vfs.html#vfs"><span class="std std-ref">VFS</span></a> lets you control how SQLite accesses storage.  APSW
 makes it easy to “inherit” from an existing VFS and monitor or alter
-data as it flows through.   You can also implement your own
-<a class="reference internal" href="vfs.html#apsw.VFSFcntlPragma" title="apsw.VFSFcntlPragma"><code class="xref py py-class docutils literal notranslate"><span class="pre">pragmas</span></code></a>.</p>
+data as it flows through.</p>
+<p><a class="reference internal" href="vfs.html#apsw.URIFilename" title="apsw.URIFilename"><code class="xref py py-class docutils literal notranslate"><span class="pre">URI</span></code></a> are shown as a way to receive parameters
+when opening/creating a database file, and <a class="reference internal" href="vfs.html#apsw.VFSFcntlPragma" title="apsw.VFSFcntlPragma"><code class="xref py py-class docutils literal notranslate"><span class="pre">pragmas</span></code></a>
+for receiving parameters once a database is open.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># This example VFS obfuscates the database file contents by xor all</span>
-<span class="c1"># bytes with 0xa5.  URI parameters are also shown as a way you can</span>
-<span class="c1"># pass additional information for files.</span>
-
+<span class="c1"># bytes with 0xa5.</span>
 
 <span class="k">def</span> <span class="nf">obfuscate</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">):</span>
     <span class="k">return</span> <span class="nb">bytes</span><span class="p">([</span><span class="n">x</span> <span class="o">^</span> <span class="mh">0xa5</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data</span><span class="p">])</span>
@@ -1496,6 +1496,8 @@ data as it flows through.   You can also implement your own
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   level is&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">.</span><span class="n">uri_int</span><span class="p">(</span><span class="s2">&quot;level&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   warp is&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">.</span><span class="n">uri_boolean</span><span class="p">(</span><span class="s2">&quot;warp&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   notpresent is&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">.</span><span class="n">uri_parameter</span><span class="p">(</span><span class="s2">&quot;notpresent&quot;</span><span class="p">))</span>
+            <span class="c1"># all of them</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   all uris&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   filename&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">ObfuscatedVFSFile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_vfs</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">flags</span><span class="p">)</span>
@@ -1539,6 +1541,7 @@ data as it flows through.   You can also implement your own
 <span class="c1"># add in using URI parameters</span>
 <span class="n">open_flags</span> <span class="o">|=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_URI</span>
 
+<span class="c1"># uri parameters are after the ? separated by &amp;</span>
 <span class="n">obfudb</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;file:myobfudb?fast=speed&amp;level=7&amp;warp=on&amp;another=true&quot;</span><span class="p">,</span>
                          <span class="n">flags</span><span class="o">=</span><span class="n">open_flags</span><span class="p">,</span>
                          <span class="n">vfs</span><span class="o">=</span><span class="n">obfuvfs</span><span class="o">.</span><span class="n">vfs_name</span><span class="p">)</span>
@@ -1567,6 +1570,7 @@ data as it flows through.   You can also implement your own
 <span class="go">   level is 7</span>
 <span class="go">   warp is True</span>
 <span class="go">   notpresent is None</span>
+<span class="go">   all uris (&#39;fast&#39;, &#39;level&#39;, &#39;warp&#39;, &#39;another&#39;)</span>
 <span class="go">pragma received journal_mode = wal</span>
 <span class="go">xOpen flags SQLITE_OPEN_CREATE | SQLITE_OPEN_MAIN_JOURNAL | SQLITE_OPEN_READWRITE</span>
 <span class="go">   filename /space/apsw/myobfudb-journal</span>
@@ -1671,9 +1675,9 @@ Python.</p>
 
 <span class="go">Dump output</span>
 
-<span class="go">-- SQLite dump (by APSW 3.44.0.0)</span>
-<span class="go">-- SQLite version 3.44.0</span>
-<span class="go">-- Date: Mon Nov  6 08:28:48 2023</span>
+<span class="go">-- SQLite dump (by APSW 3.44.2.0)</span>
+<span class="go">-- SQLite version 3.44.2</span>
+<span class="go">-- Date: Wed Nov 29 11:04:22 2023</span>
 <span class="go">-- Tables like: csvtest%</span>
 <span class="go">-- Database: /space/apsw/dbfile</span>
 <span class="go">-- User: rogerb @ clamps</span>
@@ -1770,7 +1774,7 @@ for per connection statistics.</p>
 
 <span class="go">code is  SQLITE_TRACE_PROFILE</span>
 <span class="go">{&#39;code&#39;: 2,</span>
-<span class="go"> &#39;nanoseconds&#39;: 18000000,</span>
+<span class="go"> &#39;nanoseconds&#39;: 17000000,</span>
 <span class="go"> &#39;stmt_status&#39;: {&#39;SQLITE_STMTSTATUS_AUTOINDEX&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FILTER_HIT&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FILTER_MISS&#39;: 0,</span>
@@ -1908,7 +1912,7 @@ rollback the incomplete transaction.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Nov 06, 2023.
+      <span class="lastupdated">Last updated on Nov 29, 2023.
       </span></p>
   </div>
 

@@ -10,6 +10,25 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+3.44.2.0
+========
+
+Added `logger` parameter to :func:`apsw.ext.log_sqlite` to use a
+specific :class:`logging.Logger` (:issue:`493`)
+
+Added :func:`apsw.ext.result_string` to turn an result code into
+a string, taking into account if it is extended or not.
+
+Provide detail when C implemented objects are printed. For example
+:class:`connections <Connection>` include the filename.
+(:issue:`494`)
+
+Added :meth:`URIFilename.parameters` (:issue:`496`)
+
+:class:`URIFilename` are only valid for the duration of the
+:meth:`VFS.xOpen` call.  If you save and use the object later you will
+get an exception.  (:issue:`501`)
+
 3.44.0.0
 ========
 
@@ -17,7 +36,7 @@ Added virtual table :meth:`VTTable.Integrity` support.
 
 On 64 bit platforms with the amalgamation, `SQLITE_MAX_MMAP_SIZE
 <https://www.sqlite.org/mmap.html>`__ is set to 256 terabytes.
-SQLite's default limit is 2GB.  (:issue:`491`)`
+SQLite's default limit is 2GB.  (:issue:`491`)
 
 3.43.2.0
 ========
