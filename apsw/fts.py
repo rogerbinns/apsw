@@ -211,6 +211,9 @@ def PyUnicodeTokenizer(args: list[str]) -> apsw.Tokenizer:
     use compatibility code points.
     """
 
+    # ::TODO:: singletokencategories where any codepoint in them becomes a token by
+    # itself - eg category So which includes emoji
+
     options = {
         "categories": "L* N* Co",
         "tokenchars": "",
@@ -402,24 +405,33 @@ class FTS5Table:
 
         :param normalize: All text added via :meth:`insert` will be normalized to this
 
-        If making an external content table then run :meth:`rebuild` after this create.
+        If making an external content table then run command_rebuild after this create.
         """
         # ... make table, having fun quoting tokenizer etc
-        return cls(db, name, schema)
+        # for content tables, figure out columns automatically
+        inst = cls(db, name, schema)
+        # assert inst.columns == columns
+        # assert tokenizer == get_args(tokenizer)
+        return inst
 
 
 class AutocompleteTable(FTS5Table):
     "Does auto completion etc"
 
-    @classmethod
-    def create(cls, db, name, schema):
-        "do same as fts5table, require external content, config so that most information is not stored"
-        pass
+    def __init__(self, db:apsw.Connection, name:str, schema:str="main"):
+        super().__init__(db, name, schema)
 
     @classmethod
-    def is_autocomplete_table(cls, db, name, schema):
-        "checks if autocomplete, if so return us, if not then None"
-        pass
+    def create(cls, db:apsw.Connection, name:str, schema:str="main"):
+        "do same as fts5table, require external content, config so that most information is not stored"
+        ...
+        # run command_rebuild
+        return cls(db, name, schema)
+
+    @classmethod
+    def is_autocomplete_table(cls, db, name, schema) -> bool:
+        "checks if autocomplete"
+        return True
 
 
 # To get options set in the create virtual table statement there can be lots of quoting
@@ -427,7 +439,11 @@ class AutocompleteTable(FTS5Table):
 # including single and double quoting, backslashes etc.  So we use a dummy virtual module
 # that always throws an exception with the args as received from sqlite.
 # This is an early test that SQLite/FTS5 accepts:
+#
 # CREATE VIRTUAL TABLE ft UsInG fts5(a, [',], [\"=], "prefix=2", 'pr"ef"ix=3  ' , tokenize = '''porter'' ''ascii'''    )
+#
+# fts5_config.c contains the source that parses these.  Also working is
+#  tokenize = [porter 'as de' foo ascii]
 
 class _sqlite_parsed_args(Exception):
     def __init__(self, args):
@@ -451,13 +467,19 @@ def get_args(db: apsw.Connection, table_name: str, schema: str = "main"):
     paren = sql.index("(", idx)
     sqlite_args = None
     try:
-        db.execute(f"create virtual table sdkjfhdskj using { modname }" + sql[paren:])
+        # this will show up in sqlite log so use a descriptive name
+        db.execute(f"create virtual table [apsw_fts_get_args_{ id(db) }_{ table_name }] using { modname }" + sql[paren:])
         raise RuntimeError("Execution should not have reached here")
     except _sqlite_parsed_args as e:
         sqlite_args = e.sqlite_args
     assert sqlite_args is not None
     # column names and options can be interspersed
     # figure out fts5 decides what is an option
+
+    # options are bareword = value
+    # value is one bareword or dequote
+    # dequote is [ ' " `" ``  till corresponding close
+    # if end quote char is doubled treat it as single and continue
     return sqlite_args
 
 if __name__ == "__main__":
@@ -811,6 +833,7 @@ if __name__ == "__main__":
 
     # registrations built in
     con.register_fts5_tokenizer("pyunicode", PyUnicodeTokenizer)
+    # ::TODO:: add remaining tokenizers
     # registrations from args
     for reg in options.register:
         try:
@@ -872,6 +895,7 @@ if __name__ == "__main__":
                     f"{ comment } : { ' '.join(reasons) } { forms }",
                     kind="result",
                     id=counter,
+                    # ::TODO:: left side original utf8, right side tokens returned alternately underlined
                     message=utf8.decode("utf8"),
                 )
             )
