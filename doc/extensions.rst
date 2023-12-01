@@ -18,8 +18,8 @@ then they all enabled usually.
 FTS5
 ====
 
-`FTS5 <https://www.sqlite.org/fts5.html>`__ is the :doc:`full text
-search <fts>` extension.
+`FTS5 <https://www.sqlite.org/fts5.html>`__ is the full text search extension.
+APSW includes comprehensive :doc:`functionality  <fts>`..
 
 .. _ext-icu:
 
