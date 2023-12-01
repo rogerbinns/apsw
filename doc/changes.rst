@@ -10,6 +10,19 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+fts
+===
+
+Added :doc:`FTS5 support <fts>` including registering and calling tokenizers, and
+auxiliary functions.  The :mod:`apsw.fts` module provides additional classes and
+methods for working with FTS5.  The shell gets a :ref:`ftsq <shell-cmd-ftsq>` command
+for issuing queries.
+
+Added :attr:`Connection.data_version` for getting a change counter.
+`pragma data_version
+<https://sqlite.org/pragma.html#pragma_data_version>`__ doesn't update when
+changes are made on the same connection, only others.
+
 3.44.2.0
 ========
 
