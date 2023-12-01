@@ -1147,6 +1147,17 @@ class Connection:
     that are actually called.  These are likely to be `execute`,
     `executemany`, `close` etc."""
 
+    def data_version(self, schema: Optional[str] = None) -> int:
+        """Unlike `pragma data_version
+        <https://sqlite.org/pragma.html#pragma_data_version>`__ this value
+        updates when changes are made by other connections, **AND** this one.
+
+        :param schema: `schema` is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__,
+            defaulting to `main` if not supplied.
+
+        Calls: `sqlite3_file_control <https://sqlite.org/c3ref/file_control.html>`__"""
+        ...
+
     def db_filename(self, name: str) -> str:
         """Returns the full filename of the named (attached) database.  The
         main is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
@@ -1336,9 +1347,10 @@ class Connection:
     def fts5_tokenizer(self, name: str) -> FTS5Tokenizer:
         """Returns the named tokenizer.  Names are case insensitive.
 
-        .. seealso:
+        .. seealso::
 
-            :meth:`register_fts5_tokenizer`"""
+            * :meth:`register_fts5_tokenizer`
+            * :doc:`fts`"""
         ...
 
     def get_autocommit(self) -> bool:
@@ -1515,9 +1527,10 @@ class Connection:
         """Registers a tokenizer factory.  Names are case insensitive.  It is not possible to
         unregister a tokenizer.
 
-        .. seealso:
+        .. seealso::
 
-            :meth:`fts5_tokenizer`"""
+            * :meth:`fts5_tokenizer`
+            * :doc:`fts`"""
         ...
 
     def release_memory(self) -> None:
@@ -2181,6 +2194,9 @@ class FTS5Tokenizer:
                   "place",
                 ]"""
         ...
+
+    connection: Connection
+    """The :class:`Connection` this tokenizer is registered with."""
 
 @final
 class IndexInfo:
@@ -4141,7 +4157,7 @@ SQLITE_FCNTL_VFS_POINTER SQLITE_FCNTL_WAL_BLOCK
 SQLITE_FCNTL_WIN32_AV_RETRY SQLITE_FCNTL_WIN32_GET_HANDLE
 SQLITE_FCNTL_WIN32_SET_HANDLE SQLITE_FCNTL_ZIPVFS"""
 
-mapping_fts5_token_flag: dict[str | int, int | str]
+mapping_fts5_token_flags: dict[str | int, int | str]
 """FTS5 Token Flag mapping names to int and int to names.
 Doc at https://sqlite.org/fts5.html
 

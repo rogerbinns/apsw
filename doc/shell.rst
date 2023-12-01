@@ -128,6 +128,7 @@ leading ``.`` (period) - for example::
   * :ref:`exceptions <shell-cmd-exceptions>`
   * :ref:`exit <shell-cmd-exit>`
   * :ref:`find <shell-cmd-find>`
+  * :ref:`ftsq <shell-cmd-ftsq>`
   * :ref:`header <shell-cmd-header>`
   * :ref:`help <shell-cmd-help>`
   * :ref:`import <shell-cmd-import>`
@@ -413,6 +414,17 @@ contains ``%`` or ``_`` then it is also treated as a like pattern.
 
 This command can take a long time to execute needing to scan all of the relevant
 tables, rows, and columns.
+
+.. _shell-cmd-ftsq:
+.. index::
+    single: ftsq (Shell command)
+
+ftsq TABLE query
+----------------
+
+*Issues the query against the named FTS5 table*
+
+Text after the table name is used exactly as the query - do not shell quote it.
 
 .. _shell-cmd-header:
 .. index::

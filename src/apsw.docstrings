@@ -1316,6 +1316,25 @@
 "that are actually called.  These are likely to be `execute`,\n" \
 "`executemany`, `close` etc.\n" 
 
+#define  Connection_data_version_DOC "data_version($self,schema=None)\n--\n\nConnection.data_version(schema: Optional[str] = None) -> int\n\n" \
+"Unlike `pragma data_version\n" \
+"<https://sqlite.org/pragma.html#pragma_data_version>`__ this value\n" \
+"updates when changes are made by other connections, **AND** this one.\n" \
+"\n" \
+":param schema: `schema` is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__,\n" \
+"    defaulting to `main` if not supplied.\n" \
+"\n" \
+"Calls: `sqlite3_file_control <https://sqlite.org/c3ref/file_control.html>`__\n" 
+
+#define Connection_data_version_KWNAMES "schema"
+#define Connection_data_version_USAGE "Connection.data_version(schema: Optional[str] = None) -> int"
+
+#define Connection_data_version_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(schema), const char *)); \
+  assert(schema == 0); \
+} while(0)
+
+
 #define  Connection_db_filename_DOC "db_filename($self,name)\n--\n\nConnection.db_filename(name: str) -> str\n\n" \
 "Returns the full filename of the named (attached) database.  The\n" \
 "main is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__\n" \
@@ -1556,9 +1575,10 @@
 #define  Connection_fts5_tokenizer_DOC "fts5_tokenizer($self,name)\n--\n\nConnection.fts5_tokenizer(name: str) -> apsw.FTS5Tokenizer\n\n" \
 "Returns the named tokenizer.  Names are case insensitive.\n" \
 "\n" \
-".. seealso:\n" \
+".. seealso::\n" \
 "\n" \
-"    :meth:`register_fts5_tokenizer`\n" 
+"    * :meth:`register_fts5_tokenizer`\n" \
+"    * :doc:`fts`\n" 
 
 #define Connection_fts5_tokenizer_KWNAMES "name"
 #define Connection_fts5_tokenizer_USAGE "Connection.fts5_tokenizer(name: str) -> apsw.FTS5Tokenizer"
@@ -1814,9 +1834,10 @@
 "Registers a tokenizer factory.  Names are case insensitive.  It is not possible to\n" \
 "unregister a tokenizer.\n" \
 "\n" \
-".. seealso:\n" \
+".. seealso::\n" \
 "\n" \
-"    :meth:`fts5_tokenizer`\n" 
+"    * :meth:`fts5_tokenizer`\n" \
+"    * :doc:`fts`\n" 
 
 #define Connection_register_fts5_tokenizer_KWNAMES "name", "tokenizer_factory"
 #define Connection_register_fts5_tokenizer_USAGE "Connection.register_fts5_tokenizer(name: str, tokenizer_factory: FTS5TokenizerFactory) -> None"

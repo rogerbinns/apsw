@@ -5158,9 +5158,10 @@ Connection_data_version(Connection *self, PyObject *const *fast_args, Py_ssize_t
 
   Returns the named tokenizer.  Names are case insensitive.
 
-  .. seealso:
+  .. seealso::
 
-      :meth:`register_fts5_tokenizer`
+      * :meth:`register_fts5_tokenizer`
+      * :doc:`fts`
 
 */
 static PyObject *
@@ -5200,9 +5201,10 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
   Registers a tokenizer factory.  Names are case insensitive.  It is not possible to
   unregister a tokenizer.
 
-  .. seealso:
+  .. seealso::
 
-      :meth:`fts5_tokenizer`
+      * :meth:`fts5_tokenizer`
+      * :doc:`fts`
 */
 static PyObject *
 Connection_register_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)

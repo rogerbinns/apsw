@@ -351,7 +351,7 @@ add_apsw_constants(PyObject *module)
         assert(PyErr_Occurred());
         return -1;
     }
-    if (PyModule_AddObject(module, "mapping_fts5_token_flag", the_dict))
+    if (PyModule_AddObject(module, "mapping_fts5_token_flags", the_dict))
     {
         assert(PyErr_Occurred());
         Py_DECREF(the_dict);
