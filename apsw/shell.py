@@ -1632,10 +1632,9 @@ Enter ".help" for instructions
             self.process_sql(query, queryparams, internal=True, summary=("Table " + table + "\n", "\n"))
 
     def command_ftsq(self, cmd):
-        """ftsq TABLE query
+        """ftsq TABLE query: Issues the query against the named FTS5 table
 
-        Issues the query against the named FTS5 table.  Text after the table
-        name is used exactly as the query - do not shell quote it.
+        Text after the table name is used exactly as the query - do not shell quote it.
         """
         if len(cmd) != 2:
             raise self.Error("Expected a table name and a query")
