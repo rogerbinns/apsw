@@ -5114,6 +5114,43 @@ Connection_is_interrupted(Connection *self)
   return Py_NewRef(sqlite3_is_interrupted(self->db) ? Py_True : Py_False);
 }
 
+/** .. method:: data_version(schema: Optional[str] = None) -> int
+
+  Unlike `pragma data_version
+  <https://sqlite.org/pragma.html#pragma_data_version>`__ this value
+  updates when changes are made by other connections, **AND** this one.
+
+  :param schema: `schema` is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__,
+      defaulting to `main` if not supplied.
+
+  -* sqlite3_file_control
+*/
+static PyObject *
+Connection_data_version(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  const char *schema = NULL;
+  {
+    Connection_data_version_CHECK;
+    ARG_PROLOG(1, Connection_data_version_KWNAMES);
+    ARG_OPTIONAL ARG_optional_str(schema);
+    ARG_EPILOG(NULL, Connection_data_version_USAGE, );
+  }
+  int res, data_version = -1;
+  PYSQLITE_VOID_CALL(res = sqlite3_file_control(self->db, schema ? schema : "main", SQLITE_FCNTL_DATA_VERSION, &data_version));
+
+  if(res != SQLITE_OK)
+  {
+    /* errmsg is not set on failure */
+    SET_EXC(res, NULL);
+    return NULL;
+  }
+
+  return PyLong_FromLong(data_version);
+}
+
 /* done this way here to keep doc generation simple */
 #include "fts.c"
 
@@ -5385,6 +5422,7 @@ static PyMethodDef Connection_methods[] = {
     {"read", (PyCFunction)Connection_read, METH_FASTCALL | METH_KEYWORDS, Connection_read_DOC},
     {"fts5_tokenizer", (PyCFunction)Connection_fts5_tokenizer, METH_FASTCALL | METH_KEYWORDS, Connection_fts5_tokenizer_DOC},
     {"register_fts5_tokenizer", (PyCFunction)Connection_register_fts5_tokenizer, METH_FASTCALL | METH_KEYWORDS, Connection_register_fts5_tokenizer_DOC},
+    {"data_version", (PyCFunction)Connection_data_version, METH_FASTCALL | METH_KEYWORDS, Connection_data_version_DOC},
 #ifndef APSW_OMIT_OLD_NAMES
     {Connection_set_busy_timeout_OLDNAME, (PyCFunction)Connection_set_busy_timeout, METH_FASTCALL | METH_KEYWORDS,
      Connection_set_busy_timeout_OLDDOC},
