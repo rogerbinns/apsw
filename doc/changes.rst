@@ -23,6 +23,9 @@ Added :attr:`Connection.data_version` for getting a change counter.
 <https://sqlite.org/pragma.html#pragma_data_version>`__ doesn't update when
 changes are made on the same connection, only others.
 
+Added :func:`apsw.ext.ShowResourceUsage` for getting resource and SQLite
+usage in a block.
+
 3.44.2.0
 ========
 

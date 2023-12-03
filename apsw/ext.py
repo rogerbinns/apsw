@@ -11,6 +11,7 @@ from typing import Union, Any, Callable, Sequence, TextIO, Literal, Iterator, Ge
 import types
 
 import functools
+import time
 import abc
 import enum
 import inspect
@@ -571,6 +572,138 @@ def dbinfo(db: apsw.Connection,
             journalinfo = JournalFileInfo(**kw)
 
     return dbinfo, journalinfo
+
+class ShowResourceUsage:
+    """Use a context manager to show time, resource, and SQLite usage::
+
+        with apsw.ext.ShowResourceUsage(sys.stdout, db=connection, scope="thread"):
+            # do things with the database
+            connection.execute("...")
+            # and other calculations
+            do_work()
+
+    When then context finishes a report is printed to the file.  Only
+    non-zero fields are shown - eg if no I/O is done then no I/O
+    fields are shown.  See the :ref:`example <example_ShowResourceUsage>`.
+
+    :param file: File to print to.  If `None` then no information is gathered or
+           printed
+    :param db: :class:`~apsw.Connection` to gather SQLite stats from if not `None`
+    :param scope: Get :data:`thread <resource.RUSAGE_THREAD>` or
+           :data:`process <resource.RUSAGE_SELF>` stats, or `None`.
+
+    Timing information comes from :func:`time.monotonic` and :func:`time.process_time`,
+    resource usage from :func:`resource.getrusage` (empty for Windows), and SQLite from
+    :meth:`~apsw.Connection.trace_v2`.
+
+    ::TODO:: issue 502 so sqlite profile is not wiped
+    """
+    def __init__(
+        self,
+        file: TextIO | None,
+        *,
+        db: apsw.Connection | None = None,
+        scope: Literal["thread"] | Literal["process"] | None = None,
+    ):
+        self.file = file
+        self.db = db
+        if scope not in {"thread", "process", None}:
+            raise ValueError(f"scope { scope } not a valid choice")
+        self.scope = file and self._get_resource and scope
+
+    try:
+        import resource
+
+        _get_resource = resource.getrusage
+        _get_resource_param = {"thread": resource.RUSAGE_THREAD, "process": resource.RUSAGE_SELF}
+
+        del resource
+
+    except ImportError:
+        _get_resource = None
+
+    def __enter__(self):
+        self._times = time.process_time(), time.monotonic()
+        if self.scope:
+            self._usage = self._get_resource(self._get_resource_param[self.scope])
+        if self.db:
+            self.db.trace_v2(apsw.SQLITE_TRACE_PROFILE, self._sqlite_trace)
+            self.stmt_status = {}
+        return self
+
+    def _sqlite_trace(self, v):
+        for k, val in v["stmt_status"].items():
+            self.stmt_status[k] = val + self.stmt_status.get(k, 0)
+
+    def __exit__(self, *_) -> None:
+        if not self.file:
+            return
+
+        vals: list[tuple[str, int | float]] = []
+
+        times = time.process_time(), time.monotonic()
+        if times[0] - self._times[0] >= 0.001:
+            vals.append((self._descriptions["process_time"], times[0] - self._times[0]))
+        if times[1] - self._times[1] >= 0.0001:
+            vals.append((self._descriptions["monotonic"], times[1] - self._times[1]))
+
+        if self.scope:
+            usage = self._get_resource(self._get_resource_param[self.scope])
+
+            for k in dir(usage):
+                if not k.startswith("ru_"):
+                    continue
+                delta = getattr(usage, k) - getattr(self._usage, k)
+                if delta >= 0.001:
+                    vals.append((self._descriptions[k], delta))
+
+        if self.db:
+            self.db.trace_v2(0, None)
+            if self.stmt_status:
+                self.stmt_status.pop("SQLITE_STMTSTATUS_MEMUSED")
+                for k, v in self.stmt_status.items():
+                    if v:
+                        vals.append((self._descriptions[k], v))
+
+        if not vals:
+            print("(No resource changes)", file=self.file)
+        else:
+            max_width = max(len(k) for k in self._descriptions.values())
+            for k, v in vals:
+                if isinstance(v, float):
+                    v = f"{ v:.3f}"
+                else:
+                    v = f"{ v:,}"
+                print(" " * (max_width - len(k)) + k, v, file=self.file)
+
+    _descriptions = {
+        "process_time": "Total CPU consumption",
+        "monotonic": "Wall clock",
+        "SQLITE_STMTSTATUS_FULLSCAN_STEP": "SQLite full table scan",
+        "SQLITE_STMTSTATUS_SORT": "SQLite sort operations",
+        "SQLITE_STMTSTATUS_AUTOINDEX": "SQLite auto index rows added",
+        "SQLITE_STMTSTATUS_VM_STEP": "SQLite vm operations",
+        "SQLITE_STMTSTATUS_REPREPARE": "SQLite statement reprepares",
+        "SQLITE_STMTSTATUS_RUN": "SQLite statements completed",
+        "SQLITE_STMTSTATUS_FILTER_HIT": "SQLite bloom filter hit",
+        "SQLITE_STMTSTATUS_FILTER_MISS": "SQLite bloom filter miss",
+        "ru_utime": "Time in user mode",
+        "ru_stime": "Time in system mode",
+        "ru_maxrss": "Maximum resident set size",
+        "ru_ixrss": "Shared memory size",
+        "ru_idrss": "Unshared memory size",
+        "ru_isrss": "Unshared stack size",
+        "ru_minflt": "Page faults - no I/O",
+        "ru_majflt": "Page faults with I/O",
+        "ru_nswap": "Number of swapouts",
+        "ru_inblock": "Block input operations",
+        "ru_oublock": "Block output operations",
+        "ru_msgsnd": "Messages sent",
+        "ru_msgrcv": "Messages received",
+        "ru_nsignals": "Signals received",
+        "ru_nvcsw": "Voluntary context switches",
+        "ru_nivcsw": "Involuntary context switches",
+    }
 
 
 def format_query_table(db: apsw.Connection,

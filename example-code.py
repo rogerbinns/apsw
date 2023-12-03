@@ -12,6 +12,7 @@ import apsw
 import apsw.ext
 import random
 import re
+import time
 from pathlib import Path
 
 ### version_check: Checking APSW and SQLite versions
@@ -1108,6 +1109,18 @@ for _ in connection.execute(query):
 
 # Turn off tracing
 connection.trace_v2(0, None)
+
+### ShowResourceUsage: System and SQLite resource usage in a block
+# Use :meth:`apsw.ext.ShowResourceUsage` to see what resources a
+# block of code does.  We use the same query from above.
+
+with apsw.ext.ShowResourceUsage(sys.stdout, db=connection, scope="thread"):
+    # some SQLite work
+    rows = connection.execute(query).get
+    # and some non-SQLite work - the imports cause filesystem access
+    import statistics, tokenize, uuid, fractions, dist, pydoc, decimal
+    # and take some wall clock time
+    time.sleep(1.3)
 
 ### format_query: Formatting query results table
 # :meth:`apsw.ext.format_query_table` makes it easy

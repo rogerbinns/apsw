@@ -7,6 +7,7 @@ import sys
 import re
 import tempfile
 import shutil
+import io
 
 import apsw.ext
 
@@ -54,16 +55,23 @@ def get_output(filename: str):
         if mo:
             code.append(f"print('{ table_marker }<{ num }\\n', apsw.ext.format_query_table"+line[len(mo[0]):])
         else:
-            code.append(line.rstrip())
+            code.append(line.rstrip().replace("sys.stdout", "my_io"))
 
     output: dict[str, list[str]] = {}
     tables: dict[int, list[str]] = {}
     cur_section = None
 
+    my_io=io.StringIO()
+
     def my_print(*args: Any) -> None:
         nonlocal output, cur_section, tables
         s = " ".join(str(a) for a in args)
         if s.startswith(section_marker):
+            v=my_io.getvalue()
+            if v:
+                my_print(v)
+                my_io.seek(0)
+                my_io.truncate(0)
             cur_section = s[len(section_marker):]
             assert cur_section not in output
             output[cur_section] = []
@@ -82,7 +90,9 @@ def get_output(filename: str):
 
         print(s)
 
-    exec(compile("\n".join(code), "example-code.py", "exec"), {"print": my_print})
+    print("\n".join(code))
+
+    exec(compile("\n".join(code), "example-code.py", "exec"), {"print": my_print, "my_io": my_io})
 
     return output, tables
 
