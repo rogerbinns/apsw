@@ -591,6 +591,7 @@ class ShowResourceUsage:
     :param db: :class:`~apsw.Connection` to gather SQLite stats from if not `None`
     :param scope: Get :data:`thread <resource.RUSAGE_THREAD>` or
            :data:`process <resource.RUSAGE_SELF>` stats, or `None`.
+    :param indent: Printed before each line of output
 
     Timing information comes from :func:`time.monotonic` and :func:`time.process_time`,
     resource usage from :func:`resource.getrusage` (empty for Windows), and SQLite from
@@ -604,9 +605,11 @@ class ShowResourceUsage:
         *,
         db: apsw.Connection | None = None,
         scope: Literal["thread"] | Literal["process"] | None = None,
+        indent: str = ""
     ):
         self.file = file
         self.db = db
+        self.indent = indent
         if scope not in {"thread", "process", None}:
             raise ValueError(f"scope { scope } not a valid choice")
         self.scope = file and self._get_resource and scope
@@ -674,7 +677,7 @@ class ShowResourceUsage:
                     v = f"{ v:.3f}"
                 else:
                     v = f"{ v:,}"
-                print(" " * (max_width - len(k)) + k, v, file=self.file)
+                print(self.indent, " " * (max_width - len(k)), k, " ", v, file=self.file, sep="")
 
     _descriptions = {
         "process_time": "Total CPU consumption",
