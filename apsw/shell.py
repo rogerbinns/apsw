@@ -1630,11 +1630,12 @@ Enter ".help" for instructions
     def command_ftsq(self, cmd):
         """ftsq TABLE query: Issues the query against the named FTS5 table
 
-        Text after the table name is used exactly as the query - do not shell quote it.
+        The top 20 results are shown.  Text after the table name is used
+        exactly as the query - do not shell quote it.
         """
         if len(cmd) != 2:
             raise self.Error("Expected a table name and a query")
-        query =f"select rowid, rank, * from { cmd[0] }(?)"
+        query =f"select rowid, snippet({ cmd[0] }, -1, '<<', '>>', '...', 10) as 'snippet' from { cmd[0] }(?) order by rank limit 20"
         self.process_sql(query, (cmd[1], ))
 
     def command_header(self, cmd):
