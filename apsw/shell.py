@@ -929,45 +929,41 @@ Enter ".help" for instructions
             p = sig.parameters[param_name]
             use_prow = p.annotation == "Shell.Row"
 
-            timing_start = self.get_resource_usage()
+            with apsw.ext.ShowResourceUsage(file = self.stderr if self.timer else None, db=self.db, scope="thread", indent="* "):
+                column_names = None
+                rows = [] if getattr(self.output, "all_at_once", False) else None
 
-            column_names = None
-            rows = [] if getattr(self.output, "all_at_once", False) else None
+                cur = self.db.cursor()
+                if self.db.exec_trace:
+                    cur.exec_trace = lambda *args: True
+                if self.db.row_trace:
+                    cur.row_trace = lambda x, y: y
 
-            cur = self.db.cursor()
-            if self.db.exec_trace:
-                cur.exec_trace = lambda *args: True
-            if self.db.row_trace:
-                cur.row_trace = lambda x, y: y
-
-            for prow in Shell.PositionRow(cur.execute(qd.query, bindings)):
-                row = prow.row
-                if column_names is None:
-                    column_names = prow.columns
+                for prow in Shell.PositionRow(cur.execute(qd.query, bindings)):
+                    row = prow.row
+                    if column_names is None:
+                        column_names = prow.columns
+                        if qd.explain == 2:
+                            # column 2 is "notused"
+                            column_names = tuple(c for i, c in enumerate(column_names) if i != 2)
+                        if summary:
+                            self._output_summary(summary[0])
+                        if rows is None:
+                            self.output(True, column_names)
                     if qd.explain == 2:
-                        # column 2 is "notused"
-                        column_names = tuple(c for i, c in enumerate(column_names) if i != 2)
-                    if summary:
-                        self._output_summary(summary[0])
+                        row = tuple(c for i, c in enumerate(row) if i != 2)
+
+                    row = prow if use_prow else row
                     if rows is None:
-                        self.output(True, column_names)
-                if qd.explain == 2:
-                    row = tuple(c for i, c in enumerate(row) if i != 2)
+                        self.output(False, row)
+                    else:
+                        rows.append(row)
 
-                row = prow if use_prow else row
-                if rows is None:
-                    self.output(False, row)
-                else:
-                    rows.append(row)
+                if column_names and rows:
+                    self.output(column_names, rows)
 
-            if column_names and rows:
-                self.output(column_names, rows)
-
-            if column_names and summary:
-                self._output_summary(summary[1])
-
-            if self.timer:
-                self.display_timing(timing_start, self.get_resource_usage())
+                if column_names and summary:
+                    self._output_summary(summary[1])
 
             if qd.explain:
                 self.pop_output()
@@ -2693,16 +2689,10 @@ Enter ".help" for instructions
         The values displayed are in seconds when shown as floating
         point or an absolute count.  Only items that have changed
         since starting the query are shown.  On non-Windows platforms
-        considerably more information can be shown.
+        considerably more information can be shown.  SQLite statistics
+        are also included.
         """
-        if self._boolean_command("timer", cmd):
-            try:
-                self.get_resource_usage()
-            except Exception:
-                raise self.Error("Timing not supported by this Python version/platform")
-            self.timer = True
-        else:
-            self.timer = False
+        self.timer = self._boolean_command("timer", cmd)
 
     def command_version(self, cmd):
         "version: Displays SQLite, APSW, and Python version information"
@@ -3253,84 +3243,6 @@ Enter ".help" for instructions
 
         return [v for v in sorted(completions) if v.startswith(token) and v != token]
 
-    def get_resource_usage(self):
-        """Return a dict of various numbers (ints or floats).  The
-        .timer command shows the difference between before and after
-        results of what this returns by calling :meth:`display_timing`"""
-        if sys.platform == "win32":
-            import ctypes
-            import platform
-            import time
-            ctypes.windll.kernel32.GetProcessTimes.argtypes = [
-                platform.architecture()[0] == '64bit' and ctypes.c_int64 or ctypes.c_int32, ctypes.c_void_p,
-                ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p
-            ]
-
-            # All 4 out params have to be present.  FILETIME is really
-            # just a 64 bit quantity in 100 nanosecond granularity
-            dummy = ctypes.c_ulonglong()
-            utime = ctypes.c_ulonglong()
-            stime = ctypes.c_ulonglong()
-            rc = ctypes.windll.kernel32.GetProcessTimes(
-                ctypes.windll.kernel32.GetCurrentProcess(),
-                ctypes.byref(dummy),  # creation time
-                ctypes.byref(dummy),  # exit time
-                ctypes.byref(stime),
-                ctypes.byref(utime))
-            if rc:
-                return {
-                    'Wall clock': time.time(),
-                    'User time': float(utime.value) / 10000000,
-                    'System time': float(stime.value) / 10000000
-                }
-            return {}
-        else:
-            import resource
-            import time
-            r = resource.getrusage(resource.RUSAGE_SELF)
-            res = {'Wall clock': time.time()}
-            for i, desc in (
-                ("utime", "User time"),
-                ("stime", "System time"),
-                ("maxrss", "Max rss"),
-                ("idrss", "Memory"),
-                ("isrss", "Stack"),
-                ("ixrss", "Shared Memory"),
-                ("minflt", "PF (no I/O)"),
-                ("majflt", "PF (I/O)"),
-                ("inblock", "Blocks in"),
-                ("oublock", "Blocks out"),
-                ("nsignals", "Signals"),
-                ("nvcsw", "Voluntary context switches"),
-                ("nivcsw", "Involunary context switches"),
-                ("msgrcv", "Messages received"),
-                ("msgsnd", "Messages sent"),
-                ("nswap", "Swaps"),
-            ):
-                f = "ru_" + i
-                if hasattr(r, f):
-                    res[desc] = getattr(r, f)
-            return res
-
-    def display_timing(self, before, after):
-        """Writes the difference between before and after to self.stderr.
-        The data is dictionaries returned from
-        :meth:`get_resource_usage`."""
-        v = list(before.keys())
-        for i in after:
-            if i not in v:
-                v.append(i)
-        v.sort()
-        for k in v:
-            if k in before and k in after:
-                one = before[k]
-                two = after[k]
-                val = two - one
-                if val:
-                    if isinstance(val, float):
-                        self.write(self.stderr, "+ %s: %.4f\n" % (k, val))
-                    else:
-                        self.write(self.stderr, "+ %s: %d\n" % (k, val))
 
     ### Output helpers
     @dataclasses.dataclass(**({"slots": True, "frozen": True} if sys.version_info >= (3, 10) else {}))
