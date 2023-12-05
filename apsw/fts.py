@@ -9,7 +9,9 @@ import pathlib
 import re
 import fnmatch
 import functools
+import itertools
 import difflib
+import multiprocessing, multiprocessing.pool
 from dataclasses import dataclass
 
 from typing import Iterator, Callable, Sequence, Any, Literal
@@ -52,7 +54,7 @@ unicode_categories = {
 
 
 def tokenizer_test_strings(
-    filename: str = None, forms: tuple[str, ...] | None = ("NFC", "NFKC", "NFD", "NFKD")
+    filename: str | None = None, forms: tuple[str, ...] | None = ("NFC", "NFKC", "NFD", "NFKD")
 ) -> tuple[tuple[bytes, str], ...]:
     """Provides utf-8 bytes sequences for interesting test strings
 
@@ -293,13 +295,21 @@ class FTS5Table:
     :meth:`create` to create a new FTS5 table.
     """
 
+    @dataclass
+    class _cache:
+        token_data_version: int = -1
+        tokens: list[str] = None
+
     def __init__(self, db: apsw.Connection, name: str, schema: str = "main"):
+        if not db.table_exists(schema, name):
+            raise ValueError(f"{ schema }.{ name } doesn't exist")
+        # ::TODO:: figure out if it is fts5 table
         self.db = db
         self.name = name
         self.schema = schema
         # ::TODO:: figure out if name and schema need quoting and generate
         # self.qname self.qschema
-        pass
+        self._cache: FTS5Table._cache = FTS5Table._cache()
 
     @functools.cached_property
     def columns(self) -> tuple[str]:
@@ -358,27 +368,57 @@ class FTS5Table:
 
     def tokens(self) -> list[str]:
         "Return all tokens"
-        # grab from fts5vocab table
-        pass
+        if self._cache.token_data_version != self.db.data_version(self.schema):
+            n = self.fts5vocab_name("row")
+            self._cache.tokens = self.db.execute(f"select term from {n}").get
+            self._cache.token_data_version = self.db.data_version(self.schema)
+        return self._cache.tokens
+
+    def is_token(self, token: str) -> bool:
+        "Returns True if it is a known token"
+        n = self.fts5vocab_name("row")
+        return bool(self.db.execute("select term from { n } where term = ?", (token,)).get)
 
     def token_frequency(self, count: int = 10) -> list[tuple[str, int]]:
         "Most frequent tokens, useful for building a stopwords list"
-        pass
+        n = self.fts5vocab_name("row")
+        return self.db.execute(f"select term, cnt from { n } order by cnt desc limit { count }").get
 
-    def get_closest_tokens(self, token: str, n=3, cutoff=0.6) -> list[str]:
-        "Returns closest known tokens"
-        # use difflib.get_close_matches against tokens()
-        pass
+    def get_closest_tokens(self, token: str, n: int = 25, cutoff: float = 0.6) -> list[tuple[float, str]]:
+        """Returns closest known tokens to ``token`` with score for each
+
+        Calls :func:`token_closeness` with the parameters having the same meaning."""
+        return token_closeness(token, self.tokens(), n, cutoff)
+
+    def get_closest_tokens_mp(
+        self, pool: multiprocessing.pool.Pool, batch_size: int, token: str, n: int = 25, cutoff: float = 0.6
+    ) -> list[tuple[float, str]]:
+        """Returns closest known tokens to ``token`` with score for each
+
+        Does the same as :meth:`get_closest_tokens` but uses the
+        multiprocessing pool with ``batch_size`` tokens processed at
+        once in each work unit.
+        """
+        results: list[tuple[float, str]] = []
+        for res in pool.imap_unordered(
+            functools.partial(token_closeness, token, n=n, cutoff=cutoff), batched(self.tokens(), batch_size)
+        ):
+            results.extend(res)
+        results.sort(reverse=True)
+        return results[:n]
 
     @functools.cache
     def fts5vocab_name(self, type: Literal["row"] | Literal["col"] | Literal["instance"]) -> str:
         """
         Creates fts5vocab table in temp and returns name
         """
-        name = f"temp.fts5vocab_{ self.schema }_{ self.name }_{ type }"
+        name = f"temp.[fts5vocab_{ self.schema }_{ self.name }_{ type }]"
 
-        # need a "IF NOT EXISTS" somewhere in there
-        self.db.execute(f"create virtual table { name }(?, ?, ?)", (self.schema, self.name, type))
+        self.db.execute(
+            f"""create virtual table if not exists { name } using fts5vocab("""
+            + ",".join(apsw.format_sql_value(v) for v in (self.schema, self.name, type))
+            + ")"
+        )
         return name
 
     @classmethod
@@ -386,7 +426,7 @@ class FTS5Table:
         cls,
         db: apsw.Connection,
         name: str,
-        columns: list[str],
+        columns: list[str] | None,
         *,
         schema: str = "main",
         tokenizer: list[str] | None = None,
@@ -405,7 +445,12 @@ class FTS5Table:
 
         :param normalize: All text added via :meth:`insert` will be normalized to this
 
-        If making an external content table then run command_rebuild after this create.
+        External content table
+        ----------------------
+
+        Run :meth:`command_rebuild` after this create.
+
+        Columns can be `None` in which case they will come from external table.
         """
         # ... make table, having fun quoting tokenizer etc
         # for content tables, figure out columns automatically
@@ -415,14 +460,70 @@ class FTS5Table:
         return inst
 
 
+if hasattr(itertools, "batched"):
+    batched = itertools.batched
+else:
+
+    def batched(iterable, n):
+        "itertools.batched equivalent for older Python"
+        if n < 1:
+            raise ValueError("n must be at least one")
+        it = iter(iterable)
+        while batch := tuple(itertools.islice(it, n)):
+            yield batch
+
+
+def shingle(token: str, size: int = 3) -> tuple[str, ...]:
+    """Returns the token into sequences of ``size`` substrings
+
+    For example ``hello`` size 3 becomes ``('hel', 'ell', 'llo')``.
+
+    This is useful when calculating token closeness as the shingles
+    are more representative of word pronunciation and meaning than
+    individual letters.
+    """
+    if len(token) <= size:
+        return (token,)
+    return tuple(token[n : n + size] for n in range(0, len(token) - size + 1))
+
+
+def token_closeness(
+    token: str, tokens: Sequence[str], n: int, cutoff: float, transform: Callable[[str], Any] | None = shingle
+) -> list[tuple[float, str]]:
+    """
+    Uses :func:`difflib.get_close_matches` algorithm to find close matches.
+
+    Note that this is a statistical operation, and has no understanding
+    of the tokens and their meaning.  If the ``transform`` parameter is
+    None then the comparisons are letter by letter.
+    """
+    assert n > 0
+    assert 0.0 <= cutoff <= 1.0
+    result: list[tuple[float, str]] = []
+    sm = difflib.SequenceMatcher()
+    sm.set_seq2(transform(token) if transform else token)
+    for t in tokens:
+        if t == token:
+            continue
+        sm.set_seq1(transform(t) if transform else t)
+        if sm.real_quick_ratio() >= cutoff and sm.quick_ratio() >= cutoff and (ratio := sm.ratio()) >= cutoff:
+            result.append((ratio, t))
+            if len(result) > n:
+                result.sort(reverse=True)
+                result.pop()
+                cutoff = result[-1][0]
+    result.sort(reverse=True)
+    return result
+
+
 class AutocompleteTable(FTS5Table):
     "Does auto completion etc"
 
-    def __init__(self, db:apsw.Connection, name:str, schema:str="main"):
+    def __init__(self, db: apsw.Connection, name: str, schema: str = "main"):
         super().__init__(db, name, schema)
 
     @classmethod
-    def create(cls, db:apsw.Connection, name:str, schema:str="main"):
+    def create(cls, db: apsw.Connection, name: str, schema: str = "main"):
         "do same as fts5table, require external content, config so that most information is not stored"
         ...
         # run command_rebuild
@@ -444,6 +545,7 @@ class AutocompleteTable(FTS5Table):
 #
 # fts5_config.c contains the source that parses these.  Also working is
 #  tokenize = [porter 'as de' foo ascii]
+
 
 class _sqlite_parsed_args(Exception):
     def __init__(self, args):
@@ -468,7 +570,9 @@ def get_args(db: apsw.Connection, table_name: str, schema: str = "main"):
     sqlite_args = None
     try:
         # this will show up in sqlite log so use a descriptive name
-        db.execute(f"create virtual table [apsw_fts_get_args_{ id(db) }_{ table_name }] using { modname }" + sql[paren:])
+        db.execute(
+            f"create virtual table [apsw_fts_get_args_{ id(db) }_{ table_name }] using { modname }" + sql[paren:]
+        )
         raise RuntimeError("Execution should not have reached here")
     except _sqlite_parsed_args as e:
         sqlite_args = e.sqlite_args
@@ -481,6 +585,7 @@ def get_args(db: apsw.Connection, table_name: str, schema: str = "main"):
     # dequote is [ ' " `" ``  till corresponding close
     # if end quote char is doubled treat it as single and continue
     return sqlite_args
+
 
 if __name__ == "__main__":
     import html
