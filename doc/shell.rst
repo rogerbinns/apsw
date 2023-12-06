@@ -424,7 +424,8 @@ ftsq TABLE query
 
 *Issues the query against the named FTS5 table*
 
-Text after the table name is used exactly as the query - do not shell quote it.
+The top 20 results are shown.  Text after the table name is used exactly as the
+query - do not shell quote it.
 
 .. _shell-cmd-header:
 .. index::
@@ -797,7 +798,8 @@ timer ON|OFF
 
 The values displayed are in seconds when shown as floating point or an absolute
 count.  Only items that have changed since starting the query are shown.  On
-non-Windows platforms considerably more information can be shown.
+non-Windows platforms considerably more information can be shown.  SQLite
+statistics are also included.
 
 .. _shell-cmd-version:
 .. index::
