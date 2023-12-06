@@ -5225,7 +5225,7 @@ Connection_register_fts5_tokenizer(Connection *self, PyObject *const *fast_args,
   if (!api)
     return NULL;
 
-  int rc = api->xCreateTokenizer(api, name, tokenizer_factory, &APSWPythonTokenizer,
+  int rc = api->xCreateTokenizer(api, name, Py_NewRef(tokenizer_factory), &APSWPythonTokenizer,
                                  APSWPythonTokenizerFactoryDelete);
   if (rc != SQLITE_OK)
   {
