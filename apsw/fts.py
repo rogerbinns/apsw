@@ -14,12 +14,12 @@ import itertools
 import difflib
 import multiprocessing
 import multiprocessing.pool
-import collections
 from dataclasses import dataclass
 
 from typing import Iterator, Callable, Sequence, Any, Literal
 
 import apsw
+import apsw.ext
 
 unicode_categories = {
     "Lu": "Letter Uppercase",
@@ -191,7 +191,7 @@ def RegularExpressionSegmenter(utf8: bytes, pattern: str, flags: int = 0) -> Ite
         yield s, s + len(token.encode("utf8")), token
 
 
-def PyUnicodeTokenizer(args: list[str]) -> apsw.Tokenizer:
+def PyUnicodeTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     """Like the `unicode61 tokenizer <https://www.sqlite.org/fts5.html#unicode61_tokenizer>`__ but uses Python's Unicode database
 
     The SQLite unicode61 tokenizer uses a `Unicode character database
@@ -210,7 +210,7 @@ def PyUnicodeTokenizer(args: list[str]) -> apsw.Tokenizer:
 
     categories
         Space separated Unicode categories to consider part of tokens allowing wildcards.
-        Default is ``L* N* Mc`` to get all letters, numbers, and combining marks
+        Default is ``L* N* Mc Mn`` to get all letters, numbers, and combining marks
     tokenchars
         String of characters always considered part of tokens, no matter the category.
         For example ``@.`` wouldn't break apart email addresses.
@@ -220,17 +220,17 @@ def PyUnicodeTokenizer(args: list[str]) -> apsw.Tokenizer:
         (Not in unicode61) Any codepoint in this list of wildcard categories becomes a token by itself.
         For example ``So`` (Symbols other) includes emoji
 
-    Use the :func:`SimplifyWrapper` to convert case, remove diacritics, combining marks, and
+    Use the :func:`SimplifyTokenizer` to convert case, remove diacritics, combining marks, and
     use compatibility code points.
     """
     options = {
-        "categories": TokenizerArgument(default=categories_match("L* N* Mc"), convertor=categories_match),
+        "categories": TokenizerArgument(default=categories_match("L* N* Mc Mn"), convertor=categories_match),
         "tokenchars": "",
         "separators": "",
         "single_token_categories": TokenizerArgument(default="", convertor=categories_match),
     }
 
-    parse_tokenizer_args(options, args)
+    parse_tokenizer_args(con, options, args)
 
     def tokenize(flags, utf8):
         yield from UnicodeCategorySegmenter(
@@ -244,16 +244,54 @@ def PyUnicodeTokenizer(args: list[str]) -> apsw.Tokenizer:
     return tokenize
 
 
-def SimplifyWrapper(args: list[str]) -> apsw.Tokenizer:
-    """Simplifies tokens by case conversion, canonicalization"""
+def SimplifyTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
+    """Tokenizer wrapper that simplifies tokens by case conversion, canonicalization, token removal
+
+    Put this before another tokenizer to simplify its output.  For example:
+
+       simplify case upper pyunicode
+
+    The following tokenizer arguments are accepted, and are applied to each
+    token in this order.
+
+    case
+        ``upper`` or ``lower`` to convert case.  ``lower`` is recommended
+    normalize
+        Perform Unicode normalization - ``NFD`` ``NFC`` ``NFKD`` ``NFKC``.
+        NFKD is recommended
+    remove_categories
+       Which codepoint categories to remove.  ``M* *m Sk`` is recommended
+       to remove all marks, combining codepoints, and modifiers.
+    """
     ta = TokenizerArgument
     options = {
-        "case": ta(value="lower", choices=("upper", "lower")),
-        "form": ta(value="NFKD", choices=("NFD", "NFC", "NFKD", "NFKC")),
-        "remove": ta(value="Lm Sk"),
+        "case": ta(choices=("upper", "lower")),
+        "normalize": ta(choices=("NFD", "NFC", "NFKD", "NFKC")),
+        "remove_categories": ta(convertor=categories_match),
         "+": None,
     }
-    pass
+    parse_tokenizer_args(con, options, args)
+
+    def identity(s: str):
+        return s
+
+    case = getattr(str, options["case"]) if options["case"] else identity
+    normalize = functools.partial(unicodedata.normalize, options["normalize"]) if options["normalize"] else identity
+    remove_categories = options["remove_categories"]
+    remove = (
+        (lambda s: "".join(c for c in s if unicodedata.category(c) not in remove_categories))
+        if remove_categories
+        else identity
+    )
+
+    def tokenize(flags, utf8):
+        tok, args = options["+"]
+        for start, end, *tokens in tok(utf8, flags, args):
+            new_tokens = tuple(t for t in (remove(normalize(case(token))) for token in tokens) if t)
+            if new_tokens:
+                yield start, end, *new_tokens
+
+    return tokenize
 
 
 @dataclass
@@ -268,12 +306,14 @@ class TokenizerArgument:
     "Value must be one of these, after conversion"
 
 
-def parse_tokenizer_args(options: dict[str, TokenizerArgument | Any], args: list[str]) -> None:
+def parse_tokenizer_args(con: apsw.Connection, options: dict[str, TokenizerArgument | Any], args: list[str]) -> None:
     """Parses the arguments to a tokenizer updating the options with corresponding values
 
     :param options: A dictionary where the key is a string, and the value is either
        the corresponding default, or :class:`TokenizerArgument`.
     :params args: A list of strings as received by :class:`apsw.FTS5TokenizerFactory`
+
+    The ``options`` dictionary passed in is modified with the results.
 
     For example to parse ``args`` ``["arg1", "3", "big", "ship", "unicode61", "yes"]``
 
@@ -292,7 +332,7 @@ def parse_tokenizer_args(options: dict[str, TokenizerArgument | Any], args: list
             "+": None
         }
 
-        # options in output
+        # options on output
         {
             "arg1": 3,
             "big": "ship",
@@ -307,7 +347,7 @@ def parse_tokenizer_args(options: dict[str, TokenizerArgument | Any], args: list
         if n not in options:
             if "+" not in options:
                 raise ValueError(f"Unexpected parameter name { n }")
-            options["+"] = [n] + ac
+            options["+"] = [con.fts5_tokenizer(n), ac]
             ac = []
             break
         if not ac:
@@ -429,7 +469,7 @@ class FTS5Table:
         n = self.fts5vocab_name("row")
         return bool(self.db.execute(f"select term from { n } where term = ?", (token,)).get)
 
-    def combined_tokens(self, tokens: list[str]) -> list[str] | None:
+    def combined_tokens(self, tokens: list[str]) -> list[str]:
         """
         Figure out if token list can have adjacent tokens combined
         into other tokens that exist
@@ -440,18 +480,33 @@ class FTS5Table:
 
         ``["one", "two", "three"]`` ->
            ["onetwothree", "twothree", "onetwo"]
-        """
-        pass
 
-    def split_tokens(self, token: str) -> list[list[str]] | None:
+        ?? Sort by token frequency
+        """
+        # ::TODO:: implement
+        return []
+
+    def split_tokens(self, token: str) -> list[list[str]]:
         """
         Figure out of token can be split into multiple tokens that exist
 
         ``"playstation`` -> ``[["play", "station"]]``
 
         ``"onetwothree"`` -> ``[ ["one", "twothree"], ["onetwo", "three"]]``
+
+        ?? Sort by token frequency
         """
-        pass
+        # ::TODO:: implement
+        return []
+
+    def superset_tokens(self, token: str) -> list[str]:
+        """Figure out longer tokens that include this one
+
+        ``one`` -> ``["gone", "phone", "opponent"]``
+
+        ?? Sort by token frequency
+        """
+        return [t for t in self.tokens() if token in t]
 
     def token_frequency(self, count: int = 10) -> list[tuple[str, int]]:
         "Most frequent tokens, useful for building a stop words list"
@@ -539,7 +594,7 @@ if hasattr(itertools, "batched"):
 else:
 
     def batched(iterable, n):
-        "itertools.batched equivalent for older Python"
+        ":func:`itertools.batched` equivalent for older Python"
         if n < 1:
             raise ValueError("n must be at least one")
         it = iter(iterable)
@@ -634,6 +689,18 @@ class _sqlite_parsed_args_vtmodule:
 
 
 def get_args(db: apsw.Connection, table_name: str, schema: str = "main"):
+    """Returns the declared parameters for the table
+
+    ``CREATE VIRTUAL TABLE ft UsInG fts5(a, [',], [\"=], "prefix=2", prefix   =   2, 'pr"ef"ix=3  ' , tokenize = '''porter'' a ''ascii''')``
+
+    would return:
+
+    ``("prefix", "2"), ("tokenize", ("porter", "a", "ascii")))``
+
+    It understands SQLite and FTS5 quoting rules and gets the information out.  Any
+    ``tokenize`` parameter has its value broken out into the individual items.
+
+    """
     sql: str | None = db.execute(f"select sql from [{ schema }].sqlite_schema where name=?", (table_name,)).get
     if sql is None:
         raise ValueError(f"no such table { schema }.{ table_name}")
@@ -658,6 +725,8 @@ def get_args(db: apsw.Connection, table_name: str, schema: str = "main"):
     # value is one bareword or dequote
     # dequote is [ ' " `" ``  till corresponding close
     # if end quote char is doubled treat it as single and continue
+    # can have comments like
+    # tokenize='html stoken unicode61 tokenchars _' -- Tokenizer definition
     return sqlite_args
 
 
@@ -942,8 +1011,13 @@ if __name__ == "__main__":
 
     .compare-tokens {
         display: block;
-        float: right;
+        float: left;
         background-color: lightyellow;
+        text-wrap: balance;
+    }
+
+    .compare-tokens, .compare-original {
+        padding: 5px;
     }
 
     .compare-tokens .ct:nth-child(odd) {
@@ -964,7 +1038,7 @@ if __name__ == "__main__":
             newline = "\n"  # fstring can't have backslash
             left = html.escape(compare[0]).replace(newline, "<br>")
             right = " ".join(f"<span class='ct'>{ html.escape(token) }</span>" for token in compare[1])
-            compare = f"<br><span class='compare-original' title='Original bytes'>{left}</span><span class='compare-tokens' title='Tokens'>{ right }</span>"
+            compare = f"<br><span class='compare-original' title='Original UTF8 bytes'>{left}</span><span class='compare-tokens' title='Tokens, alternate ones underlined'>{ right }</span>"
         else:
             compare = ""
         return f"<tr class='remark { kind }' { id }><td colspan=8>{ ls }{ html.escape(remark) }{ le }{ compare }</td></tr>\n"
@@ -1003,7 +1077,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--reason",
-        choices = list(reason_map.keys()),
+        choices=list(reason_map.keys()),
         help="Tokenize reason [%(default)s]",
         default="DOCUMENT",
     )
@@ -1013,7 +1087,7 @@ if __name__ == "__main__":
         default=[],
         help="Registers tokenizers.  This option can be specified multiple times.  Format is name=mod.submod.callable "
         "where name is what is registered with FTS5 and callable is the factory function.  The module containing "
-        "callable will be imported.",
+        "callable will be imported.  pyunicode and simplify from apsw.fts are registered.",
         metavar="name=mod.part.callable",
     )
 
@@ -1029,6 +1103,7 @@ if __name__ == "__main__":
 
     # registrations built in
     con.register_fts5_tokenizer("pyunicode", PyUnicodeTokenizer)
+    con.register_fts5_tokenizer("simplify", SimplifyTokenizer)
     # ::TODO:: add remaining tokenizers
 
     # registrations from args
@@ -1064,9 +1139,7 @@ if __name__ == "__main__":
     sections = []
     counter = 1
     for comment, utf8, h, reason, tokens in results:
-        normalized = [
-            f for f in ("NFC", "NFKC", "NFD", "NFKD") if unicodedata.is_normalized(f, utf8.decode("utf8"))
-        ]
+        normalized = [f for f in ("NFC", "NFKC", "NFD", "NFKD") if unicodedata.is_normalized(f, utf8.decode("utf8"))]
         if normalized:
             forms = ": forms " + " ".join(normalized)
         else:
