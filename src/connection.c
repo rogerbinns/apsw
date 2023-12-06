@@ -5212,7 +5212,9 @@ Connection_register_fts5_tokenizer(Connection *self, PyObject *const *fast_args,
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
   const char *name;
+  int rc = SQLITE_NOMEM;
   PyObject *tokenizer_factory;
+
   {
     Connection_register_fts5_tokenizer_CHECK;
     ARG_PROLOG(2, Connection_register_fts5_tokenizer_KWNAMES);
@@ -5225,10 +5227,20 @@ Connection_register_fts5_tokenizer(Connection *self, PyObject *const *fast_args,
   if (!api)
     return NULL;
 
-  int rc = api->xCreateTokenizer(api, name, Py_NewRef(tokenizer_factory), &APSWPythonTokenizer,
+  TokenizerFactoryData *tfd = PyMem_Malloc(sizeof(TokenizerFactoryData));
+  if(!tfd)
+    goto finally;
+  tfd->factory_func = Py_NewRef(tokenizer_factory);
+  tfd->connection = Py_NewRef(self);
+
+  rc = api->xCreateTokenizer(api, name, tfd, &APSWPythonTokenizer,
                                  APSWPythonTokenizerFactoryDelete);
+
+  finally:
   if (rc != SQLITE_OK)
   {
+    if(tfd)
+      APSWPythonTokenizerFactoryDelete(tfd);
     SET_EXC(rc, NULL);
     return NULL;
   }

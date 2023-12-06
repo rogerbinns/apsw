@@ -522,19 +522,29 @@ static PyTypeObject APSWFTS5TokenizerType = {
   .tp_getset = APSWFTS5Tokenizer_getset,
 };
 
+typedef struct
+{
+  PyObject *factory_func;
+  PyObject *connection;
+}  TokenizerFactoryData;
+
 static void
-APSWPythonTokenizerFactoryDelete(void *factory)
+APSWPythonTokenizerFactoryDelete(void *factory_data)
 {
   PyGILState_STATE gilstate = PyGILState_Ensure();
-  Py_DECREF((PyObject *)factory);
+  TokenizerFactoryData *tfd = (TokenizerFactoryData *)factory_data;
+  Py_DECREF(tfd->factory_func);
+  Py_DECREF(tfd->connection);
+  PyMem_Free(tfd);
   PyGILState_Release(gilstate);
 }
 
 static int
-APSWPythonTokenizerCreate(void *factory, const char **argv, int argc, Fts5Tokenizer **ppOut)
+APSWPythonTokenizerCreate(void *factory_data, const char **argv, int argc, Fts5Tokenizer **ppOut)
 {
   PyGILState_STATE gilstate = PyGILState_Ensure();
   int i, res = SQLITE_NOMEM;
+  TokenizerFactoryData *tfd = (TokenizerFactoryData *)factory_data;
 
   PyObject *args = PyList_New(argc);
   if (!args)
@@ -548,9 +558,9 @@ APSWPythonTokenizerCreate(void *factory, const char **argv, int argc, Fts5Tokeni
     PyList_SET_ITEM(args, i, arg);
   }
 
-  PyObject *vargs[] = { NULL, args };
+  PyObject *vargs[] = { NULL, tfd->connection, args };
 
-  PyObject *pyres = PyObject_Vectorcall((PyObject *)factory, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  PyObject *pyres = PyObject_Vectorcall(tfd->factory_func, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (!pyres)
   {
     res = SQLITE_ERROR;

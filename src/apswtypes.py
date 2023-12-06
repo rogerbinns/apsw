@@ -135,6 +135,6 @@ Tokenizer = Callable[[int, bytes], Sequence[str | tuple[str, ...] | tuple[int, i
 iterated and each item should be either a str, a tuple of one or more str, or a tuple of
 int start, int end, and one or more str"""
 
-FTS5TokenizerFactory = Callable[[list[str]], Tokenizer]
+FTS5TokenizerFactory = Callable[[Connection, list[str]], Tokenizer]
 """The factory is called with a list of strings as an argument and should
 return a suitably configured Tokenizer"""
