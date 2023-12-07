@@ -55,6 +55,27 @@ unicode_categories = {
 }
 "Unicode categories and descriptions for reference"
 
+TokenizeReasons = {
+    "DOCUMENT": apsw.FTS5_TOKENIZE_DOCUMENT,
+    "QUERY": apsw.FTS5_TOKENIZE_QUERY,
+    "QUERY_PREFIX": apsw.FTS5_TOKENIZE_QUERY | apsw.FTS5_TOKENIZE_PREFIX,
+    "AUX": apsw.FTS5_TOKENIZE_AUX,
+}
+
+"Mapping between friendly strings and constants for `xTokenize flags <https://www.sqlite.org/fts5.html#custom_tokenizers>`__"
+
+
+def tokenize_reason_convert(value: str) -> set[int]:
+    """Converts a space separated list of :data:`TokenizeReasons` into a set of corresponding values
+
+    Use with :func:`parse_tokenizer_args`"""
+    res = set()
+    for v in value.split():
+        if v not in TokenizeReasons:
+            raise ValueError(f"{ v } is not a tokenizer reason - valid values are { ' '.join(TokenizeReasons.keys()) }")
+        res.add(TokenizeReasons[v])
+    return res
+
 
 def tokenizer_test_strings(filename: str | None = None) -> tuple[tuple[bytes, str], ...]:
     """Provides utf-8 bytes sequences for interesting test strings
@@ -256,9 +277,11 @@ def SynonymTokenizer(
         connection.register_fts5_tokenizer("my_name", tokenizer)
 
     """
-    # ::TODO:: add option to say what tokenize reason to apply this under
 
     options = {
+        "reasons": TokenizerArgument(
+            default=tokenize_reason_convert("DOCUMENT AUX"), convertor=tokenize_reason_convert
+        ),
         "+": None,
     }
 
@@ -266,6 +289,10 @@ def SynonymTokenizer(
 
     def tokenize(utf8: bytes, flags: int):
         tok, args = options["+"]
+        if flags not in options["reasons"]:
+            yield from tok(utf8, flags, args)
+            return
+
         for start, end, *tokens in tok(utf8, flags, args):
             new_tokens = []
             for t in tokens:
@@ -385,10 +412,6 @@ def parse_tokenizer_args(con: apsw.Connection, options: dict[str, TokenizerArgum
             for start, end, *tokens in tok(utf8, flags, args):
                 # do something
                 yield start, end, *tokens
-
-
-    """
-    FIXME the tokenize and for in tok() take utf8 and flags in opposite order
 
 
 
@@ -1100,13 +1123,6 @@ if __name__ == "__main__":
             compare = ""
         return f"<tr class='remark { kind }' { id }><td colspan=8>{ ls }{ html.escape(remark) }{ le }{ compare }</td></tr>\n"
 
-    reason_map = {
-        "DOCUMENT": apsw.FTS5_TOKENIZE_DOCUMENT,
-        "QUERY": apsw.FTS5_TOKENIZE_QUERY,
-        "QUERY_PREFIX": apsw.FTS5_TOKENIZE_QUERY | apsw.FTS5_TOKENIZE_PREFIX,
-        "AUX": apsw.FTS5_TOKENIZE_AUX,
-    }
-
     parser = argparse.ArgumentParser(
         prog="python3 -m apsw.fts",
         description="Runs FTS5 tokenizer against test text producing a HTML report for manual inspection.",
@@ -1134,7 +1150,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--reason",
-        choices=list(reason_map.keys()),
+        choices=list(TokenizeReasons.keys()),
         help="Tokenize reason [%(default)s]",
         default="DOCUMENT",
     )
@@ -1215,7 +1231,7 @@ if __name__ == "__main__":
     for utf8, comment in tokenizer_test_strings(filename=options.text_file):
         if options.normalize:
             utf8 = unicodedata.normalize(options.normalize, utf8.decode("utf8")).encode("utf8")
-        h, tokens = show_tokenization(tok, utf8, reason_map[options.reason], options.args[1:])
+        h, tokens = show_tokenization(tok, utf8, TokenizeReasons[options.reason], options.args[1:])
         results.append((comment, utf8, h, options.reason, tokens))
 
     w = lambda s: options.output.write(s.encode("utf8") + b"\n")
