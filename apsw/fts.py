@@ -308,6 +308,34 @@ def SynonymTokenizer(
     return tokenize
 
 
+class StrPositions:
+    """Use this as a wrapper if your tokenizer works with text and not utf8 bytes
+
+    Your inner tokenize method is called from SQLite with utf8 bytes.  If you work
+    with Python strings and their positions, then use this wrapper which will
+    provide str instead, and work out the mapping back to utf8 byte offsets.
+
+    See the source for :func:`RegexTokenizer` for an example use.
+    """
+
+    def __init__(self, func: Callable[[str, int], None]):
+        self.func = func
+
+    def __call__(self, utf8: bytes, flags: int):
+        text = utf8.decode("utf8")
+        last_pos_bytes: int = 0
+        last_pos_str: int = 0
+        for start, end, *tokens in self.func(text, flags):
+            if end < start or start < last_pos_str:
+                raise ValueError(f"Invalid token sequencing { start= } { end= } { last_pos_str= } ")
+            # utf8 bytes keeping track of last position
+            utf8_start = len(text[last_pos_str:start].encode("utf8"))
+            utf8_span = len(text[start:end].encode("utf8"))
+            yield last_pos_bytes + utf8_start, last_pos_bytes + utf8_start + utf8_span, *tokens
+            last_pos_bytes += utf8_start + utf8_span
+            last_pos_str = end
+
+
 def RegexTokenizer(con: apsw.Connection, args: list[str], pattern: str | re.Pattern, flags: int = 0) -> apsw.Tokenizer:
     """Finds tokens using a regular expression
 
