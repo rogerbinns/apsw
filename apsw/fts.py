@@ -16,7 +16,7 @@ import multiprocessing
 import multiprocessing.pool
 from dataclasses import dataclass
 
-from typing import Iterator, Callable, Sequence, Any, Literal
+from typing import Callable, Sequence, Any, Literal
 
 import apsw
 import apsw.ext
@@ -152,7 +152,14 @@ def PyUnicodeTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
         For example ``So`` (Symbols other) includes emoji
 
     Use the :func:`SimplifyTokenizer` to convert case, remove diacritics, combining marks, and
-    use compatibility code points.
+    use compatibility code points.  A recommended tokenizer sequence is
+    ``simplify case lower normalize NFKD remove_categories 'M* *m Sk' pyunicode single_token_categories 'So'``
+    with:
+
+    .. code:: python
+
+        con.register_fts5_tokenizer("simplify", apsw.fts.SimplifyTokenizer)
+        con.register_fts5_tokenizer("pyunicode", apsw.fts.PyUnicodeTokenizer)
     """
     options = {
         "categories": TokenizerArgument(default=categories_match("L* N* Mc Mn"), convertor=categories_match),
@@ -171,46 +178,33 @@ def PyUnicodeTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     if tokenchars & separators:
         raise ValueError(f"Codepoints are in both tokens and separators { tokenchars & separators }")
 
-    def tokenize(flags, utf8):
-        # extracting loop, codepoint at a time
-        i = 0
+    def tokenize(text: str, flags: int):
         start = None
         token = ""
-        while i < len(utf8):
-            b = utf8[i]
-            if b & 0b1111_0000 == 0b1111_0000:
-                l = 4
-            elif b & 0b1110_0000 == 0b1110_0000:
-                l = 3
-            elif b & 0b1100_0000 == 0b1100_0000:
-                l = 2
-            else:
-                l = 1
-            codepoint = utf8[i : i + l].decode("utf8")
+        i = 0
+
+        for i, codepoint in enumerate(text):
             cat = unicodedata.category(codepoint)
             if codepoint not in separators and cat in single_token_categories:
                 if token:
                     yield start, i, token
-                yield i, i + l, codepoint
+                yield i, i + 1, codepoint
                 token = ""
                 start = None
-                i += l
                 continue
             if (codepoint in tokenchars or cat in categories) and codepoint not in separators:
                 if not token:
                     start = i
                 token += codepoint
-                i += l
                 continue
             if token:
                 yield start, i, token
                 token = ""
                 start = None
-            i += l
         if token:
             yield start, i, token
 
-    return tokenize
+    return StrPositions(tokenize)
 
 
 def SimplifyTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
@@ -267,9 +261,15 @@ def SynonymTokenizer(
     con: apsw.Connection, args: list[str], get: Callable[[str], str | Sequence[str] | None]
 ) -> apsw.Tokenizer:
     """
-    Adds colocated tokens, such as 1st for first
+    Adds `colocated tokens <https://www.sqlite.org/fts5.html#synonym_support>`__ such as 1st for first.
 
-    To use you need a ``get`` callable that takes a str, and returns a str, a sequence of str, or None
+    To use you need a  callable that takes a str, and returns a str, a sequence of str, or None
+
+    The following tokenizer arguments are accepted.
+
+    reasons
+        Which tokenize :data:`TokenizeReasons` you want the lookups to happen in
+        as a space separated list.  Default is ``DOCUMENT AUX``.
 
     .. code:: python
 
@@ -361,28 +361,12 @@ def RegexTokenizer(con: apsw.Connection, args: list[str], pattern: str | re.Patt
 
     parse_tokenizer_args(con, options, args)
 
-    def tokenize(flags, utf8):
-        # re works on str not bytes, so we have to convert to str
-        # and then keep mapping back to the bytes position
-        text = utf8.decode("utf8")
-        last_pos_bytes = 0
-        last_pos_str = 0
+    def tokenize(text: str, flags: int):
         for match in re.finditer(pattern, text):
-            # positions in str
-            s = match.start()
-            token = match.group()
-            l = len(token.encode("utf8"))
-            # now utf8 bytes keeping track of last position
-            span_utf8 = len(text[last_pos_str:s].encode("utf8"))
-            last_pos_bytes += span_utf8
-            last_pos_str = s
-            # yield the token
-            yield last_pos_bytes, last_pos_bytes + l, token
-            # adjust pos by size of token
-            last_pos_bytes += l
-            last_pos_str += len(token)
+            yield *match.span(), match.group()
 
-    return tokenize
+    # re works on str offsets, not byte offsets so use the wrapper
+    return StrPositions(tokenize)
 
 
 @dataclass
@@ -441,8 +425,12 @@ def parse_tokenizer_args(con: apsw.Connection, options: dict[str, TokenizerArgum
                 # do something
                 yield start, end, *tokens
 
+    .. seealso:: Some convertors
 
+        * :meth:`categories_match`
+        * :meth:`tokenize_reason_convert`
 
+    """
     ac = args[:]
     while ac:
         n = ac.pop(0)
@@ -1217,6 +1205,8 @@ if __name__ == "__main__":
         "For example to run the trigram tokenizer on unicode keeping diacritics use: trigram unicode61 remove_diacritics 0",
     )
     options = parser.parse_args()
+    if options.output.isatty():
+        parser.error("Refusing to spew HTML to your terminal.  Redirect/pipe output or use the --output option")
 
     con = apsw.Connection("")
 
