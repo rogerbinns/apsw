@@ -423,7 +423,7 @@ typedef struct
 {
   PyObject *factory_func;
   PyObject *connection;
-}  TokenizerFactoryData;
+} TokenizerFactoryData;
 
 static void
 APSWPythonTokenizerFactoryDelete(void *factory_data)
@@ -506,7 +506,7 @@ APSWPythonTokenizerTokenize(Fts5Tokenizer *our_context, void *their_context, int
   if (!pyflags)
     goto finally;
 
-  PyObject *vargs[] = { NULL, pyflags, bytes };
+  PyObject *vargs[] = { NULL, bytes, pyflags };
   object = PyObject_Vectorcall((PyObject *)our_context, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (!object)
     goto finally;
@@ -622,4 +622,3 @@ static fts5_tokenizer APSWPythonTokenizer = {
   .xDelete = APSWPythonTokenizerDelete,
   .xTokenize = APSWPythonTokenizerTokenize,
 };
-

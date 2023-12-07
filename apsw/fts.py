@@ -232,7 +232,7 @@ def SimplifyTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
         else identity
     )
 
-    def tokenize(flags, utf8):
+    def tokenize(utf8, flags):
         tok, args = options["+"]
         for start, end, *tokens in tok(utf8, flags, args):
             new_tokens = tuple(t for t in (remove(normalize(case(token))) for token in tokens) if t)
@@ -264,7 +264,7 @@ def SynonymTokenizer(
 
     parse_tokenizer_args(con, options, args)
 
-    def tokenize(flags: int, utf8: bytes):
+    def tokenize(utf8: bytes, flags: int):
         tok, args = options["+"]
         for start, end, *tokens in tok(utf8, flags, args):
             new_tokens = []
@@ -380,7 +380,7 @@ def parse_tokenizer_args(con: apsw.Connection, options: dict[str, TokenizerArgum
         }
 
         # Using "+" in your ``tokenize`` functions
-        def tokenize(flags, utf8):
+        def tokenize(utf8, flags):
             tok, args = options["+"]
             for start, end, *tokens in tok(utf8, flags, args):
                 # do something
