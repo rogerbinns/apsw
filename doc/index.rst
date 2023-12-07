@@ -18,7 +18,7 @@ APSW |version| documentation
    cursor
    blob
    backup
-   fts
+   textsearch
    vtable
    vfs
    shell

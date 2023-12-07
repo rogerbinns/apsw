@@ -5161,7 +5161,7 @@ Connection_data_version(Connection *self, PyObject *const *fast_args, Py_ssize_t
   .. seealso::
 
       * :meth:`register_fts5_tokenizer`
-      * :doc:`fts`
+      * :doc:`textsearch`
 
 */
 static PyObject *
@@ -5204,7 +5204,7 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
   .. seealso::
 
       * :meth:`fts5_tokenizer`
-      * :doc:`fts`
+      * :doc:`textsearch`
 */
 static PyObject *
 Connection_register_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)

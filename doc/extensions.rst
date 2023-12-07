@@ -19,7 +19,7 @@ FTS5
 ====
 
 `FTS5 <https://www.sqlite.org/fts5.html>`__ is the full text search extension.
-APSW includes comprehensive :doc:`functionality  <fts>`..
+APSW includes comprehensive :doc:`functionality  <textsearch>`..
 
 .. _ext-icu:
 

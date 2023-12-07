@@ -5,7 +5,7 @@
 Shell
 *****
 
-The shell provides a convenient way for you to interact with SQLite,
+The shell provides a convtext interface to interact with SQLite,
 perform administration, and supply SQL for execution.  It is modelled
 after the `shell that comes with SQLite
 <https://sqlite.org/cli.html>`__ which doesn't interoperate with Python.
@@ -871,6 +871,6 @@ can then `monkey patch <https://en.wikipedia.org/wiki/Monkey_patch>`__
 the shell as needed.
 
 .. automodule:: apsw.shell
-     :synopsis: Convenient way for you to interact with SQLite
+     :synopsis: Interact with SQLite
      :members:
      :undoc-members:

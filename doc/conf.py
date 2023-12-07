@@ -63,6 +63,7 @@ assert version and today
 today_fmt = '%B %d, %Y'
 
 exclude_trees = ['build']
+exclude_patterns = ["fts.rst"]
 
 extlinks_detect_hardcoded_links = True
 
