@@ -101,96 +101,6 @@ def categories_match(patterns: str) -> set[str]:
     return categories
 
 
-def UnicodeCategorySegmenter(
-    utf8: bytes,
-    categories: set[str],
-    tokens: set[str] = set(),
-    separators: set[str] = set(),
-    single_token_categories: set[str] = set(),
-) -> Iterator[tuple[int, int, str]]:
-    """Yields tokens from the UTF8 as a tuple of (start, end, token) using :func:`Unicode categories <unicodedata.category>`
-
-    start and end are the :ref:`byte_offsets`, and token is the token text.
-
-    :param categories: Which Unicode categories to consider part of tokens.  See :meth:`categories_match`
-    :param tokens: Any codepoints in tokens are considered part of the token, no matter what category
-       they are in
-    :param separators: Any codepoints in separators are considered not part of tokens, no matter
-       what category they are in
-    :param single_token_categories: Any codepoints in these wildcard categories become a single codepoint
-       token.
-
-    This method is useful for building your own tokenizer.  See :func:`PyUnicodeTokenizer` for useful
-    defaults and longer descriptions.
-    """
-    if tokens & separators:
-        raise ValueError(f"Codepoints are in both tokens and separators { tokens & separators }")
-
-    # extracting loop, codepoint at a time
-    i = 0
-    start = None
-    token = ""
-    while i < len(utf8):
-        b = utf8[i]
-        if b & 0b1111_0000 == 0b1111_0000:
-            l = 4
-        elif b & 0b1110_0000 == 0b1110_0000:
-            l = 3
-        elif b & 0b1100_0000 == 0b1100_0000:
-            l = 2
-        else:
-            l = 1
-        codepoint = utf8[i : i + l].decode("utf8")
-        cat = unicodedata.category(codepoint)
-        if codepoint not in separators and cat in single_token_categories:
-            if token:
-                yield start, i, token
-            yield i, i + l, codepoint
-            token = ""
-            start = None
-            i += l
-            continue
-        if (codepoint in tokens or cat in categories) and codepoint not in separators:
-            if not token:
-                start = i
-            token += codepoint
-            i += l
-            continue
-        if token:
-            yield start, i, token
-            token = ""
-            start = None
-        i += l
-    if token:
-        yield start, i, token
-
-
-def RegularExpressionSegmenter(utf8: bytes, pattern: str, flags: int = 0) -> Iterator[tuple[int, int, str]]:
-    """Yields tokens from the UTF8 as a tuple of (start, end, token) using :mod:`regular expressions <re>`
-
-    start is the start byte offset of the token in the utf8.
-    end is the byte offset of the first byte not in token.
-    token is the token text.
-
-    :param pattern: The `regular expression <https://docs.python.org/3/library/re.html#regular-expression-syntax>`__.
-        For example :code:`\\\\w+` is all alphanumeric and underscore characters.
-    :param flags: `Regular expression flags <https://docs.python.org/3/library/re.html#flags>`__
-
-    This method is useful for building your own tokenizer.
-    """
-
-    text = utf8.decode("utf8")
-    for match in re.finditer(pattern, text, flags):
-        # positions in str
-        s = match.start()
-        # now utf8 bytes
-        s = len(text[:s].encode("utf8"))
-        # ::TODO:: remember last offset so we don't keep re-encoding
-        # the bytes from the start
-        token = match.group()
-        yield s, s + len(token.encode("utf8")), token
-
-
 def PyUnicodeTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     """Like the `unicode61 tokenizer <https://www.sqlite.org/fts5.html#unicode61_tokenizer>`__ but uses Python's Unicode database
 
@@ -232,20 +142,58 @@ def PyUnicodeTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
 
     parse_tokenizer_args(con, options, args)
 
+    categories = set(options["categories"])
+    tokenchars = set(options["tokenchars"])
+    separators = set(options["separators"])
+    single_token_categories = set(options["single_token_categories"])
+
+    if tokenchars & separators:
+        raise ValueError(f"Codepoints are in both tokens and separators { tokenchars & separators }")
+
     def tokenize(flags, utf8):
-        yield from UnicodeCategorySegmenter(
-            utf8,
-            categories=set(options["categories"]),
-            tokens=set(options["tokenchars"]),
-            separators=set(options["separators"]),
-            single_token_categories=set(options["single_token_categories"]),
-        )
+        # extracting loop, codepoint at a time
+        i = 0
+        start = None
+        token = ""
+        while i < len(utf8):
+            b = utf8[i]
+            if b & 0b1111_0000 == 0b1111_0000:
+                l = 4
+            elif b & 0b1110_0000 == 0b1110_0000:
+                l = 3
+            elif b & 0b1100_0000 == 0b1100_0000:
+                l = 2
+            else:
+                l = 1
+            codepoint = utf8[i : i + l].decode("utf8")
+            cat = unicodedata.category(codepoint)
+            if codepoint not in separators and cat in single_token_categories:
+                if token:
+                    yield start, i, token
+                yield i, i + l, codepoint
+                token = ""
+                start = None
+                i += l
+                continue
+            if (codepoint in tokenchars or cat in categories) and codepoint not in separators:
+                if not token:
+                    start = i
+                token += codepoint
+                i += l
+                continue
+            if token:
+                yield start, i, token
+                token = ""
+                start = None
+            i += l
+        if token:
+            yield start, i, token
 
     return tokenize
 
 
 def SimplifyTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
-    """Tokenizer wrapper that simplifies tokens by case conversion, canonicalization, token removal
+    """Tokenizer wrapper that simplifies tokens by case conversion, canonicalization, codepoint removal
 
     Put this before another tokenizer to simplify its output.  For example:
 
@@ -294,6 +242,94 @@ def SimplifyTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     return tokenize
 
 
+def SynonymTokenizer(
+    con: apsw.Connection, args: list[str], get: Callable[[str], str | Sequence[str] | None]
+) -> apsw.Tokenizer:
+    """
+    Adds colocated tokens, such as 1st for first
+
+    To use you need a ``get`` callable that takes a str, and returns a str, a sequence of str, or None
+
+    .. code:: python
+
+        tokenizer = functools.partial(apsw.fts.SynonymTokenizer, get=my_get)
+        connection.register_fts5_tokenizer("my_name", tokenizer)
+
+    """
+    # ::TODO:: add option to say what tokenize reason to apply this under
+
+    options = {
+        "+": None,
+    }
+
+    parse_tokenizer_args(con, options, args)
+
+    def tokenize(flags: int, utf8: bytes):
+        tok, args = options["+"]
+        for start, end, *tokens in tok(utf8, flags, args):
+            new_tokens = []
+            for t in tokens:
+                new_tokens.append(t)
+                alt = get(t)
+                if alt:
+                    if isinstance(alt, str):
+                        new_tokens.append(alt)
+                    else:
+                        new_tokens.extend(alt)
+            yield start, end, *new_tokens
+
+    return tokenize
+
+
+def RegexTokenizer(con: apsw.Connection, args: list[str], pattern: str | re.Pattern, flags: int = 0) -> apsw.Tokenizer:
+    """Finds tokens using a regular expression
+
+    :param pattern: The `regular expression <https://docs.python.org/3/library/re.html#regular-expression-syntax>`__.
+        For example :code:`\\\\w+` is all alphanumeric and underscore characters.
+    :param flags: `Regular expression flags <https://docs.python.org/3/library/re.html#flags>`__.
+       Ignored if `pattern` is an already compiled pattern
+
+    To use:
+
+    .. code:: python
+
+        pattern = r"\d+" # digits
+        flags = re.ASCII # only ascii recognised
+        tokenizer = functools.partial(apsw.fts.RegexTokenizer, pattern=pattern, flags=flags)
+        connection.register_fts5_tokenizer("my_name", tokenizer)
+
+    """
+    if not isinstance(pattern, re.Pattern):
+        pattern = re.compile(pattern, flags)
+
+    options = {}
+
+    parse_tokenizer_args(con, options, args)
+
+    def tokenize(flags, utf8):
+        # re works on str not bytes, so we have to convert to str
+        # and then keep mapping back to the bytes position
+        text = utf8.decode("utf8")
+        last_pos_bytes = 0
+        last_pos_str = 0
+        for match in re.finditer(pattern, text):
+            # positions in str
+            s = match.start()
+            token = match.group()
+            l = len(token.encode("utf8"))
+            # now utf8 bytes keeping track of last position
+            span_utf8 = len(text[last_pos_str:s].encode("utf8"))
+            last_pos_bytes += span_utf8
+            last_pos_str = s
+            # yield the token
+            yield last_pos_bytes, last_pos_bytes + l, token
+            # adjust pos by size of token
+            last_pos_bytes += l
+            last_pos_str += len(token)
+
+    return tokenize
+
+
 @dataclass
 class TokenizerArgument:
     "Used as input values to :func:`parse_tokenizer_args`"
@@ -309,15 +345,18 @@ class TokenizerArgument:
 def parse_tokenizer_args(con: apsw.Connection, options: dict[str, TokenizerArgument | Any], args: list[str]) -> None:
     """Parses the arguments to a tokenizer updating the options with corresponding values
 
+    :param con: Used to lookup other tokenizers
     :param options: A dictionary where the key is a string, and the value is either
        the corresponding default, or :class:`TokenizerArgument`.
     :params args: A list of strings as received by :class:`apsw.FTS5TokenizerFactory`
 
-    The ``options`` dictionary passed in is modified with the results.
+    .. note::
 
-    For example to parse ``args`` ``["arg1", "3", "big", "ship", "unicode61", "yes"]``
+        The ``options`` dictionary passed in is modified with the results.
 
-    .. code: python
+    For example to parse  ``["arg1", "3", "big", "ship", "unicode61", "yes", "two"]``
+
+    .. code:: python
 
         # options on input
         {
@@ -337,10 +376,22 @@ def parse_tokenizer_args(con: apsw.Connection, options: dict[str, TokenizerArgum
             "arg1": 3,
             "big": "ship",
             "small": "hello",
-            "+": ["unicode61", yes"]
+            "+": [apsw.Tokenizer("unicode61"), ["yes", "two"]]
         }
 
+        # Using "+" in your ``tokenize`` functions
+        def tokenize(flags, utf8):
+            tok, args = options["+"]
+            for start, end, *tokens in tok(utf8, flags, args):
+                # do something
+                yield start, end, *tokens
+
+
     """
+    FIXME the tokenize and for in tok() take utf8 and flags in opposite order
+
+
+
     ac = args[:]
     while ac:
         n = ac.pop(0)
@@ -373,6 +424,9 @@ def parse_tokenizer_args(con: apsw.Connection, options: dict[str, TokenizerArgum
     for k, v in list(options.items()):
         if isinstance(v, TokenizerArgument):
             options[k] = v.default
+
+    if "+" in options and not options["+"]:
+        raise ValueError("Expected additional tokenizer and arguments")
 
 
 class FTS5Table:
@@ -734,6 +788,7 @@ if __name__ == "__main__":
     import html
     import argparse
     import importlib
+    import json
 
     # This code evolved a lot, and was not intelligently designed.  Sorry.
 
@@ -751,6 +806,7 @@ if __name__ == "__main__":
             utf8: bytes
             token_num: int | None = None
             token: str | None = None
+            colo: bool = False
 
         seq: list[Row | str] = []
         for toknum, row in enumerate(tok(utf8, reason, args)):
@@ -764,8 +820,8 @@ if __name__ == "__main__":
             if start > offset:
                 # white space
                 seq.append(Row(start=offset, end=start, utf8=utf8[offset:start]))
-            for t in tokens:
-                seq.append(Row(start=start, end=end, utf8=utf8[start:end], token_num=toknum, token=t))
+            for i, t in enumerate(tokens):
+                seq.append(Row(start=start, end=end, utf8=utf8[start:end], token_num=toknum, token=t, colo=i > 0))
             offset = end
 
         if offset < len(utf8):
@@ -845,7 +901,7 @@ if __name__ == "__main__":
                 out += "</tr>\n"
                 continue
 
-            out += "<tr class='token'>"
+            out += f"<tr class='token {'colo' if row.colo else ''}'>"
             # token num
             out += f"<td>{ row.token_num }</td>"
             # start
@@ -911,43 +967,42 @@ if __name__ == "__main__":
         scroll-padding-top: 100px;
     }
 
-    table.tokenization-results thead {
+    thead {
         position: sticky;
         top: 0;
         background: darkgoldenrod;
     }
 
-    table.tokenization-results td,
-    table.tokenization-results th {
+    td, th {
         border: 1px solid black;
         padding: 3px;
         min-width: 5px;
     }
 
-    table.tokenization-results td {
+    td {
         vertical-align: top;
     }
 
-    table.tokenization-results th {
+    th {
         resize: horizontal;
         overflow: auto;
     }
 
-    table.tokenization-results {
+    table {
         border-collapse: collapse
     }
 
-    table.tokenization-results tr.result {
+    tr.result {
         background-color: lightblue;
         font-weight: bold;
     }
 
-    table.tokenization-results tr.toc {
+    tr.toc {
         background-color: powderblue;
         font-weight: bold;
     }
 
-    table.tokenization-results tr.result .message {
+    tr.result .message {
         display: block;
         background-color: white;
         font-weight: normal;
@@ -955,34 +1010,38 @@ if __name__ == "__main__":
 
 
     /* token number */
-    .tokenization-results .token td:nth-child(1) {
+    .token td:nth-child(1) {
         text-align: right;
         font-weight: bold;
     }
 
     /* byte offsets */
-    .tokenization-results td:nth-child(2),
-    .tokenization-results td:nth-child(3) {
+    td:nth-child(2), td:nth-child(3) {
         text-align: right;
     }
 
     /* bytes */
-    .tokenization-results td:nth-child(4) {
+    td:nth-child(4) {
         font-family: monospace;
         font-size: 95%;
     }
 
     /* non token space */
-    .tokenization-results .not-token {
+    .not-token {
         background-color: lightgray;
     }
 
     /* token */
-    .tokenization-results .token {
+    .token {
         background-color: lightyellow;
     }
 
-    .tokenization-results td .codepbytes:nth-child(odd) {
+    /* colocated token */
+    .token.colo {
+        background-color: #efefd0;
+    }
+
+    td .codepbytes:nth-child(odd) {
         text-decoration: underline;
     }
 
@@ -1023,8 +1082,6 @@ if __name__ == "__main__":
     .compare-tokens .ct:nth-child(odd) {
         text-decoration: underline;
     }
-
-
     </style>
     """
 
@@ -1087,8 +1144,26 @@ if __name__ == "__main__":
         default=[],
         help="Registers tokenizers.  This option can be specified multiple times.  Format is name=mod.submod.callable "
         "where name is what is registered with FTS5 and callable is the factory function.  The module containing "
-        "callable will be imported.  pyunicode and simplify from apsw.fts are registered.",
+        "callable will be imported.  pyunicode and simplify from apsw.fts are registered.  Specify this option "
+        "multiple times to register multiple tokenizers",
         metavar="name=mod.part.callable",
+    )
+
+    parser.add_argument(
+        "--synonyms",
+        help="A json file where each key is a token, and the value is either a string, or a list of strings.  A tokenizer named synonyms will be registered doing lookups on that json",
+        metavar="FILENAME",
+        type=argparse.FileType("rb"),
+    )
+
+    parser.add_argument(
+        "--regex-flags", help="A pipe separated list of flags - eg 'ASCII | DOTALL' [%(default)s]", default="NOFLAG"
+    )
+
+    parser.add_argument(
+        "--regex",
+        help="A regular expression.  A tokenizer named regex will be registered with the pattern and flags. Beware of shell quoting and backslashes.",
+        metavar="PATTERN",
     )
 
     parser.add_argument(
@@ -1104,7 +1179,20 @@ if __name__ == "__main__":
     # registrations built in
     con.register_fts5_tokenizer("pyunicode", PyUnicodeTokenizer)
     con.register_fts5_tokenizer("simplify", SimplifyTokenizer)
-    # ::TODO:: add remaining tokenizers
+
+    if options.synonyms:
+        data = json.load(options.synonyms)
+        assert isinstance(data, dict)
+        con.register_fts5_tokenizer("synonyms", functools.partial(SynonymTokenizer, get=data.get))
+
+    if options.regex:
+        flags = 0
+        for f in options.regex_flags.split("|"):
+            value = getattr(re, f.strip())
+            if not isinstance(value, int):
+                raise ValueError(f"{ f } doesn't seem to be a valid re flag")
+            flags |= value
+        con.register_fts5_tokenizer("regex", functools.partial(RegexTokenizer, pattern=options.regex, flags=flags))
 
     # registrations from args
     for reg in options.register:
