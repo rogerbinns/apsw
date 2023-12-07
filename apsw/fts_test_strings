@@ -8,19 +8,21 @@ Aren't 'they' glad. Hawaiʻi or Hawai'i?
 # numbers part of words
 The PS5 console is great
 Boot2gecko was a thing.  M8 is mate.
-# emoji
-ManY c0depoints 🤦🏼‍♂️  regular 😂❤️🤣🤣😭🙏😘
-# Chars outside BMP
-Gothic 'I can eat glass' = 𐌼𐌰𐌲 𐌲𐌻𐌴𐍃 𐌹̈𐍄𐌰𐌽, 𐌽𐌹 𐌼𐌹𐍃 𐍅𐌿 𐌽𐌳𐌰𐌽 𐌱𐍂𐌹𐌲𐌲𐌹𐌸.
 # numbers
 numbers can be 3.1415 (π), 3,123, 3,123.456, 3.123 3.123,456. Ⅰ (roman)
 ip 192.168.0.77 notip 312.256.99.2 ¹ 2.245235e-05 1,000.123
+# stemming
+Try RuNs, rUn, ran, rUnNing, runner, runners, but not run-down be the same
+# synonyms
+is it Grey or gray, first-First or 1st, Colour or color?
 # html, URLs, emails
 word www.example.com Word! https://foo-bar.example.com/pArT/another?query=more&more=%20yes#anchor
 text admin-istrator@example.org dot.dot.dot.dot mailto:LucyOne2344+spam@example.net @ : eNd
 <tag> <tag attr=val> </endtag > < tag attr2='val2' attr3="val3"> &amp; &#931; &#x3A3;
-# stemming
-Try RuNs, rUn, ran, rUnNing, runner, runners, but not run-down be the same
+# emoji
+ManY c0depoints 🤦🏼‍♂️  regular 😂❤️🤣🤣😭🙏😘
+# Chars outside BMP
+Gothic 'I can eat glass' = 𐌼𐌰𐌲 𐌲𐌻𐌴𐍃 𐌹̈𐍄𐌰𐌽, 𐌽𐌹 𐌼𐌹𐍃 𐍅𐌿 𐌽𐌳𐌰𐌽 𐌱𐍂𐌹𐌲𐌲𐌹𐌸.
 # unicode homoglyphs
 HeLLo wOrlD! <-- ascii  homoglyph --> НеLLо wОrlD!
 The-quick' $brown fox" .jumps"' /over\ the_lazy dog? Т﻿h﻿е﻿‐﻿q﻿u﻿і﻿с﻿k﻿'﻿ ​$﻿b﻿r﻿о﻿w﻿n﻿ ​f﻿о﻿х﻿"﻿ ​․﻿ј﻿u﻿m﻿р﻿ѕ﻿ ​/﻿о﻿v﻿е﻿r﻿\﻿ ​t﻿h﻿е﻿_﻿l﻿а﻿z﻿у﻿ ​d﻿о﻿g﻿?
