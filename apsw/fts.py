@@ -14,6 +14,8 @@ import itertools
 import difflib
 import multiprocessing
 import multiprocessing.pool
+import html
+import html.parser
 from dataclasses import dataclass
 
 from typing import Callable, Sequence, Any, Literal
@@ -316,6 +318,9 @@ class StrPositions:
     provide str instead, and work out the mapping back to utf8 byte offsets.
 
     See the source for :func:`RegexTokenizer` for an example use.
+
+    ::TODO:: this needs a better name
+    ::TODO:: make this a decorator instead
     """
 
     def __init__(self, func: Callable[[str, int], None]):
@@ -336,11 +341,24 @@ class StrPositions:
             last_pos_str = end
 
 
+def StrTokenizerPlease(tok: apsw.FTS5Tokenizer, text: str, flags: int, args: list[str]):
+    """Use this as a wrapper around calling a tokenizer when you have
+    text (str) and want text offsets back, not utf8 byte offsets
+
+    ::TODO:: needs a better name
+    """
+    utf8 = text.encode("utf8")
+    for start, end, *tokens in tok(utf8, flags, args):
+        # ::TODO:: optimise this like StrPositions
+        print("stp", f"{start=} {end=}", repr(utf8[start:end].decode("utf8")))
+        yield len(utf8[:start].decode("utf8")), len(utf8[:end].decode("utf8")), *tokens
+
+
 def RegexTokenizer(con: apsw.Connection, args: list[str], pattern: str | re.Pattern, flags: int = 0) -> apsw.Tokenizer:
-    """Finds tokens using a regular expression
+    r"""Finds tokens using a regular expression
 
     :param pattern: The `regular expression <https://docs.python.org/3/library/re.html#regular-expression-syntax>`__.
-        For example :code:`\\\\w+` is all alphanumeric and underscore characters.
+        For example :code:`\w+` is all alphanumeric and underscore characters.
     :param flags: `Regular expression flags <https://docs.python.org/3/library/re.html#flags>`__.
        Ignored if `pattern` is an already compiled pattern
 
@@ -823,6 +841,115 @@ def get_args(db: apsw.Connection, table_name: str, schema: str = "main"):
     return sqlite_args
 
 
+class MyParser(html.parser.HTMLParser):
+    def __init__(self, text):
+        # if charrefs are converted then we get out of sync with positions
+        # eg won't be able to turn 'abc&amp;def'
+        super().__init__(convert_charrefs=False)
+        self.current_tag = None
+        # each item is
+        # - position in result text
+        # - position in original text
+        self.result_offsets = []
+        self.result_text = ""
+        self.original_pos = 0
+        self.svg_nesting_level = 0
+        self.feed(text)
+        self.close()
+        # make sure we have ending items to avoid referencing off the end
+        self.spacing_tag("")
+        self.result_offsets.append((len(self.result_text), len(text)))
+
+    def spacing_tag(self, tag: str):
+        # adds a space for this open or close tag
+        # we don't do it for tags that aren't space
+        # so "he<b>ll</b>o" would keep "hello" as a single
+        # token
+        if self.result_text and tag.lower() not in {"b", "i"}:
+            # we only need to do this if the last char of result
+            # text is not whitespace
+            if not self.result_text[-1].isspace():
+                self.result_text += " "
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        self.current_tag = tag.lower()
+        if tag.lower() == "svg":
+            self.svg_nesting_level += 1
+        self.spacing_tag(tag)
+
+    def handle_endtag(self, tag: str) -> None:
+        self.current_tag = None
+        if tag.lower() == "svg":
+            self.svg_nesting_level -= 1
+        self.spacing_tag(tag)
+
+    def handle_data(self, data: str) -> None:
+        if self.svg_nesting_level or self.current_tag in {"script", "style"}:
+            return
+        # whitespace only?
+        if data.strip():
+            self.result_offsets.append((len(self.result_text), self.original_pos))
+            self.result_text += data
+        else:
+            self.spacing_tag("")
+
+    def handle_entityref(self, name):
+        if self.svg_nesting_level:
+            return
+        self.result_offsets.append((len(self.result_text), self.original_pos, True))
+        self.result_text += html.unescape("&" + name)
+
+    def handle_charref(self, name: str) -> None:
+        self.handle_entityref("#" + name)
+
+    # treat these as whitespace
+    def ws(self, *args):
+        if self.svg_nesting_level:
+            return
+        self.spacing_tag("")
+
+    handle_comment = handle_decl = handle_pi = unknown_del = ws
+
+    def updatepos(self, i: int, j: int) -> int:
+        self.original_pos = j
+        return super().updatepos(i, j)
+
+
+import pprint
+
+
+def HtmlTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
+    options = {"+": None}
+    parse_tokenizer_args(con, options, args)
+
+    def tokenize(text: str, flags: int):
+        tok, args = options["+"]
+        h = MyParser(text)
+        print(len(h.result_text), repr(h.result_text))
+        pprint.pprint(h.result_offsets)
+        offset_map = h.result_offsets
+        omp = 0
+        for start, end, *tokens in StrTokenizerPlease(tok, h.result_text, flags, args):
+            print(f"{omp=} {start=} {end=} {tokens=} {offset_map[omp]=}")
+            while start >= offset_map[omp+1][0]:
+                omp += 1
+
+            astart = start - offset_map[omp][0] + offset_map[omp][1]
+            while end >= offset_map[omp+1][0]:
+                omp += 1
+            aend = end - offset_map[omp][0] + offset_map[omp][1]
+            if offset_map[omp][-1] is True:
+                # in a entity/char ref, skip to ;
+                while text[aend] != ";":
+                    aend += 1
+                aend += 1
+            print(f"{astart=} {aend=}")
+            pprint.pprint(text.encode("utf8")[astart:aend])
+            yield astart, aend, *tokens
+
+    return StrPositions(tokenize)
+
+
 if __name__ == "__main__":
     import html
     import argparse
@@ -1213,6 +1340,7 @@ if __name__ == "__main__":
     # registrations built in
     con.register_fts5_tokenizer("pyunicode", PyUnicodeTokenizer)
     con.register_fts5_tokenizer("simplify", SimplifyTokenizer)
+    con.register_fts5_tokenizer("html", HtmlTokenizer)
 
     if options.synonyms:
         data = json.load(options.synonyms)
