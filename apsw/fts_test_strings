@@ -16,6 +16,8 @@ ip 192.168.0.77 notip 312.256.99.2 ¹ 2.245235e-05 1,000.123
 Try RuNs, rUn, ran, rUnNing, runner, runners, but not run-down be the same
 # synonyms
 is it Grey or gray, first-First or 1st, Colour or color?
+# stop words
+stop the to and of a in for on is you that this be with from will at have words
 # html, URLs, emails
 word www.example.com Word! https://foo-bar.example.com/pArT/another?query=more&more=%20yes#anchor
 text admin-istrator@example.org dot.dot.dot.dot mailto:LucyOne2344+spam@example.net @ : eNd
