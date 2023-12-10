@@ -330,7 +330,7 @@ def SynonymTokenizer(
             yield from tok(utf8, flags)
             return
 
-        for start, end, *tokens in tok(utf8, flags):
+        for start, end, *tokens in tok(utf8, flags, args):
             new_tokens = []
             for t in tokens:
                 new_tokens.append(t)
@@ -446,7 +446,7 @@ def HtmlTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     print(options)
 
     def tokenize(html: str, flags: int):
-        tok  = string_tokenizer_convert(options["+"])
+        tok = options["+"]
         h = _HTMLTextExtractor(html)
         # maps offset in extracted text to offset in original HTML
         offset_map = h.result_offsets
@@ -456,7 +456,7 @@ def HtmlTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
         # no longer needed
         del h
 
-        for start, end, *tokens in tok(extracted_text, flags):
+        for start, end, *tokens in string_tokenize(tok, extracted_text, flags):
             # advance start and get offset
             while start >= offset_map[offset_map_position + 1][0]:
                 offset_map_position += 1
@@ -479,7 +479,7 @@ def HtmlTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     return tokenize
 
 
-def string_tokenize(tokenizer: apsw.FTS5Tokenizer, text: str, flags: int, args: list[str]):
+def string_tokenize(tokenizer: apsw.FTS5Tokenizer, text: str, flags: int):
     """Tokenizer caller to get string offsets back
 
     Calls the tokenizer doing the conversion of `text` to UTF8, and converting the received
@@ -487,10 +487,10 @@ def string_tokenize(tokenizer: apsw.FTS5Tokenizer, text: str, flags: int, args: 
     """
     utf8 = text.encode("utf8")
     last_pos_str = 0
-    for start, end, *tokens in tok(utf8, flags, args):
+    for start, end, *tokens in tok(utf8, flags):
         if end < start or start < last_pos_str:
             raise ValueError(f"Invalid token sequencing { start= } { end= } { last_pos_str= } ")
-        # ::TODO:: optimise this like StrPositions
+        # ::TODO:: optimise this like string_tokenizer
         yield len(utf8[:start].decode("utf8")), len(utf8[:end].decode("utf8")), *tokens
         last_pos_str = start
 
@@ -575,13 +575,13 @@ def parse_tokenizer_args(con: apsw.Connection, options: dict[str, TokenizerArgum
             "arg1": 3,
             "big": "ship",
             "small": "hello",
-            "+": '<apsw.FTS5Tokenizer "unicode61" args ["yes", "two"]>'
+            "+": [apsw.Tokenizer("unicode61"), ["yes", "two"]]
         }
 
         # Using "+" in your ``tokenize`` functions
         def tokenize(utf8, flags):
-            tok = options["+]
-            for start, end, *tokens in tok(utf8, flags):
+            tok, args = options["+"]
+            for start, end, *tokens in tok(utf8, flags, args):
                 # do something
                 yield start, end, *tokens
 
@@ -993,7 +993,7 @@ if __name__ == "__main__":
     # This code evolved a lot, and was not intelligently designed.  Sorry.
 
     def show_tokenization(
-        tok: apsw.FTS5Tokenizer, utf8: bytes, reason: int, args: list[str] = []
+        tok: apsw.FTS5Tokenizer, utf8: bytes, reason: int
     ) -> tuple[str, list[str]]:
         """Runs the tokenizer and produces a html fragment showing the results for manual inspection"""
 
@@ -1009,7 +1009,7 @@ if __name__ == "__main__":
             colo: bool = False
 
         seq: list[Row | str] = []
-        for toknum, row in enumerate(tok(utf8, reason, args)):
+        for toknum, row in enumerate(tok(utf8, reason)):
             start, end, *tokens = row
             if end < start:
                 seq.append(show_tokenization_remark(f"start { start } is after end { end }", "error"))
@@ -1404,14 +1404,14 @@ if __name__ == "__main__":
             raise
 
     # go
-    tok = con.fts5_tokenizer(options.args[0])
+    tok = con.fts5_tokenizer(options.args[0], options.args[1:])
 
     # we build it all up in memory
     results = []
     for utf8, comment in tokenizer_test_strings(filename=options.text_file):
         if options.normalize:
             utf8 = unicodedata.normalize(options.normalize, utf8.decode("utf8")).encode("utf8")
-        h, tokens = show_tokenization(tok, utf8, TokenizeReasons[options.reason], options.args[1:])
+        h, tokens = show_tokenization(tok, utf8, TokenizeReasons[options.reason])
         results.append((comment, utf8, h, options.reason, tokens))
 
     w = lambda s: options.output.write(s.encode("utf8") + b"\n")
