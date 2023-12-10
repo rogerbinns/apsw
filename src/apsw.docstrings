@@ -1572,19 +1572,21 @@
 "\n" \
 "Calls: `sqlite3_filename_wal <https://sqlite.org/c3ref/filename_database.html>`__\n" 
 
-#define  Connection_fts5_tokenizer_DOC "fts5_tokenizer($self,name)\n--\n\nConnection.fts5_tokenizer(name: str) -> apsw.FTS5Tokenizer\n\n" \
-"Returns the named tokenizer.  Names are case insensitive.\n" \
+#define  Connection_fts5_tokenizer_DOC "fts5_tokenizer($self,name,args=None)\n--\n\nConnection.fts5_tokenizer(name: str, args: list[str] | None = None) -> apsw.FTS5Tokenizer\n\n" \
+"Returns the named tokenizer initialized with ``args``.  Names are case insensitive.\n" \
 "\n" \
 ".. seealso::\n" \
 "\n" \
 "    * :meth:`register_fts5_tokenizer`\n" \
-"    * :doc:`fts`\n" 
+"    * :doc:`textsearch`\n" 
 
-#define Connection_fts5_tokenizer_KWNAMES "name"
-#define Connection_fts5_tokenizer_USAGE "Connection.fts5_tokenizer(name: str) -> apsw.FTS5Tokenizer"
+#define Connection_fts5_tokenizer_KWNAMES "name", "args"
+#define Connection_fts5_tokenizer_USAGE "Connection.fts5_tokenizer(name: str, args: list[str] | None = None) -> apsw.FTS5Tokenizer"
 
 #define Connection_fts5_tokenizer_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
+  assert(__builtin_types_compatible_p(typeof(args), PyObject *)); \
+  assert(args == NULL); \
 } while(0)
 
 
@@ -1837,7 +1839,7 @@
 ".. seealso::\n" \
 "\n" \
 "    * :meth:`fts5_tokenizer`\n" \
-"    * :doc:`fts`\n" 
+"    * :doc:`textsearch`\n" 
 
 #define Connection_register_fts5_tokenizer_KWNAMES "name", "tokenizer_factory"
 #define Connection_register_fts5_tokenizer_USAGE "Connection.register_fts5_tokenizer(name: str, tokenizer_factory: FTS5TokenizerFactory) -> None"
@@ -2695,7 +2697,11 @@
 #define Cursor_set_row_trace_OLDNAME "setrowtrace"
 #define Cursor_set_row_trace_OLDDOC Cursor_set_row_trace_USAGE "\n(Old less clear name setrowtrace)"
 
-#define  FTS5Tokenizer_call_DOC "__call__($self,utf8,reason,args=None,*,include_offsets=True,include_colocated=True)\n--\n\nFTS5Tokenizer.__call__(utf8: bytes, reason: int, args: list[str] | None = None, *, include_offsets: bool = True, include_colocated: bool = True) -> list\n\n" \
+#define  FTS5Tokenizer_args_DOC ":type: list | None\n" \
+"\n" \
+"The arguments the tokenizer was created with.\n" 
+
+#define  FTS5Tokenizer_call_DOC "__call__($self,utf8,reason,*,include_offsets=True,include_colocated=True)\n--\n\nFTS5Tokenizer.__call__(utf8: bytes, reason: int,  *, include_offsets: bool = True, include_colocated: bool = True) -> list\n\n" \
 "Does a tokenization, returning a list of the results.  If you have no\n" \
 "interest in token offsets or colocated tokens then they can be omitted from\n" \
 "the results.\n" \
@@ -2748,14 +2754,12 @@
 "          \"place\",\n" \
 "        ]\n" 
 
-#define FTS5Tokenizer_call_KWNAMES "utf8", "reason", "args", "include_offsets", "include_colocated"
-#define FTS5Tokenizer_call_USAGE "FTS5Tokenizer.__call__(utf8: bytes, reason: int, args: list[str] | None = None, *, include_offsets: bool = True, include_colocated: bool = True) -> list"
+#define FTS5Tokenizer_call_KWNAMES "utf8", "reason", "include_offsets", "include_colocated"
+#define FTS5Tokenizer_call_USAGE "FTS5Tokenizer.__call__(utf8: bytes, reason: int,  *, include_offsets: bool = True, include_colocated: bool = True) -> list"
 
 #define FTS5Tokenizer_call_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(utf8), PyObject *)); \
   assert(__builtin_types_compatible_p(typeof(reason), int)); \
-  assert(__builtin_types_compatible_p(typeof(args), PyObject *)); \
-  assert(args == NULL); \
   assert(__builtin_types_compatible_p(typeof(include_offsets), int)); \
   assert(include_offsets == 1); \
   assert(__builtin_types_compatible_p(typeof(include_colocated), int)); \

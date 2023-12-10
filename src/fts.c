@@ -15,6 +15,7 @@ Connection_fts5_api(Connection *self)
   PYSQLITE_VOID_CALL(res = sqlite3_prepare(self->db, "select fts5(?1)", -1, &stmt, NULL));
   if (res != SQLITE_OK)
     goto finally;
+  /* ::TODO:: fix this mess - INUSE the whole thing.  because the GIL is released above, when this thread resumes the db could have been closed */
   CHECK_CLOSED(self, NULL);
   PYSQLITE_VOID_CALL(res = sqlite3_bind_pointer(stmt, 1, &self->fts5_api_cached, "fts5_api_ptr", NULL));
   if (res != SQLITE_OK)
@@ -36,66 +37,11 @@ typedef struct APSWFTS5Tokenizer
   PyObject_HEAD
   Connection *db;
   const char *name;
-  fts5_tokenizer tokenizer;
-  void *userdata;
-  int tokenizer_serial;
+  PyObject *args;
+  fts5_tokenizer tokenizer_class;
+  Fts5Tokenizer *tokenizer_instance;
   vectorcallfunc vectorcall;
 } APSWFTS5Tokenizer;
-
-/* Another tokenizer of the same name could have been registered which
-   makes any current pointers potentially invalid.
-   Connection->tokenizer_serial changes on each registration, so we use
-   that to revalidate our pointers
-*/
-static int
-Connection_tokenizer_refresh(APSWFTS5Tokenizer *self)
-{
-  CHECK_CLOSED(self->db, -1);
-  /* CHECK_USE not needed */
-
-  if (self->tokenizer_serial == self->db->tokenizer_serial)
-    return 0;
-  fts5_api *api = Connection_fts5_api(self->db);
-  if (!api)
-    return -1;
-
-  fts5_tokenizer tokenizer;
-  memset(&tokenizer, 0, sizeof(tokenizer));
-
-  void *userdata = NULL;
-  int res = api->xFindTokenizer(api, self->name, &userdata, &tokenizer);
-
-  /* existing tokenizer did not change */
-  if (res == SQLITE_OK && 0 == memcmp(&self->tokenizer, &tokenizer, sizeof(tokenizer)) && self->userdata == userdata)
-  {
-    self->tokenizer_serial = self->db->tokenizer_serial;
-    return 0;
-  }
-
-  if (self->tokenizer_serial == 0)
-  {
-    /* currently returns SQLITE_ERROR for not found */
-    if (res != SQLITE_OK)
-    {
-      PyErr_Format(PyExc_ValueError, "No tokenizer named \"%s\"", self->name);
-      return -1;
-    }
-    self->tokenizer_serial = self->db->tokenizer_serial;
-    self->tokenizer = tokenizer;
-    self->userdata = userdata;
-    return 0;
-  }
-
-  if (res != SQLITE_OK)
-  {
-    PyErr_Format(ExcInvalidContext, "Tokenizer \"%s\" has been deleted", self->name);
-    return -1;
-  }
-
-  assert(!(0 == memcmp(&self->tokenizer, &tokenizer, sizeof(tokenizer)) && self->userdata == userdata));
-  PyErr_Format(ExcInvalidContext, "Tokenizer \"%s\" has been changed", self->name);
-  return -1;
-}
 
 /** .. class:: FTS5Tokenizer
 
@@ -208,7 +154,7 @@ error:
   return SQLITE_ERROR;
 }
 
-/** .. method:: __call__(utf8: bytes, reason: int, args: list[str] | None = None, *, include_offsets: bool = True, include_colocated: bool = True) -> list
+/** .. method:: __call__(utf8: bytes, reason: int,  *, include_offsets: bool = True, include_colocated: bool = True) -> list
 
   Does a tokenization, returning a list of the results.  If you have no
   interest in token offsets or colocated tokens then they can be omitted from
@@ -267,24 +213,16 @@ static PyObject *
 APSWFTS5Tokenizer_call(APSWFTS5Tokenizer *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
                        PyObject *fast_kwnames)
 {
-  if (0 != Connection_tokenizer_refresh(self))
-  {
-    assert(PyErr_Occurred());
-    return NULL;
-  }
   Py_buffer utf8_buffer;
   PyObject *utf8, *args = NULL;
   int include_offsets = 1, include_colocated = 1, reason;
   int rc = SQLITE_OK;
 
-  Fts5Tokenizer *their_context = NULL;
-
   {
     FTS5Tokenizer_call_CHECK;
-    ARG_PROLOG(3, FTS5Tokenizer_call_KWNAMES);
+    ARG_PROLOG(2, FTS5Tokenizer_call_KWNAMES);
     ARG_MANDATORY ARG_py_buffer(utf8);
     ARG_MANDATORY ARG_int(reason);
-    ARG_OPTIONAL ARG_optional_list_str(args);
     ARG_OPTIONAL ARG_bool(include_offsets);
     ARG_OPTIONAL ARG_bool(include_colocated);
     ARG_EPILOG(NULL, FTS5Tokenizer_call_USAGE, );
@@ -319,45 +257,17 @@ APSWFTS5Tokenizer_call(APSWFTS5Tokenizer *self, PyObject *const *fast_args, Py_s
     goto finally;
   }
 
-  Py_ssize_t argc = args ? PyList_GET_SIZE(args) : 0;
-  /* arbitrary but reasonable maximum */
-  if (argc > 128)
+  rc = self->tokenizer_class.xTokenize(self->tokenizer_instance, &our_context, reason, utf8_buffer.buf, utf8_buffer.len,
+                                       xTokenizer_Callback);
+  if (rc != SQLITE_OK)
   {
-    PyErr_Format(PyExc_ValueError, "Too many args (%zd)", argc);
+    SET_EXC(rc, NULL);
+    AddTraceBackHere(__FILE__, __LINE__, "FTS5Tokenizer_call.xTokenize", "{s:O,s:i,s:O}", "args", OBJ(args), "reason",
+                     reason, "utf8", utf8);
     goto finally;
   }
 
-  {
-    VLA(argv, argc, const char *);
-    for (int i = 0; i < argc; i++)
-    {
-      argv[i] = PyUnicode_AsUTF8(PyList_GET_ITEM(args, i));
-      if (!argv[i])
-        goto finally;
-    }
-
-    rc = self->tokenizer.xCreate(self->userdata, argv, argc, &their_context);
-    if (rc != SQLITE_OK)
-    {
-      SET_EXC(rc, NULL);
-      AddTraceBackHere(__FILE__, __LINE__, "FTS5Tokenizer_call.xCreate", "{s:O}", "args", OBJ(args));
-      goto finally;
-    }
-
-    rc = self->tokenizer.xTokenize(their_context, &our_context, reason, utf8_buffer.buf, utf8_buffer.len,
-                                   xTokenizer_Callback);
-    if (rc != SQLITE_OK)
-    {
-      SET_EXC(rc, NULL);
-      AddTraceBackHere(__FILE__, __LINE__, "FTS5Tokenizer_call.xTokenize", "{s:O,s:i,s:O}", "args", OBJ(args), "reason",
-                       reason, "utf8", utf8);
-      goto finally;
-    }
-  }
-
 finally:
-  if (their_context)
-    self->tokenizer.xDelete(their_context);
   PyBuffer_Release(&utf8_buffer);
 
   if (rc == SQLITE_OK && our_context.last_item)
@@ -374,12 +284,6 @@ finally:
   return our_context.the_list;
 }
 
-static PyObject *
-APSWFTS5Tokenizer_str(APSWFTS5Tokenizer *self)
-{
-  return PyUnicode_FromFormat("<apsw.FTS5Tokenizer object \"%s\" on %S at %p>", self->name, self->db, self);
-}
-
 /** .. attribute:: connection
   :type: Connection
 
@@ -391,6 +295,17 @@ APSWFTS5Tokenizer_connection(APSWFTS5Tokenizer *self)
   return Py_NewRef((PyObject *)self->db);
 }
 
+/** .. attribute:: args
+  :type: list | None
+
+  The arguments the tokenizer was created with.
+*/
+static PyObject *
+APSWFTS5Tokenizer_args(APSWFTS5Tokenizer *self)
+{
+  return Py_NewRef(self->args);
+}
+
 static PyObject *
 APSWFTS5Tokenizer_tp_str(APSWFTS5Tokenizer *self)
 {
@@ -400,13 +315,17 @@ APSWFTS5Tokenizer_tp_str(APSWFTS5Tokenizer *self)
 static void
 APSWFTS5Tokenizer_dealloc(APSWFTS5Tokenizer *self)
 {
-  Py_DECREF(self->db);
+  Py_XDECREF(self->db);
+  Py_XDECREF(self->args);
   PyMem_Free((void *)self->name);
+  if (self->tokenizer_instance)
+    self->tokenizer_class.xDelete(self->tokenizer_instance);
   Py_TpFree((PyObject *)self);
 }
 
 static PyGetSetDef APSWFTS5Tokenizer_getset[] = {
   { "connection", (getter)APSWFTS5Tokenizer_connection, NULL, FTS5Tokenizer_connection_DOC },
+  { "args", (getter)APSWFTS5Tokenizer_args, NULL, FTS5Tokenizer_args_DOC },
   { 0 },
 };
 
@@ -419,7 +338,6 @@ static PyTypeObject APSWFTS5TokenizerType = {
   .tp_basicsize = sizeof(APSWFTS5Tokenizer),
   .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_VECTORCALL,
   .tp_dealloc = (destructor)APSWFTS5Tokenizer_dealloc,
-  .tp_str = (reprfunc)APSWFTS5Tokenizer_str,
   .tp_call = PyVectorcall_Call,
   .tp_vectorcall_offset = offsetof(APSWFTS5Tokenizer, vectorcall),
   .tp_getset = APSWFTS5Tokenizer_getset,

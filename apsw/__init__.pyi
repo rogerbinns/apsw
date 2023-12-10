@@ -131,12 +131,12 @@ CommitHook = Callable[[], bool]
 """Commit hook is called with no arguments and should return True to abort the commit and False
 to let it continue"""
 
-Tokenizer = Callable[[int, bytes], Sequence[str | tuple[str, ...] | tuple[int, int, str, ...]]]
+Tokenizer = Callable[[bytes, int], Sequence[str | tuple[str, ...] | tuple[int, int, str, ...]]]
 """The tokenizer is called with int flags and UTF8 encoded bytes.  The results are
 iterated and each item should be either a str, a tuple of one or more str, or a tuple of
 int start, int end, and one or more str"""
 
-FTS5TokenizerFactory = Callable[[list[str]], Tokenizer]
+FTS5TokenizerFactory = Callable[[Connection, list[str]], Tokenizer]
 """The factory is called with a list of strings as an argument and should
 return a suitably configured Tokenizer"""
 SQLITE_VERSION_NUMBER: int
@@ -1344,13 +1344,13 @@ class Connection:
 
     Calls: `sqlite3_filename_wal <https://sqlite.org/c3ref/filename_database.html>`__"""
 
-    def fts5_tokenizer(self, name: str) -> FTS5Tokenizer:
-        """Returns the named tokenizer.  Names are case insensitive.
+    def fts5_tokenizer(self, name: str, args: list[str] | None = None) -> FTS5Tokenizer:
+        """Returns the named tokenizer initialized with ``args``.  Names are case insensitive.
 
         .. seealso::
 
             * :meth:`register_fts5_tokenizer`
-            * :doc:`fts`"""
+            * :doc:`textsearch`"""
         ...
 
     def get_autocommit(self) -> bool:
@@ -1530,7 +1530,7 @@ class Connection:
         .. seealso::
 
             * :meth:`fts5_tokenizer`
-            * :doc:`fts`"""
+            * :doc:`textsearch`"""
         ...
 
     def release_memory(self) -> None:
@@ -2141,7 +2141,10 @@ class Cursor:
 @final
 class FTS5Tokenizer:
     """Wraps a registered tokenizer.  Returned by :meth:`Connection.fts5_tokenizer`."""
-    def __call__(self, utf8: bytes, reason: int, args: list[str] | None = None, *, include_offsets: bool = True, include_colocated: bool = True) -> list:
+    args: list | None
+    """The arguments the tokenizer was created with."""
+
+    def __call__(self, utf8: bytes, reason: int,  *, include_offsets: bool = True, include_colocated: bool = True) -> list:
         """Does a tokenization, returning a list of the results.  If you have no
         interest in token offsets or colocated tokens then they can be omitted from
         the results.

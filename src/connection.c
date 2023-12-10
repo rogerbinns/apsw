@@ -70,7 +70,6 @@ struct Connection
   struct StatementCache *stmtcache; /* prepared statement cache */
 
   fts5_api *fts5_api_cached;
-  int tokenizer_serial;
 
   PyObject *dependents; /* tracking cursors & blobs etc as weakrefs belonging to this connection */
 
@@ -368,7 +367,6 @@ Connection_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSE
     self->dependents = PyList_New(0);
     self->stmtcache = 0;
     self->fts5_api_cached = 0;
-    self->tokenizer_serial = 1;
     self->busyhandler = 0;
     self->rollbackhook = 0;
     self->profile = 0;
@@ -5154,9 +5152,9 @@ Connection_data_version(Connection *self, PyObject *const *fast_args, Py_ssize_t
 /* done this way here to keep doc generation simple */
 #include "fts.c"
 
-/** .. method:: fts5_tokenizer(name: str) -> apsw.FTS5Tokenizer
+/** .. method:: fts5_tokenizer(name: str, args: list[str] | None = None) -> apsw.FTS5Tokenizer
 
-  Returns the named tokenizer.  Names are case insensitive.
+  Returns the named tokenizer initialized with ``args``.  Names are case insensitive.
 
   .. seealso::
 
@@ -5168,32 +5166,78 @@ static PyObject *
 Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   const char *name = NULL;
+  PyObject *args = NULL;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
     Connection_fts5_tokenizer_CHECK;
-    ARG_PROLOG(1, Connection_fts5_tokenizer_KWNAMES);
+    ARG_PROLOG(2, Connection_fts5_tokenizer_KWNAMES);
     ARG_MANDATORY ARG_str(name);
+    ARG_OPTIONAL ARG_optional_list_str(args);
     ARG_EPILOG(NULL, Connection_fts5_tokenizer_USAGE, );
   }
 
-  APSWFTS5Tokenizer *tok = (APSWFTS5Tokenizer *)_PyObject_New(&APSWFTS5TokenizerType);
-  if (!tok)
+  fts5_api *api = Connection_fts5_api(self);
+  if(!api)
     return NULL;
-  tok->db = (Connection *)Py_NewRef(self);
-  tok->name = apsw_strdup(name);
-  tok->vectorcall = (vectorcallfunc)APSWFTS5Tokenizer_call;
-  memset(&tok->tokenizer, 0, sizeof(tok->tokenizer));
-  tok->userdata = NULL;
-  tok->tokenizer_serial = 0;
-  if (!tok->name || 0 != Connection_tokenizer_refresh(tok))
+
+  Py_ssize_t argc = args ? PyList_GET_SIZE(args) : 0;
+  /* arbitrary but reasonable maximum consuming 1kb of stack */
+  if (argc > 128)
   {
-    APSWFTS5TokenizerType.tp_dealloc((PyObject *)tok);
+    PyErr_Format(PyExc_ValueError, "Too many args (%zd)", argc);
     return NULL;
   }
-  return (PyObject *)tok;
+
+  VLA(argv, argc, const char *);
+    for (int i = 0; i < argc; i++)
+    {
+      argv[i] = PyUnicode_AsUTF8(PyList_GET_ITEM(args, i));
+      if (!argv[i])
+        return NULL;
+    }
+
+    void *userdata = NULL;
+    fts5_tokenizer tokenizer_class;
+
+    int rc = api->xFindTokenizer(api, name, &userdata, &tokenizer_class);
+    if(rc!=SQLITE_OK)
+    {
+      SET_EXC(rc, self->db);
+      AddTraceBackHere(__FILE__, __LINE__, "Connection.fts5_tokenizer.xFindTokenizer", "{s:s}", "name", name);
+      return NULL;
+    }
+
+  /* no objects/memory has been allocated yet */
+    const char *name_dup = apsw_strdup(name);
+    if(!name_dup)
+      return NULL;
+
+    APSWFTS5Tokenizer *pytok = (APSWFTS5Tokenizer *)_PyObject_New(&APSWFTS5TokenizerType);
+    if (!pytok)
+      return NULL;
+
+    /* fill in fields */
+    pytok->db = self;
+    Py_INCREF(pytok->db);
+    pytok->name = name_dup;
+    pytok->args = Py_NewRef(OBJ(args));
+    memcpy(&pytok->tokenizer_class, &tokenizer_class, sizeof(tokenizer_class));
+    pytok->tokenizer_instance = NULL;
+    pytok->vectorcall = (vectorcallfunc)APSWFTS5Tokenizer_call;
+
+    rc = tokenizer_class.xCreate(userdata, argv, argc, &pytok->tokenizer_instance);
+    if (rc != SQLITE_OK)
+    {
+      SET_EXC(rc, self->db);
+      AddTraceBackHere(__FILE__, __LINE__, "Connection.fts5_tokenizer.xCreate", "{s:s,s:i,s:O}", "name", name, "len(args)", argc, "args", OBJ(args));
+      APSWFTS5TokenizerType.tp_dealloc((PyObject *)pytok);
+      return NULL;
+    }
+
+    return (PyObject*)pytok;
 }
 
 /** .. method:: register_fts5_tokenizer(name: str, tokenizer_factory: FTS5TokenizerFactory) -> None
