@@ -391,6 +391,12 @@ APSWFTS5Tokenizer_connection(APSWFTS5Tokenizer *self)
   return Py_NewRef((PyObject *)self->db);
 }
 
+static PyObject *
+APSWFTS5Tokenizer_tp_str(APSWFTS5Tokenizer *self)
+{
+  return PyUnicode_FromFormat("<apsw.FTS5Tokenizer object \"%s\" on %S at %p>", self->name, self->db, self);
+}
+
 static void
 APSWFTS5Tokenizer_dealloc(APSWFTS5Tokenizer *self)
 {
@@ -417,6 +423,7 @@ static PyTypeObject APSWFTS5TokenizerType = {
   .tp_call = PyVectorcall_Call,
   .tp_vectorcall_offset = offsetof(APSWFTS5Tokenizer, vectorcall),
   .tp_getset = APSWFTS5Tokenizer_getset,
+  .tp_str = (reprfunc)APSWFTS5Tokenizer_tp_str,
 };
 
 typedef struct
