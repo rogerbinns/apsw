@@ -16,6 +16,7 @@ import multiprocessing
 import multiprocessing.pool
 import html
 import html.parser
+import functools
 from dataclasses import dataclass
 
 from typing import Callable, Sequence, Any, Literal
@@ -124,6 +125,39 @@ def categories_match(patterns: str) -> set[str]:
     return categories
 
 
+def string_tokenizer(func):
+    """Decorator for tokenizers that operate on strings
+
+    FTS5 tokenizers operate on UTF8 bytes for the text and offsets.  This
+    decorator provides your tokenizer with text and expects text offsets
+    back, performing the conversions for UTF8.
+    """
+
+    @functools.wraps(func)
+    def string_tokenizer_wrapper(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
+        inner_tokenizer = func(con, args)
+
+        @functools.wraps(inner_tokenizer)
+        def outer_tokenizer(utf8: bytes, flags: int):
+            text = utf8.decode("utf8")
+            last_pos_bytes: int = 0
+            last_pos_str: int = 0
+            for start, end, *tokens in inner_tokenizer(text, flags):
+                if end < start or start < last_pos_str:
+                    raise ValueError(f"Invalid token sequencing { start= } { end= } { last_pos_str= } ")
+                # utf8 bytes keeping track of last position
+                utf8_start = len(text[last_pos_str:start].encode("utf8"))
+                utf8_span = len(text[start:end].encode("utf8"))
+                yield last_pos_bytes + utf8_start, last_pos_bytes + utf8_start + utf8_span, *tokens
+                last_pos_bytes += utf8_start + utf8_span
+                last_pos_str = end
+
+        return outer_tokenizer
+
+    return string_tokenizer_wrapper
+
+
+@string_tokenizer
 def PyUnicodeTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     """Like the `unicode61 tokenizer <https://www.sqlite.org/fts5.html#unicode61_tokenizer>`__ but uses Python's Unicode database
 
@@ -206,11 +240,11 @@ def PyUnicodeTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
         if token:
             yield start, i, token
 
-    return StrPositions(tokenize)
+    return tokenize
 
 
 def SimplifyTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
-    """Tokenizer wrapper that simplifies tokens by case conversion, canonicalization, codepoint removal
+    """Tokenizer wrapper that simplifies tokens by case conversion, canonicalization, and codepoint removal
 
     Put this before another tokenizer to simplify its output.  For example:
 
@@ -259,13 +293,14 @@ def SimplifyTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     return tokenize
 
 
+# ::TODO:: make this a decorator around get
 def SynonymTokenizer(
-    con: apsw.Connection, args: list[str], get: Callable[[str], str | Sequence[str] | None]
+    con: apsw.Connection, args: list[str], *, get: Callable[[str], str | Sequence[str] | None]
 ) -> apsw.Tokenizer:
     """
     Adds `colocated tokens <https://www.sqlite.org/fts5.html#synonym_support>`__ such as 1st for first.
 
-    To use you need a  callable that takes a str, and returns a str, a sequence of str, or None
+    To use you need a callable that takes a str, and returns a str, a sequence of str, or None
 
     The following tokenizer arguments are accepted.
 
@@ -309,52 +344,160 @@ def SynonymTokenizer(
 
     return tokenize
 
+# ::TODO:: make a dataclass for the results
+# ::TODO:: have title member in dataclass
+# ::TODO:: have a function with this class inside and return dataclass
+class _HTMLTextExtractor(html.parser.HTMLParser):
+    # Extracts text from HTML maintaining a table mapping the offsets
+    # of the extracted text back tot he source HTML.
 
-class StrPositions:
-    """Use this as a wrapper if your tokenizer works with text and not utf8 bytes
+    def __init__(self, text):
+        # we handle charrefs because they are multiple codepoints in
+        # the HTML but only one in text - eg "&amp;" is "&"
+        super().__init__(convert_charrefs=False)
+        # A stack is semantically correct but we (and browsers) don't
+        # require correctly balanced tags, and a stack doesn't improve
+        # correctness
+        self.current_tag = None
+        # each item in result_offsets is
+        # - position in result text
+        # - position in original text
+        # - True is this was a entity/charref
+        self.result_offsets = []
+        self.result_text = ""
+        # tracking position in source HTML
+        self.original_pos = 0
+        # svg content is ignored.
+        self.svg_nesting_level = 0
+        # All the work is done in the constructor
+        self.feed(text)
+        self.close()
+        # make sure we have ending space to avoid off by one issues at
+        # the end
+        self.spacing_tag("")
+        self.result_offsets.append((len(self.result_text), len(text)))
 
-    Your inner tokenize method is called from SQLite with utf8 bytes.  If you work
-    with Python strings and their positions, then use this wrapper which will
-    provide str instead, and work out the mapping back to utf8 byte offsets.
+    def spacing_tag(self, tag: str):
+        # adds a space for this open or close tag, or similar. we
+        # don't do it for tags that aren't space so "he<b>ll</b>o"
+        # would keep "hello" as a single token
+        if self.result_text and tag.lower() not in {"b", "i"}:
+            # we only need to do this if the last char of result
+            # text is not whitespace
+            if not self.result_text[-1].isspace():
+                self.result_text += " "
 
-    See the source for :func:`RegexTokenizer` for an example use.
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        self.current_tag = tag.lower()
+        if tag.lower() == "svg":
+            self.svg_nesting_level += 1
+        self.spacing_tag(tag)
 
-    ::TODO:: this needs a better name
-    ::TODO:: make this a decorator instead
+    def handle_endtag(self, tag: str) -> None:
+        self.current_tag = None
+        if tag.lower() == "svg":
+            self.svg_nesting_level -= 1
+        self.spacing_tag(tag)
+
+    def handle_data(self, data: str) -> None:
+        if self.svg_nesting_level or self.current_tag in {"script", "style"}:
+            return
+        # whitespace only?
+        if data.strip():
+            self.result_offsets.append((len(self.result_text), self.original_pos))
+            self.result_text += data
+        else:
+            self.spacing_tag("")
+
+    def handle_entityref(self, name):
+        if self.svg_nesting_level:
+            return
+        self.result_offsets.append((len(self.result_text), self.original_pos, True))
+        self.result_text += html.unescape("&" + name)
+
+    def handle_charref(self, name: str) -> None:
+        self.handle_entityref("#" + name)
+
+    # treat some other markup as white space
+    def ws(self, *args):
+        if self.svg_nesting_level:
+            return
+        self.spacing_tag("")
+
+    handle_comment = handle_decl = handle_pi = unknown_decl = ws
+
+    def updatepos(self, i: int, j: int) -> int:
+        self.original_pos = j
+        return super().updatepos(i, j)
+
+
+@string_tokenizer
+def HtmlTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
+    """Extracts text from HTML suitable for passing on to other tokenizers
+
+    This should be the first tokenizer in the tokenizer list.  Behind the scenes
+    it extracts text from the HTML, and manages the offset mapping between the
+    HTML and the text passed on to other tokenizers.
     """
+    print("args b4", args)
+    options = {"+": None}
+    parse_tokenizer_args(con, options, args)
+    print("args after", args)
+    print(options)
 
-    def __init__(self, func: Callable[[str, int], None]):
-        self.func = func
+    def tokenize(html: str, flags: int):
+        tok, args = options["+"]
+        h = _HTMLTextExtractor(html)
+        # maps offset in extracted text to offset in original HTML
+        offset_map = h.result_offsets
+        # current position in offset_map advanced as tokens come in
+        offset_map_position = 0
+        extracted_text = h.result_text
+        # no longer needed
+        del h
 
-    def __call__(self, utf8: bytes, flags: int):
-        text = utf8.decode("utf8")
-        last_pos_bytes: int = 0
-        last_pos_str: int = 0
-        for start, end, *tokens in self.func(text, flags):
-            if end < start or start < last_pos_str:
-                raise ValueError(f"Invalid token sequencing { start= } { end= } { last_pos_str= } ")
-            # utf8 bytes keeping track of last position
-            utf8_start = len(text[last_pos_str:start].encode("utf8"))
-            utf8_span = len(text[start:end].encode("utf8"))
-            yield last_pos_bytes + utf8_start, last_pos_bytes + utf8_start + utf8_span, *tokens
-            last_pos_bytes += utf8_start + utf8_span
-            last_pos_str = end
+        for start, end, *tokens in string_tokenize(tok, extracted_text, flags, args):
+            # advance start and get offset
+            while start >= offset_map[offset_map_position + 1][0]:
+                offset_map_position += 1
+            html_start = start - offset_map[offset_map_position][0] + offset_map[offset_map_position][1]
+
+            # advance end and get offset
+            while end >= offset_map[offset_map_position + 1][0]:
+                offset_map_position += 1
+            html_end = end - offset_map[offset_map_position][0] + offset_map[offset_map_position][1]
+
+            # if entity/charref is last character of token then
+            # advance to semi-colon
+            if offset_map[offset_map_position][-1] is True:
+                while html[html_end] != ";":
+                    html_end += 1
+                # and one after
+                html_end += 1
+            yield html_start, html_end, *tokens
+
+    return tokenize
 
 
-def StrTokenizerPlease(tok: apsw.FTS5Tokenizer, text: str, flags: int, args: list[str]):
-    """Use this as a wrapper around calling a tokenizer when you have
-    text (str) and want text offsets back, not utf8 byte offsets
+def string_tokenize(tokenizer: apsw.FTS5Tokenizer, text: str, flags: int, args: list[str]):
+    """Tokenizer caller to get string offsets back
 
-    ::TODO:: needs a better name
+    Calls the tokenizer doing the conversion of `text` to UTF8, and converting the received
+    UTF8 offsets back to `text` offsets.
     """
     utf8 = text.encode("utf8")
+    last_pos_str = 0
     for start, end, *tokens in tok(utf8, flags, args):
+        if end < start or start < last_pos_str:
+            raise ValueError(f"Invalid token sequencing { start= } { end= } { last_pos_str= } ")
         # ::TODO:: optimise this like StrPositions
-        print("stp", f"{start=} {end=}", repr(utf8[start:end].decode("utf8")))
         yield len(utf8[:start].decode("utf8")), len(utf8[:end].decode("utf8")), *tokens
+        last_pos_str = start
 
 
-def RegexTokenizer(con: apsw.Connection, args: list[str], pattern: str | re.Pattern, flags: int = 0) -> apsw.Tokenizer:
+def RegexTokenizer(
+    con: apsw.Connection, args: list[str], *, pattern: str | re.Pattern, flags: int = re.NOFLAG
+) -> apsw.Tokenizer:
     r"""Finds tokens using a regular expression
 
     :param pattern: The `regular expression <https://docs.python.org/3/library/re.html#regular-expression-syntax>`__.
@@ -383,8 +526,7 @@ def RegexTokenizer(con: apsw.Connection, args: list[str], pattern: str | re.Patt
         for match in re.finditer(pattern, text):
             yield *match.span(), match.group()
 
-    # re works on str offsets, not byte offsets so use the wrapper
-    return StrPositions(tokenize)
+    return tokenize
 
 
 @dataclass
@@ -449,6 +591,7 @@ def parse_tokenizer_args(con: apsw.Connection, options: dict[str, TokenizerArgum
         * :meth:`tokenize_reason_convert`
 
     """
+    # ::TODO:: make this return options, not modify in place
     ac = args[:]
     while ac:
         n = ac.pop(0)
@@ -839,115 +982,6 @@ def get_args(db: apsw.Connection, table_name: str, schema: str = "main"):
     # can have comments like
     # tokenize='html stoken unicode61 tokenchars _' -- Tokenizer definition
     return sqlite_args
-
-
-class MyParser(html.parser.HTMLParser):
-    def __init__(self, text):
-        # if charrefs are converted then we get out of sync with positions
-        # eg won't be able to turn 'abc&amp;def'
-        super().__init__(convert_charrefs=False)
-        self.current_tag = None
-        # each item is
-        # - position in result text
-        # - position in original text
-        self.result_offsets = []
-        self.result_text = ""
-        self.original_pos = 0
-        self.svg_nesting_level = 0
-        self.feed(text)
-        self.close()
-        # make sure we have ending items to avoid referencing off the end
-        self.spacing_tag("")
-        self.result_offsets.append((len(self.result_text), len(text)))
-
-    def spacing_tag(self, tag: str):
-        # adds a space for this open or close tag
-        # we don't do it for tags that aren't space
-        # so "he<b>ll</b>o" would keep "hello" as a single
-        # token
-        if self.result_text and tag.lower() not in {"b", "i"}:
-            # we only need to do this if the last char of result
-            # text is not whitespace
-            if not self.result_text[-1].isspace():
-                self.result_text += " "
-
-    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        self.current_tag = tag.lower()
-        if tag.lower() == "svg":
-            self.svg_nesting_level += 1
-        self.spacing_tag(tag)
-
-    def handle_endtag(self, tag: str) -> None:
-        self.current_tag = None
-        if tag.lower() == "svg":
-            self.svg_nesting_level -= 1
-        self.spacing_tag(tag)
-
-    def handle_data(self, data: str) -> None:
-        if self.svg_nesting_level or self.current_tag in {"script", "style"}:
-            return
-        # whitespace only?
-        if data.strip():
-            self.result_offsets.append((len(self.result_text), self.original_pos))
-            self.result_text += data
-        else:
-            self.spacing_tag("")
-
-    def handle_entityref(self, name):
-        if self.svg_nesting_level:
-            return
-        self.result_offsets.append((len(self.result_text), self.original_pos, True))
-        self.result_text += html.unescape("&" + name)
-
-    def handle_charref(self, name: str) -> None:
-        self.handle_entityref("#" + name)
-
-    # treat these as whitespace
-    def ws(self, *args):
-        if self.svg_nesting_level:
-            return
-        self.spacing_tag("")
-
-    handle_comment = handle_decl = handle_pi = unknown_del = ws
-
-    def updatepos(self, i: int, j: int) -> int:
-        self.original_pos = j
-        return super().updatepos(i, j)
-
-
-import pprint
-
-
-def HtmlTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
-    options = {"+": None}
-    parse_tokenizer_args(con, options, args)
-
-    def tokenize(text: str, flags: int):
-        tok, args = options["+"]
-        h = MyParser(text)
-        print(len(h.result_text), repr(h.result_text))
-        pprint.pprint(h.result_offsets)
-        offset_map = h.result_offsets
-        omp = 0
-        for start, end, *tokens in StrTokenizerPlease(tok, h.result_text, flags, args):
-            print(f"{omp=} {start=} {end=} {tokens=} {offset_map[omp]=}")
-            while start >= offset_map[omp+1][0]:
-                omp += 1
-
-            astart = start - offset_map[omp][0] + offset_map[omp][1]
-            while end >= offset_map[omp+1][0]:
-                omp += 1
-            aend = end - offset_map[omp][0] + offset_map[omp][1]
-            if offset_map[omp][-1] is True:
-                # in a entity/char ref, skip to ;
-                while text[aend] != ";":
-                    aend += 1
-                aend += 1
-            print(f"{astart=} {aend=}")
-            pprint.pprint(text.encode("utf8")[astart:aend])
-            yield astart, aend, *tokens
-
-    return StrPositions(tokenize)
 
 
 if __name__ == "__main__":
