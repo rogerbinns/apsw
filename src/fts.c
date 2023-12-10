@@ -309,7 +309,7 @@ APSWFTS5Tokenizer_args(APSWFTS5Tokenizer *self)
 static PyObject *
 APSWFTS5Tokenizer_tp_str(APSWFTS5Tokenizer *self)
 {
-  return PyUnicode_FromFormat("<apsw.FTS5Tokenizer object \"%s\" on %S at %p>", self->name, self->db, self);
+  return PyUnicode_FromFormat("<apsw.FTS5Tokenizer object \"%s\" args %S at %p>", self->name, self->args, self);
 }
 
 static void
