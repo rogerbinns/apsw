@@ -284,8 +284,8 @@ def SimplifyTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     )
 
     def tokenize(utf8, flags):
-        tok, args = options["+"]
-        for start, end, *tokens in tok(utf8, flags, args):
+        tok = options["+"]
+        for start, end, *tokens in tok(utf8, flags):
             new_tokens = tuple(t for t in (remove(normalize(case(token))) for token in tokens) if t)
             if new_tokens:
                 yield start, end, *new_tokens
@@ -325,12 +325,12 @@ def SynonymTokenizer(
     parse_tokenizer_args(con, options, args)
 
     def tokenize(utf8: bytes, flags: int):
-        tok, args = options["+"]
+        tok = options["+"]
         if flags not in options["reasons"]:
-            yield from tok(utf8, flags, args)
+            yield from tok(utf8, flags)
             return
 
-        for start, end, *tokens in tok(utf8, flags, args):
+        for start, end, *tokens in tok(utf8, flags):
             new_tokens = []
             for t in tokens:
                 new_tokens.append(t)
@@ -446,7 +446,7 @@ def HtmlTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     print(options)
 
     def tokenize(html: str, flags: int):
-        tok, args = options["+"]
+        tok  = string_tokenizer_convert(options["+"])
         h = _HTMLTextExtractor(html)
         # maps offset in extracted text to offset in original HTML
         offset_map = h.result_offsets
@@ -456,7 +456,7 @@ def HtmlTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
         # no longer needed
         del h
 
-        for start, end, *tokens in string_tokenize(tok, extracted_text, flags, args):
+        for start, end, *tokens in tok(extracted_text, flags):
             # advance start and get offset
             while start >= offset_map[offset_map_position + 1][0]:
                 offset_map_position += 1
@@ -575,13 +575,13 @@ def parse_tokenizer_args(con: apsw.Connection, options: dict[str, TokenizerArgum
             "arg1": 3,
             "big": "ship",
             "small": "hello",
-            "+": [apsw.Tokenizer("unicode61"), ["yes", "two"]]
+            "+": '<apsw.FTS5Tokenizer "unicode61" args ["yes", "two"]>'
         }
 
         # Using "+" in your ``tokenize`` functions
         def tokenize(utf8, flags):
-            tok, args = options["+"]
-            for start, end, *tokens in tok(utf8, flags, args):
+            tok = options["+]
+            for start, end, *tokens in tok(utf8, flags):
                 # do something
                 yield start, end, *tokens
 
@@ -598,7 +598,7 @@ def parse_tokenizer_args(con: apsw.Connection, options: dict[str, TokenizerArgum
         if n not in options:
             if "+" not in options:
                 raise ValueError(f"Unexpected parameter name { n }")
-            options["+"] = [con.fts5_tokenizer(n), ac]
+            options["+"] = con.fts5_tokenizer(n, ac)
             ac = []
             break
         if not ac:
