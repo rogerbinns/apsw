@@ -16,7 +16,6 @@ import multiprocessing
 import multiprocessing.pool
 import html
 import html.parser
-import functools
 from dataclasses import dataclass
 
 from typing import Callable, Sequence, Any, Literal
@@ -58,7 +57,7 @@ unicode_categories = {
 }
 "Unicode categories and descriptions for reference"
 
-TokenizeReasons = {
+TokenizeReasons: dict[str, int] = {
     "DOCUMENT": apsw.FTS5_TOKENIZE_DOCUMENT,
     "QUERY": apsw.FTS5_TOKENIZE_QUERY,
     "QUERY_PREFIX": apsw.FTS5_TOKENIZE_QUERY | apsw.FTS5_TOKENIZE_PREFIX,
@@ -72,7 +71,7 @@ def tokenize_reason_convert(value: str) -> set[int]:
     """Converts a space separated list of :data:`TokenizeReasons` into a set of corresponding values
 
     Use with :func:`parse_tokenizer_args`"""
-    res = set()
+    res: set[int] = set()
     for v in value.split():
         if v not in TokenizeReasons:
             raise ValueError(f"{ v } is not a tokenizer reason - valid values are { ' '.join(TokenizeReasons.keys()) }")
@@ -80,7 +79,7 @@ def tokenize_reason_convert(value: str) -> set[int]:
     return res
 
 
-def tokenizer_test_strings(filename: str | None = None) -> tuple[tuple[bytes, str], ...]:
+def tokenizer_test_strings(filename: str | pathlib.Path | None = None) -> tuple[tuple[bytes, str], ...]:
     """Provides utf-8 bytes sequences for interesting test strings
 
     :param filename: File to load.  If None then the builtin one is used
@@ -125,7 +124,7 @@ def categories_match(patterns: str) -> set[str]:
     return categories
 
 
-def string_tokenizer(func):
+def StringTokenizer(func):
     """Decorator for tokenizers that operate on strings
 
     FTS5 tokenizers operate on UTF8 bytes for the text and offsets.  This
@@ -157,7 +156,7 @@ def string_tokenizer(func):
     return string_tokenizer_wrapper
 
 
-@string_tokenizer
+@StringTokenizer
 def PyUnicodeTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     """Like the `unicode61 tokenizer <https://www.sqlite.org/fts5.html#unicode61_tokenizer>`__ but uses Python's Unicode database
 
@@ -283,7 +282,7 @@ def SimplifyTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
         else identity
     )
 
-    def tokenize(utf8, flags):
+    def tokenize(utf8: bytes, flags: int):
         tok = options["+"]
         for start, end, *tokens in tok(utf8, flags):
             new_tokens = tuple(t for t in (remove(normalize(case(token))) for token in tokens) if t)
@@ -344,21 +343,23 @@ def SynonymTokenizer(
 
     return tokenize
 
+
 # ::TODO:: make a dataclass for the results
 # ::TODO:: have title member in dataclass
+# ::TODO:: do the entity stuff as a separate dict of {end_pos: adjusted_end_pos}
 # ::TODO:: have a function with this class inside and return dataclass
 class _HTMLTextExtractor(html.parser.HTMLParser):
     # Extracts text from HTML maintaining a table mapping the offsets
     # of the extracted text back tot he source HTML.
 
-    def __init__(self, text):
+    def __init__(self, text: str):
         # we handle charrefs because they are multiple codepoints in
         # the HTML but only one in text - eg "&amp;" is "&"
         super().__init__(convert_charrefs=False)
         # A stack is semantically correct but we (and browsers) don't
         # require correctly balanced tags, and a stack doesn't improve
         # correctness
-        self.current_tag = None
+        self.current_tag: str | None = None
         # each item in result_offsets is
         # - position in result text
         # - position in original text
@@ -409,7 +410,7 @@ class _HTMLTextExtractor(html.parser.HTMLParser):
         else:
             self.spacing_tag("")
 
-    def handle_entityref(self, name):
+    def handle_entityref(self, name: str):
         if self.svg_nesting_level:
             return
         self.result_offsets.append((len(self.result_text), self.original_pos, True))
@@ -419,7 +420,7 @@ class _HTMLTextExtractor(html.parser.HTMLParser):
         self.handle_entityref("#" + name)
 
     # treat some other markup as white space
-    def ws(self, *args):
+    def ws(self, *args: Any):
         if self.svg_nesting_level:
             return
         self.spacing_tag("")
@@ -431,7 +432,7 @@ class _HTMLTextExtractor(html.parser.HTMLParser):
         return super().updatepos(i, j)
 
 
-@string_tokenizer
+@StringTokenizer
 def HtmlTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     """Extracts text from HTML suitable for passing on to other tokenizers
 
@@ -439,11 +440,8 @@ def HtmlTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     it extracts text from the HTML, and manages the offset mapping between the
     HTML and the text passed on to other tokenizers.
     """
-    print("args b4", args)
     options = {"+": None}
     parse_tokenizer_args(con, options, args)
-    print("args after", args)
-    print(options)
 
     def tokenize(html: str, flags: int):
         tok = options["+"]
@@ -460,12 +458,12 @@ def HtmlTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
             # advance start and get offset
             while start >= offset_map[offset_map_position + 1][0]:
                 offset_map_position += 1
-            html_start = start - offset_map[offset_map_position][0] + offset_map[offset_map_position][1]
+            html_start: int = start - offset_map[offset_map_position][0] + offset_map[offset_map_position][1]
 
             # advance end and get offset
             while end >= offset_map[offset_map_position + 1][0]:
                 offset_map_position += 1
-            html_end = end - offset_map[offset_map_position][0] + offset_map[offset_map_position][1]
+            html_end: int = end - offset_map[offset_map_position][0] + offset_map[offset_map_position][1]
 
             # if entity/charref is last character of token then
             # advance to semi-colon
@@ -487,7 +485,7 @@ def string_tokenize(tokenizer: apsw.FTS5Tokenizer, text: str, flags: int):
     """
     utf8 = text.encode("utf8")
     last_pos_str = 0
-    for start, end, *tokens in tok(utf8, flags):
+    for start, end, *tokens in tokenizer(utf8, flags):
         if end < start or start < last_pos_str:
             raise ValueError(f"Invalid token sequencing { start= } { end= } { last_pos_str= } ")
         # ::TODO:: optimise this like string_tokenizer
@@ -992,9 +990,7 @@ if __name__ == "__main__":
 
     # This code evolved a lot, and was not intelligently designed.  Sorry.
 
-    def show_tokenization(
-        tok: apsw.FTS5Tokenizer, utf8: bytes, reason: int
-    ) -> tuple[str, list[str]]:
+    def show_tokenization(tok: apsw.FTS5Tokenizer, utf8: bytes, reason: int) -> tuple[str, list[str]]:
         """Runs the tokenizer and produces a html fragment showing the results for manual inspection"""
 
         offset: int = 0
