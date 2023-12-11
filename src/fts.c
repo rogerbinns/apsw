@@ -38,9 +38,13 @@ typedef struct APSWFTS5Tokenizer
   Connection *db;
   const char *name;
   PyObject *args;
-  fts5_tokenizer tokenizer_class;
   Fts5Tokenizer *tokenizer_instance;
   vectorcallfunc vectorcall;
+
+  /* from fts5_tokenizer structure */
+  int (*xTokenize)(Fts5Tokenizer *, void *pCtx, int flags, const char *pText, int nText,
+                   int (*xToken)(void *pCtx, int tflags, const char *pToken, int nToken, int iStart, int iEnd));
+  void (*xDelete)(Fts5Tokenizer *);
 } APSWFTS5Tokenizer;
 
 /** .. class:: FTS5Tokenizer
@@ -257,8 +261,8 @@ APSWFTS5Tokenizer_call(APSWFTS5Tokenizer *self, PyObject *const *fast_args, Py_s
     goto finally;
   }
 
-  rc = self->tokenizer_class.xTokenize(self->tokenizer_instance, &our_context, reason, utf8_buffer.buf, utf8_buffer.len,
-                                       xTokenizer_Callback);
+  rc = self->xTokenize(self->tokenizer_instance, &our_context, reason, utf8_buffer.buf, utf8_buffer.len,
+                       xTokenizer_Callback);
   if (rc != SQLITE_OK)
   {
     SET_EXC(rc, NULL);
@@ -319,7 +323,7 @@ APSWFTS5Tokenizer_dealloc(APSWFTS5Tokenizer *self)
   Py_XDECREF(self->args);
   PyMem_Free((void *)self->name);
   if (self->tokenizer_instance)
-    self->tokenizer_class.xDelete(self->tokenizer_instance);
+    self->xDelete(self->tokenizer_instance);
   Py_TpFree((PyObject *)self);
 }
 
