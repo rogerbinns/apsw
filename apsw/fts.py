@@ -1173,12 +1173,12 @@ if __name__ == "__main__":
     <style>
 
     html {
+        /* scroll past top header */
         scroll-padding-top: 100px;
-        max-width: 100%;
     }
 
-    body, table {
-        max-width: 100%;
+    .remark.result td {
+        overflow-wrap: anywhere;
     }
 
     thead {
