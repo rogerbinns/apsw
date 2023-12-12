@@ -1081,7 +1081,7 @@ if __name__ == "__main__":
                 b = b.decode("utf8", errors="replace")
             return "<wbr>".join(
                 f"<span class=codepoint title='{ html.escape(ud(c), True) }'>"
-                f"{ open}{ html.escape(unicodedata.name(c, f'UNKNOWN-{ord(c):x}')) }{ close }"
+                f"{ open}{ html.escape(unicodedata.name(c, f'U+{ord(c):04x}')) }{ close }"
                 "</span>"
                 for c in b
             )
