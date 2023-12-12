@@ -93,7 +93,7 @@ xTokenizer_Callback(void *pCtx, int iflags, const char *pToken, int nToken, int 
   if (iflags == FTS5_TOKEN_COLOCATED && !our_context->include_colocated && PyList_GET_SIZE(our_context->the_list))
     return SQLITE_OK;
 
-  token = PyUnicode_FromStringAndSize(pToken, nToken);
+  token = PyUnicode_DecodeUTF8(pToken, nToken, "replace");
   if (!token)
     goto error;
 

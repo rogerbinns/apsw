@@ -84,7 +84,7 @@ returns = {
             PyNumber_Long PySequence_Fast PySequence_List PySequence_SetItem
             PyFrame_New PyStructSequence_NewType PyStructSequence_New
             PyMem_Realloc PyUnicode_FromFormat
-            PyObject_VectorcallMethod PyObject_Vectorcall PyWeakref_GetObject
+            PyObject_VectorcallMethod PyObject_Vectorcall PyWeakref_GetObject PyUnicode_DecodeUTF8
             """.split(),
     # numeric return
     "sqlite":

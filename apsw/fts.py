@@ -138,7 +138,7 @@ def StringTokenizer(func):
 
         @functools.wraps(inner_tokenizer)
         def outer_tokenizer(utf8: bytes, flags: int):
-            text = utf8.decode("utf8")
+            text = utf8.decode("utf8", errors="replace")
             last_pos_bytes: int = 0
             last_pos_str: int = 0
             for start, end, *tokens in inner_tokenizer(text, flags):
@@ -489,7 +489,11 @@ def string_tokenize(tokenizer: apsw.FTS5Tokenizer, text: str, flags: int):
         if end < start or start < last_pos_str:
             raise ValueError(f"Invalid token sequencing { start= } { end= } { last_pos_str= } ")
         # ::TODO:: optimise this like string_tokenizer
-        yield len(utf8[:start].decode("utf8")), len(utf8[:end].decode("utf8")), *tokens
+        yield (
+            len(utf8[:start].decode("utf8", errors="replace")),
+            len(utf8[:end].decode("utf8", errors="replace")),
+            *tokens,
+        )
         last_pos_str = start
 
 
@@ -1065,7 +1069,7 @@ if __name__ == "__main__":
 
         def byte_codepoints(b: bytes | str, open="{", close="}") -> str:
             if isinstance(b, bytes):
-                b = b.decode("utf8", "replace")
+                b = b.decode("utf8", errors="replace")
             return "<wbr>".join(
                 f"<span class=codepoint title='{ html.escape(ud(c), True) }'>"
                 f"{ open}{ html.escape(unicodedata.name(c, f'UNKNOWN-{ord(c):x}')) }{ close }"
@@ -1087,7 +1091,7 @@ if __name__ == "__main__":
                 # bytes
                 out += f"<td>{ hex_utf8_bytes(row.utf8) }</td>"
                 # bytes val
-                out += f"<td>{ html.escape(row.utf8.decode('utf8', 'replace')) }</td>"
+                out += f"<td>{ html.escape(row.utf8.decode('utf8', errors='replace')) }</td>"
                 # token
                 out += "<td></td>"
                 # bytes codepoints - already escaped
@@ -1107,7 +1111,7 @@ if __name__ == "__main__":
             # bytes
             out += f"<td>{ hex_utf8_bytes(row.utf8) }</td>"
             # bytes val
-            out += f"<td>{ html.escape(row.utf8.decode('utf8', 'replace')) }</td>"
+            out += f"<td>{ html.escape(row.utf8.decode('utf8', errors='replace')) }</td>"
             # token
             out += f"<td>{ html.escape(row.token) }</td>"
             # bytes codepoints - already escaped
@@ -1406,7 +1410,7 @@ if __name__ == "__main__":
     results = []
     for utf8, comment in tokenizer_test_strings(filename=options.text_file):
         if options.normalize:
-            utf8 = unicodedata.normalize(options.normalize, utf8.decode("utf8")).encode("utf8")
+            utf8 = unicodedata.normalize(options.normalize, utf8.decode("utf8", errors="replace")).encode("utf8")
         h, tokens = show_tokenization(tok, utf8, TokenizeReasons[options.reason])
         results.append((comment, utf8, h, options.reason, tokens))
 
@@ -1419,7 +1423,11 @@ if __name__ == "__main__":
     sections = []
     counter = 1
     for comment, utf8, h, reason, tokens in results:
-        normalized = [f for f in ("NFC", "NFKC", "NFD", "NFKD") if unicodedata.is_normalized(f, utf8.decode("utf8"))]
+        normalized = [
+            f
+            for f in ("NFC", "NFKC", "NFD", "NFKD")
+            if unicodedata.is_normalized(f, utf8.decode("utf8", errors="replace"))
+        ]
         if normalized:
             forms = ": forms " + " ".join(normalized)
         else:
@@ -1436,7 +1444,7 @@ if __name__ == "__main__":
                 f"{ comment } : { reason } { forms }",
                 kind="result",
                 id=counter,
-                compare=(utf8.decode("utf8"), tokens),
+                compare=(utf8.decode("utf8", errors="replace"), tokens),
             )
         )
         if not h:
