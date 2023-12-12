@@ -1174,6 +1174,11 @@ if __name__ == "__main__":
 
     html {
         scroll-padding-top: 100px;
+        max-width: 100%;
+    }
+
+    body, table {
+        max-width: 100%;
     }
 
     thead {
