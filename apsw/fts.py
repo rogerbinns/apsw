@@ -85,22 +85,31 @@ def tokenizer_test_strings(filename: str | pathlib.Path | None = None) -> tuple[
     :param filename: File to load.  If None then the builtin one is used
 
     :returns: A tuple where each item is a tuple of utf8 bytes and comment str
-    """
+
+    The test file should be UTF-8 encoded text.
+
+    If it starts with a # then it is considered to be multiple text sections
+    where a # line contains a description of the section.  Any lines beginning
+    ## are ignored."""
     # importlib.resources should be used, but has deprecation galore, and
     # bad python version compatibility
     filename = filename or pathlib.Path(__file__).with_name("fts_test_strings")
 
-    test_strings: list[tuple[bytes, str]] = []
-    with open(filename, "rt", encoding="utf8") as f:
-        lines = [line for line in f.readlines() if not line.startswith("##")]
+    with open(filename, "rb") as f:
+        data: bytes = f.read()
+        if not data:
+            return ((b"", "No data"),)
+        if not data.startswith(b"#"):
+            return ((data, pathlib.Path(filename).name),)
+
+        test_strings: list[tuple[bytes, str]] = []
+        lines = [line for line in data.splitlines() if not line.startswith(b"##")]
         while lines:
-            if not lines[0].startswith("#"):
-                raise ValueError(f"Expected line to start with # - got { lines[0] }")
-            comment = lines.pop(0)[1:].strip()
-            text: list[str] = []
-            while lines and not lines[0].startswith("#"):
+            comment = lines.pop(0)[1:].decode("utf8", errors="replace").strip()
+            text: list[bytes] = []
+            while lines and not lines[0].startswith(b"#"):
                 text.append(lines.pop(0))
-            test_strings.append(("".join(text).rstrip("\n").encode("utf8"), comment))
+            test_strings.append((b"\n".join(text).rstrip(), comment))
 
     return tuple(test_strings)
 
@@ -1308,9 +1317,11 @@ if __name__ == "__main__":
         "--text-file",
         metavar="TEXT-FILE-NAME",
         help="Filename containing test strings.  Default is builtin. "
-        """If you provide your own file, it must be a line starting with #, and then the following
-           lines up till the next one starting with a # are gathered and treated as one
-           string.  The file must be UTF-8 encoded.""",
+        """The test file should be UTF-8 encoded text.
+
+        If it starts with a # then it is considered to be multiple text sections
+        where a # line contains a description of the section.  Any lines beginning
+        ## are ignored.""",
     )
     parser.add_argument(
         "--output",
