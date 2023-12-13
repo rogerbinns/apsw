@@ -1021,10 +1021,10 @@ if __name__ == "__main__":
         for toknum, row in enumerate(tok(utf8, reason)):
             start, end, *tokens = row
             if end < start:
-                seq.append(show_tokenization_remark(f"start { start } is after end { end }", "error"))
+                seq.append(show_tokenization_remark(f"\u21d3 start { start } is after end { end }", "error"))
             if start < offset:
                 seq.append(
-                    show_tokenization_remark(f"start { start } is before end of previous item { offset }", "error")
+                    show_tokenization_remark(f"\u21d3  start { start } is before end of previous item { offset }", "error")
                 )
             if start > offset:
                 # white space
@@ -1089,6 +1089,9 @@ if __name__ == "__main__":
         tokensret = []
         out = ""
         for row in seq:
+            if isinstance(row, str):
+                out += row
+                continue
             if row.token is None:  # space
                 out += "<tr class='not-token'>"
                 # token num
@@ -1222,6 +1225,10 @@ if __name__ == "__main__":
         font-weight: normal;
     }
 
+    tr.remark.error {
+        background-color: red;
+        font-weight: bold;
+    }
 
     /* token number */
     .token td:nth-child(1) {
