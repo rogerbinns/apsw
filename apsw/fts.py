@@ -151,8 +151,10 @@ def StringTokenizer(func):
             last_pos_bytes: int = 0
             last_pos_str: int = 0
             for start, end, *tokens in inner_tokenizer(text, flags):
-                if end < start or start < last_pos_str:
-                    raise ValueError(f"Invalid token sequencing { start= } { end= } { last_pos_str= } ")
+                if start < last_pos_str:  # went backwards
+                    last_pos_bytes = last_pos_str = 0
+                if end < start: # silently fix
+                   end = start
                 # utf8 bytes keeping track of last position
                 utf8_start = len(text[last_pos_str:start].encode("utf8"))
                 utf8_span = len(text[start:end].encode("utf8"))
@@ -508,12 +510,19 @@ def string_tokenize(tokenizer: apsw.FTS5Tokenizer, text: str, flags: int):
     utf8 = text.encode("utf8")
     last_pos_str = 0
     for start, end, *tokens in tokenizer(utf8, flags):
-        if end < start or start < last_pos_str:
-            raise ValueError(f"Invalid token sequencing { start= } { end= } { last_pos_str= } ")
+        if start < last_pos_str:  # went backwards
+            last_pos_str = 0
+        if end < start: # silently fix
+            end = start
+
         # ::TODO:: optimise this like string_tokenizer
-        yield (
+        bytes_start, bytes_end = (
             len(utf8[:start].decode("utf8", errors="replace")),
             len(utf8[:end].decode("utf8", errors="replace")),
+        )
+        yield (
+            bytes_start,
+            bytes_end,
             *tokens,
         )
         last_pos_str = start
