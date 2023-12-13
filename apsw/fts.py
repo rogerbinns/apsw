@@ -153,8 +153,8 @@ def StringTokenizer(func):
             for start, end, *tokens in inner_tokenizer(text, flags):
                 if start < last_pos_str:  # went backwards
                     last_pos_bytes = last_pos_str = 0
-                if end < start: # silently fix
-                   end = start
+                if end < start:  # silently fix
+                    end = start
                 # utf8 bytes keeping track of last position
                 utf8_start = len(text[last_pos_str:start].encode("utf8"))
                 utf8_span = len(text[start:end].encode("utf8"))
@@ -357,6 +357,8 @@ def SynonymTokenizer(
 
 @dataclass
 class HTMLText:
+    "See :class:`HTMLTokenizer` for how to use this."
+
     html: str
     "Original HTML parsed"
     text: str
@@ -364,13 +366,15 @@ class HTMLText:
     offsets: list[tuple[int, int]]
     "Maps offsets from extracted text back to corresponding offset in the original HTML"
     adjust: dict[int, int]
-    """Alternative position because some html offsets are multiple characters
+    """Alternative positions because some html offsets are multiple characters
     while only one character in the extracted text.  For example `&copy;` in HTML maps to
     copyright symbol in text, so if an offset was pointing at the `c` it needs
     to adjusted to one past the `;`"""
 
 
 def extract_html_text(html: str) -> HTMLText:
+    """Extracts text from HTML using :class:`html.parser.HTMLParser` under the hood"""
+
     class _HTMLTextExtractor(html_parser_module.HTMLParser):
         # Extracts text from HTML maintaining a table mapping the offsets
         # of the extracted text back tot he source HTML.
@@ -467,7 +471,7 @@ def extract_html_text(html: str) -> HTMLText:
 
 
 @StringTokenizer
-def HtmlTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
+def HTMLTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     """Extracts text from HTML suitable for passing on to other tokenizers
 
     This should be the first tokenizer in the tokenizer list.  Behind the scenes
@@ -512,7 +516,7 @@ def string_tokenize(tokenizer: apsw.FTS5Tokenizer, text: str, flags: int):
     for start, end, *tokens in tokenizer(utf8, flags):
         if start < last_pos_str:  # went backwards
             last_pos_str = 0
-        if end < start: # silently fix
+        if end < start:  # silently fix
             end = start
 
         # ::TODO:: optimise this like string_tokenizer
@@ -1046,7 +1050,9 @@ if __name__ == "__main__":
                 seq.append(show_tokenization_remark(f"\u21d3 start { start } is after end { end }", "error"))
             if start < offset:
                 seq.append(
-                    show_tokenization_remark(f"\u21d3  start { start } is before end of previous item { offset }", "error")
+                    show_tokenization_remark(
+                        f"\u21d3  start { start } is before end of previous item { offset }", "error"
+                    )
                 )
             if start > offset:
                 # white space
@@ -1419,7 +1425,7 @@ if __name__ == "__main__":
     # registrations built in
     con.register_fts5_tokenizer("pyunicode", PyUnicodeTokenizer)
     con.register_fts5_tokenizer("simplify", SimplifyTokenizer)
-    con.register_fts5_tokenizer("html", HtmlTokenizer)
+    con.register_fts5_tokenizer("html", HTMLTokenizer)
 
     if options.synonyms:
         data = json.load(options.synonyms)
