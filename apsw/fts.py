@@ -14,8 +14,8 @@ import itertools
 import difflib
 import multiprocessing
 import multiprocessing.pool
-import html
-import html.parser
+import html as html_module
+import html.parser as html_parser_module
 from dataclasses import dataclass
 
 from typing import Callable, Sequence, Any, Literal
@@ -353,92 +353,115 @@ def SynonymTokenizer(
     return tokenize
 
 
-# ::TODO:: make a dataclass for the results
-# ::TODO:: have title member in dataclass
-# ::TODO:: do the entity stuff as a separate dict of {end_pos: adjusted_end_pos}
-# ::TODO:: have a function with this class inside and return dataclass
-class _HTMLTextExtractor(html.parser.HTMLParser):
-    # Extracts text from HTML maintaining a table mapping the offsets
-    # of the extracted text back tot he source HTML.
+@dataclass
+class HTMLText:
+    html: str
+    "Original HTML parsed"
+    text: str
+    "Text extracted from the HTML"
+    offsets: list[tuple[int, int]]
+    "Maps offsets from extracted text back to corresponding offset in the original HTML"
+    adjust: dict[int, int]
+    """Alternative position because some html offsets are multiple characters
+    while only one character in the extracted text.  For example `&copy;` in HTML maps to
+    copyright symbol in text, so if an offset was pointing at the `c` it needs
+    to adjusted to one past the `;`"""
 
-    def __init__(self, text: str):
-        # we handle charrefs because they are multiple codepoints in
-        # the HTML but only one in text - eg "&amp;" is "&"
-        super().__init__(convert_charrefs=False)
-        # A stack is semantically correct but we (and browsers) don't
-        # require correctly balanced tags, and a stack doesn't improve
-        # correctness
-        self.current_tag: str | None = None
-        # each item in result_offsets is
-        # - position in result text
-        # - position in original text
-        # - True is this was a entity/charref
-        self.result_offsets = []
-        self.result_text = ""
-        # tracking position in source HTML
-        self.original_pos = 0
-        # svg content is ignored.
-        self.svg_nesting_level = 0
-        # All the work is done in the constructor
-        self.feed(text)
-        self.close()
-        # make sure we have ending space to avoid off by one issues at
-        # the end
-        self.spacing_tag("")
-        self.result_offsets.append((len(self.result_text), len(text)))
 
-    def spacing_tag(self, tag: str):
-        # adds a space for this open or close tag, or similar. we
-        # don't do it for tags that aren't space so "he<b>ll</b>o"
-        # would keep "hello" as a single token
-        if self.result_text and tag.lower() not in {"b", "i"}:
-            # we only need to do this if the last char of result
-            # text is not whitespace
-            if not self.result_text[-1].isspace():
-                self.result_text += " "
+def extract_html_text(html: str) -> HTMLText:
+    class _HTMLTextExtractor(html_parser_module.HTMLParser):
+        # Extracts text from HTML maintaining a table mapping the offsets
+        # of the extracted text back tot he source HTML.
 
-    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        self.current_tag = tag.lower()
-        if tag.lower() == "svg":
-            self.svg_nesting_level += 1
-        self.spacing_tag(tag)
+        def __init__(self, html: str):
+            # we handle charrefs because they are multiple codepoints in
+            # the HTML but only one in text - eg "&amp;" is "&"
+            super().__init__(convert_charrefs=False)
+            # A stack is semantically correct but we (and browsers) don't
+            # require correctly balanced tags, and a stack doesn't improve
+            # correctness
+            self.current_tag: str | None = None
+            # each item in result_offsets is
+            # - position in result text
+            # - position in original text
+            self.result_offsets: list[tuple[int, int]] = []
+            # some result chars correspond to multiple in the source
+            # so
+            self.end_adjust: dict[int, int] = {}
+            self.result_text = ""
+            # tracking position in source HTML
+            self.original_pos = 0
+            # svg content is ignored.
+            self.svg_nesting_level = 0
+            # All the work is done in the constructor
+            self.feed(html)
+            self.close()
+            # make sure we have have ending offset to terminate forward offset scanning
+            self.result_offsets.append((len(self.result_text) + 1, len(html)))
 
-    def handle_endtag(self, tag: str) -> None:
-        self.current_tag = None
-        if tag.lower() == "svg":
-            self.svg_nesting_level -= 1
-        self.spacing_tag(tag)
+        def spacing_tag(self, tag: str):
+            # adds a space for this open or close tag, or similar. we
+            # don't do it for tags that aren't space so "he<b>ll</b>o"
+            # would keep "hello" as a single token
+            if self.result_text and tag.lower() not in {"b", "i"}:
+                # we only need to do this if the last char of result
+                # text is not whitespace
+                if not self.result_text[-1].isspace():
+                    self.result_text += " "
 
-    def handle_data(self, data: str) -> None:
-        if self.svg_nesting_level or self.current_tag in {"script", "style"}:
-            return
-        # whitespace only?
-        if data.strip():
-            self.result_offsets.append((len(self.result_text), self.original_pos))
-            self.result_text += data
-        else:
+        def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+            self.current_tag = tag.lower()
+            if tag.lower() == "svg":
+                self.svg_nesting_level += 1
+            self.spacing_tag(tag)
+
+        def handle_endtag(self, tag: str) -> None:
+            self.current_tag = None
+            if tag.lower() == "svg":
+                self.svg_nesting_level -= 1
+            self.spacing_tag(tag)
+
+        def handle_data(self, data: str) -> None:
+            if self.svg_nesting_level or self.current_tag in {"script", "style"}:
+                return
+            # whitespace only?
+            if data.strip():
+                self.result_offsets.append((len(self.result_text), self.original_pos))
+                self.result_text += data
+            else:
+                self.spacing_tag("")
+
+        def handle_entityref(self, name: str):
+            if self.svg_nesting_level:
+                return
+
+            # find end of ref
+            i = self.original_pos
+            while self.rawdata[i] != ";":
+                i += 1
+            i += 1
+
+            self.end_adjust[self.original_pos + 1] = i
+            self.handle_data(html_module.unescape("&" + name))
+
+        def handle_charref(self, name: str) -> None:
+            self.handle_entityref("#" + name)
+
+        # treat some other markup as white space
+        def ws(self, *args: Any):
+            if self.svg_nesting_level:
+                return
             self.spacing_tag("")
 
-    def handle_entityref(self, name: str):
-        if self.svg_nesting_level:
-            return
-        self.result_offsets.append((len(self.result_text), self.original_pos, True))
-        self.result_text += html.unescape("&" + name)
+        handle_comment = handle_decl = handle_pi = unknown_decl = ws
 
-    def handle_charref(self, name: str) -> None:
-        self.handle_entityref("#" + name)
+        def updatepos(self, i: int, j: int) -> int:
+            self.original_pos = j
+            return super().updatepos(i, j)
 
-    # treat some other markup as white space
-    def ws(self, *args: Any):
-        if self.svg_nesting_level:
-            return
-        self.spacing_tag("")
+    h = _HTMLTextExtractor(html)
 
-    handle_comment = handle_decl = handle_pi = unknown_decl = ws
-
-    def updatepos(self, i: int, j: int) -> int:
-        self.original_pos = j
-        return super().updatepos(i, j)
+    return HTMLText(html=html, text=h.result_text, offsets=h.result_offsets, adjust=h.end_adjust)
 
 
 @StringTokenizer
@@ -453,34 +476,24 @@ def HtmlTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     parse_tokenizer_args(con, options, args)
 
     def tokenize(html: str, flags: int):
-        tok = options["+"]
-        h = _HTMLTextExtractor(html)
-        # maps offset in extracted text to offset in original HTML
-        offset_map = h.result_offsets
-        # current position in offset_map advanced as tokens come in
-        offset_map_position = 0
-        extracted_text = h.result_text
-        # no longer needed
-        del h
+        h = extract_html_text(html)
 
-        for start, end, *tokens in string_tokenize(tok, extracted_text, flags):
+        offset_map_position = 0
+        for start, end, *tokens in string_tokenize(options["+"], h.text, flags):
             # advance start and get offset
-            while start >= offset_map[offset_map_position + 1][0]:
+            while start >= h.offsets[offset_map_position + 1][0]:
                 offset_map_position += 1
-            html_start: int = start - offset_map[offset_map_position][0] + offset_map[offset_map_position][1]
+            html_start: int = start - h.offsets[offset_map_position][0] + h.offsets[offset_map_position][1]
 
             # advance end and get offset
-            while end >= offset_map[offset_map_position + 1][0]:
+            while end >= h.offsets[offset_map_position + 1][0]:
                 offset_map_position += 1
-            html_end: int = end - offset_map[offset_map_position][0] + offset_map[offset_map_position][1]
+            html_end: int = end - h.offsets[offset_map_position][0] + h.offsets[offset_map_position][1]
 
-            # if entity/charref is last character of token then
-            # advance to semi-colon
-            if offset_map[offset_map_position][-1] is True:
-                while html[html_end] != ";":
-                    html_end += 1
-                # and one after
-                html_end += 1
+            # adjust
+            html_start = h.adjust.get(html_start, html_start)
+            html_end = h.adjust.get(html_end, html_end)
+
             yield html_start, html_end, *tokens
 
     return tokenize
