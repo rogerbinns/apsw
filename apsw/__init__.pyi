@@ -2,7 +2,7 @@
 
 import sys
 
-from typing import Optional, Callable, Any, Iterator, Sequence, Literal, final, Protocol
+from typing import Optional, Callable, Any, Iterator, Iterable, Sequence, Literal, final, Protocol
 from collections.abc import Mapping
 import array
 import types
@@ -131,7 +131,7 @@ CommitHook = Callable[[], bool]
 """Commit hook is called with no arguments and should return True to abort the commit and False
 to let it continue"""
 
-Tokenizer = Callable[[bytes, int], Sequence[str | tuple[str, ...] | tuple[int, int, str, ...]]]
+Tokenizer = Callable[[bytes, int], Iterable[str | tuple[str, ...] | tuple[int, int, str, ...]]]
 """The tokenizer is called with int flags and UTF8 encoded bytes.  The results are
 iterated and each item should be either a str, a tuple of one or more str, or a tuple of
 int start, int end, and one or more str"""
