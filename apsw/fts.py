@@ -463,6 +463,8 @@ def extract_html_text(html: str) -> HTMLText:
 
         def updatepos(self, i: int, j: int) -> int:
             self.original_pos = j
+            # sometimes it goes to zero or backwards for no reason!
+            self.original_pos = max(self.original_pos, j)
             return super().updatepos(i, j)
 
     h = _HTMLTextExtractor(html)
