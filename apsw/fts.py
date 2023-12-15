@@ -423,7 +423,7 @@ def extract_html_text(html: str) -> HTMLText:
             self.feed(html)
             self.close()
             # make sure we have have ending offset to terminate forward offset scanning
-            self.result_offsets.append((len(self.result_text), self.original_pos))
+            self.result_offsets.append((len(self.result_text) + 1, len(html) + 1))
 
         def append_result_text(self, s: str):
             if self.can_ws_compress and s.strip() == "" and self.result_text and self.result_text[-1].isspace():
