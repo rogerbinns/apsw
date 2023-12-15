@@ -260,7 +260,7 @@ def PyUnicodeTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
                 token = ""
                 start = None
         if token:
-            yield start, i, token
+            yield start, i + 1, token
 
     return tokenize
 
