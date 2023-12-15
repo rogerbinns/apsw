@@ -119,6 +119,9 @@ def categories_match(patterns: str) -> set[str]:
 
     An example pattern is ``L* Pc`` would return
     ``{'Pc', 'Lm', 'Lo', 'Lu', 'Lt', 'Ll'}``
+
+    You can also put ! in front to exclude categories, so ``* !m``
+    would be all categories except those ending in ``m``.
     """
     # Figure out categories expanding wild cards
     categories: set[str] = set()
@@ -126,10 +129,16 @@ def categories_match(patterns: str) -> set[str]:
         if cat in unicode_categories:
             categories.add(cat)
             continue
+        negate = cat.startswith("!")
+        if negate:
+            cat = cat[1:]
         found = set(n for n in unicode_categories if fnmatch.fnmatchcase(n, cat))
         if not found:
             raise ValueError(f"'{ cat }' doesn't match any Unicode categories")
-        categories.update(found)
+        if negate:
+            categories.remove(found)
+        else:
+            categories.update(found)
     return categories
 
 
