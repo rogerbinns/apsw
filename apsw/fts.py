@@ -383,7 +383,7 @@ class HTMLText:
         index = bisect.bisect(self.offsets, (offset, -1))
         if self.offsets[index][0] == offset:
             return self.offsets[index][1]
-        text, html = self.offsets[index-1]
+        text, html = self.offsets[index - 1]
         return offset - text + html
 
 
