@@ -5203,10 +5203,10 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
     fts5_tokenizer tokenizer_class;
 
     int rc = api->xFindTokenizer(api, name, &userdata, &tokenizer_class);
-    if(rc!=SQLITE_OK)
+    if(rc != SQLITE_OK)
     {
-      SET_EXC(rc, self->db);
-      AddTraceBackHere(__FILE__, __LINE__, "Connection.fts5_tokenizer.xFindTokenizer", "{s:s}", "name", name);
+      PyErr_Format(get_exception_for_code(rc), "Finding tokenizer named \"%s\"", name);
+      AddTraceBackHere(__FILE__, __LINE__, "Connection.fts5_api.xFindTokenizer", "{s:s}", "name", name);
       return NULL;
     }
 

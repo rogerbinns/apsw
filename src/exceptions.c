@@ -212,9 +212,18 @@ static int init_exceptions(PyObject *m)
   return 0;
 }
 
-static void make_exception(int res, sqlite3 *db)
+static PyObject *
+get_exception_for_code(int res)
 {
   int i;
+  for (i = 0; exc_descriptors[i].name; i++)
+    if (exc_descriptors[i].code == (res & 0xff))
+      return exc_descriptors[i].cls;
+  return APSWException;
+}
+
+static void make_exception(int res, sqlite3 *db)
+{
   const char *errmsg = NULL;
   int error_offset = -1;
 
@@ -226,48 +235,39 @@ static void make_exception(int res, sqlite3 *db)
   if (db)
     _PYSQLITE_CALL_V(error_offset = sqlite3_error_offset(db));
 
-  for (i = 0; exc_descriptors[i].name; i++)
-    if (exc_descriptors[i].code == (res & 0xff))
-    {
-      PyObject *tmp;
-      assert(exc_descriptors[i].cls);
-      PyErr_Format(exc_descriptors[i].cls, "%sError: %s", exc_descriptors[i].name, errmsg);
-      PY_ERR_FETCH(exc);
-      PY_ERR_NORMALIZE(exc);
+  PyObject *tmp;
+  PyErr_Format(get_exception_for_code(res), "%s",  errmsg);
+  PY_ERR_FETCH(exc);
+  PY_ERR_NORMALIZE(exc);
 
-      assert(!PyErr_Occurred());
-      tmp = PyLong_FromLongLong(res & 0xff);
-      if (!tmp)
-        goto error;
+  assert(!PyErr_Occurred());
+  tmp = PyLong_FromLongLong(res & 0xff);
+  if (!tmp)
+    goto error;
 
-      if (PyObject_SetAttr(exc, apst.result, tmp))
-        goto error;
+  if (PyObject_SetAttr(exc, apst.result, tmp))
+    goto error;
 
-      Py_DECREF(tmp);
-      tmp = PyLong_FromLongLong(res);
-      if (!tmp)
-        goto error;
+  Py_DECREF(tmp);
+  tmp = PyLong_FromLongLong(res);
+  if (!tmp)
+    goto error;
 
-      if (PyObject_SetAttr(exc, apst.extendedresult, tmp))
-        goto error;
-      Py_DECREF(tmp);
+  if (PyObject_SetAttr(exc, apst.extendedresult, tmp))
+    goto error;
+  Py_DECREF(tmp);
 
-      tmp = PyLong_FromLong(error_offset);
-      if (!tmp)
-        goto error;
+  tmp = PyLong_FromLong(error_offset);
+  if (!tmp)
+    goto error;
 
-      PyObject_SetAttr(exc, apst.error_offset, tmp);
-    error:
-      Py_XDECREF(tmp);
-      if (PyErr_Occurred())
-        apsw_write_unraisable(NULL);
-      PY_ERR_RESTORE(exc);
+  PyObject_SetAttr(exc, apst.error_offset, tmp);
+error:
+  Py_XDECREF(tmp);
+  if (PyErr_Occurred())
+    apsw_write_unraisable(NULL);
+  PY_ERR_RESTORE(exc);
       assert(PyErr_Occurred());
-      return;
-    }
-
-  /* this line should only be reached if SQLite returns an error code not in the main list */
-  PyErr_Format(APSWException, "Error %d: %s", res, errmsg);
 }
 
 /* Turns the current Python exception into an SQLite error code and
