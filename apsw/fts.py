@@ -94,7 +94,7 @@ def tokenizer_test_strings(filename: str | pathlib.Path | None = None) -> tuple[
     If it starts with a # then it is considered to be multiple text sections
     where a # line contains a description of the section.  Any lines beginning
     ## are ignored."""
-    # importlib.resources should be used, but has deprecation galore, and
+    # ::TODO:: importlib.resources should be used, but has deprecation galore, and
     # bad python version compatibility
     filename = filename or pathlib.Path(__file__).with_name("fts_test_strings")
 
@@ -145,7 +145,7 @@ def categories_match(patterns: str) -> set[str]:
     return categories
 
 
-def StringTokenizer(func):
+def StringTokenizer(func: apsw.FTS5TokenizerFactory):
     """Decorator for tokenizers that operate on strings
 
     FTS5 tokenizers operate on UTF8 bytes for the text and offsets.  This
@@ -207,17 +207,11 @@ def PyUnicodeTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
         String of characters always considered not part of tokens, no matter the category.
     single_token_categories
         (Not in unicode61) Any codepoint in this list of wildcard categories becomes a token by itself.
-        For example ``So`` (Symbols other) includes emoji
+        For example ``So`` (Symbols other) includes emoji, which you probably want as individual
+        tokens.
 
     Use the :func:`SimplifyTokenizer` to convert case, remove diacritics, combining marks, and
-    use compatibility code points.  A recommended tokenizer sequence is
-    ``simplify case lower normalize NFKD remove_categories 'M* *m Sk' pyunicode single_token_categories 'So'``
-    with:
-
-    .. code:: python
-
-        con.register_fts5_tokenizer("simplify", apsw.fts.SimplifyTokenizer)
-        con.register_fts5_tokenizer("pyunicode", apsw.fts.PyUnicodeTokenizer)
+    use compatibility code points.
     """
     options = {
         "categories": TokenizerArgument(default=categories_match("L* N* Mc Mn"), convertor=categories_match),
@@ -315,14 +309,11 @@ def SimplifyTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     return tokenize
 
 
-# ::TODO:: make this a decorator around get
-def SynonymTokenizer(
-    con: apsw.Connection, args: list[str], *, get: Callable[[str], str | Sequence[str] | None]
-) -> apsw.Tokenizer:
-    """
-    Adds `colocated tokens <https://www.sqlite.org/fts5.html#synonym_support>`__ such as 1st for first.
+def SynonymTokenizer(get: Callable[[str], None | str | tuple[str]] | None = None) -> apsw.FTS5TokenizerFactory:
+    """Adds `colocated tokens <https://www.sqlite.org/fts5.html#synonym_support>`__ such as 1st for first.
 
-    To use you need a callable that takes a str, and returns a str, a sequence of str, or None
+    To use you need a callable that takes a str, and returns a str, a sequence of str, or None.
+    For example :meth:`dict.get` does that.
 
     The following tokenizer arguments are accepted.
 
@@ -330,41 +321,142 @@ def SynonymTokenizer(
         Which tokenize :data:`TokenizeReasons` you want the lookups to happen in
         as a space separated list.  Default is ``DOCUMENT AUX``.
 
-    .. code:: python
+    get
+        Specify a :func:`getter <string_to_python>`
+    """
 
-        tokenizer = functools.partial(apsw.fts.SynonymTokenizer, get=my_get)
-        connection.register_fts5_tokenizer("my_name", tokenizer)
+    @functools.wraps(get)
+    def tokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
+        options = {
+            "get": TokenizerArgument(default=get, convertor=string_to_python),
+            "reasons": TokenizerArgument(
+                default=tokenize_reason_convert("DOCUMENT AUX"), convertor=tokenize_reason_convert
+            ),
+            "+": None,
+        }
+
+        parse_tokenizer_args(con, options, args)
+
+        get = options["get"]
+        if get is None:
+            raise ValueError("A callable must be provided by decorator, or parameter")
+
+        def tokenize(utf8: bytes, flags: int):
+            tok = options["+"]
+            if flags not in options["reasons"]:
+                yield from tok(utf8, flags)
+                return
+
+            for start, end, *tokens in tok(utf8, flags):
+                new_tokens = []
+                for t in tokens:
+                    new_tokens.append(t)
+                    alt = get(t)
+                    if alt:
+                        if isinstance(alt, str):
+                            new_tokens.append(alt)
+                        else:
+                            new_tokens.extend(alt)
+                yield start, end, *new_tokens
+
+        return tokenize
+
+    return tokenizer
+
+
+def StopWordsTokenizer(test: Callable[[str], bool] | None = None) -> apsw.FTS5TokenizerFactory:
+    """Removes tokens that are too frequent to be useful
+
+    To use you need a callable that takes a str, and returns a boolean.  If
+    ``True`` then the token is ignored.
+
+    The following tokenizer arguments are accepted.
+
+    test
+        Specify a :func:`test <string_to_python>`
 
     """
 
-    options = {
-        "reasons": TokenizerArgument(
-            default=tokenize_reason_convert("DOCUMENT AUX"), convertor=tokenize_reason_convert
-        ),
-        "+": None,
-    }
+    @functools.wraps(test)
+    def tokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
+        options = {
+            "test": TokenizerArgument(default=test, convertor=string_to_python),
+            "+": None,
+        }
 
-    parse_tokenizer_args(con, options, args)
+        parse_tokenizer_args(con, options, args)
 
-    def tokenize(utf8: bytes, flags: int):
-        tok = options["+"]
-        if flags not in options["reasons"]:
-            yield from tok(utf8, flags)
-            return
+        test = options["test"]
+        if test is None:
+            raise ValueError("A callable must be provided by decorator, or parameter")
 
-        for start, end, *tokens in tok(utf8, flags, args):
-            new_tokens = []
-            for t in tokens:
-                new_tokens.append(t)
-                alt = get(t)
-                if alt:
-                    if isinstance(alt, str):
-                        new_tokens.append(alt)
+        def tokenize(utf8: bytes, flags: int):
+            tok = options["+"]
+
+            if flags == TokenizeReasons["QUERY_PREFIX"]:
+                yield from tok(utf8, flags)
+                return
+
+            for start, end, *tokens in tok(utf8, flags):
+                new_tokens = []
+                for t in tokens:
+                    if test(t):
+                        # stop word - do nothing
+                        pass
                     else:
-                        new_tokens.extend(alt)
-            yield start, end, *new_tokens
+                        new_tokens.append(t)
+                if new_tokens:
+                    yield start, end, *new_tokens
 
-    return tokenize
+        return tokenize
+
+    return tokenizer
+
+
+def TransformTokenizer(transform: Callable[[str], str | Sequence[str]] | None = None) -> apsw.FTS5TokenizerFactory:
+    """Transforms tokens to a different token, such as stemming
+
+    To use you need a callable that takes a str, and returns one
+    or more str to replace it.
+
+    The following tokenizer arguments are accepted.
+
+    transform
+        Specify a :func:`transform <string_to_python>`
+
+    """
+
+    @functools.wraps(transform)
+    def tokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
+        nonlocal transform
+        options = {
+            "+": None,
+            **({} if transform else {"transform": TokenizerArgument(convertor=string_to_python)}),
+        }
+
+        parse_tokenizer_args(con, options, args)
+
+        transform = options["transform"]
+        if transform is None:
+            raise ValueError("A callable must be provided by decorator, or parameter")
+
+        def tokenize(utf8: bytes, flags: int):
+            tok = options["+"]
+
+            for start, end, *tokens in tok(utf8, flags):
+                new_tokens = []
+                for t in tokens:
+                    replacement = transform(t)
+                    if isinstance(replacement, str):
+                        new_tokens.append(replacement)
+                    else:
+                        new_tokens.extend(replacement)
+                if new_tokens:
+                    yield start, end, *new_tokens
+
+        return tokenize
+
+    return tokenizer
 
 
 @dataclass
@@ -630,10 +722,12 @@ def parse_tokenizer_args(con: apsw.Connection, options: dict[str, TokenizerArgum
                 # do something
                 yield start, end, *tokens
 
-    .. seealso:: Some convertors
+    .. seealso:: Some useful convertors
 
-        * :meth:`categories_match`
-        * :meth:`tokenize_reason_convert`
+        * :func:`categories_match`
+        * :func:`tokenize_reason_convert`
+        * :func:`string_to_python`
+        * :func:`tokenize_reason_convert`
 
     """
     # ::TODO:: make this return options, not modify in place
@@ -704,6 +798,15 @@ class FTS5Table:
 
     def query(self, query: str) -> apsw.Cursor:
         "Returns a cursor making the query - rowid first"
+
+
+    def fuzzy_query(self, query: str) -> apsw.Cursor:
+        """Returns a cursor making the query - rowid first
+
+        Not all the tokens have to be present in the matched docs"""
+        # :TODO: parse query and turn all implicit and explicit AND into
+        # OR.  Then add ranking function that takes into account missing
+        # tokens in scoring
         return self.db.execute("select rowid, * from { self.schema }.{ self.name }(?) order by rank", (query,))
 
     def insert(self, *args: str, **kwargs: str) -> None:
@@ -1027,6 +1130,36 @@ def get_args(db: apsw.Connection, table_name: str, schema: str = "main"):
     # can have comments like
     # tokenize='html stoken unicode61 tokenchars _' -- Tokenizer definition
     return sqlite_args
+
+
+def string_to_python(expr: str) -> Any:
+    """Converts a string to a Python object
+
+    This is useful to process command line arguments and arguments to
+    tokenizers.  It automatically imports the necessary modules.
+
+    .. warning::
+
+         The string is ultimately :func:`evaluated <eval>` allowing
+         arbitrary code execution and side effects.
+
+    Some examples of what is accepted are:
+
+    * 3 + 4
+    * apsw.fts.RegexTokenizer
+    * snowballstemmer.stemmer("english").stemWord
+    * nltk.stem.snowball.EnglishStemmer().stem
+    """
+    parts = expr.split(".")
+    imports = {}
+    for i in range(1, len(parts)):
+        try:
+            name = ".".join(parts[:i])
+            mod = importlib.import_module(name)
+            imports[name] = mod
+        except ImportError:
+            pass
+    return eval(expr, imports)
 
 
 if __name__ == "__main__":
@@ -1357,6 +1490,8 @@ if __name__ == "__main__":
             compare = ""
         return f"<tr class='remark { kind }' { id }><td colspan=8>{ ls }{ html.escape(remark) }{ le }{ compare }</td></tr>\n"
 
+    con = apsw.Connection("")
+
     parser = argparse.ArgumentParser(
         prog="python3 -m apsw.fts",
         description="Runs FTS5 tokenizer against test text producing a HTML report for manual inspection.",
@@ -1394,12 +1529,21 @@ if __name__ == "__main__":
         "--register",
         action="append",
         default=[],
-        help="Registers tokenizers.  This option can be specified multiple times.  Format is name=mod.submod.callable "
+        help="Registers tokenizers. Format is name=mod.submod.callable "
         "where name is what is registered with FTS5 and callable is the factory function.  The module containing "
-        "callable will be imported.  pyunicode and simplify from apsw.fts are registered.  Specify this option "
-        "multiple times to register multiple tokenizers",
+        "callable will be imported.  Specify this option multiple times to register multiple tokenizers. "
+        "apsw.fts tokenizers are pre-registered as pyunicode, simplify, html, synonyms, regex, stopwords, "
+        "and transform",
         metavar="name=mod.part.callable",
     )
+
+    # registrations built in
+    con.register_fts5_tokenizer("pyunicode", PyUnicodeTokenizer)
+    con.register_fts5_tokenizer("simplify", SimplifyTokenizer)
+    con.register_fts5_tokenizer("html", HTMLTokenizer)
+    con.register_fts5_tokenizer("synonyms", SynonymTokenizer)
+    con.register_fts5_tokenizer("regex", RegexTokenizer)
+    con.register_fts5_tokenizer("transform", TransformTokenizer())
 
     parser.add_argument(
         "--synonyms",
@@ -1428,17 +1572,10 @@ if __name__ == "__main__":
     if options.output.isatty():
         parser.error("Refusing to spew HTML to your terminal.  Redirect/pipe output or use the --output option")
 
-    con = apsw.Connection("")
-
-    # registrations built in
-    con.register_fts5_tokenizer("pyunicode", PyUnicodeTokenizer)
-    con.register_fts5_tokenizer("simplify", SimplifyTokenizer)
-    con.register_fts5_tokenizer("html", HTMLTokenizer)
-
     if options.synonyms:
         data = json.load(options.synonyms)
         assert isinstance(data, dict)
-        con.register_fts5_tokenizer("synonyms", functools.partial(SynonymTokenizer, get=data.get))
+        con.register_fts5_tokenizer("synonyms", SynonymTokenizer(data.get))
 
     if options.regex:
         flags = 0
@@ -1453,10 +1590,8 @@ if __name__ == "__main__":
     for reg in options.register:
         try:
             name, mod = reg.split("=", 1)
-            mod, call = mod.rsplit(".", 1)
-            mod = importlib.import_module(mod)
-            call = getattr(mod, call)
-            con.register_fts5_tokenizer("name", call)
+            obj = string_to_python(mod)
+            con.register_fts5_tokenizer("name", obj)
         except Exception as e:
             if hasattr(e, "add_note"):
                 e.add_note(f"Processing --register { reg }")
