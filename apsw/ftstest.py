@@ -37,11 +37,11 @@ class FTS(unittest.TestCase):
         test_text = "The quick brown fox Aragonés jumps over the lazy dog"
         test_data = [
             (0, 3, "The"),
-            (4, 9, "quick"),
-            (10, 15, "brown", "brawn"),
+            ("quick",),
+            (10, 15, "brown", "brawn", "bruin"),
             (16, 19, "fox"),
             (20, 29, "Aragonés"),
-            ("jumps",),
+            "jumps",
             ("over", "under"),
             (41, 44, "the"),
             (45, 49, "lazy"),
@@ -88,6 +88,26 @@ class FTS(unittest.TestCase):
 
     def verify_token_stream(self, expected, actual, include_offsets, include_colocated):
         self.assertEqual(len(expected), len(actual))
+        for l, r in zip(expected, actual):
+            # we turn l back into a list with offsets
+            if isinstance(l, str):
+                l = [l]
+            l = list(l)
+            if not isinstance(l[0], int):
+                l = [0, 0] + l
+            # then tear back down based on include
+            if not include_colocated:
+                l = l[:3]
+            if not include_offsets:
+                l = l[2:]
+            if include_colocated or include_offsets:
+                l = tuple(l)
+            else:
+                assert len(l) == 1
+                l = l[0]
+                assert isinstance(l, str)
+
+            self.assertEqual(l, r)
 
 
 if __name__ == "__main__":

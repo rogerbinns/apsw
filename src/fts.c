@@ -90,7 +90,7 @@ xTokenizer_Callback(void *pCtx, int iflags, const char *pToken, int nToken, int 
   }
 
   /* fast exit for colocated */
-  if (iflags == FTS5_TOKEN_COLOCATED && !our_context->include_colocated && PyList_GET_SIZE(our_context->the_list))
+  if (iflags == FTS5_TOKEN_COLOCATED && !our_context->include_colocated)
     return SQLITE_OK;
 
   token = PyUnicode_DecodeUTF8(pToken, nToken, "replace");
@@ -104,50 +104,44 @@ xTokenizer_Callback(void *pCtx, int iflags, const char *pToken, int nToken, int 
       PyErr_Format(PyExc_ValueError, "FTS5_TOKEN_COLOCATED set when there is no previous token");
       goto error;
     }
-    assert(PyUnicode_Check(our_context->last_item) || PyTuple_Check(our_context->last_item));
-    if (PyTuple_Check(our_context->last_item))
-    {
-      if (0 != _PyTuple_Resize(&our_context->last_item, 1 + PyTuple_GET_SIZE(our_context->last_item)))
-        goto error;
-      PyTuple_SET_ITEM(our_context->last_item, PyTuple_GET_SIZE(our_context->last_item) - 1, token);
-    }
-    else
-    {
-      PyObject *newlast = PyTuple_Pack(2, our_context->last_item, token);
-      if (!newlast)
-        goto error;
-      Py_DECREF(token);
-      Py_DECREF(our_context->last_item);
-      our_context->last_item = newlast;
-    }
-    return SQLITE_OK;
-  }
+    assert(PyTuple_Check(our_context->last_item));
 
-  if (our_context->last_item)
-  {
-    if (0 != PyList_Append(our_context->the_list, our_context->last_item))
+    if (0 != _PyTuple_Resize(&our_context->last_item, 1 + PyTuple_GET_SIZE(our_context->last_item)))
       goto error;
-    Py_CLEAR(our_context->last_item);
-  }
-
-  if (our_context->include_offsets)
-  {
-    start = PyLong_FromLong(iStart);
-    end = PyLong_FromLong(iEnd);
-    if (!start || !end)
-      goto error;
-    our_context->last_item = PyTuple_Pack(3, start, end, token);
-    Py_CLEAR(start);
-    Py_CLEAR(end);
-    Py_CLEAR(token);
+    PyTuple_SET_ITEM(our_context->last_item, PyTuple_GET_SIZE(our_context->last_item) - 1, token);
+    token = NULL; /* set item took the reference */
   }
   else
   {
-    if (0 != PyList_Append(our_context->the_list, token))
-      goto error;
-    Py_CLEAR(token);
-  }
+    if (our_context->last_item)
+    {
+      if (0 != PyList_Append(our_context->the_list, our_context->last_item))
+        goto error;
+      Py_CLEAR(our_context->last_item);
+    }
 
+    if (our_context->include_offsets)
+    {
+      start = PyLong_FromLong(iStart);
+      end = PyLong_FromLong(iEnd);
+      if (!start || !end)
+        goto error;
+      our_context->last_item = PyTuple_Pack(3, start, end, token);
+      Py_CLEAR(start);
+      Py_CLEAR(end);
+      Py_CLEAR(token);
+    }
+    else if (our_context->include_colocated)
+    {
+      our_context->last_item = PyTuple_Pack(1, token);
+      Py_CLEAR(token);
+    }
+    else
+    {
+      if (0 != PyList_Append(our_context->the_list, token))
+        goto error;
+    }
+  }
   assert(!token); /* it should have been stashed somewhere */
   return SQLITE_OK;
 
@@ -166,15 +160,14 @@ error:
 
   :param utf8: Input bytes
   :param reason: :data:`Reason <apsw.mapping_fts5_tokenize_reason>` flag
-  :param args: Arguments to the tokenizer
   :param include_offsets: Returned list includes offsets into utf8 for each token
   :param include_colocated: Returned list can include colocated tokens
 
   Example outputs
   ---------------
 
-  Tokenizing :code:`"first place"` where :code:`1st` has been provided as a
-  colocated token for :code:`first`.
+  Tokenizing ``first place`` where ``1st`` has been provided as a
+  colocated token for ``first``.
 
   (**Default**) include_offsets **True**, include_colocated **True**
 
@@ -191,7 +184,7 @@ error:
 
           [
             ("first", "1st"),
-            "place",
+            ("place", ),
           ]
 
   include_offsets **True**, include_colocated **False**
