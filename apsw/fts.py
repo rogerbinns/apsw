@@ -12,6 +12,7 @@ import fnmatch
 import functools
 import itertools
 import difflib
+import importlib
 import multiprocessing
 import multiprocessing.pool
 
@@ -139,7 +140,7 @@ def categories_match(patterns: str) -> set[str]:
         if not found:
             raise ValueError(f"'{ cat }' doesn't match any Unicode categories")
         if negate:
-            categories.remove(found)
+            categories -= found
         else:
             categories.update(found)
     return categories
@@ -1170,7 +1171,6 @@ def string_to_python(expr: str) -> Any:
 if __name__ == "__main__":
     import html
     import argparse
-    import importlib
     import json
 
     # This code evolved a lot, and was not intelligently designed.  Sorry.
