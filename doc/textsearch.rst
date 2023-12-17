@@ -194,21 +194,30 @@ Recommendations
 
 Tokenizer sequence
   For general text, use ``simplify case lower normalize NFKD
-  remove_categories 'M* *m Sk' pyunicode single_token_categories 'So
-  Lo'``
+  remove_categories 'M* *m Sk'`` ``pyunicode single_token_categories
+  'So Lo'``
 
   :class:`simplify <apsw.fts.SimplifyTokenizer>`:
 
     * Lower cases the tokens
-    * Uses compatibility codepoints, and breaks out combining marks and diacritics
+    * Uses compatibility codepoints, and removes combining marks and diacritics
     * Removes marks and diacritics
 
   :class:`pyunicode <apsw.fts.PyUnicodeTokenizer>`:
 
-    * Makes emoji (symbols other) be individually searchable
-    * Makes letters other individually searchable as these occur in
-      many languages where the distinction between syllables and words
-      can't easily be determined
+    * Makes emoji (So symbols other) be individually searchable
+    * Makes codepoints (Lo letters other) individually searchable
+      which is useful if you have some content in languages that do
+      not use spaces to separate words (often from Asia).
+
+      Those codepoints can correspond to letters, syllables, or words,
+      and will result in a large index if you have a lot of such
+      content, while functions like `snippet
+      <https://www.sqlite.org/fts5.html#the_snippet_function>`__ won't
+      work well. Correctly determining those  words `requires
+      additional code and tables
+      <https://www.unicode.org/reports/tr29/>`__ not included with
+      Python.
 
 
 Use external content table
