@@ -9,10 +9,11 @@
 
 
 import unittest
-import sys
+import tempfile
 
 import apsw
 import apsw.ext
+import apsw.fts
 
 
 class FTS(unittest.TestCase):
@@ -108,6 +109,81 @@ class FTS(unittest.TestCase):
                 assert isinstance(l, str)
 
             self.assertEqual(l, r)
+
+    def testFTSHelpers(self):
+        "Test various FTS helper functions"
+        ## tokenize_reason_convert
+        for pat, expected in (
+            ("QUERY", {apsw.FTS5_TOKENIZE_QUERY}),
+            (
+                "DOCUMENT AUX QUERY_PREFIX AUX",
+                {
+                    apsw.FTS5_TOKENIZE_DOCUMENT,
+                    apsw.FTS5_TOKENIZE_AUX,
+                    apsw.FTS5_TOKENIZE_QUERY | apsw.FTS5_TOKENIZE_PREFIX,
+                },
+            ),
+        ):
+            self.assertEqual(apsw.fts.tokenize_reason_convert(pat), expected)
+        self.assertRaises(ValueError, apsw.fts.tokenize_reason_convert, "AUX BANANA")
+
+        ## tokenizer_test_strings
+        def verify_test_string_item(item):
+            value, comment = item
+            self.assertTrue(comment)
+            self.assertIsInstance(comment, str)
+            self.assertIsInstance(value, bytes)
+            self.assertEqual(value, value.decode("utf8", "replace").encode("utf8"))
+
+        tests = apsw.fts.tokenizer_test_strings()
+        for count, item in enumerate(tests):
+            verify_test_string_item(item)
+        self.assertGreater(count, 16)
+
+        with tempfile.NamedTemporaryFile("wb") as tf:
+            some_text = "hello Aragonés 你好世界"
+            items = apsw.fts.tokenizer_test_strings(tf.name)
+            self.assertEqual(len(items), 1)
+            verify_test_string_item(items[0])
+            tf.write(some_text.encode("utf8"))
+            tf.flush()
+            items = apsw.fts.tokenizer_test_strings(tf.name)
+            self.assertEqual(len(items), 1)
+            verify_test_string_item(items[0])
+            self.assertEqual(items[0][0], some_text.encode("utf8"))
+            tf.seek(0)
+            for i in range(10):
+                tf.write(f"# { i }\t\r\n## ignored\n".encode("utf8"))
+                tf.write((some_text + f"{ i }  \n").encode("utf8"))
+            tf.flush()
+            items = apsw.fts.tokenizer_test_strings(tf.name)
+            self.assertEqual(10, len(items))
+            for i, (value, comment) in enumerate(items):
+                self.assertEqual(comment, f"{ i }")
+                self.assertNotIn(b"##", value)
+                self.assertEqual((some_text + f"{ i }").encode("utf8"), value)
+
+        ## categories_match
+        self.assertRaises(ValueError, apsw.fts.categories_match, "L* !BANANA")
+        self.assertEqual(apsw.fts.categories_match("L* Pc !N* N* !N*"), {"Pc", "Lm", "Lo", "Lu", "Lt", "Ll"})
+
+        ## extract_html_text
+        some_html = (
+            """<!decl><!--comment-->&copy;&#62;<?pi><hello/><script>script</script><svg>ddd<svg>ffff"""
+            """</svg>ggg&lt;<?pi2></svg><hello>bye</hello>"""
+        )
+        h = apsw.fts.extract_html_text(some_html)
+        self.assertEqual(h.html, some_html)
+        self.assertEqual(h.text.strip(), "©> bye")
+        self.assertEqual(h.offsets, [(0, 0), (1, 21), (2, 27), (3, 32), (4, 117), (7, 120), (9, 129)])
+
+        ## shingle
+        self.assertEqual(apsw.fts.shingle("hello", 3), ('hel', 'ell', 'llo'))
+        self.assertEqual(apsw.fts.shingle("hello", 80), ("hello",))
+
+        ## string to python
+        self.assertIs(apsw.fts.string_to_python("apsw.fts.shingle"), apsw.fts.shingle)
+
 
 
 if __name__ == "__main__":
