@@ -120,6 +120,13 @@ pycoverage:  ## Coverage of the Python code
 	$(PYTHON) -m coverage html --title "APSW python coverage"
 	$(PYTHON) -m webbrowser -t htmlcov/index.html
 
+ftscoverage: ## Temporary rule to test fts coverage
+	-rm -rf .coverage htmlcov
+	$(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw.ftstest
+	$(PYTHON) -m coverage report -m
+	$(PYTHON) -m coverage html --title "APSW python coverage"
+
+
 test: build_ext ## Standard testing
 	env $(PYTHON) -m apsw.tests
 	env PYTHONPATH=. $(PYTHON) tools/names.py run-tests
