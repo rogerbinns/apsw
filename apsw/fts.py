@@ -582,6 +582,11 @@ def HTMLTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     parse_tokenizer_args(con, options, args)
 
     def tokenize(html: str, flags: int):
+        # We only process html for the document/aux, not queries
+        if flags & apsw.FTS5_TOKENIZE_QUERY:
+            yield from string_tokenize(options["+"], html, flags)
+            return
+
         h = extract_html_text(html)
 
         offset_map_position = 0
