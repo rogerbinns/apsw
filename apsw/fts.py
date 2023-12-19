@@ -472,7 +472,13 @@ class HTMLText:
     "Maps offsets from extracted text back to corresponding offset in the original HTML"
 
     def text_offset_to_html_offset(self, offset: int) -> int:
-        "Returns the html offset corresponding to the provided text offset"
+        """Returns the html offset corresponding to the provided text offset
+
+        You can ask for the offset one beyond the end of the text
+        because that is needed for tokenizer end offsets.
+        """
+        if offset < 0 or offset > len(self.text):
+            raise ValueError(f"offset { offset } is must be 0 to { len(self.text) } inclusive")
         index = bisect.bisect(self.offsets, (offset, -1))
         if self.offsets[index][0] == offset:
             return self.offsets[index][1]
@@ -674,7 +680,7 @@ def RegexTokenizer(
 
 @dataclass
 class TokenizerArgument:
-    "Used as input values to :func:`parse_tokenizer_args`"
+    "Used as spec values to :func:`parse_tokenizer_args`"
 
     default: Any = None
     "Value - set to default before parsing"
@@ -807,7 +813,6 @@ class FTS5Table:
 
     def query(self, query: str) -> apsw.Cursor:
         "Returns a cursor making the query - rowid first"
-
 
     def fuzzy_query(self, query: str) -> apsw.Cursor:
         """Returns a cursor making the query - rowid first
