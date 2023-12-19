@@ -61,7 +61,7 @@ unicode_categories = {
 }
 "Unicode categories and descriptions for reference"
 
-TokenizeReasons: dict[str, int] = {
+tokenize_reasons: dict[str, int] = {
     "DOCUMENT": apsw.FTS5_TOKENIZE_DOCUMENT,
     "QUERY": apsw.FTS5_TOKENIZE_QUERY,
     "QUERY_PREFIX": apsw.FTS5_TOKENIZE_QUERY | apsw.FTS5_TOKENIZE_PREFIX,
@@ -71,15 +71,15 @@ TokenizeReasons: dict[str, int] = {
 "Mapping between friendly strings and constants for `xTokenize flags <https://www.sqlite.org/fts5.html#custom_tokenizers>`__"
 
 
-def tokenize_reason_convert(value: str) -> set[int]:
-    """Converts a space separated list of :data:`TokenizeReasons` into a set of corresponding values
+def convert_tokenize_reason(value: str) -> set[int]:
+    """Converts a space separated list of :data:`tokenize_reasons` into a set of corresponding values
 
     Use with :func:`parse_tokenizer_args`"""
     res: set[int] = set()
     for v in value.split():
-        if v not in TokenizeReasons:
-            raise ValueError(f"{ v } is not a tokenizer reason - valid values are { ' '.join(TokenizeReasons.keys()) }")
-        res.add(TokenizeReasons[v])
+        if v not in tokenize_reasons:
+            raise ValueError(f"{ v } is not a tokenizer reason - valid values are { ' '.join(tokenize_reasons.keys()) }")
+        res.add(tokenize_reasons[v])
     return res
 
 
@@ -118,7 +118,7 @@ def tokenizer_test_strings(filename: str | pathlib.Path | None = None) -> tuple[
     return tuple(test_strings)
 
 
-def categories_match(patterns: str) -> set[str]:
+def convert_categories(patterns: str) -> set[str]:
     """Returns Unicode categories matching space separated values
 
     An example pattern is ``L* Pc`` would return
@@ -215,10 +215,10 @@ def PyUnicodeTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     use compatibility code points.
     """
     spec = {
-        "categories": TokenizerArgument(default=categories_match("L* N* Mc Mn"), convertor=categories_match),
+        "categories": TokenizerArgument(default=convert_categories("L* N* Mc Mn"), convertor=convert_categories),
         "tokenchars": "",
         "separators": "",
-        "single_token_categories": TokenizerArgument(default="", convertor=categories_match),
+        "single_token_categories": TokenizerArgument(default="", convertor=convert_categories),
     }
 
     options = parse_tokenizer_args(con, spec, args)
@@ -283,7 +283,7 @@ def SimplifyTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     spec = {
         "case": ta(choices=("upper", "lower")),
         "normalize": ta(choices=("NFD", "NFC", "NFKD", "NFKC")),
-        "remove_categories": ta(convertor=categories_match),
+        "remove_categories": ta(convertor=convert_categories),
         "+": None,
     }
     options = parse_tokenizer_args(con, spec, args)
@@ -319,19 +319,19 @@ def SynonymTokenizer(get: Callable[[str], None | str | tuple[str]] | None = None
     The following tokenizer arguments are accepted.
 
     reasons
-        Which tokenize :data:`TokenizeReasons` you want the lookups to happen in
+        Which tokenize :data:`tokenize_reasons` you want the lookups to happen in
         as a space separated list.  Default is ``DOCUMENT AUX``.
 
     get
-        Specify a :func:`getter <string_to_python>`
+        Specify a :func:`getter <convert_string_to_python>`
     """
 
     @functools.wraps(get)
     def tokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
         spec = {
-            "get": TokenizerArgument(default=get, convertor=string_to_python),
+            "get": TokenizerArgument(default=get, convertor=convert_string_to_python),
             "reasons": TokenizerArgument(
-                default=tokenize_reason_convert("DOCUMENT AUX"), convertor=tokenize_reason_convert
+                default=convert_tokenize_reason("DOCUMENT AUX"), convertor=convert_tokenize_reason
             ),
             "+": None,
         }
@@ -374,14 +374,14 @@ def StopWordsTokenizer(test: Callable[[str], bool] | None = None) -> apsw.FTS5To
     The following tokenizer arguments are accepted.
 
     test
-        Specify a :func:`test <string_to_python>`
+        Specify a :func:`test <convert_string_to_python>`
 
     """
 
     @functools.wraps(test)
     def tokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
         spec = {
-            "test": TokenizerArgument(default=test, convertor=string_to_python),
+            "test": TokenizerArgument(default=test, convertor=convert_string_to_python),
             "+": None,
         }
 
@@ -394,7 +394,7 @@ def StopWordsTokenizer(test: Callable[[str], bool] | None = None) -> apsw.FTS5To
         def tokenize(utf8: bytes, flags: int):
             tok = options["+"]
 
-            if flags == TokenizeReasons["QUERY_PREFIX"]:
+            if flags == tokenize_reasons["QUERY_PREFIX"]:
                 yield from tok(utf8, flags)
                 return
 
@@ -423,7 +423,7 @@ def TransformTokenizer(transform: Callable[[str], str | Sequence[str]] | None = 
     The following tokenizer arguments are accepted.
 
     transform
-        Specify a :func:`transform <string_to_python>`
+        Specify a :func:`transform <convert_string_to_python>`
 
     """
 
@@ -432,7 +432,7 @@ def TransformTokenizer(transform: Callable[[str], str | Sequence[str]] | None = 
         nonlocal transform
         spec = {
             "+": None,
-            **({} if transform else {"transform": TokenizerArgument(convertor=string_to_python)}),
+            **({} if transform else {"transform": TokenizerArgument(convertor=convert_string_to_python)}),
         }
 
         options = parse_tokenizer_args(con, spec, args)
@@ -734,9 +734,9 @@ def parse_tokenizer_args(
 
     .. seealso:: Some useful convertors
 
-        * :func:`categories_match`
-        * :func:`tokenize_reason_convert`
-        * :func:`string_to_python`
+        * :func:`convert_categories`
+        * :func:`convert_tokenize_reason`
+        * :func:`convert_string_to_python`
 
     """
     options: dict[str, Any] = {}
@@ -1150,7 +1150,7 @@ def get_args(db: apsw.Connection, table_name: str, schema: str = "main"):
     return sqlite_args
 
 
-def string_to_python(expr: str) -> Any:
+def convert_string_to_python(expr: str) -> Any:
     """Converts a string to a Python object
 
     This is useful to process command line arguments and arguments to
@@ -1538,7 +1538,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--reason",
-        choices=list(TokenizeReasons.keys()),
+        choices=list(tokenize_reasons.keys()),
         help="Tokenize reason [%(default)s]",
         default="DOCUMENT",
     )
@@ -1607,7 +1607,7 @@ if __name__ == "__main__":
     for reg in options.register:
         try:
             name, mod = reg.split("=", 1)
-            obj = string_to_python(mod)
+            obj = convert_string_to_python(mod)
             con.register_fts5_tokenizer("name", obj)
         except Exception as e:
             if hasattr(e, "add_note"):
@@ -1622,7 +1622,7 @@ if __name__ == "__main__":
     for utf8, comment in tokenizer_test_strings(filename=options.text_file):
         if options.normalize:
             utf8 = unicodedata.normalize(options.normalize, utf8.decode("utf8", errors="replace")).encode("utf8")
-        h, tokens = show_tokenization(tok, utf8, TokenizeReasons[options.reason])
+        h, tokens = show_tokenization(tok, utf8, tokenize_reasons[options.reason])
         results.append((comment, utf8, h, options.reason, tokens))
 
     w = lambda s: options.output.write(s.encode("utf8") + b"\n")

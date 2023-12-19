@@ -112,7 +112,7 @@ class FTS(unittest.TestCase):
 
     def testFTSHelpers(self):
         "Test various FTS helper functions"
-        ## tokenize_reason_convert
+        ## convert_tokenize_reason
         for pat, expected in (
             ("QUERY", {apsw.FTS5_TOKENIZE_QUERY}),
             (
@@ -124,8 +124,8 @@ class FTS(unittest.TestCase):
                 },
             ),
         ):
-            self.assertEqual(apsw.fts.tokenize_reason_convert(pat), expected)
-        self.assertRaises(ValueError, apsw.fts.tokenize_reason_convert, "AUX BANANA")
+            self.assertEqual(apsw.fts.convert_tokenize_reason(pat), expected)
+        self.assertRaises(ValueError, apsw.fts.convert_tokenize_reason, "AUX BANANA")
 
         ## tokenizer_test_strings
         def verify_test_string_item(item):
@@ -163,9 +163,9 @@ class FTS(unittest.TestCase):
                 self.assertNotIn(b"##", value)
                 self.assertEqual((some_text + f"{ i }").encode("utf8"), value)
 
-        ## categories_match
-        self.assertRaises(ValueError, apsw.fts.categories_match, "L* !BANANA")
-        self.assertEqual(apsw.fts.categories_match("L* Pc !N* N* !N*"), {"Pc", "Lm", "Lo", "Lu", "Lt", "Ll"})
+        ## convert_categories
+        self.assertRaises(ValueError, apsw.fts.convert_categories, "L* !BANANA")
+        self.assertEqual(apsw.fts.convert_categories("L* Pc !N* N* !N*"), {"Pc", "Lm", "Lo", "Lu", "Lt", "Ll"})
 
         ## extract_html_text
         some_html = (
@@ -188,8 +188,8 @@ class FTS(unittest.TestCase):
         self.assertEqual(apsw.fts.shingle("hello", 3), ("hel", "ell", "llo"))
         self.assertEqual(apsw.fts.shingle("hello", 80), ("hello",))
 
-        ## string_to_python
-        self.assertIs(apsw.fts.string_to_python("apsw.fts.shingle"), apsw.fts.shingle)
+        ## convert_string_to_python
+        self.assertIs(apsw.fts.convert_string_to_python("apsw.fts.shingle"), apsw.fts.shingle)
 
         ## parse_tokenizer_args
         ta = apsw.fts.TokenizerArgument
@@ -218,7 +218,6 @@ class FTS(unittest.TestCase):
             ({"foo": ta(convertor=int)}, ["foo", "four"], (ValueError, "invalid literal for int.*")),
             ({"foo": ta(choices=("one", "two"))}, ["foo", "four"], (ValueError, ".*was not allowed choice.*")),
         ):
-            print(repr(spec), repr(args), repr(expected))
             if isinstance(expected, tuple):
                 self.assertRaisesRegex(expected[0], expected[1], apsw.fts.parse_tokenizer_args, self.db, spec, args)
             else:

@@ -1,7 +1,7 @@
 Full text search
 ****************
 
-.. currentmodule:: apsw
+.. currentmodule:: apsw.fts
 
 APSW provides complete access to SQLite's full text search functionality.
 SQLite provides the `FTS5 extension <https://www.sqlite.org/fts5.html>`__
@@ -47,9 +47,9 @@ Tokens
   FTS5 tokenizers are `specified when creating a table
   <https://www.sqlite.org/fts5.html#tokenizers>`__ and `provides an
   API <https://www.sqlite.org/fts5.html#custom_tokenizers>`__ for
-  implementing your own.  Use :meth:`Connection.fts5_tokenizer` to get
+  implementing your own.  Use :meth:`apsw.Connection.fts5_tokenizer` to get
   an existing tokenizer, and register your own with
-  :meth:`Connection.register_fts5_tokenizer`.
+  :meth:`apsw.Connection.register_fts5_tokenizer`.
 
   :ref:`List of available tokenizers <all_tokenizers>`,
 
@@ -63,7 +63,7 @@ Full Text Index
   time consuming, and it can take quite a lot of storage space.  But
   it is fast to use.
 
-  :class:`apsw.fts.FTS5Table` encapsulates an index.
+  :class:`FTS5Table` encapsulates an index.
 
 Stop words
 
@@ -73,8 +73,7 @@ Stop words
   space and increase performance.  The downside is it becomes
   impossible to search for stop words.
 
-  :class:`apsw.fts.StopWordsTokenizer` provides a base for
-  implementation.
+  :class:`StopWordsTokenizer` provides a base for implementation.
 
 Stemming
 
@@ -88,7 +87,7 @@ Stemming
   is more recent, supports more languages, and has a `Python module
   <https://github.com/snowballstem/pystemmer>`__.
 
-  :class:`apsw.fts.TransformTokenizer` provides a base for
+  :class:`TransformTokenizer` provides a base for
   implementation.
 
 Ranking
@@ -155,24 +154,24 @@ All tokenizers
       <https://www.sqlite.org/fts5.html#the_trigram_tokenizer>`__ that
       turns the entire text into trigrams (token generator).  Note it
       does not turn tokens into trigrams, but everything.
-  * - :class:`apsw.fts.PyUnicodeTokenizer`
+  * - :class:`PyUnicodeTokenizer`
     - Uses Python's more recent :mod:`Unicode database <unicodedata>`
       to generate tokens
-  * - :class:`apsw.fts.RegexTokenizer`
+  * - :class:`RegexTokenizer`
     - Use :mod:`regular expressions <re>` to generate tokens
-  * - :class:`apsw.fts.HTMLTokenizer`
+  * - :class:`HTMLTokenizer`
     - Wrapper that converts HTML to plan text for a further tokenizer to generate
       tokens
-  * - :class:`apsw.fts.SimplifyTokenizer`
+  * - :class:`SimplifyTokenizer`
     - Wrapper that transforms the token stream such as converting case, removing
       diacritics, and Unicode normalization.
-  * - :class:`apsw.fts.SynonymTokenizer`
+  * - :class:`SynonymTokenizer`
     - Wrapper that provides additional tokens for existing ones such as ``first``
       for ``1st``
-  * - :class:`apsw.fts.StopWordsTokenizer`
+  * - :class:`StopWordsTokenizer`
     - Wrapper that removes tokens from the token stream that occur too often to be useful, such as
       ``the`` in English text
-  * - :class:`apsw.fts.StringTokenizer`
+  * - :class:`StringTokenizer`
     - A decorator for your own tokenizers so that they operate on strings, performing the
       mapping to UTF8 bytes for you.
 
@@ -197,13 +196,13 @@ Tokenizer sequence
   remove_categories 'M* *m Sk'`` ``pyunicode single_token_categories
   'So Lo'``
 
-  :class:`simplify <apsw.fts.SimplifyTokenizer>`:
+  :class:`simplify <SimplifyTokenizer>`:
 
     * Lower cases the tokens
     * Uses compatibility codepoints, and removes combining marks and diacritics
     * Removes marks and diacritics
 
-  :class:`pyunicode <apsw.fts.PyUnicodeTokenizer>`:
+  :class:`pyunicode <PyUnicodeTokenizer>`:
 
     * Makes emoji (So symbols other) be individually searchable
     * Makes codepoints (Lo letters other) individually searchable
