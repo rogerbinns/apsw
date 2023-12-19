@@ -303,6 +303,17 @@ APSWFTS5Tokenizer_args(APSWFTS5Tokenizer *self)
   return Py_NewRef(self->args);
 }
 
+/** .. attribute:: name
+  :type: str
+
+  Tokenizer name
+*/
+static PyObject *
+APSWFTS5Tokenizer_name(APSWFTS5Tokenizer *self)
+{
+  return PyUnicode_FromString(self->name);
+}
+
 static PyObject *
 APSWFTS5Tokenizer_tp_str(APSWFTS5Tokenizer *self)
 {
@@ -323,6 +334,7 @@ APSWFTS5Tokenizer_dealloc(APSWFTS5Tokenizer *self)
 static PyGetSetDef APSWFTS5Tokenizer_getset[] = {
   { "connection", (getter)APSWFTS5Tokenizer_connection, NULL, FTS5Tokenizer_connection_DOC },
   { "args", (getter)APSWFTS5Tokenizer_args, NULL, FTS5Tokenizer_args_DOC },
+  { "name", (getter)APSWFTS5Tokenizer_name, NULL, FTS5Tokenizer_name_DOC },
   { 0 },
 };
 
