@@ -2697,7 +2697,7 @@
 #define Cursor_set_row_trace_OLDNAME "setrowtrace"
 #define Cursor_set_row_trace_OLDDOC Cursor_set_row_trace_USAGE "\n(Old less clear name setrowtrace)"
 
-#define  FTS5Tokenizer_args_DOC ":type: list | None\n" \
+#define  FTS5Tokenizer_args_DOC ":type: tuple\n" \
 "\n" \
 "The arguments the tokenizer was created with.\n" 
 
@@ -2708,15 +2708,14 @@
 "\n" \
 ":param utf8: Input bytes\n" \
 ":param reason: :data:`Reason <apsw.mapping_fts5_tokenize_reason>` flag\n" \
-":param args: Arguments to the tokenizer\n" \
 ":param include_offsets: Returned list includes offsets into utf8 for each token\n" \
 ":param include_colocated: Returned list can include colocated tokens\n" \
 "\n" \
 "Example outputs\n" \
 "---------------\n" \
 "\n" \
-"Tokenizing :code:`\"first place\"` where :code:`1st` has been provided as a\n" \
-"colocated token for :code:`first`.\n" \
+"Tokenizing ``first place`` where ``1st`` has been provided as a\n" \
+"colocated token for ``first``.\n" \
 "\n" \
 "(**Default**) include_offsets **True**, include_colocated **True**\n" \
 "\n" \
@@ -2733,7 +2732,7 @@
 "\n" \
 "        [\n" \
 "          (\"first\", \"1st\"),\n" \
-"          \"place\",\n" \
+"          (\"place\", ),\n" \
 "        ]\n" \
 "\n" \
 "include_offsets **True**, include_colocated **False**\n" \
@@ -2772,6 +2771,10 @@
 #define  FTS5Tokenizer_connection_DOC ":type: Connection\n" \
 "\n" \
 "The :class:`Connection` this tokenizer is registered with.\n" 
+
+#define  FTS5Tokenizer_name_DOC ":type: str\n" \
+"\n" \
+"Tokenizer name\n" 
 
 #define  IndexInfo_class_DOC "IndexInfo represents the `sqlite3_index_info\n" \
 "<https://www.sqlite.org/c3ref/index_info.html>`__ and associated\n" \

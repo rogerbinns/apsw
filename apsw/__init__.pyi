@@ -2141,7 +2141,7 @@ class Cursor:
 @final
 class FTS5Tokenizer:
     """Wraps a registered tokenizer.  Returned by :meth:`Connection.fts5_tokenizer`."""
-    args: list | None
+    args: tuple
     """The arguments the tokenizer was created with."""
 
     def __call__(self, utf8: bytes, reason: int,  *, include_offsets: bool = True, include_colocated: bool = True) -> list:
@@ -2151,15 +2151,14 @@ class FTS5Tokenizer:
 
         :param utf8: Input bytes
         :param reason: :data:`Reason <apsw.mapping_fts5_tokenize_reason>` flag
-        :param args: Arguments to the tokenizer
         :param include_offsets: Returned list includes offsets into utf8 for each token
         :param include_colocated: Returned list can include colocated tokens
 
         Example outputs
         ---------------
 
-        Tokenizing :code:`"first place"` where :code:`1st` has been provided as a
-        colocated token for :code:`first`.
+        Tokenizing ``first place`` where ``1st`` has been provided as a
+        colocated token for ``first``.
 
         (**Default**) include_offsets **True**, include_colocated **True**
 
@@ -2176,7 +2175,7 @@ class FTS5Tokenizer:
 
                 [
                   ("first", "1st"),
-                  "place",
+                  ("place", ),
                 ]
 
         include_offsets **True**, include_colocated **False**
@@ -2200,6 +2199,9 @@ class FTS5Tokenizer:
 
     connection: Connection
     """The :class:`Connection` this tokenizer is registered with."""
+
+    name: str
+    """Tokenizer name"""
 
 @final
 class IndexInfo:
