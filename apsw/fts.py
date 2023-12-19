@@ -1022,6 +1022,10 @@ def shingle(token: str, size: int = 3) -> tuple[str, ...]:
     are more representative of word pronunciation and meaning than
     individual letters.
     """
+    if (size) < 1:
+        raise ValueError(f"size { size } should be at least 1")
+    if len(token) < 1:
+        raise ValueError("Can't shingle empty token")
     if len(token) <= size:
         return (token,)
     return tuple(token[n : n + size] for n in range(0, len(token) - size + 1))
