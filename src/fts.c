@@ -211,7 +211,7 @@ APSWFTS5Tokenizer_call(APSWFTS5Tokenizer *self, PyObject *const *fast_args, Py_s
                        PyObject *fast_kwnames)
 {
   Py_buffer utf8_buffer;
-  PyObject *utf8, *args = NULL;
+  PyObject *utf8;
   int include_offsets = 1, include_colocated = 1, reason;
   int rc = SQLITE_OK;
 
@@ -259,8 +259,7 @@ APSWFTS5Tokenizer_call(APSWFTS5Tokenizer *self, PyObject *const *fast_args, Py_s
   if (rc != SQLITE_OK)
   {
     SET_EXC(rc, NULL);
-    AddTraceBackHere(__FILE__, __LINE__, "FTS5Tokenizer_call.xTokenize", "{s:O,s:i,s:O}", "args", OBJ(args), "reason",
-                     reason, "utf8", utf8);
+    AddTraceBackHere(__FILE__, __LINE__, "FTS5Tokenizer_call.xTokenize", "{s:i,s:O}", "reason", reason, "utf8", utf8);
     goto finally;
   }
 
