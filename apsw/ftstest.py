@@ -176,14 +176,60 @@ class FTS(unittest.TestCase):
         self.assertEqual(h.html, some_html)
         self.assertEqual(h.text.strip(), "©> bye")
         self.assertEqual(h.offsets, [(0, 0), (1, 21), (2, 27), (3, 32), (4, 117), (7, 120), (9, 129)])
+        self.assertRaises(ValueError, h.text_offset_to_html_offset, -1)
+        self.assertRaises(ValueError, h.text_offset_to_html_offset, len(h.text) + 1)
+        offsets = [h.text_offset_to_html_offset(i) for i in range(len(h.text) + 1)]
+        self.assertEqual(offsets, [0, 21, 27, 32, 117, 118, 119, 120, 121])
 
         ## shingle
-        self.assertEqual(apsw.fts.shingle("hello", 3), ('hel', 'ell', 'llo'))
+        self.assertRaises(ValueError, apsw.fts.shingle, "", 3)
+        self.assertRaises(ValueError, apsw.fts.shingle, "hello", 0)
+        self.assertEqual(apsw.fts.shingle("hello", 1), ("h", "e", "l", "l", "o"))
+        self.assertEqual(apsw.fts.shingle("hello", 3), ("hel", "ell", "llo"))
         self.assertEqual(apsw.fts.shingle("hello", 80), ("hello",))
 
-        ## string to python
+        ## string_to_python
         self.assertIs(apsw.fts.string_to_python("apsw.fts.shingle"), apsw.fts.shingle)
 
+        ## parse_tokenizer_args
+        ta = apsw.fts.TokenizerArgument
+        self.db.register_fts5_tokenizer("dummy", lambda *args: None)
+
+        def t(args):
+            return self.db.fts5_tokenizer("dummy", args)
+
+        for spec, args, expected in (
+            ({}, [], {}),
+            ({"foo": 3}, [], {"foo": 3}),
+            ({"foo": 3, "a1": 1}, ["a1", "1"], {"foo": 3, "a1": "1"}),
+            ({"foo": 3}, ["foo"], (ValueError, "Expected a value for parameter foo")),
+            ({}, ["foo"], (ValueError, "Unexpected parameter name foo")),
+            ({"foo": 3, "+": None}, ["foo", "3", "dummy"], {"foo": "3", "+": t([])}),
+            (
+                {"foo": 3, "+": None},
+                ["foo", "3", "dummy", "more", "args", "here"],
+                {"foo": "3", "+": t(["more", "args", "here"])},
+            ),
+            ({"+": None}, ["dummy"], {"+": t([])}),
+            ({"+": None}, [], (ValueError, "Expected additional tokenizer and arguments")),
+            ({"+": t(["fred"])}, [], {"+": t(["fred"])}),
+            ({"foo": ta(default=4)}, [], {"foo": 4}),
+            ({"foo": ta(convertor=int)}, ["foo", "4"], {"foo": 4}),
+            ({"foo": ta(convertor=int)}, ["foo", "four"], (ValueError, "invalid literal for int.*")),
+            ({"foo": ta(choices=("one", "two"))}, ["foo", "four"], (ValueError, ".*was not allowed choice.*")),
+        ):
+            print(repr(spec), repr(args), repr(expected))
+            if isinstance(expected, tuple):
+                self.assertRaisesRegex(expected[0], expected[1], apsw.fts.parse_tokenizer_args, self.db, spec, args)
+            else:
+                options = apsw.fts.parse_tokenizer_args(self.db, spec, args)
+                if "+" in spec:
+                    tok = options.pop("+")
+                    e = expected.pop("+")
+                    self.assertIs(tok.connection, e.connection)
+                    self.assertEqual(tok.args, e.args)
+                    self.assertEqual(tok.name, e.name)
+                self.assertEqual(expected, options)
 
 
 if __name__ == "__main__":
