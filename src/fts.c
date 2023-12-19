@@ -293,7 +293,7 @@ APSWFTS5Tokenizer_connection(APSWFTS5Tokenizer *self)
 }
 
 /** .. attribute:: args
-  :type: list | None
+  :type: tuple
 
   The arguments the tokenizer was created with.
 */

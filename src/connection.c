@@ -5166,7 +5166,7 @@ static PyObject *
 Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   const char *name = NULL;
-  PyObject *args = NULL;
+  PyObject *args = NULL, *tmptuple = NULL;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
@@ -5178,6 +5178,8 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
     ARG_OPTIONAL ARG_optional_list_str(args);
     ARG_EPILOG(NULL, Connection_fts5_tokenizer_USAGE, );
   }
+
+  tmptuple = args ? NULL : PyTuple_New(0);
 
   fts5_api *api = Connection_fts5_api(self);
   if(!api)
@@ -5191,54 +5193,64 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
     return NULL;
   }
 
-  VLA(argv, argc, const char *);
-    for (int i = 0; i < argc; i++)
-    {
-      argv[i] = PyUnicode_AsUTF8(PyList_GET_ITEM(args, i));
-      if (!argv[i])
-        return NULL;
-    }
+  /* vla can't be size zero */
+  VLA(argv, argc + 1, const char *);
+  for (int i = 0; i < argc; i++)
+  {
+    argv[i] = PyUnicode_AsUTF8(PyList_GET_ITEM(args, i));
+    if (!argv[i])
+      goto error;
+  }
 
-    void *userdata = NULL;
-    fts5_tokenizer tokenizer_class;
+  /* force args to always be a tuple because we save it
+     in returned object and don't want that to be modifyable */
+  args = PySequence_Tuple(args ? args : tmptuple);
+  if (!args)
+    goto error;
 
-    int rc = api->xFindTokenizer(api, name, &userdata, &tokenizer_class);
-    if(rc != SQLITE_OK)
-    {
-      PyErr_Format(get_exception_for_code(rc), "Finding tokenizer named \"%s\"", name);
-      AddTraceBackHere(__FILE__, __LINE__, "Connection.fts5_api.xFindTokenizer", "{s:s}", "name", name);
-      return NULL;
-    }
+  void *userdata = NULL;
+  fts5_tokenizer tokenizer_class;
+
+  int rc = api->xFindTokenizer(api, name, &userdata, &tokenizer_class);
+  if(rc != SQLITE_OK)
+  {
+    PyErr_Format(get_exception_for_code(rc), "Finding tokenizer named \"%s\"", name);
+    AddTraceBackHere(__FILE__, __LINE__, "Connection.fts5_api.xFindTokenizer", "{s:s}", "name", name);
+    goto error;
+  }
 
   /* no objects/memory has been allocated yet */
-    const char *name_dup = apsw_strdup(name);
-    if(!name_dup)
-      return NULL;
+  const char *name_dup = apsw_strdup(name);
+  if(!name_dup)
+    goto error;
 
-    APSWFTS5Tokenizer *pytok = (APSWFTS5Tokenizer *)_PyObject_New(&APSWFTS5TokenizerType);
-    if (!pytok)
-      return NULL;
+  APSWFTS5Tokenizer *pytok = (APSWFTS5Tokenizer *)_PyObject_New(&APSWFTS5TokenizerType);
+  if (!pytok)
+    goto error;
 
-    /* fill in fields */
-    pytok->db = self;
-    Py_INCREF(pytok->db);
-    pytok->name = name_dup;
-    pytok->args = Py_NewRef(OBJ(args));
-    pytok->xTokenize = tokenizer_class.xTokenize;
-    pytok->xDelete = tokenizer_class.xDelete;
-    pytok->tokenizer_instance = NULL;
-    pytok->vectorcall = (vectorcallfunc)APSWFTS5Tokenizer_call;
+  /* fill in fields */
+  pytok->db = self;
+  Py_INCREF(pytok->db);
+  pytok->name = name_dup;
+  pytok->args = args;
+  pytok->xTokenize = tokenizer_class.xTokenize;
+  pytok->xDelete = tokenizer_class.xDelete;
+  pytok->tokenizer_instance = NULL;
+  pytok->vectorcall = (vectorcallfunc)APSWFTS5Tokenizer_call;
 
-    rc = tokenizer_class.xCreate(userdata, argv, argc, &pytok->tokenizer_instance);
-    if (rc != SQLITE_OK)
-    {
-      SET_EXC(rc, self->db);
-      AddTraceBackHere(__FILE__, __LINE__, "Connection.fts5_tokenizer.xCreate", "{s:s,s:i,s:O}", "name", name, "len(args)", argc, "args", OBJ(args));
-      APSWFTS5TokenizerType.tp_dealloc((PyObject *)pytok);
-      return NULL;
-    }
-
-    return (PyObject*)pytok;
+  rc = tokenizer_class.xCreate(userdata, argv, argc, &pytok->tokenizer_instance);
+  if (rc != SQLITE_OK)
+  {
+    SET_EXC(rc, self->db);
+    AddTraceBackHere(__FILE__, __LINE__, "Connection.fts5_tokenizer.xCreate", "{s:s,s:i,s:O}", "name", name, "len(args)", argc, "args", args);
+    APSWFTS5TokenizerType.tp_dealloc((PyObject *)pytok);
+    goto error;
+  }
+  Py_XDECREF(tmptuple);
+  return (PyObject*)pytok;
+error:
+  Py_XDECREF(tmptuple);
+  return NULL;
 }
 
 /** .. method:: register_fts5_tokenizer(name: str, tokenizer_factory: FTS5TokenizerFactory) -> None
