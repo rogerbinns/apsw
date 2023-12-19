@@ -214,14 +214,14 @@ def PyUnicodeTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     Use the :func:`SimplifyTokenizer` to convert case, remove diacritics, combining marks, and
     use compatibility code points.
     """
-    options = {
+    spec = {
         "categories": TokenizerArgument(default=categories_match("L* N* Mc Mn"), convertor=categories_match),
         "tokenchars": "",
         "separators": "",
         "single_token_categories": TokenizerArgument(default="", convertor=categories_match),
     }
 
-    parse_tokenizer_args(con, options, args)
+    options = parse_tokenizer_args(con, spec, args)
 
     categories = set(options["categories"])
     tokenchars = set(options["tokenchars"])
@@ -280,13 +280,13 @@ def SimplifyTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
        to remove all marks, combining codepoints, and modifiers.
     """
     ta = TokenizerArgument
-    options = {
+    spec = {
         "case": ta(choices=("upper", "lower")),
         "normalize": ta(choices=("NFD", "NFC", "NFKD", "NFKC")),
         "remove_categories": ta(convertor=categories_match),
         "+": None,
     }
-    parse_tokenizer_args(con, options, args)
+    options = parse_tokenizer_args(con, spec, args)
 
     def identity(s: str):
         return s
@@ -328,7 +328,7 @@ def SynonymTokenizer(get: Callable[[str], None | str | tuple[str]] | None = None
 
     @functools.wraps(get)
     def tokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
-        options = {
+        spec = {
             "get": TokenizerArgument(default=get, convertor=string_to_python),
             "reasons": TokenizerArgument(
                 default=tokenize_reason_convert("DOCUMENT AUX"), convertor=tokenize_reason_convert
@@ -336,7 +336,7 @@ def SynonymTokenizer(get: Callable[[str], None | str | tuple[str]] | None = None
             "+": None,
         }
 
-        parse_tokenizer_args(con, options, args)
+        options = parse_tokenizer_args(con, spec, args)
 
         get = options["get"]
         if get is None:
@@ -380,12 +380,12 @@ def StopWordsTokenizer(test: Callable[[str], bool] | None = None) -> apsw.FTS5To
 
     @functools.wraps(test)
     def tokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
-        options = {
+        spec = {
             "test": TokenizerArgument(default=test, convertor=string_to_python),
             "+": None,
         }
 
-        parse_tokenizer_args(con, options, args)
+        options = parse_tokenizer_args(con, spec, args)
 
         test = options["test"]
         if test is None:
@@ -430,12 +430,12 @@ def TransformTokenizer(transform: Callable[[str], str | Sequence[str]] | None = 
     @functools.wraps(transform)
     def tokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
         nonlocal transform
-        options = {
+        spec = {
             "+": None,
             **({} if transform else {"transform": TokenizerArgument(convertor=string_to_python)}),
         }
 
-        parse_tokenizer_args(con, options, args)
+        options = parse_tokenizer_args(con, spec, args)
 
         transform = options["transform"]
         if transform is None:
@@ -579,8 +579,8 @@ def HTMLTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     it extracts text from the HTML, and manages the offset mapping between the
     HTML and the text passed on to other tokenizers.
     """
-    options = {"+": None}
-    parse_tokenizer_args(con, options, args)
+    spec = {"+": None}
+    options = parse_tokenizer_args(con, spec, args)
 
     def tokenize(html: str, flags: int):
         # We only process html for the document/aux, not queries
@@ -661,9 +661,9 @@ def RegexTokenizer(
     if not isinstance(pattern, re.Pattern):
         pattern = re.compile(pattern, flags)
 
-    options = {}
+    spec = {}
 
-    parse_tokenizer_args(con, options, args)
+    options = parse_tokenizer_args(con, spec, args)
 
     def tokenize(text: str, flags: int):
         for match in re.finditer(pattern, text):
@@ -684,23 +684,21 @@ class TokenizerArgument:
     "Value must be one of these, after conversion"
 
 
-def parse_tokenizer_args(con: apsw.Connection, options: dict[str, TokenizerArgument | Any], args: list[str]) -> None:
-    """Parses the arguments to a tokenizer updating the options with corresponding values
+def parse_tokenizer_args(
+    con: apsw.Connection, spec: dict[str, TokenizerArgument | Any], args: list[str]
+) -> dict[str, Any]:
+    """Parses the arguments to a tokenizer based on spec returning corresponding values
 
     :param con: Used to lookup other tokenizers
-    :param options: A dictionary where the key is a string, and the value is either
+    :param spec: A dictionary where the key is a string, and the value is either
        the corresponding default, or :class:`TokenizerArgument`.
     :params args: A list of strings as received by :class:`apsw.FTS5TokenizerFactory`
-
-    .. note::
-
-        The ``options`` dictionary passed in is modified with the results.
 
     For example to parse  ``["arg1", "3", "big", "ship", "unicode61", "yes", "two"]``
 
     .. code:: python
 
-        # options on input
+        # spec on input
         {
             # Converts to integer
             "arg1": TokenizerArgument(convertor=int, default=7),
@@ -718,13 +716,13 @@ def parse_tokenizer_args(con: apsw.Connection, options: dict[str, TokenizerArgum
             "arg1": 3,
             "big": "ship",
             "small": "hello",
-            "+": [apsw.Tokenizer("unicode61"), ["yes", "two"]]
+            "+": db.Tokenizer("unicode61", ["yes", "two"])
         }
 
         # Using "+" in your ``tokenize`` functions
         def tokenize(utf8, flags):
-            tok, args = options["+"]
-            for start, end, *tokens in tok(utf8, flags, args):
+            tok = options["+"]
+            for start, end, *tokens in tok(utf8, flags):
                 # do something
                 yield start, end, *tokens
 
@@ -733,15 +731,14 @@ def parse_tokenizer_args(con: apsw.Connection, options: dict[str, TokenizerArgum
         * :func:`categories_match`
         * :func:`tokenize_reason_convert`
         * :func:`string_to_python`
-        * :func:`tokenize_reason_convert`
 
     """
-    # ::TODO:: make this return options, not modify in place
+    options: dict[str, Any] = {}
     ac = args[:]
     while ac:
         n = ac.pop(0)
-        if n not in options:
-            if "+" not in options:
+        if n not in spec:
+            if "+" not in spec:
                 raise ValueError(f"Unexpected parameter name { n }")
             options["+"] = con.fts5_tokenizer(n, ac)
             ac = []
@@ -749,8 +746,8 @@ def parse_tokenizer_args(con: apsw.Connection, options: dict[str, TokenizerArgum
         if not ac:
             raise ValueError(f"Expected a value for parameter { n }")
         v = ac.pop(0)
-        if isinstance(options[n], TokenizerArgument):
-            ta = options[n]
+        if isinstance(spec[n], TokenizerArgument):
+            ta = spec[n]
             try:
                 if ta.convertor is not None:
                     v = ta.convertor(v)
@@ -761,17 +758,23 @@ def parse_tokenizer_args(con: apsw.Connection, options: dict[str, TokenizerArgum
             if ta.choices is not None:
                 if v not in ta.choices:
                     raise ValueError(f"Parameter { n } value {v!r} was not allowed choice { ta.choices }")
-            ta.default = v  # modifies in-place, yuck
-        else:
-            options[n] = v
+        options[n] = v
 
     assert len(ac) == 0
-    for k, v in list(options.items()):
-        if isinstance(v, TokenizerArgument):
-            options[k] = v.default
+    for k, v in list(spec.items()):
+        if k not in options and k != "+":
+            if isinstance(v, TokenizerArgument):
+                options[k] = v.default
+            else:
+                options[k] = v
 
-    if "+" in options and not options["+"]:
-        raise ValueError("Expected additional tokenizer and arguments")
+    if "+" in spec and "+" not in options:
+        if spec["+"] is not None:
+            options["+"] = spec["+"]
+        else:
+            raise ValueError("Expected additional tokenizer and arguments")
+
+    return options
 
 
 class FTS5Table:
