@@ -140,6 +140,7 @@ xTokenizer_Callback(void *pCtx, int iflags, const char *pToken, int nToken, int 
     {
       if (0 != PyList_Append(our_context->the_list, token))
         goto error;
+      Py_CLEAR(token);
     }
   }
   assert(!token); /* it should have been stashed somewhere */
@@ -254,6 +255,7 @@ APSWFTS5Tokenizer_call(APSWFTS5Tokenizer *self, PyObject *const *fast_args, Py_s
     goto finally;
   }
 
+  /* ::TODO:: should we release gil around this? */
   rc = self->xTokenize(self->tokenizer_instance, &our_context, reason, utf8_buffer.buf, utf8_buffer.len,
                        xTokenizer_Callback);
   if (rc != SQLITE_OK)
@@ -521,6 +523,7 @@ APSWPythonTokenizerTokenize(Fts5Tokenizer *our_context, void *their_context, int
         goto finally;
       rc = xToken(their_context, first ? 0 : FTS5_TOKEN_COLOCATED, str_addr, str_size, iStart, iEnd);
     }
+    Py_CLEAR(item);
   }
 
 finally:
