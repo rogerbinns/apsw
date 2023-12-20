@@ -230,6 +230,95 @@ class FTS(unittest.TestCase):
                     self.assertEqual(tok.name, e.name)
                 self.assertEqual(expected, options)
 
+    def testApswTokenizerWrappers(self):
+        "Test tokenizer wrappers supplied by apsw.fts"
+        test_reason = apsw.FTS5_TOKENIZE_AUX
+        test_data = b"a 1 2 3 b"
+        test_res = ((0, 1, "a"), (2, 3, "1"), (4, 5, "2", "deux", "two"), (6, 7, "3"), (8, 9, "b"))
+
+        def source(con, args):
+            apsw.fts.parse_tokenizer_args(con, {}, args)
+
+            def tokenize(utf8, flags):
+                self.assertEqual(flags, test_reason)
+                self.assertEqual(utf8, test_data)
+                return test_res
+
+            return tokenize
+
+        self.db.register_fts5_tokenizer("source", source)
+
+        @apsw.fts.TransformTokenizer
+        def transform_wrapped_func(s):
+            return transform_test_function(s)
+
+        @apsw.fts.StopWordsTokenizer
+        def stopwords_wrapped_func(s):
+            return stopwords_test_function(s)
+
+        self.db.register_fts5_tokenizer("transform_wrapped", transform_wrapped_func)
+        self.db.register_fts5_tokenizer("transform_param", apsw.fts.TransformTokenizer(transform_test_function))
+        self.db.register_fts5_tokenizer("transform_arg", apsw.fts.TransformTokenizer())
+
+        self.db.register_fts5_tokenizer("stopwords_wrapped", stopwords_wrapped_func)
+        self.db.register_fts5_tokenizer("stopwords_param", apsw.fts.StopWordsTokenizer(stopwords_test_function))
+        self.db.register_fts5_tokenizer("stopwords_arg", apsw.fts.StopWordsTokenizer())
+
+        for name in ("transform", "stopwords", "synonym"):
+            returns = []
+            for suffix in "wrapped", "param", "arg":
+                print(name, suffix)
+                param_name = {"transform": "transform", "stopwords": "test", "synonym": "get"}[name]
+                args_with = [param_name, f"apsw.ftstest.{ name }_test_function", "source"]
+                args_without = ["source"]
+                tokname = f"{ name }_{ suffix }"
+
+                if suffix == "arg":
+                    self.assertRaisesRegex(
+                        ValueError,
+                        "A callable must be provided by decorator, or parameter",
+                        self.db.fts5_tokenizer,
+                        tokname,
+                        args_without,
+                    )
+                    tok = self.db.fts5_tokenizer(tokname, args_with)
+                else:
+                    self.assertRaisesRegex(
+                        apsw.SQLError, "Finding tokenizer named .*", self.db.fts5_tokenizer, tokname, args_with
+                    )
+                    tok = self.db.fts5_tokenizer(tokname, args_without)
+
+                returns.append(tok(test_data, test_reason))
+
+            self.assertNotEqual(returns[0], test_res)
+            self.assertEqual(returns[0], returns[1])
+            self.assertEqual(returns[1], returns[2])
+
+            apsw.fts.convert_string_to_python(f"apsw.ftstest.{ name }_test_function_check")(self, returns[0])
+
+
+def transform_test_function(s):
+    if s == "1":
+        return "one"
+    if s == "2":
+        return ("two", "ii")
+    if s == "3":
+        return tuple()
+    return s
+
+
+def transform_test_function_check(self, s):
+    # check the above happened
+    self.assertEqual(s, [(0, 1, "a"), (2, 3, "one"), (4, 5, "two", "ii", "deux"), (8, 9, "b")])
+
+
+def stopwords_test_function(s):
+    return s in {"a", "deux", "b"}
+
+
+def stopwords_test_function_check(self, s):
+    self.assertEqual(s, [(2, 3, "1"), (4, 5, "2", "two"), (6, 7, "3")])
+
 
 if __name__ == "__main__":
     unittest.main()

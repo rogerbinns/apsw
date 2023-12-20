@@ -229,9 +229,6 @@ Have db be only content table and fts indices and attach
 Normalize the Unicode
   Insert as NFC as adding to content table - too hard to correct later
 
-API
-===
-
 .. include:: fts.rst
 
 apsw.fts module

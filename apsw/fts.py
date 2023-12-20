@@ -78,7 +78,9 @@ def convert_tokenize_reason(value: str) -> set[int]:
     res: set[int] = set()
     for v in value.split():
         if v not in tokenize_reasons:
-            raise ValueError(f"{ v } is not a tokenizer reason - valid values are { ' '.join(tokenize_reasons.keys()) }")
+            raise ValueError(
+                f"{ v } is not a tokenizer reason - valid values are { ' '.join(tokenize_reasons.keys()) }"
+            )
         res.add(tokenize_reasons[v])
     return res
 
@@ -380,14 +382,17 @@ def StopWordsTokenizer(test: Callable[[str], bool] | None = None) -> apsw.FTS5To
 
     @functools.wraps(test)
     def tokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
+        nonlocal test
         spec = {
-            "test": TokenizerArgument(default=test, convertor=convert_string_to_python),
             "+": None,
+            **({} if test else {"test": TokenizerArgument(default=test, convertor=convert_string_to_python)}),
         }
 
         options = parse_tokenizer_args(con, spec, args)
 
-        test = options["test"]
+        if "test" in options:
+            test = options["test"]
+
         if test is None:
             raise ValueError("A callable must be provided by decorator, or parameter")
 
@@ -404,8 +409,8 @@ def StopWordsTokenizer(test: Callable[[str], bool] | None = None) -> apsw.FTS5To
                     if test(t):
                         # stop word - do nothing
                         pass
-                    else:
-                        new_tokens.append(t)
+                    elif t not in new_tokens:
+                            new_tokens.append(t)
                 if new_tokens:
                     yield start, end, *new_tokens
 
@@ -436,8 +441,8 @@ def TransformTokenizer(transform: Callable[[str], str | Sequence[str]] | None = 
         }
 
         options = parse_tokenizer_args(con, spec, args)
-
-        transform = options["transform"]
+        if "transform" in options:
+            transform = options["transform"]
         if transform is None:
             raise ValueError("A callable must be provided by decorator, or parameter")
 
@@ -449,9 +454,12 @@ def TransformTokenizer(transform: Callable[[str], str | Sequence[str]] | None = 
                 for t in tokens:
                     replacement = transform(t)
                     if isinstance(replacement, str):
-                        new_tokens.append(replacement)
+                        if replacement not in new_tokens:
+                            new_tokens.append(replacement)
                     else:
-                        new_tokens.extend(replacement)
+                        for r in replacement:
+                            if r not in new_tokens:
+                                new_tokens.append(r)
                 if new_tokens:
                     yield start, end, *new_tokens
 
@@ -1167,6 +1175,7 @@ def convert_string_to_python(expr: str) -> Any:
     * apsw.fts.RegexTokenizer
     * snowballstemmer.stemmer("english").stemWord
     * nltk.stem.snowball.EnglishStemmer().stem
+    * shutil.rmtree("a/directory/location")  **COULD DELETE ALL FILES**
     """
     parts = expr.split(".")
     imports = {}
