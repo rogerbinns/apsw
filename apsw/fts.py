@@ -521,22 +521,25 @@ def SynonymTokenizer(get: Callable[[str], None | str | tuple[str]] | None = None
         as a space separated list.  Default is ``DOCUMENT AUX``.
 
     get
-        Specify a :func:`getter <convert_string_to_python>`
+        Specify a :func:`get <convert_string_to_python>`
     """
 
     @functools.wraps(get)
     def tokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
+        nonlocal get
         spec = {
-            "get": TokenizerArgument(default=get, convertor=convert_string_to_python),
             "reasons": TokenizerArgument(
-                default=convert_tokenize_reason("DOCUMENT AUX"), convertor=convert_tokenize_reason
+                default="DOCUMENT AUX", convertor=convert_tokenize_reason, convert_default=True
             ),
             "+": None,
+            **({} if get else {"get": TokenizerArgument(default=get, convertor=convert_string_to_python)}),
         }
 
         options = parse_tokenizer_args(con, spec, args)
 
-        get = options["get"]
+        if "get" in options:
+            get = options["get"]
+
         if get is None:
             raise ValueError("A callable must be provided by decorator, or parameter")
 
@@ -549,13 +552,18 @@ def SynonymTokenizer(get: Callable[[str], None | str | tuple[str]] | None = None
             for start, end, *tokens in tok(utf8, flags):
                 new_tokens = []
                 for t in tokens:
-                    new_tokens.append(t)
+                    if t not in new_tokens:
+                        new_tokens.append(t)
+
                     alt = get(t)
                     if alt:
                         if isinstance(alt, str):
-                            new_tokens.append(alt)
+                            if alt not in new_tokens:
+                                new_tokens.append(alt)
                         else:
-                            new_tokens.extend(alt)
+                            for t in alt:
+                                if t not in new_tokens:
+                                    new_tokens.append(t)
                 yield start, end, *new_tokens
 
         return tokenize

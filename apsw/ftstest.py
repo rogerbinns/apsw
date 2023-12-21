@@ -16,7 +16,7 @@ import apsw.ext
 import apsw.fts
 
 
-class FTS(unittest.TestCase):
+class APSW(unittest.TestCase):
     def setUp(self):
         self.db = apsw.Connection("")
 
@@ -163,9 +163,21 @@ class FTS(unittest.TestCase):
                 self.assertNotIn(b"##", value)
                 self.assertEqual((some_text + f"{ i }").encode("utf8"), value)
 
-        ## convert_categories
-        self.assertRaises(ValueError, apsw.fts.convert_categories, "L* !BANANA")
-        self.assertEqual(apsw.fts.convert_categories("L* Pc !N* N* !N*"), {"Pc", "Lm", "Lo", "Lu", "Lt", "Ll"})
+        ## convert_unicode_categories
+        self.assertRaises(ValueError, apsw.fts.convert_unicode_categories, "L* !BANANA")
+        self.assertEqual(apsw.fts.convert_unicode_categories("L* Pc !N* N* !N*"), {"Pc", "Lm", "Lo", "Lu", "Lt", "Ll"})
+        self.assertEqual(apsw.fts.convert_unicode_categories("* !P* !Z*"), apsw.fts.convert_unicode_categories("[CLMNS]*"))
+        ## convert_number_ranges
+        for t in "3-", "a", "", "3-5-7", "3,3-", "3,a", "3,4-a":
+            self.assertRaises(ValueError, apsw.fts.convert_number_ranges, t)
+        for t, expected in (
+            ("3", {3}),
+            ("3,4,5", {3, 4, 5}),
+            ("3-7", {3, 4, 5, 6, 7}),
+            ("2-3,3-9", {2, 3, 4, 5, 6, 7, 8, 9}),
+            ("6-2", set()),
+        ):
+            self.assertEqual(apsw.fts.convert_number_ranges(t), expected)
 
         ## extract_html_text
         some_html = (
@@ -230,7 +242,7 @@ class FTS(unittest.TestCase):
                     self.assertEqual(tok.name, e.name)
                 self.assertEqual(expected, options)
 
-    def testApswTokenizerWrappers(self):
+    def testAPSWTokenizerWrappers(self):
         "Test tokenizer wrappers supplied by apsw.fts"
         test_reason = apsw.FTS5_TOKENIZE_AUX
         test_data = b"a 1 2 3 b"
@@ -250,26 +262,33 @@ class FTS(unittest.TestCase):
 
         @apsw.fts.TransformTokenizer
         def transform_wrapped_func(s):
-            return transform_test_function(s)
+            return self.transform_test_function(s)
 
         @apsw.fts.StopWordsTokenizer
         def stopwords_wrapped_func(s):
-            return stopwords_test_function(s)
+            return self.stopwords_test_function(s)
+
+        @apsw.fts.SynonymTokenizer
+        def synonym_wrapped_func(s):
+            return self.synonym_test_function(s)
 
         self.db.register_fts5_tokenizer("transform_wrapped", transform_wrapped_func)
-        self.db.register_fts5_tokenizer("transform_param", apsw.fts.TransformTokenizer(transform_test_function))
+        self.db.register_fts5_tokenizer("transform_param", apsw.fts.TransformTokenizer(self.transform_test_function))
         self.db.register_fts5_tokenizer("transform_arg", apsw.fts.TransformTokenizer())
 
         self.db.register_fts5_tokenizer("stopwords_wrapped", stopwords_wrapped_func)
-        self.db.register_fts5_tokenizer("stopwords_param", apsw.fts.StopWordsTokenizer(stopwords_test_function))
+        self.db.register_fts5_tokenizer("stopwords_param", apsw.fts.StopWordsTokenizer(self.stopwords_test_function))
         self.db.register_fts5_tokenizer("stopwords_arg", apsw.fts.StopWordsTokenizer())
+
+        self.db.register_fts5_tokenizer("synonym_wrapped", synonym_wrapped_func)
+        self.db.register_fts5_tokenizer("synonym_param", apsw.fts.SynonymTokenizer(self.synonym_test_function))
+        self.db.register_fts5_tokenizer("synonym_arg", apsw.fts.SynonymTokenizer())
 
         for name in ("transform", "stopwords", "synonym"):
             returns = []
             for suffix in "wrapped", "param", "arg":
-                print(name, suffix)
                 param_name = {"transform": "transform", "stopwords": "test", "synonym": "get"}[name]
-                args_with = [param_name, f"apsw.ftstest.{ name }_test_function", "source"]
+                args_with = [param_name, f"apsw.ftstest.APSW.{ name }_test_function", "source"]
                 args_without = ["source"]
                 tokname = f"{ name }_{ suffix }"
 
@@ -294,31 +313,36 @@ class FTS(unittest.TestCase):
             self.assertEqual(returns[0], returns[1])
             self.assertEqual(returns[1], returns[2])
 
-            apsw.fts.convert_string_to_python(f"apsw.ftstest.{ name }_test_function_check")(self, returns[0])
+            apsw.fts.convert_string_to_python(f"apsw.ftstest.APSW.{ name }_test_function_check")(self, returns[0])
 
+    @staticmethod
+    def transform_test_function(s):
+        if s == "1":
+            return "one"
+        if s == "2":
+            return ("two", "ii", "2")
+        if s == "3":
+            return tuple()
+        return s
 
-def transform_test_function(s):
-    if s == "1":
-        return "one"
-    if s == "2":
-        return ("two", "ii")
-    if s == "3":
-        return tuple()
-    return s
+    def transform_test_function_check(self, s):
+        # check the above happened
+        self.assertEqual(s, [(0, 1, "a"), (2, 3, "one"), (4, 5, "two", "ii", "2", "deux"), (8, 9, "b")])
 
+    @staticmethod
+    def stopwords_test_function(s):
+        return s in {"a", "deux", "b"}
 
-def transform_test_function_check(self, s):
-    # check the above happened
-    self.assertEqual(s, [(0, 1, "a"), (2, 3, "one"), (4, 5, "two", "ii", "deux"), (8, 9, "b")])
+    def stopwords_test_function_check(self, s):
+        self.assertEqual(s, [(2, 3, "1"), (4, 5, "2", "two"), (6, 7, "3")])
 
+    @staticmethod
+    def synonym_test_function(s):
+        syn = APSW.transform_test_function(s)
+        return syn if syn != s else None
 
-def stopwords_test_function(s):
-    return s in {"a", "deux", "b"}
-
-
-def stopwords_test_function_check(self, s):
-    self.assertEqual(s, [(2, 3, "1"), (4, 5, "2", "two"), (6, 7, "3")])
-
+    def synonym_test_function_check(self, s):
+        self.assertEqual(s, [(0, 1, 'a'), (2, 3, '1', 'one'), (4, 5, '2', 'two', 'ii', 'deux'), (6, 7, '3'), (8, 9, 'b')])
 
 if __name__ == "__main__":
     unittest.main()
