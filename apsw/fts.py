@@ -85,6 +85,94 @@ def convert_tokenize_reason(value: str) -> set[int]:
     return res
 
 
+def convert_unicode_categories(patterns: str) -> set[str]:
+    """Returns Unicode categories matching space separated values
+
+    :func:`fnmatch.fnmatchcase` is used to check matches.  An example
+    pattern is ``L* Pc`` would return ``{'Pc', 'Lm', 'Lo', 'Lu', 'Lt',
+    'Ll'}``
+
+    You can also put ! in front to exclude categories, so ``* !*m``
+    would be all categories except those ending in ``m``.
+
+    .. seealso:
+
+        * :data:`unicode_categories`
+        * `Wikipedia <https://en.wikipedia.org/wiki/Unicode_character_property#General_Category>`__
+
+    """
+    # Figure out categories expanding wild cards
+    categories: set[str] = set()
+    for cat in patterns.split():
+        if cat in unicode_categories:
+            categories.add(cat)
+            continue
+        negate = cat.startswith("!")
+        if negate:
+            cat = cat[1:]
+        found = set(n for n in unicode_categories if fnmatch.fnmatchcase(n, cat))
+        if not found:
+            raise ValueError(f"'{ cat }' doesn't match any Unicode categories")
+        if negate:
+            categories -= found
+        else:
+            categories.update(found)
+    return categories
+
+
+def convert_string_to_python(expr: str) -> Any:
+    """Converts a string to a Python object
+
+    This is useful to process command line arguments and arguments to
+    tokenizers.  It automatically imports the necessary modules.
+
+    .. warning::
+
+         The string is ultimately :func:`evaluated <eval>` allowing
+         arbitrary code execution and side effects.
+
+    Some examples of what is accepted are:
+
+    * 3 + 4
+    * apsw.fts.RegexTokenizer
+    * snowballstemmer.stemmer("english").stemWord
+    * nltk.stem.snowball.EnglishStemmer().stem
+    * shutil.rmtree("a/directory/location")  **COULD DELETE ALL FILES**
+    """
+    parts = expr.split(".")
+    imports = {}
+    for i in range(1, len(parts)):
+        try:
+            name = ".".join(parts[:i])
+            mod = importlib.import_module(name)
+            imports[name] = mod
+        except ImportError:
+            pass
+    return eval(expr, imports)
+
+
+def convert_number_ranges(numbers: str) -> set[int]:
+    """Converts comma separated number ranges
+
+    Takes input like ``2,3-5,17` and converts to
+    ``{2, 3, 4, 5, 17}``
+    """
+    res = set()
+    for part in numbers.split(","):
+        try:
+            res.add(int(part))
+            continue
+        except ValueError:
+            try:
+                low, high = part.split("-", 1)
+                low = int(low)
+                high = int(high)
+            except ValueError:
+                raise ValueError(f"Unable to turn '{ part }' from '{ numbers }' into a numeric range")
+            res.update(range(low, high + 1))
+    return res
+
+
 def tokenizer_test_strings(filename: str | pathlib.Path | None = None) -> tuple[tuple[bytes, str], ...]:
     """Provides utf-8 bytes sequences for interesting test strings
 
@@ -118,34 +206,6 @@ def tokenizer_test_strings(filename: str | pathlib.Path | None = None) -> tuple[
             test_strings.append((b"\n".join(text).rstrip(), comment))
 
     return tuple(test_strings)
-
-
-def convert_categories(patterns: str) -> set[str]:
-    """Returns Unicode categories matching space separated values
-
-    An example pattern is ``L* Pc`` would return
-    ``{'Pc', 'Lm', 'Lo', 'Lu', 'Lt', 'Ll'}``
-
-    You can also put ! in front to exclude categories, so ``* !m``
-    would be all categories except those ending in ``m``.
-    """
-    # Figure out categories expanding wild cards
-    categories: set[str] = set()
-    for cat in patterns.split():
-        if cat in unicode_categories:
-            categories.add(cat)
-            continue
-        negate = cat.startswith("!")
-        if negate:
-            cat = cat[1:]
-        found = set(n for n in unicode_categories if fnmatch.fnmatchcase(n, cat))
-        if not found:
-            raise ValueError(f"'{ cat }' doesn't match any Unicode categories")
-        if negate:
-            categories -= found
-        else:
-            categories.update(found)
-    return categories
 
 
 def StringTokenizer(func: apsw.FTS5TokenizerFactory):
@@ -1156,37 +1216,6 @@ def get_args(db: apsw.Connection, table_name: str, schema: str = "main"):
     # can have comments like
     # tokenize='html stoken unicode61 tokenchars _' -- Tokenizer definition
     return sqlite_args
-
-
-def convert_string_to_python(expr: str) -> Any:
-    """Converts a string to a Python object
-
-    This is useful to process command line arguments and arguments to
-    tokenizers.  It automatically imports the necessary modules.
-
-    .. warning::
-
-         The string is ultimately :func:`evaluated <eval>` allowing
-         arbitrary code execution and side effects.
-
-    Some examples of what is accepted are:
-
-    * 3 + 4
-    * apsw.fts.RegexTokenizer
-    * snowballstemmer.stemmer("english").stemWord
-    * nltk.stem.snowball.EnglishStemmer().stem
-    * shutil.rmtree("a/directory/location")  **COULD DELETE ALL FILES**
-    """
-    parts = expr.split(".")
-    imports = {}
-    for i in range(1, len(parts)):
-        try:
-            name = ".".join(parts[:i])
-            mod = importlib.import_module(name)
-            imports[name] = mod
-        except ImportError:
-            pass
-    return eval(expr, imports)
 
 
 if __name__ == "__main__":

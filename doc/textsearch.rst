@@ -159,6 +159,9 @@ All tokenizers
       to generate tokens
   * - :class:`RegexTokenizer`
     - Use :mod:`regular expressions <re>` to generate tokens
+  * - :class:`NGramTokenizer`
+    - Generates ngrams from the text, where you can specify the sizes and
+      unicode categories.  Useful for doing autocomplete as you type.
   * - :class:`HTMLTokenizer`
     - Wrapper that converts HTML to plan text for a further tokenizer to generate
       tokens
@@ -171,6 +174,9 @@ All tokenizers
   * - :class:`StopWordsTokenizer`
     - Wrapper that removes tokens from the token stream that occur too often to be useful, such as
       ``the`` in English text
+  * - :class:`NGramTokenTokenizer`
+    - Wrapper that Generates ngrams from the token stream, where you can specify the sizes and
+      unicode categories.  Useful for doing autocomplete as you type.
   * - :class:`StringTokenizer`
     - A decorator for your own tokenizers so that they operate on strings, performing the
       mapping to UTF8 bytes for you.
