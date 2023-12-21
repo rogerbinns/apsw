@@ -3054,10 +3054,10 @@ finally:
     Registers a `window function
     <https://sqlite.org/windowfunctions.html#user_defined_aggregate_window_functions>`__
 
-      :param name: The string name of the function.  It should be less than 255 characters
-      :param factory: Called to start a new window.  Use None to delete the function.
-      :param numargs: How many arguments the function takes, with -1 meaning any number
-      :param flags: `Function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__
+    :param name: The string name of the function.  It should be less than 255 characters
+    :param factory: Called to start a new window.  Use None to delete the function.
+    :param numargs: How many arguments the function takes, with -1 meaning any number
+    :param flags: `Function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__
 
     You need to provide callbacks for the ``step``, ``final``, ``value``
     and ``inverse`` methods.  This can be done by having `factory` as a
