@@ -277,15 +277,17 @@ def PyUnicodeTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     use compatibility code points.
     """
     spec = {
-        "categories": TokenizerArgument(default=convert_categories("L* N* Mc Mn"), convertor=convert_categories),
+        "categories": TokenizerArgument(
+            default="L* N* Mc Mn", convertor=convert_unicode_categories, convert_default=True
+        ),
         "tokenchars": "",
         "separators": "",
-        "single_token_categories": TokenizerArgument(default="", convertor=convert_categories),
+        "single_token_categories": TokenizerArgument(default="", convertor=convert_unicode_categories),
     }
 
     options = parse_tokenizer_args(con, spec, args)
 
-    categories = set(options["categories"])
+    categories = options["categories"]
     tokenchars = set(options["tokenchars"])
     separators = set(options["separators"])
     single_token_categories = set(options["single_token_categories"])
@@ -345,7 +347,7 @@ def SimplifyTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     spec = {
         "case": ta(choices=("upper", "lower")),
         "normalize": ta(choices=("NFD", "NFC", "NFKD", "NFKC")),
-        "remove_categories": ta(convertor=convert_categories),
+        "remove_categories": ta(convertor=convert_unicode_categories),
         "+": None,
     }
     options = parse_tokenizer_args(con, spec, args)
@@ -752,10 +754,12 @@ class TokenizerArgument:
 
     default: Any = None
     "Value - set to default before parsing"
-    convertor: Callable[[str], Any] | None = None
-    "Function to convert string value to desired value"
     choices: Sequence[Any] | None = None
     "Value must be one of these, after conversion"
+    convertor: Callable[[str], Any] | None = None
+    "Function to convert string value to desired value"
+    convert_default: bool = False
+    "True if the default value should be run through the convertor"
 
 
 def parse_tokenizer_args(
@@ -802,9 +806,10 @@ def parse_tokenizer_args(
 
     .. seealso:: Some useful convertors
 
-        * :func:`convert_categories`
+        * :func:`convert_unicode_categories`
         * :func:`convert_tokenize_reason`
         * :func:`convert_string_to_python`
+        * :func:`convert_number_ranges`
 
     """
     options: dict[str, Any] = {}
@@ -838,7 +843,7 @@ def parse_tokenizer_args(
     for k, v in list(spec.items()):
         if k not in options and k != "+":
             if isinstance(v, TokenizerArgument):
-                options[k] = v.default
+                options[k] = v.default if not v.convert_default else v.convertor(v.default)
             else:
                 options[k] = v
 
