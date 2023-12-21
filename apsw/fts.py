@@ -374,6 +374,140 @@ def SimplifyTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     return tokenize
 
 
+@StringTokenizer
+def NGramTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
+    """Generates ngrams from the text, useful for completion as you type
+
+    For example if doing 3 (trigram) then ``a big dog`` would result in
+    ``'a b', ' bi', 'big', 'ig '`` etc.
+
+    The following tokenizer arguments are accepted
+
+    ngrams
+        Numeric ranges to generate.  Smaller values allow showing
+        completions with less input but a larger index, while larger
+        values will result in quicker searches as the input grows.
+        Default is 3.
+
+    include_categories
+        Which Unicode categories to include, by default all.  You could
+        include everything except punctuation and separators with
+        ``* !P* !Z*``
+
+    .. seealso::
+
+       :func:`NGramTokenTokenizer` for generating ngrams from another token source.
+    """
+
+    spec = {
+        "ngrams": TokenizerArgument(default="3", convertor=convert_number_ranges, convert_default=True),
+        "include_categories": TokenizerArgument(
+            default="*", convertor=convert_unicode_categories, convert_default=True
+        ),
+    }
+
+    options = parse_tokenizer_args(con, spec, args)
+
+    def tokenize(text: str, flags: int):
+        for start in range(len(text)):
+            tokens: list[tuple[int, int, str]] = []
+            seen = options["ngrams"].copy()
+            end = start
+            token = ""
+            while seen and end < len(text):
+                c = text[end]
+                end += 1
+                if unicodedata.category(c) not in options["include_categories"]:
+                    continue
+                token += c
+                if len(token) in seen:
+                    tokens.append((start, end, token))
+                    seen.remove(len(token))
+            if not tokens:
+                continue
+            # if doing a query, only produce largest possible
+            if flags & apsw.FTS5_TOKENIZE_QUERY:
+                yield tokens[-1][0], tokens[-1][1], tokens[-1][2]
+            else:
+                for start, end, token in tokens:
+                    yield start, end, token
+
+    return tokenize
+
+
+def NGramTokenTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
+    """Turns a token stream into ngrams, useful for completion as you type
+
+    For example if doing 3 (trigram) then ``('a', 'deep', 'example')`` would result in
+    ``('a', 'dee', 'eep', 'exa', 'xam', 'amp', 'mpl', 'ple')`` - ie ngrams are done
+    of each token separately.  The entire token is also included in addition to the
+    ngrams (before include_categories filtering).
+
+    The following tokenizer arguments are accepted
+
+    ngrams
+        Numeric ranges to generate.  Smaller values allow showing
+        completions with less input but a larger index, while larger
+        values will result in quicker searches as the input grows.
+        Default is 3.
+
+    include_categories
+        Which codepoints to include in ngrams based on Unicode categories, by default all.
+        The token generator will likely already have excluded noise like spacing
+        and punctuation.
+
+    .. seealso::
+
+       :func:`NGramTokenizer` for generating ngrams from the source text
+    """
+
+    spec = {
+        "+": None,
+        "ngrams": TokenizerArgument(default="3", convertor=convert_number_ranges, convert_default=True),
+        "include_categories": TokenizerArgument(
+            default="*", convertor=convert_unicode_categories, convert_default=True
+        ),
+    }
+
+    options = parse_tokenizer_args(con, spec, args)
+
+    if options["include_categories"] == convert_unicode_categories("*"):
+
+        def transform(t: str):
+            return t
+    else:
+
+        def transform(t: str):
+            cats = options["include_categories"]
+            return "".join(c for c in t if unicodedata.category(c) in cats)
+
+    def tokenize(utf8: bytes, flags: int):
+        for start, end, *tokens in options["+"](utf8, flags):
+            new_tokens: list[str] = []
+            for token in tokens:
+                if token not in new_tokens:
+                    new_tokens.append(token)
+                token = transform(token)
+                if not token:
+                    continue
+                for size in options["ngrams"]:
+                    for s in shingle(token, size):
+                        if s not in new_tokens:
+                            new_tokens.append(s)
+
+            if not new_tokens:
+                continue
+
+            # if doing a query, only produce largest possible
+            if flags & apsw.FTS5_TOKENIZE_QUERY:
+                biggest = max(len(token) for token in new_tokens)
+                new_tokens = [token for token in new_tokens if len(token) == biggest]
+
+            yield start, end, *new_tokens
+
+    return tokenize
+
+
 def SynonymTokenizer(get: Callable[[str], None | str | tuple[str]] | None = None) -> apsw.FTS5TokenizerFactory:
     """Adds `colocated tokens <https://www.sqlite.org/fts5.html#synonym_support>`__ such as 1st for first.
 
@@ -1230,7 +1364,7 @@ if __name__ == "__main__":
 
     # This code evolved a lot, and was not intelligently designed.  Sorry.
 
-    def show_tokenization(tok: apsw.FTS5Tokenizer, utf8: bytes, reason: int) -> tuple[str, list[str]]:
+    def show_tokenization(options, tok: apsw.FTS5Tokenizer, utf8: bytes, reason: int) -> tuple[str, list[str]]:
         """Runs the tokenizer and produces a html fragment showing the results for manual inspection"""
 
         offset: int = 0
@@ -1249,7 +1383,7 @@ if __name__ == "__main__":
             start, end, *tokens = row
             if end < start:
                 seq.append(show_tokenization_remark(f"\u21d3 start { start } is after end { end }", "error"))
-            if start < offset:
+            if start < offset and options.show_start_overlap:
                 seq.append(
                     show_tokenization_remark(
                         f"\u21d3  start { start } is before end of previous item { offset }", "error"
@@ -1593,7 +1727,7 @@ if __name__ == "__main__":
         "where name is what is registered with FTS5 and callable is the factory function.  The module containing "
         "callable will be imported.  Specify this option multiple times to register multiple tokenizers. "
         "apsw.fts tokenizers are pre-registered as pyunicode, simplify, html, synonyms, regex, stopwords, "
-        "and transform",
+        "transform, ngramtoken, and ngram",
         metavar="name=mod.part.callable",
     )
 
@@ -1601,6 +1735,9 @@ if __name__ == "__main__":
     con.register_fts5_tokenizer("pyunicode", PyUnicodeTokenizer)
     con.register_fts5_tokenizer("simplify", SimplifyTokenizer)
     con.register_fts5_tokenizer("html", HTMLTokenizer)
+    con.register_fts5_tokenizer("ngramtoken", NGramTokenTokenizer)
+    con.register_fts5_tokenizer("ngram", NGramTokenizer)
+    # ::TODO check these work
     con.register_fts5_tokenizer("synonyms", SynonymTokenizer)
     con.register_fts5_tokenizer("regex", RegexTokenizer)
     con.register_fts5_tokenizer("transform", TransformTokenizer())
@@ -1623,6 +1760,13 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
+        "--show-start-overlap",
+        action="store_true",
+        help="Shows big red message where tokens overlap.  Default is true unless 'gram' is in args in which case it is false "
+        "since ngrams/trigrams deliberately overlap tokens",
+    )
+
+    parser.add_argument(
         "args",
         nargs="+",
         help="Tokenizer and arguments to run.  FTS5 builtin tokenizers are ascii, trigram, unicode61, and porter.  "
@@ -1631,6 +1775,9 @@ if __name__ == "__main__":
     options = parser.parse_args()
     if options.output.isatty():
         parser.error("Refusing to spew HTML to your terminal.  Redirect/pipe output or use the --output option")
+
+    if options.show_start_overlap is None:
+        options.show_start_overlap = any("gram" in arg for arg in options.args)
 
     if options.synonyms:
         data = json.load(options.synonyms)
@@ -1665,7 +1812,7 @@ if __name__ == "__main__":
     for utf8, comment in tokenizer_test_strings(filename=options.text_file):
         if options.normalize:
             utf8 = unicodedata.normalize(options.normalize, utf8.decode("utf8", errors="replace")).encode("utf8")
-        h, tokens = show_tokenization(tok, utf8, tokenize_reasons[options.reason])
+        h, tokens = show_tokenization(options, tok, utf8, tokenize_reasons[options.reason])
         results.append((comment, utf8, h, options.reason, tokens))
 
     w = lambda s: options.output.write(s.encode("utf8") + b"\n")
