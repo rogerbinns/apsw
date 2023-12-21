@@ -606,7 +606,7 @@ def StopWordsTokenizer(test: Callable[[str], bool] | None = None) -> apsw.FTS5To
                         # stop word - do nothing
                         pass
                     elif t not in new_tokens:
-                            new_tokens.append(t)
+                        new_tokens.append(t)
                 if new_tokens:
                     yield start, end, *new_tokens
 
@@ -1270,25 +1270,6 @@ def token_closeness(
                 cutoff = result[-1][0]
     result.sort(reverse=True)
     return result
-
-
-class AutocompleteTable(FTS5Table):
-    "Does auto completion etc"
-
-    def __init__(self, db: apsw.Connection, name: str, schema: str = "main"):
-        super().__init__(db, name, schema)
-
-    @classmethod
-    def create(cls, db: apsw.Connection, name: str, schema: str = "main"):
-        "do same as fts5table, require external content, config so that most information is not stored"
-        ...
-        # run command_rebuild
-        return cls(db, name, schema)
-
-    @classmethod
-    def is_autocomplete_table(cls, db, name, schema) -> bool:
-        "checks if autocomplete"
-        return True
 
 
 # To get options set in the create virtual table statement there can be lots of quoting
