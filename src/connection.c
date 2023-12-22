@@ -5262,6 +5262,7 @@ error:
 
       * :meth:`fts5_tokenizer`
       * :doc:`textsearch`
+      * `FTS5 documentation <https://www.sqlite.org/fts5.html#custom_tokenizers>`__
 */
 static PyObject *
 Connection_register_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
@@ -5301,6 +5302,54 @@ Connection_register_fts5_tokenizer(Connection *self, PyObject *const *fast_args,
     SET_EXC(rc, NULL);
     return NULL;
   }
+  Py_RETURN_NONE;
+}
+
+/** .. method:: register_fts5_function(name: str, function: FTS5Function) -> None
+
+  Registers the (case insensitive) named function used as an `auxiliary
+  function  <https://www.sqlite.org/fts5.html#custom_auxiliary_functions>`__.
+
+  The first parameter to the function will be :class:`FTS5ExtensionApi`
+  and the rest will be the function arguments at the SQL level.
+*/
+static PyObject *
+Connection_register_fts5_function(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  const char *name;
+  PyObject *function = NULL;
+  {
+    Connection_register_fts5_function_CHECK;
+    ARG_PROLOG(2, Connection_register_fts5_function_KWNAMES);
+    ARG_MANDATORY ARG_str(name);
+    ARG_MANDATORY ARG_Callable(function);
+    ARG_EPILOG(NULL, Connection_register_fts5_function_USAGE, );
+  }
+
+  fts5_api *api = Connection_fts5_api(self);
+  if(!api)
+    return NULL;
+
+  struct fts5aux_cbinfo *cbinfo = PyMem_Malloc(sizeof(struct fts5aux_cbinfo));
+  if(!cbinfo)
+    return NULL;
+  cbinfo->callback = Py_NewRef(function);
+  cbinfo->name = apsw_strdup(name);
+
+  int rc = SQLITE_NOMEM;
+  if(cbinfo->name)
+    rc = api->xCreateFunction(api, name, cbinfo, apsw_fts5_extension_function, apsw_fts5_extension_function_destroy);
+  if(rc != SQLITE_OK)
+  {
+    PyErr_Format(get_exception_for_code(rc), "Registering function named \"%s\"", name);
+    AddTraceBackHere(__FILE__, __LINE__, "Connection.fts5_api.xCreateFunction", "{s:s,s:O}", "name", name, "function", function);
+    apsw_fts5_extension_function_destroy(cbinfo);
+    return NULL;
+  }
+
   Py_RETURN_NONE;
 }
 
@@ -5493,6 +5542,7 @@ static PyMethodDef Connection_methods[] = {
     {"read", (PyCFunction)Connection_read, METH_FASTCALL | METH_KEYWORDS, Connection_read_DOC},
     {"fts5_tokenizer", (PyCFunction)Connection_fts5_tokenizer, METH_FASTCALL | METH_KEYWORDS, Connection_fts5_tokenizer_DOC},
     {"register_fts5_tokenizer", (PyCFunction)Connection_register_fts5_tokenizer, METH_FASTCALL | METH_KEYWORDS, Connection_register_fts5_tokenizer_DOC},
+    {"register_fts5_function", (PyCFunction)Connection_register_fts5_function, METH_FASTCALL | METH_KEYWORDS, Connection_register_fts5_function_DOC},
     {"data_version", (PyCFunction)Connection_data_version, METH_FASTCALL | METH_KEYWORDS, Connection_data_version_DOC},
 #ifndef APSW_OMIT_OLD_NAMES
     {Connection_set_busy_timeout_OLDNAME, (PyCFunction)Connection_set_busy_timeout, METH_FASTCALL | METH_KEYWORDS,

@@ -138,3 +138,7 @@ int start, int end, and one or more str"""
 FTS5TokenizerFactory = Callable[[Connection, list[str]], Tokenizer]
 """The factory is called with a list of strings as an argument and should
 return a suitably configured Tokenizer"""
+
+FTS5Function = Callable[[FTS5ExtensionApi, SQLiteValue, ...], SQLiteValue]
+"""The first argument is the extension API while the rest are the function parameters
+from the SQL"""

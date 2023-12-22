@@ -1895,7 +1895,7 @@ PyInit_apsw(void)
     goto fail;
   }
 
-  if (PyType_Ready(&ConnectionType) < 0 || PyType_Ready(&APSWCursorType) < 0 || PyType_Ready(&ZeroBlobBindType) < 0 || PyType_Ready(&APSWBlobType) < 0 || PyType_Ready(&APSWVFSType) < 0 || PyType_Ready(&APSWVFSFileType) < 0 || PyType_Ready(&apswfcntl_pragma_Type) < 0 || PyType_Ready(&APSWURIFilenameType) < 0 || PyType_Ready(&FunctionCBInfoType) < 0 || PyType_Ready(&APSWBackupType) < 0 || PyType_Ready(&SqliteIndexInfoType) < 0 || PyType_Ready(&apsw_no_change_object) < 0 || PyType_Ready(&APSWFTS5TokenizerType) < 0)
+  if (PyType_Ready(&ConnectionType) < 0 || PyType_Ready(&APSWCursorType) < 0 || PyType_Ready(&ZeroBlobBindType) < 0 || PyType_Ready(&APSWBlobType) < 0 || PyType_Ready(&APSWVFSType) < 0 || PyType_Ready(&APSWVFSFileType) < 0 || PyType_Ready(&apswfcntl_pragma_Type) < 0 || PyType_Ready(&APSWURIFilenameType) < 0 || PyType_Ready(&FunctionCBInfoType) < 0 || PyType_Ready(&APSWBackupType) < 0 || PyType_Ready(&SqliteIndexInfoType) < 0 || PyType_Ready(&apsw_no_change_object) < 0 || PyType_Ready(&APSWFTS5TokenizerType) < 0 || PyType_Ready(&APSWFTS5ExtensionAPIType) < 0)
     goto fail;
 
   /* PyStructSequence_NewType is broken in some Pythons
@@ -1947,7 +1947,7 @@ PyInit_apsw(void)
   ADD(URIFilename, APSWURIFilenameType);
   ADD(IndexInfo, SqliteIndexInfoType);
   ADD(FTS5Tokenizer, APSWFTS5TokenizerType);
-
+  ADD(FTS5ExtensionApi, APSWFTS5ExtensionAPIType);
 #undef ADD
 
   /** .. attribute:: connection_hooks

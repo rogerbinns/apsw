@@ -558,3 +558,103 @@ static fts5_tokenizer APSWPythonTokenizer = {
   .xDelete = APSWPythonTokenizerDelete,
   .xTokenize = APSWPythonTokenizerTokenize,
 };
+
+/** .. class:: FTS5ExtensionApi
+
+  Wraps the `auxiliary functions API
+  <https://www.sqlite.org/fts5.html#_custom_auxiliary_functions_api_reference_>__
+*/
+
+typedef struct APSWFTS5ExtensionApi
+{
+  PyObject_HEAD
+  const Fts5ExtensionApi *pApi;
+  Fts5Context *pFts;
+} APSWFTS5ExtensionApi;
+
+static PyGetSetDef APSWFTS5ExtensionApi_getset[] = { { 0 } };
+
+static PyMethodDef APSWFTS5ExtensionApi_methods[] = { { 0 } };
+
+static PyTypeObject APSWFTS5ExtensionAPIType = {
+  /* clang-format off */
+  PyVarObject_HEAD_INIT(NULL, 0)
+  .tp_name = "apsw.FTS5ExtensionApi",
+  /* clang-format on */
+  .tp_doc = FTS5ExtensionApi_class_DOC,
+  .tp_basicsize = sizeof(APSWFTS5ExtensionApi),
+  .tp_flags = Py_TPFLAGS_DEFAULT,
+  .tp_getset = APSWFTS5ExtensionApi_getset,
+  .tp_methods = APSWFTS5ExtensionApi_methods,
+};
+
+struct fts5aux_cbinfo
+{
+  PyObject *callback;
+  const char *name;
+};
+
+static void
+apsw_fts5_extension_function_destroy(void *pUserData)
+{
+  struct fts5aux_cbinfo *cbinfo = (struct fts5aux_cbinfo *)pUserData;
+  Py_DECREF(cbinfo->callback);
+  PyMem_Free((void*)cbinfo->name);
+  PyMem_Free(cbinfo);
+}
+
+static void
+apsw_fts5_extension_function(const Fts5ExtensionApi *pApi, /* API offered by current FTS version */
+                             Fts5Context *pFts,            /* First arg to pass to pApi functions */
+                             sqlite3_context *pCtx,        /* Context for returning result/error */
+                             int nVal,                     /* Number of values in apVal[] array */
+                             sqlite3_value **apVal         /* Array of trailing arguments */
+)
+{
+  fprintf(stderr, "apsw_fts5_extension_function called %p %p %d\n", pApi, pFts, nVal);
+  PyGILState_STATE gilstate = PyGILState_Ensure();
+  PyObject *retval = NULL;
+
+  VLA_PYO(vargs, 2 + nVal);
+
+  APSWFTS5ExtensionApi *extapi = (APSWFTS5ExtensionApi *)_PyObject_New(&APSWFTS5ExtensionAPIType);
+  if (!extapi)
+  {
+    sqlite3_result_error_nomem(pCtx);
+    goto finally;
+  }
+
+  struct fts5aux_cbinfo *cbinfo = (struct fts5aux_cbinfo *)pApi->xUserData(pFts);
+
+  extapi->pApi = pApi;
+  extapi->pFts = pFts;
+
+  vargs[1] = (PyObject *)extapi;
+  if (getfunctionargs(vargs + 2, pCtx, nVal, apVal))
+    goto finally;
+
+  retval = PyObject_Vectorcall(cbinfo->callback, vargs + 1, (1 + nVal) | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+
+  Py_DECREF_ARRAY(vargs + 2, nVal);
+  if (retval)
+    set_context_result(pCtx, retval);
+  else
+  {
+    char *errmsg = NULL;
+    sqlite3_result_error_code(pCtx, MakeSqliteMsgFromPyException(&errmsg));
+    sqlite3_result_error(pCtx, errmsg, -1);
+    AddTraceBackHere(__FILE__, __LINE__, "apsw_fts5_extension_function", "{s: s, s: i, s: s}", "name", cbinfo->name,
+                     "nargs", nVal, "message", errmsg);
+    sqlite3_free(errmsg);
+  }
+
+finally:
+  if (extapi)
+  {
+    extapi->pApi = NULL;
+    extapi->pFts = NULL;
+    Py_DECREF(extapi);
+  }
+  Py_XDECREF(retval);
+  PyGILState_Release(gilstate);
+}
