@@ -1351,6 +1351,10 @@ if __name__ == "__main__":
     import argparse
     import json
 
+    import apsw.bestpractice
+
+    apsw.bestpractice.apply(apsw.bestpractice.recommended)
+
     # This code evolved a lot, and was not intelligently designed.  Sorry.
 
     def show_tokenization(options, tok: apsw.FTS5Tokenizer, utf8: bytes, reason: int) -> tuple[str, list[str]]:
