@@ -139,6 +139,10 @@ int start, int end, and one or more str"""
 FTS5TokenizerFactory = Callable[[Connection, list[str]], Tokenizer]
 """The factory is called with a list of strings as an argument and should
 return a suitably configured Tokenizer"""
+
+FTS5Function = Callable[[FTS5ExtensionApi, SQLiteValue, ...], SQLiteValue]
+"""The first argument is the extension API while the rest are the function parameters
+from the SQL"""
 SQLITE_VERSION_NUMBER: int
 """The integer version number of SQLite that APSW was compiled
 against.  For example SQLite 3.44.1 will have the value *3440100*.
@@ -1104,10 +1108,10 @@ class Connection:
         """Registers a `window function
         <https://sqlite.org/windowfunctions.html#user_defined_aggregate_window_functions>`__
 
-          :param name: The string name of the function.  It should be less than 255 characters
-          :param factory: Called to start a new window.  Use None to delete the function.
-          :param numargs: How many arguments the function takes, with -1 meaning any number
-          :param flags: `Function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__
+        :param name: The string name of the function.  It should be less than 255 characters
+        :param factory: Called to start a new window.  Use None to delete the function.
+        :param numargs: How many arguments the function takes, with -1 meaning any number
+        :param flags: `Function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__
 
         You need to provide callbacks for the ``step``, ``final``, ``value``
         and ``inverse`` methods.  This can be done by having `factory` as a
@@ -1523,6 +1527,14 @@ class Connection:
         Calls: `sqlite3_db_readonly <https://sqlite.org/c3ref/db_readonly.html>`__"""
         ...
 
+    def register_fts5_function(self, name: str, function: FTS5Function) -> None:
+        """Registers the (case insensitive) named function used as an `auxiliary
+        function  <https://www.sqlite.org/fts5.html#custom_auxiliary_functions>`__.
+
+        The first parameter to the function will be :class:`FTS5ExtensionApi`
+        and the rest will be the function arguments at the SQL level."""
+        ...
+
     def register_fts5_tokenizer(self, name: str, tokenizer_factory: FTS5TokenizerFactory) -> None:
         """Registers a tokenizer factory.  Names are case insensitive.  It is not possible to
         unregister a tokenizer.
@@ -1530,7 +1542,8 @@ class Connection:
         .. seealso::
 
             * :meth:`fts5_tokenizer`
-            * :doc:`textsearch`"""
+            * :doc:`textsearch`
+            * `FTS5 documentation <https://www.sqlite.org/fts5.html#custom_tokenizers>`__"""
         ...
 
     def release_memory(self) -> None:

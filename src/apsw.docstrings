@@ -1261,10 +1261,10 @@
 "Registers a `window function\n" \
 "<https://sqlite.org/windowfunctions.html#user_defined_aggregate_window_functions>`__\n" \
 "\n" \
-"  :param name: The string name of the function.  It should be less than 255 characters\n" \
-"  :param factory: Called to start a new window.  Use None to delete the function.\n" \
-"  :param numargs: How many arguments the function takes, with -1 meaning any number\n" \
-"  :param flags: `Function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__\n" \
+":param name: The string name of the function.  It should be less than 255 characters\n" \
+":param factory: Called to start a new window.  Use None to delete the function.\n" \
+":param numargs: How many arguments the function takes, with -1 meaning any number\n" \
+":param flags: `Function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__\n" \
 "\n" \
 "You need to provide callbacks for the ``step``, ``final``, ``value``\n" \
 "and ``inverse`` methods.  This can be done by having `factory` as a\n" \
@@ -1832,6 +1832,22 @@
 } while(0)
 
 
+#define  Connection_register_fts5_function_DOC "register_fts5_function($self,name,function)\n--\n\nConnection.register_fts5_function(name: str, function: FTS5Function) -> None\n\n" \
+"Registers the (case insensitive) named function used as an `auxiliary\n" \
+"function  <https://www.sqlite.org/fts5.html#custom_auxiliary_functions>`__.\n" \
+"\n" \
+"The first parameter to the function will be :class:`FTS5ExtensionApi`\n" \
+"and the rest will be the function arguments at the SQL level.\n" 
+
+#define Connection_register_fts5_function_KWNAMES "name", "function"
+#define Connection_register_fts5_function_USAGE "Connection.register_fts5_function(name: str, function: FTS5Function) -> None"
+
+#define Connection_register_fts5_function_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(name), const char *)); \
+  assert(__builtin_types_compatible_p(typeof(function), PyObject *)); \
+} while(0)
+
+
 #define  Connection_register_fts5_tokenizer_DOC "register_fts5_tokenizer($self,name,tokenizer_factory)\n--\n\nConnection.register_fts5_tokenizer(name: str, tokenizer_factory: FTS5TokenizerFactory) -> None\n\n" \
 "Registers a tokenizer factory.  Names are case insensitive.  It is not possible to\n" \
 "unregister a tokenizer.\n" \
@@ -1839,7 +1855,8 @@
 ".. seealso::\n" \
 "\n" \
 "    * :meth:`fts5_tokenizer`\n" \
-"    * :doc:`textsearch`\n" 
+"    * :doc:`textsearch`\n" \
+"    * `FTS5 documentation <https://www.sqlite.org/fts5.html#custom_tokenizers>`__\n" 
 
 #define Connection_register_fts5_tokenizer_KWNAMES "name", "tokenizer_factory"
 #define Connection_register_fts5_tokenizer_USAGE "Connection.register_fts5_tokenizer(name: str, tokenizer_factory: FTS5TokenizerFactory) -> None"
@@ -2696,6 +2713,9 @@
 
 #define Cursor_set_row_trace_OLDNAME "setrowtrace"
 #define Cursor_set_row_trace_OLDDOC Cursor_set_row_trace_USAGE "\n(Old less clear name setrowtrace)"
+
+#define  FTS5ExtensionApi_class_DOC "Wraps the `auxiliary functions API\n" \
+"<https://www.sqlite.org/fts5.html#_custom_auxiliary_functions_api_reference_>__\n" 
 
 #define  FTS5Tokenizer_args_DOC ":type: tuple\n" \
 "\n" \
