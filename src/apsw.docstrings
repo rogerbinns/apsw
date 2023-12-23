@@ -2741,6 +2741,11 @@
 } while(0)
 
 
+#define  FTS5ExtensionApi_row_count_DOC ":type: int\n" \
+"\n" \
+"Returns the `number of rows in the table\n" \
+"<https://www.sqlite.org/fts5.html#xRowCount>`__\n" 
+
 #define  FTS5ExtensionApi_rowid_DOC ":type: int\n" \
 "\n" \
 "Rowid of the `current row <https://www.sqlite.org/fts5.html#xGetAuxdata>`__\n" 

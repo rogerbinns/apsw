@@ -595,8 +595,28 @@ APSWFTS5ExtensionApi_xColumnCount(APSWFTS5ExtensionApi *self)
   return PyLong_FromLong(self->pApi->xColumnCount(self->pFts));
 }
 
+/** .. attribute:: row_count
+  :type: int
+
+  Returns the `number of rows in the table
+  <https://www.sqlite.org/fts5.html#xRowCount>`__
+*/
+static PyObject *
+APSWFTS5ExtensionApi_xRowCount(APSWFTS5ExtensionApi *self)
+{
+  FTSEXT_CHECK(NULL);
+  sqlite3_int64 row_count;
+  int rc = self->pApi->xRowCount(self->pFts, &row_count);
+  if (rc != SQLITE_OK)
+  {
+    SET_EXC(rc, NULL);
+    return NULL;
+  }
+  return PyLong_FromLongLong(row_count);
+}
+
 /** .. attribute:: rowid
-   :type: int
+  :type: int
 
   Rowid of the `current row <https://www.sqlite.org/fts5.html#xGetAuxdata>`__
 */
@@ -608,7 +628,7 @@ APSWFTS5ExtensionApi_xRowid(APSWFTS5ExtensionApi *self)
 }
 
 /** .. attribute:: aux_data
-   :type: Any
+  :type: Any
 
   You can store an object as `auxiliary data <https://www.sqlite.org/fts5.html#xSetAuxdata>`__
   which is available across rows and :meth:`query_phrase`.
@@ -680,6 +700,7 @@ APSWFTS5ExtensionApi_xColumnTotalSize(APSWFTS5ExtensionApi *self, PyObject *cons
 
 static PyGetSetDef APSWFTS5ExtensionApi_getset[] = {
   { "column_count", (getter)APSWFTS5ExtensionApi_xColumnCount, NULL, FTS5ExtensionApi_column_count_DOC },
+  { "row_count", (getter)APSWFTS5ExtensionApi_xRowCount, NULL, FTS5ExtensionApi_row_count_DOC },
   { "aux_data", (getter)APSWFTS5ExtensionApi_xGetAuxdata, (setter)APSWFTS5ExtensionApi_xSetAuxdata,
     FTS5ExtensionApi_aux_data_DOC },
   { "rowid", (getter)APSWFTS5ExtensionApi_xRowid, NULL, FTS5ExtensionApi_rowid_DOC },

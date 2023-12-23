@@ -2169,6 +2169,10 @@ class FTS5ExtensionApi:
         column, of if `col` is negative then for all columns."""
         ...
 
+    row_count: int
+    """Returns the `number of rows in the table
+    <https://www.sqlite.org/fts5.html#xRowCount>`__"""
+
     rowid: int
     """Rowid of the `current row <https://www.sqlite.org/fts5.html#xGetAuxdata>`__"""
 
