@@ -2727,6 +2727,17 @@
 "Returns the `number of columns in the table\n" \
 "<https://www.sqlite.org/fts5.html#xColumnCount>`__\n" 
 
+#define  FTS5ExtensionApi_column_text_DOC "column_text($self,col)\n--\n\nFTS5ExtensionApi.column_text(col: int) -> bytes\n\n" \
+"Returns the `utf8 bytes for the column of the current row <https://www.sqlite.org/draft/fts5.html#xColumnText>`__.\n" 
+
+#define FTS5ExtensionApi_column_text_KWNAMES "col"
+#define FTS5ExtensionApi_column_text_USAGE "FTS5ExtensionApi.column_text(col: int) -> bytes"
+
+#define FTS5ExtensionApi_column_text_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(col), int)); \
+} while(0)
+
+
 #define  FTS5ExtensionApi_column_total_size_DOC "column_total_size($self,col=-1)\n--\n\nFTS5ExtensionApi.column_total_size(col: int = -1) -> int\n\n" \
 "Returns the `total number of tokens in the table\n" \
 "<https://www.sqlite.org/fts5.html#xColumnTotalSize>`__ for a specific\n" \
@@ -2741,6 +2752,15 @@
 } while(0)
 
 
+#define  FTS5ExtensionApi_phrases_DOC ":type: tuple[tuple[str | None, ...], ...]\n" \
+"\n" \
+"A tuple where each member is a phrase from the query.  Each phrase is a tuple\n" \
+"of str (or None when not available) per token of the phrase.\n" \
+"\n" \
+"This combines the results of `xPhraseCount <https://www.sqlite.org/fts5.html#xPhraseCount>`__,\n" \
+"`xPhraseSize <https://www.sqlite.org/fts5.html#xPhraseSize>`__ and\n" \
+"`xQueryToken <https://www.sqlite.org/fts5.html#xQueryToken>`__\n" 
+
 #define  FTS5ExtensionApi_row_count_DOC ":type: int\n" \
 "\n" \
 "Returns the `number of rows in the table\n" \
@@ -2749,6 +2769,22 @@
 #define  FTS5ExtensionApi_rowid_DOC ":type: int\n" \
 "\n" \
 "Rowid of the `current row <https://www.sqlite.org/fts5.html#xGetAuxdata>`__\n" 
+
+#define  FTS5ExtensionApi_tokenize_DOC "tokenize($self,utf8,*,include_offsets=True,include_colocated=True)\n--\n\nFTS5ExtensionApi.tokenize(utf8: bytes, *, include_offsets: bool = True, include_colocated: bool = True) -> list\n\n" \
+"`Tokenizes the utf8 <https://www.sqlite.org/fts5.html#xTokenize>`__.  FTS5 sets the reason to ``FTS5_TOKENIZE_AUX``.\n" \
+"See :meth:`apsw.FTS5Tokenizer.__call__` for details.\n" 
+
+#define FTS5ExtensionApi_tokenize_KWNAMES "utf8", "include_offsets", "include_colocated"
+#define FTS5ExtensionApi_tokenize_USAGE "FTS5ExtensionApi.tokenize(utf8: bytes, *, include_offsets: bool = True, include_colocated: bool = True) -> list"
+
+#define FTS5ExtensionApi_tokenize_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(utf8), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(include_offsets), int)); \
+  assert(include_offsets == 1); \
+  assert(__builtin_types_compatible_p(typeof(include_colocated), int)); \
+  assert(include_colocated == 1); \
+} while(0)
+
 
 #define  FTS5Tokenizer_args_DOC ":type: tuple\n" \
 "\n" \

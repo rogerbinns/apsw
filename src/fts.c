@@ -668,6 +668,71 @@ APSWFTS5ExtensionApi_xSetAuxdata(APSWFTS5ExtensionApi *self, PyObject *value)
   return 0;
 }
 
+/** .. attribute:: phrases
+  :type: tuple[tuple[str | None, ...], ...]
+
+  A tuple where each member is a phrase from the query.  Each phrase is a tuple
+  of str (or None when not available) per token of the phrase.
+
+  This combines the results of `xPhraseCount <https://www.sqlite.org/fts5.html#xPhraseCount>`__,
+  `xPhraseSize <https://www.sqlite.org/fts5.html#xPhraseSize>`__ and
+  `xQueryToken <https://www.sqlite.org/fts5.html#xQueryToken>`__
+*/
+static PyObject *
+APSWFTS5ExtensionApi_phrases(APSWFTS5ExtensionApi *self)
+{
+  FTSEXT_CHECK(NULL);
+  PyObject *outside = NULL, *phrase = NULL;
+  int phrase_num, token_num;
+
+  int nphrases = self->pApi->xPhraseCount(self->pFts);
+
+  outside = PyTuple_New(nphrases);
+  if (!outside)
+    goto error;
+  for (phrase_num = 0; phrase_num < nphrases; phrase_num++)
+  {
+    int ntokens = self->pApi->xPhraseSize(self->pFts, phrase_num);
+    phrase = PyTuple_New(ntokens);
+    if (!phrase)
+      goto error;
+    for (token_num = 0; token_num < ntokens; token_num++)
+    {
+      const char *pToken = NULL;
+      int nToken = 0;
+      /* ::TODO:: this version check can be removed once 3.45 is released */
+#if SQLITE_VERSION_NUMBER >= 3045000
+      if (self->pApi->iVersion >= 3)
+      {
+        int rc = self->pApi->xQueryToken(self->pFts, phrase_num, token_num, &pToken, &nToken);
+        if (rc != SQLITE_OK)
+        {
+          SET_EXC(rc, NULL);
+          goto error;
+        }
+      }
+#endif
+      if (pToken)
+      {
+        PyObject *tmpstr = PyUnicode_FromStringAndSize(pToken, nToken);
+        if (!tmpstr)
+          goto error;
+        PyTuple_SET_ITEM(phrase, token_num, tmpstr);
+      }
+      else
+        PyTuple_SET_ITEM(phrase, token_num, Py_NewRef(Py_None));
+    }
+    PyTuple_SET_ITEM(outside, phrase_num, phrase);
+    phrase = NULL;
+  }
+
+  return outside;
+error:
+  Py_XDECREF(outside);
+  Py_XDECREF(phrase);
+  return NULL;
+}
+
 /** .. method:: column_total_size(col: int = -1) -> int
 
   Returns the `total number of tokens in the table
@@ -698,18 +763,130 @@ APSWFTS5ExtensionApi_xColumnTotalSize(APSWFTS5ExtensionApi *self, PyObject *cons
   return PyLong_FromLongLong(nToken);
 }
 
+/** .. method:: column_text(col: int) -> bytes
+
+  Returns the `utf8 bytes for the column of the current row <https://www.sqlite.org/draft/fts5.html#xColumnText>`__.
+
+*/
+static PyObject *
+APSWFTS5ExtensionApi_xColumnText(APSWFTS5ExtensionApi *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                                 PyObject *fast_kwnames)
+{
+  FTSEXT_CHECK(NULL);
+
+  int col;
+
+  {
+    FTS5ExtensionApi_column_text_CHECK;
+    ARG_PROLOG(1, FTS5ExtensionApi_column_text_KWNAMES);
+    ARG_MANDATORY ARG_int(col);
+    ARG_EPILOG(NULL, FTS5ExtensionApi_column_text_USAGE, );
+  }
+
+  const char *bytes = NULL;
+  int size;
+
+  int rc = self->pApi->xColumnText(self->pFts, col, &bytes, &size);
+  if (rc != SQLITE_OK)
+  {
+    SET_EXC(rc, NULL);
+    return NULL;
+  }
+
+  return PyBytes_FromStringAndSize(bytes, size);
+}
+
+/** .. method:: tokenize(utf8: bytes, *, include_offsets: bool = True, include_colocated: bool = True) -> list
+
+  `Tokenizes the utf8 <https://www.sqlite.org/fts5.html#xTokenize>`__.  FTS5 sets the reason to ``FTS5_TOKENIZE_AUX``.
+  See :meth:`apsw.FTS5Tokenizer.__call__` for details.
+
+*/
+static PyObject *
+APSWFTS5ExtensionApi_xTokenize(APSWFTS5ExtensionApi *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                               PyObject *fast_kwnames)
+{
+  FTSEXT_CHECK(NULL);
+
+  Py_buffer utf8_buffer;
+  PyObject *utf8;
+  int include_offsets = 1, include_colocated = 1;
+  int rc = SQLITE_OK;
+
+  {
+    FTS5ExtensionApi_tokenize_CHECK;
+    ARG_PROLOG(1, FTS5ExtensionApi_tokenize_KWNAMES);
+    ARG_MANDATORY ARG_py_buffer(utf8);
+    ARG_OPTIONAL ARG_bool(include_offsets);
+    ARG_OPTIONAL ARG_bool(include_colocated);
+    ARG_EPILOG(NULL, FTS5ExtensionApi_tokenize_USAGE, );
+  }
+
+  if (0 != PyObject_GetBufferContiguous(utf8, &utf8_buffer, PyBUF_SIMPLE))
+  {
+    assert(PyErr_Occurred());
+    return NULL;
+  }
+
+  TokenizingContext our_context = {
+    .the_list = PyList_New(0),
+    .buffer_len = (int)utf8_buffer.len,
+    .include_colocated = include_colocated,
+    .include_offsets = include_offsets,
+  };
+
+  if (!our_context.the_list)
+    goto finally;
+
+  if (utf8_buffer.len >= INT_MAX)
+  {
+    PyErr_Format(PyExc_ValueError, "utf8 byres is too large (%zd)", utf8_buffer.len);
+    goto finally;
+  }
+
+  /* ::TODO:: should we release gil around this? */
+  rc = self->pApi->xTokenize(self->pFts, utf8_buffer.buf, utf8_buffer.len, &our_context, xTokenizer_Callback);
+  if (rc != SQLITE_OK)
+  {
+    SET_EXC(rc, NULL);
+    AddTraceBackHere(__FILE__, __LINE__, "FTS5ExtensionApi.tokenize", "{s:O}", "utf8", utf8);
+    goto finally;
+  }
+
+finally:
+  PyBuffer_Release(&utf8_buffer);
+
+  if (rc == SQLITE_OK && our_context.last_item)
+  {
+    if (0 != PyList_Append(our_context.the_list, our_context.last_item))
+      rc = SQLITE_ERROR;
+  }
+  if (rc != SQLITE_OK)
+  {
+    assert(PyErr_Occurred());
+    Py_CLEAR(our_context.the_list);
+  }
+  Py_CLEAR(our_context.last_item);
+  return our_context.the_list;
+}
+
 static PyGetSetDef APSWFTS5ExtensionApi_getset[] = {
   { "column_count", (getter)APSWFTS5ExtensionApi_xColumnCount, NULL, FTS5ExtensionApi_column_count_DOC },
   { "row_count", (getter)APSWFTS5ExtensionApi_xRowCount, NULL, FTS5ExtensionApi_row_count_DOC },
   { "aux_data", (getter)APSWFTS5ExtensionApi_xGetAuxdata, (setter)APSWFTS5ExtensionApi_xSetAuxdata,
     FTS5ExtensionApi_aux_data_DOC },
   { "rowid", (getter)APSWFTS5ExtensionApi_xRowid, NULL, FTS5ExtensionApi_rowid_DOC },
+  { "phrases", (getter)APSWFTS5ExtensionApi_phrases, NULL, FTS5ExtensionApi_phrases_DOC },
   { 0 },
 };
 
 static PyMethodDef APSWFTS5ExtensionApi_methods[] = {
   { "column_total_size", (PyCFunction)APSWFTS5ExtensionApi_xColumnTotalSize, METH_FASTCALL | METH_KEYWORDS,
     FTS5ExtensionApi_column_total_size_DOC },
+  { "tokenize", (PyCFunction)APSWFTS5ExtensionApi_xTokenize, METH_FASTCALL | METH_KEYWORDS,
+    FTS5ExtensionApi_tokenize_DOC },
+  { "column_text", (PyCFunction)APSWFTS5ExtensionApi_xColumnText, METH_FASTCALL | METH_KEYWORDS,
+    FTS5ExtensionApi_column_text_DOC },
   { 0 },
 };
 

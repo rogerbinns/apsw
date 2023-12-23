@@ -2163,11 +2163,23 @@ class FTS5ExtensionApi:
     """Returns the `number of columns in the table
     <https://www.sqlite.org/fts5.html#xColumnCount>`__"""
 
+    def column_text(self, col: int) -> bytes:
+        """Returns the `utf8 bytes for the column of the current row <https://www.sqlite.org/draft/fts5.html#xColumnText>`__."""
+        ...
+
     def column_total_size(self, col: int = -1) -> int:
         """Returns the `total number of tokens in the table
         <https://www.sqlite.org/fts5.html#xColumnTotalSize>`__ for a specific
         column, of if `col` is negative then for all columns."""
         ...
+
+    phrases: tuple[tuple[str | None, ...], ...]
+    """A tuple where each member is a phrase from the query.  Each phrase is a tuple
+    of str (or None when not available) per token of the phrase.
+
+    This combines the results of `xPhraseCount <https://www.sqlite.org/fts5.html#xPhraseCount>`__,
+    `xPhraseSize <https://www.sqlite.org/fts5.html#xPhraseSize>`__ and
+    `xQueryToken <https://www.sqlite.org/fts5.html#xQueryToken>`__"""
 
     row_count: int
     """Returns the `number of rows in the table
@@ -2175,6 +2187,11 @@ class FTS5ExtensionApi:
 
     rowid: int
     """Rowid of the `current row <https://www.sqlite.org/fts5.html#xGetAuxdata>`__"""
+
+    def tokenize(self, utf8: bytes, *, include_offsets: bool = True, include_colocated: bool = True) -> list:
+        """`Tokenizes the utf8 <https://www.sqlite.org/fts5.html#xTokenize>`__.  FTS5 sets the reason to ``FTS5_TOKENIZE_AUX``.
+        See :meth:`apsw.FTS5Tokenizer.__call__` for details."""
+        ...
 
 @final
 class FTS5Tokenizer:

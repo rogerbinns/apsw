@@ -237,8 +237,8 @@ Normalize the Unicode
 
 .. include:: fts.rst
 
-apsw.fts module
-===============
+Full Text Search module
+=======================
 
 Provided by the :mod:`apsw.fts` module.
 

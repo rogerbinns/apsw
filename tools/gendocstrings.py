@@ -266,7 +266,7 @@ def analyze_signature(s: str) -> list[dict]:
         rettype = "None"
     res.append({"name": "return", "type": rettype})
 
-    assert s[0] == "(" and s[-1] == ")"
+    assert s[0] == "(" and s[-1] == ")", f"Bad signature { s=} - { rettype=}"
 
     # we want to split on commas, but a param could be:  Union[Dict[A,B],X]
     nest_start = "[("
