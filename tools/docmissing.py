@@ -86,7 +86,7 @@ for name, obj in (
                 continue
             # ignore classes !!!
             if c in ("Connection", "VFS", "VFSFile", "zeroblob", "Shell", "URIFilename", "Cursor", "Blob", "Backup",
-                     "IndexInfo", "VFSFcntlPragma", "FTS5Tokenizer"):
+                     "IndexInfo", "VFSFcntlPragma", "FTS5Tokenizer", "FTS5ExtensionApi"):
                 continue
             # ignore mappings !!!
             if c.startswith("mapping_"):

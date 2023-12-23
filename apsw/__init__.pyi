@@ -2152,6 +2152,27 @@ class Cursor:
     setrowtrace = set_row_trace ## OLD-NAME
 
 @final
+class FTS5ExtensionApi:
+    """Wraps the `auxiliary functions API
+    <https://www.sqlite.org/fts5.html#_custom_auxiliary_functions_api_reference_>`__"""
+    aux_data: Any
+    """You can store an object as `auxiliary data <https://www.sqlite.org/fts5.html#xSetAuxdata>`__
+    which is available across rows and :meth:`query_phrase`."""
+
+    column_count: int
+    """Returns the `number of columns in the table
+    <https://www.sqlite.org/fts5.html#xColumnCount>`__"""
+
+    def column_total_size(self, col: int = -1) -> int:
+        """Returns the `total number of tokens in the table
+        <https://www.sqlite.org/fts5.html#xColumnTotalSize>`__ for a specific
+        column, of if `col` is negative then for all columns."""
+        ...
+
+    rowid: int
+    """Rowid of the `current row <https://www.sqlite.org/fts5.html#xGetAuxdata>`__"""
+
+@final
 class FTS5Tokenizer:
     """Wraps a registered tokenizer.  Returned by :meth:`Connection.fts5_tokenizer`."""
     args: tuple

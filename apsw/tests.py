@@ -5458,7 +5458,12 @@ class APSW(unittest.TestCase):
                 "req": {
                     "check": "CHECK_SCOPE"
                 }
-            }
+            },
+            "APSWFTS5ExtensionApi": {
+                "req": {
+                    "check": "FTSEXT_CHECK"
+                }
+            },
         }
 
         prefix, base = name.split("_", 1)

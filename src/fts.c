@@ -562,7 +562,7 @@ static fts5_tokenizer APSWPythonTokenizer = {
 /** .. class:: FTS5ExtensionApi
 
   Wraps the `auxiliary functions API
-  <https://www.sqlite.org/fts5.html#_custom_auxiliary_functions_api_reference_>__
+  <https://www.sqlite.org/fts5.html#_custom_auxiliary_functions_api_reference_>`__
 */
 
 typedef struct APSWFTS5ExtensionApi
@@ -572,9 +572,125 @@ typedef struct APSWFTS5ExtensionApi
   Fts5Context *pFts;
 } APSWFTS5ExtensionApi;
 
-static PyGetSetDef APSWFTS5ExtensionApi_getset[] = { { 0 } };
+#define FTSEXT_CHECK(v)                                                                                                \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (!self->pApi)                                                                                                   \
+    {                                                                                                                  \
+      PyErr_Format(ExcInvalidContext, "apsw.FTS5ExtensionApi is being used outside of the callback it was valid in");  \
+      return v;                                                                                                        \
+    }                                                                                                                  \
+  } while (0)
 
-static PyMethodDef APSWFTS5ExtensionApi_methods[] = { { 0 } };
+/** .. attribute:: column_count
+  :type: int
+
+  Returns the `number of columns in the table
+  <https://www.sqlite.org/fts5.html#xColumnCount>`__
+*/
+static PyObject *
+APSWFTS5ExtensionApi_xColumnCount(APSWFTS5ExtensionApi *self)
+{
+  FTSEXT_CHECK(NULL);
+  return PyLong_FromLong(self->pApi->xColumnCount(self->pFts));
+}
+
+/** .. attribute:: rowid
+   :type: int
+
+  Rowid of the `current row <https://www.sqlite.org/fts5.html#xGetAuxdata>`__
+*/
+static PyObject *
+APSWFTS5ExtensionApi_xRowid(APSWFTS5ExtensionApi *self)
+{
+  FTSEXT_CHECK(NULL);
+  return PyLong_FromLong(self->pApi->xRowid(self->pFts));
+}
+
+/** .. attribute:: aux_data
+   :type: Any
+
+  You can store an object as `auxiliary data <https://www.sqlite.org/fts5.html#xSetAuxdata>`__
+  which is available across rows and :meth:`query_phrase`.
+*/
+
+static void
+auxdata_xdelete(void *auxdata)
+{
+  PyGILState_STATE gilstate = PyGILState_Ensure();
+  Py_DECREF((PyObject *)auxdata);
+  PyGILState_Release(gilstate);
+}
+
+static PyObject *
+APSWFTS5ExtensionApi_xGetAuxdata(APSWFTS5ExtensionApi *self)
+{
+  FTSEXT_CHECK(NULL);
+
+  PyObject *data = self->pApi->xGetAuxdata(self->pFts, 0);
+  if (!data)
+    data = Py_None;
+  return Py_NewRef(data);
+}
+
+static int
+APSWFTS5ExtensionApi_xSetAuxdata(APSWFTS5ExtensionApi *self, PyObject *value)
+{
+  FTSEXT_CHECK(-1);
+
+  int rc = self->pApi->xSetAuxdata(self->pFts, value, auxdata_xdelete);
+  if (rc != SQLITE_OK)
+  {
+    SET_EXC(rc, NULL);
+    return -1;
+  }
+  Py_IncRef(value);
+  return 0;
+}
+
+/** .. method:: column_total_size(col: int = -1) -> int
+
+  Returns the `total number of tokens in the table
+  <https://www.sqlite.org/fts5.html#xColumnTotalSize>`__ for a specific
+  column, of if `col` is negative then for all columns.
+*/
+static PyObject *
+APSWFTS5ExtensionApi_xColumnTotalSize(APSWFTS5ExtensionApi *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                                      PyObject *fast_kwnames)
+{
+  FTSEXT_CHECK(NULL);
+
+  int col = -1;
+
+  {
+    FTS5ExtensionApi_column_total_size_CHECK;
+    ARG_PROLOG(1, FTS5ExtensionApi_column_total_size_KWNAMES);
+    ARG_OPTIONAL ARG_int(col);
+    ARG_EPILOG(NULL, FTS5ExtensionApi_column_total_size_USAGE, );
+  }
+  sqlite3_int64 nToken;
+  int rc = self->pApi->xColumnTotalSize(self->pFts, col, &nToken);
+  if (rc != SQLITE_OK)
+  {
+    SET_EXC(rc, NULL);
+    return NULL;
+  }
+  return PyLong_FromLongLong(nToken);
+}
+
+static PyGetSetDef APSWFTS5ExtensionApi_getset[] = {
+  { "column_count", (getter)APSWFTS5ExtensionApi_xColumnCount, NULL, FTS5ExtensionApi_column_count_DOC },
+  { "aux_data", (getter)APSWFTS5ExtensionApi_xGetAuxdata, (setter)APSWFTS5ExtensionApi_xSetAuxdata,
+    FTS5ExtensionApi_aux_data_DOC },
+  { "rowid", (getter)APSWFTS5ExtensionApi_xRowid, NULL, FTS5ExtensionApi_rowid_DOC },
+  { 0 },
+};
+
+static PyMethodDef APSWFTS5ExtensionApi_methods[] = {
+  { "column_total_size", (PyCFunction)APSWFTS5ExtensionApi_xColumnTotalSize, METH_FASTCALL | METH_KEYWORDS,
+    FTS5ExtensionApi_column_total_size_DOC },
+  { 0 },
+};
 
 static PyTypeObject APSWFTS5ExtensionAPIType = {
   /* clang-format off */
@@ -599,7 +715,7 @@ apsw_fts5_extension_function_destroy(void *pUserData)
 {
   struct fts5aux_cbinfo *cbinfo = (struct fts5aux_cbinfo *)pUserData;
   Py_DECREF(cbinfo->callback);
-  PyMem_Free((void*)cbinfo->name);
+  PyMem_Free((void *)cbinfo->name);
   PyMem_Free(cbinfo);
 }
 
