@@ -1030,6 +1030,11 @@ class FTS5Table:
 
     def query(self, query: str) -> apsw.Cursor:
         "Returns a cursor making the query - rowid first"
+        # ::TODO:: it appears you need to do some processing of the results
+        # to avoid duplicate rows or something
+        # https://sqlite-utils.datasette.io/en/latest/python-api.html#building-sql-queries-with-table-search-sql
+        # https://news.ycombinator.com/item?id=38664366
+        pass
 
     def fuzzy_query(self, query: str) -> apsw.Cursor:
         """Returns a cursor making the query - rowid first
