@@ -153,7 +153,8 @@ All tokenizers
     - `SQLite builtin
       <https://www.sqlite.org/fts5.html#the_trigram_tokenizer>`__ that
       turns the entire text into trigrams (token generator).  Note it
-      does not turn tokens into trigrams, but everything.
+      does not turn tokens into trigrams, but the entire text including
+      all spaces and punctuation.
   * - :class:`PyUnicodeTokenizer`
     - Uses Python's more recent :mod:`Unicode database <unicodedata>`
       to generate tokens
@@ -198,13 +199,13 @@ Recommendations
 ===============
 
 Tokenizer sequence
-  For general text, use ``simplify case lower normalize NFKD
+  For general text, use ``simplify case casefold normalize NFKD
   remove_categories 'M* *m Sk'`` ``pyunicode single_token_categories
   'So Lo'``
 
   :class:`simplify <SimplifyTokenizer>`:
 
-    * Lower cases the tokens
+    * :meth:`Case folds <str.casefold>` the tokens
     * Uses compatibility codepoints, and removes combining marks and diacritics
     * Removes marks and diacritics
 

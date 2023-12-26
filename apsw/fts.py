@@ -335,7 +335,7 @@ def SimplifyTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     token in this order.
 
     case
-        ``upper`` or ``lower`` to convert case.  ``lower`` is recommended
+        ``upper``, ``lower``, or ``casefold`` to convert case.  :meth:`casefold <str.casefold>` is recommended
     normalize
         Perform Unicode normalization - ``NFD`` ``NFC`` ``NFKD`` ``NFKC``.
         NFKD is recommended
@@ -345,7 +345,7 @@ def SimplifyTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     """
     ta = TokenizerArgument
     spec = {
-        "case": ta(choices=("upper", "lower")),
+        "case": ta(choices=("upper", "lower", "casefold")),
         "normalize": ta(choices=("NFD", "NFC", "NFKD", "NFKC")),
         "remove_categories": ta(convertor=convert_unicode_categories),
         "+": None,
@@ -355,6 +355,8 @@ def SimplifyTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     def identity(s: str):
         return s
 
+    # ::TODO:: we want to normalize to NFKD to remove categories so
+    # diacritics etc can go, but final should be NFKC
     case = getattr(str, options["case"]) if options["case"] else identity
     normalize = functools.partial(unicodedata.normalize, options["normalize"]) if options["normalize"] else identity
     remove_categories = options["remove_categories"]
