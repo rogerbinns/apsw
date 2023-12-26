@@ -610,7 +610,7 @@ def do_argparse(item):
                 else:
                     breakpoint()
                 pass
-        elif param["type"] in {"FTS5TokenizerFactory", "FTS5Function"} or callable_erasure(param["type"]) == "Callable":
+        elif param["type"] in {"FTS5TokenizerFactory", "FTS5Function", "FTS5QueryPhrase"} or callable_erasure(param["type"]) == "Callable":
             type = "PyObject *"
             kind = "Callable"
             if param["default"]:

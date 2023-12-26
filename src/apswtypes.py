@@ -142,3 +142,6 @@ return a suitably configured Tokenizer"""
 FTS5Function = Callable[[FTS5ExtensionApi, SQLiteValue, ...], SQLiteValue]
 """The first argument is the extension API while the rest are the function parameters
 from the SQL"""
+
+FTS5QueryPhrase = Callable[[FTS5ExtensionApi, Any], None]
+"""Callback from :meth:`FTS5ExtensionApi.query_phrase`"""

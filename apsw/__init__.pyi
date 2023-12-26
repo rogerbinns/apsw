@@ -143,6 +143,9 @@ return a suitably configured Tokenizer"""
 FTS5Function = Callable[[FTS5ExtensionApi, SQLiteValue, ...], SQLiteValue]
 """The first argument is the extension API while the rest are the function parameters
 from the SQL"""
+
+FTS5QueryPhrase = Callable[[FTS5ExtensionApi, Any], None]
+"""Callback from :meth:`FTS5ExtensionApi.query_phrase`"""
 SQLITE_VERSION_NUMBER: int
 """The integer version number of SQLite that APSW was compiled
 against.  For example SQLite 3.44.1 will have the value *3440100*.
@@ -2157,7 +2160,9 @@ class FTS5ExtensionApi:
     <https://www.sqlite.org/fts5.html#_custom_auxiliary_functions_api_reference_>`__"""
     aux_data: Any
     """You can store an object as `auxiliary data <https://www.sqlite.org/fts5.html#xSetAuxdata>`__
-    which is available across rows and :meth:`query_phrase`."""
+    which is available across matching rows.  It starts out as :class:`None`.
+
+    An example use is to do up front calculations once, rather than on every matched row."""
 
     column_count: int
     """Returns the `number of columns in the table
@@ -2173,6 +2178,19 @@ class FTS5ExtensionApi:
         column, of if `col` is negative then for all columns."""
         ...
 
+    def phrase_columns(self, phrase: int) -> tuple(int):
+        """Returns `which columns the phrase number occurs in <https://www.sqlite.org/fts5.html#xPhraseFirstColumn>`__"""
+        ...
+
+    def phrase_locations(self, phrase: int) -> list[list[int]]:
+        """Returns `which columns and token offsets  the phrase number occurs in
+        <https://www.sqlite.org/fts5.html#xPhraseFirst>`__.
+
+        The returned list is the same length as the number of columns.  Each
+        member is a list of token offsets in that column, and will be empty
+        if the phrase is not in that column."""
+        ...
+
     phrases: tuple[tuple[str | None, ...], ...]
     """A tuple where each member is a phrase from the query.  Each phrase is a tuple
     of str (or None when not available) per token of the phrase.
@@ -2180,6 +2198,14 @@ class FTS5ExtensionApi:
     This combines the results of `xPhraseCount <https://www.sqlite.org/fts5.html#xPhraseCount>`__,
     `xPhraseSize <https://www.sqlite.org/fts5.html#xPhraseSize>`__ and
     `xQueryToken <https://www.sqlite.org/fts5.html#xQueryToken>`__"""
+
+    def query_phrase(self, phrase: int, callback: FTS5QueryPhrase, closure: Any) -> None:
+        """Searches the table for the `numbered query <https://www.sqlite.org/draft/fts5.html#xQueryPhrase>`__.
+        The callback takes two parameters - :class:`apsw.FTS5ExtensionApi` and closure.
+
+        An example usage for this method is to see how often the phrases occur in the table.  Setup a
+        tracking counter here, and then in the callback you can update it on each visited row."""
+        ...
 
     row_count: int
     """Returns the `number of rows in the table
@@ -2212,7 +2238,7 @@ class FTS5Tokenizer:
         Example outputs
         ---------------
 
-        Tokenizing ``first place`` where ``1st`` has been provided as a
+        Tokenizing ``b"first place"`` where ``1st`` has been provided as a
         colocated token for ``first``.
 
         (**Default**) include_offsets **True**, include_colocated **True**

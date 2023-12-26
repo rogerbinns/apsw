@@ -2717,7 +2717,9 @@
 #define  FTS5ExtensionApi_aux_data_DOC ":type: Any\n" \
 "\n" \
 "You can store an object as `auxiliary data <https://www.sqlite.org/fts5.html#xSetAuxdata>`__\n" \
-"which is available across rows and :meth:`query_phrase`.\n" 
+"which is available across matching rows.  It starts out as :class:`None`.\n" \
+"\n" \
+"An example use is to do up front calculations once, rather than on every matched row.\n" 
 
 #define  FTS5ExtensionApi_class_DOC "Wraps the `auxiliary functions API\n" \
 "<https://www.sqlite.org/fts5.html#_custom_auxiliary_functions_api_reference_>`__\n" 
@@ -2752,6 +2754,33 @@
 } while(0)
 
 
+#define  FTS5ExtensionApi_phrase_columns_DOC "phrase_columns($self,phrase)\n--\n\nFTS5ExtensionApi.phrase_columns(phrase: int) -> tuple(int)\n\n" \
+"Returns `which columns the phrase number occurs in <https://www.sqlite.org/fts5.html#xPhraseFirstColumn>`__\n" 
+
+#define FTS5ExtensionApi_phrase_columns_KWNAMES "phrase"
+#define FTS5ExtensionApi_phrase_columns_USAGE "FTS5ExtensionApi.phrase_columns(phrase: int) -> tuple(int)"
+
+#define FTS5ExtensionApi_phrase_columns_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(phrase), int)); \
+} while(0)
+
+
+#define  FTS5ExtensionApi_phrase_locations_DOC "phrase_locations($self,phrase)\n--\n\nFTS5ExtensionApi.phrase_locations(phrase: int) -> list[list[int]]\n\n" \
+"Returns `which columns and token offsets  the phrase number occurs in\n" \
+"<https://www.sqlite.org/fts5.html#xPhraseFirst>`__.\n" \
+"\n" \
+"The returned list is the same length as the number of columns.  Each\n" \
+"member is a list of token offsets in that column, and will be empty\n" \
+"if the phrase is not in that column.\n" 
+
+#define FTS5ExtensionApi_phrase_locations_KWNAMES "phrase"
+#define FTS5ExtensionApi_phrase_locations_USAGE "FTS5ExtensionApi.phrase_locations(phrase: int) -> list[list[int]]"
+
+#define FTS5ExtensionApi_phrase_locations_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(phrase), int)); \
+} while(0)
+
+
 #define  FTS5ExtensionApi_phrases_DOC ":type: tuple[tuple[str | None, ...], ...]\n" \
 "\n" \
 "A tuple where each member is a phrase from the query.  Each phrase is a tuple\n" \
@@ -2760,6 +2789,23 @@
 "This combines the results of `xPhraseCount <https://www.sqlite.org/fts5.html#xPhraseCount>`__,\n" \
 "`xPhraseSize <https://www.sqlite.org/fts5.html#xPhraseSize>`__ and\n" \
 "`xQueryToken <https://www.sqlite.org/fts5.html#xQueryToken>`__\n" 
+
+#define  FTS5ExtensionApi_query_phrase_DOC "query_phrase($self,phrase,callback,closure)\n--\n\nFTS5ExtensionApi.query_phrase(phrase: int, callback: FTS5QueryPhrase, closure: Any) -> None\n\n" \
+"Searches the table for the `numbered query <https://www.sqlite.org/draft/fts5.html#xQueryPhrase>`__.\n" \
+"The callback takes two parameters - :class:`apsw.FTS5ExtensionApi` and closure.\n" \
+"\n" \
+"An example usage for this method is to see how often the phrases occur in the table.  Setup a\n" \
+"tracking counter here, and then in the callback you can update it on each visited row.\n" 
+
+#define FTS5ExtensionApi_query_phrase_KWNAMES "phrase", "callback", "closure"
+#define FTS5ExtensionApi_query_phrase_USAGE "FTS5ExtensionApi.query_phrase(phrase: int, callback: FTS5QueryPhrase, closure: Any) -> None"
+
+#define FTS5ExtensionApi_query_phrase_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(phrase), int)); \
+  assert(__builtin_types_compatible_p(typeof(callback), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(closure), PyObject *)); \
+} while(0)
+
 
 #define  FTS5ExtensionApi_row_count_DOC ":type: int\n" \
 "\n" \
@@ -2803,7 +2849,7 @@
 "Example outputs\n" \
 "---------------\n" \
 "\n" \
-"Tokenizing ``first place`` where ``1st`` has been provided as a\n" \
+"Tokenizing ``b\"first place\"`` where ``1st`` has been provided as a\n" \
 "colocated token for ``first``.\n" \
 "\n" \
 "(**Default**) include_offsets **True**, include_colocated **True**\n" \

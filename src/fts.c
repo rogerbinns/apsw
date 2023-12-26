@@ -167,7 +167,7 @@ error:
   Example outputs
   ---------------
 
-  Tokenizing ``first place`` where ``1st`` has been provided as a
+  Tokenizing ``b"first place"`` where ``1st`` has been provided as a
   colocated token for ``first``.
 
   (**Default**) include_offsets **True**, include_colocated **True**
@@ -572,6 +572,33 @@ typedef struct APSWFTS5ExtensionApi
   Fts5Context *pFts;
 } APSWFTS5ExtensionApi;
 
+static PyTypeObject APSWFTS5ExtensionAPIType;
+
+/* ::TODO:: some sort of recycling for these */
+static APSWFTS5ExtensionApi *
+fts5extensionapi_acquire(void)
+{
+  APSWFTS5ExtensionApi *res = (APSWFTS5ExtensionApi *)_PyObject_New(&APSWFTS5ExtensionAPIType);
+  if (res)
+  {
+    res->pApi = 0;
+    res->pFts = 0;
+  }
+  return res;
+}
+
+static void
+fts5extensionapi_release(APSWFTS5ExtensionApi *extapi)
+{
+  if (extapi)
+  {
+    extapi->pApi = NULL;
+    extapi->pFts = NULL;
+    /* if ref count is 1 then this could be recycled */
+    Py_DECREF(extapi);
+  }
+}
+
 #define FTSEXT_CHECK(v)                                                                                                \
   do                                                                                                                   \
   {                                                                                                                    \
@@ -631,7 +658,9 @@ APSWFTS5ExtensionApi_xRowid(APSWFTS5ExtensionApi *self)
   :type: Any
 
   You can store an object as `auxiliary data <https://www.sqlite.org/fts5.html#xSetAuxdata>`__
-  which is available across rows and :meth:`query_phrase`.
+  which is available across matching rows.  It starts out as :class:`None`.
+
+  An example use is to do up front calculations once, rather than on every matched row.
 */
 
 static void
@@ -730,6 +759,127 @@ APSWFTS5ExtensionApi_phrases(APSWFTS5ExtensionApi *self)
 error:
   Py_XDECREF(outside);
   Py_XDECREF(phrase);
+  return NULL;
+}
+
+/** .. method:: phrase_columns(phrase: int) -> tuple(int)
+
+ Returns `which columns the phrase number occurs in <https://www.sqlite.org/fts5.html#xPhraseFirstColumn>`__
+*/
+static PyObject *
+APSWFTS5ExtensionApi_phrase_columns(APSWFTS5ExtensionApi *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                                    PyObject *fast_kwnames)
+{
+
+  FTSEXT_CHECK(NULL);
+
+  int phrase;
+
+  {
+    FTS5ExtensionApi_phrase_columns_CHECK;
+    ARG_PROLOG(1, FTS5ExtensionApi_phrase_columns_KWNAMES);
+    ARG_MANDATORY ARG_int(phrase);
+    ARG_EPILOG(NULL, FTS5ExtensionApi_phrase_columns_USAGE, );
+  }
+
+  Fts5PhraseIter iter;
+  int iCol = -1;
+
+  /* the loop is done differently than the doc so we can check this return */
+  int rc = self->pApi->xPhraseFirstColumn(self->pFts, phrase, &iter, &iCol);
+  if (rc != SQLITE_OK)
+  {
+    SET_EXC(rc, NULL);
+    return NULL;
+  }
+
+  PyObject *retval = PyTuple_New(0);
+  if (!retval)
+    return NULL;
+  while (iCol >= 0)
+  {
+    if (0 != _PyTuple_Resize(&retval, 1 + PyTuple_GET_SIZE(retval)))
+      goto error;
+    PyObject *tmp = PyLong_FromLong(iCol);
+    if (!tmp)
+      goto error;
+    PyTuple_SetItem(retval, PyTuple_GET_SIZE(retval) - 1, tmp);
+    self->pApi->xPhraseNextColumn(self->pFts, &iter, &iCol);
+  }
+
+  return retval;
+error:
+  Py_DECREF(retval);
+  return NULL;
+}
+
+/** .. method:: phrase_locations(phrase: int) -> list[list[int]]
+
+ Returns `which columns and token offsets  the phrase number occurs in
+ <https://www.sqlite.org/fts5.html#xPhraseFirst>`__.
+
+ The returned list is the same length as the number of columns.  Each
+ member is a list of token offsets in that column, and will be empty
+ if the phrase is not in that column.
+*/
+static PyObject *
+APSWFTS5ExtensionApi_phrase_locations(APSWFTS5ExtensionApi *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                                      PyObject *fast_kwnames)
+{
+
+  FTSEXT_CHECK(NULL);
+
+  int phrase;
+
+  {
+    FTS5ExtensionApi_phrase_locations_CHECK;
+    ARG_PROLOG(1, FTS5ExtensionApi_phrase_locations_KWNAMES);
+    ARG_MANDATORY ARG_int(phrase);
+    ARG_EPILOG(NULL, FTS5ExtensionApi_phrase_locations_USAGE, );
+  }
+
+  Fts5PhraseIter iter;
+  int iCol = -1, iOff = -1;
+
+  /* the loop is done differently than the doc so we can check this return */
+  int rc = self->pApi->xPhraseFirst(self->pFts, phrase, &iter, &iCol, &iOff);
+  if (rc != SQLITE_OK)
+  {
+    SET_EXC(rc, NULL);
+    return NULL;
+  }
+
+  int ncols = self->pApi->xColumnCount(self->pFts);
+
+  PyObject *retval = PyList_New(ncols);
+  if (!retval)
+    return NULL;
+
+  for (int i = 0; i < ncols; i++)
+  {
+    PyObject *tmp = PyList_New(0);
+    if (!tmp)
+      goto error;
+    PyList_SET_ITEM(retval, i, tmp);
+  }
+
+  while (iCol >= 0)
+  {
+    PyObject *tmp = PyLong_FromLong(iOff);
+    if (!tmp)
+      goto error;
+    if (0 != PyList_Append(PyList_GET_ITEM(retval, iCol), tmp))
+    {
+      Py_DECREF(tmp);
+      goto error;
+    }
+    Py_DECREF(tmp);
+    self->pApi->xPhraseNext(self->pFts, &iter, &iCol, &iOff);
+  }
+
+  return retval;
+error:
+  Py_DECREF(retval);
   return NULL;
 }
 
@@ -870,6 +1020,82 @@ finally:
   return our_context.the_list;
 }
 
+struct query_phrase_context
+{
+  APSWFTS5ExtensionApi *extapi;
+  PyObject *callable;
+  PyObject *closure;
+};
+
+static int
+apsw_fts_query_phrase_callback(const Fts5ExtensionApi *pApi, Fts5Context *pFts, void *userData)
+{
+  struct query_phrase_context *qpc = (struct query_phrase_context *)userData;
+  qpc->extapi->pApi = pApi;
+  qpc->extapi->pFts = pFts;
+  PyObject *vargs[] = { NULL, (PyObject *)qpc->extapi, qpc->closure };
+  PyObject *ret = PyObject_Vectorcall(qpc->callable, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  qpc->extapi->pApi = NULL;
+  qpc->extapi->pFts = NULL;
+  if (ret)
+  {
+    Py_DECREF(ret);
+    return SQLITE_OK;
+  }
+  return SQLITE_ERROR;
+}
+
+/** .. method:: query_phrase(phrase: int, callback: FTS5QueryPhrase, closure: Any) -> None
+
+  Searches the table for the `numbered query <https://www.sqlite.org/draft/fts5.html#xQueryPhrase>`__.
+  The callback takes two parameters - :class:`apsw.FTS5ExtensionApi` and closure.
+
+  An example usage for this method is to see how often the phrases occur in the table.  Setup a
+  tracking counter here, and then in the callback you can update it on each visited row.
+*/
+static PyObject *
+APSWFTS5ExtensionApi_xQueryPhrase(APSWFTS5ExtensionApi *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                                  PyObject *fast_kwnames)
+{
+  FTSEXT_CHECK(NULL);
+
+  PyObject *callback, *closure;
+  int phrase;
+
+  {
+    FTS5ExtensionApi_query_phrase_CHECK;
+    ARG_PROLOG(3, FTS5ExtensionApi_query_phrase_KWNAMES);
+    ARG_MANDATORY ARG_int(phrase);
+    ARG_MANDATORY ARG_Callable(callback);
+    ARG_MANDATORY ARG_pyobject(closure);
+    ARG_EPILOG(NULL, FTS5ExtensionApi_query_phrase_USAGE, );
+  }
+
+  APSWFTS5ExtensionApi *qpcapi = fts5extensionapi_acquire();
+  if (!qpcapi)
+    return NULL;
+
+  struct query_phrase_context context = {
+    .extapi = qpcapi,
+    .callable = Py_NewRef(callback),
+    .closure = Py_NewRef(closure),
+  };
+
+  int rc = self->pApi->xQueryPhrase(self->pFts, phrase, &context, apsw_fts_query_phrase_callback);
+  fts5extensionapi_release(context.extapi);
+  Py_DECREF(context.callable);
+  Py_DECREF(context.closure);
+  if (rc != SQLITE_OK)
+  {
+    if (!PyErr_Occurred())
+      SET_EXC(rc, NULL);
+    AddTraceBackHere(__FILE__, __LINE__, "FTS5ExtensionApi.query_phrase", "{s: i, s:O, s: O}", "phrase", phrase,
+                     "callback", callback, "closure", closure);
+    return NULL;
+  }
+  Py_RETURN_NONE;
+}
+
 static PyGetSetDef APSWFTS5ExtensionApi_getset[] = {
   { "column_count", (getter)APSWFTS5ExtensionApi_xColumnCount, NULL, FTS5ExtensionApi_column_count_DOC },
   { "row_count", (getter)APSWFTS5ExtensionApi_xRowCount, NULL, FTS5ExtensionApi_row_count_DOC },
@@ -887,6 +1113,12 @@ static PyMethodDef APSWFTS5ExtensionApi_methods[] = {
     FTS5ExtensionApi_tokenize_DOC },
   { "column_text", (PyCFunction)APSWFTS5ExtensionApi_xColumnText, METH_FASTCALL | METH_KEYWORDS,
     FTS5ExtensionApi_column_text_DOC },
+  { "phrase_columns", (PyCFunction)APSWFTS5ExtensionApi_phrase_columns, METH_FASTCALL | METH_KEYWORDS,
+    FTS5ExtensionApi_phrase_columns_DOC },
+  { "phrase_locations", (PyCFunction)APSWFTS5ExtensionApi_phrase_locations, METH_FASTCALL | METH_KEYWORDS,
+    FTS5ExtensionApi_phrase_locations_DOC },
+  { "query_phrase", (PyCFunction)APSWFTS5ExtensionApi_xQueryPhrase, METH_FASTCALL | METH_KEYWORDS,
+    FTS5ExtensionApi_query_phrase_DOC },
   { 0 },
 };
 
@@ -925,13 +1157,12 @@ apsw_fts5_extension_function(const Fts5ExtensionApi *pApi, /* API offered by cur
                              sqlite3_value **apVal         /* Array of trailing arguments */
 )
 {
-  fprintf(stderr, "apsw_fts5_extension_function called %p %p %d\n", pApi, pFts, nVal);
   PyGILState_STATE gilstate = PyGILState_Ensure();
   PyObject *retval = NULL;
 
   VLA_PYO(vargs, 2 + nVal);
 
-  APSWFTS5ExtensionApi *extapi = (APSWFTS5ExtensionApi *)_PyObject_New(&APSWFTS5ExtensionAPIType);
+  APSWFTS5ExtensionApi *extapi = fts5extensionapi_acquire();
   if (!extapi)
   {
     sqlite3_result_error_nomem(pCtx);
@@ -963,12 +1194,7 @@ apsw_fts5_extension_function(const Fts5ExtensionApi *pApi, /* API offered by cur
   }
 
 finally:
-  if (extapi)
-  {
-    extapi->pApi = NULL;
-    extapi->pFts = NULL;
-    Py_DECREF(extapi);
-  }
+  fts5extensionapi_release(extapi);
   Py_XDECREF(retval);
   PyGILState_Release(gilstate);
 }
