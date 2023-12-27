@@ -5166,7 +5166,7 @@ static PyObject *
 Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   const char *name = NULL;
-  PyObject *args = NULL, *tmptuple = NULL;
+  PyObject *args = NULL, *args_as_tuple = NULL, *tmptuple = NULL;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
@@ -5204,8 +5204,8 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
 
   /* force args to always be a tuple because we save it
      in returned object and don't want that to be modifyable */
-  args = PySequence_Tuple(args ? args : tmptuple);
-  if (!args)
+  args_as_tuple = PySequence_Tuple(args ? args : tmptuple);
+  if (!args_as_tuple)
     goto error;
 
   void *userdata = NULL;
@@ -5232,7 +5232,7 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
   pytok->db = self;
   Py_INCREF(pytok->db);
   pytok->name = name_dup;
-  pytok->args = args;
+  pytok->args = Py_NewRef(args_as_tuple);
   pytok->xTokenize = tokenizer_class.xTokenize;
   pytok->xDelete = tokenizer_class.xDelete;
   pytok->tokenizer_instance = NULL;
@@ -5247,9 +5247,11 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
     goto error;
   }
   Py_XDECREF(tmptuple);
-  return (PyObject*)pytok;
+  Py_DECREF(args_as_tuple);
+  return (PyObject *)pytok;
 error:
   Py_XDECREF(tmptuple);
+  Py_XDECREF(args_as_tuple);
   return NULL;
 }
 
