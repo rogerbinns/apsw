@@ -640,7 +640,7 @@ apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int infla
   if (vargs[2] && vargs[3])
     pyresult = PyObject_VectorcallMethod(apst.xOpen, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   /* issue 501 */
-  if (inflags & (SQLITE_OPEN_URI | SQLITE_OPEN_MAIN_DB))
+  if (inflags & (SQLITE_OPEN_URI | SQLITE_OPEN_MAIN_DB) && nameobject)
     ((APSWURIFilename *)nameobject)->filename = 0;
   if (!pyresult)
   {
