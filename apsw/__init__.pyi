@@ -2168,6 +2168,12 @@ class FTS5ExtensionApi:
     """Returns the `number of columns in the table
     <https://www.sqlite.org/fts5.html#xColumnCount>`__"""
 
+    def column_size(self, col: int = -1) -> int:
+        """Returns the `total number of tokens in the current row
+        <https://www.sqlite.org/fts5.html#xColumnSize>`__ for a specific
+        column, or if `col` is negative then for all columns."""
+        ...
+
     def column_text(self, col: int) -> bytes:
         """Returns the `utf8 bytes for the column of the current row <https://www.sqlite.org/draft/fts5.html#xColumnText>`__."""
         ...
@@ -2175,7 +2181,16 @@ class FTS5ExtensionApi:
     def column_total_size(self, col: int = -1) -> int:
         """Returns the `total number of tokens in the table
         <https://www.sqlite.org/fts5.html#xColumnTotalSize>`__ for a specific
-        column, of if `col` is negative then for all columns."""
+        column, or if `col` is negative then for all columns."""
+        ...
+
+    inst_count: int
+    """Returns the `number of hits in the current row
+    <https://www.sqlite.org/fts5.html#xInstCount>`__"""
+
+    def inst_tokens(self, inst: int) -> tuple[str, ...] | None:
+        """`Access tokens of hit `inst` in current row <https://www.sqlite.org/fts5.html#xInstToken>`__
+         None is returned if the call is not supported."""
         ...
 
     def phrase_columns(self, phrase: int) -> tuple(int):

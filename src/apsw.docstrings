@@ -2729,6 +2729,20 @@
 "Returns the `number of columns in the table\n" \
 "<https://www.sqlite.org/fts5.html#xColumnCount>`__\n" 
 
+#define  FTS5ExtensionApi_column_size_DOC "column_size($self,col=-1)\n--\n\nFTS5ExtensionApi.column_size(col: int = -1) -> int\n\n" \
+"Returns the `total number of tokens in the current row\n" \
+"<https://www.sqlite.org/fts5.html#xColumnSize>`__ for a specific\n" \
+"column, or if `col` is negative then for all columns.\n" 
+
+#define FTS5ExtensionApi_column_size_KWNAMES "col"
+#define FTS5ExtensionApi_column_size_USAGE "FTS5ExtensionApi.column_size(col: int = -1) -> int"
+
+#define FTS5ExtensionApi_column_size_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(col), int)); \
+  assert(col == (-1)); \
+} while(0)
+
+
 #define  FTS5ExtensionApi_column_text_DOC "column_text($self,col)\n--\n\nFTS5ExtensionApi.column_text(col: int) -> bytes\n\n" \
 "Returns the `utf8 bytes for the column of the current row <https://www.sqlite.org/draft/fts5.html#xColumnText>`__.\n" 
 
@@ -2743,7 +2757,7 @@
 #define  FTS5ExtensionApi_column_total_size_DOC "column_total_size($self,col=-1)\n--\n\nFTS5ExtensionApi.column_total_size(col: int = -1) -> int\n\n" \
 "Returns the `total number of tokens in the table\n" \
 "<https://www.sqlite.org/fts5.html#xColumnTotalSize>`__ for a specific\n" \
-"column, of if `col` is negative then for all columns.\n" 
+"column, or if `col` is negative then for all columns.\n" 
 
 #define FTS5ExtensionApi_column_total_size_KWNAMES "col"
 #define FTS5ExtensionApi_column_total_size_USAGE "FTS5ExtensionApi.column_total_size(col: int = -1) -> int"
@@ -2751,6 +2765,23 @@
 #define FTS5ExtensionApi_column_total_size_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(col), int)); \
   assert(col == (-1)); \
+} while(0)
+
+
+#define  FTS5ExtensionApi_inst_count_DOC ":type: int\n" \
+"\n" \
+"Returns the `number of hits in the current row\n" \
+"<https://www.sqlite.org/fts5.html#xInstCount>`__\n" 
+
+#define  FTS5ExtensionApi_inst_tokens_DOC "inst_tokens($self,inst)\n--\n\nFTS5ExtensionApi.inst_tokens(inst: int) -> tuple[str, ...] | None\n\n" \
+"`Access tokens of hit `inst` in current row <https://www.sqlite.org/fts5.html#xInstToken>`__\n" \
+" None is returned if the call is not supported.\n" 
+
+#define FTS5ExtensionApi_inst_tokens_KWNAMES "inst"
+#define FTS5ExtensionApi_inst_tokens_USAGE "FTS5ExtensionApi.inst_tokens(inst: int) -> tuple[str, ...] | None"
+
+#define FTS5ExtensionApi_inst_tokens_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(inst), int)); \
 } while(0)
 
 

@@ -762,6 +762,93 @@ error:
   return NULL;
 }
 
+/** .. attribute:: inst_count
+  :type: int
+
+  Returns the `number of hits in the current row
+  <https://www.sqlite.org/fts5.html#xInstCount>`__
+*/
+static PyObject *
+APSWFTS5ExtensionApi_xInstCount(APSWFTS5ExtensionApi *self)
+{
+  FTSEXT_CHECK(NULL);
+  int inst_count;
+  int rc = self->pApi->xInstCount(self->pFts, &inst_count);
+  if (rc != SQLITE_OK)
+  {
+    SET_EXC(rc, NULL);
+    return NULL;
+  }
+  return PyLong_FromLongLong(inst_count);
+}
+
+/** .. method:: inst_tokens(inst: int) -> tuple[str, ...] | None
+
+ `Access tokens of hit `inst` in current row <https://www.sqlite.org/fts5.html#xInstToken>`__
+  None is returned if the call is not supported.
+*/
+static PyObject *
+APSWFTS5ExtensionApi_xInstToken(APSWFTS5ExtensionApi *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                                PyObject *fast_kwnames)
+{
+  FTSEXT_CHECK(NULL);
+
+/* ::TODO:: this and none return in signature can go away once 3.45 is released */
+#if SQLITE_VERSION_NUMBER < 3045000
+  Py_RETURN_NONE;
+#else
+  if (self->pApi->iVersion < 3)
+  {
+    fprintf(stderr, "self->pApi->iVersion = %d\n", self->pApi->iVersion);
+    Py_RETURN_NONE;
+  }
+#endif
+
+  int inst;
+
+  {
+    FTS5ExtensionApi_inst_tokens_CHECK;
+    ARG_PROLOG(1, FTS5ExtensionApi_inst_tokens_KWNAMES);
+    ARG_MANDATORY ARG_int(inst);
+    ARG_EPILOG(NULL, FTS5ExtensionApi_inst_tokens_USAGE, );
+  }
+
+  PyObject *retval = NULL;
+
+  for (int token = 0;; token++)
+  {
+    const char *bytes = NULL;
+    int size = 0, rc = SQLITE_OK;
+
+    rc = self->pApi->xInstToken(self->pFts, inst, token, &bytes, &size);
+    if (rc == SQLITE_RANGE && retval)
+      break;
+    if (rc != SQLITE_OK)
+    {
+      SET_EXC(rc, NULL);
+      goto error;
+    }
+    if (!retval)
+    {
+      retval = PyTuple_New(0);
+      if (!retval)
+        goto error;
+    }
+    if (0 != _PyTuple_Resize(&retval, 1 + PyTuple_GET_SIZE(retval)))
+      goto error;
+    PyObject *str = PyUnicode_FromStringAndSize(bytes, size);
+    if (!str)
+      goto error;
+    PyTuple_SET_ITEM(retval, PyTuple_GET_SIZE(retval) - 1, str);
+  }
+
+  return retval;
+
+error:
+  Py_XDECREF(retval);
+  return NULL;
+}
+
 /** .. method:: phrase_columns(phrase: int) -> tuple(int)
 
  Returns `which columns the phrase number occurs in <https://www.sqlite.org/fts5.html#xPhraseFirstColumn>`__
@@ -803,7 +890,7 @@ APSWFTS5ExtensionApi_phrase_columns(APSWFTS5ExtensionApi *self, PyObject *const 
     PyObject *tmp = PyLong_FromLong(iCol);
     if (!tmp)
       goto error;
-    PyTuple_SetItem(retval, PyTuple_GET_SIZE(retval) - 1, tmp);
+    PyTuple_SET_ITEM(retval, PyTuple_GET_SIZE(retval) - 1, tmp);
     self->pApi->xPhraseNextColumn(self->pFts, &iter, &iCol);
   }
 
@@ -887,7 +974,7 @@ error:
 
   Returns the `total number of tokens in the table
   <https://www.sqlite.org/fts5.html#xColumnTotalSize>`__ for a specific
-  column, of if `col` is negative then for all columns.
+  column, or if `col` is negative then for all columns.
 */
 static PyObject *
 APSWFTS5ExtensionApi_xColumnTotalSize(APSWFTS5ExtensionApi *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
@@ -905,6 +992,36 @@ APSWFTS5ExtensionApi_xColumnTotalSize(APSWFTS5ExtensionApi *self, PyObject *cons
   }
   sqlite3_int64 nToken;
   int rc = self->pApi->xColumnTotalSize(self->pFts, col, &nToken);
+  if (rc != SQLITE_OK)
+  {
+    SET_EXC(rc, NULL);
+    return NULL;
+  }
+  return PyLong_FromLongLong(nToken);
+}
+
+/** .. method:: column_size(col: int = -1) -> int
+
+  Returns the `total number of tokens in the current row
+  <https://www.sqlite.org/fts5.html#xColumnSize>`__ for a specific
+  column, or if `col` is negative then for all columns.
+*/
+static PyObject *
+APSWFTS5ExtensionApi_xColumnSize(APSWFTS5ExtensionApi *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                                 PyObject *fast_kwnames)
+{
+  FTSEXT_CHECK(NULL);
+
+  int col = -1;
+
+  {
+    FTS5ExtensionApi_column_size_CHECK;
+    ARG_PROLOG(1, FTS5ExtensionApi_column_size_KWNAMES);
+    ARG_OPTIONAL ARG_int(col);
+    ARG_EPILOG(NULL, FTS5ExtensionApi_column_size_USAGE, );
+  }
+  int nToken;
+  int rc = self->pApi->xColumnSize(self->pFts, col, &nToken);
   if (rc != SQLITE_OK)
   {
     SET_EXC(rc, NULL);
@@ -934,7 +1051,7 @@ APSWFTS5ExtensionApi_xColumnText(APSWFTS5ExtensionApi *self, PyObject *const *fa
   }
 
   const char *bytes = NULL;
-  int size;
+  int size = 0;
 
   int rc = self->pApi->xColumnText(self->pFts, col, &bytes, &size);
   if (rc != SQLITE_OK)
@@ -1103,12 +1220,15 @@ static PyGetSetDef APSWFTS5ExtensionApi_getset[] = {
     FTS5ExtensionApi_aux_data_DOC },
   { "rowid", (getter)APSWFTS5ExtensionApi_xRowid, NULL, FTS5ExtensionApi_rowid_DOC },
   { "phrases", (getter)APSWFTS5ExtensionApi_phrases, NULL, FTS5ExtensionApi_phrases_DOC },
+  { "inst_count", (getter)APSWFTS5ExtensionApi_xInstCount, NULL, FTS5ExtensionApi_inst_count_DOC },
   { 0 },
 };
 
 static PyMethodDef APSWFTS5ExtensionApi_methods[] = {
   { "column_total_size", (PyCFunction)APSWFTS5ExtensionApi_xColumnTotalSize, METH_FASTCALL | METH_KEYWORDS,
     FTS5ExtensionApi_column_total_size_DOC },
+  { "column_size", (PyCFunction)APSWFTS5ExtensionApi_xColumnSize, METH_FASTCALL | METH_KEYWORDS,
+    FTS5ExtensionApi_column_size_DOC },
   { "tokenize", (PyCFunction)APSWFTS5ExtensionApi_xTokenize, METH_FASTCALL | METH_KEYWORDS,
     FTS5ExtensionApi_tokenize_DOC },
   { "column_text", (PyCFunction)APSWFTS5ExtensionApi_xColumnText, METH_FASTCALL | METH_KEYWORDS,
@@ -1119,6 +1239,8 @@ static PyMethodDef APSWFTS5ExtensionApi_methods[] = {
     FTS5ExtensionApi_phrase_locations_DOC },
   { "query_phrase", (PyCFunction)APSWFTS5ExtensionApi_xQueryPhrase, METH_FASTCALL | METH_KEYWORDS,
     FTS5ExtensionApi_query_phrase_DOC },
+  { "inst_tokens", (PyCFunction)APSWFTS5ExtensionApi_xInstToken, METH_FASTCALL | METH_KEYWORDS,
+    FTS5ExtensionApi_inst_tokens_DOC },
   { 0 },
 };
 
@@ -1143,10 +1265,12 @@ struct fts5aux_cbinfo
 static void
 apsw_fts5_extension_function_destroy(void *pUserData)
 {
+  PyGILState_STATE gilstate = PyGILState_Ensure();
   struct fts5aux_cbinfo *cbinfo = (struct fts5aux_cbinfo *)pUserData;
   Py_DECREF(cbinfo->callback);
   PyMem_Free((void *)cbinfo->name);
   PyMem_Free(cbinfo);
+  PyGILState_Release(gilstate);
 }
 
 static void
