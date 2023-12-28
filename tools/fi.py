@@ -434,7 +434,8 @@ def exercise(example_code, expect_exception):
     class myvfsfile(apsw.VFSFile):
 
         def __init__(self, parent, filename, flags):
-            filename.parameters
+            if not isinstance(filename, str):
+                filename.parameters
             super().__init__(parent, filename, flags)
 
     vfsinstance = myvfs()
