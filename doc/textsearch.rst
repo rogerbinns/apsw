@@ -175,6 +175,8 @@ All tokenizers
   * - :class:`StopWordsTokenizer`
     - Wrapper that removes tokens from the token stream that occur too often to be useful, such as
       ``the`` in English text
+  * - :class:`TransformTokenizer
+    - Wrapper to transform tokens, such as when stemming.
   * - :class:`NGramTokenTokenizer`
     - Wrapper that Generates ngrams from the token stream, where you can specify the sizes and
       unicode categories.  Useful for doing autocomplete as you type.
