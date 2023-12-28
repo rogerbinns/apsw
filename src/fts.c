@@ -449,7 +449,7 @@ APSWPythonTokenizerTokenize(Fts5Tokenizer *our_context, void *their_context, int
   iterator = PyObject_GetIter(object);
   if (!iterator)
     goto finally;
-  while ((item = PyIter_Next(iterator)))
+  while (rc == SQLITE_OK && (item = PyIter_Next(iterator)))
   {
     /* single string */
     if (PyUnicode_Check(item))
@@ -522,6 +522,12 @@ APSWPythonTokenizerTokenize(Fts5Tokenizer *our_context, void *their_context, int
       if (!str_addr)
         goto finally;
       rc = xToken(their_context, first ? 0 : FTS5_TOKEN_COLOCATED, str_addr, str_size, iStart, iEnd);
+      if (rc != SQLITE_OK)
+      {
+        if (!PyErr_Occurred())
+          SET_EXC(rc, NULL);
+        break;
+      }
     }
     Py_CLEAR(item);
   }
