@@ -10,9 +10,9 @@ import sys
 import time
 import apsw
 import apsw.ext
+import apsw.fts
 import random
 import re
-import time
 from pathlib import Path
 
 ### version_check: Checking APSW and SQLite versions
@@ -70,12 +70,14 @@ connection = apsw.Connection("dbfile", flags=apsw.SQLITE_OPEN_READWRITE)
 connection.execute("create table point(x,y,z)")
 connection.execute("insert into point values(1, 2, 3)")
 # You can use multiple ; separated statements
-connection.execute("""
+connection.execute(
+    """
     insert into point values(4, 5, 6);
     create table log(timestamp, event);
     create table foo(a, b, c);
     create table important(secret, data);
-""")
+"""
+)
 
 # read rows
 for row in connection.execute("select * from point"):
@@ -214,7 +216,9 @@ cursor.execute(
         drop table if exists bar;
         create table bar(x,y,z);
         select * from point where x=?;
-        """, (3, ))
+        """,
+    (3,),
+)
 
 # if set on a connection then all cursors are traced
 connection.exec_trace = my_tracer
@@ -303,7 +307,6 @@ print(connection.execute("select longest(event) from log").get)
 
 
 class SumInt:
-
     def __init__(self):
         self.v = 0
 
@@ -326,7 +329,8 @@ class SumInt:
 
 connection.create_window_function("sumint", SumInt)
 
-for row in connection.execute("""
+for row in connection.execute(
+    """
         CREATE TABLE t3(x, y);
         INSERT INTO t3 VALUES('a', 4),
                              ('b', 5),
@@ -338,7 +342,8 @@ for row in connection.execute("""
         ORDER BY x ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING
         ) AS sum_y
         FROM t3 ORDER BY x;
-    """):
+    """
+):
     print("ROW", row)
 
 ### collation: Defining collations (sorting)
@@ -349,13 +354,16 @@ for row in connection.execute("""
 # number and ensures the number portion gets sorted correctly
 
 connection.execute("create table names(name)")
-connection.executemany("insert into names values(?)", (
-    ("file1", ),
-    ("file7", ),
-    ("file17", ),
-    ("file20", ),
-    ("file3", ),
-))
+connection.executemany(
+    "insert into names values(?)",
+    (
+        ("file1",),
+        ("file7",),
+        ("file17",),
+        ("file20",),
+        ("file3",),
+    ),
+)
 
 print("Standard sorting")
 for row in connection.execute("select * from names order by name"):
@@ -367,8 +375,7 @@ def str_num_collate(s1: apsw.SQLiteValue, s2: apsw.SQLiteValue) -> int:
 
     def parts(s: str) -> list:
         "Converts str into list of alternating str and int parts"
-        return [int(v) if v.isdigit() else v
-                  for v in re.split(r"(\d+)", s)]
+        return [int(v) if v.isdigit() else v for v in re.split(r"(\d+)", s)]
 
     ps1 = parts(str(s1))
     ps2 = parts(str(s2))
@@ -393,14 +400,16 @@ for row in connection.execute("select * from names order by name collate strnum"
 
 import apsw.ext
 
-connection.execute("""
+connection.execute(
+    """
     create table books(id, title, author, year);
     insert into books values(7, 'Animal Farm', 'George Orwell', 1945);
     insert into books values(37, 'The Picture of Dorian Gray', 'Oscar Wilde', 1890);
-    """)
+    """
+)
 
 # Normally you use column numbers
-for row in connection.execute("select title, id, year from books where author=?", ("Oscar Wilde", )):
+for row in connection.execute("select title, id, year from books where author=?", ("Oscar Wilde",)):
     # this is very fragile
     print("title", row[0])
     print("id", row[1])
@@ -413,10 +422,12 @@ print("\nNow with dataclasses\n")
 
 # Same query - note using AS to set column name
 for row in connection.execute(
-        """SELECT title,
+    """SELECT title,
            id AS book_id,
            year AS book_year
-           FROM books WHERE author = ?""", ("Oscar Wilde", )):
+           FROM books WHERE author = ?""",
+    ("Oscar Wilde",),
+):
     print("title", row.title)
     print("id", row.book_id)
     print("year", row.book_year)
@@ -437,7 +448,6 @@ connection.cursor_factory = registrar
 # A type we define - deriving from SQLiteTypeAdapter automatically registers conversion
 # to a SQLite value
 class Point(apsw.ext.SQLiteTypeAdapter):
-
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -501,7 +511,8 @@ connection.cursor_factory = apsw.Cursor
 import apsw.ext
 
 # test tables
-connection.execute("""
+connection.execute(
+    """
     create table customers(
         id INTEGER PRIMARY KEY,
         name CHAR,
@@ -511,14 +522,15 @@ connection.execute("""
         customer_id INTEGER,
         item MY_OWN_TYPE);
     create index cust_addr on customers(address);
-""")
+"""
+)
 
 query = """
     SELECT * FROM orders
     JOIN customers ON orders.customer_id=customers.id
     WHERE address = ?;
     SELECT 7;"""
-bindings = ("123 Main Street", )
+bindings = ("123 Main Street",)
 
 # ask for all information available
 qd = apsw.ext.query_info(
@@ -560,7 +572,7 @@ connection.execute("create table blobby(x,y)")
 # Add a blob we will fill in later
 connection.execute("insert into blobby values(1, zeroblob(10000))")
 # Or as a binding
-connection.execute("insert into blobby values(2, ?)", (apsw.zeroblob(20000), ))
+connection.execute("insert into blobby values(2, ?)", (apsw.zeroblob(20000),))
 # Open a blob for writing.  We need to know the rowid
 rowid = connection.execute("select ROWID from blobby where x=1").get
 blob = connection.blob_open("main", "blobby", "y", rowid, True)
@@ -657,8 +669,9 @@ connection.execute(
 # :attr:`Connection.authorizer` to set an authorizer.
 
 
-def auth(operation: int, p1: Optional[str], p2: Optional[str], db_name: Optional[str],
-         trigger_or_view: Optional[str]) -> int:
+def auth(
+    operation: int, p1: Optional[str], p2: Optional[str], db_name: Optional[str], trigger_or_view: Optional[str]
+) -> int:
     """Called when each operation is prepared.  We can return SQLITE_OK, SQLITE_DENY or
     SQLITE_IGNORE"""
     # find the operation name
@@ -690,9 +703,7 @@ connection.authorizer = None
 # create a table with random numbers
 with connection:
     connection.execute("create table numbers(x)")
-    connection.executemany("insert into numbers values(?)",
-                            ((random.randint(0, 9999999999), )
-                                for _ in range(100)))
+    connection.executemany("insert into numbers values(?)", ((random.randint(0, 9999999999),) for _ in range(100)))
 
 
 def progress_handler() -> bool:
@@ -729,28 +740,27 @@ def get_data_version(db):
     ok = db.file_control(
         "main",  # or an attached database name
         apsw.SQLITE_FCNTL_DATA_VERSION,  # code
-        ctypes.addressof(data_version))  # pass C level pointer
+        ctypes.addressof(data_version),
+    )  # pass C level pointer
     assert ok, "SQLITE_FCNTL_DATA_VERSION was not understood!"
     return data_version.value
 
 
 # Show starting values
-print("fcntl", get_data_version(connection),
-      "pragma", connection.pragma("data_version"))
+print("fcntl", get_data_version(connection), "pragma", connection.pragma("data_version"))
 
 # See the fcntl value versus pragma value
 for sql in (
-        "create table fcntl_example(x)",
-        "begin ; insert into fcntl_example values(3)",
-        # we can see the version doesn't change inside a transaction
-        "insert into fcntl_example values(4)",
-        "commit",
-        "pragma user_version=1234",
+    "create table fcntl_example(x)",
+    "begin ; insert into fcntl_example values(3)",
+    # we can see the version doesn't change inside a transaction
+    "insert into fcntl_example values(4)",
+    "commit",
+    "pragma user_version=1234",
 ):
     print(sql)
     connection.execute(sql)
-    print("fcntl", get_data_version(connection),
-          "pragma", connection.pragma("data_version"))
+    print("fcntl", get_data_version(connection), "pragma", connection.pragma("data_version"))
 
 ### commit_hook: Commit hook
 # A commit hook can allow or veto commits.  Register a commit hook
@@ -770,8 +780,10 @@ def my_commit_hook() -> bool:
 connection.set_commit_hook(my_commit_hook)
 try:
     with connection:
-        connection.execute("""create table example(x,y,z);
-                           insert into example values (3,4,5)""")
+        connection.execute(
+            """create table example(x,y,z);
+                           insert into example values (3,4,5)"""
+        )
 except apsw.ConstraintError:
     print("commit was not allowed")
 
@@ -790,9 +802,9 @@ def my_update_hook(type: int, db_name: str, table_name: str, rowid: int) -> None
 
 
 connection.set_update_hook(my_update_hook)
-connection.execute("insert into names values(?)", ("file93", ))
+connection.execute("insert into names values(?)", ("file93",))
 connection.execute("update names set name=? where name=?", ("file94", "file93"))
-connection.execute("delete from names where name=?", ("file94", ))
+connection.execute("delete from names where name=?", ("file94",))
 
 # Clear the hook
 connection.set_update_hook(None)
@@ -811,13 +823,15 @@ connection.set_update_hook(None)
 # For the first example you'll find :meth:`apsw.ext.generate_series`
 # useful instead.
 
+
 # Yield a row at a time
 def table_range(start=1, stop=100, step=1):
     for i in range(start, stop + 1, step):
-        yield (i, )
+        yield (i,)
+
 
 # set column names
-table_range.columns = ("value", )
+table_range.columns = ("value",)
 # set how to access what table_range returns
 table_range.column_access = apsw.ext.VTColumnAccess.By_Index
 
@@ -840,13 +854,23 @@ import unicodedata
 # A more complex example exporting unicodedata module
 
 # The methods we will call on each codepoint
-unicode_methods = ("name", "decimal", "digit", "numeric", "category", "combining",
-                   "bidirectional", "east_asian_width", "mirrored", "decomposition")
+unicode_methods = (
+    "name",
+    "decimal",
+    "digit",
+    "numeric",
+    "category",
+    "combining",
+    "bidirectional",
+    "east_asian_width",
+    "mirrored",
+    "decomposition",
+)
+
 
 # the function we will turn into a virtual table returning
 # each row as a dict
 def unicode_data(start=0, stop=sys.maxunicode):
-
     # some methods raise ValueError on some codepoints
     def call(meth: str, c: str):
         try:
@@ -877,10 +901,9 @@ print(apsw.ext.format_query_table(connection, query))
 
 # A more complex example - given a list of directories return information
 # about the files within them recursively
-def get_files_info(directories: str,
-                   sep: str = os.pathsep,
-                   *,
-                   ignore_symlinks: bool = True) -> Iterator[dict[str, Any]]:
+def get_files_info(
+    directories: str, sep: str = os.pathsep, *, ignore_symlinks: bool = True
+) -> Iterator[dict[str, Any]]:
     for root in directories.split(sep):
         with os.scandir(root) as sd:
             for entry in sd:
@@ -894,25 +917,27 @@ def get_files_info(directories: str,
                         "directory": root,
                         "name": entry.name,
                         "extension": os.path.splitext(entry.name)[1],
-                        **{
-                            k: getattr(s, k)
-                            for k in get_files_info.stat_columns
-                        }
+                        **{k: getattr(s, k) for k in get_files_info.stat_columns},
                     }
 
 
 # which stat columns do we want?
 get_files_info.stat_columns = tuple(n for n in dir(os.stat(".")) if n.startswith("st_"))
 # setup columns and access by providing an example of the first entry returned
-get_files_info.columns, get_files_info.column_access = \
-    apsw.ext.get_column_names(next(get_files_info(".")))
+get_files_info.columns, get_files_info.column_access = apsw.ext.get_column_names(next(get_files_info(".")))
 
 apsw.ext.make_virtual_module(connection, "files_info", get_files_info)
 
 # all the sys.path directories
-bindings = (os.pathsep.join(p for p in sys.path if os.path.isdir(p)
-            #  except our current one
-            and not os.path.samefile(p, ".")), )
+bindings = (
+    os.pathsep.join(
+        p
+        for p in sys.path
+        if os.path.isdir(p)
+        #  except our current one
+        and not os.path.samefile(p, ".")
+    ),
+)
 
 # Find the 3 biggest files that aren't libraries
 query = """SELECT st_size, directory, name
@@ -952,13 +977,13 @@ connection.create_module("files_info", None)
 # This example VFS obfuscates the database file contents by xor all
 # bytes with 0xa5.
 
+
 def obfuscate(data: bytes):
-    return bytes([x ^ 0xa5 for x in data])
+    return bytes([x ^ 0xA5 for x in data])
 
 
 # Inheriting from a base of "" means the default vfs
 class ObfuscatedVFS(apsw.VFS):
-
     def __init__(self, vfsname="obfuscated", basevfs=""):
         self.vfs_name = vfsname
         self.base_vfs = basevfs
@@ -990,7 +1015,6 @@ class ObfuscatedVFS(apsw.VFS):
 # The file implementation where we override xRead and xWrite to call our
 # encryption routine
 class ObfuscatedVFSFile(apsw.VFSFile):
-
     def __init__(self, inheritfromvfsname, filename, flags):
         super().__init__(inheritfromvfsname, filename, flags)
 
@@ -1013,6 +1037,7 @@ class ObfuscatedVFSFile(apsw.VFSFile):
         # We did not understand
         return False
 
+
 # To register the VFS we just instantiate it
 obfuvfs = ObfuscatedVFS()
 
@@ -1026,9 +1051,9 @@ open_flags = apsw.SQLITE_OPEN_READWRITE | apsw.SQLITE_OPEN_CREATE
 open_flags |= apsw.SQLITE_OPEN_URI
 
 # uri parameters are after the ? separated by &
-obfudb = apsw.Connection("file:myobfudb?fast=speed&level=7&warp=on&another=true",
-                         flags=open_flags,
-                         vfs=obfuvfs.vfs_name)
+obfudb = apsw.Connection(
+    "file:myobfudb?fast=speed&level=7&warp=on&another=true", flags=open_flags, vfs=obfuvfs.vfs_name
+)
 
 # Check it works
 obfudb.execute("create table foo(x,y); insert into foo values(1,2)")
@@ -1057,22 +1082,22 @@ for limit in ("LENGTH", "COLUMN", "ATTACHED"):
     orig = connection.limit(getattr(apsw, name))
     print(name, orig)
     # To get the maximum, set to 0x7fffffff and then read value back
-    connection.limit(getattr(apsw, name), 0x7fffffff)
+    connection.limit(getattr(apsw, name), 0x7FFFFFFF)
     max = connection.limit(getattr(apsw, name))
     print(max_name, " ", max)
 
 # Set limit for size of a string
 connection.execute("create table testlimit(s)")
-connection.execute("insert into testlimit values(?)", ("x" * 1024, ))  # 1024 char string
+connection.execute("insert into testlimit values(?)", ("x" * 1024,))  # 1024 char string
 connection.limit(apsw.SQLITE_LIMIT_LENGTH, 1023)  # limit is now 1023
 try:
-    connection.execute("insert into testlimit values(?)", ("y" * 1024, ))
+    connection.execute("insert into testlimit values(?)", ("y" * 1024,))
     print("string exceeding limit was inserted")
 except apsw.TooBigError:
     print("Caught toobig exception")
 
 # reset back to largest value
-connection.limit(apsw.SQLITE_LIMIT_LENGTH, 0x7fffffff)
+connection.limit(apsw.SQLITE_LIMIT_LENGTH, 0x7FFFFFFF)
 
 ### shell: Shell
 # APSW includes a :ref:`shell <shell>`  like the one in `SQLite
@@ -1095,12 +1120,14 @@ shell.process_command(".mode csv")
 shell.process_command(".headers on")
 
 # How to execute SQL
-shell.process_sql("""
+shell.process_sql(
+    """
     create table csvtest(column1, column2 INTEGER);
     create index faster on csvtest(column1);
     insert into csvtest values(3, 4);
     insert into csvtest values('a b', NULL);
-""")
+"""
+)
 
 # Or let the shell figure out SQL vs dot command
 shell.process_complete_line("select * from csvtest")
@@ -1160,10 +1187,7 @@ def trace_hook(trace: dict) -> None:
     print(pprint.pformat(trace), "\n")
 
 
-connection.trace_v2(apsw.SQLITE_TRACE_STMT
-                     | apsw.SQLITE_TRACE_PROFILE
-                     | apsw.SQLITE_TRACE_ROW,
-                    trace_hook)
+connection.trace_v2(apsw.SQLITE_TRACE_STMT | apsw.SQLITE_TRACE_PROFILE | apsw.SQLITE_TRACE_ROW, trace_hook)
 
 # We will get one each of the trace events
 for _ in connection.execute(query):
@@ -1181,6 +1205,7 @@ with apsw.ext.ShowResourceUsage(sys.stdout, db=connection, scope="thread"):
     rows = connection.execute(query).get
     # and some non-SQLite work - the imports cause filesystem access
     import statistics, tokenize, uuid, fractions, dist, pydoc, decimal
+
     # and take some wall clock time
     time.sleep(1.3)
 
@@ -1196,7 +1221,9 @@ connection.execute(
     INSERT INTO dummy VALUES(3, 'some regular text to make this row interesting', x'030709');
     INSERT INTO dummy VALUES(3.14, 'Tiếng Việt', null);
     INSERT INTO dummy VALUES('', ?, ' ');
-""", ('special \t\n\f\0 cha\\rs', ))
+""",
+    ("special \t\n\f\0 cha\\rs",),
+)
 
 query = "SELECT * FROM dummy"
 # default
