@@ -122,7 +122,7 @@ returns = {
             sqlite3_vtab_in_next sqlite3_vtab_rhs_value
             sqlite3_wal_autocheckpoint sqlite3_wal_checkpoint_v2
 
-            sqlite3_prepare sqlite3_bind_pointer
+            sqlite3_prepare
             """.split(),
     # py functions that return a number to indicate failure
     "number":
@@ -134,7 +134,7 @@ returns = {
         PyStructSequence_InitType2 PyList_Size PyLong_AsInt
 
         PyObject_GetBufferContiguous PyObject_GetBuffer
-        PyBuffer_IsContiguous PyWeakref_GetRef
+        PyBuffer_IsContiguous PyWeakref_GetRef _PyTuple_Resize
 
         connection_trace_and_exec getfunctionargs
         """.split(),

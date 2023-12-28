@@ -73,6 +73,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef PyType_Ready
 #undef PyUnicode_AsUTF8
 #undef PyUnicode_AsUTF8AndSize
+#undef PyUnicode_DecodeUTF8
 #undef PyUnicode_FromFormat
 #undef PyUnicode_FromString
 #undef PyUnicode_FromStringAndSize
@@ -84,6 +85,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef Py_VaBuildValue
 #undef _PyBytes_Resize
 #undef _PyObject_New
+#undef _PyTuple_Resize
 #undef allocfunccbinfo
 #undef apsw_strdup
 #undef connection_trace_and_exec
@@ -148,6 +150,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef sqlite3_open
 #undef sqlite3_open_v2
 #undef sqlite3_overload_function
+#undef sqlite3_prepare
 #undef sqlite3_prepare_v3
 #undef sqlite3_realloc
 #undef sqlite3_realloc64
@@ -1053,6 +1056,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
     }                                                                                                                                                                     \
     _res_PyUnicode_AsUTF8AndSize;                                                                                                                                         \
 })
+#define PyUnicode_DecodeUTF8(...) \
+({                                                                                                                                                               \
+    __auto_type _res_PyUnicode_DecodeUTF8 = 0 ? PyUnicode_DecodeUTF8(__VA_ARGS__) : 0;                                                                           \
+                                                                                                                                                                 \
+    _res_PyUnicode_DecodeUTF8 = (typeof (_res_PyUnicode_DecodeUTF8))APSW_FaultInjectControl("PyUnicode_DecodeUTF8", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                 \
+    if ((typeof (_res_PyUnicode_DecodeUTF8))0x1FACADE == _res_PyUnicode_DecodeUTF8)                                                                              \
+       _res_PyUnicode_DecodeUTF8 = PyUnicode_DecodeUTF8(__VA_ARGS__);                                                                                            \
+    else if ((typeof(_res_PyUnicode_DecodeUTF8))0x2FACADE == _res_PyUnicode_DecodeUTF8)                                                                          \
+    {                                                                                                                                                            \
+        PyUnicode_DecodeUTF8(__VA_ARGS__);                                                                                                                       \
+        _res_PyUnicode_DecodeUTF8 = (typeof (_res_PyUnicode_DecodeUTF8))18;                                                                                      \
+    }                                                                                                                                                            \
+    _res_PyUnicode_DecodeUTF8;                                                                                                                                   \
+})
 #define PyUnicode_FromFormat(...) \
 ({                                                                                                                                                               \
     __auto_type _res_PyUnicode_FromFormat = 0 ? PyUnicode_FromFormat(__VA_ARGS__) : 0;                                                                           \
@@ -1219,6 +1237,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res__PyObject_New = (typeof (_res__PyObject_New))18;                                                                               \
     }                                                                                                                                       \
     _res__PyObject_New;                                                                                                                     \
+})
+#define _PyTuple_Resize(...) \
+({                                                                                                                                                \
+    __auto_type _res__PyTuple_Resize = 0 ? _PyTuple_Resize(__VA_ARGS__) : 0;                                                                      \
+                                                                                                                                                  \
+    _res__PyTuple_Resize = (typeof (_res__PyTuple_Resize))APSW_FaultInjectControl("_PyTuple_Resize", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                  \
+    if ((typeof (_res__PyTuple_Resize))0x1FACADE == _res__PyTuple_Resize)                                                                         \
+       _res__PyTuple_Resize = _PyTuple_Resize(__VA_ARGS__);                                                                                       \
+    else if ((typeof(_res__PyTuple_Resize))0x2FACADE == _res__PyTuple_Resize)                                                                     \
+    {                                                                                                                                             \
+        _PyTuple_Resize(__VA_ARGS__);                                                                                                             \
+        _res__PyTuple_Resize = (typeof (_res__PyTuple_Resize))18;                                                                                 \
+    }                                                                                                                                             \
+    _res__PyTuple_Resize;                                                                                                                         \
 })
 #define allocfunccbinfo(...) \
 ({                                                                                                                                                \
@@ -2179,6 +2212,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res_sqlite3_overload_function = (typeof (_res_sqlite3_overload_function))18;                                                                                           \
     }                                                                                                                                                                           \
     _res_sqlite3_overload_function;                                                                                                                                             \
+})
+#define sqlite3_prepare(...) \
+({                                                                                                                                                \
+    __auto_type _res_sqlite3_prepare = 0 ? sqlite3_prepare(__VA_ARGS__) : 0;                                                                      \
+                                                                                                                                                  \
+    _res_sqlite3_prepare = (typeof (_res_sqlite3_prepare))APSW_FaultInjectControl("sqlite3_prepare", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                  \
+    if ((typeof (_res_sqlite3_prepare))0x1FACADE == _res_sqlite3_prepare)                                                                         \
+       _res_sqlite3_prepare = sqlite3_prepare(__VA_ARGS__);                                                                                       \
+    else if ((typeof(_res_sqlite3_prepare))0x2FACADE == _res_sqlite3_prepare)                                                                     \
+    {                                                                                                                                             \
+        sqlite3_prepare(__VA_ARGS__);                                                                                                             \
+        _res_sqlite3_prepare = (typeof (_res_sqlite3_prepare))18;                                                                                 \
+    }                                                                                                                                             \
+    _res_sqlite3_prepare;                                                                                                                         \
 })
 #define sqlite3_prepare_v3(...) \
 ({                                                                                                                                                         \

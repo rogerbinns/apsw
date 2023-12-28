@@ -516,10 +516,12 @@ class Tester:
             # make it use tmpfs
             code = code.replace('"dbfile"', f'"{ tmpdir.name }/dbfile-delme-example"')
             code = code.replace("myobfudb", f"{ tmpdir.name }/myobfudb-example")
-            # logging will fail
-            code = code.replace(
-                "apsw.ext.log_sqlite()", "with contextlib.suppress(apsw.MisuseError): apsw.ext.log_sqlite(level=0)"
-            )
+            # silence logging
+            code = code.replace("apsw.ext.log_sqlite()", "apsw.ext.log_sqlite(level=0)")
+            # resource usage is deliberately slow
+            code = code.replace("time.sleep(1.3)", "time.sleep(0)")
+            code = code.replace("sys.stdout", "open(os.devnull, 'w')")
+
         self.example_code_lines = len(code.split("\n"))
         self.example_code = compile(code, "example-code.py", "exec")
 
@@ -607,7 +609,7 @@ class Tester:
                 self.expect_exception.append(TypeError)
                 return 0
 
-            if fname.startswith("Py") or fname in {"_PyBytes_Resize", "getfunctionargs"}:
+            if fname.startswith("Py") or fname in {"_PyBytes_Resize", "_PyTuple_Resize", "getfunctionargs"}:
                 # for ones returning -1 on error
                 self.expect_exception.append(self.FAULTT)
                 return (-1, *self.FAULT)
