@@ -665,6 +665,11 @@ class Tester:
     def __exit__(self, e1, e2, e3):
         if e2:
             self.add_exc(e2)
+        if self.abort:
+            tbe = traceback.TracebackException(e1, e2, e3, capture_locals=True, compact=True)
+            for line in tbe.format():
+                print(line, file=sys.stderr)
+            return False
         return True  # do not raise
 
     def get_progress(self):
@@ -731,6 +736,7 @@ class Tester:
             sys.exit(1)
 
     def run(self):
+        self.abort = False
         # keys that we will fault in the future.  we saw these keys while a
         # call had already faulted, so we have to do those same faults again
         # to see this one.  value is list of those previous faults
@@ -777,6 +783,9 @@ class Tester:
                             print("\nExercising locations that require multiple failures\n")
                             continue
                 finally:
+                    if not use_runplan and not self.faulted_this_round:
+                        print("NOT MAKING PROGRESS - ABORTING")
+                        self.abort = True
                     if "apsw" in sys.modules:
                         for c in sys.modules["apsw"].connections():
                             c.close()
