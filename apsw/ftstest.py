@@ -10,6 +10,7 @@
 
 import unittest
 import tempfile
+import sys
 
 import apsw
 import apsw.ext
@@ -24,11 +25,16 @@ class APSW(unittest.TestCase):
         self.db.close()
         del self.db
 
-    def testFTSTokenizerAPI(self):
-        "Test C interface for tokenizers"
+    def has_fts5(self):
         try:
             self.db.fts5_tokenizer("ascii")
+            return True
         except apsw.NoFTS5Error:
+            return False
+
+    def testFTSTokenizerAPI(self):
+        "Test C interface for tokenizers"
+        if not self.has_fts5():
             return
 
         self.assertRaisesRegex(apsw.SQLError, "Finding tokenizer named .*", self.db.fts5_tokenizer, "doesn't exist")
@@ -76,6 +82,10 @@ class APSW(unittest.TestCase):
         self.db.register_fts5_tokenizer("func_tok", func_tok)
         self.db.register_fts5_tokenizer("class_tok", class_tok)
 
+        self.assertRaisesRegex(ValueError, "Too many args.*", self.db.fts5_tokenizer, "func_tok", [""] * 1000)
+
+        self.assertIn("class_tok", str(self.db.fts5_tokenizer("class_tok", ["one", "two", "three"])))
+
         for name in ("func_tok", "class_tok"):
             for include_offsets in (True, False):
                 for include_colocated in (True, False):
@@ -86,6 +96,26 @@ class APSW(unittest.TestCase):
                         include_colocated=include_colocated,
                     )
                     self.verify_token_stream(test_data, res, include_offsets, include_colocated)
+
+        bad_results = [(-73, 0, "one"), (0, 10000, "two"), 3.7, (0, "hello"), (0, 1, 3.8), (0, 1, "hello", 3.8), tuple(), (0, 3.8)]
+
+        def bad_tok(con, args):
+            def tokenize(utf8, reason):
+                nonlocal bad_results
+                yield bad_results.pop()
+
+            return tokenize
+
+        self.db.register_fts5_tokenizer("bad_tok", bad_tok)
+
+        self.assertRaisesRegex(
+            ValueError, ".*reason is not an allowed value.*", self.db.fts5_tokenizer("unicode61", []).__call__, b"", 0
+        )
+
+        while bad_results:
+            self.assertRaises(
+                ValueError, self.db.fts5_tokenizer("bad_tok", []).__call__, b"abc", apsw.FTS5_TOKENIZE_DOCUMENT
+            )
 
     def verify_token_stream(self, expected, actual, include_offsets, include_colocated):
         self.assertEqual(len(expected), len(actual))
@@ -112,6 +142,8 @@ class APSW(unittest.TestCase):
 
     def testFTSHelpers(self):
         "Test various FTS helper functions"
+        if not self.has_fts5():
+            return
         ## convert_tokenize_reason
         for pat, expected in (
             ("QUERY", {apsw.FTS5_TOKENIZE_QUERY}),
@@ -166,7 +198,9 @@ class APSW(unittest.TestCase):
         ## convert_unicode_categories
         self.assertRaises(ValueError, apsw.fts.convert_unicode_categories, "L* !BANANA")
         self.assertEqual(apsw.fts.convert_unicode_categories("L* Pc !N* N* !N*"), {"Pc", "Lm", "Lo", "Lu", "Lt", "Ll"})
-        self.assertEqual(apsw.fts.convert_unicode_categories("* !P* !Z*"), apsw.fts.convert_unicode_categories("[CLMNS]*"))
+        self.assertEqual(
+            apsw.fts.convert_unicode_categories("* !P* !Z*"), apsw.fts.convert_unicode_categories("[CLMNS]*")
+        )
         ## convert_number_ranges
         for t in "3-", "a", "", "3-5-7", "3,3-", "3,a", "3,4-a":
             self.assertRaises(ValueError, apsw.fts.convert_number_ranges, t)
@@ -244,6 +278,8 @@ class APSW(unittest.TestCase):
 
     def testAPSWTokenizerWrappers(self):
         "Test tokenizer wrappers supplied by apsw.fts"
+        if not self.has_fts5():
+            return
         test_reason = apsw.FTS5_TOKENIZE_AUX
         test_data = b"a 1 2 3 b"
         test_res = ((0, 1, "a"), (2, 3, "1"), (4, 5, "2", "deux", "two"), (6, 7, "3"), (8, 9, "b"))
@@ -342,7 +378,58 @@ class APSW(unittest.TestCase):
         return syn if syn != s else None
 
     def synonym_test_function_check(self, s):
-        self.assertEqual(s, [(0, 1, 'a'), (2, 3, '1', 'one'), (4, 5, '2', 'two', 'ii', 'deux'), (6, 7, '3'), (8, 9, 'b')])
+        self.assertEqual(
+            s, [(0, 1, "a"), (2, 3, "1", "one"), (4, 5, "2", "two", "ii", "deux"), (6, 7, "3"), (8, 9, "b")]
+        )
+
+    def testFTSFunction(self):
+        if not self.has_fts5():
+            return
+        self.db.execute(
+            """
+            create virtual table testfts using fts5(a,b,c);
+            insert into testfts values('a b c', 'b c d', 'c d e');
+            insert into testfts values('1 2 3', '2 3 4', '3 4 5');
+        """
+        )
+
+        contexts = []
+
+        def identity(api, param):
+            contexts.append(api)
+            return param
+
+        self.db.register_fts5_function("identity", identity)
+
+        x = self.db.execute("select identity(testfts,a) from testfts('e OR 5')").get
+        self.assertEqual(x, ["a b c", "1 2 3"])
+
+        def check_api(api, *params):
+            contexts.append(api)
+            self
+
+    def testzzFaultInjection(self):
+        "Deliberately inject faults to exercise all code paths"
+        ### Copied from main tests
+        if not getattr(apsw, "test_fixtures_present", None):
+            return
+
+        apsw.faultdict = dict()
+
+        def ShouldFault(name, pending_exception):
+            r = apsw.faultdict.get(name, False)
+            apsw.faultdict[name] = False
+            return r
+
+        sys.apsw_should_fault = ShouldFault
+        ### end copied from main tests
+
+        if self.has_fts5():
+            apsw.faultdict["FTS5TokenizerRegister"] = True
+            self.assertRaises(apsw.NoMemError, self.db.register_fts5_tokenizer, "foo", lambda *args: None)
+            apsw.faultdict["FTS5FunctionRegister"] = True
+            self.assertRaises(apsw.BusyError, self.db.register_fts5_function, "foo", lambda *args: None)
+
 
 if __name__ == "__main__":
     unittest.main()

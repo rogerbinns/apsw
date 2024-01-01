@@ -1,8 +1,11 @@
 
 
+#undef Connection_fts5_api
 static fts5_api *
 Connection_fts5_api(Connection *self)
 {
+#include "faultinject.h"
+
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
@@ -410,9 +413,11 @@ finally:
   return res;
 }
 
+#undef get_token_value
 static const char *
 get_token_value(PyObject *s, int *size)
 {
+#include "faultinject.h"
   Py_ssize_t ssize;
   const char *address = PyUnicode_AsUTF8AndSize(s, &ssize);
   if (!address)

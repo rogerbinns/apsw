@@ -5242,7 +5242,7 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
   if (rc != SQLITE_OK)
   {
     SET_EXC(rc, self->db);
-    AddTraceBackHere(__FILE__, __LINE__, "Connection.fts5_tokenizer.xCreate", "{s:s,s:i,s:O}", "name", name, "len(args)", argc, "args", args);
+    AddTraceBackHere(__FILE__, __LINE__, "Connection.fts5_tokenizer.xCreate", "{s:s,s:i,s:O}", "name", name, "len(args)", argc, "args", args_as_tuple);
     APSWFTS5TokenizerType.tp_dealloc((PyObject *)pytok);
     goto error;
   }
@@ -5287,14 +5287,16 @@ Connection_register_fts5_tokenizer(Connection *self, PyObject *const *fast_args,
   if (!api)
     return NULL;
 
-  TokenizerFactoryData *tfd = PyMem_Malloc(sizeof(TokenizerFactoryData));
+  TokenizerFactoryData *tfd = PyMem_Calloc(1, sizeof(TokenizerFactoryData));
   if(!tfd)
     goto finally;
   tfd->factory_func = Py_NewRef(tokenizer_factory);
   tfd->connection = Py_NewRef(self);
 
+  APSW_FAULT_INJECT(FTS5TokenizerRegister,
   rc = api->xCreateTokenizer(api, name, tfd, &APSWPythonTokenizer,
-                                 APSWPythonTokenizerFactoryDelete);
+                                 APSWPythonTokenizerFactoryDelete),
+  rc = SQLITE_NOMEM);
 
   finally:
   if (rc != SQLITE_OK)
@@ -5335,7 +5337,7 @@ Connection_register_fts5_function(Connection *self, PyObject *const *fast_args, 
   if(!api)
     return NULL;
 
-  struct fts5aux_cbinfo *cbinfo = PyMem_Malloc(sizeof(struct fts5aux_cbinfo));
+  struct fts5aux_cbinfo *cbinfo = PyMem_Calloc(1, sizeof(struct fts5aux_cbinfo));
   if(!cbinfo)
     return NULL;
   cbinfo->callback = Py_NewRef(function);
@@ -5343,10 +5345,15 @@ Connection_register_fts5_function(Connection *self, PyObject *const *fast_args, 
 
   int rc = SQLITE_NOMEM;
   if(cbinfo->name)
-    rc = api->xCreateFunction(api, name, cbinfo, apsw_fts5_extension_function, apsw_fts5_extension_function_destroy);
+  {
+    APSW_FAULT_INJECT(FTS5FunctionRegister,
+    rc = api->xCreateFunction(api, name, cbinfo, apsw_fts5_extension_function, apsw_fts5_extension_function_destroy),
+    rc = SQLITE_BUSY);
+  }
   if(rc != SQLITE_OK)
   {
-    PyErr_Format(get_exception_for_code(rc), "Registering function named \"%s\"", name);
+    if(!PyErr_Occurred())
+      PyErr_Format(get_exception_for_code(rc), "Registering function named \"%s\"", name);
     AddTraceBackHere(__FILE__, __LINE__, "Connection.fts5_api.xCreateFunction", "{s:s,s:O}", "name", name, "function", function);
     apsw_fts5_extension_function_destroy(cbinfo);
     return NULL;

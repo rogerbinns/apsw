@@ -10,6 +10,8 @@ import glob
 import inspect
 import atexit
 import random
+import re
+import contextlib
 
 import tempfile
 
@@ -157,6 +159,53 @@ def exercise(example_code, expect_exception):
 
     con.pragma("user_version")
     con.pragma("user_version", 7)
+
+    con.fts5_tokenizer("unicode61", ["remove_diacritics", "1"])
+
+    def tok(con, args):
+        def tokenizer(utf8, reason):
+            yield (0, 1, "hello")
+            yield (1, 2, "hello", "world", "more")
+            yield "third"
+            yield ("fourth", "fifth")
+            raise ZeroDivisionError()
+
+        return tokenizer
+
+    con.register_fts5_tokenizer("silly", tok)
+
+    with contextlib.suppress(ZeroDivisionError):
+        for _ in con.fts5_tokenizer("silly", [])(b"abcdef", apsw.FTS5_TOKENIZE_DOCUMENT):
+            pass
+
+    def tok2(con, args):
+        options = apsw.fts.parse_tokenizer_args(con, {"+": None}, args)
+
+        def tokenizer(utf8, reason):
+            for start, end, *tokens in options["+"](utf8, reason, include_colocated=False):
+                yield start, end, *tokens
+
+        return tokenizer
+
+    con.register_fts5_tokenizer("tok2", tok2)
+    with contextlib.suppress(ZeroDivisionError):
+        for _ in con.fts5_tokenizer("tok2", ["silly"])(b"abcdef", apsw.FTS5_TOKENIZE_DOCUMENT):
+            pass
+
+    con.execute(
+        """
+            create virtual table testfts using fts5(a,b,c);
+            insert into testfts values('a b c', 'b c d', 'c d e');
+            insert into testfts values('1 2 3', '2 3 4', '3 4 5');
+        """
+    )
+
+    def identity(api, param):
+        return param
+
+    con.register_fts5_function("identity", identity)
+
+    con.execute("select identity(testfts,a) from testfts('e OR 5')").get
 
     class Source:
         def Connect(self, *args):
@@ -520,7 +569,7 @@ class Tester:
             code = code.replace("apsw.ext.log_sqlite()", "apsw.ext.log_sqlite(level=0)")
             # resource usage is deliberately slow
             code = code.replace("time.sleep(1.3)", "time.sleep(0)")
-            code = code.replace("sys.stdout", "open(os.devnull, 'w')")
+            code = re.sub(r"ShowResourceUsage\([^)]*\)", "ShowResourceUsage(None)", code)
 
         self.example_code_lines = len(code.split("\n"))
         self.example_code = compile(code, "example-code.py", "exec")
@@ -791,10 +840,8 @@ class Tester:
             with self:
                 try:
                     if complete:
-                        # we do this at the very end
-                        import apsw
-
-                        apsw.shutdown()
+                        # we do this at the very end with shutdown being terminal
+                        sys.modules["apsw"].shutdown()
                     else:
                         exercise(self.example_code, self.expect_exception)
                         self.abort = 0
@@ -818,6 +865,10 @@ class Tester:
 
         if complete:
             print("\nAll faults exercised")
+            if hasattr(sys.modules["apsw"], "_fini"):
+                print("Running apsw fini()")
+                sys.modules["apsw"]._fini()
+            del sys.modules["apsw"]
 
         print(f"Total faults: { len(self.has_faulted_ever) }")
 

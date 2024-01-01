@@ -905,7 +905,7 @@ class TokenizerArgument:
     convert_default: bool = False
     "True if the default value should be run through the convertor"
 
-
+# ::TODO:: move spec to first argument
 def parse_tokenizer_args(
     con: apsw.Connection, spec: dict[str, TokenizerArgument | Any], args: list[str]
 ) -> dict[str, Any]:
@@ -914,7 +914,7 @@ def parse_tokenizer_args(
     :param con: Used to lookup other tokenizers
     :param spec: A dictionary where the key is a string, and the value is either
        the corresponding default, or :class:`TokenizerArgument`.
-    :params args: A list of strings as received by :class:`apsw.FTS5TokenizerFactory`
+    :param args: A list of strings as received by :class:`apsw.FTS5TokenizerFactory`
 
     For example to parse  ``["arg1", "3", "big", "ship", "unicode61", "yes", "two"]``
 

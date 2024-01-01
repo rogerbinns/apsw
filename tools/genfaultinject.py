@@ -81,10 +81,11 @@ returns = {
             PySequence_GetItem PyLong_FromLongLong PySequence_GetSlice PyBytes_FromStringAndSize
             PyFloat_FromDouble  PyBool_FromLong PyCode_NewEmpty PyFloat_AsDouble
             PyIter_Next PyList_GetItem PyList_SetItem PyLong_FromVoidPtr PyMapping_GetItemString PyNumber_Float
-            PyNumber_Long PySequence_Fast PySequence_List PySequence_SetItem
+            PyNumber_Long PySequence_Fast PySequence_List PySequence_Tuple PySequence_SetItem
             PyFrame_New PyStructSequence_NewType PyStructSequence_New
-            PyMem_Realloc PyUnicode_FromFormat
+            PyMem_Realloc PyUnicode_FromFormat PyTuple_Pack
             PyObject_VectorcallMethod PyObject_Vectorcall PyWeakref_GetObject PyUnicode_DecodeUTF8
+            Connection_fts5_api get_token_value
             """.split(),
     # numeric return
     "sqlite":
