@@ -241,7 +241,7 @@ pydebug: ## Build a debug python including address sanitizer.  Extensions it bui
 	curl https://www.python.org/ftp/python/`echo $(PYDEBUG_VER) | sed 's/[abr].*//'`/Python-$(PYDEBUG_VER).tar.xz | tar xfJ - && \
 	cd Python-$(PYDEBUG_VER) && \
 	./configure --with-address-sanitizer --with-undefined-behavior-sanitizer --without-pymalloc --with-pydebug --prefix="$(PYDEBUG_DIR)" \
-	CPPFLAGS="-DPyDict_MAXFREELIST=0 -DPyFloat_MAXFREELIST=0 -DPyTuple_MAXFREELIST=0 -DPyList_MAXFREELIST=0" && \
+	--with-assertions --with-strict-overflow --without-freelists && \
 	env PATH="/usr/lib/ccache:$$PATH" ASAN_OPTIONS=detect_leaks=false make -j install
 	make dev-depends PYTHON=$(PYDEBUG_DIR)/bin/python3
 
@@ -250,7 +250,7 @@ pyvalgrind: ## Build a debug python with valgrind integration
 	curl https://www.python.org/ftp/python/`echo $(PYVALGRIND_VER) | sed 's/[abr].*//'`/Python-$(PYVALGRIND_VER).tar.xz | tar xfJ - && \
 	cd Python-$(PYVALGRIND_VER) && \
 	./configure --with-valgrind --without-pymalloc  --with-pydebug --prefix="$(PYVALGRIND_DIR)" \
-	CPPFLAGS="-DPyDict_MAXFREELIST=0 -DPyFloat_MAXFREELIST=0 -DPyTuple_MAXFREELIST=0 -DPyList_MAXFREELIST=0" && \
+	--without-freelists && \
 	env PATH="/usr/lib/ccache:$$PATH" make -j install
 	make dev-depends PYTHON=$(PYVALGRIND_DIR)/bin/python3
 
