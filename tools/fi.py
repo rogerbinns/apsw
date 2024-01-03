@@ -162,19 +162,22 @@ def exercise(example_code, expect_exception):
 
     con.fts5_tokenizer("unicode61", ["remove_diacritics", "1"])
 
+    # this needs to be a type that doesn't happen in synthesized faults
+    fake_exc = UnboundLocalError
+
     def tok(con, args):
         def tokenizer(utf8, reason):
             yield (0, 1, "hello")
             yield (1, 2, "hello", "world", "more")
             yield "third"
             yield ("fourth", "fifth")
-            raise ZeroDivisionError()
+            raise fake_exc()
 
         return tokenizer
 
     con.register_fts5_tokenizer("silly", tok)
 
-    with contextlib.suppress(ZeroDivisionError):
+    with contextlib.suppress(fake_exc):
         for _ in con.fts5_tokenizer("silly", [])(b"abcdef", apsw.FTS5_TOKENIZE_DOCUMENT):
             pass
 
@@ -188,7 +191,7 @@ def exercise(example_code, expect_exception):
         return tokenizer
 
     con.register_fts5_tokenizer("tok2", tok2)
-    with contextlib.suppress(ZeroDivisionError):
+    with contextlib.suppress(fake_exc):
         for _ in con.fts5_tokenizer("tok2", ["silly"])(b"abcdef", apsw.FTS5_TOKENIZE_DOCUMENT):
             pass
 
@@ -199,8 +202,27 @@ def exercise(example_code, expect_exception):
             insert into testfts values('1 2 3', '2 3 4', '3 4 5');
         """
     )
+    extapi = {
+        "attr": {"aux_data", "column_count", "inst_count", "phrases", "row_count", "rowid"},
+        (0,): {
+            "column_size",
+            "column_text",
+            "column_total_size",
+            "inst_tokens",
+            "phrase_columns",
+            "phrase_locations",
+        },
+        (0, lambda *args: None, None): {"query_phrase"},
+        (b"abcd e f g h",): {"tokenize"},
+    }
 
     def identity(api, param):
+        for args, names in extapi.items():
+            for name in names:
+                if args == "attr":
+                    getattr(api, name)
+                else:
+                    getattr(api, name)(*args)
         return param
 
     con.register_fts5_function("identity", identity)

@@ -85,7 +85,7 @@ returns = {
             PyFrame_New PyStructSequence_NewType PyStructSequence_New
             PyMem_Realloc PyUnicode_FromFormat PyTuple_Pack
             PyObject_VectorcallMethod PyObject_Vectorcall PyWeakref_GetObject PyUnicode_DecodeUTF8
-            Connection_fts5_api get_token_value
+            Connection_fts5_api get_token_value fts5extensionapi_acquire
             """.split(),
     # numeric return
     "sqlite":

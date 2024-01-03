@@ -130,6 +130,8 @@ xTokenizer_Callback(void *pCtx, int iflags, const char *pToken, int nToken, int 
       if (!start || !end)
         goto error;
       our_context->last_item = PyTuple_Pack(3, start, end, token);
+      if (!our_context->last_item)
+        goto error;
       Py_CLEAR(start);
       Py_CLEAR(end);
       Py_CLEAR(token);
@@ -137,6 +139,8 @@ xTokenizer_Callback(void *pCtx, int iflags, const char *pToken, int nToken, int 
     else if (our_context->include_colocated)
     {
       our_context->last_item = PyTuple_Pack(1, token);
+      if (!our_context->last_item)
+        goto error;
       Py_CLEAR(token);
     }
     else
@@ -586,9 +590,11 @@ typedef struct APSWFTS5ExtensionApi
 static PyTypeObject APSWFTS5ExtensionAPIType;
 
 /* ::TODO:: some sort of recycling for these */
+#undef fts5extensionapi_acquire
 static APSWFTS5ExtensionApi *
 fts5extensionapi_acquire(void)
 {
+#include "faultinject.h"
   APSWFTS5ExtensionApi *res = (APSWFTS5ExtensionApi *)_PyObject_New(&APSWFTS5ExtensionAPIType);
   if (res)
   {
@@ -795,7 +801,7 @@ APSWFTS5ExtensionApi_xInstCount(APSWFTS5ExtensionApi *self)
 
 /** .. method:: inst_tokens(inst: int) -> tuple[str, ...] | None
 
- `Access tokens of hit `inst` in current row <https://www.sqlite.org/fts5.html#xInstToken>`__
+ `Access tokens of hit `inst in current row <https://www.sqlite.org/fts5.html#xInstToken>`__
   None is returned if the call is not supported.
 */
 static PyObject *
@@ -807,12 +813,6 @@ APSWFTS5ExtensionApi_xInstToken(APSWFTS5ExtensionApi *self, PyObject *const *fas
 /* ::TODO:: this and none return in signature can go away once 3.45 is released */
 #if SQLITE_VERSION_NUMBER < 3045000
   Py_RETURN_NONE;
-#else
-  if (self->pApi->iVersion < 3)
-  {
-    fprintf(stderr, "self->pApi->iVersion = %d\n", self->pApi->iVersion);
-    Py_RETURN_NONE;
-  }
 #endif
 
   int inst;

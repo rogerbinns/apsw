@@ -97,7 +97,19 @@ class APSW(unittest.TestCase):
                     )
                     self.verify_token_stream(test_data, res, include_offsets, include_colocated)
 
-        bad_results = [(-73, 0, "one"), (0, 10000, "two"), 3.7, (0, "hello"), (0, 1, 3.8), (0, 1, "hello", 3.8), tuple(), (0, 3.8)]
+        bad_results = [
+            (-73, 0, "one"),
+            (0, 10000, "two"),
+            3.7,
+            (0, "hello"),
+            (0, 1, 3.8),
+            (0, 1, "hello", 3.8),
+            tuple(),
+            (0, 3.8),
+            (0, 3.8, "hello")
+        ]
+
+        bad_results_orig = bad_results[:]
 
         def bad_tok(con, args):
             def tokenize(utf8, reason):
@@ -115,6 +127,25 @@ class APSW(unittest.TestCase):
         while bad_results:
             self.assertRaises(
                 ValueError, self.db.fts5_tokenizer("bad_tok", []).__call__, b"abc", apsw.FTS5_TOKENIZE_DOCUMENT
+            )
+
+        def bad_tok2(con, args):
+            options = apsw.fts.parse_tokenizer_args(con, {"+": None}, args)
+
+            def tokenize(utf8, reason):
+                for start, end, *tokens in options["+"](utf8, reason):
+                    yield start, end, *tokens
+
+            return tokenize
+
+        self.db.register_fts5_tokenizer("bad_tok2", bad_tok2)
+        bad_result = bad_results_orig[:]
+        while bad_results:
+            self.assertRaises(
+                ValueError,
+                self.db.fts5_tokenizer("bad_tok2", ["bad_tok"]).__call__,
+                b"abc",
+                apsw.FTS5_TOKENIZE_DOCUMENT,
             )
 
     def verify_token_stream(self, expected, actual, include_offsets, include_colocated):
@@ -387,7 +418,7 @@ class APSW(unittest.TestCase):
             return
         self.db.execute(
             """
-            create virtual table testfts using fts5(a,b,c);
+            create virtual table testfts using fts5(a,b,c, tokenize="unicode61 remove_diacritics 2");
             insert into testfts values('a b c', 'b c d', 'c d e');
             insert into testfts values('1 2 3', '2 3 4', '3 4 5');
         """
@@ -404,9 +435,128 @@ class APSW(unittest.TestCase):
         x = self.db.execute("select identity(testfts,a) from testfts('e OR 5')").get
         self.assertEqual(x, ["a b c", "1 2 3"])
 
-        def check_api(api, *params):
+        aux_sentinel = object()
+
+        def check_api(api: apsw.FTS5ExtensionApi, *params):
             contexts.append(api)
-            self
+            self.assertEqual(api.column_count, 3)
+            self.assertEqual(api.row_count, 2)
+            self.assertIn(api.rowid, {1, 2})
+            self.assertTrue(api.aux_data is None or api.aux_data is aux_sentinel)
+            if api.aux_data is None:
+                api.aux_data = aux_sentinel
+            # ::TODO:: remove once release happens
+            if apsw.SQLITE_VERSION_NUMBER >= 3045000:
+                self.assertEqual(api.phrases, (("c",), ("d",), ("5",)))
+                self.assertRaises(apsw.RangeError, api.inst_tokens, 999)
+                inst = tuple(api.inst_tokens(i) for i in range(api.inst_count))
+                correct = [(("c",), ("c",), ("d",), ("c",), ("d",)), (("5",),)]
+                self.assertIn(inst, correct)
+            self.assertIn(api.inst_count, {1, 5})
+
+            correct = {((0, 1, 2), (1, 2), ()), ((), (), (2,))}
+            self.assertRaises(apsw.RangeError, api.phrase_columns, 9999)
+            pc = tuple(api.phrase_columns(i) for i in range(len(api.phrases)))
+            self.assertIn(pc, correct)
+
+            correct = [([[2], [1], [0]], [[], [2], [1]], [[], [], []]), ([[], [], []], [[], [], []], [[], [], [2]])]
+            self.assertRaises(apsw.RangeError, api.phrase_locations, 9999)
+            pl = tuple(api.phrase_locations(i) for i in range(len(api.phrases)))
+            self.assertIn(pl, correct)
+
+            correct = {-1: 18, 0: 6, 1: 6, 2: 6}
+            self.assertRaises(apsw.RangeError, api.column_total_size, 999)
+            for k, v in correct.items():
+                self.assertEqual(api.column_total_size(k), v)
+
+            correct = {-1: {9}, 0: {3}, 1: {3}, 2: {3}}
+            self.assertRaises(apsw.RangeError, api.column_size, 999)
+            for k, v in correct.items():
+                self.assertIn(api.column_size(k), v)
+
+            correct = {
+                (1, 0, b"a b c"),
+                (1, 1, b"b c d"),
+                (1, 2, b"c d e"),
+                (2, 0, b"1 2 3"),
+                (2, 1, b"2 3 4"),
+                (2, 2, b"3 4 5"),
+            }
+            self.assertRaises(apsw.RangeError, api.column_text, 99)
+            for col in range(api.column_count):
+                self.assertIn((api.rowid, col, api.column_text(col)), correct)
+
+            self.assertRaises(apsw.RangeError, api.query_phrase, 9999, lambda : None, None)
+            def cb(api2, l):
+                self.assertTrue(api2 is not api)
+                l.append((api2.rowid, tuple(api.phrase_locations(i) for i in range(len(api.phrases)))))
+
+            def cberror(api2, _):
+                1 / 0
+
+            correct = (
+                [(1, ([[2], [1], [0]], [[], [2], [1]], [[], [], []]))],
+                [(1, ([[2], [1], [0]], [[], [2], [1]], [[], [], []]))],
+                [(2, ([[2], [1], [0]], [[], [2], [1]], [[], [], []]))],
+                [(1, ([[], [], []], [[], [], []], [[], [], [2]]))],
+                [(1, ([[], [], []], [[], [], []], [[], [], [2]]))],
+                [(2, ([[], [], []], [[], [], []], [[], [], [2]]))],
+            )
+            for i in range(len(api.phrases)):
+                l = []
+                api.query_phrase(i, cb, l)
+                self.assertIn(l, correct)
+                self.assertRaises(ZeroDivisionError, api.query_phrase, i, cberror, None)
+
+            correct = (
+                (True, True, [(0, 5, "hello"), (7, 12, "world"), (13, 22, "aragones")]),
+                (True, False, [(0, 5, "hello"), (7, 12, "world"), (13, 22, "aragones")]),
+                (False, True, [("hello",), ("world",), ("aragones",)]),
+                (False, False, ["hello", "world", "aragones"]),
+                (True, True, [(0, 5, "hello"), (7, 12, "world"), (13, 22, "aragones")]),
+                (True, False, [(0, 5, "hello"), (7, 12, "world"), (13, 22, "aragones")]),
+                (False, True, [("hello",), ("world",), ("aragones",)]),
+                (False, False, ["hello", "world", "aragones"]),
+            )
+
+            test_text = "hello, world Aragonés"
+            for include_offsets in (True, False):
+                for include_colocated in (True, False):
+                    res = api.tokenize(
+                        test_text.encode("utf8"), include_offsets=include_offsets, include_colocated=include_colocated
+                    )
+                    self.assertIn((include_offsets, include_colocated, res), correct)
+
+        self.db.register_fts5_function("check_api", check_api)
+        for _ in self.db.execute("select check_api(testfts) from testfts('c d OR 5')"):
+            pass
+
+        # the same structure is in tools/fi.py - update that if you update this
+        extapi = {
+            "attr": {"aux_data", "column_count", "inst_count", "phrases", "row_count", "rowid"},
+            (0,): {
+                "column_size",
+                "column_text",
+                "column_total_size",
+                "inst_tokens",
+                "phrase_columns",
+                "phrase_locations",
+            },
+            (0, lambda *args: None, None): {"query_phrase"},
+            (b"abcd e f g h",): {"tokenize"},
+        }
+        for ctx in contexts:
+            items = set(n for n in dir(ctx) if not n.startswith("_"))
+            for args, names in extapi.items():
+                for name in names:
+                    if args == "attr":
+                        self.assertRaises(apsw.InvalidContextError, getattr, ctx, name)
+                        if name == "aux_data":
+                            self.assertRaises(apsw.InvalidContextError, setattr, ctx, name, dict())
+                    else:
+                        self.assertRaises(apsw.InvalidContextError, getattr(ctx, name), *args)
+                    items.remove(name)
+            self.assertEqual(len(items), 0)
 
     def testzzFaultInjection(self):
         "Deliberately inject faults to exercise all code paths"

@@ -95,6 +95,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef convert_column_to_pyobject
 #undef convert_value_to_pyobject
 #undef convertutf8string
+#undef fts5extensionapi_acquire
 #undef get_token_value
 #undef get_window_function_context
 #undef getfunctionargs
@@ -1391,6 +1392,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res_convertutf8string = (typeof (_res_convertutf8string))18;                                                                                   \
     }                                                                                                                                                   \
     _res_convertutf8string;                                                                                                                             \
+})
+#define fts5extensionapi_acquire(...) \
+({                                                                                                                                                                           \
+    __auto_type _res_fts5extensionapi_acquire = 0 ? fts5extensionapi_acquire(__VA_ARGS__) : 0;                                                                               \
+                                                                                                                                                                             \
+    _res_fts5extensionapi_acquire = (typeof (_res_fts5extensionapi_acquire))APSW_FaultInjectControl("fts5extensionapi_acquire", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                             \
+    if ((typeof (_res_fts5extensionapi_acquire))0x1FACADE == _res_fts5extensionapi_acquire)                                                                                  \
+       _res_fts5extensionapi_acquire = fts5extensionapi_acquire(__VA_ARGS__);                                                                                                \
+    else if ((typeof(_res_fts5extensionapi_acquire))0x2FACADE == _res_fts5extensionapi_acquire)                                                                              \
+    {                                                                                                                                                                        \
+        fts5extensionapi_acquire(__VA_ARGS__);                                                                                                                               \
+        _res_fts5extensionapi_acquire = (typeof (_res_fts5extensionapi_acquire))18;                                                                                          \
+    }                                                                                                                                                                        \
+    _res_fts5extensionapi_acquire;                                                                                                                                           \
 })
 #define get_token_value(...) \
 ({                                                                                                                                                \
