@@ -106,7 +106,7 @@ class APSW(unittest.TestCase):
             (0, 1, "hello", 3.8),
             tuple(),
             (0, 3.8),
-            (0, 3.8, "hello")
+            (0, 3.8, "hello"),
         ]
 
         bad_results_orig = bad_results[:]
@@ -486,7 +486,8 @@ class APSW(unittest.TestCase):
             for col in range(api.column_count):
                 self.assertIn((api.rowid, col, api.column_text(col)), correct)
 
-            self.assertRaises(apsw.RangeError, api.query_phrase, 9999, lambda : None, None)
+            self.assertRaises(apsw.RangeError, api.query_phrase, 9999, lambda: None, None)
+
             def cb(api2, l):
                 self.assertTrue(api2 is not api)
                 l.append((api2.rowid, tuple(api.phrase_locations(i) for i in range(len(api.phrases)))))
@@ -579,6 +580,60 @@ class APSW(unittest.TestCase):
             self.assertRaises(apsw.NoMemError, self.db.register_fts5_tokenizer, "foo", lambda *args: None)
             apsw.faultdict["FTS5FunctionRegister"] = True
             self.assertRaises(apsw.BusyError, self.db.register_fts5_function, "foo", lambda *args: None)
+            apsw.faultdict["xTokenCBFlagsBad"] = True
+            self.assertRaisesRegex(
+                ValueError,
+                "Invalid tokenize flags.*",
+                self.db.fts5_tokenizer("unicode61", []),
+                b"abc def",
+                apsw.FTS5_TOKENIZE_DOCUMENT,
+            )
+            apsw.faultdict["xTokenCBOffsetsBad"] = True
+            self.assertRaisesRegex(
+                ValueError,
+                "Invalid start .* or end .*",
+                self.db.fts5_tokenizer("unicode61", []),
+                b"abc def",
+                apsw.FTS5_TOKENIZE_DOCUMENT,
+            )
+            apsw.faultdict["xTokenCBColocatedBad"] = True
+            self.assertRaisesRegex(
+                ValueError,
+                "FTS5_TOKEN_COLOCATED set.*",
+                self.db.fts5_tokenizer("unicode61", []),
+                b"abc def",
+                apsw.FTS5_TOKENIZE_DOCUMENT,
+            )
+            apsw.faultdict["TokenizeRC"] = True
+
+            def tokenizer(con, args):
+                def tokenize(utf8, reason):
+                    yield "hello"
+                    yield ("hello", "world")
+
+                return tokenize
+
+            self.db.register_fts5_tokenizer("simple", tokenizer)
+            self.assertRaises(
+                apsw.NoMemError, self.db.fts5_tokenizer("simple", []), b"abc def", apsw.FTS5_TOKENIZE_DOCUMENT
+            )
+            apsw.faultdict["TokenizeRC2"] = True
+            self.assertRaises(
+                apsw.NoMemError, self.db.fts5_tokenizer("simple", []), b"abc def", apsw.FTS5_TOKENIZE_DOCUMENT
+            )
+
+            self.db.execute("""create virtual table ftstest using fts5(x); insert into ftstest values('hello world')""")
+            def cb(api: apsw.FTS5ExtensionApi):
+                api.row_count
+                api.aux_data = "hello"
+                api.phrases
+                api.inst_count
+                api.tokenize(b"hello world")
+
+            self.db.register_fts5_function("errmaker", cb)
+            for fault in ("xRowCountErr", "xSetAuxDataErr", "xQueryTokenErr", "xInstCountErr", "xTokenizeErr"):
+                apsw.faultdict[fault] = True
+                self.assertRaises(apsw.NoMemError, self.db.execute, "select errmaker(ftstest) from ftstest('hello')")
 
 
 if __name__ == "__main__":

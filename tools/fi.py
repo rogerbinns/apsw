@@ -195,6 +195,15 @@ def exercise(example_code, expect_exception):
         for _ in con.fts5_tokenizer("tok2", ["silly"])(b"abcdef", apsw.FTS5_TOKENIZE_DOCUMENT):
             pass
 
+    for include_offsets in (True, False):
+        for include_colocated in (True, False):
+            con.fts5_tokenizer("unicode61", [])(
+                b"hello world",
+                apsw.FTS5_TOKENIZE_DOCUMENT,
+                include_offsets=include_offsets,
+                include_colocated=include_colocated,
+            )
+
     con.execute(
         """
             create virtual table testfts using fts5(a,b,c);
