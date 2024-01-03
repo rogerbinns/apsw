@@ -583,6 +583,7 @@ class Tester:
         self.call_remap = {v: k for k, v in genfaultinject.call_map.items()}
 
         sys.apsw_fault_inject_control = self.fault_inject_control
+        sys.apsw_should_fault = self.should_fault
 
         lines, start = inspect.getsourcelines(exercise)
         end = start + len(lines)
@@ -615,6 +616,10 @@ class Tester:
         apsw_attr = self.apsw_attr
         fname = self.call_remap.get(key[0], key[0])
         try:
+            if key[0] == "APSW_FAULT_INJECT":
+                self.expect_exception.append(Exception)
+                return True
+
             if fname in self.returns["pointer"]:
                 self.expect_exception.append(MemoryError)
                 return 0, MemoryError, self.FAULTS
@@ -704,6 +709,14 @@ class Tester:
 
         print("Unhandled", key)
         breakpoint()
+
+    def should_fault(self, name, pending_exception):
+        if pending_exception != (None, None, None):
+            return False
+        key = ("APSW_FAULT_INJECT", "", name, 0, "")
+        res = self.fault_inject_control(key)
+        assert res in {self.Proceed, True}
+        return res is True
 
     def fault_inject_control(self, key):
         if testing_recursion and key[2] in {"apsw_write_unraisable", "apswvfs_excepthook"}:
@@ -804,6 +817,9 @@ class Tester:
             "MakeSqliteMsgFromPyException",
             "apswvfs_excepthook",
         }:
+            return
+        # fault inject doesn't know which specific exception it will be
+        if len(self.expect_exception) == 1 and self.expect_exception[0] is Exception:
             return
         if len(self.exc_happened) < len(tested):
             if len(tested) >= 2 and (tested[0][0], tested[1][0]) == ("_PyObject_New", "sqlite3_backup_finish"):
