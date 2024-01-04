@@ -130,7 +130,7 @@ class APSW(unittest.TestCase):
             )
 
         def bad_tok2(con, args):
-            options = apsw.fts.parse_tokenizer_args(con, {"+": None}, args)
+            options = apsw.fts.parse_tokenizer_args({"+": None}, con, args)
 
             def tokenize(utf8, reason):
                 for start, end, *tokens in options["+"](utf8, reason):
@@ -296,9 +296,9 @@ class APSW(unittest.TestCase):
             ({"foo": ta(choices=("one", "two"))}, ["foo", "four"], (ValueError, ".*was not allowed choice.*")),
         ):
             if isinstance(expected, tuple):
-                self.assertRaisesRegex(expected[0], expected[1], apsw.fts.parse_tokenizer_args, self.db, spec, args)
+                self.assertRaisesRegex(expected[0], expected[1], apsw.fts.parse_tokenizer_args, spec, self.db, args)
             else:
-                options = apsw.fts.parse_tokenizer_args(self.db, spec, args)
+                options = apsw.fts.parse_tokenizer_args(spec, self.db, args)
                 if "+" in spec:
                     tok = options.pop("+")
                     e = expected.pop("+")
@@ -316,7 +316,7 @@ class APSW(unittest.TestCase):
         test_res = ((0, 1, "a"), (2, 3, "1"), (4, 5, "2", "deux", "two"), (6, 7, "3"), (8, 9, "b"))
 
         def source(con, args):
-            apsw.fts.parse_tokenizer_args(con, {}, args)
+            apsw.fts.parse_tokenizer_args({}, con, args)
 
             def tokenize(utf8, flags):
                 self.assertEqual(flags, test_reason)
@@ -623,6 +623,7 @@ class APSW(unittest.TestCase):
             )
 
             self.db.execute("""create virtual table ftstest using fts5(x); insert into ftstest values('hello world')""")
+
             def cb(api: apsw.FTS5ExtensionApi):
                 api.row_count
                 api.aux_data = "hello"

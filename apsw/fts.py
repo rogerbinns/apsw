@@ -285,7 +285,7 @@ def PyUnicodeTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
         "single_token_categories": TokenizerArgument(default="", convertor=convert_unicode_categories),
     }
 
-    options = parse_tokenizer_args(con, spec, args)
+    options = parse_tokenizer_args(spec, con, args)
 
     categories = options["categories"]
     tokenchars = set(options["tokenchars"])
@@ -350,7 +350,7 @@ def SimplifyTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
         "remove_categories": ta(convertor=convert_unicode_categories),
         "+": None,
     }
-    options = parse_tokenizer_args(con, spec, args)
+    options = parse_tokenizer_args(spec, con, args)
 
     def identity(s: str):
         return s
@@ -408,7 +408,7 @@ def NGramTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
         ),
     }
 
-    options = parse_tokenizer_args(con, spec, args)
+    options = parse_tokenizer_args(spec, con, args)
 
     def tokenize(text: str, flags: int):
         for start in range(len(text)):
@@ -471,7 +471,7 @@ def NGramTokenTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer
         ),
     }
 
-    options = parse_tokenizer_args(con, spec, args)
+    options = parse_tokenizer_args(spec, con, args)
 
     if options["include_categories"] == convert_unicode_categories("*"):
 
@@ -537,7 +537,7 @@ def SynonymTokenizer(get: Callable[[str], None | str | tuple[str]] | None = None
             **({} if get else {"get": TokenizerArgument(default=get, convertor=convert_string_to_python)}),
         }
 
-        options = parse_tokenizer_args(con, spec, args)
+        options = parse_tokenizer_args(spec, con, args)
 
         if "get" in options:
             get = options["get"]
@@ -594,7 +594,7 @@ def StopWordsTokenizer(test: Callable[[str], bool] | None = None) -> apsw.FTS5To
             **({} if test else {"test": TokenizerArgument(default=test, convertor=convert_string_to_python)}),
         }
 
-        options = parse_tokenizer_args(con, spec, args)
+        options = parse_tokenizer_args(spec, con, args)
 
         if "test" in options:
             test = options["test"]
@@ -646,7 +646,7 @@ def TransformTokenizer(transform: Callable[[str], str | Sequence[str]] | None = 
             **({} if transform else {"transform": TokenizerArgument(convertor=convert_string_to_python)}),
         }
 
-        options = parse_tokenizer_args(con, spec, args)
+        options = parse_tokenizer_args(spec, con, args)
         if "transform" in options:
             transform = options["transform"]
         if transform is None:
@@ -800,7 +800,7 @@ def HTMLTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     HTML and the text passed on to other tokenizers.
     """
     spec = {"+": None}
-    options = parse_tokenizer_args(con, spec, args)
+    options = parse_tokenizer_args(spec, con, args)
 
     def tokenize(html: str, flags: int):
         # We only process html for the document/aux, not queries
@@ -883,7 +883,7 @@ def RegexTokenizer(
 
     spec = {}
 
-    options = parse_tokenizer_args(con, spec, args)
+    options = parse_tokenizer_args(spec, con, args)
 
     def tokenize(text: str, flags: int):
         for match in re.finditer(pattern, text):
@@ -905,15 +905,15 @@ class TokenizerArgument:
     convert_default: bool = False
     "True if the default value should be run through the convertor"
 
-# ::TODO:: move spec to first argument
+
 def parse_tokenizer_args(
-    con: apsw.Connection, spec: dict[str, TokenizerArgument | Any], args: list[str]
+    spec: dict[str, TokenizerArgument | Any], con: apsw.Connection, args: list[str]
 ) -> dict[str, Any]:
     """Parses the arguments to a tokenizer based on spec returning corresponding values
 
-    :param con: Used to lookup other tokenizers
     :param spec: A dictionary where the key is a string, and the value is either
        the corresponding default, or :class:`TokenizerArgument`.
+    :param con: Used to lookup other tokenizers
     :param args: A list of strings as received by :class:`apsw.FTS5TokenizerFactory`
 
     For example to parse  ``["arg1", "3", "big", "ship", "unicode61", "yes", "two"]``
@@ -926,7 +926,7 @@ def parse_tokenizer_args(
             "arg1": TokenizerArgument(convertor=int, default=7),
             # Limit allowed values
             "big": TokenizerArgument(choices=("ship", "plane")),
-            # Accepts any string
+            # Accepts any string, with a default
             "small": "hello",
             # gathers up remaining arguments, if you intend
             # to process the results of another tokenizer

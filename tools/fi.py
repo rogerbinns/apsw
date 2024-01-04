@@ -182,7 +182,7 @@ def exercise(example_code, expect_exception):
             pass
 
     def tok2(con, args):
-        options = apsw.fts.parse_tokenizer_args(con, {"+": None}, args)
+        options = apsw.fts.parse_tokenizer_args({"+": None}, con, args)
 
         def tokenizer(utf8, reason):
             for start, end, *tokens in options["+"](utf8, reason, include_colocated=False):
