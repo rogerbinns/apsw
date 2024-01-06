@@ -27,6 +27,11 @@ Added :func:`apsw.ext.ShowResourceUsage` for getting resource and
 SQLite usage in a block, and also use it for the shell :ref:`timer
 <shell-cmd-timer>` command.
 
+3.45.0.0
+========
+
+Correctly handle NULL/None VFS filenames (:issue:`506`)
+
 3.44.2.0
 ========
 

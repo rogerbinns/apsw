@@ -5016,6 +5016,39 @@ class APSW(unittest.TestCase):
             self.assertRaisesRegex(RuntimeError, "__init__ has already been called, and cannot be called again",
                                    o.__init__, "issue 488")
 
+    def testIssue506(self):
+        "VFS file with None/NULL filename"
+        vfs_saw_none = False
+        vfsfile_saw_none = False
+        class TVFS(apsw.VFS):
+            vfsname = "test"
+            def __init__(self):
+                super().__init__(self.vfsname, "")
+
+            def xOpen(self, name, flags):
+                nonlocal vfs_saw_none
+                if name is None:
+                    vfs_saw_none = True
+                return TVFSFile(name, flags)
+
+        class TVFSFile(apsw.VFSFile):
+            def __init__(self, filename, flags):
+                nonlocal vfsfile_saw_none
+                if filename is None:
+                    vfsfile_saw_none = True
+                super().__init__("", filename, flags)
+
+        tvfs = TVFS()
+        con = apsw.Connection(self.db.filename, vfs=tvfs.vfsname)
+        # put enough stuff in temp table that it spills to disk
+        con.pragma("cache_size", 10)
+        con.execute("create temp table testissue506(x UNIQUE,y UNIQUE, PRIMARY KEY(x,y))")
+        con.executemany("insert into testissue506 values(?,?)", (("a"*i, "b"*i) for i in range(1000)))
+
+        # verify we saw the Nones
+        self.assertTrue(vfs_saw_none)
+        self.assertTrue(vfsfile_saw_none)
+
     def testCursorGet(self):
         "Cursor.get"
         for query, expected in (("select 3,4", (3, 4)), ("select 3; select 4", [3, 4]), ("select 3,4; select 4,5", [
