@@ -10,6 +10,11 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+3.45.0.0
+========
+
+Correctly handle NULL/None VFS filenames (:issue:`506`)
+
 3.44.2.0
 ========
 

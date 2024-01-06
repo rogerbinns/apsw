@@ -2010,7 +2010,7 @@ APSWVFSFile_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUS
   return (PyObject *)self;
 }
 
-/** .. method:: __init__(vfs: str, filename: str | URIFilename, flags: list[int,int])
+/** .. method:: __init__(vfs: str, filename: str | URIFilename | None, flags: list[int,int])
 
     :param vfs: The vfs you want to inherit behaviour from.  You can
        use an empty string ``""`` to inherit from the default vfs.
@@ -2066,6 +2066,10 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwargs)
     self->filename = apsw_strdup(text);
     if (!self->filename)
       return -1;
+  }
+  else if (Py_IsNone(filename))
+  {
+    self->filename = NULL;
   }
   else
   {
