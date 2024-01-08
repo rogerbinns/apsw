@@ -332,22 +332,30 @@ def SimplifyTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
        simplify case upper pyunicode
 
     The following tokenizer arguments are accepted, and are applied to each
-    token in this order.
+    token in this order.  If you do not specify an argument then it does nothing
+    for that phase.
 
+    normalize_pre
+        Perform Unicode :func:`normalization <unicodedata.normalize>` - ``NFD`` ``NFC`` ``NFKD`` ``NFKC``.
+        NFKD is recommended to decompose codepoints (eg expanding diacritics
+        into base codepoint and combining codepoint) and to use compatibility
+        codepoints.
     case
-        ``upper``, ``lower``, or ``casefold`` to convert case.  :meth:`casefold <str.casefold>` is recommended
-    normalize
-        Perform Unicode normalization - ``NFD`` ``NFC`` ``NFKD`` ``NFKC``.
-        NFKD is recommended
+        ``upper``, ``lower``, or ``casefold`` to convert case.  :meth:`casefold <str.casefold>`
+        is recommended
     remove_categories
-       Which codepoint categories to remove.  ``M* *m Sk`` is recommended
-       to remove all marks, combining codepoints, and modifiers.
+        Which codepoint categories to remove.  ``M* *m Sk`` is recommended
+        to remove all marks, combining codepoints, and modifiers.
+    normalize_post
+        Perform a final round of normalization after processing.  ``NFC`` is
+        recommended to recombine any remaining codepoints that can be combined.
     """
     ta = TokenizerArgument
     spec = {
+        "normalize_pre": ta(choices=("NFD", "NFC", "NFKD", "NFKC")),
         "case": ta(choices=("upper", "lower", "casefold")),
-        "normalize": ta(choices=("NFD", "NFC", "NFKD", "NFKC")),
         "remove_categories": ta(convertor=convert_unicode_categories),
+        "normalize_post": ta(choices=("NFD", "NFC", "NFKD", "NFKC")),
         "+": None,
     }
     options = parse_tokenizer_args(spec, con, args)
@@ -355,21 +363,28 @@ def SimplifyTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     def identity(s: str):
         return s
 
-    # ::TODO:: we want to normalize to NFKD to remove categories so
-    # diacritics etc can go, but final should be NFKC
+    normalize_pre = (
+        functools.partial(unicodedata.normalize, options["normalize_pre"]) if options["normalize_pre"] else identity
+    )
     case = getattr(str, options["case"]) if options["case"] else identity
-    normalize = functools.partial(unicodedata.normalize, options["normalize"]) if options["normalize"] else identity
     remove_categories = options["remove_categories"]
     remove = (
         (lambda s: "".join(c for c in s if unicodedata.category(c) not in remove_categories))
         if remove_categories
         else identity
     )
+    normalize_post = (
+        functools.partial(unicodedata.normalize, options["normalize_post"]) if options["normalize_post"] else identity
+    )
 
     def tokenize(utf8: bytes, flags: int):
         tok = options["+"]
         for start, end, *tokens in tok(utf8, flags):
-            new_tokens = tuple(t for t in (remove(normalize(case(token))) for token in tokens) if t)
+            new_tokens = []
+            for token in tokens:
+                new = normalize_post(remove(case(normalize_pre(token))))
+                if new and new not in new_tokens:
+                    new_tokens.append(new)
             if new_tokens:
                 yield start, end, *new_tokens
 
