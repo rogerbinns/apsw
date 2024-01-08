@@ -420,6 +420,8 @@ def NGramTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
                 c = text[end]
                 end += 1
                 if unicodedata.category(c) not in options["include_categories"]:
+                    if not token:
+                        break
                     continue
                 token += c
                 if len(token) in seen:
