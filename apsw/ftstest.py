@@ -11,6 +11,9 @@
 import unittest
 import tempfile
 import sys
+import unicodedata
+import itertools
+import collections
 
 import apsw
 import apsw.ext
@@ -170,6 +173,68 @@ class APSW(unittest.TestCase):
                 assert isinstance(l, str)
 
             self.assertEqual(l, r)
+
+    def testAPSWFTSTokenizers(self):
+        "Test apsw.fts tokenizers"
+        if not self.has_fts5():
+            return
+
+        test_text = """ 😂❤️ 𐌼𐌰𐌲 العالم!
+            Olá, mundo! 8975984
+            नमस्ते, दुनिया!"""
+
+        test_utf8 = test_text.encode("utf8")
+
+        ## PyUnicodeTokenizer
+        self.db.register_fts5_tokenizer("pyunicode", apsw.fts.PyUnicodeTokenizer)
+
+        self.assertRaises(ValueError, self.db.fts5_tokenizer, "pyunicode", ["tokenchars", "%$#*", "separators", "$"])
+
+        self.assertEqual(self.db.fts5_tokenizer("pyunicode", [])(b"", apsw.FTS5_TOKENIZE_DOCUMENT), [])
+        self.assertEqual(self.db.fts5_tokenizer("pyunicode", [])(b"a", apsw.FTS5_TOKENIZE_DOCUMENT), [(0, 1, "a")])
+
+        correct = (
+            ("N*:::", "8975984"),
+            ("L* !Lu:::", "𐌼𐌰𐌲:العالم:lá:mundo:नमस:त:द:न:य"),
+            ("N*:::C* L* So", "😂:❤:𐌼:𐌰:𐌲:ا:ل:ع:ا:ل:م:\n:O:l:á:m:u:n:d:o:8975984:\n:न:म:स:त:द:न:य"),
+            ("N*::ud:", "8975984"),
+            ("N*::ud:C* L* So", "😂:❤:𐌼:𐌰:𐌲:ا:ل:ع:ا:ل:م:\n:O:l:á:m:n:o:8975984:\n:न:म:स:त:द:न:य"),
+            ("L* !Lu:::C* L* So", "😂:❤:𐌼:𐌰:𐌲:ا:ل:ع:ا:ل:م:\n:O:l:á:m:u:n:d:o:\n:न:म:स:त:द:न:य"),
+            ("N*:﹘❴⸡ᡃ｣\u2005ᾞᴧٙ꭛::", "8975984"),
+            ("N*:﹘❴⸡ᡃ｣\u2005ᾞᴧٙ꭛::C* L* So", "😂:❤:𐌼:𐌰:𐌲:ا:ل:ع:ا:ل:م:\n:O:l:á:m:u:n:d:o:8975984:\n:न:म:स:त:द:न:य"),
+            ("N*:﹘❴⸡ᡃ｣\u2005ᾞᴧٙ꭛:ud:", "8975984"),
+            ("L* !Lu::ud:", "𐌼𐌰𐌲:العالم:lá:m:n:o:नमस:त:द:न:य"),
+            ("N*:﹘❴⸡ᡃ｣\u2005ᾞᴧٙ꭛:ud:C* L* So", "😂:❤:𐌼:𐌰:𐌲:ا:ل:ع:ا:ل:م:\n:O:l:á:m:n:o:8975984:\n:न:म:स:त:द:न:य"),
+            ("L* !Lu::ud:C* L* So", "😂:❤:𐌼:𐌰:𐌲:ا:ل:ع:ا:ل:م:\n:O:l:á:m:n:o:\n:न:म:स:त:द:न:य"),
+            ("L* !Lu:﹘❴⸡ᡃ｣\u2005ᾞᴧٙ꭛::", "𐌼𐌰𐌲:العالم:lá:mundo:नमस:त:द:न:य"),
+            ("L* !Lu:﹘❴⸡ᡃ｣\u2005ᾞᴧٙ꭛::C* L* So", "😂:❤:𐌼:𐌰:𐌲:ا:ل:ع:ا:ل:م:\n:O:l:á:m:u:n:d:o:\n:न:म:स:त:द:न:य"),
+            ("L* !Lu:﹘❴⸡ᡃ｣\u2005ᾞᴧٙ꭛:ud:", "𐌼𐌰𐌲:العالم:lá:m:n:o:नमस:त:द:न:य"),
+            ("L* !Lu:﹘❴⸡ᡃ｣\u2005ᾞᴧٙ꭛:ud:C* L* So", "😂:❤:𐌼:𐌰:𐌲:ا:ل:ع:ا:ل:م:\n:O:l:á:m:n:o:\n:न:म:स:त:द:न:य"),
+        )
+        for categories in {"N*", "L* !Lu"}:
+            for tokenchars in {"", "﹘❴⸡ᡃ｣ ᾞᴧٙ꭛"}:
+                for separators in {"", "ud"}:
+                    for single_token_categories in {"", "C* L* So"}:
+                        key = ":".join((categories, tokenchars, separators, single_token_categories))
+                        args = [
+                            "categories",
+                            categories,
+                            "tokenchars",
+                            tokenchars,
+                            "separators",
+                            separators,
+                            "single_token_categories",
+                            single_token_categories,
+                        ]
+                        result = []
+                        for start, end, token in self.db.fts5_tokenizer("pyunicode", args)(
+                            test_utf8, apsw.FTS5_TOKENIZE_DOCUMENT
+                        ):
+                            self.assertEqual(test_utf8[start:end].decode("utf8"), token)
+                            result.append(token)
+                        result = ":".join(result)
+
+                        self.assertIn((key, result), correct)
 
     def testFTSHelpers(self):
         "Test various FTS helper functions"
@@ -381,6 +446,122 @@ class APSW(unittest.TestCase):
             self.assertEqual(returns[1], returns[2])
 
             apsw.fts.convert_string_to_python(f"apsw.ftstest.APSW.{ name }_test_function_check")(self, returns[0])
+
+        ## SimplifyTokenizer
+        test_text = "中文(繁體) Fr1AnçAiS češt2ina  🤦🏼‍♂️ straße"
+        test_utf8 = test_text.encode("utf8")
+
+        self.db.register_fts5_tokenizer("simplify", apsw.fts.SimplifyTokenizer)
+        self.db.register_fts5_tokenizer("pyunicode", apsw.fts.PyUnicodeTokenizer)
+
+        # no args should have no effect
+        baseline = self.db.fts5_tokenizer("pyunicode")(test_utf8, test_reason)
+        nowt = self.db.fts5_tokenizer("simplify", ["pyunicode"])(test_utf8, test_reason)
+        self.assertEqual(baseline, nowt)
+
+        # require tokenizer
+        self.assertRaises(ValueError, self.db.fts5_tokenizer, "simplify")
+
+        # get all codepoints except spacing
+        tok_args = ["pyunicode", "categories", "* !Z*"]
+
+        def toks(args, text):
+            return self.db.fts5_tokenizer("simplify", args + tok_args)(
+                text.encode("utf8"), test_reason, include_offsets=False, include_colocated=False
+            )
+
+        def codepoints(tokens, caseless=False):
+            res = []
+            for token in tokens:
+                for t in token:
+                    if caseless:
+                        if t == t.upper() and t == t.lower():
+                            continue
+                    res.append(t)
+            return res
+
+        self.assertTrue(any(unicodedata.category(c) == "Sk" for c in codepoints(toks([], test_text))))
+        self.assertFalse(
+            any(unicodedata.category(c) == "Sk" for c in codepoints(toks(["remove_categories", "S*"], test_text)))
+        )
+        self.assertTrue(any(c.upper() == c for c in codepoints(toks([], test_text))))
+        self.assertFalse(any(c.upper() == c for c in codepoints(toks(["case", "casefold"], test_text), caseless=True)))
+
+        norms = "NFD", "NFC", "NFKD", "NFKC"
+
+        for nin, nout in itertools.product(norms, norms):
+            if unicodedata.is_normalized(nin, test_text):
+                # make sure normalization is not changed
+                self.assertTrue(all(unicodedata.is_normalized(nin, token) for token in toks([], test_text)))
+            else:
+                # make sure it is
+                self.assertTrue(
+                    all(unicodedata.is_normalized(nin, token) for token in toks(["normalize_pre", nin], test_text))
+                )
+                self.assertTrue(
+                    all(unicodedata.is_normalized(nin, token) for token in toks(["normalize_post", nin], test_text))
+                )
+            if nin != nout:
+                self.assertTrue(
+                    all(
+                        unicodedata.is_normalized(nout, token)
+                        for token in toks(["normalize_pre", nin, "normalize_post", nout], test_text)
+                    )
+                )
+
+        ## NGramTokenizer
+        test_utf8 = (test_text * 4).encode("utf8")
+        self.db.register_fts5_tokenizer("ngram", apsw.fts.NGramTokenizer)
+
+        for include_categories in ("Ll N*", None):
+            for reason in (apsw.FTS5_TOKENIZE_DOCUMENT, apsw.FTS5_TOKENIZE_QUERY):
+                sizes = collections.Counter()
+                # verify all bytes are covered
+                got = [None] * len(test_utf8)
+                # verify QUERY mode only has one length per offset
+                by_start_len = [None] * len(test_utf8)
+                args = ["ngrams", "3,7,9-12"]
+                if include_categories:
+                    args += ["include_categories", include_categories]
+                for start, end, *tokens in self.db.fts5_tokenizer("ngram", args)(test_utf8, reason):
+                    self.assertEqual(1, len(tokens))
+                    if reason == apsw.FTS5_TOKENIZE_QUERY:
+                        self.assertIsNone(by_start_len[start])
+                        by_start_len[start] = len(tokens[0])
+                    self.assertIn(len(tokens[0]), {3, 7, 9, 10, 11, 12})
+                    sizes[len(tokens[0])] += 1
+                    token_bytes = tokens[0].encode("utf8")
+                    if include_categories is None:
+                        self.assertEqual(len(token_bytes), end - start)
+                    else:
+                        # token must be equal or subset of utf8
+                        self.assertLessEqual(len(token_bytes), end - start)
+                    if include_categories is None:
+                        for offset, byte in zip(range(start, start + end), token_bytes):
+                            self.assertTrue(got[offset] is None or got[offset] == byte)
+                            got[offset] = byte
+                    if include_categories:
+                        cats = apsw.fts.convert_unicode_categories(include_categories)
+                        self.assertTrue(all(unicodedata.category(t) in cats for t in tokens[0]))
+                self.assertTrue(all(got[i] is not None) for i in range(len(got)))
+
+                # size seen should be increasing, decreasing count for DOCUMENT,
+                if reason == apsw.FTS5_TOKENIZE_DOCUMENT:
+                    for l, r in itertools.pairwise(sorted(sizes.items())):
+                        self.assertLess(l[0], r[0])
+                        self.assertGreaterEqual(l[1], r[1])
+                else:
+                    # there should be more of the longest than all the others
+                    vals = [x[1] for x in sorted(sizes.items())]
+                    self.assertGreater(vals[-1], sum(vals[:-1]))
+
+        # longer than ngrams
+        token = self.db.fts5_tokenizer("ngram", ["ngrams", "20000"])(
+            test_utf8, apsw.FTS5_TOKENIZE_DOCUMENT, include_colocated=False, include_offsets=False
+        )[0]
+        self.assertEqual(test_utf8, token.encode("utf8"))
+        # zero len
+        self.assertEqual([], self.db.fts5_tokenizer("ngram")(b"", test_reason))
 
     @staticmethod
     def transform_test_function(s):
