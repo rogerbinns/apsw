@@ -426,6 +426,7 @@ def NGramTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     options = parse_tokenizer_args(spec, con, args)
 
     def tokenize(text: str, flags: int):
+        ntokens = 0
         for start in range(len(text)):
             tokens: list[tuple[int, int, str]] = []
             seen = options["ngrams"].copy()
@@ -447,9 +448,16 @@ def NGramTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
             # if doing a query, only produce largest possible
             if flags & apsw.FTS5_TOKENIZE_QUERY:
                 yield tokens[-1][0], tokens[-1][1], tokens[-1][2]
+                ntokens += 1
             else:
                 for start, end, token in tokens:
                     yield start, end, token
+                    ntokens += 1
+        # text didn't match any of our lengths, so return as is
+        if ntokens == 0:
+            token = "".join(c for c in text if unicodedata.category(c) in options["include_categories"])
+            if token:
+                yield 0, len(text), token
 
     return tokenize
 
