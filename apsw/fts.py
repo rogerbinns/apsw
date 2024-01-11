@@ -228,8 +228,8 @@ def StringTokenizer(func: apsw.FTS5TokenizerFactory):
             for start, end, *tokens in inner_tokenizer(text, flags):
                 if start < last_pos_str:  # went backwards
                     last_pos_bytes = last_pos_str = 0
-                if end < start:  # silently fix
-                    end = start
+                if end < start:
+                    raise ValueError(f"{end=} before {start=} utf8 byte offsets")
                 # utf8 bytes keeping track of last position
                 utf8_start = len(text[last_pos_str:start].encode("utf8"))
                 utf8_span = len(text[start:end].encode("utf8"))
