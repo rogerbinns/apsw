@@ -602,7 +602,7 @@ with destination.backup("main", connection, "main") as backup:
         print(backup.remaining, backup.page_count)
 
 ### fts: Full Text Search
-# See :doc:`fts` for full details
+# See :doc:`textsearch` for full details
 
 # Some silly sample content
 connection.execute(

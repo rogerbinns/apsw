@@ -154,7 +154,7 @@ def convert_string_to_python(expr: str) -> Any:
 def convert_number_ranges(numbers: str) -> set[int]:
     """Converts comma separated number ranges
 
-    Takes input like ``2,3-5,17` and converts to
+    Takes input like ``2,3-5,17`` and converts to
     ``{2, 3, 4, 5, 17}``
     """
     res = set()
@@ -211,8 +211,8 @@ def tokenizer_test_strings(filename: str | pathlib.Path | None = None) -> tuple[
 def StringTokenizer(func: apsw.FTS5TokenizerFactory):
     """Decorator for tokenizers that operate on strings
 
-    FTS5 tokenizers operate on UTF8 bytes for the text and offsets.  This
-    decorator provides your tokenizer with text and expects text offsets
+    FTS5 tokenizers operate on :ref:`UTF8 bytes for the text and offsets <byte_offsets>`.
+    This decorator provides your tokenizer with text and expects text offsets
     back, performing the conversions for UTF8.
     """
 
@@ -396,7 +396,7 @@ def NGramTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     """Generates ngrams from the text, useful for completion as you type
 
     For example if doing 3 (trigram) then ``a big dog`` would result in
-    ``'a b', ' bi', 'big', 'ig '`` etc.
+    ``'a b', ' bi', 'big', 'ig ', 'g d', ' do`, 'dog'``
 
     The following tokenizer arguments are accepted
 
@@ -404,7 +404,7 @@ def NGramTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
         Numeric ranges to generate.  Smaller values allow showing
         completions with less input but a larger index, while larger
         values will result in quicker searches as the input grows.
-        Default is 3.
+        Default is 3.  You can specify :func:`multiple values <convert_number_ranges>`.
 
     include_categories
         Which Unicode categories to include, by default all.  You could
@@ -450,6 +450,9 @@ def NGramTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
                 yield tokens[-1][0], tokens[-1][1], tokens[-1][2]
                 ntokens += 1
             else:
+                # in theory these are colocated but with different end
+                # bytes, but the APSW underlying implementation doesn't
+                # allow for that scenario
                 for start, end, token in tokens:
                     yield start, end, token
                     ntokens += 1
@@ -476,7 +479,7 @@ def NGramTokenTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer
         Numeric ranges to generate.  Smaller values allow showing
         completions with less input but a larger index, while larger
         values will result in quicker searches as the input grows.
-        Default is 3.
+        Default is 3.  You can specify :func:`multiple values <convert_number_ranges>`.
 
     include_categories
         Which codepoints to include in ngrams based on Unicode categories, by default all.

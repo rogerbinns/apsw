@@ -155,32 +155,32 @@ All tokenizers
       turns the entire text into trigrams (token generator).  Note it
       does not turn tokens into trigrams, but the entire text including
       all spaces and punctuation.
-  * - :class:`PyUnicodeTokenizer`
+  * - :func:`PyUnicodeTokenizer`
     - Uses Python's more recent :mod:`Unicode database <unicodedata>`
       to generate tokens
-  * - :class:`RegexTokenizer`
+  * - :func:`RegexTokenizer`
     - Use :mod:`regular expressions <re>` to generate tokens
-  * - :class:`NGramTokenizer`
+  * - :func:`NGramTokenizer`
     - Generates ngrams from the text, where you can specify the sizes and
       unicode categories.  Useful for doing autocomplete as you type.
-  * - :class:`HTMLTokenizer`
+  * - :func:`HTMLTokenizer`
     - Wrapper that converts HTML to plan text for a further tokenizer to generate
       tokens
-  * - :class:`SimplifyTokenizer`
+  * - :func:`SimplifyTokenizer`
     - Wrapper that transforms the token stream such as converting case, removing
       diacritics, and Unicode normalization.
-  * - :class:`SynonymTokenizer`
+  * - :func:`SynonymTokenizer`
     - Wrapper that provides additional tokens for existing ones such as ``first``
       for ``1st``
-  * - :class:`StopWordsTokenizer`
+  * - :func:`StopWordsTokenizer`
     - Wrapper that removes tokens from the token stream that occur too often to be useful, such as
       ``the`` in English text
-  * - :class:`TransformTokenizer
+  * - :func:`TransformTokenizer`
     - Wrapper to transform tokens, such as when stemming.
-  * - :class:`NGramTokenTokenizer`
+  * - :func:`NGramTokenTokenizer`
     - Wrapper that Generates ngrams from the token stream, where you can specify the sizes and
       unicode categories.  Useful for doing autocomplete as you type.
-  * - :class:`StringTokenizer`
+  * - :func:`StringTokenizer`
     - A decorator for your own tokenizers so that they operate on strings, performing the
       mapping to UTF8 bytes for you.
 
@@ -189,11 +189,20 @@ All tokenizers
 UTF8 byte offsets
 -----------------
 
-* into original utf8 (ie not changed/normalized)
-* start is first byte
-* end is first byte **after** token like python does with :class:`range`
-* end minus start is length of token in bytes
-* must be complete utf8, errors if middle of a utf8 byte making up codepoint
+The underlying FTS5 apis work on UTF8 and expect to be given the start
+and end offset into the UTF8 for each token.  However this information
+is never stored, and is only used by auxiliary functions like
+`snippet()
+<https://www.sqlite.org/draft/fts5.html#the_snippet_function>`__ which
+uses the offsets to work out where to put the markers.
+
+The ``end`` is the first byte **after** the token, like Python does
+with :class:`range`.  ``end`` minus ``start`` is the token length in
+bytes.
+
+If you do not care about the offsets, or they make no sense for your content,
+then you can return zero for the ``start`` and ``end``.  You can omit the
+offsets in your tokenizer and APSW automatically substitures zero.
 
 .. _fts_recommendations:
 
@@ -201,14 +210,21 @@ Recommendations
 ===============
 
 Tokenizer sequence
-  For general text, use ``simplify case casefold normalize NFKD
-  remove_categories 'M* *m Sk'`` ``pyunicode single_token_categories
-  'So Lo'``
+  For general text, use the following as one string, broken out
+  into multiple lines here for clarity::
+
+    simplify
+      normalize_pre NFKD
+      case casefold
+      remove_categories 'M* *m Sk'
+      normalize_post NFC
+    pyunicode
+      single_token_categories 'So Lo'``
 
   :class:`simplify <SimplifyTokenizer>`:
 
     * :meth:`Case folds <str.casefold>` the tokens
-    * Uses compatibility codepoints, and removes combining marks and diacritics
+    * Uses compatibility codepoints
     * Removes marks and diacritics
 
   :class:`pyunicode <PyUnicodeTokenizer>`:
@@ -237,6 +253,61 @@ Have db be only content table and fts indices and attach
 
 Normalize the Unicode
   Insert as NFC as adding to content table - too hard to correct later
+
+Third party libraries
+=====================
+
+There are several libraries available on PyPI that can be ``pip`` installed.
+
+NLTK (nltk)
+-----------
+
+`Natural Language Toolkit <https://www.nltk.org/>`__ has several
+useful methods to help with search.  You can use it do do stemming in
+many different languages, and `different algorithms
+<https://www.nltk.org/api/nltk.stem.html>`__::
+
+  stemmer = apsw.fts.TransformTokenizer(
+    nltk.stem.snowball.EnglishStemmer().stem
+  )
+  connection.register_fts5_tokenizer("english_stemmer", english_stemmer)
+
+You can use `wordnet <https://www.nltk.org/howto/wordnet.html>`__ to get
+synonyms::
+
+  from nltk.corpus import wordnet
+
+  def synonyms(word):
+    return [syn.name() for syn in wordnet.synsets(word)]
+
+  wrapper = apsw.fts.SynonymTokenizer(synonyms)
+  connection.register_fts5_tokenizer("english_synonyms", wrapper)
+
+
+Snowball Stemmer (snowballstemmer)
+----------------------------------
+
+`Snowball <https://snowballstem.org/>`__ is a successor to the Porter
+stemming algorithm (`included in FTS5
+<https://www.sqlite.org/draft/fts5.html#porter_tokenizer>`__), and
+supports many more languages.  It is also included as part of nltk.::
+
+  stemmer = apsw.fts.TransformTokenizer(
+    snowballstemmer.stemmer("english").stemWord
+  )
+  connection.register_fts5_tokenizer("english_stemmer", english_stemmer)
+
+Unidecode (unidecode)
+---------------------
+
+The `algorithm <https://interglacial.com/tpj/22/>`__ turns Unicode
+text into ascii text that sounds approximately similar::
+
+  transform = apsw.fts.TransformTokenizer(
+    unidecode.unidecode
+  )
+
+  connection.register_fts5_tokenizer("unidecode", transform)
 
 .. include:: fts.rst
 
