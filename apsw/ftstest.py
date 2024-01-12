@@ -236,6 +236,60 @@ class APSW(unittest.TestCase):
 
                         self.assertIn((key, result), correct)
 
+        ## NGramTokenizer
+        test_utf8 = ("中文(繁體) Fr1AnçAiS češt2ina  🤦🏼‍♂️ straße" * 4).encode("utf8")
+        self.db.register_fts5_tokenizer("ngram", apsw.fts.NGramTokenizer)
+
+        for include_categories in ("Ll N*", None):
+            for reason in (apsw.FTS5_TOKENIZE_DOCUMENT, apsw.FTS5_TOKENIZE_QUERY):
+                sizes = collections.Counter()
+                # verify all bytes are covered
+                got = [None] * len(test_utf8)
+                # verify QUERY mode only has one length per offset
+                by_start_len = [None] * len(test_utf8)
+                args = ["ngrams", "3,7,9-12"]
+                if include_categories:
+                    args += ["include_categories", include_categories]
+                for start, end, *tokens in self.db.fts5_tokenizer("ngram", args)(test_utf8, reason):
+                    self.assertEqual(1, len(tokens))
+                    if reason == apsw.FTS5_TOKENIZE_QUERY:
+                        self.assertIsNone(by_start_len[start])
+                        by_start_len[start] = len(tokens[0])
+                    self.assertIn(len(tokens[0]), {3, 7, 9, 10, 11, 12})
+                    sizes[len(tokens[0])] += 1
+                    token_bytes = tokens[0].encode("utf8")
+                    if include_categories is None:
+                        self.assertEqual(len(token_bytes), end - start)
+                    else:
+                        # token must be equal or subset of utf8
+                        self.assertLessEqual(len(token_bytes), end - start)
+                    if include_categories is None:
+                        for offset, byte in zip(range(start, start + end), token_bytes):
+                            self.assertTrue(got[offset] is None or got[offset] == byte)
+                            got[offset] = byte
+                    if include_categories:
+                        cats = apsw.fts.convert_unicode_categories(include_categories)
+                        self.assertTrue(all(unicodedata.category(t) in cats for t in tokens[0]))
+                self.assertTrue(all(got[i] is not None) for i in range(len(got)))
+
+                # size seen should be increasing, decreasing count for DOCUMENT,
+                if reason == apsw.FTS5_TOKENIZE_DOCUMENT:
+                    for l, r in itertools.pairwise(sorted(sizes.items())):
+                        self.assertLess(l[0], r[0])
+                        self.assertGreaterEqual(l[1], r[1])
+                else:
+                    # there should be more of the longest than all the others
+                    vals = [x[1] for x in sorted(sizes.items())]
+                    self.assertGreater(vals[-1], sum(vals[:-1]))
+
+        # longer than ngrams
+        token = self.db.fts5_tokenizer("ngram", ["ngrams", "20000"])(
+            test_utf8, apsw.FTS5_TOKENIZE_DOCUMENT, include_colocated=False, include_offsets=False
+        )[0]
+        self.assertEqual(test_utf8, token.encode("utf8"))
+        # zero len
+        self.assertEqual([], self.db.fts5_tokenizer("ngram")(b"", apsw.FTS5_TOKENIZE_DOCUMENT))
+
     def testFTSHelpers(self):
         "Test various FTS helper functions"
         if not self.has_fts5():
@@ -509,59 +563,46 @@ class APSW(unittest.TestCase):
                     )
                 )
 
-        ## NGramTokenizer
-        test_utf8 = (test_text * 4).encode("utf8")
-        self.db.register_fts5_tokenizer("ngram", apsw.fts.NGramTokenizer)
-
-        for include_categories in ("Ll N*", None):
-            for reason in (apsw.FTS5_TOKENIZE_DOCUMENT, apsw.FTS5_TOKENIZE_QUERY):
-                sizes = collections.Counter()
-                # verify all bytes are covered
-                got = [None] * len(test_utf8)
-                # verify QUERY mode only has one length per offset
-                by_start_len = [None] * len(test_utf8)
-                args = ["ngrams", "3,7,9-12"]
-                if include_categories:
-                    args += ["include_categories", include_categories]
-                for start, end, *tokens in self.db.fts5_tokenizer("ngram", args)(test_utf8, reason):
-                    self.assertEqual(1, len(tokens))
-                    if reason == apsw.FTS5_TOKENIZE_QUERY:
-                        self.assertIsNone(by_start_len[start])
-                        by_start_len[start] = len(tokens[0])
-                    self.assertIn(len(tokens[0]), {3, 7, 9, 10, 11, 12})
-                    sizes[len(tokens[0])] += 1
-                    token_bytes = tokens[0].encode("utf8")
-                    if include_categories is None:
-                        self.assertEqual(len(token_bytes), end - start)
-                    else:
-                        # token must be equal or subset of utf8
-                        self.assertLessEqual(len(token_bytes), end - start)
-                    if include_categories is None:
-                        for offset, byte in zip(range(start, start + end), token_bytes):
-                            self.assertTrue(got[offset] is None or got[offset] == byte)
-                            got[offset] = byte
-                    if include_categories:
-                        cats = apsw.fts.convert_unicode_categories(include_categories)
-                        self.assertTrue(all(unicodedata.category(t) in cats for t in tokens[0]))
-                self.assertTrue(all(got[i] is not None) for i in range(len(got)))
-
-                # size seen should be increasing, decreasing count for DOCUMENT,
-                if reason == apsw.FTS5_TOKENIZE_DOCUMENT:
-                    for l, r in itertools.pairwise(sorted(sizes.items())):
-                        self.assertLess(l[0], r[0])
-                        self.assertGreaterEqual(l[1], r[1])
-                else:
-                    # there should be more of the longest than all the others
-                    vals = [x[1] for x in sorted(sizes.items())]
-                    self.assertGreater(vals[-1], sum(vals[:-1]))
-
-        # longer than ngrams
-        token = self.db.fts5_tokenizer("ngram", ["ngrams", "20000"])(
-            test_utf8, apsw.FTS5_TOKENIZE_DOCUMENT, include_colocated=False, include_offsets=False
-        )[0]
-        self.assertEqual(test_utf8, token.encode("utf8"))
-        # zero len
-        self.assertEqual([], self.db.fts5_tokenizer("ngram")(b"", test_reason))
+        ## NGramTokenTokenizer
+        self.db.register_fts5_tokenizer("ngramtoken", apsw.fts.NGramTokenTokenizer)
+        test_text = "a deep example make sure normalization is not changed "
+        for reason in (apsw.FTS5_TOKENIZE_QUERY, apsw.FTS5_TOKENIZE_DOCUMENT):
+            res = []
+            for start, end, *tokens in self.db.fts5_tokenizer("ngramtoken", ["ngrams", "3,5,7", "pyunicode"])(
+                test_text.encode("utf8"), reason
+            ):
+                res.append(f"{start}:{end}:{':'.join(tokens)}")
+            # the correct values were derived by inspection
+            if reason == apsw.FTS5_TOKENIZE_QUERY:
+                self.assertEqual(
+                    res,
+                    [
+                        "0:1:a",
+                        "2:6:dee:eep",
+                        "7:14:examp:xampl:ample",
+                        "15:19:mak:ake",
+                        "20:24:sur:ure",
+                        "25:38:normali:ormaliz:rmaliza:malizat:alizati:lizatio:ization",
+                        "39:41:is",
+                        "42:45:not",
+                        "46:53:chang:hange:anged",
+                    ],
+                )
+            else:
+                self.assertEqual(
+                    res,
+                    [
+                        "0:1:a",
+                        "2:6:dee:eep",
+                        "7:14:exa:xam:amp:mpl:ple:examp:xampl:ample",
+                        "15:19:mak:ake",
+                        "20:24:sur:ure",
+                        "25:38:nor:orm:rma:mal:ali:liz:iza:zat:ati:tio:ion:norma:ormal:rmali:maliz:aliza:lizat:izati:zatio:ation:normali:ormaliz:rmaliza:malizat:alizati:lizatio:ization",
+                        "39:41:is",
+                        "42:45:not",
+                        "46:53:cha:han:ang:nge:ged:chang:hange:anged",
+                    ],
+                )
 
     @staticmethod
     def transform_test_function(s):
