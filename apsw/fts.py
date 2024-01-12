@@ -470,8 +470,7 @@ def NGramTokenTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer
 
     For example if doing 3 (trigram) then ``('a', 'deep', 'example')`` would result in
     ``('a', 'dee', 'eep', 'exa', 'xam', 'amp', 'mpl', 'ple')`` - ie ngrams are done
-    of each token separately.  The entire token is also included in addition to the
-    ngrams (before include_categories filtering).
+    of each token separately.
 
     The following tokenizer arguments are accepted
 
@@ -481,11 +480,6 @@ def NGramTokenTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer
         values will result in quicker searches as the input grows.
         Default is 3.  You can specify :func:`multiple values <convert_number_ranges>`.
 
-    include_categories
-        Which codepoints to include in ngrams based on Unicode categories, by default all.
-        The token generator will likely already have excluded noise like spacing
-        and punctuation.
-
     .. seealso::
 
        :func:`NGramTokenizer` for generating ngrams from the source text
@@ -494,39 +488,23 @@ def NGramTokenTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer
     spec = {
         "+": None,
         "ngrams": TokenizerArgument(default="3", convertor=convert_number_ranges, convert_default=True),
-        "include_categories": TokenizerArgument(
-            default="*", convertor=convert_unicode_categories, convert_default=True
-        ),
     }
 
     options = parse_tokenizer_args(spec, con, args)
-
-    if options["include_categories"] == convert_unicode_categories("*"):
-
-        def transform(t: str):
-            return t
-    else:
-
-        def transform(t: str):
-            cats = options["include_categories"]
-            return "".join(c for c in t if unicodedata.category(c) in cats)
 
     def tokenize(utf8: bytes, flags: int):
         for start, end, *tokens in options["+"](utf8, flags):
             new_tokens: list[str] = []
             for token in tokens:
-                if token not in new_tokens:
-                    new_tokens.append(token)
-                token = transform(token)
-                if not token:
-                    continue
+                added = 0
                 for size in options["ngrams"]:
                     for s in shingle(token, size):
-                        if s not in new_tokens:
+                        if s not in new_tokens and s != token:
                             new_tokens.append(s)
-
-            if not new_tokens:
-                continue
+                            added += 1
+                # shingling got us nothing
+                if added == 0 and token not in new_tokens:
+                    new_tokens.append(token)
 
             # if doing a query, only produce largest possible
             if flags & apsw.FTS5_TOKENIZE_QUERY:
