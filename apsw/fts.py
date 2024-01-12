@@ -1694,7 +1694,11 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(
         prog="python3 -m apsw.fts",
-        description="Runs FTS5 tokenizer against test text producing a HTML report for manual inspection.",
+        description="""Runs FTS5 tokenizer against test text producing a HTML report for manual inspection.
+
+        The FTS5 builtin tokenizers are ascii, trigram, unicode61, and porter. apsw.fts tokenizers are
+        registered as pyunicode, simplify, html, synonyms, regex, stopwords,
+        transform, ngramtoken, and ngram"""
     )
     parser.add_argument(
         "--text-file",
@@ -1731,9 +1735,7 @@ if __name__ == "__main__":
         default=[],
         help="Registers tokenizers. Format is name=mod.submod.callable "
         "where name is what is registered with FTS5 and callable is the factory function.  The module containing "
-        "callable will be imported.  Specify this option multiple times to register multiple tokenizers. "
-        "apsw.fts tokenizers are pre-registered as pyunicode, simplify, html, synonyms, regex, stopwords, "
-        "transform, ngramtoken, and ngram",
+        "callable will be imported.  Specify this option multiple times to register multiple tokenizers.",
         metavar="name=mod.part.callable",
     )
 
@@ -1775,8 +1777,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "args",
         nargs="+",
-        help="Tokenizer and arguments to run.  FTS5 builtin tokenizers are ascii, trigram, unicode61, and porter.  "
-        "For example to run the trigram tokenizer on unicode keeping diacritics use: trigram unicode61 remove_diacritics 0",
+        help="Tokenizers and arguments to run. "
+        "For example to run the trigram tokenizer on unicode61 keeping diacritics use: trigram unicode61 remove_diacritics 0",
     )
     options = parser.parse_args()
     if options.output.isatty():
