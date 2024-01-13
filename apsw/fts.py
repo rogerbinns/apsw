@@ -848,8 +848,8 @@ def string_tokenize(tokenizer: apsw.FTS5Tokenizer, text: str, flags: int):
     for start, end, *tokens in tokenizer(utf8, flags):
         if start < last_pos_str:  # went backwards
             last_pos_str = 0
-        if end < start:  # silently fix
-            end = start
+        if end < start:
+            raise ValueError(f"{end=} is before {start=}")
 
         # ::TODO:: optimise this like string_tokenizer
         bytes_start, bytes_end = (
