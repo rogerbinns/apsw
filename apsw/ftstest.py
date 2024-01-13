@@ -501,12 +501,41 @@ class APSW(unittest.TestCase):
 
             apsw.fts.convert_string_to_python(f"apsw.ftstest.APSW.{ name }_test_function_check")(self, returns[0])
 
+        # synonym reason
+        test_text = "one two three"
+
+        @apsw.fts.SynonymTokenizer
+        def func(n):
+            1 / 0
+
+        self.db.register_fts5_tokenizer("pyunicode", apsw.fts.PyUnicodeTokenizer)
+        self.db.register_fts5_tokenizer("synonym-reason", func)
+
+        self.assertEqual(
+            self.db.fts5_tokenizer("pyunicode")(test_text.encode("utf8"), apsw.FTS5_TOKENIZE_QUERY),
+            self.db.fts5_tokenizer("synonym-reason", ["pyunicode"])(test_text.encode("utf8"), apsw.FTS5_TOKENIZE_QUERY),
+        )
+
+        # stopwords reason
+        @apsw.fts.StopWordsTokenizer
+        def func(n):
+            1 / 0
+
+        self.db.register_fts5_tokenizer("stopwords-reason", func)
+
+        self.assertEqual(
+            self.db.fts5_tokenizer("pyunicode")(test_text.encode("utf8"), apsw.FTS5_TOKENIZE_QUERY),
+            self.db.fts5_tokenizer("stopwords-reason", ["pyunicode"])(
+                test_text.encode("utf8"), apsw.FTS5_TOKENIZE_QUERY | apsw.FTS5_TOKENIZE_PREFIX
+            ),
+        )
+        self.db.register_fts5_tokenizer("stopwords-reason", func)
+
         ## SimplifyTokenizer
         test_text = "中文(繁體) Fr1AnçAiS češt2ina  🤦🏼‍♂️ straße"
         test_utf8 = test_text.encode("utf8")
 
         self.db.register_fts5_tokenizer("simplify", apsw.fts.SimplifyTokenizer)
-        self.db.register_fts5_tokenizer("pyunicode", apsw.fts.PyUnicodeTokenizer)
 
         # no args should have no effect
         baseline = self.db.fts5_tokenizer("pyunicode")(test_utf8, test_reason)
@@ -603,6 +632,24 @@ class APSW(unittest.TestCase):
                         "46:53:cha:han:ang:nge:ged:chang:hange:anged",
                     ],
                 )
+
+        ## HTMLTokenizer
+        test_html = "<t>text</b><fooo/>mor<b>e</b> stuff&amp;things<yes yes>yes<>/no>a&#1234;b"
+        self.db.register_fts5_tokenizer("html", apsw.fts.HTMLTokenizer)
+        # htmltext is separately tested
+        self.assertEqual(
+            self.db.fts5_tokenizer("html", ["pyunicode", "tokenchars", "&"])(
+                test_html.encode("utf8"), apsw.FTS5_TOKENIZE_DOCUMENT, include_colocated=False, include_offsets=False
+            ),
+            ["text", "mor", "e", "stuff&things", "yes", "no", "aӒb"],
+        )
+        # queries should be pass through
+        self.assertEqual(
+            self.db.fts5_tokenizer("html", ["pyunicode", "tokenchars", "&<"])(
+                "<b>a</b>".encode("utf8"), apsw.FTS5_TOKENIZE_QUERY, include_colocated=False, include_offsets=False
+            ),
+            ["<b", "a<", "b"],
+        )
 
     @staticmethod
     def transform_test_function(s):
