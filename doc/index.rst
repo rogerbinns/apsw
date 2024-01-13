@@ -19,6 +19,7 @@ APSW |version| documentation
    blob
    backup
    textsearch
+   example-fts
    vtable
    vfs
    shell

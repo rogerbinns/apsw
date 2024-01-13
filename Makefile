@@ -40,14 +40,14 @@ clean: ## Cleans up everything
 	mkdir dist
 	for i in 'vgcore.*' '.coverage' '*.pyc' '*.pyo' '*~' '*.o' '*.so' '*.dll' '*.pyd' '*.gcov' '*.gcda' '*.gcno' '*.orig' '*.tmp' 'testdb*' 'testextension.sqlext' ; do \
 		find . -type f -name "$$i" -print0 | xargs -0 --no-run-if-empty rm -f ; done
-	rm -f doc/typing.rstgen doc/example.rst doc/renames.rstgen $(GENDOCS)
+	rm -f doc/typing.rstgen doc/example.rst doc/example-fts.rst doc/renames.rstgen $(GENDOCS)
 	-rm -rf sqlite3/
 
 doc: docs ## Builds all the doc
 
 docs: build_ext docs-no-fetch
 
-docs-no-fetch: $(GENDOCS) doc/example.rst doc/.static doc/typing.rstgen doc/renames.rstgen
+docs-no-fetch: $(GENDOCS) doc/example.rst doc/example-fts.rst doc/.static doc/typing.rstgen doc/renames.rstgen
 	rm -f testdb
 	env PYTHONPATH=. $(PYTHON) tools/docmissing.py
 	env PYTHONPATH=. $(PYTHON) tools/docupdate.py $(VERSION)
@@ -57,8 +57,14 @@ docs-no-fetch: $(GENDOCS) doc/example.rst doc/.static doc/typing.rstgen doc/rena
 
 doc/example.rst: example-code.py tools/example2rst.py src/apswversion.h
 	rm -f dbfile
-	env PYTHONPATH=. $(PYTHON) -sS tools/example2rst.py
+	env PYTHONPATH=. $(PYTHON) -sS tools/example2rst.py example-code.py doc/example.rst
 	rm -f dbfile
+
+doc/example-fts.rst: example-fts.py tools/example2rst.py src/apswversion.h apsw/fts.py
+	rm -f dbfile
+	env PYTHONPATH=. $(PYTHON) -sS tools/example2rst.py example-fts.py doc/example-fts.rst
+	rm -f dbfile
+
 
 doc/typing.rstgen: src/apswtypes.py tools/types2rst.py
 	-rm -f doc/typing.rstgen

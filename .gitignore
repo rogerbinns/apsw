@@ -8,6 +8,7 @@ callgrind.out.*
 :memory:
 doc/vfs.rst
 doc/example.rst
+doc/example-fts.rst
 doc/cursor.rst
 doc/connection.rst
 doc/blob.rst
