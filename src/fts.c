@@ -756,8 +756,6 @@ APSWFTS5ExtensionApi_phrases(APSWFTS5ExtensionApi *self)
     {
       const char *pToken = NULL;
       int nToken = 0;
-      /* ::TODO:: this version check can be removed once 3.45 is released */
-#if SQLITE_VERSION_NUMBER >= 3045000
       if (self->pApi->iVersion >= 3)
       {
         int rc = self->pApi->xQueryToken(self->pFts, phrase_num, token_num, &pToken, &nToken);
@@ -768,7 +766,6 @@ APSWFTS5ExtensionApi_phrases(APSWFTS5ExtensionApi *self)
           goto error;
         }
       }
-#endif
       if (pToken)
       {
         PyObject *tmpstr = PyUnicode_FromStringAndSize(pToken, nToken);
@@ -821,11 +818,6 @@ APSWFTS5ExtensionApi_xInstToken(APSWFTS5ExtensionApi *self, PyObject *const *fas
                                 PyObject *fast_kwnames)
 {
   FTSEXT_CHECK(NULL);
-
-/* ::TODO:: this and none return in signature can go away once 3.45 is released */
-#if SQLITE_VERSION_NUMBER < 3045000
-  Py_RETURN_NONE;
-#endif
 
   int inst;
 
