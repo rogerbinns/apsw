@@ -116,7 +116,9 @@ def fixup_download_url(url):
     ver = re.search("3[0-9]{6}", url)
     if ver:
         ver = int(ver.group(0))
-        if ver >= 3410000:
+        if ver >= 3450000:
+            year = "2024"
+        elif ver >= 3410000:
             year = "2023"
         elif ver >= 3370200:
             year = "2022"
