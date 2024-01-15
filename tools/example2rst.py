@@ -8,6 +8,7 @@ import re
 import tempfile
 import shutil
 import io
+import pprint
 
 import apsw.ext
 
@@ -69,6 +70,9 @@ header = {"example-code.py": header_example, "example-fts.py": header_fts}[input
 def get_output(filename: str):
     code: list[str] = []
     for num, line in enumerate(open(filename, "rt")):
+        if line.split() == ["from", "pprint", "import", "pprint"]:
+            code.append("# " + line)
+            continue
         mo = re.match(section_re, line)
         if mo:
             code.append(f"print('{ section_marker }{ mo.group('section') }')")
@@ -112,9 +116,15 @@ def get_output(filename: str):
 
         print(s)
 
-    print("\n".join(code))
+    def my_pprint(obj):
+        my_print(pprint.pformat(obj))
 
-    exec(compile("\n".join(code), filename, "exec"), {"print": my_print, "my_io": my_io})
+    if False: # make True if you need to debug the changes
+        print("\n".join(code))
+
+    exec(compile("\n".join(code), filename, "exec"), {"print": my_print,
+                                                      "pprint": my_pprint,
+                                                      "my_io": my_io})
 
     return output, tables
 

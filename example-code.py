@@ -13,6 +13,8 @@ import apsw.ext
 import random
 import re
 from pathlib import Path
+# pretty formatting
+from pprint import pprint
 
 ### version_check: Checking APSW and SQLite versions
 
@@ -542,9 +544,6 @@ qd = apsw.ext.query_info(
     explain_query_plan=True,  # how SQLite solves the query
 )
 
-# help with formatting
-import pprint
-
 print("query", qd.query)
 print("\nbindings", qd.bindings)
 print("\nexpanded_sql", qd.expanded_sql)
@@ -552,13 +551,18 @@ print("\nfirst_query", qd.first_query)
 print("\nquery_remaining", qd.query_remaining)
 print("\nis_explain", qd.is_explain)
 print("\nis_readonly", qd.is_readonly)
-print("\ndescription\n", pprint.pformat(qd.description))
+print("\ndescription")
+pprint(qd.description)
 if hasattr(qd, "description_full"):
-    print("\ndescription_full\n", pprint.pformat(qd.description_full))
+    print("\ndescription_full")
+    pprint(qd.description_full)
 
-print("\nquery_plan\n", pprint.pformat(qd.query_plan))
-print("\nFirst 5 actions\n", pprint.pformat(qd.actions[:5]))
-print("\nFirst 5 explain\n", pprint.pformat(qd.explain[:5]))
+print("\nquery_plan")
+pprint(qd.query_plan)
+print("\nFirst 5 actions")
+pprint(qd.actions[:5])
+print("\nFirst 5 explain")
+pprint(qd.explain[:5])
 
 ### blob_io: Blob I/O
 # BLOBS (binary large objects) are supported by SQLite.  Note that you
@@ -1121,7 +1125,7 @@ def trace_hook(trace: dict) -> None:
     # so we don't print them
     assert trace.pop("sql") == query and trace.pop("connection") is connection
     print("code is ", apsw.mapping_trace_codes[trace["code"]])
-    print(pprint.pformat(trace), "\n")
+    pprint(trace)
 
 
 connection.trace_v2(apsw.SQLITE_TRACE_STMT | apsw.SQLITE_TRACE_PROFILE | apsw.SQLITE_TRACE_ROW, trace_hook)

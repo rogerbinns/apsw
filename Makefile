@@ -65,7 +65,6 @@ doc/example-fts.rst: example-fts.py tools/example2rst.py src/apswversion.h apsw/
 	env PYTHONPATH=. $(PYTHON) -sS tools/example2rst.py example-fts.py doc/example-fts.rst
 	rm -f dbfile
 
-
 doc/typing.rstgen: src/apswtypes.py tools/types2rst.py
 	-rm -f doc/typing.rstgen
 	$(PYTHON) tools/types2rst.py
@@ -73,7 +72,6 @@ doc/typing.rstgen: src/apswtypes.py tools/types2rst.py
 doc/renames.rstgen: tools/names.py tools/renames.json
 	-rm -f doc/renames.rstgen
 	env PYTHONPATH=. $(PYTHON) tools/names.py rst-gen > doc/renames.rstgen
-
 
 doc/.static:
 	mkdir -p doc/.static

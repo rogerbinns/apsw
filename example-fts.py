@@ -5,15 +5,34 @@
 from __future__ import annotations
 from typing import Optional, Iterator, Any
 
-import os
-import sys
-import time
 import apsw
 import apsw.ext
 import apsw.fts
-import random
-import re
-from pathlib import Path
+
+# The sample data we use - recipes with ingredients, instructions, and serving
+sample_data = (
+    (
+        "One egg",
+        "Place egg in three cups water until boiling.  Take out after 3 minutes",
+        "Peel egg and place on piece of toast",
+    ),
+    (
+        "1 orange.  One cup water. 1 chicken breast",
+        "Cook chicken in pan.  Add water and peeled orange. Sauté until reduced",
+        "Cut into strips, and make a tower",
+    ),
+    (
+        "2 pieces of bread. A dollop of jam",
+        "Spread jam over one piece of toast, then place other bread on top",
+        "Eat with a warm glass of milk and no eggs",
+    ),
+    (
+        "Lemon, a tbsp of honey, 1 c water",
+        "Juice lemon, add to boiling water",
+        "Stir in honey, sniff while it cools, then drink out of tall cup",
+    ),
+)
+
 
 connection = apsw.Connection("dbfile")
 
@@ -22,66 +41,26 @@ connection = apsw.Connection("dbfile")
 
 print("FTS5 available:", "ENABLE_FTS5" in apsw.compile_options)
 
-### fts: Full Text Search
-# See :doc:`textsearch` for full details
+### fts_standard: Standard FTS5 usage
+# See the SQLite `FTS5 documentation <https://www.sqlite.org/fts5.html>`__
 
-# Some silly sample content
+# Create a virtual table
 connection.execute(
-    """
-    create table recipes(ingredients, instructions, serving);
-    insert into recipes values
-      ('One egg', 'Place egg in three cups water until boiling.  Take out after 3 minutes', 'Peel egg and place on piece of toast'),
-      ('1 orange.  One cup water. 1 chicken breast', 'Cook chicken in pan.  Add water and peeled orange. Sauté until reduced', 'Cut into strips, and make a tower'),
-      ('2 pieces of bread. A dollop of jam', 'Spread jam over one piece of toast, then place other bread on top', 'Eat with a warm glass of milk and no eggs');
-"""
+    """CREATE VIRTUAL TABLE fts_standard USING fts5(ingredients,
+                   instructions, serving)"""
 )
 
-# be able to search for either form
-synonyms = {"1": "one", "one": "1"}
-connection.register_fts5_tokenizer("synonyms", apsw.fts.SynonymTokenizer(synonyms.get))
+# Add the content
+connection.executemany("INSERT INTO fts_standard VALUES(?, ?, ?)", sample_data)
 
+# Some queries
+queries = (
+    # Any occurence
+    "bread",
+    # OR
+    "bread OR toast",
+    # AND
+    "bread AND toast",
+    #
 
-# ignore trailing 's' on all tokens
-def ignore_s(token):
-    return token.rstrip("s")
-
-
-connection.register_fts5_tokenizer("plurals", apsw.fts.TransformTokenizer(ignore_s))
-
-
-# Ignore words
-def ignore(token):
-    return token in {"and", "of"}
-
-
-connection.register_fts5_tokenizer("ignore", apsw.fts.StopWordsTokenizer(ignore))
-
-# Use python's more recent unicode db
-connection.register_fts5_tokenizer("pyunicode", apsw.fts.PyUnicodeTokenizer)
-# Separate wrapper does lower casing, removal of accents etc
-connection.register_fts5_tokenizer("simplify", apsw.fts.SimplifyTokenizer)
-
-# How we will tokenize combining the above
-tokenize = " ".join(
-    apsw.format_sql_value(arg)
-    for arg in (
-        "ignore",
-        "plurals",
-        "synonyms",
-        "simplify",
-        "case", "casefold",
-        "remove_categories",   "M* *m Sk",
-        "pyunicode",
-    )
-)
-
-# Can't use bound values, so fstring hence doubled apostrophes above
-connection.execute(
-    f"""
-    create virtual table recipes_search using fts5(ingredients, instructions, serving,
-                   tokenize="{tokenize}",
-                   content=recipes);
-    insert into recipes_search(recipes_search) values('rebuild');
-"""
-)
-
+):

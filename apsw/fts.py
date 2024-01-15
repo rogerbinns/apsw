@@ -1208,7 +1208,7 @@ class FTS5Table:
         contentless_delete: int | None = None,
         content_rowid: str | None = None,
         generate_triggers: bool = False,
-        normalize: None | Literal["NFC"] | Literal["NFKC"] | Literal["NFD"] | Literal[NFKD] = None,
+        normalize: None | Literal["NFC"] | Literal["NFKC"] | Literal["NFD"] | Literal["NFKD"] = None,
     ) -> FTS5Table:
         """Creates the table
 
