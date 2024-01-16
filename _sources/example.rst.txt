@@ -62,9 +62,9 @@ Checking APSW and SQLite versions
 .. code-block:: output
 
           Using APSW file /space/apsw/apsw/__init__.cpython-311-x86_64-linux-gnu.so
-             APSW version 3.44.2.0
-    SQLite header version 3044002
-       SQLite lib version 3.44.2
+             APSW version 3.45.0.0
+    SQLite header version 3045000
+       SQLite lib version 3.45.0
        Using amalgamation True
 
 
@@ -909,12 +909,7 @@ query (without running it)
      ('address', 'CHAR'))
     
     description_full
-     (('id', 'INTEGER', 'main', 'orders', 'id'),
-     ('customer_id', 'INTEGER', 'main', 'orders', 'customer_id'),
-     ('item', 'MY_OWN_TYPE', 'main', 'orders', 'item'),
-     ('id', 'INTEGER', 'main', 'customers', 'id'),
-     ('name', 'CHAR', 'main', 'customers', 'name'),
-     ('address', 'CHAR', 'main', 'customers', 'address'))
+     None
     
     query_plan
      QueryPlan(detail='QUERY PLAN',
@@ -1204,7 +1199,7 @@ feedback and allows cancelling.
     progress handler called
     progress handler called
     progress handler called
-    (9922068098,)
+    (9682844702,)
 
 
 .. index:: File Control (example code)
@@ -1610,7 +1605,7 @@ useful instead.
     │ .local     │ 1534       │
     │ .o         │ 20696      │
     │ .ps1       │ 9033       │
-    │ .py        │ 11815871   │
+    │ .py        │ 11815895   │
     │ .pyc       │ 13288659   │
     │ .rst       │ 9561       │
     │ .sh        │ 3941       │
@@ -1880,9 +1875,9 @@ Python.
     
     Dump output
     
-    -- SQLite dump (by APSW 3.44.2.0)
-    -- SQLite version 3.44.2
-    -- Date: Wed Nov 29 11:04:22 2023
+    -- SQLite dump (by APSW 3.45.0.0)
+    -- SQLite version 3.45.0
+    -- Date: Tue Jan 16 08:37:01 2024
     -- Tables like: csvtest%
     -- Database: /space/apsw/dbfile
     -- User: rogerb @ clamps
@@ -1891,7 +1886,7 @@ Python.
     PRAGMA page_size=4096;
     -- PRAGMA encoding='UTF-8';
     -- PRAGMA auto_vacuum=NONE;
-    -- PRAGMA max_page_count=1073741823;
+    -- PRAGMA max_page_count=4294967294;
     
     BEGIN TRANSACTION;
     
@@ -1931,7 +1926,7 @@ for per connection statistics.
 
 .. code-block:: output
 
-    SQLite memory usage 520456 max 2497232
+    SQLite memory usage 510184 max 2494360
     4936 bytes used to store schema for this connection
 
 
@@ -2005,7 +2000,7 @@ This shows using :meth:`Connection.trace_v2`
                      'SQLITE_STMTSTATUS_FILTER_HIT': 0,
                      'SQLITE_STMTSTATUS_FILTER_MISS': 0,
                      'SQLITE_STMTSTATUS_FULLSCAN_STEP': 1365,
-                     'SQLITE_STMTSTATUS_MEMUSED': 15784,
+                     'SQLITE_STMTSTATUS_MEMUSED': 15616,
                      'SQLITE_STMTSTATUS_REPREPARE': 0,
                      'SQLITE_STMTSTATUS_RUN': 1,
                      'SQLITE_STMTSTATUS_SORT': 2,

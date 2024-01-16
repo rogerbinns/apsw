@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Example/Tour &mdash; APSW 3.44.2.0 documentation</title>
+  <title>Example/Tour &mdash; APSW 3.45.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -17,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=bfcc354d"></script>
+        <script src="_static/documentation_options.js?v=a1169eb9"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -42,7 +42,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.44.2.0
+                3.45.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -187,9 +187,9 @@ and attribute documentation.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">      Using APSW file /space/apsw/apsw/__init__.cpython-311-x86_64-linux-gnu.so</span>
-<span class="go">         APSW version 3.44.2.0</span>
-<span class="go">SQLite header version 3044002</span>
-<span class="go">   SQLite lib version 3.44.2</span>
+<span class="go">         APSW version 3.45.0.0</span>
+<span class="go">SQLite header version 3045000</span>
+<span class="go">   SQLite lib version 3.45.0</span>
 <span class="go">   Using amalgamation True</span>
 </pre></div>
 </div>
@@ -856,12 +856,7 @@ query (without running it)</p>
 <span class="go"> (&#39;address&#39;, &#39;CHAR&#39;))</span>
 
 <span class="go">description_full</span>
-<span class="go"> ((&#39;id&#39;, &#39;INTEGER&#39;, &#39;main&#39;, &#39;orders&#39;, &#39;id&#39;),</span>
-<span class="go"> (&#39;customer_id&#39;, &#39;INTEGER&#39;, &#39;main&#39;, &#39;orders&#39;, &#39;customer_id&#39;),</span>
-<span class="go"> (&#39;item&#39;, &#39;MY_OWN_TYPE&#39;, &#39;main&#39;, &#39;orders&#39;, &#39;item&#39;),</span>
-<span class="go"> (&#39;id&#39;, &#39;INTEGER&#39;, &#39;main&#39;, &#39;customers&#39;, &#39;id&#39;),</span>
-<span class="go"> (&#39;name&#39;, &#39;CHAR&#39;, &#39;main&#39;, &#39;customers&#39;, &#39;name&#39;),</span>
-<span class="go"> (&#39;address&#39;, &#39;CHAR&#39;, &#39;main&#39;, &#39;customers&#39;, &#39;address&#39;))</span>
+<span class="go"> None</span>
 
 <span class="go">query_plan</span>
 <span class="go"> QueryPlan(detail=&#39;QUERY PLAN&#39;,</span>
@@ -1112,7 +1107,7 @@ feedback and allows cancelling.</p>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
-<span class="go">(9922068098,)</span>
+<span class="go">(9682844702,)</span>
 </pre></div>
 </div>
 </section>
@@ -1441,7 +1436,7 @@ useful instead.</p>
 <span class="go">│ .local     │ 1534       │</span>
 <span class="go">│ .o         │ 20696      │</span>
 <span class="go">│ .ps1       │ 9033       │</span>
-<span class="go">│ .py        │ 11815871   │</span>
+<span class="go">│ .py        │ 11815895   │</span>
 <span class="go">│ .pyc       │ 13288659   │</span>
 <span class="go">│ .rst       │ 9561       │</span>
 <span class="go">│ .sh        │ 3941       │</span>
@@ -1675,9 +1670,9 @@ Python.</p>
 
 <span class="go">Dump output</span>
 
-<span class="go">-- SQLite dump (by APSW 3.44.2.0)</span>
-<span class="go">-- SQLite version 3.44.2</span>
-<span class="go">-- Date: Wed Nov 29 11:04:22 2023</span>
+<span class="go">-- SQLite dump (by APSW 3.45.0.0)</span>
+<span class="go">-- SQLite version 3.45.0</span>
+<span class="go">-- Date: Tue Jan 16 08:37:01 2024</span>
 <span class="go">-- Tables like: csvtest%</span>
 <span class="go">-- Database: /space/apsw/dbfile</span>
 <span class="go">-- User: rogerb @ clamps</span>
@@ -1686,7 +1681,7 @@ Python.</p>
 <span class="go">PRAGMA page_size=4096;</span>
 <span class="go">-- PRAGMA encoding=&#39;UTF-8&#39;;</span>
 <span class="go">-- PRAGMA auto_vacuum=NONE;</span>
-<span class="go">-- PRAGMA max_page_count=1073741823;</span>
+<span class="go">-- PRAGMA max_page_count=4294967294;</span>
 
 <span class="go">BEGIN TRANSACTION;</span>
 
@@ -1715,7 +1710,7 @@ for per connection statistics.</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="w"> </span><span class="n">schema_used</span><span class="w"> </span><span class="si">}</span><span class="s2"> bytes used to store schema for this connection&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite memory usage 520456 max 2497232</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite memory usage 510184 max 2494360</span>
 <span class="go">4936 bytes used to store schema for this connection</span>
 </pre></div>
 </div>
@@ -1779,7 +1774,7 @@ for per connection statistics.</p>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FILTER_HIT&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FILTER_MISS&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FULLSCAN_STEP&#39;: 1365,</span>
-<span class="go">                 &#39;SQLITE_STMTSTATUS_MEMUSED&#39;: 15784,</span>
+<span class="go">                 &#39;SQLITE_STMTSTATUS_MEMUSED&#39;: 15616,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_REPREPARE&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_RUN&#39;: 1,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_SORT&#39;: 2,</span>
@@ -1911,8 +1906,8 @@ rollback the incomplete transaction.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Nov 29, 2023.
+    <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      <span class="lastupdated">Last updated on Jan 16, 2024.
       </span></p>
   </div>
 

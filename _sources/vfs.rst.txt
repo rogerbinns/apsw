@@ -313,7 +313,7 @@ VFS class
 VFSFile class
 =============
 
-.. class:: VFSFile(vfs: str, filename: str | URIFilename, flags: list[int,int])
+.. class:: VFSFile(vfs: str, filename: str | URIFilename | None, flags: list[int,int])
 
     Wraps access to a file.  You only need to derive from this class
     if you want the file object returned from :meth:`VFS.xOpen` to
