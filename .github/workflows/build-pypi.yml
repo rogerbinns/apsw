@@ -24,6 +24,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
+          name: dist-${{ matrix.os }}
           path: ./wheelhouse/*.whl
 
 
@@ -53,6 +54,7 @@ jobs:
 
         - uses: actions/upload-artifact@v4
           with:
+            name: dist-qemu-${{ matrix.arch }}
             path: ./wheelhouse/*.whl
 
 
@@ -67,6 +69,7 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
+        name: dist-source
         path: ./dist/*
 
   pypi_publish:
@@ -79,7 +82,8 @@ jobs:
     - name: Stage wheels
       uses: actions/download-artifact@v4
       with:
-        name: artifact
+        pattern: dist-*
+        merge-multiple: true
         path: dist
 
     - name: Publish package
