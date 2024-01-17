@@ -20,6 +20,10 @@ import time
 import concurrent.futures
 import random
 
+if os.path.isdir("/usr/lib/ccache"):
+    os.putenv("PATH", "/usr/lib/ccache:" + os.environ["PATH"])
+    print(f"{os.environ.get('CCACHE_DIR')=}")
+
 os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # disable testfileprefix

@@ -1,0 +1,25 @@
+FROM ubuntu:latest
+
+RUN dpkg --add-architecture i386
+
+RUN apt update && apt dist-upgrade && apt install -y python3 python3-dev build-essential gcc-multilib \
+    wget git ccache \
+    zlib1g-dev   zlib1g-dev:i386 \
+    libssl-dev   libssl-dev:i386 \
+    libffi-dev   libffi-dev:i386
+
+# apsw-test is where the Python's are extracted and built.  It used to  be
+# a subdirectory of apsw but then the language server ignored the gitignore
+# and tried to index all the many many source files in it
+
+# apsw is the apsw source directory
+
+# ccache is where ccache is stored
+
+VOLUME /megatest/apsw-test /megatest/apsw /megatest/ccache
+
+ENV CCACHE_DIR=/megatest/ccache
+
+WORKDIR /megatest/apsw
+
+ENTRYPOINT [ "tools/megatest.py" ]
