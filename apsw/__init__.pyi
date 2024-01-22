@@ -2175,7 +2175,7 @@ class FTS5ExtensionApi:
         ...
 
     def column_text(self, col: int) -> bytes:
-        """Returns the `utf8 bytes for the column of the current row <https://www.sqlite.org/draft/fts5.html#xColumnText>`__."""
+        """Returns the `utf8 bytes for the column of the current row <https://www.sqlite.org/fts5.html#xColumnText>`__."""
         ...
 
     def column_total_size(self, col: int = -1) -> int:
@@ -2189,11 +2189,11 @@ class FTS5ExtensionApi:
     <https://www.sqlite.org/fts5.html#xInstCount>`__"""
 
     def inst_tokens(self, inst: int) -> tuple[str, ...] | None:
-        """`Access tokens of hit `inst` in current row <https://www.sqlite.org/fts5.html#xInstToken>`__
+        """`Access tokens of hit `inst in current row <https://www.sqlite.org/fts5.html#xInstToken>`__
          None is returned if the call is not supported."""
         ...
 
-    def phrase_columns(self, phrase: int) -> tuple(int):
+    def phrase_columns(self, phrase: int) -> tuple[int]:
         """Returns `which columns the phrase number occurs in <https://www.sqlite.org/fts5.html#xPhraseFirstColumn>`__"""
         ...
 
@@ -2215,8 +2215,8 @@ class FTS5ExtensionApi:
     `xQueryToken <https://www.sqlite.org/fts5.html#xQueryToken>`__"""
 
     def query_phrase(self, phrase: int, callback: FTS5QueryPhrase, closure: Any) -> None:
-        """Searches the table for the `numbered query <https://www.sqlite.org/draft/fts5.html#xQueryPhrase>`__.
-        The callback takes two parameters - :class:`apsw.FTS5ExtensionApi` and closure.
+        """Searches the table for the `numbered query <https://www.sqlite.org/fts5.html#xQueryPhrase>`__.
+        The callback takes two parameters - a different :class:`apsw.FTS5ExtensionApi` and closure.
 
         An example usage for this method is to see how often the phrases occur in the table.  Setup a
         tracking counter here, and then in the callback you can update it on each visited row."""

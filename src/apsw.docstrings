@@ -2744,7 +2744,7 @@
 
 
 #define  FTS5ExtensionApi_column_text_DOC "column_text($self,col)\n--\n\nFTS5ExtensionApi.column_text(col: int) -> bytes\n\n" \
-"Returns the `utf8 bytes for the column of the current row <https://www.sqlite.org/draft/fts5.html#xColumnText>`__.\n" 
+"Returns the `utf8 bytes for the column of the current row <https://www.sqlite.org/fts5.html#xColumnText>`__.\n" 
 
 #define FTS5ExtensionApi_column_text_KWNAMES "col"
 #define FTS5ExtensionApi_column_text_USAGE "FTS5ExtensionApi.column_text(col: int) -> bytes"
@@ -2774,7 +2774,7 @@
 "<https://www.sqlite.org/fts5.html#xInstCount>`__\n" 
 
 #define  FTS5ExtensionApi_inst_tokens_DOC "inst_tokens($self,inst)\n--\n\nFTS5ExtensionApi.inst_tokens(inst: int) -> tuple[str, ...] | None\n\n" \
-"`Access tokens of hit `inst` in current row <https://www.sqlite.org/fts5.html#xInstToken>`__\n" \
+"`Access tokens of hit `inst in current row <https://www.sqlite.org/fts5.html#xInstToken>`__\n" \
 " None is returned if the call is not supported.\n" 
 
 #define FTS5ExtensionApi_inst_tokens_KWNAMES "inst"
@@ -2785,11 +2785,11 @@
 } while(0)
 
 
-#define  FTS5ExtensionApi_phrase_columns_DOC "phrase_columns($self,phrase)\n--\n\nFTS5ExtensionApi.phrase_columns(phrase: int) -> tuple(int)\n\n" \
+#define  FTS5ExtensionApi_phrase_columns_DOC "phrase_columns($self,phrase)\n--\n\nFTS5ExtensionApi.phrase_columns(phrase: int) -> tuple[int]\n\n" \
 "Returns `which columns the phrase number occurs in <https://www.sqlite.org/fts5.html#xPhraseFirstColumn>`__\n" 
 
 #define FTS5ExtensionApi_phrase_columns_KWNAMES "phrase"
-#define FTS5ExtensionApi_phrase_columns_USAGE "FTS5ExtensionApi.phrase_columns(phrase: int) -> tuple(int)"
+#define FTS5ExtensionApi_phrase_columns_USAGE "FTS5ExtensionApi.phrase_columns(phrase: int) -> tuple[int]"
 
 #define FTS5ExtensionApi_phrase_columns_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(phrase), int)); \
@@ -2822,8 +2822,8 @@
 "`xQueryToken <https://www.sqlite.org/fts5.html#xQueryToken>`__\n" 
 
 #define  FTS5ExtensionApi_query_phrase_DOC "query_phrase($self,phrase,callback,closure)\n--\n\nFTS5ExtensionApi.query_phrase(phrase: int, callback: FTS5QueryPhrase, closure: Any) -> None\n\n" \
-"Searches the table for the `numbered query <https://www.sqlite.org/draft/fts5.html#xQueryPhrase>`__.\n" \
-"The callback takes two parameters - :class:`apsw.FTS5ExtensionApi` and closure.\n" \
+"Searches the table for the `numbered query <https://www.sqlite.org/fts5.html#xQueryPhrase>`__.\n" \
+"The callback takes two parameters - a different :class:`apsw.FTS5ExtensionApi` and closure.\n" \
 "\n" \
 "An example usage for this method is to see how often the phrases occur in the table.  Setup a\n" \
 "tracking counter here, and then in the callback you can update it on each visited row.\n" 

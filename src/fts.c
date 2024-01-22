@@ -864,7 +864,7 @@ error:
   return NULL;
 }
 
-/** .. method:: phrase_columns(phrase: int) -> tuple(int)
+/** .. method:: phrase_columns(phrase: int) -> tuple[int]
 
  Returns `which columns the phrase number occurs in <https://www.sqlite.org/fts5.html#xPhraseFirstColumn>`__
 */
@@ -1047,7 +1047,7 @@ APSWFTS5ExtensionApi_xColumnSize(APSWFTS5ExtensionApi *self, PyObject *const *fa
 
 /** .. method:: column_text(col: int) -> bytes
 
-  Returns the `utf8 bytes for the column of the current row <https://www.sqlite.org/draft/fts5.html#xColumnText>`__.
+  Returns the `utf8 bytes for the column of the current row <https://www.sqlite.org/fts5.html#xColumnText>`__.
 
 */
 static PyObject *
@@ -1181,8 +1181,8 @@ apsw_fts_query_phrase_callback(const Fts5ExtensionApi *pApi, Fts5Context *pFts, 
 
 /** .. method:: query_phrase(phrase: int, callback: FTS5QueryPhrase, closure: Any) -> None
 
-  Searches the table for the `numbered query <https://www.sqlite.org/draft/fts5.html#xQueryPhrase>`__.
-  The callback takes two parameters - :class:`apsw.FTS5ExtensionApi` and closure.
+  Searches the table for the `numbered query <https://www.sqlite.org/fts5.html#xQueryPhrase>`__.
+  The callback takes two parameters - a different :class:`apsw.FTS5ExtensionApi` and closure.
 
   An example usage for this method is to see how often the phrases occur in the table.  Setup a
   tracking counter here, and then in the callback you can update it on each visited row.

@@ -1001,7 +1001,6 @@ def _format_table(colnames: list[str], rows: list[apsw.SQLiteValues], colour: bo
         out_lines.append(line)
 
     def do_row(row, sep: str, *, centre: bool = False, header: bool = False) -> None:
-        # column names
         for n in range(max(len(cell[0]) for cell in row)):
             line = sep
             for i, (cell, t) in enumerate(row):

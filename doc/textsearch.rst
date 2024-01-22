@@ -193,7 +193,7 @@ The underlying FTS5 apis work on UTF8 and expect to be given the start
 and end offset into the UTF8 for each token.  However this information
 is never stored, and is only used by auxiliary functions like
 `snippet()
-<https://www.sqlite.org/draft/fts5.html#the_snippet_function>`__ which
+<https://www.sqlite.org/fts5.html#the_snippet_function>`__ which
 uses the offsets to work out where to put the markers.
 
 The ``end`` is the first byte **after** the token, like Python does
@@ -289,7 +289,7 @@ Snowball Stemmer (snowballstemmer)
 
 `Snowball <https://snowballstem.org/>`__ is a successor to the Porter
 stemming algorithm (`included in FTS5
-<https://www.sqlite.org/draft/fts5.html#porter_tokenizer>`__), and
+<https://www.sqlite.org/fts5.html#porter_tokenizer>`__), and
 supports many more languages.  It is also included as part of nltk.::
 
   stemmer = apsw.fts.TransformTokenizer(
