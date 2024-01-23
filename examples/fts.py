@@ -31,7 +31,8 @@ sample_data = (
     (
         "Lemon🍋; a-tbsp. of__honey+1 'c' water",
         "Juice lemon, add to boiling? 'water'",
-        "Stir-in🥄 HONEY, sniff while it cools, pour into tall cup, " "then drink out of ☕ cup.",
+        "Stir-in🥄 HONEY, sniff while it cools, pour into tall cup, "
+        "then drink out of ☕ cup.",
     ),
 )
 
@@ -53,7 +54,9 @@ connection.execute(
 )
 
 # Add the content
-connection.executemany("INSERT INTO fts_table VALUES(?, ?, ?)", sample_data)
+connection.executemany(
+    "INSERT INTO fts_table VALUES(?, ?, ?)", sample_data
+)
 
 # Some simple queries  - FTS5 supports more complex ones and ways of
 # expressing them
@@ -72,7 +75,11 @@ for query in queries:
     print(query)
     # show matching rows showing best matches first
     sql = "SELECT * FROM fts_table(?) ORDER BY rank"
-    print(apsw.ext.format_query_table(connection, sql, (query,), string_sanitize=0))
+    print(
+        apsw.ext.format_query_table(
+            connection, sql, (query,), string_sanitize=0
+        )
+    )
 
 ### fts5_auxfunc: Auxiliary functions
 # `Auxiliary functions <https://sqlite.org/fts5.html#_auxiliary_functions_>`__
@@ -165,7 +172,9 @@ tokenizer = connection.fts5_tokenizer("unicode61")
 test_text = "😂❤️ v1.2 Grey ColOUR! Straße"
 
 # Call the tokenizer to do a tokenization, supplying the reason
-pprint(tokenizer(test_text.encode("utf8"), apsw.FTS5_TOKENIZE_DOCUMENT))
+pprint(
+    tokenizer(test_text.encode("utf8"), apsw.FTS5_TOKENIZE_DOCUMENT)
+)
 
 
 # Make a function to show output
@@ -173,7 +182,9 @@ def show_tokens(text, tokenizer_name, tokenizer_args=None):
     print(f"{text=}")
     print(f"{tokenizer_name=} {tokenizer_args=}")
 
-    tokenizer = connection.fts5_tokenizer(tokenizer_name, tokenizer_args)
+    tokenizer = connection.fts5_tokenizer(
+        tokenizer_name, tokenizer_args
+    )
     # exclude the offsets since they clutter the output
     pprint(
         tokenizer(

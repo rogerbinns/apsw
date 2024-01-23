@@ -13,6 +13,7 @@ import apsw.ext
 import random
 import re
 from pathlib import Path
+
 # pretty formatting
 from pprint import pprint
 
@@ -60,10 +61,14 @@ apsw.log(apsw.SQLITE_ERROR, "A message from Python")
 connection = apsw.Connection("dbfile")
 
 # Open existing read-only
-connection = apsw.Connection("dbfile", flags=apsw.SQLITE_OPEN_READONLY)
+connection = apsw.Connection(
+    "dbfile", flags=apsw.SQLITE_OPEN_READONLY
+)
 
 # Open existing read-write (exception if it doesn't exist)
-connection = apsw.Connection("dbfile", flags=apsw.SQLITE_OPEN_READWRITE)
+connection = apsw.Connection(
+    "dbfile", flags=apsw.SQLITE_OPEN_READWRITE
+)
 
 ### executing_sql: Executing SQL
 # Use :meth:`Connection.execute` to execute SQL
@@ -202,7 +207,11 @@ if check != "ok":
 # tracing <tracing>`.
 
 
-def my_tracer(cursor: apsw.Cursor, statement: str, bindings: Optional[apsw.Bindings]) -> bool:
+def my_tracer(
+    cursor: apsw.Cursor,
+    statement: str,
+    bindings: Optional[apsw.Bindings],
+) -> bool:
     "Called just before executing each statement"
     print("SQL:", statement.strip())
     print("Bindings:", bindings)
@@ -231,7 +240,9 @@ connection.exec_trace = None
 # skipping it completely.  See :ref:`more about tracing <tracing>`.
 
 
-def row_tracer(cursor: apsw.Cursor, row: apsw.SQLiteValues) -> apsw.SQLiteValues:
+def row_tracer(
+    cursor: apsw.Cursor, row: apsw.SQLiteValues
+) -> apsw.SQLiteValues:
     """Called with each row of results before they are handed off.  You can return None to
     cause the row to be skipped or a different set of values to return"""
     print("Row:", row)
@@ -262,7 +273,9 @@ def ilove7(*args: apsw.SQLiteValue) -> int:
 
 connection.create_scalar_function("seven", ilove7)
 
-for row in connection.execute("select seven(x,y) from point where x>4"):
+for row in connection.execute(
+    "select seven(x,y) from point where x>4"
+):
     print("row", row)
 
 ### aggregate: Defining aggregate functions
@@ -371,12 +384,17 @@ for row in connection.execute("select * from names order by name"):
     print(row)
 
 
-def str_num_collate(s1: apsw.SQLiteValue, s2: apsw.SQLiteValue) -> int:
+def str_num_collate(
+    s1: apsw.SQLiteValue, s2: apsw.SQLiteValue
+) -> int:
     # return -1 if s1<s2, +1 if s1>s2 else 0 for equal
 
     def parts(s: str) -> list:
         "Converts str into list of alternating str and int parts"
-        return [int(v) if v.isdigit() else v for v in re.split(r"(\d+)", s)]
+        return [
+            int(v) if v.isdigit() else v
+            for v in re.split(r"(\d+)", s)
+        ]
 
     ps1 = parts(str(s1))
     ps2 = parts(str(s2))
@@ -392,7 +410,9 @@ def str_num_collate(s1: apsw.SQLiteValue, s2: apsw.SQLiteValue) -> int:
 connection.create_collation("strnum", str_num_collate)
 
 print("\nUsing strnum")
-for row in connection.execute("select * from names order by name collate strnum"):
+for row in connection.execute(
+    "select * from names order by name collate strnum"
+):
     print(row)
 
 ### colnames: Accessing results by column name
@@ -410,14 +430,19 @@ connection.execute(
 )
 
 # Normally you use column numbers
-for row in connection.execute("select title, id, year from books where author=?", ("Oscar Wilde",)):
+for row in connection.execute(
+    "select title, id, year from books where author=?",
+    ("Oscar Wilde",),
+):
     # this is very fragile
     print("title", row[0])
     print("id", row[1])
     print("year", row[2])
 
 # Turn on dataclasses - frozen makes them read-only
-connection.row_trace = apsw.ext.DataClassRowFactory(dataclass_kwargs={"frozen": True})
+connection.row_trace = apsw.ext.DataClassRowFactory(
+    dataclass_kwargs={"frozen": True}
+)
 
 print("\nNow with dataclasses\n")
 
@@ -457,7 +482,11 @@ class Point(apsw.ext.SQLiteTypeAdapter):
         return f"Point({ self.x }, { self.y })"
 
     def __eq__(self, other: object) -> bool:
-        return isinstance(other, type(self)) and self.x == other.x and self.y == other.y
+        return (
+            isinstance(other, type(self))
+            and self.x == other.x
+            and self.y == other.y
+        )
 
     def to_sqlite_value(self) -> str:
         # called to convert Point into something SQLite supports
@@ -575,7 +604,9 @@ connection.execute("create table blobby(x,y)")
 # Add a blob we will fill in later
 connection.execute("insert into blobby values(1, zeroblob(10000))")
 # Or as a binding
-connection.execute("insert into blobby values(2, ?)", (apsw.zeroblob(20000),))
+connection.execute(
+    "insert into blobby values(2, ?)", (apsw.zeroblob(20000),)
+)
 # Open a blob for writing.  We need to know the rowid
 rowid = connection.execute("select ROWID from blobby where x=1").get
 blob = connection.blob_open("main", "blobby", "y", rowid, True)
@@ -611,13 +642,27 @@ with destination.backup("main", connection, "main") as backup:
 
 
 def auth(
-    operation: int, p1: Optional[str], p2: Optional[str], db_name: Optional[str], trigger_or_view: Optional[str]
+    operation: int,
+    p1: Optional[str],
+    p2: Optional[str],
+    db_name: Optional[str],
+    trigger_or_view: Optional[str],
 ) -> int:
     """Called when each operation is prepared.  We can return SQLITE_OK, SQLITE_DENY or
     SQLITE_IGNORE"""
     # find the operation name
-    print(apsw.mapping_authorizer_function[operation], p1, p2, db_name, trigger_or_view)
-    if operation == apsw.SQLITE_CREATE_TABLE and p1 and p1.startswith("private"):
+    print(
+        apsw.mapping_authorizer_function[operation],
+        p1,
+        p2,
+        db_name,
+        trigger_or_view,
+    )
+    if (
+        operation == apsw.SQLITE_CREATE_TABLE
+        and p1
+        and p1.startswith("private")
+    ):
         return apsw.SQLITE_DENY  # not allowed to create tables whose names start with private
 
     return apsw.SQLITE_OK  # always allow
@@ -644,7 +689,10 @@ connection.authorizer = None
 # create a table with random numbers
 with connection:
     connection.execute("create table numbers(x)")
-    connection.executemany("insert into numbers values(?)", ((random.randint(0, 9999999999),) for _ in range(100)))
+    connection.executemany(
+        "insert into numbers values(?)",
+        ((random.randint(0, 9999999999),) for _ in range(100)),
+    )
 
 
 def progress_handler() -> bool:
@@ -688,7 +736,12 @@ def get_data_version(db):
 
 
 # Show starting values
-print("fcntl", get_data_version(connection), "pragma", connection.pragma("data_version"))
+print(
+    "fcntl",
+    get_data_version(connection),
+    "pragma",
+    connection.pragma("data_version"),
+)
 
 # See the fcntl value versus pragma value
 for sql in (
@@ -701,7 +754,12 @@ for sql in (
 ):
     print(sql)
     connection.execute(sql)
-    print("fcntl", get_data_version(connection), "pragma", connection.pragma("data_version"))
+    print(
+        "fcntl",
+        get_data_version(connection),
+        "pragma",
+        connection.pragma("data_version"),
+    )
 
 ### commit_hook: Commit hook
 # A commit hook can allow or veto commits.  Register a commit hook
@@ -737,14 +795,20 @@ connection.set_commit_hook(None)
 # :meth:`Connection.set_update_hook`.
 
 
-def my_update_hook(type: int, db_name: str, table_name: str, rowid: int) -> None:
+def my_update_hook(
+    type: int, db_name: str, table_name: str, rowid: int
+) -> None:
     op: str = apsw.mapping_authorizer_function[type]
-    print(f"Updated: { op } db { db_name }, table { table_name }, rowid { rowid }")
+    print(
+        f"Updated: { op } db { db_name }, table { table_name }, rowid { rowid }"
+    )
 
 
 connection.set_update_hook(my_update_hook)
 connection.execute("insert into names values(?)", ("file93",))
-connection.execute("update names set name=? where name=?", ("file94", "file93"))
+connection.execute(
+    "update names set name=? where name=?", ("file94", "file93")
+)
 connection.execute("delete from names where name=?", ("file94",))
 
 # Clear the hook
@@ -843,7 +907,10 @@ print(apsw.ext.format_query_table(connection, query))
 # A more complex example - given a list of directories return information
 # about the files within them recursively
 def get_files_info(
-    directories: str, sep: str = os.pathsep, *, ignore_symlinks: bool = True
+    directories: str,
+    sep: str = os.pathsep,
+    *,
+    ignore_symlinks: bool = True,
 ) -> Iterator[dict[str, Any]]:
     for root in directories.split(sep):
         with os.scandir(root) as sd:
@@ -851,21 +918,32 @@ def get_files_info(
                 if entry.is_symlink() and ignore_symlinks:
                     continue
                 if entry.is_dir():
-                    yield from get_files_info(os.path.join(root, entry.name), ignore_symlinks=ignore_symlinks)
+                    yield from get_files_info(
+                        os.path.join(root, entry.name),
+                        ignore_symlinks=ignore_symlinks,
+                    )
                 elif entry.is_file():
                     s = entry.stat()
                     yield {
                         "directory": root,
                         "name": entry.name,
                         "extension": os.path.splitext(entry.name)[1],
-                        **{k: getattr(s, k) for k in get_files_info.stat_columns},
+                        **{
+                            k: getattr(s, k)
+                            for k in get_files_info.stat_columns
+                        },
                     }
 
 
 # which stat columns do we want?
-get_files_info.stat_columns = tuple(n for n in dir(os.stat(".")) if n.startswith("st_"))
+get_files_info.stat_columns = tuple(
+    n for n in dir(os.stat(".")) if n.startswith("st_")
+)
 # setup columns and access by providing an example of the first entry returned
-get_files_info.columns, get_files_info.column_access = apsw.ext.get_column_names(next(get_files_info(".")))
+(
+    get_files_info.columns,
+    get_files_info.column_access,
+) = apsw.ext.get_column_names(next(get_files_info(".")))
 
 apsw.ext.make_virtual_module(connection, "files_info", get_files_info)
 
@@ -945,7 +1023,9 @@ class ObfuscatedVFS(apsw.VFS):
             print("   fast is", name.uri_parameter("fast"))
             print("   level is", name.uri_int("level", 3))
             print("   warp is", name.uri_boolean("warp", False))
-            print("   notpresent is", name.uri_parameter("notpresent"))
+            print(
+                "   notpresent is", name.uri_parameter("notpresent")
+            )
             # all of them
             print("   all uris", name.parameters)
         else:
@@ -993,7 +1073,9 @@ open_flags |= apsw.SQLITE_OPEN_URI
 
 # uri parameters are after the ? separated by &
 obfudb = apsw.Connection(
-    "file:myobfudb?fast=speed&level=7&warp=on&another=true", flags=open_flags, vfs=obfuvfs.vfs_name
+    "file:myobfudb?fast=speed&level=7&warp=on&another=true",
+    flags=open_flags,
+    vfs=obfuvfs.vfs_name,
 )
 
 # Check it works
@@ -1003,10 +1085,15 @@ obfudb.execute("create table foo(x,y); insert into foo values(1,2)")
 print("What is on disk", repr(Path("myobfudb").read_bytes()[:20]))
 
 # And unobfuscating it
-print("Unobfuscated disk", repr(obfuscate(Path("myobfudb").read_bytes()[:20])))
+print(
+    "Unobfuscated disk",
+    repr(obfuscate(Path("myobfudb").read_bytes()[:20])),
+)
 
 # Custom pragma
-print("pragma returned", obfudb.pragma("my_custom_pragma", "my value"))
+print(
+    "pragma returned", obfudb.pragma("my_custom_pragma", "my value")
+)
 
 # Tidy up
 obfudb.close()
@@ -1029,10 +1116,14 @@ for limit in ("LENGTH", "COLUMN", "ATTACHED"):
 
 # Set limit for size of a string
 connection.execute("create table testlimit(s)")
-connection.execute("insert into testlimit values(?)", ("x" * 1024,))  # 1024 char string
+connection.execute(
+    "insert into testlimit values(?)", ("x" * 1024,)
+)  # 1024 char string
 connection.limit(apsw.SQLITE_LIMIT_LENGTH, 1023)  # limit is now 1023
 try:
-    connection.execute("insert into testlimit values(?)", ("y" * 1024,))
+    connection.execute(
+        "insert into testlimit values(?)", ("y" * 1024,)
+    )
     print("string exceeding limit was inserted")
 except apsw.TooBigError:
     print("Caught toobig exception")
@@ -1093,7 +1184,9 @@ print(output.getvalue())
 current_usage, max_usage = apsw.status(apsw.SQLITE_STATUS_MEMORY_USED)
 print(f"SQLite memory usage { current_usage } max { max_usage }")
 schema_used, _ = connection.status(apsw.SQLITE_DBSTATUS_SCHEMA_USED)
-print(f"{ schema_used } bytes used to store schema for this connection")
+print(
+    f"{ schema_used } bytes used to store schema for this connection"
+)
 
 ### trace_v2: Tracing
 # This shows using :meth:`Connection.trace_v2`
@@ -1123,12 +1216,20 @@ query = """WITH RECURSIVE
 def trace_hook(trace: dict) -> None:
     # check the sql and connection are as expected and remove from trace
     # so we don't print them
-    assert trace.pop("sql") == query and trace.pop("connection") is connection
+    assert (
+        trace.pop("sql") == query
+        and trace.pop("connection") is connection
+    )
     print("code is ", apsw.mapping_trace_codes[trace["code"]])
     pprint(trace)
 
 
-connection.trace_v2(apsw.SQLITE_TRACE_STMT | apsw.SQLITE_TRACE_PROFILE | apsw.SQLITE_TRACE_ROW, trace_hook)
+connection.trace_v2(
+    apsw.SQLITE_TRACE_STMT
+    | apsw.SQLITE_TRACE_PROFILE
+    | apsw.SQLITE_TRACE_ROW,
+    trace_hook,
+)
 
 # We will get one each of the trace events
 for _ in connection.execute(query):
@@ -1141,7 +1242,9 @@ connection.trace_v2(0, None)
 # Use :meth:`apsw.ext.ShowResourceUsage` to see what resources a
 # block of code does.  We use the same query from above.
 
-with apsw.ext.ShowResourceUsage(sys.stdout, db=connection, scope="thread"):
+with apsw.ext.ShowResourceUsage(
+    sys.stdout, db=connection, scope="thread"
+):
     # some SQLite work
     rows = connection.execute(query).get
     # and some non-SQLite work - the imports cause filesystem access
@@ -1175,7 +1278,12 @@ kwargs = {"use_unicode": False, "string_sanitize": 2}
 print(apsw.ext.format_query_table(connection, query, **kwargs))
 
 # lets have unicode boxes and make things narrow with no word wrap
-kwargs = {"use_unicode": True, "string_sanitize": 0, "text_width": 30, "word_wrap": False}
+kwargs = {
+    "use_unicode": True,
+    "string_sanitize": 0,
+    "text_width": 30,
+    "word_wrap": False,
+}
 print(apsw.ext.format_query_table(connection, query, **kwargs))
 
 # have the values in SQL syntax
