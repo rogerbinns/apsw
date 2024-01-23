@@ -55,14 +55,14 @@ docs-no-fetch: $(GENDOCS) doc/example.rst doc/example-fts.rst doc/.static doc/ty
 	tools/spellcheck.sh
 	rst2html.py --strict --verbose --exit-status 1 README.rst >/dev/null
 
-doc/example.rst: example-code.py tools/example2rst.py src/apswversion.h
+doc/example.rst: examples/main.py tools/example2rst.py src/apswversion.h
 	rm -f dbfile
-	env PYTHONPATH=. $(PYTHON) -sS tools/example2rst.py example-code.py doc/example.rst
+	env PYTHONPATH=. $(PYTHON) -sS tools/example2rst.py examples/main.py doc/example.rst
 	rm -f dbfile
 
-doc/example-fts.rst: example-fts.py tools/example2rst.py src/apswversion.h apsw/fts.py
+doc/example-fts.rst: examples/fts.py tools/example2rst.py src/apswversion.h apsw/fts.py
 	rm -f dbfile
-	env PYTHONPATH=. $(PYTHON) -sS tools/example2rst.py example-fts.py doc/example-fts.rst
+	env PYTHONPATH=. $(PYTHON) -sS tools/example2rst.py examples/fts.py doc/example-fts.rst
 	rm -f dbfile
 
 doc/typing.rstgen: src/apswtypes.py tools/types2rst.py

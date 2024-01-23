@@ -58,7 +58,7 @@ printed when you run the code.
 
 """
 
-header = {"example-code.py": header_example, "example-fts.py": header_fts}[input_name]
+header = {"examples/main.py": header_example, "examples/fts.py": header_fts}[input_name]
 
 
 def get_output(filename: str):
