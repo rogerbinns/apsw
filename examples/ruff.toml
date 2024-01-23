@@ -1,0 +1,3 @@
+# This has to be a lot narrower because the code ends up in the doc
+# which has wide margins resulting in horizontal scrollbars
+line-length = 70
