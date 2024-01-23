@@ -31,8 +31,7 @@ sample_data = (
     (
         "Lemon🍋; a-tbsp. of__honey+1 'c' water",
         "Juice lemon, add to boiling? 'water'",
-        "Stir-in🥄 HONEY, sniff while it cools, pour into tall cup, "
-        "then drink out of ☕ cup.",
+        "Stir-in🥄 HONEY, sniff while it cools, pour into tall cup, " "then drink out of ☕ cup.",
     ),
 )
 
@@ -40,7 +39,7 @@ sample_data = (
 connection = apsw.Connection("dbfile")
 
 ### fts5_check: Is FTS5 available?
-# FTS5 is included as part of the library usually.
+# FTS5 is included as part of the library (usually).
 
 print("FTS5 available:", "ENABLE_FTS5" in apsw.compile_options)
 
@@ -139,9 +138,72 @@ query = """
 ("BoiLING wateR" OR Eggs) AND NEAR (drink Cup, 5) AND jui*
 """
 
-# Note how the table name has to be the first parameter to our
-# function in the SQL
-connection.execute("SELECT match_info(fts_table, 5, 'hello') FROM fts_table(?)", (query,))
+# Make all the code above be called. Note how the table name has to be
+# the first parameter to our function in the SQL
+connection.execute(
+    "SELECT match_info(fts_table, 5, 'hello') FROM fts_table(?)",
+    (query,),
+)
+
+### fts5_tokens: Tokenizers
+# `Tokenizers <https://sqlite.org/fts5.html#tokenizers>`__ convert
+# text into the tokens used to find matching rows.  They work on UTF8
+# input providing the beginning and end offsets for each token.  They
+# can also provide `more than one token at the same position
+# <https://sqlite.org/fts5.html#synonym_support>`__ for example if you
+# wanted both 'first' and '1st'.
+#
+# Tokenizers and their arguments are specified as the 'tokenize'
+# option when creating a FTS5 table.  You can also call them directly
+# from a connection.  APSW provides :ref:`several tokenizes
+# <all_tokenizers>` but lets look at `unicode61
+# <https://sqlite.org/fts5.html#unicode61_tokenizer>`__ - the default
+# SQLite tokenizer
+
+tokenizer = connection.fts5_tokenizer("unicode61")
+
+test_text = "😂❤️ v1.2 Grey ColOUR! Straße"
+
+# Call the tokenizer to do a tokenization, supplying the reason
+pprint(tokenizer(test_text.encode("utf8"), apsw.FTS5_TOKENIZE_DOCUMENT))
+
+
+# Make a function to show output
+def show_tokens(text, tokenizer_name, tokenizer_args=None):
+    print(f"{text=}")
+    print(f"{tokenizer_name=} {tokenizer_args=}")
+
+    tokenizer = connection.fts5_tokenizer(tokenizer_name, tokenizer_args)
+    # exclude the offsets since they clutter the output
+    pprint(
+        tokenizer(
+            text.encode("utf8"),
+            apsw.FTS5_TOKENIZE_DOCUMENT,
+            include_offsets=False,
+        )
+    )
+    print()
+
+
+show_tokens("v1.2 SQLITE_ERROR", "unicode61")
+
+# We want the version number and symbol kept together, so use
+# the tokenchars parameter
+show_tokens("v1.2 SQLITE_ERROR", "unicode61", ["tokenchars", "_."])
+
+# Tokenizers can also be chained together.  The porter tokenizer takes
+# existing tokens and turns them into a base.  The rightmost tokenizer
+# generates tokens, while ones to the left transform them.  This ensures
+# you can search for variations of words without having to get them
+# exactly right.
+show_tokens(
+    "Likes liked likely liking cat cats colour color",
+    "porter",
+    ["unicode61"],
+)
+
+### fts5_apsw_pyunicode: apsw.fts.PyUnicodeTokenizer
+#
 
 ### fts5_end: Close the connection
 # When you close the connection, all the registered tokenizers, and
