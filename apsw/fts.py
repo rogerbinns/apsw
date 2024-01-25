@@ -275,6 +275,8 @@ def PyUnicodeTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
 
     Use the :func:`SimplifyTokenizer` to convert case, remove diacritics, combining marks, and
     use compatibility code points.
+
+    See the :ref:`example <example_fts_apsw_pyunicode>`
     """
     spec = {
         "categories": TokenizerArgument(
@@ -349,6 +351,8 @@ def SimplifyTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     normalize_post
         Perform a final round of normalization after processing.  ``NFC`` is
         recommended to recombine any remaining codepoints that can be combined.
+
+    See the :ref:`example <example_fts_apsw_simplify>`.
     """
     ta = TokenizerArgument
     spec = {
@@ -1692,7 +1696,7 @@ if __name__ == "__main__":
 
         The FTS5 builtin tokenizers are ascii, trigram, unicode61, and porter. apsw.fts tokenizers are
         registered as pyunicode, simplify, html, synonyms, regex, stopwords,
-        transform, ngramtoken, and ngram"""
+        transform, ngramtoken, and ngram""",
     )
     parser.add_argument(
         "--text-file",
