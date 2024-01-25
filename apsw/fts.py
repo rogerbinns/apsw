@@ -217,8 +217,8 @@ def StringTokenizer(func: apsw.FTS5TokenizerFactory):
     """
 
     @functools.wraps(func)
-    def string_tokenizer_wrapper(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
-        inner_tokenizer = func(con, args)
+    def string_tokenizer_wrapper(con: apsw.Connection, args: list[str], **kwargs) -> apsw.Tokenizer:
+        inner_tokenizer = func(con, args, **kwargs)
 
         @functools.wraps(inner_tokenizer)
         def outer_tokenizer(utf8: bytes, flags: int):
