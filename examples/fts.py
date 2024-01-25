@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
 # This code uses Python's optional typing annotations.  You can
-# ignore them and do not need to use them.
+# ignore them and do not need to use them.  If you do use them
+# then you must include this future annotations line first.
 from __future__ import annotations
+
 from typing import Optional, Iterator, Any
 
 from pprint import pprint
