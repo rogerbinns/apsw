@@ -864,6 +864,7 @@ def string_tokenize(tokenizer: apsw.FTS5Tokenizer, text: str, flags: int):
         last_pos_str = start
 
 
+@StringTokenizer
 def RegexTokenizer(
     con: apsw.Connection, args: list[str], *, pattern: str | re.Pattern, flags: int = re.NOFLAG
 ) -> apsw.Tokenizer:
@@ -874,14 +875,7 @@ def RegexTokenizer(
     :param flags: `Regular expression flags <https://docs.python.org/3/library/re.html#flags>`__.
        Ignored if `pattern` is an already compiled pattern
 
-    To use:
-
-    .. code:: python
-
-        pattern = r"\d+" # digits
-        flags = re.ASCII # only ascii recognised
-        tokenizer = functools.partial(apsw.fts.RegexTokenizer, pattern=pattern, flags=flags)
-        connection.register_fts5_tokenizer("my_name", tokenizer)
+    See the :ref:`example <example_fts_apsw_regex>`
 
     """
     if not isinstance(pattern, re.Pattern):
