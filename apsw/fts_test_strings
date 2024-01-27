@@ -26,6 +26,8 @@ text admin-istrator@example.org dot.dot.dot.dot mailto:LucyOne2344+spam@example.
 ManY c0depoints 🤦🏼‍♂️  regular 😂❤️🤣🤣😭🙏😘
 # Chars outside BMP
 Gothic 'I can eat glass' = 𐌼𐌰𐌲 𐌲𐌻𐌴𐍃 𐌹̈𐍄𐌰𐌽, 𐌽𐌹 𐌼𐌹𐍃 𐍅𐌿 𐌽𐌳𐌰𐌽 𐌱𐍂𐌹𐌲𐌲𐌹𐌸.
+# multi-codepoint sequences that make up one user perceived character
+🇬🇧🇨🇦🇯🇵🇮🇳👍🏻👍🏽👍🏿क़言︀あ︀👍︎❤️🧡ÀӒ
 # unicode homoglyphs
 HeLLo wOrlD! <-- ascii  homoglyph --> НеLLо wОrlD!
 The-quick' $brown fox" .jumps"' /over\ the_lazy dog? Т﻿h﻿е﻿‐﻿q﻿u﻿і﻿с﻿k﻿'﻿ ​$﻿b﻿r﻿о﻿w﻿n﻿ ​f﻿о﻿х﻿"﻿ ​․﻿ј﻿u﻿m﻿р﻿ѕ﻿ ​/﻿о﻿v﻿е﻿r﻿\﻿ ​t﻿h﻿е﻿_﻿l﻿а﻿z﻿у﻿ ​d﻿о﻿g﻿?
