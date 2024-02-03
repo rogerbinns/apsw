@@ -6,6 +6,9 @@
 import sys
 import itertools
 import time
+import pathlib
+
+from typing import Any
 
 try:
     batched = itertools.batched
@@ -19,11 +22,14 @@ except AttributeError:
         while batch := tuple(itertools.islice(it, n)):
             yield batch
 
+
 def is_one_value(vals):
     return len(vals) == 1 and isinstance(vals[0], int)
 
+
 def is_one_range(vals):
     return len(vals) == 1 and not isinstance(vals[0], int)
+
 
 def all_vals(vals):
     for row in vals:
@@ -32,15 +38,19 @@ def all_vals(vals):
         else:
             yield from range(row[0], row[1])
 
+
 def fmt(v: int) -> str:
     # format values the same as in the text source for easy grepping
     return "0x%04X" % v
+
 
 # We do Python code for testing and development
 def generate_python() -> str:
     out: list[str] = []
     for top in props:
+        names = []
         for name, vals in sorted(props[top].items()):
+            names.append(name)
             if is_one_value(vals):
                 out.append(f"def is_{top}_{name}(c: int) -> bool:")
                 out.append(f"   return c == { fmt(vals[0])}")
@@ -48,8 +58,10 @@ def generate_python() -> str:
                 out.append(f"def is_{top}_{name}(c: int) -> bool:")
                 out.append(f"   return { fmt(vals[0][0]) } <= c <= { fmt(vals[0][1]) }")
             else:
+                vals = list(all_vals(vals))
+                out.append(f"# { len(vals):,} codepoints")
                 out.append(f"_{ top }_{ name }_members = {{")
-                for row in batched(all_vals(vals), 10):
+                for row in batched(vals, 10):
                     out.append("    " + ", ".join(fmt(v) for v in row) + ",")
                 out.append("}")
                 out.append("")
@@ -57,6 +69,13 @@ def generate_python() -> str:
                 out.append(f"   return c in _{ top }_{ name }_members")
             out.append("")
             out.append("")
+        out.append(f"def all_{ top }_flags(c: int) -> tuple[str, ...]:")
+        out.append("    return tuple(name for name, is_set in (")
+        for name in names:
+            out.append("        " + f'("{ name }", is_{ top }_{ name }(c)),')
+        out.append("    ) if is_set)")
+        out.append("")
+        out.append("")
 
     return "\n".join(out) + "\n"
 
@@ -68,31 +87,71 @@ props = {
 }
 
 
-def populate(source: str, dest: dict[str, list]):
+def parse_source_lines(source: str):
     for line in source.splitlines():
         if not line.strip() or line.startswith("#"):
             continue
-        line = line.split(";", 2)
-        label = line[1].split()[0].strip()
-        try:
-            accumulate = dest[label]
-        except KeyError:
-            accumulate = dest[label] = []
-
-        vals = line[0].strip().split("..")
-        start = int(vals[0], 16)
+        line = line[: line.index("#")]
+        vals, prop = line.split(";")
+        prop = prop.strip()
+        vals = vals.strip().split("..")
         if len(vals) == 1:
+            yield int(vals[0], 16), None, prop
+        else:
+            yield int(vals[0], 16), int(vals[1], 16), prop
+
+
+def populate(source: str, dest: dict[str, Any]):
+    for start, end, prop in parse_source_lines(source):
+        try:
+            accumulate = dest[prop]
+        except KeyError:
+            accumulate = dest[prop] = []
+
+        if end is None:
             accumulate.append(start)
         else:
-            end = int(vals[1], 16)
             accumulate.append((start, end))
 
 
-def read_props(ucd_base: str):
-    for top in "Grapheme", "Word", "Sentence":
-        url = f"{ucd_base}{ top }BreakProperty.txt"
-        print("Reading", url)
+def extract_prop(source: str, dest: dict[str, Any], name: str):
+    assert name not in dest
+    accumulate = dest[name] = []
+
+    for start, end, prop in parse_source_lines(source):
+        if prop == name:
+            if end is None:
+                accumulate.append(start)
+            else:
+                accumulate.append((start, end))
+
+    assert len(accumulate) > 0
+
+
+def read_props(data_dir: str):
+    if data_dir:
+        url = pathlib.Path(data_dir) / "emoji-data.txt"
+    else:
+        url = "https://www.unicode.org/Public/UCD/latest/ucd/emoji/emoji-data.txt"
+
+    print("Reading", url)
+    if isinstance(url, str):
         source = urllib.request.urlopen(url).read().decode("utf8")
+    else:
+        source = url.read_text("utf8")
+
+    extract_prop(source, props["grapheme"], "Extended_Pictographic")
+
+    for top in "Grapheme", "Word", "Sentence":
+        if data_dir:
+            url = pathlib.Path(data_dir) / f"{ top }BreakProperty.txt"
+        else:
+            url = f"https://www.unicode.org/Public/UCD/latest/ucd/auxiliary/{ top }BreakProperty.txt"
+        print("Reading", url)
+        if isinstance(url, str):
+            source = urllib.request.urlopen(url).read().decode("utf8")
+        else:
+            source = url.read_text("utf8")
         populate(source, props[top.lower()])
 
 py_code_header = f"""
@@ -108,15 +167,15 @@ if __name__ == "__main__":
 
     p = argparse.ArgumentParser(description="Generate code from Unicode properties")
     p.add_argument(
-        "--ucd-base",
-        default="https://www.unicode.org/Public/UCD/latest/ucd/auxiliary/",
-        help="Base for properties file [%(default)s]",
+        "--data-dir",
+        help="Directory containing local copies of the relevant unicode database files.  If "
+        "not supplied the latest files are read from https://www.unicode.org/Public/UCD/latest/ucd/",
     )
     p.add_argument("out_py", type=argparse.FileType("w", encoding="utf8"), help="File to write python code to")
 
     options = p.parse_args()
 
-    read_props(options.ucd_base)
+    read_props(options.data_dir)
 
     py_code = generate_python()
     options.out_py.write(py_code_header)
