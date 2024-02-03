@@ -6,6 +6,7 @@ sqlite3async.h
 sqlite3async.c
 callgrind.out.*
 :memory:
+apsw/_tr29db.py
 doc/vfs.rst
 doc/example.rst
 doc/example-fts.rst
