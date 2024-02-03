@@ -1,7 +1,7 @@
 
 import sys
 
-from typing import Optional, Callable, Any, Iterator, Sequence, Literal, final, Protocol
+from typing import Optional, Callable, Any, Iterator, Iterable, Sequence, Literal, final, Protocol
 from collections.abc import Mapping
 import array
 import types

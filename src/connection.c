@@ -4341,7 +4341,7 @@ fail:
   return res;
 }
 
-/** .. method:: executemany(statements: str, sequenceofbindings:Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor
+/** .. method:: executemany(statements: str, sequenceofbindings:Iterable[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor
 
 This method is for when you want to execute the same statements over a
 sequence of bindings, such as inserting into a database.  (A cursor is
@@ -4655,7 +4655,7 @@ Connection_release_memory(Connection *self)
   Py_RETURN_NONE;
 }
 
-/** .. method:: drop_modules(keep: Optional[Sequence[str]]) -> None
+/** .. method:: drop_modules(keep: Optional[Iterable[str]]) -> None
 
   If *keep* is *None* then all registered virtual tables are dropped.
 

@@ -7,7 +7,7 @@ import collections.abc
 import dataclasses
 from dataclasses import dataclass, make_dataclass, is_dataclass
 
-from typing import Union, Any, Callable, Sequence, TextIO, Literal, Iterator, Generator
+from typing import Union, Any, Callable, Sequence, Iterable, TextIO, Literal, Iterator, Generator
 import types
 
 import functools
@@ -217,11 +217,10 @@ class TypesConverterCursorFactory:
             return None
         if isinstance(bindings, (dict, collections.abc.Mapping)):
             return TypesConverterCursorFactory.DictAdapter(self, bindings)  # type: ignore[arg-type]
-        # turn into a list since PySequence_Fast does that anyway
-        return [self.adapt_value(v) for v in bindings]
+        return tuple(self.adapt_value(v) for v in bindings)
 
     def wrap_sequence_bindings(self,
-                               sequenceofbindings: Sequence[apsw.Bindings]) -> Generator[apsw.Bindings, None, None]:
+                               sequenceofbindings: Iterable[apsw.Bindings]) -> Generator[apsw.Bindings, None, None]:
         "Wraps a sequence of bindings that are supplied to the underlying executemany"
         for binding in sequenceofbindings:
             yield self.wrap_bindings(binding)  # type: ignore[misc]
@@ -273,7 +272,7 @@ class TypesConverterCursorFactory:
 
         def executemany(self,
                         statements: str,
-                        sequenceofbindings: Sequence[apsw.Bindings],
+                        sequenceofbindings: Iterable[apsw.Bindings],
                         *,
                         can_cache: bool = True,
                         prepare_flags: int = 0,

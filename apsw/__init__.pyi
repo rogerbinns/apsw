@@ -2,7 +2,7 @@
 
 import sys
 
-from typing import Optional, Callable, Any, Iterator, Sequence, Literal, final, Protocol
+from typing import Optional, Callable, Any, Iterator, Iterable, Sequence, Literal, final, Protocol
 from collections.abc import Mapping
 import array
 import types
@@ -1169,7 +1169,7 @@ class Connection:
         Calls: `sqlite3_deserialize <https://sqlite.org/c3ref/deserialize.html>`__"""
         ...
 
-    def drop_modules(self, keep: Optional[Sequence[str]]) -> None:
+    def drop_modules(self, keep: Optional[Iterable[str]]) -> None:
         """If *keep* is *None* then all registered virtual tables are dropped.
 
         Otherwise *keep* is a sequence of strings, naming the virtual tables that
@@ -1240,7 +1240,7 @@ class Connection:
         See :meth:`Cursor.execute` for more details, and the :ref:`example <example_executing_sql>`."""
         ...
 
-    def executemany(self, statements: str, sequenceofbindings:Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor:
+    def executemany(self, statements: str, sequenceofbindings:Iterable[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor:
         """This method is for when you want to execute the same statements over a
         sequence of bindings, such as inserting into a database.  (A cursor is
         automatically obtained).
@@ -1929,7 +1929,7 @@ class Cursor:
           * `sqlite3_bind_zeroblob <https://sqlite.org/c3ref/bind_blob.html>`__"""
         ...
 
-    def executemany(self, statements: str, sequenceofbindings: Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor:
+    def executemany(self, statements: str, sequenceofbindings: Iterable[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor:
         """This method is for when you want to execute the same statements over
         a sequence of bindings.  Conceptually it does this::
 
