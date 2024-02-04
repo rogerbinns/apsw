@@ -15,8 +15,8 @@ from __future__ import annotations
 from _tr29db import *
 
 
-def grapheme_next_length(text: str, offset: int = 0) -> int:
-    """Returns how long a User Perceived Character is
+def grapheme_span(text: str, offset: int = 0) -> int:
+    """Returns end of Grapheme /  User Perceived Character
 
     For example regional indicators are in pairs, and a base codepoint
     can be combined with zero or more additional codepoints providing
@@ -25,8 +25,8 @@ def grapheme_next_length(text: str, offset: int = 0) -> int:
     :param text: The text to examine
     :param offset: The first codepoint to examine
 
-    :returns:  How many codepoints make up one user perceived
-      character.  You should extract ``text[offset:offset+len]``
+    :returns:  Index of first codepoint not part of the grapheme
+        starting at offset. You should extract ``text[offset:span]``
 
     """
     lt = len(text)
@@ -35,11 +35,11 @@ def grapheme_next_length(text: str, offset: int = 0) -> int:
 
     # At end?
     if offset == lt:
-        return 0
+        return offset
 
     # Only one char?
     if offset + 1 == lt:
-        return 1
+        return offset + 1
 
     # rules are based on lookahead so we use pos to indicate where we are looking
     char = ord(text[offset])
@@ -47,11 +47,11 @@ def grapheme_next_length(text: str, offset: int = 0) -> int:
 
     # GB3
     if is_grapheme_CR(char) and is_grapheme_LF(lookahead):
-        return 2
+        return offset + 2
 
     # GB4/5
     if is_grapheme_Control(char) or is_grapheme_CR(char) or is_grapheme_LF(char):
-        return 1
+        return offset + 1
 
     # State machine for the rest
     pos = offset
@@ -62,7 +62,7 @@ def grapheme_next_length(text: str, offset: int = 0) -> int:
         try:
             lookahead = ord(text[pos])
         except IndexError:
-            return pos - offset
+            return pos
 
         # GB9B
         if is_grapheme_Prepend(char):
@@ -87,7 +87,7 @@ def grapheme_next_length(text: str, offset: int = 0) -> int:
                 or is_grapheme_Prepend(lookahead)
                 or is_grapheme_SpacingMark(lookahead)
             ):
-                return pos - offset
+                return pos
             continue
 
         # GB6
@@ -108,9 +108,9 @@ def grapheme_next_length(text: str, offset: int = 0) -> int:
             continue
 
         # GB999
-        return pos - offset
+        break
 
-    return pos - offset
+    return pos
 
 
 if __name__ == "__main__":
@@ -161,17 +161,17 @@ if __name__ == "__main__":
                 text += " "
             text += options.text_file.read()
 
-        len_func = globals()[f"{ options.show }_next_length"]
+        span_func = globals()[f"{ options.show }_span"]
         flags_func = globals()[f"all_{ options.show }_flags"]
 
         counter = 0
         offset = 0
         while offset < len(text):
-            ncp = len_func(text, offset)
-            print(f"#{ counter } offset { offset } codepoints { ncp }")
+            span = span_func(text, offset)
+            print(f"#{ counter } offset { offset } span { span } codepoints { span - offset }")
             codepoints = []
             names_flags = []
-            for i in range(offset, offset + ncp):
+            for i in range(offset, span):
                 c = text[i]
                 codepoints.append("%04X" % ord(c))
                 try:
@@ -186,11 +186,11 @@ if __name__ == "__main__":
                 names_flags.append("{" + f"{name}{ flags }" + "}")
             print("\n".join(textwrap.wrap(" ".join(codepoints), width=options.width)))
             print("\n".join(textwrap.wrap(" ".join(names_flags), width=options.width)))
-            offset += ncp
+            offset = span
 
     else:
         assert options.function == "breaktest"
-        len_func = globals()[f"{ options.test }_next_length"]
+        span_func = globals()[f"{ options.test }_span"]
         ok = "÷"
         not_ok = "×"
         fails : list[str] = []
@@ -217,16 +217,15 @@ if __name__ == "__main__":
             lf = len(fails)
             while offset < len(text):
                 try:
-                  length = len_func(text, offset)
+                  span = span_func(text, offset)
                 except:
                     apsw.ext.print_augmented_traceback(*sys.exc_info())
                     raise
-                break_pos = offset + length
-                if break_pos not in breaks:
-                    fails.append(f"Line { line_num } got unexpected break at { break_pos } - expected are { breaks }")
+                if span not in breaks:
+                    fails.append(f"Line { line_num } got unexpected break at { span } - expected are { breaks }")
                     break
-                seen.append(break_pos)
-                offset = break_pos
+                seen.append(span)
+                offset = span
             if len(fails) != lf:
                 continue
             if set(seen) != set(breaks):
