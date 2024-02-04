@@ -807,7 +807,7 @@ APSWCursor_step(APSWCursor *self)
         self->bindings = next;
       else
       {
-        self->bindings = PySequence_Fast(next, "You must supply a dict or a sequence");
+        self->bindings = PySequence_Fast(next, "You must supply a dict or a sequence for bindings");
         /* we no longer need next irrespective of what happens in line above */
         Py_DECREF(next);
         if (!self->bindings)
@@ -945,7 +945,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast
       Py_INCREF(self->bindings);
     else
     {
-      self->bindings = PySequence_Fast(self->bindings, "You must supply a dict or a sequence");
+      self->bindings = PySequence_Fast(self->bindings, "You must supply a dict or a sequence for execute");
       if (!self->bindings)
         return NULL;
     }
@@ -992,7 +992,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast
   return Py_NewRef(retval);
 }
 
-/** .. method:: executemany(statements: str, sequenceofbindings: Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor
+/** .. method:: executemany(statements: str, sequenceofbindings: Iterable[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor
 
   This method is for when you want to execute the same statements over
   a sequence of bindings.  Conceptually it does this::
@@ -1063,7 +1063,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t 
     self->bindings = next;
   else
   {
-    self->bindings = PySequence_Fast(next, "You must supply a dict or a sequence");
+    self->bindings = PySequence_Fast(next, "You must supply a dict or a sequence for executemany");
     Py_DECREF(next); /* _Fast makes new reference */
     if (!self->bindings)
       return NULL;

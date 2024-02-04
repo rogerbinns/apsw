@@ -36,7 +36,7 @@ def process(module: ast.Module, source: str) -> list[tuple[str, str, str]]:
 
 
 # stuff defined in standard library
-std_typing = {"Union", "Callable", "Tuple", "Dict", "List", "Optional", "Any", "Sequence", "Mapping", "Protocol"}
+std_typing = {"Union", "Callable", "Tuple", "Dict", "List", "Optional", "Any", "Sequence", "Iterable", "Mapping", "Protocol"}
 std_other = {"None", "int", "float", "bytes", "str", "dict", "tuple", "bool"}
 
 # from apsw

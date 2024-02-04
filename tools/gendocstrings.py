@@ -616,7 +616,7 @@ def do_argparse(item):
             if param["default"]:
                 breakpoint()
                 pass
-        elif param["type"] == "Sequence":
+        elif param["type"] in {"Sequence", "Iterable"}:
             # note that we can't check for sequence because anything
             # that PySequence_Fast accepts is ok which includes sets,
             # iterators, generators etc and I can't test for all of
