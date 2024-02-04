@@ -131,6 +131,7 @@ if __name__ == "__main__":
     subparsers = parser.add_subparsers()
     p = subparsers.add_parser("breaktest", help="Run Unicode test file")
     p.set_defaults(function="breaktest")
+    p.add_argument("--fail-fast", default=False, action="store_true", help="Exit on first test failure")
     p.add_argument("test", choices=("grapheme", "word", "sentence"), help="What to test")
     p.add_argument("file", help="break test text file.  They can be downloaded from https://www.unicode.org/Public/UCD/latest/ucd/auxiliary/", type=argparse.FileType("rt", encoding="utf8"))
 
@@ -230,6 +231,8 @@ if __name__ == "__main__":
                 continue
             if set(seen) != set(breaks):
                 fails.append(f"Line { line_num } got breaks at { seen } expected at { breaks }")
+            if options.fail_fast and fails:
+                break
 
         if fails:
             print("Tests failed:", file=sys.stderr)
