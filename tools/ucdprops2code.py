@@ -116,7 +116,7 @@ def parse_source_lines(source: str):
         if not line.strip() or line.startswith("#"):
             continue
         line = line[: line.index("#")]
-        vals, prop = line.split(";")
+        vals, prop = line.split(";", 1)
         prop = prop.strip()
         vals = vals.strip().split("..")
         if len(vals) == 1:
@@ -138,12 +138,14 @@ def populate(source: str, dest: dict[str, Any]):
             accumulate.append((start, end))
 
 
-def extract_prop(source: str, dest: dict[str, Any], name: str):
+def extract_prop(source: str, dest: dict[str, Any], prop_name: str, name: str | None = None):
+    if name is None:
+        name = prop_name
     assert name not in dest
     accumulate = dest[name] = []
 
     for start, end, prop in parse_source_lines(source):
-        if prop == name:
+        if prop == prop_name:
             if end is None:
                 accumulate.append(start)
             else:
@@ -166,6 +168,22 @@ def read_props(data_dir: str):
 
     extract_version("emoji-data.txt", source)
     extract_prop(source, props["grapheme"], "Extended_Pictographic")
+
+    if data_dir:
+        url = pathlib.Path(data_dir) / "DerivedCoreProperties.txt"
+    else:
+        url = "https://www.unicode.org/Public/UCD/latest/ucd/DerivedCoreProperties.txt"
+
+    print("Reading", url)
+    if isinstance(url, str):
+        source = urllib.request.urlopen(url).read().decode("utf8")
+    else:
+        source = url.read_text("utf8")
+
+    extract_version("DerivedCoreProperties.txt", source)
+    extract_prop(source, props["grapheme"], "InCB; Linker", "InCB_Linker")
+    extract_prop(source, props["grapheme"], "InCB; Consonant", "InCB_Consonant")
+    extract_prop(source, props["grapheme"], "InCB; Extend", "InCB_Extend")
 
     for top in "Grapheme", "Word", "Sentence":
         if data_dir:
