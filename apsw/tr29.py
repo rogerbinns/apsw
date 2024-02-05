@@ -64,13 +64,19 @@ def grapheme_span(text: str, offset: int = 0) -> int:
         except IndexError:
             return pos
 
-        # GB9B
+        # GB5 - when we've already absorbed one codepoint
+        if is_grapheme_Control(char) or is_grapheme_CR(char) or is_grapheme_LF(char):
+            return pos
+
+        # GB9B - always takes next codepoint
         if is_grapheme_Prepend(char):
+            # .. unless they are one of these
+            if is_grapheme_Control(lookahead) or is_grapheme_CR(lookahead) or is_grapheme_LF(lookahead) or is_grapheme_Extended_Pictographic(lookahead):
+                break
             continue
 
         # GB9a/11
         if is_grapheme_ZWJ(lookahead) or is_grapheme_Extend(lookahead) or is_grapheme_SpacingMark(lookahead):
-            pos += 1
             continue
 
         # GB12/13
@@ -80,7 +86,7 @@ def grapheme_span(text: str, offset: int = 0) -> int:
             try:
                 lookahead = ord(text[pos])
             except IndexError:
-                return pos - offset
+                return pos
             if not (
                 is_grapheme_ZWJ(lookahead)
                 or is_grapheme_Extend(lookahead)
@@ -227,6 +233,8 @@ if __name__ == "__main__":
                     break
                 seen.append(span)
                 offset = span
+            if options.fail_fast and fails:
+                break
             if len(fails) != lf:
                 continue
             if set(seen) != set(breaks):
