@@ -71,7 +71,7 @@ def grapheme_span(text: str, offset: int = 0) -> int:
         # GB9B - always takes next codepoint
         if is_grapheme_Prepend(char):
             # .. unless they are one of these
-            if is_grapheme_Control(lookahead) or is_grapheme_CR(lookahead) or is_grapheme_LF(lookahead) or is_grapheme_Extended_Pictographic(lookahead):
+            if is_grapheme_Control(lookahead) or is_grapheme_CR(lookahead) or is_grapheme_LF(lookahead):
                 break
             continue
 
@@ -132,13 +132,19 @@ if __name__ == "__main__":
     if sys.stdout.isatty():
         width = os.get_terminal_size(sys.stdout.fileno()).columns
 
+    # ::TODO:: add tablecheck command that runs every codepoint, verifying at most one
+    # flag.  could also benchmark
+
     parser = argparse.ArgumentParser()
     parser.set_defaults(function=None)
     subparsers = parser.add_subparsers()
     p = subparsers.add_parser("breaktest", help="Run Unicode test file")
     p.set_defaults(function="breaktest")
+    # ::TODO:: a setting to show what pairs of codepoint kinds are not exercised by test text
+    # eg (Extend, Prepend)
     p.add_argument("--fail-fast", default=False, action="store_true", help="Exit on first test failure")
     p.add_argument("test", choices=("grapheme", "word", "sentence"), help="What to test")
+    # ::TODO:: auto download file if not provided
     p.add_argument("file", help="break test text file.  They can be downloaded from https://www.unicode.org/Public/UCD/latest/ucd/auxiliary/", type=argparse.FileType("rt", encoding="utf8"))
 
     p = subparsers.add_parser("show", help="Run against provided text")
@@ -155,6 +161,19 @@ if __name__ == "__main__":
 
     if not options.function:
         p.error("You must specify a sub-command")
+
+    def codepoint_details(c: str) -> str:
+        try:
+            name = unicodedata.name(c)
+        except ValueError:
+            name = "<NO NAME>"
+        cat = unicodedata.category(c)
+        name += f" ({ cat } { apsw.fts.unicode_categories[cat] })"
+        flags = ",".join(flags_func(ord(c)))
+        if flags:
+            flags = f" : { flags }"
+        return "{U+" + ("%04X" % ord(c)) + f" {name}{ flags }" + "}"
+
 
     if options.function == "show":
         if not options.text_file and not options.text:
@@ -177,31 +196,20 @@ if __name__ == "__main__":
             span = span_func(text, offset)
             print(f"#{ counter } offset { offset } span { span } codepoints { span - offset }")
             codepoints = []
-            names_flags = []
             for i in range(offset, span):
-                c = text[i]
-                codepoints.append("%04X" % ord(c))
-                try:
-                    name = unicodedata.name(c)
-                except ValueError:
-                    name = codepoints[-1]
-                cat = unicodedata.category(c)
-                name += f" ({ cat } { apsw.fts.unicode_categories[cat] })"
-                flags = ",".join(flags_func(ord(c)))
-                if flags:
-                    flags = f" : { flags }"
-                names_flags.append("{" + f"{name}{ flags }" + "}")
+                codepoints.append(codepoint_details(text[i]))
             print("\n".join(textwrap.wrap(" ".join(codepoints), width=options.width)))
-            print("\n".join(textwrap.wrap(" ".join(names_flags), width=options.width)))
             offset = span
 
     else:
         assert options.function == "breaktest"
         span_func = globals()[f"{ options.test }_span"]
+        flags_func = globals()[f"all_{ options.test }_flags"]
         ok = "÷"
         not_ok = "×"
         fails : list[str] = []
         for line_num, line in enumerate(options.file, 1):
+            orig_line = line
             if not line.strip() or line.startswith("#"):
                 continue
             line = line.split("#")[0].strip().split()
@@ -219,6 +227,13 @@ if __name__ == "__main__":
                     continue
                 text += chr(int(c, 16))
 
+            def add_failinfo():
+                fails.append(orig_line.strip())
+                codepoints = []
+                for c in text:
+                    codepoints.append(codepoint_details(c))
+                fails.append(" ".join(codepoints))
+
             offset = 0
             seen : list[int]= []
             lf = len(fails)
@@ -229,7 +244,8 @@ if __name__ == "__main__":
                     apsw.ext.print_augmented_traceback(*sys.exc_info())
                     raise
                 if span not in breaks:
-                    fails.append(f"Line { line_num } got unexpected break at { span } - expected are { breaks }")
+                    fails.append(f"Line { line_num } got unexpected break at { span } - expected are { breaks }.  Seen { seen }")
+                    add_failinfo()
                     break
                 seen.append(span)
                 offset = span
@@ -239,6 +255,7 @@ if __name__ == "__main__":
                 continue
             if set(seen) != set(breaks):
                 fails.append(f"Line { line_num } got breaks at { seen } expected at { breaks }")
+                add_failinfo()
             if options.fail_fast and fails:
                 break
 
