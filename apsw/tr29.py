@@ -75,8 +75,12 @@ def grapheme_span(text: str, offset: int = 0) -> int:
                 break
             continue
 
-        # GB9a/11
+        # GB9
         if is_grapheme_ZWJ(lookahead) or is_grapheme_Extend(lookahead) or is_grapheme_SpacingMark(lookahead):
+            continue
+
+        # GB11
+        if is_grapheme_ZWJ(char) and is_grapheme_Extended_Pictographic(lookahead):
             continue
 
         # GB12/13
@@ -233,6 +237,7 @@ if __name__ == "__main__":
                 for c in text:
                     codepoints.append(codepoint_details(c))
                 fails.append(" ".join(codepoints))
+                fails.append("")
 
             offset = 0
             seen : list[int]= []
