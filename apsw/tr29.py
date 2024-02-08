@@ -265,7 +265,7 @@ if __name__ == "__main__":
                 break
 
         if fails:
-            print("Tests failed:", file=sys.stderr)
+            print(f"{ len(fails)//4 } tests failed:", file=sys.stderr)
             for fail in fails:
                 print(fail, file=sys.stderr)
             sys.exit(2)
