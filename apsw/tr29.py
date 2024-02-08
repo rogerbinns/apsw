@@ -42,26 +42,21 @@ def grapheme_span(text: str, offset: int = 0) -> int:
         return offset + 1
 
     # rules are based on lookahead so we use pos to indicate where we are looking
-    char = ord(text[offset])
-    lookahead = ord(text[offset + 1])
-
-    # GB3
-    if is_grapheme_CR(char) and is_grapheme_LF(lookahead):
-        return offset + 2
-
-    # GB4/5
-    if is_grapheme_Control(char) or is_grapheme_CR(char) or is_grapheme_LF(char):
-        return offset + 1
-
-    # State machine for the rest
     pos = offset
-    while pos < lt:
-        # Do lookahead
-        char = ord(text[pos])
+    char = lookahead = grapheme_category(ord(text[pos]))
+
+    def advance():
+        nonlocal char, pos, lookahead
+        char = lookahead
         pos += 1
         try:
-            lookahead = ord(text[pos])
+            lookahead = grapheme_category(ord(text[pos]))
         except IndexError:
+            # always break before Control so no need for separate end of file category
+            lookahead = GC.Control
+
+    while pos < lt:
+        advance()
             return pos
 
         # GB5 - when we've already absorbed one codepoint
@@ -136,8 +131,7 @@ if __name__ == "__main__":
     if sys.stdout.isatty():
         width = os.get_terminal_size(sys.stdout.fileno()).columns
 
-    # ::TODO:: add tablecheck command that runs every codepoint, verifying at most one
-    # flag.  could also benchmark
+    # ::TODO:: benchmark to work out best bsearch parameter
 
     parser = argparse.ArgumentParser()
     parser.set_defaults(function=None)
@@ -173,10 +167,8 @@ if __name__ == "__main__":
             name = "<NO NAME>"
         cat = unicodedata.category(c)
         name += f" ({ cat } { apsw.fts.unicode_categories[cat] })"
-        flags = ",".join(flags_func(ord(c)))
-        if flags:
-            flags = f" : { flags }"
-        return "{U+" + ("%04X" % ord(c)) + f" {name}{ flags }" + "}"
+        flags = flags_func(ord(c)).name
+        return "{U+" + ("%04X" % ord(c)) + f" {name} : { flags }" + "}"
 
 
     if options.function == "show":
@@ -192,7 +184,7 @@ if __name__ == "__main__":
             text += options.text_file.read()
 
         span_func = globals()[f"{ options.show }_span"]
-        flags_func = globals()[f"all_{ options.show }_flags"]
+        flags_func = globals()[f"{ options.show }_category"]
 
         counter = 0
         offset = 0
@@ -208,9 +200,9 @@ if __name__ == "__main__":
     else:
         assert options.function == "breaktest"
         span_func = globals()[f"{ options.test }_span"]
-        flags_func = globals()[f"all_{ options.test }_flags"]
+        flags_func = globals()[f"{ options.test }_category"]
         ok = "÷"
-        not_ok = "×"
+        not_ok = "\u00d7"
         fails : list[str] = []
         for line_num, line in enumerate(options.file, 1):
             orig_line = line
