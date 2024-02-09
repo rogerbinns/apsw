@@ -111,6 +111,16 @@ def grapheme_span(text: str, offset: int = 0) -> int:
         ):
             continue
 
+        # GB11
+        if (
+            lookahead is GC.Extended_Pictographic
+            and char is GC.ZWJ
+            and accepted
+            and GC.Extended_Pictographic in accepted
+            and does_gb11_apply(accepted)
+        ):
+            continue
+
         # GB999
         break
 
@@ -128,6 +138,16 @@ def does_gb9c_apply(seen: list[GC]) -> bool:
         if cp is GC.InCB_Extend or cp is GC.ZWJ:
             continue
         return False
+    assert False, "Can't reach here"
+
+def does_gb11_apply(seen: list[GC]) -> bool:
+    # we are sitting at ZWJ and looking back
+    # should only see Extend (zero or more) then
+    # extended_pictographic
+    for cp in reversed(seen):
+        if cp is GC.Extend or cp is GC.InCB_Extend:
+            continue
+        return cp is GC.Extended_Pictographic
     assert False, "Can't reach here"
 
 
