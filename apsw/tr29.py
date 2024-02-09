@@ -121,6 +121,14 @@ def grapheme_span(text: str, offset: int = 0) -> int:
         ):
             continue
 
+        # GB12
+        if char is GC.Regional_Indicator and lookahead is GC.Regional_Indicator:
+            advance()
+            # re-apply GB9
+            if lookahead is GC.Extend or lookahead is GC.ZWJ or lookahead is GC.InCB_Extend:
+                continue
+            break
+
         # GB999
         break
 
