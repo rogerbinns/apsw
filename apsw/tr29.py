@@ -33,6 +33,8 @@ def grapheme_span(text: str, offset: int = 0) -> int:
     if offset < 0 or offset > lt:
         raise ValueError(f"{offset=} is out of bounds 0 - { lt }")
 
+    # GB1/2
+
     # At end?
     if offset == lt:
         return offset
@@ -46,7 +48,11 @@ def grapheme_span(text: str, offset: int = 0) -> int:
     char = lookahead = grapheme_category(ord(text[pos]))
 
     def advance():
-        nonlocal char, pos, lookahead
+        nonlocal char, lookahead, pos, accepted
+        if accepted is None:
+            accepted = []
+        else:
+            accepted.append(char)
         char = lookahead
         pos += 1
         try:
@@ -54,68 +60,75 @@ def grapheme_span(text: str, offset: int = 0) -> int:
         except IndexError:
             # always break before Control so no need for separate end of file category
             lookahead = GC.Control
+        # print(f"{offset=} {pos=} {char=} {lookahead=} {accepted=}")
+
+    accepted = None
 
     while pos < lt:
         advance()
-            return pos
 
-        # GB5 - when we've already absorbed one codepoint
-        if is_grapheme_Control(char) or is_grapheme_CR(char) or is_grapheme_LF(char):
-            return pos
+        # GB3
+        if char is GC.CR and lookahead is GC.LF:
+            return pos + 1
 
-        # GB9B - always takes next codepoint
-        if is_grapheme_Prepend(char):
-            # .. unless they are one of these
-            if is_grapheme_Control(lookahead) or is_grapheme_CR(lookahead) or is_grapheme_LF(lookahead):
-                break
-            continue
-
-        # GB9
-        if is_grapheme_ZWJ(lookahead) or is_grapheme_Extend(lookahead) or is_grapheme_SpacingMark(lookahead):
-            continue
-
-        # GB11
-        if is_grapheme_ZWJ(char) and is_grapheme_Extended_Pictographic(lookahead):
-            continue
-
-        # GB12/13
-        if is_grapheme_Regional_Indicator(char) and is_grapheme_Regional_Indicator(lookahead):
-            # suck up the pair then repeat GB9/11
-            pos += 1
-            try:
-                lookahead = ord(text[pos])
-            except IndexError:
-                return pos
-            if not (
-                is_grapheme_ZWJ(lookahead)
-                or is_grapheme_Extend(lookahead)
-                or is_grapheme_Prepend(lookahead)
-                or is_grapheme_SpacingMark(lookahead)
-            ):
-                return pos
-            continue
+        # GB4
+        if char is GC.Control or char is GC.CR or char is GC.LF:
+            # break before if any chars are accepted
+            if accepted:
+                return pos - 1
+            break
 
         # GB6
-        if is_grapheme_L(char) and (
-            is_grapheme_L(lookahead)
-            or is_grapheme_V(lookahead)
-            or is_grapheme_LV(lookahead)
-            or is_grapheme_LVT(lookahead)
-        ):
+        if char is GC.L and (lookahead is GC.L or lookahead is GC.V or lookahead is GC.LV or lookahead is GC.LVT):
             continue
 
         # GB7
-        if (is_grapheme_LV(char) or is_grapheme_V(char)) and (is_grapheme_V(lookahead) or is_grapheme_T(lookahead)):
+        if (char is GC.LV or char is GC.V) and (lookahead is GC.V or lookahead is GC.T):
             continue
 
         # GB8
-        if (is_grapheme_LVT(char) or is_grapheme_T(char)) and is_grapheme_T(lookahead):
+        if (char is GC.LVT or char is GC.T) and lookahead is GC.T:
+            continue
+
+        # GB9 (InCB Extend and Linker chars are also marked extend)
+        if lookahead is GC.Extend or lookahead is GC.InCB_Linker or lookahead is GC.InCB_Extend or lookahead is GC.ZWJ:
+            continue
+
+        # GB9a
+        if lookahead is GC.SpacingMark:
+            continue
+
+        # GB9b
+        if char is GC.Prepend:
+            continue
+
+        # GB9c
+        if (
+            lookahead is GC.InCB_Consonant
+            and accepted
+            and GC.InCB_Consonant in accepted
+            and does_gb9c_apply(accepted + [char])
+        ):
             continue
 
         # GB999
         break
 
     return pos
+
+
+def does_gb9c_apply(seen: list[GC]) -> bool:
+    bare_linker_seen = False
+    for cp in reversed(seen):
+        if cp is GC.InCB_Consonant:
+            return bare_linker_seen
+        if cp is GC.InCB_Linker:
+            bare_linker_seen = True
+            continue
+        if cp is GC.InCB_Extend or cp is GC.ZWJ:
+            continue
+        return False
+    assert False, "Can't reach here"
 
 
 if __name__ == "__main__":
