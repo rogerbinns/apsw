@@ -143,7 +143,11 @@ if __name__ == "__main__":
     p.add_argument("--fail-fast", default=False, action="store_true", help="Exit on first test failure")
     p.add_argument("test", choices=("grapheme", "word", "sentence"), help="What to test")
     # ::TODO:: auto download file if not provided
-    p.add_argument("file", help="break test text file.  They can be downloaded from https://www.unicode.org/Public/UCD/latest/ucd/auxiliary/", type=argparse.FileType("rt", encoding="utf8"))
+    p.add_argument(
+        "file",
+        help="break test text file.  They can be downloaded from https://www.unicode.org/Public/UCD/latest/ucd/auxiliary/",
+        type=argparse.FileType("rt", encoding="utf8"),
+    )
 
     p = subparsers.add_parser("show", help="Run against provided text")
     p.set_defaults(function="show")
@@ -169,7 +173,6 @@ if __name__ == "__main__":
         name += f" ({ cat } { apsw.fts.unicode_categories[cat] })"
         flags = flags_func(ord(c)).name
         return "{U+" + ("%04X" % ord(c)) + f" {name} : { flags }" + "}"
-
 
     if options.function == "show":
         if not options.text_file and not options.text:
@@ -203,7 +206,7 @@ if __name__ == "__main__":
         flags_func = globals()[f"{ options.test }_category"]
         ok = "÷"
         not_ok = "\u00d7"
-        fails : list[str] = []
+        fails: list[str] = []
         for line_num, line in enumerate(options.file, 1):
             orig_line = line
             if not line.strip() or line.startswith("#"):
@@ -232,16 +235,18 @@ if __name__ == "__main__":
                 fails.append("")
 
             offset = 0
-            seen : list[int]= []
+            seen: list[int] = []
             lf = len(fails)
             while offset < len(text):
                 try:
-                  span = span_func(text, offset)
+                    span = span_func(text, offset)
                 except:
                     apsw.ext.print_augmented_traceback(*sys.exc_info())
                     raise
                 if span not in breaks:
-                    fails.append(f"Line { line_num } got unexpected break at { span } - expected are { breaks }.  Seen { seen }")
+                    fails.append(
+                        f"Line { line_num } got unexpected break at { span } - expected are { breaks }.  Seen { seen }"
+                    )
                     add_failinfo()
                     break
                 seen.append(span)
