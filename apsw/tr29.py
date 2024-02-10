@@ -148,6 +148,7 @@ def does_gb9c_apply(seen: list[GC]) -> bool:
         return False
     assert False, "Can't reach here"
 
+
 def does_gb11_apply(seen: list[GC]) -> bool:
     # we are sitting at ZWJ and looking back
     # should only see Extend (zero or more) then

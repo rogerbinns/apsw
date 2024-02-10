@@ -57,7 +57,7 @@ def augiter(content: Iterable):
         yield is_first, is_last, item
 
 
-def bsearch(indent: int, items: list, n: int):
+def bsearch(enum_name: str, indent: int, items: list, n: int):
     # n is if tests at same level.  2 means binary search, 3 is trinary etc
     indent_ = "    " * indent
 
@@ -75,7 +75,7 @@ def bsearch(indent: int, items: list, n: int):
                 yield f"{ indent_ }else:"
             else:
                 yield f"{ indent_ }elif c < 0x{ test:04X}:"
-            yield from bsearch(indent + 1, items[begin : begin + step], n)
+            yield from bsearch(enum_name, indent + 1, items[begin : begin + step], n)
     else:
         for is_first, is_last, (start, end, cat) in augiter(items):
             if start == end:
@@ -84,10 +84,10 @@ def bsearch(indent: int, items: list, n: int):
                 test = f"0x{ start:04X} <= c <= 0x{ end:04X}"
             if not is_last:
                 yield f"{ indent_ }if { test }:"
-                yield f"{ indent_ }    return GC.{ cat }"
+                yield f"{ indent_ }    return { enum_name }.{ cat }"
             else:
                 yield f"{ indent_ }# { test }"
-                yield f"{ indent_ }return GC.{ cat }"
+                yield f"{ indent_ }return { enum_name }.{ cat }"
 
 
 # We do Python code for testing and development
@@ -99,23 +99,57 @@ def generate_python() -> str:
     out.append("")
     out.append("")
 
-    # grapheme only for the moment
-    out.append(f"# Grapheme categories")
-    out.append("class GC(enum.Enum):")
-    for i, cat in enumerate(sorted(set(v[2] for v in grapheme_ranges))):
-        out.append(f"    { cat } = { i }")
+    out.extend(generate_python_table("grapheme", "GC", grapheme_ranges))
     out.append("")
+    out.extend(generate_python_table("word", "WC", word_ranges))
     out.append("")
-    out.append("def grapheme_category(c: int) -> GC:")
-    out.append('    "Returns category corresponding to codepoint"')
-    out.append("")
-
-    # ::TODO:: generate a direct lookup table for first N codepoints
-    # where N is likely 256 so they don't need to go through bsearch
-
-    out.extend(bsearch(1, grapheme_ranges, 2))
-
     return "\n".join(out) + "\n"
+
+
+def generate_python_table(name, enum_name, ranges):
+    yield f"# { name }"
+    yield ""
+    yield f"class { enum_name }(enum.Enum):"
+    for i, cat in enumerate(sorted(set(v[2] for v in ranges))):
+        yield f"    { cat } = { i }"
+    yield ""
+    yield ""
+
+    # make a copy because we modify it
+    ranges = ranges[:]
+    table_limit = 256
+
+    yield f"{ name}_fast_lookup = ["
+    line = ""
+    for cp in range(table_limit):
+        if cp > ranges[0][1]:
+            ranges.pop(0)
+        if cp % 16 == 0:
+            if line:
+                yield line.rstrip()
+                line = ""
+            yield f"    # { cp:04X} - {min(table_limit,cp+16)-1:04X}"
+        cat = f"{ enum_name }.{ ranges[0][2]}"
+        if len(line) + len(cat) > 116:
+            yield line.rstrip()
+            line = ""
+        if not line:
+            line = "    "
+        line += f"{cat}, "
+    if line:
+        yield line.rstrip()
+    yield "]"
+    yield ""
+    ranges[0][0] = table_limit
+
+    yield f"def { name }_category(c: int) -> { enum_name }:"
+    yield '    "Returns category corresponding to codepoint"'
+    yield ""
+    yield f"    if c < 0x{ table_limit:04X}:"
+    yield f"        return { name}_fast_lookup[c]"
+    yield ""
+
+    yield from bsearch(enum_name, 1, ranges, 2)
 
 
 props = {
@@ -237,11 +271,11 @@ def read_props(data_dir: str):
 grapheme_ranges = []
 
 
-def generate_grapheme_ranges():
+def generate_ranges(name, source, dest, adjust):
     all_cp = {}
-    # somewhat messy because eg Extend and InCB_Extend overlap
-    # so we turn into a set in that case
-    for category, vals in props["grapheme"].items():
+    # somewhat messy because the same codepoint can be
+    # in multiple categories (grapheme especially)
+    for category, vals in source.items():
         for val in all_vals(vals):
             if val in all_cp:
                 existing = all_cp[val]
@@ -252,7 +286,7 @@ def generate_grapheme_ranges():
                 cat = category
             all_cp[val] = cat
 
-    print("Categories and members")
+    print(f"{name} categories and members")
     by_cat = collections.Counter()
     for v in all_cp.values():
         by_cat[v] += 1
@@ -260,6 +294,18 @@ def generate_grapheme_ranges():
 
     last = None
 
+    for cp in range(0, sys.maxunicode + 1):
+        cat = all_cp.get(cp, "Other")
+        cat = adjust.get(cat, cat)
+        assert isinstance(cat, str), f"{cat=} is not a str"
+        if cat != last:
+            dest.append([cp, cp, cat])
+        else:
+            dest[-1][1] = cp
+        last = cat
+
+
+def generate_grapheme_ranges():
     adjust = {
         # only one codepoint
         ("InCB_Extend", "ZWJ"): "ZWJ",
@@ -269,15 +315,14 @@ def generate_grapheme_ranges():
         ("Extend", "InCB_Extend"): "InCB_Extend",
     }
 
-    for cp in range(0, sys.maxunicode + 1):
-        cat = all_cp.get(cp, "Other")
-        cat = adjust.get(cat, cat)
-        assert isinstance(cat, str), f"{cat=} is not a str"
-        if cat != last:
-            grapheme_ranges.append([cp, cp, cat])
-        else:
-            grapheme_ranges[-1][1] = cp
-        last = cat
+    generate_ranges("Grapheme", props["grapheme"], grapheme_ranges, adjust)
+
+
+word_ranges = []
+
+
+def generate_word_ranges():
+    generate_ranges("Word", props["word"], word_ranges, {})
 
 
 py_code_header = f"""\
@@ -302,6 +347,7 @@ if __name__ == "__main__":
     read_props(options.data_dir)
 
     generate_grapheme_ranges()
+    generate_word_ranges()
 
     py_code = generate_python()
     options.out_py.write(py_code_header)
