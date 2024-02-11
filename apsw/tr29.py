@@ -15,12 +15,14 @@ from __future__ import annotations
 from _tr29db import *
 
 
-def grapheme_span(text: str, offset: int = 0) -> int:
+def grapheme_next_break(text: str, offset: int = 0) -> int:
     """Returns end of Grapheme /  User Perceived Character
 
     For example regional indicators are in pairs, and a base codepoint
     can be combined with zero or more additional codepoints providing
-    diacritics, marks, and variations.
+    diacritics, marks, and variations.  Break points are defined in
+    the `TR29 spec
+    <https://www.unicode.org/reports/tr29/#Grapheme_Cluster_Boundary_Rules>`__.
 
     :param text: The text to examine
     :param offset: The first codepoint to examine
@@ -159,6 +161,18 @@ def does_gb11_apply(seen: list[GC]) -> bool:
         return cp is GC.Extended_Pictographic
     assert False, "Can't reach here"
 
+def grapheme_next(text: str, offset: int=0) -> tuple[int, int]:
+    "Returns span of next grapheme"
+    start = offset
+    end = grapheme_next_break(text, offset=offset)
+    return start, end
+
+def grapheme_iter(text: str, offset: int=0):
+    "Generator providing start, end, text of each grapheme"
+    while offset < len(text):
+        start, end = grapheme_next(text, offset)
+        yield (start, end, text[start:end])
+        offset = end
 
 if __name__ == "__main__":
     import argparse
@@ -180,8 +194,6 @@ if __name__ == "__main__":
     subparsers = parser.add_subparsers()
     p = subparsers.add_parser("breaktest", help="Run Unicode test file")
     p.set_defaults(function="breaktest")
-    # ::TODO:: a setting to show what pairs of codepoint kinds are not exercised by test text
-    # eg (Extend, Prepend)
     p.add_argument("--fail-fast", default=False, action="store_true", help="Exit on first test failure")
     p.add_argument("test", choices=("grapheme", "word", "sentence"), help="What to test")
     # ::TODO:: auto download file if not provided
@@ -213,8 +225,8 @@ if __name__ == "__main__":
             name = "<NO NAME>"
         cat = unicodedata.category(c)
         name += f" ({ cat } { apsw.fts.unicode_categories[cat] })"
-        flags = flags_func(ord(c)).name
-        return "{U+" + ("%04X" % ord(c)) + f" {name} : { flags }" + "}"
+        tr29_cat = tr29_cat_func(ord(c)).name
+        return "{U+" + ("%04X" % ord(c)) + f" {name} : { tr29_cat }" + "}"
 
     if options.function == "show":
         if not options.text_file and not options.text:
@@ -228,24 +240,24 @@ if __name__ == "__main__":
                 text += " "
             text += options.text_file.read()
 
-        span_func = globals()[f"{ options.show }_span"]
-        flags_func = globals()[f"{ options.show }_category"]
+        next_func = globals()[f"{ options.show }_next"]
+        tr29_cat_func = globals()[f"{ options.show }_category"]
 
         counter = 0
         offset = 0
         while offset < len(text):
-            span = span_func(text, offset)
-            print(f"#{ counter } offset { offset } span { span } codepoints { span - offset }")
+            begin, end = next_func(text, offset)
+            print(f"#{ counter } offset { offset } span { begin }-{ end } codepoints { end - begin }")
             codepoints = []
-            for i in range(offset, span):
+            for i in range(begin, end):
                 codepoints.append(codepoint_details(text[i]))
             print("\n".join(textwrap.wrap(" ".join(codepoints), width=options.width)))
-            offset = span
+            offset = end
 
     else:
         assert options.function == "breaktest"
-        span_func = globals()[f"{ options.test }_span"]
-        flags_func = globals()[f"{ options.test }_category"]
+        next_break_func = globals()[f"{ options.test }_next_break"]
+        tr29_cat_func = globals()[f"{ options.test }_category"]
         ok = "÷"
         not_ok = "\u00d7"
         fails: list[str] = []
@@ -281,7 +293,7 @@ if __name__ == "__main__":
             lf = len(fails)
             while offset < len(text):
                 try:
-                    span = span_func(text, offset)
+                    span = next_break_func(text, offset)
                 except:
                     apsw.ext.print_augmented_traceback(*sys.exc_info())
                     raise
