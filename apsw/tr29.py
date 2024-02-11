@@ -192,8 +192,7 @@ if __name__ == "__main__":
     # ::TODO:: benchmark to work out best bsearch parameter
 
     parser = argparse.ArgumentParser()
-    parser.set_defaults(function=None)
-    subparsers = parser.add_subparsers()
+    subparsers = parser.add_subparsers(required=True)
     p = subparsers.add_parser("breaktest", help="Run Unicode test file")
     p.set_defaults(function="breaktest")
     p.add_argument("--fail-fast", default=False, action="store_true", help="Exit on first test failure")
@@ -215,10 +214,11 @@ if __name__ == "__main__":
     p.add_argument("--width", default=width, help="Output width [%(default)s]", type=int)
     p.add_argument("text", nargs="*", help="Text to segment unless --text-file used")
 
-    options = parser.parse_args()
+    p = subparsers.add_parser("codepoint", help="Show infornation about codepoints")
+    p.add_argument("text", nargs="+", help="If a hex constant then use that value, otherwise treat as text")
+    p.set_defaults(function="codepoint")
 
-    if not options.function:
-        p.error("You must specify a sub-command")
+    options = parser.parse_args()
 
     def codepoint_details(c: str) -> str:
         try:
@@ -256,8 +256,7 @@ if __name__ == "__main__":
             print("\n".join(textwrap.wrap(" ".join(codepoints), width=options.width)))
             offset = end
 
-    else:
-        assert options.function == "breaktest"
+    elif options.function == "breaktest":
         next_break_func = globals()[f"{ options.test }_next_break"]
         tr29_cat_func = globals()[f"{ options.test }_category"]
         ok = "÷"
@@ -322,3 +321,23 @@ if __name__ == "__main__":
             for fail in fails:
                 print(fail, file=sys.stderr)
             sys.exit(2)
+
+    elif options.function == "codepoint":
+        codepoints = []
+        for t in options.text:
+            try:
+                codepoints.append(int(t, 16))
+            except ValueError:
+                codepoints.extend(ord(c) for c in t)
+        for i, cp in enumerate(codepoints):
+            print(f"#{ i } U+{ cp:04X} - { chr(cp) }")
+            try:
+                name = unicodedata.name(chr(cp))
+            except ValueError:
+                name = "<NO NAME>"
+            cat = unicodedata.category(chr(cp))
+            print(f"unicodedata: { name } category { cat }: { apsw.fts.unicode_categories[cat] }")
+            print(
+                f"TR29 grapheme { grapheme_category(cp) } word { word_category(cp) } sentence { sentence_category(cp) }"
+            )
+            print()
