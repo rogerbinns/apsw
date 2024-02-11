@@ -117,13 +117,12 @@ def generate_python_table(name, enum_name, ranges):
 
     # make a copy because we modify it
     ranges = ranges[:]
+    # first codepoint NOT in table
     table_limit = 256
 
     yield f"{ name}_fast_lookup = ["
     line = ""
     for cp in range(table_limit):
-        if cp > ranges[0][1]:
-            ranges.pop(0)
         if cp % 16 == 0:
             if line:
                 yield line.rstrip()
@@ -136,6 +135,9 @@ def generate_python_table(name, enum_name, ranges):
         if not line:
             line = "    "
         line += f"{cat}, "
+        if cp >= ranges[0][1]:
+            ranges.pop(0)
+
     if line:
         yield line.rstrip()
     yield "]"
