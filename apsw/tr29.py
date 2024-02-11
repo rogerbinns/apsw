@@ -16,7 +16,7 @@ from _tr29db import *
 
 
 def grapheme_next_break(text: str, offset: int = 0) -> int:
-    """Returns end of Grapheme /  User Perceived Character
+    """Returns end of Grapheme cluster /  User Perceived Character
 
     For example regional indicators are in pairs, and a base codepoint
     can be combined with zero or more additional codepoints providing
@@ -27,7 +27,7 @@ def grapheme_next_break(text: str, offset: int = 0) -> int:
     :param text: The text to examine
     :param offset: The first codepoint to examine
 
-    :returns:  Index of first codepoint not part of the grapheme
+    :returns:  Index of first codepoint not part of the grapheme cluster
         starting at offset. You should extract ``text[offset:span]``
 
     """
@@ -161,14 +161,16 @@ def does_gb11_apply(seen: list[GC]) -> bool:
         return cp is GC.Extended_Pictographic
     assert False, "Can't reach here"
 
-def grapheme_next(text: str, offset: int=0) -> tuple[int, int]:
-    "Returns span of next grapheme"
+
+def grapheme_next(text: str, offset: int = 0) -> tuple[int, int]:
+    "Returns span of next grapheme cluster"
     start = offset
     end = grapheme_next_break(text, offset=offset)
     return start, end
 
-def grapheme_iter(text: str, offset: int=0):
-    "Generator providing start, end, text of each grapheme"
+
+def grapheme_iter(text: str, offset: int = 0):
+    "Generator providing start, end, text of each grapheme cluster"
     while offset < len(text):
         start, end = grapheme_next(text, offset)
         yield (start, end, text[start:end])
