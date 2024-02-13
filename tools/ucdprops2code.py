@@ -111,9 +111,10 @@ def generate_python() -> str:
 def generate_python_table(name, enum_name, ranges):
     yield f"# { name }"
     yield ""
-    yield f"class { enum_name }(enum.Enum):"
+    yield f"class { enum_name }(enum.IntEnum):"
     for i, cat in enumerate(sorted(set(v[2] for v in ranges))):
         yield f"    { cat } = { i }"
+    yield f"    EOT = { i + 1 } # End of text"
     yield ""
     yield ""
 
@@ -241,6 +242,7 @@ def read_props(data_dir: str):
 
     extract_version("emoji-data.txt", source)
     extract_prop(source, props["grapheme"], "Extended_Pictographic")
+    extract_prop(source, props["word"], "Extended_Pictographic")
 
     if data_dir:
         url = pathlib.Path(data_dir) / "DerivedCoreProperties.txt"
@@ -296,12 +298,21 @@ def generate_ranges(name, source, dest, adjust):
         by_cat[v] += 1
     pprint.pprint(by_cat)
 
+    fail = False
+    for cp in range(0, sys.maxunicode + 1):
+        cat = all_cp.get(cp, "Other")
+        cat = adjust.get(cat, cat)
+        if not isinstance(cat, str):
+            print(f"{cat=} is not a str for U+{ cp:04X}", file=sys.stderr)
+            fail = True
+    if fail:
+        sys.exit(2)
+
     last = None
 
     for cp in range(0, sys.maxunicode + 1):
         cat = all_cp.get(cp, "Other")
         cat = adjust.get(cat, cat)
-        assert isinstance(cat, str), f"{cat=} is not a str"
         if cat != last:
             dest.append([cp, cp, cat])
         else:
@@ -326,9 +337,17 @@ word_ranges = []
 
 
 def generate_word_ranges():
-    generate_ranges("Word", props["word"], word_ranges, {})
+    adjust = {
+        # A wierd collection of 6 codepoints - keeping as pictographic for
+        # consistency with grapheme cluster rules
+        # U+2139 U+24C2 U+1F170 U+1F171 U+1F17E U+1F17F
+        ("ALetter", "Extended_Pictographic"): "Extended_Pictographic",
+    }
+    generate_ranges("Word", props["word"], word_ranges, adjust)
+
 
 sentence_ranges = []
+
 
 def generate_sentence_ranges():
     generate_ranges("sentence", props["sentence"], sentence_ranges, {})
