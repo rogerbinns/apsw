@@ -329,15 +329,28 @@ if __name__ == "__main__":
                 codepoints.append(int(t, 16))
             except ValueError:
                 codepoints.extend(ord(c) for c in t)
+
+        def uniname(cp):
+            try:
+                return unicodedata.name(chr(cp))
+            except ValueError:
+                return "<NO NAME>"
+
+        def deets(cp):
+            cat = unicodedata.category(chr(cp))
+            return f"{ uniname(cp) } category { cat }: { apsw.fts.unicode_categories[cat] }"
+
         for i, cp in enumerate(codepoints):
             print(f"#{ i } U+{ cp:04X} - { chr(cp) }")
-            try:
-                name = unicodedata.name(chr(cp))
-            except ValueError:
-                name = "<NO NAME>"
-            cat = unicodedata.category(chr(cp))
-            print(f"unicodedata: { name } category { cat }: { apsw.fts.unicode_categories[cat] }")
+            print(f"unicodedata: { deets(cp) }")
+            normalized = []
+            for form in "NFD", "NFKD":
+                if chr(cp) != unicodedata.normalize(form, chr(cp)):
+                    normalized.append((form, unicodedata.normalize(form, chr(cp))))
+            for norm, val in normalized:
+                val = ", ".join(f"U+{ ord(v):04X} {uniname(ord(v))}" for v in val)
+                print(f"{ norm }: { val }")
             print(
-                f"TR29 grapheme { grapheme_category(cp) } word { word_category(cp) } sentence { sentence_category(cp) }"
+                f"TR29 grapheme: { grapheme_category(cp).name }   word: { word_category(cp).name }   sentence: { sentence_category(cp).name }"
             )
             print()
