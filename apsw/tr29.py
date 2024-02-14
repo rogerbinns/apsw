@@ -10,9 +10,54 @@ https://www.unicode.org/reports/tr29/
 
 from __future__ import annotations
 
+from typing import Callable, Any
+
 # This module is expected to be C in the future, so pretend these methods
 # are present in this module
 from _tr29db import *
+
+
+class TextIterator:
+    def __init__(self, text: str, offset: int, catfunc: Callable, end_marker: Any):
+        self.text = text
+        self.start = offset
+        self.end = len(text)  # we allow pointing to one item beyond end
+        self.pos = offset  # index we are currently examining but have not accepted yet
+        self.catfunc = catfunc
+        self.end_marker = end_marker
+        self.accepted = 0  # bitmask of accepted properties
+        if offset < 0 or offset > self.end:
+            raise ValueError(f"{offset=} is out of bounds 0 - { self.end }")
+        if self.pos == self.end:
+            self.char = self.lookahead = self.end_marker
+        else:
+            self.char = self.lookahead = self.catfunc(ord(self.text[self.pos]))
+
+    def end_of_text(self) -> bool:
+        return self.pos >= self.end
+
+    def start_of_text(self) -> bool:
+        return self.pos == self.start
+
+    def has_accepted(self, cat) -> bool:
+        return bool(self.accepted & 2**cat)
+
+    def peek(self, count: int):
+        # 0 corresponds to current char, 1 to lookahead, -1 to behind current char etc
+        offset = self.pos - 1 + count
+        assert offset >= self.start and offset < self.end
+        return self.catfunc(ord(self.text[offset]))
+
+    def advance(self) -> tuple:
+        "Returns tuple of current char and lookahead props"
+        if self.end_of_text():
+            raise ValueError("Trying to advance beyond end of text")
+        if self.pos != self.start:
+            self.accepted |= 2**self.char
+        self.char = self.lookahead
+        self.pos += 1
+        self.lookahead = self.catfunc(ord(self.text[self.pos])) if self.pos < self.end else self.end_marker
+        return self.char, self.lookahead
 
 
 def grapheme_next_break(text: str, offset: int = 0) -> int:
@@ -31,53 +76,27 @@ def grapheme_next_break(text: str, offset: int = 0) -> int:
         starting at offset. You should extract ``text[offset:span]``
 
     """
-    lt = len(text)
-    if offset < 0 or offset > lt:
-        raise ValueError(f"{offset=} is out of bounds 0 - { lt }")
 
-    # GB1/2
+    it = TextIterator(text, offset, grapheme_category, GC.EOT)
 
-    # At end?
-    if offset == lt:
-        return offset
+    # GB1 implicit
 
-    # Only one char?
-    if offset + 1 == lt:
-        return offset + 1
+    # GB2
+    if it.end_of_text():
+        return it.pos
 
-    # rules are based on lookahead so we use pos to indicate where we are looking
-    pos = offset
-    char = lookahead = grapheme_category(ord(text[pos]))
-
-    def advance():
-        nonlocal char, lookahead, pos, accepted
-        if accepted is None:
-            accepted = []
-        else:
-            accepted.append(char)
-        char = lookahead
-        pos += 1
-        try:
-            lookahead = grapheme_category(ord(text[pos]))
-        except IndexError:
-            # always break before Control so no need for separate end of file category
-            lookahead = GC.Control
-        # print(f"{offset=} {pos=} {char=} {lookahead=} {accepted=}")
-
-    accepted = None
-
-    while pos < lt:
-        advance()
+    while not it.end_of_text():
+        char, lookahead = it.advance()
 
         # GB3
         if char is GC.CR and lookahead is GC.LF:
-            return pos + 1
+            return it.pos + 1
 
         # GB4
         if char is GC.Control or char is GC.CR or char is GC.LF:
             # break before if any chars are accepted
-            if accepted:
-                return pos - 1
+            if it.accepted:
+                return it.pos - 1
             break
 
         # GB6
@@ -105,27 +124,21 @@ def grapheme_next_break(text: str, offset: int = 0) -> int:
             continue
 
         # GB9c
-        if (
-            lookahead is GC.InCB_Consonant
-            and accepted
-            and GC.InCB_Consonant in accepted
-            and does_gb9c_apply(accepted + [char])
-        ):
+        if lookahead is GC.InCB_Consonant and it.has_accepted(GC.InCB_Consonant) and does_gb9c_apply(it):
             continue
 
         # GB11
         if (
             lookahead is GC.Extended_Pictographic
             and char is GC.ZWJ
-            and accepted
-            and GC.Extended_Pictographic in accepted
-            and does_gb11_apply(accepted)
+            and it.has_accepted(GC.Extended_Pictographic)
+            and does_gb11_apply(it)
         ):
             continue
 
         # GB12
         if char is GC.Regional_Indicator and lookahead is GC.Regional_Indicator:
-            advance()
+            char, lookahead = it.advance()
             # re-apply GB9
             if lookahead is GC.Extend or lookahead is GC.ZWJ or lookahead is GC.InCB_Extend:
                 continue
@@ -134,12 +147,15 @@ def grapheme_next_break(text: str, offset: int = 0) -> int:
         # GB999
         break
 
-    return pos
+    return it.pos
 
 
-def does_gb9c_apply(seen: list[GC]) -> bool:
+def does_gb9c_apply(it: TextIterator) -> bool:
     bare_linker_seen = False
-    for cp in reversed(seen):
+    i = 0
+    while True:
+        cp = it.peek(i)
+        i -= 1
         if cp is GC.InCB_Consonant:
             return bare_linker_seen
         if cp is GC.InCB_Linker:
@@ -148,18 +164,20 @@ def does_gb9c_apply(seen: list[GC]) -> bool:
         if cp is GC.InCB_Extend or cp is GC.ZWJ:
             continue
         return False
-    assert False, "Can't reach here"
 
 
-def does_gb11_apply(seen: list[GC]) -> bool:
+def does_gb11_apply(it: TextIterator) -> bool:
     # we are sitting at ZWJ and looking back
     # should only see Extend (zero or more) then
     # extended_pictographic
-    for cp in reversed(seen):
+    assert it.char is GC.ZWJ
+    i = -1
+    while True:
+        cp = it.peek(i)
+        i -= 1
         if cp is GC.Extend or cp is GC.InCB_Extend:
             continue
         return cp is GC.Extended_Pictographic
-    assert False, "Can't reach here"
 
 
 def grapheme_next(text: str, offset: int = 0) -> tuple[int, int]:
