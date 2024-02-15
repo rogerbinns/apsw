@@ -113,8 +113,8 @@ def generate_python_table(name, enum_name, ranges):
     yield ""
     yield f"class { enum_name }(enum.IntEnum):"
     for i, cat in enumerate(sorted(set(v[2] for v in ranges))):
-        yield f"    { cat } = { i }"
-    yield f"    EOT = { i + 1 } # End of text"
+        yield f"    { cat } = { 2 ** i }"
+    yield f"    EOT = { 2 ** (i + 1) } # End of text"
     yield ""
     yield ""
 

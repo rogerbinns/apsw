@@ -40,7 +40,7 @@ class TextIterator:
         return self.pos == self.start
 
     def has_accepted(self, cat) -> bool:
-        return bool(self.accepted & 2**cat)
+        return bool(self.accepted & cat)
 
     def peek(self, count: int):
         # 0 corresponds to current char, 1 to lookahead, -1 to behind current char etc
@@ -53,7 +53,7 @@ class TextIterator:
         if self.end_of_text():
             raise ValueError("Trying to advance beyond end of text")
         if self.pos != self.start:
-            self.accepted |= 2**self.char
+            self.accepted |= self.char
         self.char = self.lookahead
         self.pos += 1
         self.lookahead = self.catfunc(ord(self.text[self.pos])) if self.pos < self.end else self.end_marker
@@ -89,58 +89,58 @@ def grapheme_next_break(text: str, offset: int = 0) -> int:
         char, lookahead = it.advance()
 
         # GB3
-        if char is GC.CR and lookahead is GC.LF:
+        if char == GC.CR and lookahead == GC.LF:
             return it.pos + 1
 
         # GB4
-        if char is GC.Control or char is GC.CR or char is GC.LF:
+        if char & (GC.Control | GC.CR | GC.LF):
             # break before if any chars are accepted
             if it.accepted:
                 return it.pos - 1
             break
 
         # GB6
-        if char is GC.L and (lookahead is GC.L or lookahead is GC.V or lookahead is GC.LV or lookahead is GC.LVT):
+        if char == GC.L and lookahead & (GC.L | GC.V | GC.LV | GC.LVT):
             continue
 
         # GB7
-        if (char is GC.LV or char is GC.V) and (lookahead is GC.V or lookahead is GC.T):
+        if char & (GC.LV | GC.V) and lookahead & (GC.V | GC.T):
             continue
 
         # GB8
-        if (char is GC.LVT or char is GC.T) and lookahead is GC.T:
+        if char & (GC.LVT | GC.T) and lookahead == GC.T:
             continue
 
         # GB9 (InCB Extend and Linker chars are also marked extend)
-        if lookahead is GC.Extend or lookahead is GC.InCB_Linker or lookahead is GC.InCB_Extend or lookahead is GC.ZWJ:
+        if lookahead & (GC.Extend | GC.InCB_Linker | GC.InCB_Extend | GC.ZWJ):
             continue
 
         # GB9a
-        if lookahead is GC.SpacingMark:
+        if lookahead == GC.SpacingMark:
             continue
 
         # GB9b
-        if char is GC.Prepend:
+        if char == GC.Prepend:
             continue
 
         # GB9c
-        if lookahead is GC.InCB_Consonant and it.has_accepted(GC.InCB_Consonant) and does_gb9c_apply(it):
+        if lookahead == GC.InCB_Consonant and it.has_accepted(GC.InCB_Consonant) and does_gb9c_apply(it):
             continue
 
         # GB11
         if (
-            lookahead is GC.Extended_Pictographic
-            and char is GC.ZWJ
+            lookahead == GC.Extended_Pictographic
+            and char == GC.ZWJ
             and it.has_accepted(GC.Extended_Pictographic)
             and does_gb11_apply(it)
         ):
             continue
 
         # GB12
-        if char is GC.Regional_Indicator and lookahead is GC.Regional_Indicator:
+        if char == GC.Regional_Indicator and lookahead == GC.Regional_Indicator:
             char, lookahead = it.advance()
             # re-apply GB9
-            if lookahead is GC.Extend or lookahead is GC.ZWJ or lookahead is GC.InCB_Extend:
+            if lookahead & (GC.Extend | GC.ZWJ | GC.InCB_Extend):
                 continue
             break
 
@@ -156,12 +156,12 @@ def does_gb9c_apply(it: TextIterator) -> bool:
     while True:
         cp = it.peek(i)
         i -= 1
-        if cp is GC.InCB_Consonant:
+        if cp == GC.InCB_Consonant:
             return bare_linker_seen
-        if cp is GC.InCB_Linker:
+        if cp == GC.InCB_Linker:
             bare_linker_seen = True
             continue
-        if cp is GC.InCB_Extend or cp is GC.ZWJ:
+        if cp & (GC.InCB_Extend | GC.ZWJ):
             continue
         return False
 
@@ -170,12 +170,12 @@ def does_gb11_apply(it: TextIterator) -> bool:
     # we are sitting at ZWJ and looking back
     # should only see Extend (zero or more) then
     # extended_pictographic
-    assert it.char is GC.ZWJ
+    assert it.char == GC.ZWJ
     i = -1
     while True:
         cp = it.peek(i)
         i -= 1
-        if cp is GC.Extend or cp is GC.InCB_Extend:
+        if cp & (GC.Extend | GC.InCB_Extend):
             continue
         return cp is GC.Extended_Pictographic
 
