@@ -91,7 +91,7 @@ def grapheme_next_break(text: str, offset: int = 0) -> int:
         char, lookahead = it.advance()
 
         # GB3
-        if char == GC.CR and lookahead == GC.LF:
+        if char & GC.CR and lookahead & GC.LF:
             return it.pos + 1
 
         # GB4
@@ -102,7 +102,7 @@ def grapheme_next_break(text: str, offset: int = 0) -> int:
             break
 
         # GB6
-        if char == GC.L and lookahead & (GC.L | GC.V | GC.LV | GC.LVT):
+        if char & GC.L and lookahead & (GC.L | GC.V | GC.LV | GC.LVT):
             continue
 
         # GB7
@@ -110,7 +110,7 @@ def grapheme_next_break(text: str, offset: int = 0) -> int:
             continue
 
         # GB8
-        if char & (GC.LVT | GC.T) and lookahead == GC.T:
+        if char & (GC.LVT | GC.T) and lookahead & GC.T:
             continue
 
         # GB9 (InCB Extend and Linker chars are also marked extend)
@@ -118,28 +118,28 @@ def grapheme_next_break(text: str, offset: int = 0) -> int:
             continue
 
         # GB9a
-        if lookahead == GC.SpacingMark:
+        if lookahead & GC.SpacingMark:
             continue
 
         # GB9b
-        if char == GC.Prepend:
+        if char & GC.Prepend:
             continue
 
         # GB9c
-        if lookahead == GC.InCB_Consonant and it.has_accepted(GC.InCB_Consonant) and does_gb9c_apply(it):
+        if lookahead & GC.InCB_Consonant and it.has_accepted(GC.InCB_Consonant) and does_gb9c_apply(it):
             continue
 
         # GB11
         if (
-            lookahead == GC.Extended_Pictographic
-            and char == GC.ZWJ
+            lookahead & GC.Extended_Pictographic
+            and char & GC.ZWJ
             and it.has_accepted(GC.Extended_Pictographic)
             and does_gb11_apply(it)
         ):
             continue
 
         # GB12
-        if char == GC.Regional_Indicator and lookahead == GC.Regional_Indicator:
+        if char & GC.Regional_Indicator and lookahead & GC.Regional_Indicator:
             char, lookahead = it.advance()
             # re-apply GB9
             if lookahead & (GC.Extend | GC.ZWJ | GC.InCB_Extend):
@@ -158,9 +158,9 @@ def does_gb9c_apply(it: TextIterator) -> bool:
     while True:
         cp = it.peek(i)
         i -= 1
-        if cp == GC.InCB_Consonant:
+        if cp & GC.InCB_Consonant:
             return bare_linker_seen
-        if cp == GC.InCB_Linker:
+        if cp & GC.InCB_Linker:
             bare_linker_seen = True
             continue
         if cp & (GC.InCB_Extend | GC.ZWJ):
@@ -172,14 +172,14 @@ def does_gb11_apply(it: TextIterator) -> bool:
     # we are sitting at ZWJ and looking back
     # should only see Extend (zero or more) then
     # extended_pictographic
-    assert it.char == GC.ZWJ
+    assert it.char & GC.ZWJ
     i = -1
     while True:
         cp = it.peek(i)
         i -= 1
         if cp & (GC.Extend | GC.InCB_Extend):
             continue
-        return cp is GC.Extended_Pictographic
+        return cp & GC.Extended_Pictographic
 
 
 def grapheme_next(text: str, offset: int = 0) -> tuple[int, int]:
