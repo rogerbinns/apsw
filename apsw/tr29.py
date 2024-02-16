@@ -513,6 +513,19 @@ if __name__ == "__main__":
             cat = unicodedata.category(chr(cp))
             return f"{ uniname(cp) } category { cat }: { apsw.fts.unicode_categories[cat] }"
 
+        def category_name(func, enum_name, cp: int):
+            try:
+                # works if only one category
+                return func(cp).name
+            except AttributeError:
+                pass
+            cat = func(cp)
+            cats = []
+            for name, value in enum_name.__members__.items():
+                if cat & value:
+                    cats.append(name)
+            return " | ".join(sorted(cats))
+
         for i, cp in enumerate(codepoints):
             print(f"#{ i } U+{ cp:04X} - { chr(cp) }")
             print(f"unicodedata: { deets(cp) }")
@@ -524,6 +537,8 @@ if __name__ == "__main__":
                 val = ", ".join(f"U+{ ord(v):04X} {uniname(ord(v))}" for v in val)
                 print(f"{ norm }: { val }")
             print(
-                f"TR29 grapheme: { grapheme_category(cp).name }   word: { word_category(cp).name }   sentence: { sentence_category(cp).name }"
+                f"TR29 grapheme: { category_name(grapheme_category, GC, cp) }   "
+                f"word: { category_name(word_category, WC, cp )}   "
+                f"sentence: { category_name(sentence_category, SC, cp) }"
             )
             print()
