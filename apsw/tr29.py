@@ -45,7 +45,9 @@ class TextIterator:
     def peek(self, count: int):
         # 0 corresponds to current char, 1 to lookahead, -1 to behind current char etc
         offset = self.pos - 1 + count
-        assert offset >= self.start and offset < self.end
+        assert offset >= self.start and offset <= self.end
+        if offset == self.end:
+            return self.end_marker
         return self.catfunc(ord(self.text[offset]))
 
     def advance(self) -> tuple:
@@ -193,6 +195,159 @@ def grapheme_iter(text: str, offset: int = 0):
         start, end = grapheme_next(text, offset)
         yield (start, end, text[start:end])
         offset = end
+
+
+def word_next_break(text: str, offset: int = 0) -> int:
+    """Returns end of next word or non-word
+
+    Finds the next break point according to the `TR29 spec
+    <https://www.unicode.org/reports/tr29/#Word_Boundary_Rules>`__.
+    Note that the segment returned may be a word, or a non-word.
+    Use :func:`word_next` to get words.
+
+    :param text: The text to examine
+    :param offset: The first codepoint to examine
+
+    :returns:  Next break point
+    """
+
+    # From spec
+    AHLetter = WC.ALetter | WC.Hebrew_Letter
+    MidNumLetQ = WC.MidNumLet | WC.Single_Quote
+
+    it = TextIterator(text, offset, word_category, GC.EOT)
+
+    # WB1 implicit
+
+    # WB2
+    if it.end_of_text():
+        return it.pos
+
+    while not it.end_of_text():
+        char, lookahead = it.advance()
+
+        # WB3
+        if char == WC.CR and lookahead == WC.LF:
+            continue
+
+        # WB3a/b
+        if char & (WC.Newline | WC.CR | WC.LF):
+            # break before if any chars are accepted
+            if it.accepted:
+                return it.pos - 1
+            # break after
+            break
+
+        # WB3c
+        if char == WC.ZWJ and lookahead == WC.Extended_Pictographic:
+            continue
+
+        # WB3d
+        if char == WC.WSegSpace and lookahead == WC.WSegSpace:
+            continue
+
+        # WB4
+        ...
+
+        # WB5
+        if char & AHLetter and lookahead & AHLetter:
+            continue
+
+        # WB6
+        if char & AHLetter and lookahead & (WC.MidLetter | MidNumLetQ):
+            one_more = it.peek(2)
+            if one_more & AHLetter:
+                it.advance()
+                continue
+
+        # WB7
+        if it.accepted and char & (WC.MidLetter & MidNumLetQ):
+            last = it.peek(-1)
+            if last & AHLetter and lookahead & AHLetter:
+                continue
+
+        # WB7a
+        if char == WC.Hebrew_Letter and lookahead == WC.Single_Quote:
+            continue
+
+        # WB7b
+        if char == WC.Hebrew_Letter and lookahead == WC.Double_Quote and it.peek(2) == WC.Hebrew_Letter:
+            continue
+
+        # WB7c
+        if it.accepted & WC.Hebrew_Letter and char == WC.Double_Quote and lookahead == WC.Hebrew_Letter and it.peek(-1) == WC.Hebrew_Letter:
+            continue
+
+        # WB8
+        if char == WC.Numeric and lookahead == WC.Numeric:
+            continue
+
+        # WB9
+        if char & AHLetter and lookahead == WC.Numeric:
+            continue
+
+        # WB10
+        if char == WC.Numeric and lookahead & AHLetter:
+            continue
+
+        # WB11
+        if it.accepted and char & (WC.MidNum | MidNumLetQ) and lookahead == WC.Numeric and it.peek(-1) == WC.Numeric:
+            continue
+
+        # WB12
+        if char == WC.Numeric and lookahead & (WC.MidNum | MidNumLetQ) and it.peek(2) == WC.Numeric:
+            continue
+
+        # WB13
+        if char == WC.Katakana and lookahead == WC.Katakana:
+            continue
+
+        # WB13a
+        if char & (AHLetter | WC.Numeric | WC.Katakana | WC.ExtendNumLet) and lookahead == WC.ExtendNumLet:
+            continue
+
+        # WB13b
+        if char == WC.ExtendNumLet and lookahead & (AHLetter | WC.Numeric | WC.Katakana):
+            continue
+
+        # WB15/16
+        if char == WC.Regional_Indicator and lookahead == WC.Regional_Indicator:
+            char, lookahead = it.advance()
+            # re-apply WB4
+            if lookahead & (WC.Extend | WC.ZWJ | WC.Format):
+                continue
+            break
+
+        # WB999
+        break
+
+    return it.pos
+
+
+def word_next(text: str, offset: int = 0) -> tuple[int, int]:
+    """Returns span of next word
+
+    Words are determined by there being at least one of
+    * letter
+    * numeric
+    """
+
+    while offset < len(text):
+        end = word_next_break(text, offset=offset)
+        for c in text[offset:end]:
+            if word_category(c) is WC.ALetter or word_category(c) is WC.Numeric:
+                return offset, end
+        offset = end
+    return offset, offset
+
+
+def word_iter(text: str, offset: int = 0):
+    "Generator providing start, end, text of each word"
+    while offset < len(text):
+        start, end = word_next(text, offset)
+        yield (start, end, text[start:end])
+        offset = end
+
 
 if __name__ == "__main__":
     import argparse
