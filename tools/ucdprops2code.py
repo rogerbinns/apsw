@@ -56,6 +56,10 @@ def augiter(content: Iterable):
         is_last = i == last_index
         yield is_first, is_last, item
 
+def fmt_cat(enum_name: str, cat: str | tuple[str,...]):
+    if isinstance(cat, str):
+        return f"{ enum_name }.{ cat }"
+    return " | ".join(f"{ enum_name }.{ c }" for c in cat)
 
 def bsearch(enum_name: str, indent: int, items: list, n: int):
     # n is if tests at same level.  2 means binary search, 3 is trinary etc
@@ -84,10 +88,10 @@ def bsearch(enum_name: str, indent: int, items: list, n: int):
                 test = f"0x{ start:04X} <= c <= 0x{ end:04X}"
             if not is_last:
                 yield f"{ indent_ }if { test }:"
-                yield f"{ indent_ }    return { enum_name }.{ cat }"
+                yield f"{ indent_ }    return { fmt_cat(enum_name, cat) }"
             else:
                 yield f"{ indent_ }# { test }"
-                yield f"{ indent_ }return { enum_name }.{ cat }"
+                yield f"{ indent_ }return { fmt_cat(enum_name, cat) }"
 
 
 # We do Python code for testing and development
@@ -112,7 +116,13 @@ def generate_python_table(name, enum_name, ranges):
     yield f"# { name }"
     yield ""
     yield f"class { enum_name }(enum.IntEnum):"
-    for i, cat in enumerate(sorted(set(v[2] for v in ranges))):
+    all_cats = set()
+    for _,_,cat in ranges:
+        if isinstance(cat, str):
+            all_cats.add(cat)
+        else:
+            all_cats.update(cat)
+    for i, cat in enumerate(sorted(all_cats)):
         yield f"    { cat } = { 2 ** i }"
     yield f"    EOT = { 2 ** (i + 1) } # End of text"
     yield ""
@@ -131,7 +141,7 @@ def generate_python_table(name, enum_name, ranges):
                 yield line.rstrip()
                 line = ""
             yield f"    # { cp:04X} - {min(table_limit,cp+16)-1:04X}"
-        cat = f"{ enum_name }.{ ranges[0][2]}"
+        cat = fmt_cat(enum_name, ranges[0][2])
         if len(line) + len(cat) > 116:
             yield line.rstrip()
             line = ""
@@ -277,10 +287,10 @@ def read_props(data_dir: str):
 grapheme_ranges = []
 
 
-def generate_ranges(name, source, dest, adjust):
+def generate_ranges(name, source, dest):
     all_cp = {}
     # somewhat messy because the same codepoint can be
-    # in multiple categories (grapheme especially)
+    # in multiple categories
     for category, vals in source.items():
         for val in all_vals(vals):
             if val in all_cp:
@@ -298,21 +308,10 @@ def generate_ranges(name, source, dest, adjust):
         by_cat[v] += 1
     pprint.pprint(by_cat)
 
-    fail = False
-    for cp in range(0, sys.maxunicode + 1):
-        cat = all_cp.get(cp, "Other")
-        cat = adjust.get(cat, cat)
-        if not isinstance(cat, str):
-            print(f"{cat=} is not a str for U+{ cp:04X}", file=sys.stderr)
-            fail = True
-    if fail:
-        sys.exit(2)
-
     last = None
 
     for cp in range(0, sys.maxunicode + 1):
         cat = all_cp.get(cp, "Other")
-        cat = adjust.get(cat, cat)
         if cat != last:
             dest.append([cp, cp, cat])
         else:
@@ -321,36 +320,21 @@ def generate_ranges(name, source, dest, adjust):
 
 
 def generate_grapheme_ranges():
-    adjust = {
-        # only one codepoint
-        ("InCB_Extend", "ZWJ"): "ZWJ",
-        # same semantics as ZWJ if followed by InCB_Consonant
-        ("Extend", "InCB_Linker"): "InCB_Linker",
-        # all InCB_Extend are also marked as Extend, but not all extend are InCB_Extend
-        ("Extend", "InCB_Extend"): "InCB_Extend",
-    }
-
-    generate_ranges("Grapheme", props["grapheme"], grapheme_ranges, adjust)
+    generate_ranges("Grapheme", props["grapheme"], grapheme_ranges)
 
 
 word_ranges = []
 
 
 def generate_word_ranges():
-    adjust = {
-        # A wierd collection of 6 codepoints - keeping as pictographic for
-        # consistency with grapheme cluster rules
-        # U+2139 U+24C2 U+1F170 U+1F171 U+1F17E U+1F17F
-        ("ALetter", "Extended_Pictographic"): "Extended_Pictographic",
-    }
-    generate_ranges("Word", props["word"], word_ranges, adjust)
+    generate_ranges("Word", props["word"], word_ranges)
 
 
 sentence_ranges = []
 
 
 def generate_sentence_ranges():
-    generate_ranges("sentence", props["sentence"], sentence_ranges, {})
+    generate_ranges("sentence", props["sentence"], sentence_ranges)
 
 
 py_code_header = f"""\
