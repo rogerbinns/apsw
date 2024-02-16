@@ -227,7 +227,7 @@ def word_next_break(text: str, offset: int = 0) -> int:
         char, lookahead = it.advance()
 
         # WB3
-        if char == WC.CR and lookahead == WC.LF:
+        if char & WC.CR and lookahead & WC.LF:
             continue
 
         # WB3a/b
@@ -239,11 +239,11 @@ def word_next_break(text: str, offset: int = 0) -> int:
             break
 
         # WB3c
-        if char == WC.ZWJ and lookahead == WC.Extended_Pictographic:
+        if char & WC.ZWJ and lookahead & WC.Extended_Pictographic:
             continue
 
         # WB3d
-        if char == WC.WSegSpace and lookahead == WC.WSegSpace:
+        if char == WC.WSegSpace and lookahead & WC.WSegSpace:
             continue
 
         # WB4
@@ -267,51 +267,56 @@ def word_next_break(text: str, offset: int = 0) -> int:
                 continue
 
         # WB7a
-        if char == WC.Hebrew_Letter and lookahead == WC.Single_Quote:
+        if char & WC.Hebrew_Letter and lookahead & WC.Single_Quote:
             continue
 
         # WB7b
-        if char == WC.Hebrew_Letter and lookahead == WC.Double_Quote and it.peek(2) == WC.Hebrew_Letter:
+        if char & WC.Hebrew_Letter and lookahead & WC.Double_Quote and it.peek(2) & WC.Hebrew_Letter:
             continue
 
         # WB7c
-        if it.accepted & WC.Hebrew_Letter and char == WC.Double_Quote and lookahead == WC.Hebrew_Letter and it.peek(-1) == WC.Hebrew_Letter:
+        if (
+            it.accepted & WC.Hebrew_Letter
+            and char & WC.Double_Quote
+            and lookahead & WC.Hebrew_Letter
+            and it.peek(-1) & WC.Hebrew_Letter
+        ):
             continue
 
         # WB8
-        if char == WC.Numeric and lookahead == WC.Numeric:
+        if char & WC.Numeric and lookahead & WC.Numeric:
             continue
 
         # WB9
-        if char & AHLetter and lookahead == WC.Numeric:
+        if char & AHLetter and lookahead & WC.Numeric:
             continue
 
         # WB10
-        if char == WC.Numeric and lookahead & AHLetter:
+        if char & WC.Numeric and lookahead & AHLetter:
             continue
 
         # WB11
-        if it.accepted and char & (WC.MidNum | MidNumLetQ) and lookahead == WC.Numeric and it.peek(-1) == WC.Numeric:
+        if it.accepted and char & (WC.MidNum | MidNumLetQ) and lookahead & WC.Numeric and it.peek(-1) & WC.Numeric:
             continue
 
         # WB12
-        if char == WC.Numeric and lookahead & (WC.MidNum | MidNumLetQ) and it.peek(2) == WC.Numeric:
+        if char & WC.Numeric and lookahead & (WC.MidNum | MidNumLetQ) and it.peek(2) & WC.Numeric:
             continue
 
         # WB13
-        if char == WC.Katakana and lookahead == WC.Katakana:
+        if char & WC.Katakana and lookahead & WC.Katakana:
             continue
 
         # WB13a
-        if char & (AHLetter | WC.Numeric | WC.Katakana | WC.ExtendNumLet) and lookahead == WC.ExtendNumLet:
+        if char & (AHLetter | WC.Numeric | WC.Katakana | WC.ExtendNumLet) and lookahead & WC.ExtendNumLet:
             continue
 
         # WB13b
-        if char == WC.ExtendNumLet and lookahead & (AHLetter | WC.Numeric | WC.Katakana):
+        if char & WC.ExtendNumLet and lookahead & (AHLetter | WC.Numeric | WC.Katakana):
             continue
 
         # WB15/16
-        if char == WC.Regional_Indicator and lookahead == WC.Regional_Indicator:
+        if char & WC.Regional_Indicator and lookahead & WC.Regional_Indicator:
             char, lookahead = it.advance()
             # re-apply WB4
             if lookahead & (WC.Extend | WC.ZWJ | WC.Format):
@@ -335,7 +340,7 @@ def word_next(text: str, offset: int = 0) -> tuple[int, int]:
     while offset < len(text):
         end = word_next_break(text, offset=offset)
         for c in text[offset:end]:
-            if word_category(c) is WC.ALetter or word_category(c) is WC.Numeric:
+            if word_category(c) & (WC.ALetter | WC.Numeric):
                 return offset, end
         offset = end
     return offset, offset
