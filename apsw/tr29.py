@@ -113,8 +113,8 @@ def grapheme_next_break(text: str, offset: int = 0) -> int:
         if char & (GC.LVT | GC.T) and lookahead & GC.T:
             continue
 
-        # GB9 (InCB Extend and Linker chars are also marked extend)
-        if lookahead & (GC.Extend | GC.InCB_Linker | GC.InCB_Extend | GC.ZWJ):
+        # GB9
+        if lookahead & (GC.Extend | GC.ZWJ):
             continue
 
         # GB9a
@@ -163,7 +163,7 @@ def does_gb9c_apply(it: TextIterator) -> bool:
         if cp & GC.InCB_Linker:
             bare_linker_seen = True
             continue
-        if cp & (GC.InCB_Extend | GC.ZWJ):
+        if cp & (GC.InCB_Extend | GC.InCB_Linker):
             continue
         return False
 
@@ -177,7 +177,7 @@ def does_gb11_apply(it: TextIterator) -> bool:
     while True:
         cp = it.peek(i)
         i -= 1
-        if cp & (GC.Extend | GC.InCB_Extend):
+        if cp & GC.Extend:
             continue
         return cp & GC.Extended_Pictographic
 
