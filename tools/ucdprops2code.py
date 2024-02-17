@@ -124,7 +124,6 @@ def generate_python_table(name, enum_name, ranges):
             all_cats.update(cat)
     for i, cat in enumerate(sorted(all_cats)):
         yield f"    { cat } = { 2 ** i }"
-    yield f"    EOT = { 2 ** (i + 1) } # End of text"
     yield ""
     yield ""
 

@@ -18,18 +18,17 @@ from _tr29db import *
 
 
 class TextIterator:
-    def __init__(self, text: str, offset: int, catfunc: Callable, end_marker: Any):
+    def __init__(self, text: str, offset: int, catfunc: Callable):
         self.text = text
         self.start = offset
         self.end = len(text)  # we allow pointing to one item beyond end
         self.pos = offset  # index we are currently examining but have not accepted yet
         self.catfunc = catfunc
-        self.end_marker = end_marker
         self.accepted = 0  # bitmask of accepted properties
         if offset < 0 or offset > self.end:
             raise ValueError(f"{offset=} is out of bounds 0 - { self.end }")
         if self.pos == self.end:
-            self.char = self.lookahead = self.end_marker
+            self.char = self.lookahead = 0
         else:
             self.char = self.lookahead = self.catfunc(ord(self.text[self.pos]))
 
@@ -47,7 +46,7 @@ class TextIterator:
         offset = self.pos - 1 + count
         assert offset >= self.start and offset <= self.end
         if offset == self.end:
-            return self.end_marker
+            return 0
         return self.catfunc(ord(self.text[offset]))
 
     def advance(self) -> tuple:
@@ -58,7 +57,7 @@ class TextIterator:
             self.accepted |= self.char
         self.char = self.lookahead
         self.pos += 1
-        self.lookahead = self.catfunc(ord(self.text[self.pos])) if self.pos < self.end else self.end_marker
+        self.lookahead = self.catfunc(ord(self.text[self.pos])) if self.pos < self.end else 0
         return self.char, self.lookahead
 
 
@@ -79,7 +78,7 @@ def grapheme_next_break(text: str, offset: int = 0) -> int:
 
     """
 
-    it = TextIterator(text, offset, grapheme_category, GC.EOT)
+    it = TextIterator(text, offset, grapheme_category)
 
     # GB1 implicit
 
@@ -215,7 +214,7 @@ def word_next_break(text: str, offset: int = 0) -> int:
     AHLetter = WC.ALetter | WC.Hebrew_Letter
     MidNumLetQ = WC.MidNumLet | WC.Single_Quote
 
-    it = TextIterator(text, offset, word_category, GC.EOT)
+    it = TextIterator(text, offset, word_category)
 
     # WB1 implicit
 
