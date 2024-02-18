@@ -441,6 +441,7 @@ if __name__ == "__main__":
         tr29_cat_func = globals()[f"{ options.test }_category"]
         ok = "÷"
         not_ok = "\u00d7"
+        passed: int = 0
         fails: list[str] = []
         for line_num, line in enumerate(options.file, 1):
             orig_line = line
@@ -495,12 +496,15 @@ if __name__ == "__main__":
                 add_failinfo()
             if options.fail_fast and fails:
                 break
+            passed += 1
 
         if fails:
-            print(f"{ len(fails)//4 } tests failed:", file=sys.stderr)
+            print(f"{ len(fails)//4 } tests failed, {passed:,} passed:", file=sys.stderr)
             for fail in fails:
                 print(fail, file=sys.stderr)
             sys.exit(2)
+        else:
+            print(f"{passed:,} passed")
 
     elif options.function == "codepoint":
         codepoints = []
