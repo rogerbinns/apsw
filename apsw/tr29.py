@@ -301,13 +301,22 @@ def word_next_break(text: str, offset: int = 0) -> int:
         if char & WC.Numeric and lookahead & AHLetter:
             continue
 
-        # WB11
-        if it.accepted and char & (WC.MidNum | MidNumLetQ) and lookahead & WC.Numeric and it.peek(-1) & WC.Numeric:
-            continue
-
-        # WB12
-        if char & WC.Numeric and lookahead & (WC.MidNum | MidNumLetQ) and it.peek(2) & WC.Numeric:
-            continue
+        # WB11/12 - same shape as WB6/7
+        if char & WC.Numeric and lookahead & (WC.MidNum | MidNumLetQ):
+            # determine if next char is Numeric
+            i = 2
+            # WB4
+            while True and it.peek(i) & (WC.Extend | WC.Format | WC.ZWJ):
+                i += 1
+                continue
+            if it.peek(i) & WC.Numeric:
+                while i:
+                    char, lookahead = it.advance()
+                    i -= 1
+                # WB4 again
+                while lookahead & (WC.Extend | WC.ZWJ | WC.Format):
+                    _, lookahead = it.advance()
+                break
 
         # WB13
         if char & WC.Katakana and lookahead & WC.Katakana:
