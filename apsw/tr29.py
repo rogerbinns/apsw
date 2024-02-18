@@ -30,7 +30,8 @@ class TextIterator:
         if self.pos == self.end:
             self.char = self.lookahead = 0
         else:
-            self.char = self.lookahead = self.catfunc(ord(self.text[self.pos]))
+            self.char = 0
+            self.lookahead = self.catfunc(ord(self.text[self.pos]))
 
     def end_of_text(self) -> bool:
         return self.pos >= self.end
@@ -49,7 +50,7 @@ class TextIterator:
             return 0
         return self.catfunc(ord(self.text[offset]))
 
-    def advance(self) -> tuple:
+    def advance(self) -> tuple[int, int]:
         "Returns tuple of current char and lookahead props"
         if self.end_of_text():
             raise ValueError("Trying to advance beyond end of text")
@@ -227,6 +228,7 @@ def word_next_break(text: str, offset: int = 0) -> int:
 
         # WB3
         if char & WC.CR and lookahead & WC.LF:
+            it.advance()
             continue
 
         # WB3a/b
@@ -246,24 +248,29 @@ def word_next_break(text: str, offset: int = 0) -> int:
             continue
 
         # WB4
-        ...
+        while lookahead & (WC.Extend | WC.ZWJ | WC.Format):
+            _, lookahead = it.advance()
 
         # WB5
         if char & AHLetter and lookahead & AHLetter:
             continue
 
-        # WB6
+        # WB6/7
         if char & AHLetter and lookahead & (WC.MidLetter | MidNumLetQ):
-            one_more = it.peek(2)
-            if one_more & AHLetter:
-                it.advance()
+            # determine if next char is AHLetter
+            i = 2
+            # WB4
+            while True and it.peek(i) & (WC.Extend | WC.Format | WC.ZWJ):
+                i += 1
                 continue
-
-        # WB7
-        if it.accepted and char & (WC.MidLetter & MidNumLetQ):
-            last = it.peek(-1)
-            if last & AHLetter and lookahead & AHLetter:
-                continue
+            if it.peek(i) & AHLetter:
+                while i:
+                    char, lookahead = it.advance()
+                    i -= 1
+                # WB4 again
+                while lookahead & (WC.Extend | WC.ZWJ | WC.Format):
+                    _, lookahead = it.advance()
+                break
 
         # WB7a
         if char & WC.Hebrew_Letter and lookahead & WC.Single_Quote:
@@ -317,10 +324,6 @@ def word_next_break(text: str, offset: int = 0) -> int:
         # WB15/16
         if char & WC.Regional_Indicator and lookahead & WC.Regional_Indicator:
             char, lookahead = it.advance()
-            # re-apply WB4
-            if lookahead & (WC.Extend | WC.ZWJ | WC.Format):
-                continue
-            break
 
         # WB999
         break
