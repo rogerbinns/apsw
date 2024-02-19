@@ -266,17 +266,17 @@ def word_next_break(text: str, offset: int = 0) -> int:
             # determine if next char is AHLetter
             i = 2
             # WB4
-            while True and it.peek(i) & (WC.Extend | WC.Format | WC.ZWJ):
+            while it.peek(i) & (WC.Extend | WC.Format | WC.ZWJ):
                 i += 1
                 continue
             if it.peek(i) & AHLetter:
-                while i:
-                    char, lookahead = it.advance()
+                while i > 1:
+                    _, lookahead = it.advance()
                     i -= 1
                 # WB4 again
                 while lookahead & (WC.Extend | WC.ZWJ | WC.Format):
                     _, lookahead = it.advance()
-                break
+                continue
 
         # WB7a
         if char & WC.Hebrew_Letter and lookahead & WC.Single_Quote:
