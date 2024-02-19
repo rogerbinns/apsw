@@ -229,7 +229,7 @@ def word_next_break(text: str, offset: int = 0) -> int:
         # WB3
         if char & WC.CR and lookahead & WC.LF:
             it.advance()
-            continue
+            break
 
         # WB3a/b
         if char & (WC.Newline | WC.CR | WC.LF):
@@ -241,6 +241,7 @@ def word_next_break(text: str, offset: int = 0) -> int:
 
         # WB3c
         if char & WC.ZWJ and lookahead & WC.Extended_Pictographic:
+            it.advance()
             continue
 
         # WB3d
@@ -248,8 +249,13 @@ def word_next_break(text: str, offset: int = 0) -> int:
             continue
 
         # WB4
+        did_zwj = lookahead & WC.ZWJ
         while lookahead & (WC.Extend | WC.ZWJ | WC.Format):
             _, lookahead = it.advance()
+            did_zwj = did_zwj or lookahead & WC.ZWJ
+        # redo WB3c
+        if did_zwj and lookahead & WC.Extended_Pictographic:
+            continue
 
         # WB5
         if char & AHLetter and lookahead & AHLetter:
@@ -333,6 +339,11 @@ def word_next_break(text: str, offset: int = 0) -> int:
         # WB15/16
         if char & WC.Regional_Indicator and lookahead & WC.Regional_Indicator:
             char, lookahead = it.advance()
+            # WB4 makes another appearance
+            while lookahead & (WC.Extend | WC.ZWJ | WC.Format):
+                _, lookahead = it.advance()
+            break
+
 
         # WB999
         break
