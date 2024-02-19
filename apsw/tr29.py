@@ -414,7 +414,7 @@ if __name__ == "__main__":
     p.add_argument("--width", default=width, help="Output width [%(default)s]", type=int)
     p.add_argument("text", nargs="*", help="Text to segment unless --text-file used")
 
-    p = subparsers.add_parser("codepoint", help="Show infornation about codepoints")
+    p = subparsers.add_parser("codepoint", help="Show information about codepoints")
     p.add_argument("text", nargs="+", help="If a hex constant then use that value, otherwise treat as text")
     p.set_defaults(function="codepoint")
 
@@ -449,7 +449,7 @@ if __name__ == "__main__":
         offset = 0
         while offset < len(text):
             begin, end = next_func(text, offset)
-            print(f"#{ counter } offset { offset } span { begin }-{ end } codepoints { end - begin }")
+            print(f"#{ counter } offset { offset } span { begin }-{ end } codepoints { end - begin } value: { text[begin:end] }")
             codepoints = []
             for i in range(begin, end):
                 codepoints.append(codepoint_details(text[i]))
