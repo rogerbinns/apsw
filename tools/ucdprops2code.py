@@ -56,10 +56,12 @@ def augiter(content: Iterable):
         is_last = i == last_index
         yield is_first, is_last, item
 
-def fmt_cat(enum_name: str, cat: str | tuple[str,...]):
+
+def fmt_cat(enum_name: str, cat: str | tuple[str, ...]):
     if isinstance(cat, str):
         return f"{ enum_name }.{ cat }"
     return " | ".join(f"{ enum_name }.{ c }" for c in cat)
+
 
 def bsearch(enum_name: str, indent: int, items: list, n: int):
     # n is if tests at same level.  2 means binary search, 3 is trinary etc
@@ -101,7 +103,6 @@ def generate_python() -> str:
     out.append("")
     out.append(f'unicode_version = "{ ucd_version }"')
     out.append("")
-    out.append("")
 
     out.extend(generate_python_table("grapheme", "GC", grapheme_ranges))
     out.append("")
@@ -117,13 +118,23 @@ def generate_python_table(name, enum_name, ranges):
     yield ""
     yield f"class { enum_name }(enum.IntEnum):"
     all_cats = set()
-    for _,_,cat in ranges:
+    for _, _, cat in ranges:
         if isinstance(cat, str):
             all_cats.add(cat)
         else:
             all_cats.update(cat)
     for i, cat in enumerate(sorted(all_cats)):
-        yield f"    { cat } = { 2 ** i }"
+        yield f"    { cat } =  2 ** { i }"
+    yield ""
+    yield f"# Codepoints by { name } category"
+    yield "#"
+    for k, v in stats[name].most_common():
+        if not isinstance(k, str):
+            k = " | ".join(k)
+        yield f"# {v: 10,} { k }"
+    others = sys.maxunicode + 1 - stats[name].total()
+    yield f"# {others:10,} (other)"
+
     yield ""
     yield ""
 
@@ -286,6 +297,9 @@ def read_props(data_dir: str):
 grapheme_ranges = []
 
 
+stats = {}
+
+
 def generate_ranges(name, source, dest):
     all_cp = {}
     # somewhat messy because the same codepoint can be
@@ -306,6 +320,7 @@ def generate_ranges(name, source, dest):
     for v in all_cp.values():
         by_cat[v] += 1
     pprint.pprint(by_cat)
+    stats[name.lower()] = by_cat
 
     last = None
 
