@@ -312,17 +312,17 @@ def word_next_break(text: str, offset: int = 0) -> int:
             # determine if next char is Numeric
             i = 2
             # WB4
-            while True and it.peek(i) & (WC.Extend | WC.Format | WC.ZWJ):
+            while it.peek(i) & (WC.Extend | WC.Format | WC.ZWJ):
                 i += 1
                 continue
             if it.peek(i) & WC.Numeric:
-                while i:
-                    char, lookahead = it.advance()
+                while i > 1:
+                    _, lookahead = it.advance()
                     i -= 1
                 # WB4 again
                 while lookahead & (WC.Extend | WC.ZWJ | WC.Format):
                     _, lookahead = it.advance()
-                break
+                continue
 
         # WB13
         if char & WC.Katakana and lookahead & WC.Katakana:
