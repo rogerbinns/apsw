@@ -393,7 +393,7 @@ if __name__ == "__main__":
     if sys.stdout.isatty():
         width = os.get_terminal_size(sys.stdout.fileno()).columns
 
-    # ::TODO:: benchmark to work out best bsearch parameter
+    # ::TODO:: benchmark?
 
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(required=True)
@@ -425,10 +425,7 @@ if __name__ == "__main__":
     options = parser.parse_args()
 
     def codepoint_details(c: str) -> str:
-        try:
-            name = unicodedata.name(c)
-        except ValueError:
-            name = "<NO NAME>"
+        name = unicodedata.name(c. "<NO NAME>")
         cat = unicodedata.category(c)
         name += f" ({ cat } { apsw.fts.unicode_categories[cat] })"
         tr29_cat = tr29_cat_func(ord(c)).name
@@ -459,6 +456,7 @@ if __name__ == "__main__":
                 codepoints.append(codepoint_details(text[i]))
             print("\n".join(textwrap.wrap(" ".join(codepoints), width=options.width)))
             offset = end
+            counter += 1
 
     elif options.function == "breaktest":
         next_break_func = globals()[f"{ options.test }_next_break"]
