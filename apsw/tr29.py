@@ -361,8 +361,12 @@ def word_next(text: str, offset: int = 0) -> tuple[int, int]:
 
     while offset < len(text):
         end = word_next_break(text, offset=offset)
-        for c in text[offset:end]:
-            if word_category(c) & (WC.ALetter | WC.Numeric):
+        # ::TODO:: investigate emoji, regional indicator etc
+        # These have to use unicode category NOT word break category because most CJK are
+        # other in word break (not ALetter) but Lo in unicode category
+        for pos in range(offset, end):
+            cat = unicodedata.category(text[pos])
+            if cat[0] == "L" or cat[0] == "N":
                 return offset, end
         offset = end
     return offset, offset
