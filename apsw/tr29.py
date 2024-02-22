@@ -18,7 +18,10 @@ from _tr29db import *
 
 
 class TextIterator:
+    state_fields = "pos", "accepted", "char", "lookahead"
+
     def __init__(self, text: str, offset: int, catfunc: Callable):
+        self.saved = None
         self.text = text
         self.start = offset
         self.end = len(text)  # we allow pointing to one item beyond end
@@ -49,6 +52,23 @@ class TextIterator:
         if offset == self.end:
             return 0
         return self.catfunc(ord(self.text[offset]))
+
+    def begin(self):
+        "used for speculative lookahead"
+        assert self.saved is None
+        self.saved = {k: getattr(self, k) for k in TextIterator.state_fields}
+
+    def commit(self):
+        "lookahead worked"
+        self.saved = None
+
+    def rollback(self):
+        "undo lookahead"
+        assert self.saved is not None
+        for k, v in self.saved.items():
+            setattr(self, k, v)
+        self.saved = None
+        return self.char, self.lookahead
 
     def advance(self) -> tuple[int, int]:
         "Returns tuple of current char and lookahead props"
@@ -88,6 +108,7 @@ def grapheme_next_break(text: str, offset: int = 0) -> int:
         return it.pos
 
     while not it.end_of_text():
+        assert it.saved is None, "Incomplete lookahead"
         char, lookahead = it.advance()
 
         # GB3
