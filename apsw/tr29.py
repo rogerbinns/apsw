@@ -438,12 +438,25 @@ if __name__ == "__main__":
 
     options = parser.parse_args()
 
-    def codepoint_details(c: str) -> str:
-        name = unicodedata.name(c. "<NO NAME>")
+    def codepoint_details(enum_name, c: str) -> str:
+        name = unicodedata.name(c, "<NO NAME>")
         cat = unicodedata.category(c)
         name += f" ({ cat } { apsw.fts.unicode_categories[cat] })"
-        tr29_cat = tr29_cat_func(ord(c)).name
+        tr29_cat = category_name(tr29_cat_func, enum_name, ord(c))
         return "{U+" + ("%04X" % ord(c)) + f" {name} : { tr29_cat }" + "}"
+
+    def category_name(func, enum_name, cp: int) -> str:
+        try:
+            # works if only one category
+            return func(cp).name
+        except AttributeError:
+            pass
+        cat = func(cp)
+        cats = []
+        for name, value in enum_name.__members__.items():
+            if cat & value:
+                cats.append(name)
+        return " | ".join(sorted(cats))
 
     if options.function == "show":
         if not options.text_file and not options.text:
@@ -459,15 +472,18 @@ if __name__ == "__main__":
 
         next_func = globals()[f"{ options.show }_next"]
         tr29_cat_func = globals()[f"{ options.show }_category"]
+        enum_class = {"grapheme": GC, "word": WC, "sentence": SC}[options.show]
 
         counter = 0
         offset = 0
         while offset < len(text):
             begin, end = next_func(text, offset)
-            print(f"#{ counter } offset { offset } span { begin }-{ end } codepoints { end - begin } value: { text[begin:end] }")
+            print(
+                f"#{ counter } offset { offset } span { begin }-{ end } codepoints { end - begin } value: { text[begin:end] }"
+            )
             codepoints = []
             for i in range(begin, end):
-                codepoints.append(codepoint_details(text[i]))
+                codepoints.append(codepoint_details(enum_class, text[i]))
             print("\n".join(textwrap.wrap(" ".join(codepoints), width=options.width)))
             offset = end
             counter += 1
@@ -475,6 +491,8 @@ if __name__ == "__main__":
     elif options.function == "breaktest":
         next_break_func = globals()[f"{ options.test }_next_break"]
         tr29_cat_func = globals()[f"{ options.test }_category"]
+        enum_class = {"grapheme": GC, "word": WC, "sentence": SC}[options.test]
+
         ok = "÷"
         not_ok = "\u00d7"
         passed: int = 0
@@ -502,7 +520,7 @@ if __name__ == "__main__":
                 fails.append(orig_line.strip())
                 codepoints = []
                 for c in text:
-                    codepoints.append(codepoint_details(c))
+                    codepoints.append(codepoint_details(enum_class, c))
                 fails.append(" ".join(codepoints))
                 fails.append("")
 
@@ -559,19 +577,6 @@ if __name__ == "__main__":
         def deets(cp):
             cat = unicodedata.category(chr(cp))
             return f"{ uniname(cp) } category { cat }: { apsw.fts.unicode_categories[cat] }"
-
-        def category_name(func, enum_name, cp: int):
-            try:
-                # works if only one category
-                return func(cp).name
-            except AttributeError:
-                pass
-            cat = func(cp)
-            cats = []
-            for name, value in enum_name.__members__.items():
-                if cat & value:
-                    cats.append(name)
-            return " | ".join(sorted(cats))
 
         for i, cp in enumerate(codepoints):
             print(f"#{ i } U+{ cp:04X} - { chr(cp) }")
