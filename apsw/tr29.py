@@ -134,10 +134,6 @@ def grapheme_next_break(text: str, offset: int = 0) -> int:
         if char & (GC.LVT | GC.T) and lookahead & GC.T:
             continue
 
-        # GB9
-        if lookahead & (GC.Extend | GC.ZWJ):
-            continue
-
         # GB9a
         if lookahead & GC.SpacingMark:
             continue
@@ -147,7 +143,21 @@ def grapheme_next_break(text: str, offset: int = 0) -> int:
             continue
 
         # GB9c
-        if lookahead & GC.InCB_Consonant and it.has_accepted(GC.InCB_Consonant) and does_gb9c_apply(it):
+        if char & GC.InCB_Consonant and lookahead & (GC.InCB_Extend | GC.InCB_Linker):
+            it.begin()
+            seen_linker = lookahead & GC.InCB_Linker
+            char, lookahead = it.advance()
+            while lookahead & (GC.InCB_Extend | GC.InCB_Linker):
+                seen_linker = seen_linker or lookahead & GC.InCB_Linker
+                char, lookahead = it.advance()
+            if seen_linker and lookahead & GC.InCB_Consonant:
+                it.commit()
+                continue
+            char, lookahead = it.rollback()
+
+        # GB9 - has to be after GB9c because all InCB_Linker and InCB_Extend
+        # are also extend
+        if lookahead & (GC.Extend | GC.ZWJ):
             continue
 
         # GB11
@@ -171,22 +181,6 @@ def grapheme_next_break(text: str, offset: int = 0) -> int:
         break
 
     return it.pos
-
-
-def does_gb9c_apply(it: TextIterator) -> bool:
-    bare_linker_seen = False
-    i = 0
-    while True:
-        cp = it.peek(i)
-        i -= 1
-        if cp & GC.InCB_Consonant:
-            return bare_linker_seen
-        if cp & GC.InCB_Linker:
-            bare_linker_seen = True
-            continue
-        if cp & (GC.InCB_Extend | GC.InCB_Linker):
-            continue
-        return False
 
 
 def does_gb11_apply(it: TextIterator) -> bool:
@@ -364,7 +358,6 @@ def word_next_break(text: str, offset: int = 0) -> int:
             while lookahead & (WC.Extend | WC.ZWJ | WC.Format):
                 _, lookahead = it.advance()
             break
-
 
         # WB999
         break
