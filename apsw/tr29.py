@@ -155,18 +155,21 @@ def grapheme_next_break(text: str, offset: int = 0) -> int:
                 continue
             char, lookahead = it.rollback()
 
-        # GB9 - has to be after GB9c because all InCB_Linker and InCB_Extend
+        # GB11
+        if char & GC.Extended_Pictographic and lookahead & (GC.Extend | GC.ZWJ):
+            it.begin()
+            while lookahead & GC.Extend:
+                char, lookahead = it.advance()
+            if lookahead & GC.ZWJ:
+                char, lookahead = it.advance()
+                if lookahead & GC.Extended_Pictographic:
+                    it.commit()
+                    continue
+            char, lookahead = it.rollback()
+
+        # GB9 - has to be after GB9c and GB11 because all InCB_Linker and InCB_Extend
         # are also extend
         if lookahead & (GC.Extend | GC.ZWJ):
-            continue
-
-        # GB11
-        if (
-            lookahead & GC.Extended_Pictographic
-            and char & GC.ZWJ
-            and it.has_accepted(GC.Extended_Pictographic)
-            and does_gb11_apply(it)
-        ):
             continue
 
         # GB12
@@ -181,21 +184,6 @@ def grapheme_next_break(text: str, offset: int = 0) -> int:
         break
 
     return it.pos
-
-
-def does_gb11_apply(it: TextIterator) -> bool:
-    # we are sitting at ZWJ and looking back
-    # should only see Extend (zero or more) then
-    # extended_pictographic
-    assert it.char & GC.ZWJ
-    i = -1
-    while True:
-        cp = it.peek(i)
-        i -= 1
-        if cp & GC.Extend:
-            continue
-        return cp & GC.Extended_Pictographic
-
 
 def grapheme_next(text: str, offset: int = 0) -> tuple[int, int]:
     "Returns span of next grapheme cluster"
