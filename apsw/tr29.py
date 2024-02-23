@@ -244,21 +244,39 @@ def word_next_break(text: str, offset: int = 0) -> int:
 
         # WB3c
         if char & WC.ZWJ and lookahead & WC.Extended_Pictographic:
-            it.advance()
             continue
+
+        if lookahead & WC.ZWJ:
+            it.begin()
+            char, lookahead = it.advance()
+            if lookahead & WC.Extended_Pictographic:
+                it.advance()
+                it.commit()
+                continue
+            char, lookahead = it.rollback()
 
         # WB3d
         if char == WC.WSegSpace and lookahead & WC.WSegSpace:
             continue
 
         # WB4
-        did_zwj = lookahead & WC.ZWJ
-        while lookahead & (WC.Extend | WC.ZWJ | WC.Format):
-            _, lookahead = it.advance()
-            did_zwj = did_zwj or lookahead & WC.ZWJ
-        # redo WB3c
-        if did_zwj and lookahead & WC.Extended_Pictographic:
-            continue
+        if lookahead & (WC.Extend | WC.ZWJ | WC.Format):
+            action = None
+            while lookahead & (WC.Extend | WC.ZWJ | WC.Format):
+                if lookahead & WC.ZWJ:
+                    # Re-apply wb3c
+                    it.begin()
+                    _, lookahead = it.advance()
+                    if lookahead & WC.Extended_Pictographic:
+                        action = "continue"
+                        it.commit()
+                        break
+                    else:
+                        it.rollback()
+                _, lookahead = it.advance()
+            if action == "continue":
+                continue
+            assert action is None
 
         # WB5
         if char & AHLetter and lookahead & AHLetter:
