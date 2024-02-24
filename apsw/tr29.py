@@ -277,6 +277,7 @@ def word_next_break(text: str, offset: int = 0) -> int:
             if action == "continue":
                 continue
             assert action is None
+            it.char = char # ignore the extending chars
 
         # WB5
         if char & AHLetter and lookahead & AHLetter:
@@ -284,37 +285,28 @@ def word_next_break(text: str, offset: int = 0) -> int:
 
         # WB6/7
         if char & AHLetter and lookahead & (WC.MidLetter | MidNumLetQ):
-            # determine if next char is AHLetter
-            i = 2
-            # WB4
-            while it.peek(i) & (WC.Extend | WC.Format | WC.ZWJ):
-                i += 1
+            it.begin()
+            char, lookahead = it.advance()
+            while lookahead & (WC.Extend | WC.Format | WC.ZWJ):
+                _, lookahead = it.advance()
                 continue
-            if it.peek(i) & AHLetter:
-                while i > 1:
-                    _, lookahead = it.advance()
-                    i -= 1
-                # WB4 again
-                while lookahead & (WC.Extend | WC.ZWJ | WC.Format):
-                    _, lookahead = it.advance()
+            if lookahead & AHLetter:
+                it.commit()
                 continue
+            char, lookahead = it.rollback()
 
         # WB7a
         if char & WC.Hebrew_Letter and lookahead & WC.Single_Quote:
             continue
 
-        # WB7b
-        if char & WC.Hebrew_Letter and lookahead & WC.Double_Quote and it.peek(2) & WC.Hebrew_Letter:
-            continue
-
-        # WB7c
-        if (
-            it.accepted & WC.Hebrew_Letter
-            and char & WC.Double_Quote
-            and lookahead & WC.Hebrew_Letter
-            and it.peek(-1) & WC.Hebrew_Letter
-        ):
-            continue
+        # WB7b/c
+        if char & WC.Hebrew_Letter and lookahead & WC.Double_Quote:
+            it.begin()
+            char, lookahead = it.advance()
+            if lookahead & WC.Hebrew_Letter:
+                it.commit()
+                continue
+            char, lookahead = it.rollback()
 
         # WB8
         if char & WC.Numeric and lookahead & WC.Numeric:
@@ -328,22 +320,17 @@ def word_next_break(text: str, offset: int = 0) -> int:
         if char & WC.Numeric and lookahead & AHLetter:
             continue
 
-        # WB11/12 - same shape as WB6/7
+        # WB11/12
         if char & WC.Numeric and lookahead & (WC.MidNum | MidNumLetQ):
-            # determine if next char is Numeric
-            i = 2
-            # WB4
-            while it.peek(i) & (WC.Extend | WC.Format | WC.ZWJ):
-                i += 1
+            it.begin()
+            char, lookahead = it.advance()
+            while lookahead & (WC.Extend | WC.Format | WC.ZWJ):
+                _, lookahead = it.advance()
                 continue
-            if it.peek(i) & WC.Numeric:
-                while i > 1:
-                    _, lookahead = it.advance()
-                    i -= 1
-                # WB4 again
-                while lookahead & (WC.Extend | WC.ZWJ | WC.Format):
-                    _, lookahead = it.advance()
+            if lookahead & WC.Numeric:
+                it.commit()
                 continue
+            char, lookahead = it.rollback()
 
         # WB13
         if char & WC.Katakana and lookahead & WC.Katakana:
