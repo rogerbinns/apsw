@@ -42,17 +42,6 @@ class TextIterator:
     def start_of_text(self) -> bool:
         return self.pos == self.start
 
-    def has_accepted(self, cat) -> bool:
-        return bool(self.accepted & cat)
-
-    def peek(self, count: int):
-        # 0 corresponds to current char, 1 to lookahead, -1 to behind current char etc
-        offset = self.pos - 1 + count
-        assert offset >= self.start and offset <= self.end
-        if offset == self.end:
-            return 0
-        return self.catfunc(ord(self.text[offset]))
-
     def begin(self):
         "used for speculative lookahead"
         assert self.saved is None
