@@ -134,6 +134,8 @@ def generate_python_table(name, enum_name, ranges):
         yield f"# {v: 10,} { k }"
     others = sys.maxunicode + 1 - stats[name].total()
     yield f"# {others:10,} (other)"
+    yield ""
+    yield f"# {len(ranges):,} ranges"
 
     yield ""
     yield ""
