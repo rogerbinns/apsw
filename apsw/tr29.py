@@ -445,12 +445,12 @@ if __name__ == "__main__":
             p.error("You must specify at least --text-file or text arguments")
 
         text = ""
-        if options.text:
-            text += " ".join(options.text)
         if options.text_file:
+            text += options.text_file.read()
+        if options.text:
             if text:
                 text += " "
-            text += options.text_file.read()
+            text += " ".join(options.text)
 
         next_func = globals()[f"{ options.show }_next"]
         tr29_cat_func = globals()[f"{ options.show }_category"]
