@@ -185,6 +185,7 @@ def grapheme_next_break(text: str, offset: int = 0) -> int:
 
     return it.pos
 
+
 def grapheme_next(text: str, offset: int = 0) -> tuple[int, int]:
     "Returns span of next grapheme cluster"
     start = offset
@@ -277,7 +278,7 @@ def word_next_break(text: str, offset: int = 0) -> int:
             if action == "continue":
                 continue
             assert action is None
-            it.char = char # ignore the extending chars
+            it.char = char  # ignore the extending chars
 
         # WB5
         if char & AHLetter and lookahead & AHLetter:
@@ -383,6 +384,118 @@ def word_iter(text: str, offset: int = 0):
     "Generator providing start, end, text of each word"
     while offset < len(text):
         start, end = word_next(text, offset)
+        yield (start, end, text[start:end])
+        offset = end
+
+
+def sentence_next_break(test: str, offset: int = 0) -> int:
+    """https://www.unicode.org/reports/tr29/#Sentence_Boundary_Rules"""
+
+    # From spec
+    ParaSep = SC.Sep | SC.CR | SC.LF
+    SATerm = SC.STerm | SC.ATerm
+
+    it = TextIterator(text, offset, sentence_category)
+
+    # SB1 implicit
+
+    # SB2
+    if it.end_of_text():
+        return it.pos
+
+    while not it.end_of_text():
+        char, lookahead = it.advance()
+
+        # SB3
+        if char & SC.CR and lookahead & SC.LF:
+            it.advance()
+            break
+
+        # SB4
+        if char & ParaSep:
+            break
+
+        # SB5
+        char, lookahead = it.absorb(SC.Format | SC.Extend)
+
+        # SB6
+        if char & SC.ATerm and lookahead & SC.Numeric:
+            continue
+
+        # SB7
+        if char & (SC.Upper | SC.Lower) and lookahead & SC.ATerm:
+            it.begin()
+            it.advance()
+            char, lookahead = it.absorb(SC.Format | SC.Extend)
+            if lookahead & SC.Upper:
+                it.commit()
+                continue
+            char, lookahead = it.rollback()
+
+        # SB8
+        if char & SC.ATerm:
+            it.begin()
+            it.absorb(SC.Close)
+            it.absorb(SC.Format | SC.Extend)
+            it.absorb(SC.Sp)
+            it.absorb(SC.Format | SC.Extend)
+            it.absorb(0xFFFFFFFF ^ ~(SC.OLetter | SC.Upper | SC.Lower | ParaSep | SATerm))
+            _, lookahead = it.absorb(SC.Format | SC.Extend)
+            if lookahead & SC.Lower:
+                it.absorb(SC.Format | SC.Extend)
+                it.commit()
+                continue
+            char, lookahead = it.rollback()
+
+        # SB8a
+        if char & SATerm:
+            it.begin()
+            it.absorb(SC.Close)
+            it.absorb(SC.Format | SC.Extend)
+            it.absorb(SC.Sp)
+            _, lookahead = it.absorb(SC.Format | SC.Extend)
+            if lookahead & (SC.SContinue | SATerm):
+                it.absorb(SC.Format | SC.Extend)
+                it.commit()
+                continue
+            char, lookahead = it.rollback()
+
+        # SB9 / SB10 / SB11
+        if char & SATerm:
+            it.begin()
+            it.absorb(SC.Close)
+            _, lookahead = it.absorb(SC.Format | SC.Extend)
+            if lookahead & (SC.Close | SC.Sp | ParaSep):
+                it.absorb(SC.Format | SC.Extend)
+                it.commit()
+                continue
+            char, lookahead = it.rollback()
+
+        # SB999
+        continue
+
+    return it.pos
+
+
+def sentence_next(text: str, offset: int = 0) -> tuple[int, int]:
+    """Returns span of next sentence
+
+    ::TODO:: do not treat CRLF as end of sentence flag
+    requiring two in a row
+
+    * letter
+    * numeric
+    """
+    while offset < len(text):
+        end = sentence_next_break(text, offset=offset)
+        return offset, end
+    return offset, offset
+
+
+def sentence_iter(text: str, offset: int = 0):
+    "Generator providing start,end, text of each sentence"
+    while offset < len(text):
+        start, end = sentence_next(text, offset)
         yield (start, end, text[start:end])
         offset = end
 
