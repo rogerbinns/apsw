@@ -439,7 +439,7 @@ def sentence_next_break(test: str, offset: int = 0) -> int:
             it.absorb(SC.Format | SC.Extend)
             it.absorb(SC.Sp)
             it.absorb(SC.Format | SC.Extend)
-            it.absorb(0xFFFFFFFF ^ ~(SC.OLetter | SC.Upper | SC.Lower | ParaSep | SATerm))
+            it.absorb(0xFFFFFFFF ^ SC.OLetter ^ SC.Upper ^ SC.Lower ^ ParaSep ^ SATerm)
             _, lookahead = it.absorb(SC.Format | SC.Extend)
             if lookahead & SC.Lower:
                 it.absorb(SC.Format | SC.Extend)
