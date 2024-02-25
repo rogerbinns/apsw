@@ -70,6 +70,17 @@ class TextIterator:
         self.lookahead = self.catfunc(ord(self.text[self.pos])) if self.pos < self.end else 0
         return self.char, self.lookahead
 
+    def absorb(self, match: int):
+        """Advances while lookahead matches, keeping self.char
+
+        Used for various Extend matches"""
+        if self.lookahead & match:
+            char = self.char
+            while self.lookahead & match:
+                self.advance()
+            self.char = char
+        return self.char, self.lookahead
+
 
 def grapheme_next_break(text: str, offset: int = 0) -> int:
     """Returns end of Grapheme cluster /  User Perceived Character
