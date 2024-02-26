@@ -290,9 +290,7 @@ def word_next_break(text: str, offset: int = 0) -> int:
         if char & AHLetter and lookahead & (WC.MidLetter | MidNumLetQ):
             it.begin()
             char, lookahead = it.advance()
-            while lookahead & (WC.Extend | WC.Format | WC.ZWJ):
-                _, lookahead = it.advance()
-                continue
+            char, lookahead = it.absorb(WC.Extend | WC.Format | WC.ZWJ)
             if lookahead & AHLetter:
                 it.commit()
                 continue
@@ -327,9 +325,7 @@ def word_next_break(text: str, offset: int = 0) -> int:
         if char & WC.Numeric and lookahead & (WC.MidNum | MidNumLetQ):
             it.begin()
             char, lookahead = it.advance()
-            while lookahead & (WC.Extend | WC.Format | WC.ZWJ):
-                _, lookahead = it.advance()
-                continue
+            char, lookahead = it.absorb(WC.Extend | WC.Format | WC.ZWJ)
             if lookahead & WC.Numeric:
                 it.commit()
                 continue
@@ -350,9 +346,7 @@ def word_next_break(text: str, offset: int = 0) -> int:
         # WB15/16
         if char & WC.Regional_Indicator and lookahead & WC.Regional_Indicator:
             char, lookahead = it.advance()
-            # WB4 makes another appearance
-            while lookahead & (WC.Extend | WC.ZWJ | WC.Format):
-                _, lookahead = it.advance()
+            it.absorb(WC.Extend | WC.ZWJ | WC.Format)
             break
 
         # WB999
