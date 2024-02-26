@@ -70,14 +70,16 @@ class TextIterator:
         self.lookahead = self.catfunc(ord(self.text[self.pos])) if self.pos < self.end else 0
         return self.char, self.lookahead
 
-    def absorb(self, match: int):
-        """Advances while lookahead matches, keeping self.char
+    def absorb(self, match: int, extend: int = 0):
+        """Advances while lookahead matches, keeping self.char, also taking zero or more extend following each match
 
         Used for various Extend matches"""
         if self.lookahead & match:
             char = self.char
             while self.lookahead & match:
-                self.advance()
+                _, lookahead = self.advance()
+                while lookahead & extend:
+                    _, lookahead = self.advance()
             self.char = char
         return self.char, self.lookahead
 
