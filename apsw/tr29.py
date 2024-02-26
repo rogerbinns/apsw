@@ -543,12 +543,13 @@ if __name__ == "__main__":
 
     options = parser.parse_args()
 
-    def codepoint_details(enum_name, c: str) -> str:
+    def codepoint_details(enum_name, c: str, counter=None) -> str:
         name = unicodedata.name(c, "<NO NAME>")
         cat = unicodedata.category(c)
+        counter = f"#{counter}:" if counter is not None else ""
         name += f" ({ cat } { apsw.fts.unicode_categories[cat] })"
         tr29_cat = category_name(tr29_cat_func, enum_name, ord(c))
-        return "{U+" + ("%04X" % ord(c)) + f" {name} : { tr29_cat }" + "}"
+        return "{" + f"{counter}U+" + ("%04X" % ord(c)) + f" {name} : { tr29_cat }" + "}"
 
     def category_name(func, enum_name, cp: int) -> str:
         try:
@@ -624,8 +625,8 @@ if __name__ == "__main__":
             def add_failinfo():
                 fails.append(orig_line.strip())
                 codepoints = []
-                for c in text:
-                    codepoints.append(codepoint_details(enum_class, c))
+                for counter, c in enumerate(text):
+                    codepoints.append(codepoint_details(enum_class, c, counter))
                 fails.append(" ".join(codepoints))
                 fails.append("")
 
