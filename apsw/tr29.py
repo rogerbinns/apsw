@@ -437,10 +437,8 @@ def sentence_next_break(test: str, offset: int = 0) -> int:
         # SB8
         if char & SC.ATerm:
             it.begin()
-            it.absorb(SC.Close)
-            it.absorb(SC.Format | SC.Extend)
-            it.absorb(SC.Sp)
-            it.absorb(SC.Format | SC.Extend)
+            it.absorb(SC.Close, SC.Format | SC.Extend)
+            it.absorb(SC.Sp, SC.Format | SC.Extend)
             it.absorb(0xFFFFFFFF ^ SC.OLetter ^ SC.Upper ^ SC.Lower ^ ParaSep ^ SATerm)
             _, lookahead = it.absorb(SC.Format | SC.Extend)
             if lookahead & SC.Lower:
@@ -452,11 +450,10 @@ def sentence_next_break(test: str, offset: int = 0) -> int:
         # SB8a
         if char & SATerm:
             it.begin()
-            it.absorb(SC.Close)
-            it.absorb(SC.Format | SC.Extend)
-            it.absorb(SC.Sp)
-            _, lookahead = it.absorb(SC.Format | SC.Extend)
+            it.absorb(SC.Close, SC.Format | SC.Extend)
+            _, lookahead = it.absorb(SC.Sp, SC.Format | SC.Extend)
             if lookahead & (SC.SContinue | SATerm):
+                it.advance()
                 it.absorb(SC.Format | SC.Extend)
                 it.commit()
                 continue
@@ -465,10 +462,12 @@ def sentence_next_break(test: str, offset: int = 0) -> int:
         # SB9 / SB10 / SB11
         if char & SATerm:
             # This will result in a break with the rules to absorb
-            # zero or more close / sp and one optional ParaSep
-            _, lookahead = it.absorb(SC.Close | SC.Sp)
+            # zero or more close then space, and one optional ParaSep
+            it.absorb(SC.Close, SC.Format | SC.Extend)
+            _, lookahead = it.absorb(SC.Sp, SC.Format | SC.Extend)
             if lookahead & ParaSep:
-                it.advance()
+                # Process parasep in SB3/4 above
+                continue
             break
 
         # SB999
