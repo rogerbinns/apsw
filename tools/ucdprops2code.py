@@ -110,6 +110,8 @@ def generate_python() -> str:
     out.append("")
     out.extend(generate_python_table("sentence", "SC", sentence_ranges))
     out.append("")
+    out.extend(generate_python_table("category", "Category", category_ranges))
+    out.append("")
     return "\n".join(out) + "\n"
 
 
@@ -123,8 +125,44 @@ def generate_python_table(name, enum_name, ranges):
             all_cats.add(cat)
         else:
             all_cats.update(cat)
-    for i, cat in enumerate(sorted(all_cats)):
-        yield f"    { cat } =  2 ** { i }"
+    if name == "category":
+        cats = set()
+        cats_members = {}
+        for cat in unicode_categories.values():
+            v = cat.split()
+            v[1] = f"{v[0]}_{v[1]}"
+            cats.add(v[0])
+            if v[0] not in cats_members:
+                cats_members[v[0]] = []
+            cats_members[v[0]].append(v[1])
+        cat_vals = {}
+        yield f"    # Major category values - mutually exclusive"
+        for i, cat in enumerate(sorted(cats)):
+            yield f"    { cat } = 2 ** { i }"
+            cat_vals[cat] = i
+
+        max_used = len(cats)
+        yield f"    # Minor category values - note: their values overlap so tests must include major and equals"
+        yield f"    # To test for a minor, you must do like:"
+        yield f"    #    if codepoint & Letter_Upper == Letter_Upper ..."
+        for cat, members in sorted(cats_members.items()):
+            for i, member in enumerate(sorted(members), len(cats)):
+                yield f"    { member } = 2 ** { i } | 2 ** { cat_vals[cat] }"
+            max_used = max(max_used, i)
+
+        # the rest
+        ignore = cats.copy()
+        for minors in cats_members.values():
+            ignore.update(minors)
+        yield f"    # Remaining non-category convenience flags"
+        for cat in sorted(all_cats):
+            if cat not in ignore:
+                max_used += 1
+                yield f"    { cat } = 2 ** { max_used}"
+
+    else:
+        for i, cat in enumerate(sorted(all_cats)):
+            yield f"    { cat } =  2 ** { i }"
     yield ""
     yield f"# Codepoints by { name } category"
     yield "#"
@@ -183,6 +221,7 @@ props = {
     "grapheme": {},
     "word": {},
     "sentence": {},
+    "category": {},
 }
 
 ucd_version = None
@@ -250,32 +289,85 @@ def extract_prop(source: str, dest: dict[str, Any], prop_name: str, name: str | 
     assert len(accumulate) > 0
 
 
-def read_props(data_dir: str):
-    if data_dir:
-        url = pathlib.Path(data_dir) / "emoji-data.txt"
-    else:
-        url = "https://www.unicode.org/Public/UCD/latest/ucd/emoji/emoji-data.txt"
+unicode_categories = {
+    "Lu": "Letter Uppercase",
+    "Ll": "Letter Lowercase",
+    "Lt": "Letter Titlecase",
+    "Lm": "Letter Modifier",
+    "Lo": "Letter Other",
+    "Mn": "Mark NonSpacing",
+    "Mc": "Mark SpacingCombining",
+    "Me": "Mark Enclosing",
+    "Nd": "Number DecimalDigit",
+    "Nl": "Number Letter",
+    "No": "Number Other",
+    "Pc": "Punctuation Connector",
+    "Pd": "Punctuation Dash",
+    "Ps": "Punctuation Open",
+    "Pe": "Punctuation Close",
+    "Pi": "Punctuation InitialQuote",
+    "Pf": "Punctuation FinalQuote",
+    "Po": "Punctuation Other",
+    "Sm": "Symbol Math",
+    "Sc": "Symbol Currency",
+    "Sk": "Symbol Modifier",
+    "So": "Symbol Other",
+    "Zs": "Separator Space",
+    "Zl": "Separator Line",
+    "Zp": "Separator Paragraph",
+    "Cc": "Other Control",
+    "Cf": "Other Format",
+    "Cs": "Other Surrogate",
+    "Co": "Other PrivateUse",
+    "Cn": "Other NotAssigned",
+}
 
-    print("Reading", url)
-    if isinstance(url, str):
-        source = urllib.request.urlopen(url).read().decode("utf8")
-    else:
-        source = url.read_text("utf8")
+
+def extract_categories(source: str, dest: dict[str, Any]):
+    for v in unicode_categories.values():
+        v = v.split()
+        assert len(v) == 2
+        v[1] = f"{v[0]}_{v[1]}"
+        dest[v[0]] = []
+        dest[v[1]] = []
+
+    for start, end, cat in parse_source_lines(source):
+        v = unicode_categories[cat].split()
+        v[1] = f"{v[0]}_{v[1]}"
+        if end is None:
+            dest[v[0]].append(start)
+            dest[v[1]].append(start)
+        else:
+            dest[v[0]].append((start, end))
+            dest[v[1]].append((start, end))
+
+
+def read_props(data_dir: str):
+    def get_source(url: str) -> str:
+        base = url.split("/")[-1]
+        if data_dir:
+            url = pathlib.Path(data_dir) / base
+
+        print("Reading", url)
+        if isinstance(url, str):
+            source = urllib.request.urlopen(url).read().decode("utf8")
+        else:
+            source = url.read_text("utf8")
+
+        return source
+
+    source = get_source("https://www.unicode.org/Public/UCD/latest/ucd/extracted/DerivedGeneralCategory.txt")
+    extract_version("DerivedGeneralCategory.txt", source)
+    extract_categories(source, props["category"])
+
+    source = get_source("https://www.unicode.org/Public/UCD/latest/ucd/emoji/emoji-data.txt")
 
     extract_version("emoji-data.txt", source)
     extract_prop(source, props["grapheme"], "Extended_Pictographic")
     extract_prop(source, props["word"], "Extended_Pictographic")
+    extract_prop(source, props["category"], "Extended_Pictographic")
 
-    if data_dir:
-        url = pathlib.Path(data_dir) / "DerivedCoreProperties.txt"
-    else:
-        url = "https://www.unicode.org/Public/UCD/latest/ucd/DerivedCoreProperties.txt"
-
-    print("Reading", url)
-    if isinstance(url, str):
-        source = urllib.request.urlopen(url).read().decode("utf8")
-    else:
-        source = url.read_text("utf8")
+    source = get_source("https://www.unicode.org/Public/UCD/latest/ucd/DerivedCoreProperties.txt")
 
     extract_version("DerivedCoreProperties.txt", source)
     extract_prop(source, props["grapheme"], "InCB; Linker", "InCB_Linker")
@@ -283,17 +375,11 @@ def read_props(data_dir: str):
     extract_prop(source, props["grapheme"], "InCB; Extend", "InCB_Extend")
 
     for top in "Grapheme", "Word", "Sentence":
-        if data_dir:
-            url = pathlib.Path(data_dir) / f"{ top }BreakProperty.txt"
-        else:
-            url = f"https://www.unicode.org/Public/UCD/latest/ucd/auxiliary/{ top }BreakProperty.txt"
-        print("Reading", url)
-        if isinstance(url, str):
-            source = urllib.request.urlopen(url).read().decode("utf8")
-        else:
-            source = url.read_text("utf8")
+        source = get_source(f"https://www.unicode.org/Public/UCD/latest/ucd/auxiliary/{ top }BreakProperty.txt")
         extract_version(f"{ top }BreakProperty.txt", source)
         populate(source, props[top.lower()])
+        if top == "Grapheme":
+            extract_prop(source, props["category"], "Regional_Indicator")
 
 
 grapheme_ranges = []
@@ -353,6 +439,13 @@ def generate_sentence_ranges():
     generate_ranges("sentence", props["sentence"], sentence_ranges)
 
 
+category_ranges = []
+
+
+def generate_category_ranges():
+    generate_ranges("category", props["category"], category_ranges)
+
+
 py_code_header = f"""\
 # Generated by { sys.argv[0] } - Do not edit
 
@@ -377,6 +470,7 @@ if __name__ == "__main__":
     generate_grapheme_ranges()
     generate_word_ranges()
     generate_sentence_ranges()
+    generate_category_ranges()
 
     py_code = generate_python()
     options.out_py.write(py_code_header)
