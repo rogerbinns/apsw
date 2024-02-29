@@ -14,7 +14,7 @@ from typing import Callable, Any
 
 # This module is expected to be C in the future, so pretend these methods
 # are present in this module
-from _tr29db import *
+from . _tr29db import *
 
 
 class TextIterator:
@@ -355,31 +355,44 @@ def word_next_break(text: str, offset: int = 0) -> int:
     return it.pos
 
 
-def word_next(text: str, offset: int = 0) -> tuple[int, int]:
+def word_next(
+    text: str, offset: int = 0, *, letter=True, number=True, emoji=False, regional_indicator=False
+) -> tuple[int, int]:
     """Returns span of next word
 
-    Words are determined by there being at least one of
+    A segment is considered a word based on the codepoints it contains and their category:
+
     * letter
-    * numeric
+    * number
+    * emoji (Extended_Pictographic in Unicode specs)
+    * regional indicator - two character sequence for flags like 🇧🇷🇨🇦
     """
+
+    mask = 0
+    if letter:
+        mask |= Category.Letter
+    if number:
+        mask |= Category.Number
+    if emoji:
+        mask |= Category.Extended_Pictographic
+    if regional_indicator:
+        mask |= Category.Regional_Indicator
 
     while offset < len(text):
         end = word_next_break(text, offset=offset)
-        # ::TODO:: investigate emoji, regional indicator etc
-        # These have to use unicode category NOT word break category because most CJK are
-        # other in word break (not ALetter) but Lo in unicode category
         for pos in range(offset, end):
-            cat = unicodedata.category(text[pos])
-            if cat[0] == "L" or cat[0] == "N":
+            if category_category(ord(text[pos])) & mask:
                 return offset, end
         offset = end
     return offset, offset
 
 
-def word_iter(text: str, offset: int = 0):
+def word_iter(text: str, offset: int = 0, *, letter=True, number=True, emoji=False, regional_indicator=False):
     "Generator providing start, end, text of each word"
     while offset < len(text):
-        start, end = word_next(text, offset)
+        start, end = word_next(
+            text, offset, letter=letter, number=number, emoji=emoji, regional_indicator=regional_indicator
+        )
         yield (start, end, text[start:end])
         offset = end
 
@@ -509,6 +522,15 @@ if __name__ == "__main__":
     # ::TODO:: benchmark?
 
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-cc",
+        "--compact-codepoints",
+        dest="compact_codepoints",
+        action="store_true",
+        default=False,
+        help="Only show hex codepoint values, not full details",
+    )
+
     subparsers = parser.add_subparsers(required=True)
     p = subparsers.add_parser("breaktest", help="Run Unicode test file")
     p.set_defaults(function="breaktest")
@@ -523,12 +545,14 @@ if __name__ == "__main__":
 
     p = subparsers.add_parser("show", help="Run against provided text")
     p.set_defaults(function="show")
-
-    p.add_argument(
-        "--show", default="grapheme", choices=("grapheme", "word", "sentence"), help="What to show [%(default)s]"
-    )
+    p.add_argument("show", choices=("grapheme", "word", "sentence"), help="What to show [%(default)s]")
     p.add_argument("--text-file", type=argparse.FileType("rt", encoding="utf8"))
     p.add_argument("--width", default=width, help="Output width [%(default)s]", type=int)
+    p.add_argument(
+        "--categories",
+        default="letter,number",
+        help="For word, which segments are included comma separated.  Choose from letter, number, emoji, regional_indicator. [%(default)s]",
+    )
     p.add_argument("text", nargs="*", help="Text to segment unless --text-file used")
 
     p = subparsers.add_parser("codepoint", help="Show information about codepoints")
@@ -538,6 +562,8 @@ if __name__ == "__main__":
     options = parser.parse_args()
 
     def codepoint_details(enum_name, c: str, counter=None) -> str:
+        if options.compact_codepoints:
+            return f"U+{ord(c):04x}"
         name = unicodedata.name(c, "<NO NAME>")
         cat = unicodedata.category(c)
         counter = f"#{counter}:" if counter is not None else ""
@@ -562,6 +588,16 @@ if __name__ == "__main__":
         if not options.text_file and not options.text:
             p.error("You must specify at least --text-file or text arguments")
 
+        params = {"letter": False, "number": False, "emoji": False, "regional_indicator": False}
+        for c in options.categories.split(","):
+            c = c.strip()
+            if c not in params:
+                p.error(f"Unknown word category '{c}'")
+            params[c] = True
+
+        if options.show != "word":
+            params = {}
+
         text = ""
         if options.text_file:
             text += options.text_file.read()
@@ -577,7 +613,7 @@ if __name__ == "__main__":
         counter = 0
         offset = 0
         while offset < len(text):
-            begin, end = next_func(text, offset)
+            begin, end = next_func(text, offset, **params)
             print(
                 f"#{ counter } offset { offset } span { begin }-{ end } codepoints { end - begin } value: { text[begin:end] }"
             )
