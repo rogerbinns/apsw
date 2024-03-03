@@ -865,7 +865,6 @@ def _format_table(colnames: list[str], rows: list[apsw.SQLiteValues], colour: bo
                 if callable(string_sanitize):
                     cell = string_sanitize(cell)
                 else:
-                    cell = unicodedata.normalize("NFKC", cell)
                     if string_sanitize in (0, 1):
                         cell = cell.replace("\\", "\\\\")
                         cell = cell.replace("\r\n", "\n")
@@ -913,6 +912,7 @@ def _format_table(colnames: list[str], rows: list[apsw.SQLiteValues], colour: bo
             if truncate > 0 and len(val) > truncate:
                 val = val[:truncate] + truncate_val
             row[i] = (val, type(cell))  # type: ignore[index]
+            # ::TODO:: use tr29 grapheme_width
             colwidths[i] = max(colwidths[i], max(len(v) for v in val.splitlines()) if val else 0)
 
     ## work out widths
@@ -957,6 +957,7 @@ def _format_table(colnames: list[str], rows: list[apsw.SQLiteValues], colour: bo
         raise ValueError("Results can't be fitted in text width even with 1 char wide columns")
 
     # break headers and cells into lines
+    # ::TODO:: use tr29 grapheme cluster widths, offsets, and textwrap.wrap equiv
     if word_wrap:
 
         def wrap(text: str, width: int) -> list[str]:
