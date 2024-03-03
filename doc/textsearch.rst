@@ -322,3 +322,12 @@ Provided by the :mod:`apsw.fts` module.
     :synopsis: Helpers for working with full text search
     :members:
     :undoc-members:
+
+Unicode Text Segmentation and lookups
+=====================================
+
+Provided by the :mod:`apsw.tr29` module.
+
+.. automodule:: apsw.tr29
+    :members:
+    :undoc-members:
