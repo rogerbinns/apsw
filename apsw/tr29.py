@@ -1,87 +1,84 @@
 #!/usr/bin/env python3
 
 """
-An implementation of Unicode Text Segmentation
-primarily intended for text search
+`Unicode Technical Report #29
+<https://www.unicode.org/reports/tr29/>`__ rules for finding user
+perceived characters (grapheme clusters), words, and sentences from
+Unicode text. Useful for full text search.  Stays :data:`up to date
+<unicode_version>` with Unicode specifications and tables, and
+includes some useful table lookup methods.
 
-https://www.unicode.org/reports/tr29/
+Multiple code points can combine into what is rendered as one
+character, for example a base character and combining accents, writing
+systems where consonants with vowels added around them, and emoji
+sequences to adjust how they are shown.  Different languages have
+different ways of separating words and sentences.  This Unicode
+standard and rules implemented here deal with that complexity.
 """
-
 
 from __future__ import annotations
 
 from typing import Callable, Any
 
-# This module is expected to be C in the future, so pretend these methods
-# are present in this module
-from . _tr29db import *
+import enum
+
+### BEGIN UNICODE UPDATE SECTION ###
+unicode_version = "15.1"
+"""The `Unicode version <https://www.unicode.org/versions/enumeratedversions.html>`__
+that the rules and data tables implement"""
 
 
-class TextIterator:
-    state_fields = "pos", "accepted", "char", "lookahead"
+class _Category(enum.IntFlag):
+    # Major category values - mutually exclusive
+    Letter = 2**0
+    Mark = 2**1
+    Number = 2**2
+    Other = 2**3
+    Punctuation = 2**4
+    Separator = 2**5
+    Symbol = 2**6
+    # Minor category values - note: their values overlap so tests must include equals
+    # To test for a minor, you must do like:
+    #    if codepoint & Letter_Upper == Letter_Upper ...
+    Letter_Lowercase = 2**7 | 2**0
+    Letter_Modifier = 2**8 | 2**0
+    Letter_Other = 2**9 | 2**0
+    Letter_Titlecase = 2**10 | 2**0
+    Letter_Uppercase = 2**11 | 2**0
+    Mark_Enclosing = 2**7 | 2**1
+    Mark_NonSpacing = 2**8 | 2**1
+    Mark_SpacingCombining = 2**9 | 2**1
+    Number_DecimalDigit = 2**7 | 2**2
+    Number_Letter = 2**8 | 2**2
+    Number_Other = 2**9 | 2**2
+    Other_Control = 2**7 | 2**3
+    Other_Format = 2**8 | 2**3
+    Other_NotAssigned = 2**9 | 2**3
+    Other_PrivateUse = 2**10 | 2**3
+    Other_Surrogate = 2**11 | 2**3
+    Punctuation_Close = 2**7 | 2**4
+    Punctuation_Connector = 2**8 | 2**4
+    Punctuation_Dash = 2**9 | 2**4
+    Punctuation_FinalQuote = 2**10 | 2**4
+    Punctuation_InitialQuote = 2**11 | 2**4
+    Punctuation_Open = 2**12 | 2**4
+    Punctuation_Other = 2**13 | 2**4
+    Separator_Line = 2**7 | 2**5
+    Separator_Paragraph = 2**8 | 2**5
+    Separator_Space = 2**9 | 2**5
+    Symbol_Currency = 2**7 | 2**6
+    Symbol_Math = 2**8 | 2**6
+    Symbol_Modifier = 2**9 | 2**6
+    Symbol_Other = 2**10 | 2**6
+    # Remaining non-category convenience flags
+    Extended_Pictographic = 2**14
+    Regional_Indicator = 2**15
 
-    def __init__(self, text: str, offset: int, catfunc: Callable):
-        self.saved = None
-        self.text = text
-        self.start = offset
-        self.end = len(text)  # we allow pointing to one item beyond end
-        self.pos = offset  # index we are currently examining but have not accepted yet
-        self.catfunc = catfunc
-        self.accepted = 0  # bitmask of accepted properties
-        if offset < 0 or offset > self.end:
-            raise ValueError(f"{offset=} is out of bounds 0 - { self.end }")
-        if self.pos == self.end:
-            self.char = self.lookahead = 0
-        else:
-            self.char = 0
-            self.lookahead = self.catfunc(ord(self.text[self.pos]))
 
-    def end_of_text(self) -> bool:
-        return self.pos >= self.end
+### END UNICODE UPDATE SECTION ###
 
-    def start_of_text(self) -> bool:
-        return self.pos == self.start
-
-    def begin(self):
-        "used for speculative lookahead"
-        assert self.saved is None
-        self.saved = {k: getattr(self, k) for k in TextIterator.state_fields}
-
-    def commit(self):
-        "lookahead worked"
-        self.saved = None
-
-    def rollback(self):
-        "undo lookahead"
-        assert self.saved is not None
-        for k, v in self.saved.items():
-            setattr(self, k, v)
-        self.saved = None
-        return self.char, self.lookahead
-
-    def advance(self) -> tuple[int, int]:
-        "Returns tuple of current char and lookahead props"
-        if self.end_of_text():
-            raise ValueError("Trying to advance beyond end of text")
-        if self.pos != self.start:
-            self.accepted |= self.char
-        self.char = self.lookahead
-        self.pos += 1
-        self.lookahead = self.catfunc(ord(self.text[self.pos])) if self.pos < self.end else 0
-        return self.char, self.lookahead
-
-    def absorb(self, match: int, extend: int = 0):
-        """Advances while lookahead matches, keeping self.char, also taking zero or more extend following each match
-
-        Used for various Extend matches"""
-        if self.lookahead & match:
-            char = self.char
-            while self.lookahead & match:
-                _, lookahead = self.advance()
-                while lookahead & extend:
-                    _, lookahead = self.advance()
-            self.char = char
-        return self.char, self.lookahead
+from . import _tr29py as _tr29
+# from . import _tr29c as _tr29
 
 
 def grapheme_next_break(text: str, offset: int = 0) -> int:
@@ -100,92 +97,7 @@ def grapheme_next_break(text: str, offset: int = 0) -> int:
         starting at offset. You should extract ``text[offset:span]``
 
     """
-
-    it = TextIterator(text, offset, grapheme_category)
-
-    # GB1 implicit
-
-    # GB2
-    if it.end_of_text():
-        return it.pos
-
-    while not it.end_of_text():
-        assert it.saved is None, "Incomplete lookahead"
-        char, lookahead = it.advance()
-
-        # GB3
-        if char & GC.CR and lookahead & GC.LF:
-            return it.pos + 1
-
-        # GB4
-        if char & (GC.Control | GC.CR | GC.LF):
-            # break before if any chars are accepted
-            if it.accepted:
-                return it.pos - 1
-            break
-
-        # GB6
-        if char & GC.L and lookahead & (GC.L | GC.V | GC.LV | GC.LVT):
-            continue
-
-        # GB7
-        if char & (GC.LV | GC.V) and lookahead & (GC.V | GC.T):
-            continue
-
-        # GB8
-        if char & (GC.LVT | GC.T) and lookahead & GC.T:
-            continue
-
-        # GB9a
-        if lookahead & GC.SpacingMark:
-            continue
-
-        # GB9b
-        if char & GC.Prepend:
-            continue
-
-        # GB9c
-        if char & GC.InCB_Consonant and lookahead & (GC.InCB_Extend | GC.InCB_Linker):
-            it.begin()
-            seen_linker = lookahead & GC.InCB_Linker
-            char, lookahead = it.advance()
-            while lookahead & (GC.InCB_Extend | GC.InCB_Linker):
-                seen_linker = seen_linker or lookahead & GC.InCB_Linker
-                char, lookahead = it.advance()
-            if seen_linker and lookahead & GC.InCB_Consonant:
-                it.commit()
-                continue
-            char, lookahead = it.rollback()
-
-        # GB11
-        if char & GC.Extended_Pictographic and lookahead & (GC.Extend | GC.ZWJ):
-            it.begin()
-            while lookahead & GC.Extend:
-                char, lookahead = it.advance()
-            if lookahead & GC.ZWJ:
-                char, lookahead = it.advance()
-                if lookahead & GC.Extended_Pictographic:
-                    it.commit()
-                    continue
-            char, lookahead = it.rollback()
-
-        # GB9 - has to be after GB9c and GB11 because all InCB_Linker and InCB_Extend
-        # are also extend
-        if lookahead & (GC.Extend | GC.ZWJ):
-            continue
-
-        # GB12
-        if char & GC.Regional_Indicator and lookahead & GC.Regional_Indicator:
-            char, lookahead = it.advance()
-            # re-apply GB9
-            if lookahead & (GC.Extend | GC.ZWJ | GC.InCB_Extend):
-                continue
-            break
-
-        # GB999
-        break
-
-    return it.pos
+    return _tr29.grapheme_next_break(text, offset)
 
 
 def grapheme_next(text: str, offset: int = 0) -> tuple[int, int]:
@@ -203,6 +115,32 @@ def grapheme_iter(text: str, offset: int = 0):
         offset = end
 
 
+def grapheme_length(text: str, offset: int = 0) -> int:
+    "Returns number of grapheme clusters in the text.  Unicode aware version of len"
+    # ::TODO:: convert to C
+    count = 0
+    while offset < len(text):
+        offset = grapheme_next_break(text, offset)
+        # ::TODO:: off by 1?
+        count += 1
+    return count
+
+
+def grapheme_range(text: str, start: int = 0, end: int = -1) -> str:
+    "Like text[str:end] but in grapheme cluster units"
+    # ::TODO:: convert to C
+    return text[start:end]
+
+
+def grapheme_width(text: str, offset: int = 0) -> int:
+    "Returns number of grapheme clusters in the text, counting wide ones as two"
+    # ::TODO:: convert to C
+    count = 0
+    for start, end in grapheme_iter(text, offset):
+        count += 2 if any(unicode_category(ord(text[i])) & Category.Wide for i in range(start, end)) else 1
+    return count
+
+
 def word_next_break(text: str, offset: int = 0) -> int:
     """Returns end of next word or non-word
 
@@ -216,143 +154,7 @@ def word_next_break(text: str, offset: int = 0) -> int:
 
     :returns:  Next break point
     """
-
-    # From spec
-    AHLetter = WC.ALetter | WC.Hebrew_Letter
-    MidNumLetQ = WC.MidNumLet | WC.Single_Quote
-
-    it = TextIterator(text, offset, word_category)
-
-    # WB1 implicit
-
-    # WB2
-    if it.end_of_text():
-        return it.pos
-
-    while not it.end_of_text():
-        char, lookahead = it.advance()
-
-        # WB3
-        if char & WC.CR and lookahead & WC.LF:
-            it.advance()
-            break
-
-        # WB3a/b
-        if char & (WC.Newline | WC.CR | WC.LF):
-            # break before if any chars are accepted
-            if it.accepted:
-                return it.pos - 1
-            # break after
-            break
-
-        # WB3c
-        if char & WC.ZWJ and lookahead & WC.Extended_Pictographic:
-            continue
-
-        if lookahead & WC.ZWJ:
-            it.begin()
-            char, lookahead = it.advance()
-            if lookahead & WC.Extended_Pictographic:
-                it.advance()
-                it.commit()
-                continue
-            char, lookahead = it.rollback()
-
-        # WB3d
-        if char == WC.WSegSpace and lookahead & WC.WSegSpace:
-            continue
-
-        # WB4
-        if lookahead & (WC.Extend | WC.ZWJ | WC.Format):
-            action = None
-            while lookahead & (WC.Extend | WC.ZWJ | WC.Format):
-                if lookahead & WC.ZWJ:
-                    # Re-apply wb3c
-                    it.begin()
-                    _, lookahead = it.advance()
-                    if lookahead & WC.Extended_Pictographic:
-                        action = "continue"
-                        it.commit()
-                        break
-                    else:
-                        it.rollback()
-                _, lookahead = it.advance()
-            if action == "continue":
-                continue
-            assert action is None
-            it.char = char  # ignore the extending chars
-
-        # WB5
-        if char & AHLetter and lookahead & AHLetter:
-            continue
-
-        # WB6/7
-        if char & AHLetter and lookahead & (WC.MidLetter | MidNumLetQ):
-            it.begin()
-            char, lookahead = it.advance()
-            char, lookahead = it.absorb(WC.Extend | WC.Format | WC.ZWJ)
-            if lookahead & AHLetter:
-                it.commit()
-                continue
-            char, lookahead = it.rollback()
-
-        # WB7a
-        if char & WC.Hebrew_Letter and lookahead & WC.Single_Quote:
-            continue
-
-        # WB7b/c
-        if char & WC.Hebrew_Letter and lookahead & WC.Double_Quote:
-            it.begin()
-            char, lookahead = it.advance()
-            if lookahead & WC.Hebrew_Letter:
-                it.commit()
-                continue
-            char, lookahead = it.rollback()
-
-        # WB8
-        if char & WC.Numeric and lookahead & WC.Numeric:
-            continue
-
-        # WB9
-        if char & AHLetter and lookahead & WC.Numeric:
-            continue
-
-        # WB10
-        if char & WC.Numeric and lookahead & AHLetter:
-            continue
-
-        # WB11/12
-        if char & WC.Numeric and lookahead & (WC.MidNum | MidNumLetQ):
-            it.begin()
-            char, lookahead = it.advance()
-            char, lookahead = it.absorb(WC.Extend | WC.Format | WC.ZWJ)
-            if lookahead & WC.Numeric:
-                it.commit()
-                continue
-            char, lookahead = it.rollback()
-
-        # WB13
-        if char & WC.Katakana and lookahead & WC.Katakana:
-            continue
-
-        # WB13a
-        if char & (AHLetter | WC.Numeric | WC.Katakana | WC.ExtendNumLet) and lookahead & WC.ExtendNumLet:
-            continue
-
-        # WB13b
-        if char & WC.ExtendNumLet and lookahead & (AHLetter | WC.Numeric | WC.Katakana):
-            continue
-
-        # WB15/16
-        if char & WC.Regional_Indicator and lookahead & WC.Regional_Indicator:
-            char, lookahead = it.advance()
-            it.absorb(WC.Extend | WC.ZWJ | WC.Format)
-            break
-
-        # WB999
-        break
-
-    return it.pos
+    return _tr29.word_next_break(text, offset)
 
 
 def word_next(
@@ -370,18 +172,18 @@ def word_next(
 
     mask = 0
     if letter:
-        mask |= Category.Letter
+        mask |= _Category.Letter
     if number:
-        mask |= Category.Number
+        mask |= _Category.Number
     if emoji:
-        mask |= Category.Extended_Pictographic
+        mask |= _Category.Extended_Pictographic
     if regional_indicator:
-        mask |= Category.Regional_Indicator
+        mask |= _Category.Regional_Indicator
 
     while offset < len(text):
         end = word_next_break(text, offset=offset)
         for pos in range(offset, end):
-            if category_category(ord(text[pos])) & mask:
+            if _unicode_category(ord(text[pos])) & mask:
                 return offset, end
         offset = end
     return offset, offset
@@ -398,100 +200,22 @@ def word_iter(text: str, offset: int = 0, *, letter=True, number=True, emoji=Fal
 
 
 def sentence_next_break(test: str, offset: int = 0) -> int:
-    """https://www.unicode.org/reports/tr29/#Sentence_Boundary_Rules"""
+    """Returns end of sentence location.
 
-    # From spec
-    ParaSep = SC.Sep | SC.CR | SC.LF
-    SATerm = SC.STerm | SC.ATerm
+    Finds the next break point according to the `TR29 spec
+    <https://www.unicode.org/reports/tr29/#Sentence_Boundary_Rules>`__.
+    Note that the segment returned includes trailing white space.
 
-    it = TextIterator(text, offset, sentence_category)
+    :param text: The text to examine
+    :param offset: The first codepoint to examine
 
-    # SB1 implicit
-
-    # SB2
-    if it.end_of_text():
-        return it.pos
-
-    while not it.end_of_text():
-        char, lookahead = it.advance()
-
-        # SB3
-        if char & SC.CR and lookahead & SC.LF:
-            it.advance()
-            break
-
-        # SB4
-        if char & ParaSep:
-            break
-
-        # SB5
-        char, lookahead = it.absorb(SC.Format | SC.Extend)
-
-        # SB6
-        if char & SC.ATerm and lookahead & SC.Numeric:
-            continue
-
-        # SB7
-        if char & (SC.Upper | SC.Lower) and lookahead & SC.ATerm:
-            it.begin()
-            it.advance()
-            char, lookahead = it.absorb(SC.Format | SC.Extend)
-            if lookahead & SC.Upper:
-                it.commit()
-                continue
-            char, lookahead = it.rollback()
-
-        # SB8
-        if char & SC.ATerm:
-            it.begin()
-            it.absorb(SC.Close, SC.Format | SC.Extend)
-            it.absorb(SC.Sp, SC.Format | SC.Extend)
-            it.absorb(0xFFFFFFFF ^ SC.OLetter ^ SC.Upper ^ SC.Lower ^ ParaSep ^ SATerm)
-            _, lookahead = it.absorb(SC.Format | SC.Extend)
-            if lookahead & SC.Lower:
-                it.absorb(SC.Format | SC.Extend)
-                it.commit()
-                continue
-            char, lookahead = it.rollback()
-
-        # SB8a
-        if char & SATerm:
-            it.begin()
-            it.absorb(SC.Close, SC.Format | SC.Extend)
-            _, lookahead = it.absorb(SC.Sp, SC.Format | SC.Extend)
-            if lookahead & (SC.SContinue | SATerm):
-                it.advance()
-                it.absorb(SC.Format | SC.Extend)
-                it.commit()
-                continue
-            char, lookahead = it.rollback()
-
-        # SB9 / SB10 / SB11
-        if char & SATerm:
-            # This will result in a break with the rules to absorb
-            # zero or more close then space, and one optional ParaSep
-            it.absorb(SC.Close, SC.Format | SC.Extend)
-            _, lookahead = it.absorb(SC.Sp, SC.Format | SC.Extend)
-            if lookahead & ParaSep:
-                # Process parasep in SB3/4 above
-                continue
-            break
-
-        # SB999
-        continue
-
-    return it.pos
+    :returns:  Next break point
+    """
+    return _tr29.sentence_next_break(text, offset)
 
 
 def sentence_next(text: str, offset: int = 0) -> tuple[int, int]:
-    """Returns span of next sentence
-
-    ::TODO:: do not treat CRLF as end of sentence flag
-    requiring two in a row
-
-    * letter
-    * numeric
-    """
+    """Returns span of next sentence"""
     while offset < len(text):
         end = sentence_next_break(text, offset=offset)
         return offset, end
@@ -502,9 +226,101 @@ def sentence_iter(text: str, offset: int = 0):
     "Generator providing start,end, text of each sentence"
     while offset < len(text):
         start, end = sentence_next(text, offset)
-        yield (start, end, text[start:end])
+        yield (start, end, text[start:end].strip())
         offset = end
 
+
+_unicode_category = _tr29.category_category
+
+
+def unicode_category(codepoint: int) -> str:
+    """Returns the `general category <https://en.wikipedia.org/wiki/Unicode_character_property#General_Category>`__ - eg ``Lu`` for Letter Uppercase
+
+    See :data:`apsw.fts.unicode_categories` for descriptions mapping"""
+    cat = _unicode_category(codepoint)
+    if cat & _Category.Letter:
+        if cat & _Category.Letter_Lowercase == _Category.Letter_Lowercase:
+            return "Ll"
+        if cat & _Category.Letter_Modifier == _Category.Letter_Modifier:
+            return "Lm"
+        if cat & _Category.Letter_Other == _Category.Letter_Other:
+            return "Lo"
+        if cat & _Category.Letter_Titlecase == _Category.Letter_Titlecase:
+            return "Lt"
+        if cat & _Category.Letter_Uppercase == _Category.Letter_Uppercase:
+            return "Lu"
+    if cat & _Category.Mark:
+        if cat & _Category.Mark_Enclosing == _Category.Mark_Enclosing:
+            return "Me"
+        if cat & _Category.Mark_NonSpacing == _Category.Mark_NonSpacing:
+            return "Mn"
+        if cat & _Category.Mark_SpacingCombining == _Category.Mark_SpacingCombining:
+            return "Mc"
+    if cat & _Category.Number:
+        if cat & _Category.Number_DecimalDigit == _Category.Number_DecimalDigit:
+            return "Nd"
+        if cat & _Category.Number_Letter == _Category.Number_Letter:
+            return "Nl"
+        if cat & _Category.Number_Other == _Category.Number_Other:
+            return "No"
+    if cat & _Category.Other:
+        if cat & _Category.Other_Control == _Category.Other_Control:
+            return "Cc"
+        if cat & _Category.Other_Format == _Category.Other_Format:
+            return "Cf"
+        if cat & _Category.Other_NotAssigned == _Category.Other_NotAssigned:
+            return "Cn"
+        if cat & _Category.Other_PrivateUse == _Category.Other_PrivateUse:
+            return "Co"
+        if cat & _Category.Other_Surrogate == _Category.Other_Surrogate:
+            return "Cs"
+    if cat & _Category.Punctuation:
+        if cat & _Category.Punctuation_Close == _Category.Punctuation_Close:
+            return "Pe"
+        if cat & _Category.Punctuation_Connector == _Category.Punctuation_Connector:
+            return "Pc"
+        if cat & _Category.Punctuation_Dash == _Category.Punctuation_Dash:
+            return "Pd"
+        if cat & _Category.Punctuation_FinalQuote == _Category.Punctuation_FinalQuote:
+            return "Pf"
+        if cat & _Category.Punctuation_InitialQuote == _Category.Punctuation_InitialQuote:
+            return "Pi"
+        if cat & _Category.Punctuation_Open == _Category.Punctuation_Open:
+            return "Ps"
+        if cat & _Category.Punctuation_Other == _Category.Punctuation_Other:
+            return "Po"
+    if cat & _Category.Separator:
+        if cat & _Category.Separator_Line == _Category.Separator_Line:
+            return "Zl"
+        if cat & _Category.Separator_Paragraph == _Category.Separator_Paragraph:
+            return "Zp"
+        if cat & _Category.Separator_Space == _Category.Separator_Space:
+            return "Zs"
+    if cat & _Category.Symbol:
+        if cat & _Category.Symbol_Currency == _Category.Symbol_Currency:
+            return "Sc"
+        if cat & _Category.Symbol_Math == _Category.Symbol_Math:
+            return "Sm"
+        if cat & _Category.Symbol_Modifier == _Category.Symbol_Modifier:
+            return "Sk"
+        if cat & _Category.Symbol_Other == _Category.Symbol_Other:
+            return "So"
+
+    raise Exception("Unreachable")
+
+
+def unicode_is_extended_pictographic(codepoint: int) -> bool:
+    "Returns True if the codepoint has the extended pictographic property (Emoji and similar)"
+    return bool(_unicode_category(codepoint) & _Category.Extended_Pictographic)
+
+
+def unicode_is_regional_indicator(codepoint: int) -> bool:
+    "Returns True if the codepoint is one of the 26 `regional indicators <https://en.wikipedia.org/wiki/Regional_indicator_symbol>`__ used in pairs to represent country flags"
+    return bool(_unicode_category(codepoint) & _Category.Regional_Indicator)
+
+def text_wrap(text: str, width=70, *, initial_indent='', subsequent_indent='', max_lines=None, placeholder=' [...] ')-> str:
+    "Like :func:`textwrap.wrap` but Unicode grapheme cluster and words aware"
+    raise NotImplementedError()
 
 if __name__ == "__main__":
     import argparse
@@ -561,28 +377,15 @@ if __name__ == "__main__":
 
     options = parser.parse_args()
 
-    def codepoint_details(enum_name, c: str, counter=None) -> str:
+    def codepoint_details(kind, c: str, counter=None) -> str:
         if options.compact_codepoints:
             return f"U+{ord(c):04x}"
         name = unicodedata.name(c, "<NO NAME>")
-        cat = unicodedata.category(c)
+        cat = unicode_category(ord(c))
         counter = f"#{counter}:" if counter is not None else ""
         name += f" ({ cat } { apsw.fts.unicode_categories[cat] })"
-        tr29_cat = category_name(tr29_cat_func, enum_name, ord(c))
+        tr29_cat = " | ".join(_tr29.category_name(kind, ord(c)))
         return "{" + f"{counter}U+" + ("%04X" % ord(c)) + f" {name} : { tr29_cat }" + "}"
-
-    def category_name(func, enum_name, cp: int) -> str:
-        try:
-            # works if only one category
-            return func(cp).name
-        except AttributeError:
-            pass
-        cat = func(cp)
-        cats = []
-        for name, value in enum_name.__members__.items():
-            if cat & value:
-                cats.append(name)
-        return " | ".join(sorted(cats))
 
     if options.function == "show":
         if not options.text_file and not options.text:
@@ -607,8 +410,6 @@ if __name__ == "__main__":
             text += " ".join(options.text)
 
         next_func = globals()[f"{ options.show }_next"]
-        tr29_cat_func = globals()[f"{ options.show }_category"]
-        enum_class = {"grapheme": GC, "word": WC, "sentence": SC}[options.show]
 
         counter = 0
         offset = 0
@@ -619,15 +420,13 @@ if __name__ == "__main__":
             )
             codepoints = []
             for i in range(begin, end):
-                codepoints.append(codepoint_details(enum_class, text[i]))
+                codepoints.append(codepoint_details(options.show, text[i]))
             print("\n".join(textwrap.wrap(" ".join(codepoints), width=options.width)))
             offset = end
             counter += 1
 
     elif options.function == "breaktest":
         next_break_func = globals()[f"{ options.test }_next_break"]
-        tr29_cat_func = globals()[f"{ options.test }_category"]
-        enum_class = {"grapheme": GC, "word": WC, "sentence": SC}[options.test]
 
         ok = "÷"
         not_ok = "\u00d7"
@@ -656,7 +455,7 @@ if __name__ == "__main__":
                 fails.append(orig_line.strip())
                 codepoints = []
                 for counter, c in enumerate(text):
-                    codepoints.append(codepoint_details(enum_class, c, counter))
+                    codepoints.append(codepoint_details(options.test, c, counter))
                 fails.append(" ".join(codepoints))
                 fails.append("")
 
@@ -711,7 +510,7 @@ if __name__ == "__main__":
                 return "<NO NAME>"
 
         def deets(cp):
-            cat = unicodedata.category(chr(cp))
+            cat = unicode_category(cp)
             return f"{ uniname(cp) } category { cat }: { apsw.fts.unicode_categories[cat] }"
 
         for i, cp in enumerate(codepoints):
@@ -725,8 +524,8 @@ if __name__ == "__main__":
                 val = ", ".join(f"U+{ ord(v):04X} {uniname(ord(v))}" for v in val)
                 print(f"{ norm }: { val }")
             print(
-                f"TR29 grapheme: { category_name(grapheme_category, GC, cp) }   "
-                f"word: { category_name(word_category, WC, cp )}   "
-                f"sentence: { category_name(sentence_category, SC, cp) }"
+                f"TR29 grapheme: { ' | '.join(_tr29.category_name('grapheme', cp)) }   "
+                f"word: { ' | '.join(_tr29.category_name('word', cp )) }   "
+                f"sentence: { ' | '.join(_tr29.category_name('sentence', cp)) }"
             )
             print()
