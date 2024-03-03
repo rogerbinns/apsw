@@ -64,8 +64,15 @@ def fmt_cat(enum_name: str, cat: str | tuple[str, ...]):
     return " | ".join(f"{ enum_name }.{ c }" for c in cat)
 
 
-def bsearch(enum_name: str, indent: int, items: list, n: int):
+def fmt_cat_c(enum_name: str, cat: str | tuple[str, ...]):
+    if isinstance(cat, str):
+        return f"{ enum_name }_{ cat }"
+    return "(" + " | ".join(f"{ enum_name }_{ c }" for c in cat) + ")"
+
+
+def bsearch(language: str, enum_name: str, indent: int, items: list, n: int):
     # n is if tests at same level.  2 means binary search, 3 is trinary etc
+    assert language in {"c", "python"}
     indent_ = "    " * indent
 
     if len(items) > n:
@@ -77,24 +84,49 @@ def bsearch(enum_name: str, indent: int, items: list, n: int):
             if not is_last:
                 test = items[chunks[1 + chunks.index(begin)]][0]
             if is_first:
-                yield f"{ indent_ }if c < 0x{ test:04X}:"
+                if language == "python":
+                    yield f"{ indent_ }if c < 0x{ test:04X}:"
+                else:
+                    yield f"{ indent_ }if (c < 0x{ test:04X})"
+                    yield f"{ indent_ }{{"
             elif is_last:
-                yield f"{ indent_ }else:"
+                if language == "python":
+                    yield f"{ indent_ }else:"
+                else:
+                    yield indent_ + "else"
+                    yield indent_ + "{"
             else:
-                yield f"{ indent_ }elif c < 0x{ test:04X}:"
-            yield from bsearch(enum_name, indent + 1, items[begin : begin + step], n)
+                if language == "python":
+                    yield f"{ indent_ }elif c < 0x{ test:04X}:"
+                else:
+                    yield f"{ indent_ }else if (c < 0x{ test:04X})"
+                    yield indent_ + "{"
+            yield from bsearch(language, enum_name, indent + 1, items[begin : begin + step], n)
+            if language == "c":
+                yield indent_ + "}"
     else:
         for is_first, is_last, (start, end, cat) in augiter(items):
             if start == end:
                 test = f"c == 0x{ start:04X}"
             else:
-                test = f"0x{ start:04X} <= c <= 0x{ end:04X}"
+                if language == "python":
+                    test = f"0x{ start:04X} <= c <= 0x{ end:04X}"
+                else:
+                    test = f"(c >= 0x{ start:04X}) && (c <= 0x{ end:04X})"
             if not is_last:
-                yield f"{ indent_ }if { test }:"
-                yield f"{ indent_ }    return { fmt_cat(enum_name, cat) }"
+                if language == "python":
+                    yield f"{ indent_ }if { test }:"
+                    yield f"{ indent_ }    return { fmt_cat(enum_name, cat) }"
+                else:
+                    yield f"{ indent_ }if ({ test })"
+                    yield f"{ indent_ }    return { fmt_cat_c(enum_name, cat) };"
             else:
-                yield f"{ indent_ }# { test }"
-                yield f"{ indent_ }return { fmt_cat(enum_name, cat) }"
+                if language == "python":
+                    yield f"{ indent_ }# { test }"
+                    yield f"{ indent_ }return { fmt_cat(enum_name, cat) }"
+                else:
+                    yield f"{ indent_ }/* { test } */"
+                    yield f"{ indent_ }return { fmt_cat_c(enum_name, cat) };"
 
 
 # We do Python code for testing and development
@@ -116,6 +148,43 @@ def generate_python() -> str:
     return "\n".join(out) + "\n"
 
 
+# and C for speed
+def generate_c() -> str:
+    out: list[str] = []
+
+    out.append(f'static const char *unicode_version = "{ ucd_version }";')
+    out.append("")
+    out.extend(generate_c_table("grapheme", "GC", grapheme_ranges))
+    out.append("")
+    out.extend(generate_c_table("word", "WC", word_ranges))
+    out.append("")
+    out.extend(generate_c_table("sentence", "SC", sentence_ranges))
+    out.append("")
+    out.extend(generate_c_table("category", "Category", category_ranges))
+    out.append("")
+
+    return "\n".join(out) + "\n"
+
+
+def comment(language, text):
+    assert language in {"c", "python"}
+    text = text.splitlines()
+    if len(text) == 1:
+        if language == "python":
+            yield f"# { text[0]}"
+        else:
+            yield f"/* { text[0] } */"
+        return
+    if language == "python":
+        for line in text:
+            yield f"# { line }"
+    else:
+        yield "/*"
+        for line in text:
+            yield f" { line}"
+        yield "*/"
+
+
 def category_enum(language: str, name="Category"):
     assert language in {"c", "python"}
 
@@ -126,43 +195,63 @@ def category_enum(language: str, name="Category"):
         else:
             all_cats.update(cat)
 
+    cats = set()
+    cats_members = {}
+    for cat in unicode_categories.values():
+        v = cat.split()
+        v[1] = f"{v[0]}_{v[1]}"
+        cats.add(v[0])
+        if v[0] not in cats_members:
+            cats_members[v[0]] = []
+        cats_members[v[0]].append(v[1])
+    cat_vals = {}
     if language == "python":
-        cats = set()
-        cats_members = {}
-        for cat in unicode_categories.values():
-            v = cat.split()
-            v[1] = f"{v[0]}_{v[1]}"
-            cats.add(v[0])
-            if v[0] not in cats_members:
-                cats_members[v[0]] = []
-            cats_members[v[0]].append(v[1])
-        cat_vals = {}
         yield f"class {name}(enum.IntFlag):"
-        yield f"    # Major category values - mutually exclusive"
-        for i, cat in enumerate(sorted(cats)):
+    yield from comment(language, "Major category values - mutually exclusive")
+    for i, cat in enumerate(sorted(cats)):
+        if language == "python":
             yield f"    { cat } = 2 ** { i }"
-            cat_vals[cat] = i
+        else:
+            yield f"#define Category_{ cat } (1 << { i })"
+        cat_vals[cat] = i
 
-        max_used = len(cats)
-        yield f"    # Minor category values - note: their values overlap so tests must include equals"
-        yield f"    # To test for a minor, you must do like:"
-        yield f"    #    if codepoint & Letter_Upper == Letter_Upper ..."
-        for cat, members in sorted(cats_members.items()):
-            for i, member in enumerate(sorted(members), len(cats)):
+    max_used = len(cats)
+
+    py_comment = """\
+   Minor category values - note: their values overlap so tests must include equals")
+   To test for a minor, you must do like:"
+       if codepoint & Letter_Upper == Letter_Upper ..."
+"""
+
+    c_comment = """\
+   Minor category values - note: their values overlap so tests must include equals")
+   To test for a minor, you must do like:"
+       if ( (codepoint & Category_Letter_Upper) == Category_Letter_Upper) ..."
+"""
+
+    yield from comment(language, py_comment if language == "python" else c_comment)
+
+    for cat, members in sorted(cats_members.items()):
+        for i, member in enumerate(sorted(members), len(cats)):
+            if language == "python":
                 yield f"    { member } = 2 ** { i } | 2 ** { cat_vals[cat] }"
-            max_used = max(max_used, i)
+            else:
+                yield f"#define    Category_{ member }  ( (1 << { i }) | (1 << { cat_vals[cat] }))"
+        max_used = max(max_used, i)
 
-        # the rest
-        ignore = cats.copy()
-        for minors in cats_members.values():
-            ignore.update(minors)
-        yield f"    # Remaining non-category convenience flags"
-        for cat in sorted(all_cats):
-            if cat not in ignore:
-                max_used += 1
+    # the rest
+    ignore = cats.copy()
+    for minors in cats_members.values():
+        ignore.update(minors)
+    yield from comment(language, "Remaining non-category convenience flags")
+    for cat in sorted(all_cats):
+        if cat not in ignore:
+            max_used += 1
+            if language == "python":
                 yield f"    { cat } = 2 ** { max_used}"
-    else:
-        raise NotImplementedError()
+            else:
+                yield f"#define Category_{ cat } (1 << { max_used})"
+
 
 def generate_python_table(name, enum_name, ranges):
     yield f"# { name }"
@@ -231,7 +320,81 @@ def generate_python_table(name, enum_name, ranges):
     yield f"        return { name}_fast_lookup[c]"
     yield ""
 
-    yield from bsearch(enum_name, 1, ranges, 2)
+    yield from bsearch("python", enum_name, 1, ranges, 2)
+
+
+def generate_c_table(name, enum_name, ranges):
+    yield f"/* { name } */"
+    yield ""
+    if name == "category":
+        assert ranges is category_ranges
+        yield from category_enum("c")
+    else:
+        all_cats = set()
+        for _, _, cat in ranges:
+            if isinstance(cat, str):
+                all_cats.add(cat)
+            else:
+                all_cats.update(cat)
+        for i, cat in enumerate(sorted(all_cats)):
+            yield f"#define { enum_name }_{ cat } (1 <<  { i })"
+    yield ""
+    yield f"/* Codepoints by { name } category"
+    yield ""
+    for k, v in stats[name].most_common():
+        if not isinstance(k, str):
+            k = " | ".join(k)
+        yield f"  {v: 10,} { k }"
+    others = sys.maxunicode + 1 - stats[name].total()
+    yield f"  {others:10,} (other)"
+    yield ""
+    yield f"  {len(ranges):,} ranges"
+    yield ""
+    yield "*/"
+    yield ""
+    yield ""
+
+    # make a copy because we modify it
+    ranges = ranges[:]
+    # first codepoint NOT in table
+    table_limit = 256
+
+    yield f"static int { name}_fast_lookup[] = {{"
+    line = ""
+    for cp in range(table_limit):
+        if cp % 16 == 0:
+            if line:
+                yield line.rstrip()
+                line = ""
+            yield f"    /* { cp:04X} - {min(table_limit,cp+16)-1:04X} */"
+        cat = fmt_cat_c(enum_name, ranges[0][2])
+        if len(line) + len(cat) > 116:
+            yield line.rstrip()
+            line = ""
+        if not line:
+            line = "    "
+        line += f"{cat}, "
+        if cp >= ranges[0][1]:
+            ranges.pop(0)
+
+    if line:
+        yield line.rstrip()
+    yield "};"
+    yield ""
+    ranges[0][0] = table_limit
+
+    yield "static int"
+    yield f"{ name }_category(int c)"
+    yield "{"
+    yield '   /* "Returns category corresponding to codepoint */'
+    yield ""
+    yield f"    if (c < 0x{ table_limit:04X})"
+    yield f"        return { name}_fast_lookup[c];"
+    yield ""
+
+    yield from bsearch("c", enum_name, 1, ranges, 2)
+    yield "}"
+    yield ""
 
 
 props = {
@@ -486,6 +649,12 @@ py_code_header = f"""\
 
 """
 
+c_code_header = f"""\
+/*  Generated by { sys.argv[0] } - Do not edit */
+
+"""
+
+
 if __name__ == "__main__":
     import argparse
     import urllib.request
@@ -496,7 +665,9 @@ if __name__ == "__main__":
         help="Directory containing local copies of the relevant unicode database files.  If "
         "not supplied the latest files are read from https://www.unicode.org/Public/UCD/latest/ucd/",
     )
-    p.add_argument("out_py", type=argparse.FileType("w", encoding="utf8"), help="File to write python code to")
+    p.add_argument(
+        "out_file", type=argparse.FileType("w", encoding="utf8"), help="File to write code to with .c or .py extension"
+    )
 
     options = p.parse_args()
 
@@ -507,10 +678,18 @@ if __name__ == "__main__":
     generate_sentence_ranges()
     generate_category_ranges()
 
-    py_code = generate_python()
-    options.out_py.write(py_code_header)
-    options.out_py.write(py_code)
-    options.out_py.close()
+    if options.out_file.name.endswith(".py"):
+        py_code = generate_python()
+        options.out_file.write(py_code_header)
+        options.out_file.write(py_code)
+        options.out_file.close()
+    elif options.out_file.name.endswith(".c"):
+        c_code = generate_c()
+        options.out_file.write(c_code_header)
+        options.out_file.write(c_code)
+        options.out_file.close()
+    else:
+        p.error("Unknown extension for out file")
 
     lines = []
     in_replacement = False
