@@ -78,6 +78,7 @@ class _Category(enum.IntFlag):
 from . import _tr29py as _tr29
 # from . import _tr29c as _tr29
 
+assert unicode_version == _tr29.unicode_version
 
 def grapheme_next_break(text: str, offset: int = 0) -> int:
     """Returns end of Grapheme cluster /  User Perceived Character
