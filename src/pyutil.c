@@ -305,6 +305,7 @@ static void PyErr_AddExceptionNoteV(const char *format, ...)
 {
   (void)format;
 #if PY_VERSION_HEX >= 0x030b0000
+#ifndef DISABLE_PyErr_AddExceptionNoteV
   va_list fmt_args;
   va_start(fmt_args, format);
 
@@ -326,5 +327,6 @@ static void PyErr_AddExceptionNoteV(const char *format, ...)
   }
 
   va_end(fmt_args);
+#endif
 #endif
 }
