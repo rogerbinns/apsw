@@ -269,12 +269,27 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
 
 #define ARG_int64(varname)                                                                                             \
     do                                                                                                                 \
+/* note this allows a position one after the last actual character */
+#define ARG_PyUnicode_offset(varname, text)                                                                            \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    assert(PyUnicode_Check(text));                                                                                     \
+    varname = PyLong_AsSsize_t(useargs[argp_optindex]);                                                                \
+    if (varname == -1 && PyErr_Occurred())                                                                             \
+      goto param_error;                                                                                                \
+    if (varname < 0 || varname > 1 + PyUnicode_GET_LENGTH(text))                                                       \
     {                                                                                                                  \
         varname = PyLong_AsLongLong(useargs[argp_optindex]);                                                           \
         if (varname == -1 && PyErr_Occurred())                                                                         \
             goto param_error;                                                                                          \
         argp_optindex++;                                                                                               \
     } while (0)
+      PyErr_Format(PyExc_ValueError, "offset %zd out of range 0 through %zd", varname,                                 \
+                   1 + PyUnicode_GET_LENGTH(text));                                                                    \
+      goto param_error;                                                                                                \
+    }                                                                                                                  \
+    argp_optindex++;                                                                                                   \
+  } while (0)
 
 #define ARG_TYPE_CHECK(varname, type, cast)                                                                            \
     do                                                                                                                 \
