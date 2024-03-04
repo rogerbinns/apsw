@@ -3,8 +3,9 @@
 
 #include "_tr29db.c"
 
-#define PyErr_AddExceptionNoteV(...)
+#define DISABLE_PyErr_AddExceptionNoteV
 #include "argparse.c"
+#include "pyutil.c"
 
 #define category_name_KWNAMES "which", "codepoint"
 static PyObject *
@@ -70,7 +71,7 @@ category_name(PyObject *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
   }
   else
   {
-    PyErr_Format(PyExc_ValueError, "Unknown which paramer \"%s\" - should be one of grapheme, word, sentence", which);
+    PyErr_Format(PyExc_ValueError, "Unknown which parameter \"%s\" - should be one of grapheme, word, sentence", which);
     Py_CLEAR(res);
   }
 
@@ -80,9 +81,23 @@ error:
   return NULL;
 }
 
+static PyObject *
+get_category_category(PyObject *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  int codepoint;
+
+  ARG_PROLOG(1, "codepoint");
+  ARG_MANDATORY ARG_codepoint(codepoint);
+  ARG_EPILOG(NULL, "category_category(codepoint: int)", );
+
+  return PyLong_FromLong(category_category(codepoint));
+}
+
 static PyMethodDef methods[] = {
   { "category_name", (PyCFunction)category_name, METH_FASTCALL | METH_KEYWORDS,
     "Returns category names codepoint corresponds to" },
+  { "category_category", (PyCFunction)get_category_category, METH_FASTCALL | METH_KEYWORDS,
+    "Returns Unicode category" },
   { NULL, NULL, 0, NULL },
 };
 
