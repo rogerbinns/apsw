@@ -170,10 +170,13 @@ def comment(language, text):
     assert language in {"c", "python"}
     text = text.splitlines()
     if len(text) == 1:
+        text = text[0]
+        indent = text[:len(text)-len(text.lstrip())]
+        text = text[len(indent):]
         if language == "python":
-            yield f"# { text[0]}"
+            yield f"{ indent }# { text}"
         else:
-            yield f"/* { text[0] } */"
+            yield f"{ indent }/* { text } */"
         return
     if language == "python":
         for line in text:
@@ -207,7 +210,7 @@ def category_enum(language: str, name="Category"):
     cat_vals = {}
     if language == "python":
         yield f"class {name}(enum.IntFlag):"
-    yield from comment(language, "Major category values - mutually exclusive")
+    yield from comment(language, "    Major category values - mutually exclusive")
     for i, cat in enumerate(sorted(cats)):
         if language == "python":
             yield f"    { cat } = 2 ** { i }"
@@ -218,9 +221,9 @@ def category_enum(language: str, name="Category"):
     max_used = len(cats)
 
     py_comment = """\
-   Minor category values - note: their values overlap so tests must include equals")
-   To test for a minor, you must do like:"
-       if codepoint & Letter_Upper == Letter_Upper ..."
+  Minor category values - note: their values overlap so tests must include equals")
+  To test for a minor, you must do like:"
+      if codepoint & Letter_Upper == Letter_Upper ..."
 """
 
     c_comment = """\
@@ -243,7 +246,7 @@ def category_enum(language: str, name="Category"):
     ignore = cats.copy()
     for minors in cats_members.values():
         ignore.update(minors)
-    yield from comment(language, "Remaining non-category convenience flags")
+    yield from comment(language, "    Remaining non-category convenience flags")
     for cat in sorted(all_cats):
         if cat not in ignore:
             max_used += 1
@@ -252,6 +255,14 @@ def category_enum(language: str, name="Category"):
             else:
                 yield f"#define Category_{ cat } (1 << { max_used})"
 
+    if language == "c" and False:  # Not used at the moment
+        yield ""
+        yield "/* deliberately leaves out the major category values */"
+        yield "#define ALL_CATEGORY_VALUES \\"
+        for cat in sorted(all_cats):
+            if cat not in cat_vals:
+                yield f"    X({cat}) \\"
+        yield ""
 
 def generate_python_table(name, enum_name, ranges):
     yield f"# { name }"
@@ -338,6 +349,12 @@ def generate_c_table(name, enum_name, ranges):
                 all_cats.update(cat)
         for i, cat in enumerate(sorted(all_cats)):
             yield f"#define { enum_name }_{ cat } (1 <<  { i })"
+        yield ""
+        yield f"#define ALL_{ enum_name.upper() }_VALUES \\"
+        for cat in sorted(all_cats):
+            yield f"     X({enum_name}_{ cat }) \\"
+        yield ""
+        yield ""
     yield ""
     yield f"/* Codepoints by { name } category"
     yield ""
@@ -386,7 +403,7 @@ def generate_c_table(name, enum_name, ranges):
     yield "static int"
     yield f"{ name }_category(int c)"
     yield "{"
-    yield '   /* "Returns category corresponding to codepoint */'
+    yield '   /* Returns category corresponding to codepoint */'
     yield ""
     yield f"    if (c < 0x{ table_limit:04X})"
     yield f"        return { name}_fast_lookup[c];"
