@@ -858,7 +858,8 @@ if __name__ == '__main__':
                         library_dirs=library_dirs,
                         libraries=libraries,
                         define_macros=define_macros,
-                        depends=depends)
+                        depends=depends),
+              Extension("apsw._tr29c", ["src/tr29.c"]),
           ],
           packages=["apsw"],
           package_data={"apsw": ["__init__.pyi", "py.typed"]},
