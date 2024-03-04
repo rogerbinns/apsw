@@ -8,7 +8,7 @@ from . _tr29db import *
 
 
 class TextIterator:
-    state_fields = "pos", "accepted", "char", "lookahead"
+    state_fields = "pos", "char", "lookahead"
 
     def __init__(self, text: str, offset: int, catfunc: Callable):
         self.saved = None
@@ -17,7 +17,6 @@ class TextIterator:
         self.end = len(text)  # we allow pointing to one item beyond end
         self.pos = offset  # index we are currently examining but have not accepted yet
         self.catfunc = catfunc
-        self.accepted = 0  # bitmask of accepted properties
         if offset < 0 or offset > self.end:
             raise ValueError(f"{offset=} is out of bounds 0 - { self.end }")
         if self.pos == self.end:
@@ -31,6 +30,11 @@ class TextIterator:
 
     def start_of_text(self) -> bool:
         return self.pos == self.start
+
+    def has_accepted(self):
+        # the first advance sets pos == start + 1 but nothing
+        # is accepted yet, hence +1
+        return self.pos > self.start + 1
 
     def begin(self):
         "used for speculative lookahead"
@@ -53,8 +57,6 @@ class TextIterator:
         "Returns tuple of current char and lookahead props"
         if self.end_of_text():
             raise ValueError("Trying to advance beyond end of text")
-        if self.pos != self.start:
-            self.accepted |= self.char
         self.char = self.lookahead
         self.pos += 1
         self.lookahead = self.catfunc(ord(self.text[self.pos])) if self.pos < self.end else 0
@@ -95,7 +97,7 @@ def grapheme_next_break(text: str, offset: int = 0) -> int:
         # GB4
         if char & (GC.Control | GC.CR | GC.LF):
             # break before if any chars are accepted
-            if it.accepted:
+            if it.has_accepted():
                 return it.pos - 1
             break
 
@@ -187,7 +189,7 @@ def word_next_break(text: str, offset: int = 0) -> int:
         # WB3a/b
         if char & (WC.Newline | WC.CR | WC.LF):
             # break before if any chars are accepted
-            if it.accepted:
+            if it.has_accepted():
                 return it.pos - 1
             # break after
             break
