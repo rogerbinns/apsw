@@ -215,7 +215,7 @@ def category_enum(language: str, name="Category"):
         if language == "python":
             yield f"    { cat } = 2 ** { i }"
         else:
-            yield f"#define Category_{ cat } (1 << { i })"
+            yield f"#define Category_{ cat } (1u << { i })"
         cat_vals[cat] = i
 
     max_used = len(cats)
@@ -239,7 +239,7 @@ def category_enum(language: str, name="Category"):
             if language == "python":
                 yield f"    { member } = 2 ** { i } | 2 ** { cat_vals[cat] }"
             else:
-                yield f"#define    Category_{ member }  ( (1 << { i }) | (1 << { cat_vals[cat] }))"
+                yield f"#define Category_{ member }  ( (1u << { i }) | (1u << { cat_vals[cat] }))"
         max_used = max(max_used, i)
 
     # the rest
@@ -253,7 +253,7 @@ def category_enum(language: str, name="Category"):
             if language == "python":
                 yield f"    { cat } = 2 ** { max_used}"
             else:
-                yield f"#define Category_{ cat } (1 << { max_used})"
+                yield f"#define Category_{ cat } (1u << { max_used})"
 
     if language == "c" and False:  # Not used at the moment
         yield ""
@@ -348,7 +348,7 @@ def generate_c_table(name, enum_name, ranges):
             else:
                 all_cats.update(cat)
         for i, cat in enumerate(sorted(all_cats)):
-            yield f"#define { enum_name }_{ cat } (1 <<  { i })"
+            yield f"#define { enum_name }_{ cat } (1u <<  { i })"
         yield ""
         yield f"#define ALL_{ enum_name.upper() }_VALUES \\"
         for cat in sorted(all_cats):
@@ -376,7 +376,7 @@ def generate_c_table(name, enum_name, ranges):
     # first codepoint NOT in table
     table_limit = 256
 
-    yield f"static int { name}_fast_lookup[] = {{"
+    yield f"static unsigned int { name}_fast_lookup[] = {{"
     line = ""
     for cp in range(table_limit):
         if cp % 16 == 0:
@@ -400,8 +400,8 @@ def generate_c_table(name, enum_name, ranges):
     yield ""
     ranges[0][0] = table_limit
 
-    yield "static int"
-    yield f"{ name }_category(int c)"
+    yield "unsigned int"
+    yield f"{ name }_category(Py_UCS4 c)"
     yield "{"
     yield '   /* Returns category corresponding to codepoint */'
     yield ""
