@@ -27,53 +27,51 @@ unicode_version = "15.1"
 """The `Unicode version <https://www.unicode.org/versions/enumeratedversions.html>`__
 that the rules and data tables implement"""
 
-
 class _Category(enum.IntFlag):
     # Major category values - mutually exclusive
-    Letter = 2**0
-    Mark = 2**1
-    Number = 2**2
-    Other = 2**3
-    Punctuation = 2**4
-    Separator = 2**5
-    Symbol = 2**6
-    # Minor category values - note: their values overlap so tests must include equals
-    # To test for a minor, you must do like:
-    #    if codepoint & Letter_Upper == Letter_Upper ...
-    Letter_Lowercase = 2**7 | 2**0
-    Letter_Modifier = 2**8 | 2**0
-    Letter_Other = 2**9 | 2**0
-    Letter_Titlecase = 2**10 | 2**0
-    Letter_Uppercase = 2**11 | 2**0
-    Mark_Enclosing = 2**7 | 2**1
-    Mark_NonSpacing = 2**8 | 2**1
-    Mark_SpacingCombining = 2**9 | 2**1
-    Number_DecimalDigit = 2**7 | 2**2
-    Number_Letter = 2**8 | 2**2
-    Number_Other = 2**9 | 2**2
-    Other_Control = 2**7 | 2**3
-    Other_Format = 2**8 | 2**3
-    Other_NotAssigned = 2**9 | 2**3
-    Other_PrivateUse = 2**10 | 2**3
-    Other_Surrogate = 2**11 | 2**3
-    Punctuation_Close = 2**7 | 2**4
-    Punctuation_Connector = 2**8 | 2**4
-    Punctuation_Dash = 2**9 | 2**4
-    Punctuation_FinalQuote = 2**10 | 2**4
-    Punctuation_InitialQuote = 2**11 | 2**4
-    Punctuation_Open = 2**12 | 2**4
-    Punctuation_Other = 2**13 | 2**4
-    Separator_Line = 2**7 | 2**5
-    Separator_Paragraph = 2**8 | 2**5
-    Separator_Space = 2**9 | 2**5
-    Symbol_Currency = 2**7 | 2**6
-    Symbol_Math = 2**8 | 2**6
-    Symbol_Modifier = 2**9 | 2**6
-    Symbol_Other = 2**10 | 2**6
+    Letter = 2 ** 0
+    Mark = 2 ** 1
+    Number = 2 ** 2
+    Other = 2 ** 3
+    Punctuation = 2 ** 4
+    Separator = 2 ** 5
+    Symbol = 2 ** 6
+#   Minor category values - note: their values overlap so tests must include equals")
+#   To test for a minor, you must do like:"
+#       if codepoint & Letter_Upper == Letter_Upper ..."
+    Letter_Lowercase = 2 ** 7 | 2 ** 0
+    Letter_Modifier = 2 ** 8 | 2 ** 0
+    Letter_Other = 2 ** 9 | 2 ** 0
+    Letter_Titlecase = 2 ** 10 | 2 ** 0
+    Letter_Uppercase = 2 ** 11 | 2 ** 0
+    Mark_Enclosing = 2 ** 7 | 2 ** 1
+    Mark_NonSpacing = 2 ** 8 | 2 ** 1
+    Mark_SpacingCombining = 2 ** 9 | 2 ** 1
+    Number_DecimalDigit = 2 ** 7 | 2 ** 2
+    Number_Letter = 2 ** 8 | 2 ** 2
+    Number_Other = 2 ** 9 | 2 ** 2
+    Other_Control = 2 ** 7 | 2 ** 3
+    Other_Format = 2 ** 8 | 2 ** 3
+    Other_NotAssigned = 2 ** 9 | 2 ** 3
+    Other_PrivateUse = 2 ** 10 | 2 ** 3
+    Other_Surrogate = 2 ** 11 | 2 ** 3
+    Punctuation_Close = 2 ** 7 | 2 ** 4
+    Punctuation_Connector = 2 ** 8 | 2 ** 4
+    Punctuation_Dash = 2 ** 9 | 2 ** 4
+    Punctuation_FinalQuote = 2 ** 10 | 2 ** 4
+    Punctuation_InitialQuote = 2 ** 11 | 2 ** 4
+    Punctuation_Open = 2 ** 12 | 2 ** 4
+    Punctuation_Other = 2 ** 13 | 2 ** 4
+    Separator_Line = 2 ** 7 | 2 ** 5
+    Separator_Paragraph = 2 ** 8 | 2 ** 5
+    Separator_Space = 2 ** 9 | 2 ** 5
+    Symbol_Currency = 2 ** 7 | 2 ** 6
+    Symbol_Math = 2 ** 8 | 2 ** 6
+    Symbol_Modifier = 2 ** 9 | 2 ** 6
+    Symbol_Other = 2 ** 10 | 2 ** 6
     # Remaining non-category convenience flags
-    Extended_Pictographic = 2**14
-    Regional_Indicator = 2**15
-
+    Extended_Pictographic = 2 ** 14
+    Regional_Indicator = 2 ** 15
 
 ### END UNICODE UPDATE SECTION ###
 
