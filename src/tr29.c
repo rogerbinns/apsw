@@ -1,3 +1,25 @@
+/*
+
+Implements the Unicode Technical Report #29 break algorithms
+
+This code is performance sensitive.  It is run against every character
+of every string that gets indexed, against every query string, and
+often on query matches.  Characters are processed multiple times eg to
+find word segments, then a second time to determine if characters
+within are letters/numbers or not.  Lookaheads may have to backout.
+
+The code was originally developed in Python - see the git history of
+file apsw/_tr29py.py for development process.  This code is then a
+translation of the Python into C.
+
+The TextIterator comes from that Python code.  In C++ it would be
+templated taking the category function as a template parameter, but
+in C I am limited to static inline functions, aka macros.
+
+It is ugly, but it works.
+
+*/
+
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
@@ -10,7 +32,53 @@
 
 #include "argparse.c"
 
+/* the break routines take the same 2 arguments */
 #define break_KWNAMES "text", "offset"
+
+/*
+TextIterator keeps track of the current character being examined, the
+next character (lookahead), and the position.
+
+The character/lookahead are the category flags, not the codepoint
+value, obtained by calling cat_func.  They will always have at least
+one bit set, except for the final lookahead one position beyond the
+last actual character which is set to zero.  Tests are then performed
+using binary and.
+
+The position value is one beyond the current position.  This is how
+FTS5 offsets work, how TR29 defines positions, and how Python works -
+eg range(10) doesn't include 10 itself.
+
+When more than one character lookahead needs to be done, the current
+state is stored in the saved structure.
+
+The methods are implemented as macros.
+
+it_advance
+
+Accepts the current character, and moves to the next
+
+it_absorb(match, extend)
+
+Many of the rules are to take zero or more of a category, which this
+does. There are also extend rules where category X followed by zero or
+more extends is treated as though it was just X.  This keeps advancing
+while those criteria are met.  Crucially curchar retains its original
+value during the advancing.
+
+it_begin
+
+Saves the current state.
+
+it_rollback
+
+Restores prior saved state.
+
+it_commit
+
+Saved state is not needed.
+
+*/
 
 typedef struct
 {
