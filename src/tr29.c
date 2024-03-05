@@ -233,6 +233,75 @@ sentence_next_break(PyObject *self, PyObject *const *fast_args, Py_ssize_t fast_
 
     /* SB5 */
     it_absorb(SC_Format | SC_Extend, 0);
+
+    /* SB6 */
+    if (it.curchar & SC_ATerm && it.lookahead & SC_Numeric)
+      continue;
+
+    /* SB7 */
+    if (it.curchar & (SC_Upper | SC_Lower) && it.lookahead & SC_ATerm)
+    {
+      it_begin();
+      it_advance();
+      it_absorb(SC_Format | SC_Extend, 0);
+      if (it.lookahead & SC_Upper)
+      {
+        it_commit();
+        continue;
+      }
+      it_rollback();
+    }
+
+    /*  SB8 */
+    if (it.curchar & SC_ATerm)
+    {
+      it_begin();
+      it_absorb(SC_Close, SC_Format | SC_Extend);
+      it_absorb(SC_Sp, SC_Format | SC_Extend);
+      it_absorb(0xFFFFFFFFu ^ SC_OLetter ^ SC_Upper ^ SC_Lower ^ ParaSep ^ SATerm, 0);
+      it_absorb(SC_Format | SC_Extend, 0);
+      if (it.lookahead & SC_Lower)
+      {
+        it_absorb(SC_Format | SC_Extend, 0);
+        it_commit();
+        continue;
+      }
+      it_rollback();
+    }
+
+    /* SB8a */
+    if (it.curchar & SATerm)
+    {
+      it_begin();
+      it_absorb(SC_Close, SC_Format | SC_Extend);
+      it_absorb(SC_Sp, SC_Format | SC_Extend);
+      if (it.lookahead & (SC_SContinue | SATerm))
+      {
+        it_advance();
+        it_absorb(SC_Format | SC_Extend, 0);
+        it_commit();
+        continue;
+      }
+      it_rollback();
+    }
+
+    /* SB9 / SB10 / SB11 */
+    if (it.curchar & SATerm)
+    {
+      /* This will result in a break with the rules to absorb
+             zero or more close then space, and one optional ParaSep */
+      it_absorb(SC_Close, SC_Format | SC_Extend);
+      it_absorb(SC_Sp, SC_Format | SC_Extend);
+      if (it.lookahead & ParaSep)
+      {
+        /* Process parasep in SB3/4 above */
+        continue;
+      }
+      break;
+    }
+
+    /* SB999 */
+    continue;
   }
 
   return PyLong_FromLong(it.pos);
