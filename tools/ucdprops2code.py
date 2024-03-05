@@ -400,7 +400,7 @@ def generate_c_table(name, enum_name, ranges):
     yield ""
     ranges[0][0] = table_limit
 
-    yield "unsigned int"
+    yield "static unsigned int"
     yield f"{ name }_category(Py_UCS4 c)"
     yield "{"
     yield '   /* Returns category corresponding to codepoint */'
