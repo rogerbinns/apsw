@@ -10,6 +10,99 @@
 
 #include "argparse.c"
 
+#define break_KWNAMES "text", "offset"
+
+typedef struct
+{
+  struct
+  {
+    Py_ssize_t pos;
+    unsigned curchar;
+    unsigned lookahead;
+  } saved;
+  Py_ssize_t pos;
+  unsigned curchar;
+  unsigned lookahead;
+} TextIterator;
+
+#define TEXT_INIT                                                                                                      \
+  {                                                                                                                    \
+    .pos = offset, .curchar = 0,                                                                                       \
+    .lookahead = (offset == text_end) ? 0 : cat_func(PyUnicode_READ(text_kind, text_data, offset)),                    \
+  }
+
+#define it_advance()                                                                                                   \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    assert(it.pos < text_end);                                                                                         \
+    it.curchar = it.lookahead;                                                                                         \
+    it.pos++;                                                                                                          \
+    it.lookahead = (it.pos == text_end) ? 0 : cat_func(PyUnicode_READ(text_kind, text_data, it.pos));                  \
+  } while (0)
+
+#define it_absorb(match, extend)                                                                                       \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (it.lookahead & (match))                                                                                        \
+    {                                                                                                                  \
+      unsigned savechar = it.curchar;                                                                                  \
+      while (it.lookahead & (match))                                                                                    \
+      {                                                                                                                \
+        it_advance();                                                                                                  \
+        while (it.lookahead & (extend))                                                                                \
+          it_advance();                                                                                                \
+      }                                                                                                                \
+      it.curchar = savechar;                                                                                           \
+    }                                                                                                                  \
+  } while (0)
+
+static PyObject *
+sentence_next_break(PyObject *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  PyObject *text = NULL;
+  Py_ssize_t offset;
+
+  ARG_PROLOG(2, break_KWNAMES);
+  ARG_MANDATORY ARG_PyUnicode(text);
+  ARG_MANDATORY ARG_PyUnicode_offset(offset, text);
+  ARG_EPILOG(NULL, "sentence_next_break(text: str, offset: int)", );
+
+  /*  From spec */
+#define ParaSep (SC_Sep | SC_CR | SC_LF)
+#define SATerm (SC_STerm | SC_ATerm)
+
+  void *text_data = PyUnicode_DATA(text);
+  int text_kind = PyUnicode_KIND(text);
+  Py_ssize_t text_end = PyUnicode_GET_LENGTH(text);
+
+#define cat_func sentence_category
+  TextIterator it = TEXT_INIT;
+
+  /* SB1 implicit */
+
+  /* SB2 */
+  while (it.pos < text_end)
+  {
+    it_advance();
+
+    /* SB3 */
+    if (it.curchar & SC_CR && it.lookahead & SC_LF)
+    {
+      it_advance();
+      break;
+    }
+
+    /* SB4 */
+    if (it.curchar & ParaSep)
+      break;
+
+    /* SB5 */
+    it_absorb(SC_Format | SC_Extend, 0);
+  }
+
+  return PyLong_FromLong(it.pos);
+}
+
 #define category_name_KWNAMES "which", "codepoint"
 static PyObject *
 category_name(PyObject *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
@@ -101,6 +194,8 @@ static PyMethodDef methods[] = {
     "Returns category names codepoint corresponds to" },
   { "category_category", (PyCFunction)get_category_category, METH_FASTCALL | METH_KEYWORDS,
     "Returns Unicode category" },
+  { "sentence_next_break", (PyCFunction)sentence_next_break, METH_FASTCALL | METH_KEYWORDS,
+    "Returns next sentence break offset" },
   { NULL, NULL, 0, NULL },
 };
 
