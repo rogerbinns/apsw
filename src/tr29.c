@@ -78,6 +78,10 @@ it_commit
 
 Saved state is not needed.
 
+it_has_accepted
+
+True if at least one character has been accepted.
+
 */
 
 typedef struct
@@ -115,6 +119,10 @@ typedef struct
     it.pos++;                                                                                                          \
     it.lookahead = (it.pos == text_end) ? 0 : cat_func(PyUnicode_READ(text_kind, text_data, it.pos));                  \
   } while (0)
+
+/* the first advance sets pos == offset + 1 but nothing is accepted
+   yet, hence +1 */
+#define it_has_accepted() (it.pos > offset + 1)
 
 #define it_absorb(match, extend)                                                                                       \
   do                                                                                                                   \
