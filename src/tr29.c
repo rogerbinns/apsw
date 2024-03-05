@@ -82,15 +82,23 @@ Saved state is not needed.
 
 typedef struct
 {
+  Py_ssize_t pos;
+  unsigned curchar;
+  unsigned lookahead;
+
+#ifndef NDEBUG
+  /* This field is used to catch attempts at nested transactions which
+     are a programming error */
+  int in_transaction;
+#endif
+
   struct
   {
     Py_ssize_t pos;
     unsigned curchar;
     unsigned lookahead;
   } saved;
-  Py_ssize_t pos;
-  unsigned curchar;
-  unsigned lookahead;
+
 } TextIterator;
 
 #define TEXT_INIT                                                                                                      \
@@ -114,7 +122,7 @@ typedef struct
     if (it.lookahead & (match))                                                                                        \
     {                                                                                                                  \
       unsigned savechar = it.curchar;                                                                                  \
-      while (it.lookahead & (match))                                                                                    \
+      while (it.lookahead & (match))                                                                                   \
       {                                                                                                                \
         it_advance();                                                                                                  \
         while (it.lookahead & (extend))                                                                                \
@@ -123,6 +131,65 @@ typedef struct
       it.curchar = savechar;                                                                                           \
     }                                                                                                                  \
   } while (0)
+
+#define it_begin_base()                                                                                                \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    it.saved.pos = it.pos;                                                                                             \
+    it.saved.curchar = it.curchar;                                                                                     \
+    it.saved.lookahead = it.lookahead;                                                                                 \
+  } while (0)
+
+#define it_rollback_base()                                                                                             \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    it.pos = it.saved.pos;                                                                                             \
+    it.curchar = it.saved.curchar;                                                                                     \
+    it.lookahead = it.saved.lookahead;                                                                                 \
+  } while (0)
+
+#ifndef NDEBUG
+#define it_begin()                                                                                                     \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    assert(!it.in_transaction);                                                                                        \
+    it_begin_base();                                                                                                   \
+    it.in_transaction = 1;                                                                                             \
+  } while (0)
+
+#define it_commit()                                                                                                    \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    assert(it.in_transaction);                                                                                         \
+    it.in_transaction = 0;                                                                                             \
+  } while (0)
+
+#define it_rollback()                                                                                                  \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    assert(it.in_transaction);                                                                                         \
+    it_rollback_base();                                                                                                \
+    it.in_transaction = 0;                                                                                             \
+  } while (0)
+
+#else
+#define it_begin()                                                                                                     \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    it_begin_base();                                                                                                   \
+  } while (0)
+
+#define it_commit()                                                                                                    \
+  do                                                                                                                   \
+  {                                                                                                                    \
+  } while (0)
+
+#define it_rollback()                                                                                                  \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    it_rollback_base();                                                                                                \
+  } while (0)
+#endif
 
 static PyObject *
 sentence_next_break(PyObject *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
