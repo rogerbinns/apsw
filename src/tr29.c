@@ -3,9 +3,12 @@
 
 #include "_tr29db.c"
 
-#define DISABLE_PyErr_AddExceptionNoteV
+/* if pyutil.c is included then the compiler whines about all the
+   static definitions that aren't used, so we do these instead */
+#define PyErr_AddExceptionNoteV(...)
+#define Py_TypeName(o) (Py_TYPE(o)->tp_name)
+
 #include "argparse.c"
-#include "pyutil.c"
 
 #define category_name_KWNAMES "which", "codepoint"
 static PyObject *
