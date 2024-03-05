@@ -12,7 +12,7 @@ static PyObject *
 category_name(PyObject *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   const char *which = NULL;
-  int codepoint;
+  Py_UCS4 codepoint;
 
   ARG_PROLOG(2, category_name_KWNAMES);
   ARG_MANDATORY ARG_str(which);
@@ -56,17 +56,17 @@ category_name(PyObject *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
 
   if (0 == strcmp(which, "grapheme"))
   {
-    int val = grapheme_category(codepoint);
+    unsigned val = grapheme_category(codepoint);
     ALL_GC_VALUES;
   }
   else if (0 == strcmp(which, "word"))
   {
-    int val = word_category(codepoint);
+    unsigned int val = word_category(codepoint);
     ALL_WC_VALUES;
   }
   else if (0 == strcmp(which, "sentence"))
   {
-    int val = sentence_category(codepoint);
+    unsigned int val = sentence_category(codepoint);
     ALL_SC_VALUES;
   }
   else
@@ -84,13 +84,13 @@ error:
 static PyObject *
 get_category_category(PyObject *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
-  int codepoint;
+  Py_UCS4 codepoint;
 
   ARG_PROLOG(1, "codepoint");
   ARG_MANDATORY ARG_codepoint(codepoint);
   ARG_EPILOG(NULL, "category_category(codepoint: int)", );
 
-  return PyLong_FromLong(category_category(codepoint));
+  return PyLong_FromUnsignedLong(category_category(codepoint));
 }
 
 static PyMethodDef methods[] = {
