@@ -200,7 +200,128 @@ typedef struct
 #endif
 
 static PyObject *
-sentence_next_break(PyObject *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+grapheme_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                    PyObject *fast_kwnames)
+{
+  PyObject *text = NULL;
+  Py_ssize_t offset;
+
+  ARG_PROLOG(2, break_KWNAMES);
+  ARG_MANDATORY ARG_PyUnicode(text);
+  ARG_MANDATORY ARG_PyUnicode_offset(offset, text);
+  ARG_EPILOG(NULL, "sentence_grapheme_break(text: str, offset: int)", );
+
+  void *text_data = PyUnicode_DATA(text);
+  int text_kind = PyUnicode_KIND(text);
+  Py_ssize_t text_end = PyUnicode_GET_LENGTH(text);
+
+#define cat_func grapheme_category
+  TextIterator it = TEXT_INIT;
+
+  /* GB1 implicit */
+
+  /* GB2 */
+  while (it.pos < text_end)
+  {
+    it_advance();
+
+    /* GB3 */
+    if (it.curchar & GC_CR && it.lookahead & GC_LF)
+    {
+      it.pos++;
+      break;
+    }
+
+    /* GB4 */
+    if (it.curchar & (GC_Control | GC_CR | GC_LF))
+    {
+      /* GB5: break before if any chars are accepted */
+      if (it_has_accepted())
+        it.pos--;
+      break;
+    }
+
+    /* GB6 */
+    if (it.curchar & GC_L && it.lookahead & (GC_L | GC_V | GC_LV | GC_LVT))
+      continue;
+
+    /* GB7 */
+    if (it.curchar & (GC_LV | GC_V) && it.lookahead & (GC_V | GC_T))
+      continue;
+
+    /* GB8 */
+    if (it.curchar & (GC_LVT | GC_T) && it.lookahead & GC_T)
+      continue;
+
+    /* GB9a */
+    if (it.lookahead & GC_SpacingMark)
+      continue;
+
+    /* GB9b */
+    if (it.curchar & GC_Prepend)
+      continue;
+
+    /* GB9c */
+    if (it.curchar & GC_InCB_Consonant && it.lookahead & (GC_InCB_Extend | GC_InCB_Linker))
+    {
+      it_begin();
+      int seen_linker = it.lookahead & GC_InCB_Linker;
+      it_advance();
+      while (it.lookahead & (GC_InCB_Extend | GC_InCB_Linker))
+      {
+        seen_linker = seen_linker || it.lookahead & GC_InCB_Linker;
+        it_advance();
+      }
+      if (seen_linker && it.lookahead & GC_InCB_Consonant)
+      {
+        it_commit();
+        continue;
+      }
+      it_rollback();
+    }
+
+    /* GB11 */
+    if (it.curchar & GC_Extended_Pictographic && it.lookahead & (GC_Extend | GC_ZWJ))
+    {
+      it_begin();
+      while (it.lookahead & GC_Extend)
+        it_advance();
+      if (it.lookahead & GC_ZWJ)
+      {
+        it_advance();
+        if (it.lookahead & GC_Extended_Pictographic)
+        {
+          it_commit();
+          continue;
+        }
+      }
+      it_rollback();
+    }
+
+    /* GB9 - has to be after GB9c and GB11 because all InCB_Linker and
+       InCB_Extend are also extend */
+    if (it.lookahead & (GC_Extend | GC_ZWJ))
+      continue;
+
+    /* GB12 */
+    if (it.curchar & GC_Regional_Indicator && it.lookahead & GC_Regional_Indicator)
+    {
+      it_advance();
+      /* reapply GB9 */
+      if (it.lookahead & (GC_Extend | GC_ZWJ | GC_InCB_Extend))
+        continue;
+      break;
+    }
+
+    /* GB999 */
+    break;
+  }
+  return PyLong_FromLong(it.pos);
+}
+
+static PyObject *
+sentence_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                    PyObject *fast_kwnames)
 {
   PyObject *text = NULL;
   Py_ssize_t offset;
@@ -218,6 +339,7 @@ sentence_next_break(PyObject *self, PyObject *const *fast_args, Py_ssize_t fast_
   int text_kind = PyUnicode_KIND(text);
   Py_ssize_t text_end = PyUnicode_GET_LENGTH(text);
 
+#undef cat_func
 #define cat_func sentence_category
   TextIterator it = TEXT_INIT;
 
@@ -317,7 +439,7 @@ sentence_next_break(PyObject *self, PyObject *const *fast_args, Py_ssize_t fast_
 
 #define category_name_KWNAMES "which", "codepoint"
 static PyObject *
-category_name(PyObject *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+category_name(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   const char *which = NULL;
   Py_UCS4 codepoint;
@@ -390,7 +512,8 @@ error:
 }
 
 static PyObject *
-get_category_category(PyObject *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+get_category_category(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                      PyObject *fast_kwnames)
 {
   Py_UCS4 codepoint;
 
@@ -408,6 +531,8 @@ static PyMethodDef methods[] = {
     "Returns Unicode category" },
   { "sentence_next_break", (PyCFunction)sentence_next_break, METH_FASTCALL | METH_KEYWORDS,
     "Returns next sentence break offset" },
+  { "grapheme_next_break", (PyCFunction)grapheme_next_break, METH_FASTCALL | METH_KEYWORDS,
+    "Returns next grapheme break offset" },
   { NULL, NULL, 0, NULL },
 };
 
