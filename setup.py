@@ -859,8 +859,9 @@ if __name__ == '__main__':
                         libraries=libraries,
                         define_macros=define_macros,
                         depends=depends),
-              Extension("apsw._tr29c", ["src/tr29.c"]),
-          ],
+              Extension("apsw._tr29c", ["src/tr29.c"],
+                        undef_macros = [ "NDEBUG" ] if os.environ.get("TR29_DEBUG") else []),
+              ],
           packages=["apsw"],
           package_data={"apsw": ["__init__.pyi", "py.typed"]},
           cmdclass={
