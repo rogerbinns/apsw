@@ -323,6 +323,7 @@ def text_wrap(text: str, width=70, *, initial_indent='', subsequent_indent='', m
     "Like :func:`textwrap.wrap` but Unicode grapheme cluster and words aware"
     raise NotImplementedError()
 
+
 if __name__ == "__main__":
     import argparse
     import unicodedata
@@ -377,26 +378,30 @@ if __name__ == "__main__":
     p = subparsers.add_parser(
         "benchmark",
         help="Measure how long segmentation takes to iterate each segment",
-        description="""The provided test text will be repeatedly duplicated and shuffled then
-appended until the sized amount of text is available.
-
-A suggested source of text is to download the Universal Declaration of
-Human Rights Corpus from https://www.nltk.org/nltk_data/ and
-concatenate all the files together.
-""",
     )
     p.set_defaults(function="benchmark")
     p.add_argument(
         "--size",
         type=int,
-        default=10,
-        help="How many million codepoints (characters) of text is used to run. [%(default)s]",
+        default=50,
+        help="How many million characters (codepoints) of text to use [%(default)s]",
     )
     p.add_argument("--seed", type=int, default=0, help="Random seed to use [%(default)s]")
-    p.add_argument("--grapheme-package", action="store_true", default=False, help="")
+    p.add_argument(
+        "--grapheme-package", action="store_true", default=False, help="Test the third party grapheme package instead"
+    )
     p.add_argument(
         "text_file",
         type=argparse.FileType("rt", encoding="utf8"),
+        help="""Text source to use.
+
+        The provided text will be repeatedly duplicated and shuffled then
+        appended until the sized amount of text is available.
+
+        A suggested source of text is to download the Universal Declaration of
+        Human Rights Corpus from https://www.nltk.org/nltk_data/ and
+        concatenate all the files together.
+        """,
     )
 
     options = parser.parse_args()
@@ -678,29 +683,34 @@ concatenate all the files together.
             )
         )
 
-        print(f"Expanding text to { options.size:,d} million codepoints ...", end="", flush=True)
+        if options.grapheme_package:
+            import grapheme
+            import grapheme.finder
+
+        print("Unicode rules version", unicode_version if not options.grapheme_package else grapheme.UNICODE_VERSION)
+
+        print(f"Expanding text to { options.size:,d} million chars ...", end="", flush=True)
         while len(text) < options.size * 1_000_000:
             text += "".join(random.sample(base_text, len(base_text)))
         text = text[: options.size * 1_000_000]
         print(f"\nBenchmarking {'grapheme package' if options.grapheme_package else ''}\n")
 
         tests = (
-            ("sentence", sentence_iter),
-            ("grapheme", grapheme_iter),
+            (
+                ("sentence", sentence_iter),
+                ("grapheme", grapheme_iter),
+            )
+            if not options.grapheme_package
+            else (("grapheme", grapheme.finder.GraphemeIterator),)
         )
-
-        if options.grapheme_package:
-            import grapheme.finder
-
-            tests = (("grapheme", grapheme.finder.GraphemeIterator),)
 
         for kind, func in tests:
             print(f"{kind:>8}", end=" ", flush=True)
             count = 0
             offset = 0
-            start = time.perf_counter_ns()
+            start = time.process_time_ns()
             for _ in func(text):
                 count += 1
-            end = time.perf_counter_ns()
+            end = time.process_time_ns()
             seconds = (end - start) / 1e9
             print(f"chars per second: { int(len(text)/seconds): 12,d}    segments: {count: 11,d}")
