@@ -171,16 +171,19 @@ def comment(language, text):
     text = text.splitlines()
     if len(text) == 1:
         text = text[0]
-        indent = text[:len(text)-len(text.lstrip())]
-        text = text[len(indent):]
+        indent = text[: len(text) - len(text.lstrip())]
+        text = text[len(indent) :]
         if language == "python":
             yield f"{ indent }# { text}"
         else:
             yield f"{ indent }/* { text } */"
         return
     if language == "python":
+        indent = 999
         for line in text:
-            yield f"# { line }"
+            indent = min(indent, len(line) - len(line.lstrip()))
+        for line in text:
+            yield f"{ indent * ' '}# { line[indent:] }"
     else:
         yield "/*"
         for line in text:
@@ -213,7 +216,7 @@ def category_enum(language: str, name="Category"):
     yield from comment(language, "    Major category values - mutually exclusive")
     for i, cat in enumerate(sorted(cats)):
         if language == "python":
-            yield f"    { cat } = 2 ** { i }"
+            yield f"    { cat } = 2**{ i }"
         else:
             yield f"#define Category_{ cat } (1u << { i })"
         cat_vals[cat] = i
@@ -221,9 +224,9 @@ def category_enum(language: str, name="Category"):
     max_used = len(cats)
 
     py_comment = """\
-  Minor category values - note: their values overlap so tests must include equals")
-  To test for a minor, you must do like:"
-      if codepoint & Letter_Upper == Letter_Upper ..."
+    Minor category values - note: their values overlap so tests must include equals")
+    To test for a minor, you must do like:"
+        if codepoint & Letter_Upper == Letter_Upper ..."
 """
 
     c_comment = """\
@@ -237,7 +240,7 @@ def category_enum(language: str, name="Category"):
     for cat, members in sorted(cats_members.items()):
         for i, member in enumerate(sorted(members), len(cats)):
             if language == "python":
-                yield f"    { member } = 2 ** { i } | 2 ** { cat_vals[cat] }"
+                yield f"    { member } = 2**{ i } | 2**{ cat_vals[cat] }"
             else:
                 yield f"#define Category_{ member }  ( (1u << { i }) | (1u << { cat_vals[cat] }))"
         max_used = max(max_used, i)
@@ -251,7 +254,7 @@ def category_enum(language: str, name="Category"):
         if cat not in ignore:
             max_used += 1
             if language == "python":
-                yield f"    { cat } = 2 ** { max_used}"
+                yield f"    { cat } = 2**{ max_used}"
             else:
                 yield f"#define Category_{ cat } (1u << { max_used})"
 
@@ -263,6 +266,7 @@ def category_enum(language: str, name="Category"):
             if cat not in cat_vals:
                 yield f"    X({cat}) \\"
         yield ""
+
 
 def generate_python_table(name, enum_name, ranges):
     yield f"# { name }"
@@ -279,7 +283,7 @@ def generate_python_table(name, enum_name, ranges):
             else:
                 all_cats.update(cat)
         for i, cat in enumerate(sorted(all_cats)):
-            yield f"    { cat } =  2 ** { i }"
+            yield f"    { cat } =  2**{ i }"
     yield ""
     yield f"# Codepoints by { name } category"
     yield "#"
@@ -403,7 +407,7 @@ def generate_c_table(name, enum_name, ranges):
     yield "static unsigned int"
     yield f"{ name }_category(Py_UCS4 c)"
     yield "{"
-    yield '   /* Returns category corresponding to codepoint */'
+    yield "   /* Returns category corresponding to codepoint */"
     yield ""
     yield f"    if (c < 0x{ table_limit:04X})"
     yield f"        return { name}_fast_lookup[c];"
@@ -656,7 +660,9 @@ def get_tr29_section():
     res.append('"""The `Unicode version <https://www.unicode.org/versions/enumeratedversions.html>`__')
     res.append('that the rules and data tables implement"""')
     res.append("")
+    res.append("")
     res.extend(category_enum("python", name="_Category"))
+    res.append("")
     res.append("")
     return "\n".join(res)
 
