@@ -336,8 +336,6 @@ if __name__ == "__main__":
     if sys.stdout.isatty():
         width = os.get_terminal_size(sys.stdout.fileno()).columns
 
-    # ::TODO:: benchmark?
-
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-cc",
@@ -375,6 +373,31 @@ if __name__ == "__main__":
     p = subparsers.add_parser("codepoint", help="Show information about codepoints")
     p.add_argument("text", nargs="+", help="If a hex constant then use that value, otherwise treat as text")
     p.set_defaults(function="codepoint")
+
+    p = subparsers.add_parser(
+        "benchmark",
+        help="Measure how long segmentation takes to iterate each segment",
+        description="""The provided test text will be repeatedly duplicated and shuffled then
+appended until the sized amount of text is available.
+
+A suggested source of text is to download the Universal Declaration of
+Human Rights Corpus from https://www.nltk.org/nltk_data/ and
+concatenate all the files together.
+""",
+    )
+    p.set_defaults(function="benchmark")
+    p.add_argument(
+        "--size",
+        type=int,
+        default=10,
+        help="How many million codepoints (characters) of text is used to run. [%(default)s]",
+    )
+    p.add_argument("--seed", type=int, default=0, help="Random seed to use [%(default)s]")
+    p.add_argument("--grapheme-package", action="store_true", default=False, help="")
+    p.add_argument(
+        "text_file",
+        type=argparse.FileType("rt", encoding="utf8"),
+    )
 
     options = parser.parse_args()
 
@@ -530,3 +553,154 @@ if __name__ == "__main__":
                 f"sentence: { ' | '.join(_tr29.category_name('sentence', cp)) }"
             )
             print()
+
+    elif options.function == "benchmark":
+        import random
+        import time
+
+        random.seed(options.seed)
+
+        base_text = options.text_file.read()
+        text = base_text
+
+        # these are the codepoints used in the various break tests
+        base_text += "".join(
+            chr(x)
+            for x in (
+                0x0001,
+                0x0009,
+                0x000A,
+                0x000B,
+                0x000D,
+                0x0020,
+                0x0021,
+                0x0022,
+                0x0027,
+                0x0028,
+                0x0029,
+                0x002C,
+                0x002E,
+                0x0030,
+                0x0031,
+                0x0033,
+                0x0034,
+                0x003A,
+                0x003F,
+                0x0041,
+                0x0043,
+                0x0044,
+                0x0047,
+                0x0048,
+                0x0053,
+                0x0054,
+                0x0055,
+                0x005F,
+                0x0061,
+                0x0062,
+                0x0063,
+                0x0064,
+                0x0065,
+                0x0068,
+                0x0069,
+                0x006C,
+                0x006F,
+                0x0070,
+                0x0072,
+                0x0073,
+                0x0074,
+                0x0085,
+                0x00A0,
+                0x00AD,
+                0x01BB,
+                0x0300,
+                0x0308,
+                0x034F,
+                0x0378,
+                0x05D0,
+                0x0600,
+                0x062D,
+                0x0631,
+                0x0644,
+                0x0645,
+                0x0646,
+                0x064A,
+                0x064E,
+                0x0650,
+                0x0651,
+                0x0661,
+                0x0671,
+                0x06DD,
+                0x070F,
+                0x0710,
+                0x0712,
+                0x0717,
+                0x0718,
+                0x0719,
+                0x071D,
+                0x0721,
+                0x072A,
+                0x072B,
+                0x072C,
+                0x0900,
+                0x0903,
+                0x0904,
+                0x0915,
+                0x0924,
+                0x092F,
+                0x093C,
+                0x094D,
+                0x0A03,
+                0x0D4E,
+                0x1100,
+                0x1160,
+                0x11A8,
+                0x200D,
+                0x2018,
+                0x2019,
+                0x201C,
+                0x201D,
+                0x2060,
+                0x231A,
+                0x2701,
+                0x3002,
+                0x3031,
+                0x5B57,
+                0x5B83,
+                0xAC00,
+                0xAC01,
+                0x1F1E6,
+                0x1F1E7,
+                0x1F1E8,
+                0x1F1E9,
+                0x1F3FF,
+                0x1F476,
+                0x1F6D1,
+            )
+        )
+
+        print(f"Expanding text to { options.size:,d} million codepoints ...", end="", flush=True)
+        while len(text) < options.size * 1_000_000:
+            text += "".join(random.sample(base_text, len(base_text)))
+        text = text[: options.size * 1_000_000]
+        print(f"\nBenchmarking {'grapheme package' if options.grapheme_package else ''}\n")
+
+        tests = (
+            ("sentence", sentence_iter),
+            ("grapheme", grapheme_iter),
+        )
+
+        if options.grapheme_package:
+            import grapheme.finder
+
+            tests = (("grapheme", grapheme.finder.GraphemeIterator),)
+
+        for kind, func in tests:
+            print(f"{kind:>8}", end=" ", flush=True)
+            count = 0
+            offset = 0
+            start = time.perf_counter_ns()
+            for _ in func(text):
+                count += 1
+            end = time.perf_counter_ns()
+            seconds = (end - start) / 1e9
+            print(f"chars per second: { int(len(text)/seconds): 12,d}    segments: {count: 11,d}")
