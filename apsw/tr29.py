@@ -18,7 +18,7 @@ standard and rules implemented here deal with that complexity.
 
 from __future__ import annotations
 
-from typing import Callable, Any
+from typing import Callable, Any, Generator
 
 import enum
 
@@ -82,6 +82,7 @@ from . import _tr29py as _tr29
 
 assert unicode_version == _tr29.unicode_version
 
+
 def grapheme_next_break(text: str, offset: int = 0) -> int:
     """Returns end of Grapheme cluster /  User Perceived Character
 
@@ -103,17 +104,30 @@ def grapheme_next_break(text: str, offset: int = 0) -> int:
 
 def grapheme_next(text: str, offset: int = 0) -> tuple[int, int]:
     "Returns span of next grapheme cluster"
+    end = grapheme_next_break(text, offset)
+    return offset, end
+
+
+def grapheme_iter(text: str, offset: int = 0) -> Generator[str, None, None]:
+    "Generator providing text of each grapheme cluster"
+    lt = len(text)
+    meth = _tr29.grapheme_next_break
     start = offset
-    end = grapheme_next_break(text, offset=offset)
-    return start, end
+    while offset < lt:
+        offset = meth(text, offset)
+        yield text[start:offset]
+        start = offset
 
 
-def grapheme_iter(text: str, offset: int = 0):
+def grapheme_iter_with_offsets(text: str, offset: int = 0) -> Generator[tuple[int, int, str], None, None]:
     "Generator providing start, end, text of each grapheme cluster"
-    while offset < len(text):
-        start, end = grapheme_next(text, offset)
-        yield (start, end, text[start:end])
-        offset = end
+    lt = len(text)
+    meth = _tr29.grapheme_next_break
+    start = offset
+    while offset < lt:
+        offset = meth(text, offset)
+        yield (start, offset, text[start:offset])
+        start = offset
 
 
 def grapheme_length(text: str, offset: int = 0) -> int:
