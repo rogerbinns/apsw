@@ -256,15 +256,27 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
 #define ARG_codepoint(varname)                                                                                         \
   do                                                                                                                   \
   {                                                                                                                    \
-    unsigned long _tmpcp = PyLong_AsUnsignedLong(useargs[argp_optindex]);                                              \
-    if (_tmpcp == (unsigned long)-1 && PyErr_Occurred())                                                               \
-      goto param_error;                                                                                                \
-    if (_tmpcp > 0x10ffff)                                                                                             \
+    if (PyLong_Check(useargs[argp_optindex]))                                                                          \
     {                                                                                                                  \
-      PyErr_Format(PyExc_ValueError, "Codepoint value %lu outside of range 0 to 0x10ffff", _tmpcp);                    \
+      unsigned long _tmpcp = PyLong_AsUnsignedLong(useargs[argp_optindex]);                                            \
+      if (_tmpcp == (unsigned long)-1 && PyErr_Occurred())                                                             \
+        goto param_error;                                                                                              \
+      if (_tmpcp > 0x10ffff)                                                                                           \
+      {                                                                                                                \
+        PyErr_Format(PyExc_ValueError, "Codepoint value %lu outside of range 0 to 0x10ffff", _tmpcp);                  \
+        goto param_error;                                                                                              \
+      }                                                                                                                \
+      varname = (Py_UCS4)_tmpcp;                                                                                       \
+    }                                                                                                                  \
+    else if (PyUnicode_Check(useargs[argp_optindex]) && 1 == PyUnicode_GET_LENGTH(useargs[argp_optindex]))             \
+    {                                                                                                                  \
+      varname = PyUnicode_READ_CHAR(useargs[argp_optindex], 0);                                                        \
+    }                                                                                                                  \
+    else                                                                                                               \
+    {                                                                                                                  \
+      PyErr_Format(PyExc_TypeError, "codepoint should be an int or one character str");                                \
       goto param_error;                                                                                                \
     }                                                                                                                  \
-    varname = (Py_UCS4)_tmpcp;                                                                                         \
     argp_optindex++;                                                                                                   \
   } while (0)
 
