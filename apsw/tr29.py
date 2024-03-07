@@ -151,7 +151,7 @@ def grapheme_width(text: str, offset: int = 0) -> int:
     # ::TODO:: convert to C
     count = 0
     for start, end in grapheme_iter(text, offset):
-        count += 2 if any(unicode_category(ord(text[i])) & Category.Wide for i in range(start, end)) else 1
+        count += 2 if any(unicode_category(text[i]) & Category.Wide for i in range(start, end)) else 1
     return count
 
 
@@ -171,8 +171,27 @@ def word_next_break(text: str, offset: int = 0) -> int:
     return _tr29.word_next_break(text, offset)
 
 
+def _word_cats_to_mask(letter, number, emoji, regional_indicator):
+    mask = 0
+    if letter:
+        mask |= _Category.Letter
+    if number:
+        mask |= _Category.Number
+    if emoji:
+        mask |= _Category.Extended_Pictographic
+    if regional_indicator:
+        mask |= _Category.Regional_Indicator
+    return mask
+
+
 def word_next(
-    text: str, offset: int = 0, *, letter=True, number=True, emoji=False, regional_indicator=False
+    text: str,
+    offset: int = 0,
+    *,
+    letter: bool = True,
+    number: bool = True,
+    emoji: bool = False,
+    regional_indicator: bool = False,
 ) -> tuple[int, int]:
     """Returns span of next word
 
@@ -184,32 +203,56 @@ def word_next(
     * regional indicator - two character sequence for flags like 🇧🇷🇨🇦
     """
 
-    mask = 0
-    if letter:
-        mask |= _Category.Letter
-    if number:
-        mask |= _Category.Number
-    if emoji:
-        mask |= _Category.Extended_Pictographic
-    if regional_indicator:
-        mask |= _Category.Regional_Indicator
+    mask = _word_cats_to_mask(letter, number, emoji, regional_indicator)
+    meth = _tr29.word_next_break
 
     while offset < len(text):
-        end = word_next_break(text, offset=offset)
-        for pos in range(offset, end):
-            if _unicode_category(ord(text[pos])) & mask:
-                return offset, end
+        end = meth(text, offset)
+        if any(_unicode_category(text[pos]) & mask for pos in range(offset, end)):
+            return offset, end
         offset = end
     return offset, offset
 
 
-def word_iter(text: str, offset: int = 0, *, letter=True, number=True, emoji=False, regional_indicator=False):
+def word_iter(
+    text: str,
+    offset: int = 0,
+    *,
+    letter: bool = True,
+    number: bool = True,
+    emoji: bool = False,
+    regional_indicator: bool = False,
+) -> Generator[str, None, None]:
+    "Generator providing text of each word"
+
+    mask = _word_cats_to_mask(letter, number, emoji, regional_indicator)
+    lt = len(text)
+    meth = _tr29.word_next_break
+
+    while offset < lt:
+        end = meth(text, offset)
+        if any(_unicode_category(text[pos]) & mask for pos in range(offset, end)):
+            yield text[offset:end]
+        offset = end
+
+def word_iter_with_offsets(
+    text: str,
+    offset: int = 0,
+    *,
+    letter: bool = True,
+    number: bool = True,
+    emoji: bool = False,
+    regional_indicator: bool = False,
+) -> Generator[str, None, None]:
     "Generator providing start, end, text of each word"
-    while offset < len(text):
-        start, end = word_next(
-            text, offset, letter=letter, number=number, emoji=emoji, regional_indicator=regional_indicator
-        )
-        yield (start, end, text[start:end])
+
+    mask = _word_cats_to_mask(letter, number, emoji, regional_indicator)
+    lt = len(text)
+
+    while offset < lt:
+        end = _tr29.word_next_break(text, offset)
+        if any(_unicode_category(text[pos]) & mask for pos in range(offset, end)):
+            yield (offset, end, text[offset:end])
         offset = end
 
 
@@ -247,7 +290,7 @@ def sentence_iter(text: str, offset: int = 0):
 _unicode_category = _tr29.category_category
 
 
-def unicode_category(codepoint: int) -> str:
+def unicode_category(codepoint: int | str) -> str:
     """Returns the `general category <https://en.wikipedia.org/wiki/Unicode_character_property#General_Category>`__ - eg ``Lu`` for Letter Uppercase
 
     See :data:`apsw.fts.unicode_categories` for descriptions mapping"""
