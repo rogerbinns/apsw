@@ -703,6 +703,33 @@ get_category_category(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_
   return PyLong_FromUnsignedLong(category_category(codepoint));
 }
 
+static PyObject *
+has_category(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  PyObject *text;
+  Py_ssize_t start, end;
+  unsigned long mask;
+
+#define has_category_KWARGS "text", "start", "end", "mask"
+  ARG_PROLOG(4, has_category_KWARGS);
+  ARG_MANDATORY ARG_PyUnicode(text);
+  ARG_MANDATORY ARG_PyUnicode_offset(start, text);
+  ARG_MANDATORY ARG_PyUnicode_offset(end, text);
+  ARG_MANDATORY ARG_unsigned_long(mask);
+  ARG_EPILOG(NULL, "has_category(text: str, start:int, end: int, mask: int)", );
+
+  int kind = PyUnicode_KIND(text);
+  void *data = PyUnicode_DATA(text);
+
+  while (start < end)
+  {
+    if (category_category(PyUnicode_READ(kind, data, start)) & mask)
+      Py_RETURN_TRUE;
+    start++;
+  }
+  Py_RETURN_FALSE;
+}
+
 static PyMethodDef methods[] = {
   { "category_name", (PyCFunction)category_name, METH_FASTCALL | METH_KEYWORDS,
     "Returns category names codepoint corresponds to" },
@@ -713,6 +740,8 @@ static PyMethodDef methods[] = {
   { "grapheme_next_break", (PyCFunction)grapheme_next_break, METH_FASTCALL | METH_KEYWORDS,
     "Returns next grapheme break offset" },
   { "word_next_break", (PyCFunction)word_next_break, METH_FASTCALL | METH_KEYWORDS, "Returns next word break offset" },
+  { "has_category", (PyCFunction)has_category, METH_FASTCALL | METH_KEYWORDS,
+    "Returns True if any codepoints are covered by the mask" },
   { NULL, NULL, 0, NULL },
 };
 

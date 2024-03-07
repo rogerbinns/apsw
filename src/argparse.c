@@ -280,6 +280,15 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
     argp_optindex++;                                                                                                   \
   } while (0)
 
+#define ARG_unsigned_long(varname)                                                                                     \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    varname = PyLong_AsUnsignedLong(useargs[argp_optindex]);                                                           \
+    if (varname == (unsigned long)-1 && PyErr_Occurred())                                                              \
+      goto param_error;                                                                                                \
+    argp_optindex++;                                                                                                   \
+  } while (0)
+
 /* note this allows a position one after the last actual character */
 #define ARG_PyUnicode_offset(varname, text)                                                                            \
   do                                                                                                                   \
