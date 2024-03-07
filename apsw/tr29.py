@@ -160,8 +160,8 @@ def word_next_break(text: str, offset: int = 0) -> int:
 
     Finds the next break point according to the `TR29 spec
     <https://www.unicode.org/reports/tr29/#Word_Boundary_Rules>`__.
-    Note that the segment returned may be a word, or a non-word.
-    Use :func:`word_next` to get words.
+    Note that the segment returned may be a word, or a non-word
+    (spaces, punctuation etc).  Use :func:`word_next` to get words.
 
     :param text: The text to examine
     :param offset: The first codepoint to examine
@@ -204,11 +204,13 @@ def word_next(
     """
 
     mask = _word_cats_to_mask(letter, number, emoji, regional_indicator)
+    lt = len(text)
     meth = _tr29.word_next_break
+    catcheck = _tr29.has_category
 
-    while offset < len(text):
+    while offset < lt:
         end = meth(text, offset)
-        if any(_unicode_category(text[pos]) & mask for pos in range(offset, end)):
+        if catcheck(text, offset, end, mask):
             return offset, end
         offset = end
     return offset, offset
@@ -228,12 +230,14 @@ def word_iter(
     mask = _word_cats_to_mask(letter, number, emoji, regional_indicator)
     lt = len(text)
     meth = _tr29.word_next_break
+    catcheck = _tr29.has_category
 
     while offset < lt:
         end = meth(text, offset)
-        if any(_unicode_category(text[pos]) & mask for pos in range(offset, end)):
+        if catcheck(text, offset, end, mask):
             yield text[offset:end]
         offset = end
+
 
 def word_iter_with_offsets(
     text: str,
@@ -248,10 +252,12 @@ def word_iter_with_offsets(
 
     mask = _word_cats_to_mask(letter, number, emoji, regional_indicator)
     lt = len(text)
+    meth = _tr29.word_next_break
+    catcheck = _tr29.has_category
 
     while offset < lt:
-        end = _tr29.word_next_break(text, offset)
-        if any(_unicode_category(text[pos]) & mask for pos in range(offset, end)):
+        end = meth(text, offset)
+        if catcheck(text, offset, end, mask):
             yield (offset, end, text[offset:end])
         offset = end
 
