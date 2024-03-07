@@ -77,8 +77,7 @@ class _Category(enum.IntFlag):
 
 ### END UNICODE UPDATE SECTION ###
 
-from . import _tr29py as _tr29
-# from . import _tr29c as _tr29
+from . import _tr29c as _tr29
 
 assert unicode_version == _tr29.unicode_version
 
