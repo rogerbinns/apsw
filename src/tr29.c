@@ -320,6 +320,198 @@ grapheme_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ss
 }
 
 static PyObject *
+word_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  PyObject *text = NULL;
+  Py_ssize_t offset;
+
+  ARG_PROLOG(2, break_KWNAMES);
+  ARG_MANDATORY ARG_PyUnicode(text);
+  ARG_MANDATORY ARG_PyUnicode_offset(offset, text);
+  ARG_EPILOG(NULL, "word_next_break(text: str, offset: int)", );
+
+  void *text_data = PyUnicode_DATA(text);
+  int text_kind = PyUnicode_KIND(text);
+  Py_ssize_t text_end = PyUnicode_GET_LENGTH(text);
+
+#undef cat_func
+#define cat_func word_category
+  TextIterator it = TEXT_INIT;
+
+  /* From spec */
+#define AHLetter (WC_ALetter | WC_Hebrew_Letter)
+#define MidNumLetQ (WC_MidNumLet | WC_Single_Quote)
+
+  /* WB1 implicit */
+
+  /* WB2 */
+  while (it.pos < text_end)
+  {
+    it_advance();
+
+    /* WB3 */
+    if (it.curchar & WC_CR && it.lookahead & WC_LF)
+    {
+      it.pos++;
+      break;
+    }
+
+    /* WB3a/b */
+    if (it.curchar & (WC_Newline | WC_CR | WC_LF))
+    {
+      /* break before if any chars are accepted */
+      if (it_has_accepted())
+      {
+        it.pos--;
+        break;
+      }
+      /* else break after */
+      break;
+    }
+
+    /* WB3c */
+    if (it.curchar & WC_ZWJ && it.lookahead & WC_Extended_Pictographic)
+      continue;
+
+    if (it.lookahead & WC_ZWJ)
+    {
+      it_begin();
+      it_advance();
+      if (it.lookahead & WC_Extended_Pictographic)
+      {
+        it_advance();
+        it_commit();
+        continue;
+      }
+      it_rollback();
+    }
+
+    /* WB3d */
+    if (it.curchar & WC_WSegSpace && it.lookahead & WC_WSegSpace)
+      continue;
+
+    /* WB4 */
+
+    /* ::TODO:: the original Python code is ugly because you can't break
+       out of a loop more than one level.  Once code is all correct this
+       can be refactored using goto */
+    if (it.lookahead & (WC_Extend | WC_ZWJ | WC_Format))
+    {
+      const char *action = NULL;
+      Py_UCS4 saved_char = it.curchar;
+      while (it.lookahead & (WC_Extend | WC_ZWJ | WC_Format))
+      {
+        if (it.lookahead & WC_ZWJ)
+        {
+          /* Re-apply wb3c */
+          it_begin();
+          it_advance();
+          if (it.lookahead & WC_Extended_Pictographic)
+          {
+            action = "continue";
+            it_commit();
+            break;
+          }
+          else
+            it_rollback();
+        }
+        it_advance();
+      }
+      if (action && 0 == strcmp(action, "continue"))
+        continue;
+      assert(!action);
+      /* ignore the extending chars */
+      it.curchar = saved_char;
+    }
+
+    /* WB5 */
+    if (it.curchar & AHLetter && it.lookahead & AHLetter)
+      continue;
+
+    /* WB6/7 */
+    if (it.curchar & AHLetter && it.lookahead & (WC_MidLetter | MidNumLetQ))
+    {
+      it_begin();
+      it_advance();
+      it_absorb(WC_Extend | WC_Format | WC_ZWJ, 0);
+      if (it.lookahead & AHLetter)
+      {
+        it_commit();
+        continue;
+      }
+      it_rollback();
+    }
+
+    /* WB7a */
+    if (it.curchar & WC_Hebrew_Letter && it.lookahead & WC_Single_Quote)
+      continue;
+
+    /* WB7b/c */
+    if (it.curchar & WC_Hebrew_Letter && it.lookahead & WC_Double_Quote)
+    {
+      it_begin();
+      it_advance();
+      if (it.lookahead & WC_Hebrew_Letter)
+      {
+        it_commit();
+        continue;
+      }
+      it_rollback();
+    }
+
+    /* WB8 */
+    if (it.curchar & WC_Numeric && it.lookahead & WC_Numeric)
+      continue;
+
+    /* WB9 */
+    if (it.curchar & AHLetter && it.lookahead & WC_Numeric)
+      continue;
+
+    /* WB10 */
+    if (it.curchar & WC_Numeric && it.lookahead & AHLetter)
+      continue;
+
+    /* WB11/12 */
+    if (it.curchar & WC_Numeric && it.lookahead & (WC_MidNum | MidNumLetQ))
+    {
+      it_begin();
+      it_advance();
+      it_absorb(WC_Extend | WC_Format | WC_ZWJ, 0);
+      if (it.lookahead & WC_Numeric)
+      {
+        it_commit();
+        continue;
+      }
+      it_rollback();
+    }
+
+    /* WB13 */
+    if (it.curchar & WC_Katakana && it.lookahead & WC_Katakana)
+      continue;
+
+    /* WB13a */
+    if (it.curchar & (AHLetter | WC_Numeric | WC_Katakana | WC_ExtendNumLet) && it.lookahead & WC_ExtendNumLet)
+      continue;
+
+    /* WB13b */
+    if (it.curchar & WC_ExtendNumLet && it.lookahead & (AHLetter | WC_Numeric | WC_Katakana))
+      continue;
+
+    /* WB15/16 */
+    if (it.curchar & WC_Regional_Indicator && it.lookahead & WC_Regional_Indicator)
+    {
+        it_advance();
+        it_absorb(WC_Extend | WC_ZWJ | WC_Format, 0);
+        break;
+    }
+
+    /* WB999 */
+    break;
+  }
+  return PyLong_FromLong(it.pos);
+}
+
+static PyObject *
 sentence_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs,
                     PyObject *fast_kwnames)
 {
@@ -331,10 +523,6 @@ sentence_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ss
   ARG_MANDATORY ARG_PyUnicode_offset(offset, text);
   ARG_EPILOG(NULL, "sentence_next_break(text: str, offset: int)", );
 
-  /*  From spec */
-#define ParaSep (SC_Sep | SC_CR | SC_LF)
-#define SATerm (SC_STerm | SC_ATerm)
-
   void *text_data = PyUnicode_DATA(text);
   int text_kind = PyUnicode_KIND(text);
   Py_ssize_t text_end = PyUnicode_GET_LENGTH(text);
@@ -342,6 +530,10 @@ sentence_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ss
 #undef cat_func
 #define cat_func sentence_category
   TextIterator it = TEXT_INIT;
+
+  /*  From spec */
+#define ParaSep (SC_Sep | SC_CR | SC_LF)
+#define SATerm (SC_STerm | SC_ATerm)
 
   /* SB1 implicit */
 
@@ -533,6 +725,7 @@ static PyMethodDef methods[] = {
     "Returns next sentence break offset" },
   { "grapheme_next_break", (PyCFunction)grapheme_next_break, METH_FASTCALL | METH_KEYWORDS,
     "Returns next grapheme break offset" },
+  { "word_next_break", (PyCFunction)word_next_break, METH_FASTCALL | METH_KEYWORDS, "Returns next word break offset" },
   { NULL, NULL, 0, NULL },
 };
 
