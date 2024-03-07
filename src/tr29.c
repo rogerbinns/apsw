@@ -347,6 +347,7 @@ word_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
   /* WB2 */
   while (it.pos < text_end)
   {
+  loop_top:
     it_advance();
 
     /* WB3 */
@@ -391,35 +392,21 @@ word_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
       continue;
 
     /* WB4 */
-
-    /* ::TODO:: the original Python code is ugly because you can't break
-       out of a loop more than one level.  Once code is all correct this
-       can be refactored using goto */
     if (it.lookahead & (WC_Extend | WC_ZWJ | WC_Format))
     {
-      const char *action = NULL;
       Py_UCS4 saved_char = it.curchar;
       while (it.lookahead & (WC_Extend | WC_ZWJ | WC_Format))
       {
         if (it.lookahead & WC_ZWJ)
         {
           /* Re-apply wb3c */
-          it_begin();
           it_advance();
           if (it.lookahead & WC_Extended_Pictographic)
-          {
-            action = "continue";
-            it_commit();
-            break;
-          }
-          else
-            it_rollback();
+            goto loop_top;
         }
-        it_advance();
+        else
+          it_advance();
       }
-      if (action && 0 == strcmp(action, "continue"))
-        continue;
-      assert(!action);
       /* ignore the extending chars */
       it.curchar = saved_char;
     }
@@ -500,9 +487,9 @@ word_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     /* WB15/16 */
     if (it.curchar & WC_Regional_Indicator && it.lookahead & WC_Regional_Indicator)
     {
-        it_advance();
-        it_absorb(WC_Extend | WC_ZWJ | WC_Format, 0);
-        break;
+      it_advance();
+      it_absorb(WC_Extend | WC_ZWJ | WC_Format, 0);
+      break;
     }
 
     /* WB999 */
