@@ -712,6 +712,7 @@ if __name__ == "__main__":
         tests = (
             (
                 ("sentence", sentence_iter),
+                ("word", word_iter),
                 ("grapheme", grapheme_iter),
             )
             if not options.grapheme_package
