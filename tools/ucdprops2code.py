@@ -302,38 +302,40 @@ def generate_python_table(name, enum_name, ranges):
     # make a copy because we modify it
     ranges = ranges[:]
     # first codepoint NOT in table
-    table_limit = 256
+    table_limit = options.table_limit
 
-    yield f"{ name}_fast_lookup = ["
-    line = ""
-    for cp in range(table_limit):
-        if cp % 16 == 0:
-            if line:
+    if table_limit:
+        yield f"{ name}_fast_lookup = ["
+        line = ""
+        for cp in range(table_limit):
+            if cp % 16 == 0:
+                if line:
+                    yield line.rstrip()
+                    line = ""
+                yield f"    # { cp:04X} - {min(table_limit,cp+16)-1:04X}"
+            cat = fmt_cat(enum_name, ranges[0][2])
+            if len(line) + len(cat) > 116:
                 yield line.rstrip()
                 line = ""
-            yield f"    # { cp:04X} - {min(table_limit,cp+16)-1:04X}"
-        cat = fmt_cat(enum_name, ranges[0][2])
-        if len(line) + len(cat) > 116:
-            yield line.rstrip()
-            line = ""
-        if not line:
-            line = "    "
-        line += f"{cat}, "
-        if cp >= ranges[0][1]:
-            ranges.pop(0)
+            if not line:
+                line = "    "
+            line += f"{cat}, "
+            if cp >= ranges[0][1]:
+                ranges.pop(0)
 
-    if line:
-        yield line.rstrip()
-    yield "]"
-    yield ""
-    ranges[0][0] = table_limit
+        if line:
+            yield line.rstrip()
+        yield "]"
+        yield ""
+        ranges[0][0] = table_limit
 
     yield f"def { name }_category(c: int) -> { enum_name }:"
     yield '    "Returns category corresponding to codepoint"'
     yield ""
-    yield f"    if c < 0x{ table_limit:04X}:"
-    yield f"        return { name}_fast_lookup[c]"
-    yield ""
+    if table_limit:
+        yield f"    if c < 0x{ table_limit:04X}:"
+        yield f"        return { name}_fast_lookup[c]"
+        yield ""
 
     yield from bsearch("python", enum_name, 1, ranges, 2)
 
@@ -378,40 +380,42 @@ def generate_c_table(name, enum_name, ranges):
     # make a copy because we modify it
     ranges = ranges[:]
     # first codepoint NOT in table
-    table_limit = 256
+    table_limit = options.table_limit
 
-    yield f"static unsigned int { name}_fast_lookup[] = {{"
-    line = ""
-    for cp in range(table_limit):
-        if cp % 16 == 0:
-            if line:
+    if table_limit:
+        yield f"static unsigned int { name}_fast_lookup[] = {{"
+        line = ""
+        for cp in range(table_limit):
+            if cp % 16 == 0:
+                if line:
+                    yield line.rstrip()
+                    line = ""
+                yield f"    /* { cp:04X} - {min(table_limit,cp+16)-1:04X} */"
+            cat = fmt_cat_c(enum_name, ranges[0][2])
+            if len(line) + len(cat) > 116:
                 yield line.rstrip()
                 line = ""
-            yield f"    /* { cp:04X} - {min(table_limit,cp+16)-1:04X} */"
-        cat = fmt_cat_c(enum_name, ranges[0][2])
-        if len(line) + len(cat) > 116:
-            yield line.rstrip()
-            line = ""
-        if not line:
-            line = "    "
-        line += f"{cat}, "
-        if cp >= ranges[0][1]:
-            ranges.pop(0)
+            if not line:
+                line = "    "
+            line += f"{cat}, "
+            if cp >= ranges[0][1]:
+                ranges.pop(0)
 
-    if line:
-        yield line.rstrip()
-    yield "};"
-    yield ""
-    ranges[0][0] = table_limit
+        if line:
+            yield line.rstrip()
+        yield "};"
+        yield ""
+        ranges[0][0] = table_limit
 
     yield "static unsigned int"
     yield f"{ name }_category(Py_UCS4 c)"
     yield "{"
     yield "   /* Returns category corresponding to codepoint */"
     yield ""
-    yield f"    if (c < 0x{ table_limit:04X})"
-    yield f"        return { name}_fast_lookup[c];"
-    yield ""
+    if options.table_limit:
+        yield f"    if (c < 0x{ table_limit:04X})"
+        yield f"        return { name}_fast_lookup[c];"
+        yield ""
 
     yield from bsearch("c", enum_name, 1, ranges, 2)
     yield "}"
@@ -696,6 +700,9 @@ if __name__ == "__main__":
     import urllib.request
 
     p = argparse.ArgumentParser(description="Generate code from Unicode properties")
+    p.add_argument(
+        "--table-limit", type=int, default=256, help="First codepoint value not part of fast lookup table [%(default)s]"
+    )
     p.add_argument(
         "--data-dir",
         help="Directory containing local copies of the relevant unicode database files.  If "
