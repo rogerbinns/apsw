@@ -6,7 +6,7 @@
 perceived characters (grapheme clusters), words, and sentences from
 Unicode text. Useful for full text search.  Stays :data:`up to date
 <unicode_version>` with Unicode specifications and tables, and
-includes some useful table lookup methods.
+includes useful table lookup and other related methods.
 
 Multiple code points can combine into what is rendered as one
 character, for example a base character and combining accents, writing
@@ -73,6 +73,7 @@ class _Category(enum.IntFlag):
     # Remaining non-category convenience flags
     Extended_Pictographic = 2**14
     Regional_Indicator = 2**15
+    Wide = 2**16
 
 
 ### END UNICODE UPDATE SECTION ###
@@ -389,16 +390,24 @@ def unicode_category(codepoint: int | str) -> str:
     raise Exception("Unreachable")
 
 
-def unicode_is_extended_pictographic(codepoint: int) -> bool:
-    "Returns True if the codepoint has the extended pictographic property (Emoji and similar)"
-    return bool(_unicode_category(codepoint) & _Category.Extended_Pictographic)
+def unicode_is_extended_pictographic(text: str) -> bool:
+    "Returns True if any of the text has the extended pictographic property (Emoji and similar)"
+    return _tr29.has_category(text, 0, len(text), _Category.Extended_Pictographic)
 
 
-def unicode_is_regional_indicator(codepoint: int) -> bool:
-    "Returns True if the codepoint is one of the 26 `regional indicators <https://en.wikipedia.org/wiki/Regional_indicator_symbol>`__ used in pairs to represent country flags"
-    return bool(_unicode_category(codepoint) & _Category.Regional_Indicator)
+def unicode_is_regional_indicator(text: str) -> bool:
+    "Returns True if any of the text is one of the 26 `regional indicators <https://en.wikipedia.org/wiki/Regional_indicator_symbol>`__ used in pairs to represent country flags"
+    return _tr29.has_category(text, 0, len(text), _Category.Regional_Indicator)
 
-def text_wrap(text: str, width=70, *, initial_indent='', subsequent_indent='', max_lines=None, placeholder=' [...] ')-> str:
+
+def unicode_is_wide(text: str) -> bool:
+    "Returns True if any of the text has the double width property"
+    return _tr29.has_category(text, 0, len(text), _Category.Wide)
+
+
+def text_wrap(
+    text: str, width=70, *, initial_indent="", subsequent_indent="", max_lines=None, placeholder=" [...] "
+) -> str:
     "Like :func:`textwrap.wrap` but Unicode grapheme cluster and words aware"
     raise NotImplementedError()
 
