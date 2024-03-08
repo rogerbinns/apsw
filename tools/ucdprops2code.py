@@ -543,6 +543,16 @@ def extract_categories(source: str, dest: dict[str, Any]):
             dest[v[1]].append((start, end))
 
 
+def extract_width(source: str, dest: dict[str, Any]):
+    dest["Wide"] = []
+    for start, end, width in parse_source_lines(source):
+        if width in {"F", "W"}:
+            if end is None:
+                dest["Wide"].append(start)
+            else:
+                dest["Wide"].append((start, end))
+
+
 def read_props(data_dir: str):
     def get_source(url: str) -> str:
         base = url.split("/")[-1]
@@ -560,7 +570,10 @@ def read_props(data_dir: str):
     source = get_source("https://www.unicode.org/Public/UCD/latest/ucd/extracted/DerivedGeneralCategory.txt")
     extract_version("DerivedGeneralCategory.txt", source)
     extract_categories(source, props["category"])
-    # ::TODO:: add east asian width as Width when values are F or W
+
+    source = get_source("https://www.unicode.org/Public/UCD/latest/ucd/EastAsianWidth.txt")
+    extract_version("EastAsianWidth.txt", source)
+    extract_width(source, props["category"])
 
     source = get_source("https://www.unicode.org/Public/UCD/latest/ucd/emoji/emoji-data.txt")
 
