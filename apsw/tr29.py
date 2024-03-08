@@ -279,17 +279,34 @@ def sentence_next_break(test: str, offset: int = 0) -> int:
 
 def sentence_next(text: str, offset: int = 0) -> tuple[int, int]:
     """Returns span of next sentence"""
-    while offset < len(text):
-        end = sentence_next_break(text, offset=offset)
+    lt = len(text)
+    meth = _tr29.sentence_next_break
+
+    while offset < lt:
+        end = meth(text, offset=offset)
         return offset, end
     return offset, offset
 
 
 def sentence_iter(text: str, offset: int = 0):
-    "Generator providing start,end, text of each sentence"
-    while offset < len(text):
-        start, end = sentence_next(text, offset)
-        yield (start, end, text[start:end].strip())
+    "Generator providing text of each sentence"
+    lt = len(text)
+    meth = _tr29.sentence_next_break
+
+    while offset < lt:
+        end = meth(text, offset)
+        yield text[offset:end]
+        offset = end
+
+
+def sentence_iter_with_offsets(text: str, offset: int = 0):
+    "Generator providing start, end, text of each sentence"
+    lt = len(text)
+    meth = _tr29.sentence_next_break
+
+    while offset < lt:
+        end = meth(text, offset)
+        yield (offset, end, text[offset:end])
         offset = end
 
 
