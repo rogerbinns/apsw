@@ -179,6 +179,8 @@ showsymbols:  ## Finds any C symbols that aren't static(private)
 	$(PYTHON) setup.py fetch --all --version=$(SQLITEVERSION) build_ext --inplace --force --enable-all-extensions
 	test -f apsw/__init__`$(PYTHON) -c "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX'))"`
 	set +e; nm --extern-only --defined-only apsw/__init__`$(PYTHON) -c "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX'))"` | egrep -v ' (__bss_start|_edata|_end|_fini|_init|initapsw|PyInit_apsw)$$' ; test $$? -eq 1 || false
+	test -f apsw/_tr29c`$(PYTHON) -c "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX'))"`
+	set +e; nm --extern-only --defined-only apsw/_tr29c`$(PYTHON) -c "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX'))"` | egrep -v ' (__bss_start|_edata|_end|_fini|_init|PyInit__tr29c)$$' ; test $$? -eq 1 || false
 
 compile-win:  ## Builds and tests against all the Python versions on Windows
 	-del /q apsw\\*.pyd
@@ -234,6 +236,9 @@ release: ## Signs built source file(s)
 	-rm -f dist/$(VERDIR)-sigs.zip dist/*.asc
 	for f in dist/* ; do gpg --use-agent --armor --detach-sig "$$f" ; done
 	cd dist ; zip -m $(VERDIR)-sigs.zip *.asc
+
+src/_tr29db.c: ## Update generated Unicode database lookups
+	$(PYTHON) tools src/_tr29db.c
 
 # building a python debug interpreter
 PYDEBUG_VER=3.12.1
