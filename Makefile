@@ -36,7 +36,7 @@ tagpush: ## Tag with version and push
 
 clean: ## Cleans up everything
 	make PYTHONPATH="`pwd`" VERSION=$(VERSION) -C doc clean
-	rm -rf dist build work/* megatestresults apsw.egg-info __pycache__ apsw/__pycache__ :memory: .mypy_cache .ropeproject htmlcov "System Volume Information" doc/docdb.json apsw/_tr29db.py
+	rm -rf dist build work/* megatestresults apsw.egg-info __pycache__ apsw/__pycache__ :memory: .mypy_cache .ropeproject htmlcov "System Volume Information" doc/docdb.json
 	mkdir dist
 	for i in 'vgcore.*' '.coverage' '*.pyc' '*.pyo' '*~' '*.o' '*.so' '*.dll' '*.pyd' '*.gcov' '*.gcda' '*.gcno' '*.orig' '*.tmp' 'testdb*' 'testextension.sqlext' ; do \
 		find . -type f -name "$$i" -print0 | xargs -0 --no-run-if-empty rm -f ; done
@@ -89,9 +89,6 @@ $(GENDOCS): doc/%.rst: src/%.c tools/code2rst.py  tools/tocupdate.sql
 
 apsw/__init__.pyi src/apsw.docstrings: $(GENDOCS) tools/gendocstrings.py src/apswtypes.py  tools/tocupdate.sql
 	env PYTHONPATH=. $(PYTHON) tools/gendocstrings.py doc/docdb.json src/apsw.docstrings
-
-apsw/_tr29db.py: tools/ucdprops2code.py
-	tools/ucdprops2code.py $@
 
 src/constants.c: Makefile tools/genconstants.py src/apswversion.h tools/tocupdate.sql
 	-rm -f src/constants.c
@@ -238,7 +235,7 @@ release: ## Signs built source file(s)
 	cd dist ; zip -m $(VERDIR)-sigs.zip *.asc
 
 src/_tr29db.c: ## Update generated Unicode database lookups
-	$(PYTHON) tools src/_tr29db.c
+	$(PYTHON) tools/ucdprops2code.py $@
 
 # building a python debug interpreter
 PYDEBUG_VER=3.12.1

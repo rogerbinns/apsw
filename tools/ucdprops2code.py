@@ -70,9 +70,8 @@ def fmt_cat_c(enum_name: str, cat: str | tuple[str, ...]):
     return "(" + " | ".join(f"{ enum_name }_{ c }" for c in cat) + ")"
 
 
-def bsearch(language: str, enum_name: str, indent: int, items: list, n: int):
+def bsearch(enum_name: str, indent: int, items: list, n: int):
     # n is if tests at same level.  2 means binary search, 3 is trinary etc
-    assert language in {"c", "python"}
     indent_ = "    " * indent
 
     if len(items) > n:
@@ -84,71 +83,30 @@ def bsearch(language: str, enum_name: str, indent: int, items: list, n: int):
             if not is_last:
                 test = items[chunks[1 + chunks.index(begin)]][0]
             if is_first:
-                if language == "python":
-                    yield f"{ indent_ }if c < 0x{ test:04X}:"
-                else:
-                    yield f"{ indent_ }if (c < 0x{ test:04X})"
-                    yield f"{ indent_ }{{"
+                yield f"{ indent_ }if (c < 0x{ test:04X})"
+                yield f"{ indent_ }{{"
             elif is_last:
-                if language == "python":
-                    yield f"{ indent_ }else:"
-                else:
-                    yield indent_ + "else"
-                    yield indent_ + "{"
+                yield indent_ + "else"
+                yield indent_ + "{"
             else:
-                if language == "python":
-                    yield f"{ indent_ }elif c < 0x{ test:04X}:"
-                else:
-                    yield f"{ indent_ }else if (c < 0x{ test:04X})"
-                    yield indent_ + "{"
-            yield from bsearch(language, enum_name, indent + 1, items[begin : begin + step], n)
-            if language == "c":
-                yield indent_ + "}"
+                yield f"{ indent_ }else if (c < 0x{ test:04X})"
+                yield indent_ + "{"
+            yield from bsearch(enum_name, indent + 1, items[begin : begin + step], n)
+            yield indent_ + "}"
     else:
         for is_first, is_last, (start, end, cat) in augiter(items):
             if start == end:
                 test = f"c == 0x{ start:04X}"
             else:
-                if language == "python":
-                    test = f"0x{ start:04X} <= c <= 0x{ end:04X}"
-                else:
-                    test = f"(c >= 0x{ start:04X}) && (c <= 0x{ end:04X})"
+                test = f"(c >= 0x{ start:04X}) && (c <= 0x{ end:04X})"
             if not is_last:
-                if language == "python":
-                    yield f"{ indent_ }if { test }:"
-                    yield f"{ indent_ }    return { fmt_cat(enum_name, cat) }"
-                else:
-                    yield f"{ indent_ }if ({ test })"
-                    yield f"{ indent_ }    return { fmt_cat_c(enum_name, cat) };"
+                yield f"{ indent_ }if ({ test })"
+                yield f"{ indent_ }  return { fmt_cat_c(enum_name, cat) };"
             else:
-                if language == "python":
-                    yield f"{ indent_ }# { test }"
-                    yield f"{ indent_ }return { fmt_cat(enum_name, cat) }"
-                else:
-                    yield f"{ indent_ }/* { test } */"
-                    yield f"{ indent_ }return { fmt_cat_c(enum_name, cat) };"
+                yield f"{ indent_ }/* { test } */"
+                yield f"{ indent_ }return { fmt_cat_c(enum_name, cat) };"
 
 
-# We do Python code for testing and development
-def generate_python() -> str:
-    out: list[str] = []
-    out.append("import enum")
-    out.append("")
-    out.append(f'unicode_version = "{ ucd_version }"')
-    out.append("")
-
-    out.extend(generate_python_table("grapheme", "GC", grapheme_ranges))
-    out.append("")
-    out.extend(generate_python_table("word", "WC", word_ranges))
-    out.append("")
-    out.extend(generate_python_table("sentence", "SC", sentence_ranges))
-    out.append("")
-    out.extend(generate_python_table("category", "Category", category_ranges))
-    out.append("")
-    return "\n".join(out) + "\n"
-
-
-# and C for speed
 def generate_c() -> str:
     out: list[str] = []
 
@@ -167,7 +125,6 @@ def generate_c() -> str:
 
 
 def comment(language, text):
-    assert language in {"c", "python"}
     text = text.splitlines()
     if len(text) == 1:
         text = text[0]
@@ -213,7 +170,7 @@ def category_enum(language: str, name="Category"):
     cat_vals = {}
     if language == "python":
         yield f"class {name}(enum.IntFlag):"
-    yield from comment(language, "    Major category values - mutually exclusive")
+    yield from comment(language, "Major category values - mutually exclusive")
     for i, cat in enumerate(sorted(cats)):
         if language == "python":
             yield f"    { cat } = 2**{ i }"
@@ -337,7 +294,7 @@ def generate_python_table(name, enum_name, ranges):
         yield f"        return { name}_fast_lookup[c]"
         yield ""
 
-    yield from bsearch("python", enum_name, 1, ranges, 2)
+    yield from bsearch(enum_name, 1, ranges, 2)
 
 
 def generate_c_table(name, enum_name, ranges):
@@ -417,7 +374,7 @@ def generate_c_table(name, enum_name, ranges):
         yield f"        return { name}_fast_lookup[c];"
         yield ""
 
-    yield from bsearch("c", enum_name, 1, ranges, 2)
+    yield from bsearch(enum_name, 1, ranges, 2)
     yield "}"
     yield ""
 
@@ -709,7 +666,7 @@ if __name__ == "__main__":
         "not supplied the latest files are read from https://www.unicode.org/Public/UCD/latest/ucd/",
     )
     p.add_argument(
-        "out_file", type=argparse.FileType("w", encoding="utf8"), help="File to write code to with .c or .py extension"
+        "out_file", type=argparse.FileType("w", encoding="utf8"), help="File to write code to with .c extension"
     )
 
     options = p.parse_args()
@@ -721,18 +678,11 @@ if __name__ == "__main__":
     generate_sentence_ranges()
     generate_category_ranges()
 
-    if options.out_file.name.endswith(".py"):
-        py_code = generate_python()
-        options.out_file.write(py_code_header)
-        options.out_file.write(py_code)
-        options.out_file.close()
-    elif options.out_file.name.endswith(".c"):
-        c_code = generate_c()
-        options.out_file.write(c_code_header)
-        options.out_file.write(c_code)
-        options.out_file.close()
-    else:
-        p.error("Unknown extension for out file")
+    assert options.out_file.name.endswith(".c")
+    c_code = generate_c()
+    options.out_file.write(c_code_header)
+    options.out_file.write(c_code)
+    options.out_file.close()
 
     lines = []
     in_replacement = False
