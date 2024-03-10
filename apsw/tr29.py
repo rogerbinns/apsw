@@ -132,13 +132,7 @@ def grapheme_iter_with_offsets(text: str, offset: int = 0) -> Generator[tuple[in
 
 def grapheme_length(text: str, offset: int = 0) -> int:
     "Returns number of grapheme clusters in the text.  Unicode aware version of len"
-    # ::TODO:: convert to C
-    count = 0
-    while offset < len(text):
-        offset = grapheme_next_break(text, offset)
-        # ::TODO:: off by 1?
-        count += 1
-    return count
+    return _tr29.grapheme_length(text, offset)
 
 
 def grapheme_range(text: str, start: int = 0, end: int = -1) -> str:

@@ -861,6 +861,42 @@ casefold(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_
   return dest;
 }
 
+static PyObject *
+grapheme_length(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  PyObject *text = NULL;
+  Py_ssize_t offset;
+
+  ARG_PROLOG(2, break_KWNAMES);
+  ARG_MANDATORY ARG_PyUnicode(text);
+  ARG_MANDATORY ARG_PyUnicode_offset(offset, text);
+  ARG_EPILOG(NULL, "grapheme_length(text: str, offset: int)", );
+
+  Py_ssize_t text_length = PyUnicode_GET_LENGTH(text);
+  size_t count = 0;
+
+  PyObject *vargs[] = { text, NULL };
+
+  while (offset < text_length)
+  {
+    vargs[1] = PyLong_FromSsize_t(offset);
+    if (!vargs[1])
+      goto error;
+    PyObject *next_offset = grapheme_next_break(NULL, vargs, 2, NULL);
+    if (!next_offset)
+      goto error;
+    Py_CLEAR(vargs[1]);
+    offset = PyLong_AsSsize_t(next_offset);
+    count++;
+  }
+
+  return PyLong_FromSize_t(count);
+
+error:
+  Py_CLEAR(vargs[1]);
+  return NULL;
+}
+
 static PyMethodDef methods[] = {
   { "category_name", (PyCFunction)category_name, METH_FASTCALL | METH_KEYWORDS,
     "Returns category names codepoint corresponds to" },
@@ -874,6 +910,8 @@ static PyMethodDef methods[] = {
   { "has_category", (PyCFunction)has_category, METH_FASTCALL | METH_KEYWORDS,
     "Returns True if any codepoints are covered by the mask" },
   { "casefold", (PyCFunction)casefold, METH_FASTCALL | METH_KEYWORDS, "Does case folding for comparison" },
+  { "grapheme_length", (PyCFunction)grapheme_length, METH_FASTCALL | METH_KEYWORDS,
+    "Length of string in grapheme clusters" },
   { NULL, NULL, 0, NULL },
 };
 
