@@ -72,7 +72,7 @@ def fmt_cat_c(enum_name: str, cat: str | tuple[str, ...]):
 
 def bsearch(enum_name: str, indent: int, items: list, n: int):
     # n is if tests at same level.  2 means binary search, 3 is trinary etc
-    indent_ = "    " * indent
+    indent_ = "  " * indent
 
     if len(items) > n:
         # break into smaller
@@ -199,7 +199,7 @@ def category_enum(language: str, name="Category"):
             if language == "python":
                 yield f"    { member } = 2**{ i } | 2**{ cat_vals[cat] }"
             else:
-                yield f"#define Category_{ member }  ( (1u << { i }) | (1u << { cat_vals[cat] }))"
+                yield f"#define Category_{ member } ( (1u << { i }) | (1u << { cat_vals[cat] }))"
         max_used = max(max_used, i)
 
     # the rest
@@ -311,11 +311,13 @@ def generate_c_table(name, enum_name, ranges):
             else:
                 all_cats.update(cat)
         for i, cat in enumerate(sorted(all_cats)):
-            yield f"#define { enum_name }_{ cat } (1u <<  { i })"
+            yield f"#define { enum_name }_{ cat } (1u << {i})"
         yield ""
         yield f"#define ALL_{ enum_name.upper() }_VALUES \\"
         for cat in sorted(all_cats):
-            yield f"     X({enum_name}_{ cat }) \\"
+            l = f"  X({enum_name}_{ cat })"
+            l += " " * (119 - len(l)) + "\\"
+            yield l
         yield ""
         yield ""
     yield ""
@@ -367,11 +369,11 @@ def generate_c_table(name, enum_name, ranges):
     yield "static unsigned int"
     yield f"{ name }_category(Py_UCS4 c)"
     yield "{"
-    yield "   /* Returns category corresponding to codepoint */"
+    yield "  /* Returns category corresponding to codepoint */"
     yield ""
     if options.table_limit:
-        yield f"    if (c < 0x{ table_limit:04X})"
-        yield f"        return { name}_fast_lookup[c];"
+        yield f"  if (c < 0x{ table_limit:04X})"
+        yield f"    return { name}_fast_lookup[c];"
         yield ""
 
     yield from bsearch(enum_name, 1, ranges, 2)
