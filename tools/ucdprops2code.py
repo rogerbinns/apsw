@@ -518,9 +518,17 @@ def extract_width(source: str, dest: dict[str, Any]):
 
 def read_props(data_dir: str):
     def get_source(url: str) -> str:
-        base = url.split("/")[-1]
+        parts = url.split("/")
         if data_dir:
-            url = pathlib.Path(data_dir) / base
+            candidates = (
+                pathlib.Path(data_dir) / parts[-1],
+                pathlib.Path(data_dir) / parts[-2] / parts[-1],
+            )
+            for url in candidates:
+                if url.exists():
+                    break
+            else:
+                sys.exit(f"Failed to find file in data dir.  Looked for\n{candidates}")
 
         print("Reading", url)
         if isinstance(url, str):
