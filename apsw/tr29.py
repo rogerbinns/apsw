@@ -411,6 +411,15 @@ def text_wrap(
     "Like :func:`textwrap.wrap` but Unicode grapheme cluster and words aware"
     raise NotImplementedError()
 
+def casefold(text: str) -> str:
+    """Returns the text for equality comparison without case distinction
+
+    Case folding maps text to a canonical form where case differences
+    are removed allowing case insensitive comparison.  Unlike upper,
+    lower, and title case, the result is not intended to be displayed
+    to people.
+    """
+    return _tr29.casefold(text)
 
 if __name__ == "__main__":
     import argparse

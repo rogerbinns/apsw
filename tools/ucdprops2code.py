@@ -149,6 +149,21 @@ def generate_casefold_expansion(src) -> list[str]:
 
     res[-1] = res[-1].rstrip("\\").rstrip()
     res.append("")
+
+    add_line("#define CASEFOLD_WRITE")
+    for key in sorted(src.keys()):
+        for codepoint, replacement in src[key]:
+            if codepoint > ord('Z'):
+                add_line(f"{indent}case 0x{ codepoint:04X}:")
+                for r in replacement[:-1]:
+                    add_line(f"{indent*2}WRITE_DEST(0x{r:04X});")
+                add_line(f"{indent*2}dest_char = 0x{replacement[-1]:04X};")
+                add_line(f"{indent*2}break;")
+
+
+    res[-1] = res[-1].rstrip("\\").rstrip()
+    res.append("")
+
     return res
 
 

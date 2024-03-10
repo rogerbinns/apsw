@@ -749,9 +749,22 @@ casefold_ascii(PyObject *text)
   if (source_pos == source_length)
     return Py_NewRef(text);
 
-  allocate new pyunicode;
-  copy over chars doing conversion;
-  return new unicode;
+  PyObject *dest = PyUnicode_New(source_length, 127);
+  if (!dest)
+    return NULL;
+  assert(source_kind == PyUnicode_KIND(dest));
+  void *dest_data = PyUnicode_DATA(dest);
+
+  for (source_pos = 0; source_pos < source_length; source_pos++)
+  {
+    Py_UCS4 source_char = PyUnicode_READ(source_kind, source_data, source_pos);
+    /* ascii detect */
+    if (source_char >= 'A' && source_char <= 'Z')
+      source_char += 32;
+    PyUnicode_WRITE(source_kind, dest_data, source_pos, source_char);
+  }
+
+  return dest;
 }
 
 static PyObject *
@@ -796,7 +809,7 @@ casefold(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_
       changed = 1;
       continue;
     }
-    if(source_char == 0xB5)
+    if (source_char == 0xB5)
       UB5_seen = 1;
     switch (source_char)
     {
@@ -805,17 +818,46 @@ casefold(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_
     }
   }
 
-  if(!changed)
+  if (!changed)
     return Py_NewRef(text);
 
   Py_UCS4 dest_max = Py_MAX(PyUnicode_MAX_CHAR_VALUE(text), UB5_seen ? 65535 : 0);
 
   PyObject *dest = PyUnicode_New(source_length + expansion, dest_max);
-  if(!dest)
+  if (!dest)
     return NULL;
 
-  copy chars across doing conversion;
+  int dest_kind = PyUnicode_KIND(dest);
+  void *dest_data = PyUnicode_DATA(dest);
 
+  Py_ssize_t dest_pos;
+
+  for (source_pos = dest_pos = 0; source_pos < source_length; source_pos++)
+  {
+    /* each source corresponds to one or more dest chars.  The CASEFOLD_WRITE
+       macro provides just the replacement for one, and writes all except
+       the last when it is more than one.  That is why this macro needs to
+       be available. */
+
+#define WRITE_DEST(c)                                                                                                  \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    PyUnicode_WRITE(dest_kind, dest_data, dest_pos, (c));                                                              \
+    dest_pos++;                                                                                                        \
+  } while (0)
+
+    Py_UCS4 dest_char = PyUnicode_READ(source_kind, source_data, source_pos);
+    /* ascii shortcut */
+    if (dest_char >= 'A' && dest_char <= 'Z')
+      dest_char += 32;
+    else
+      switch (dest_char)
+      {
+        /* generated, present in _tr29db.c */
+        CASEFOLD_WRITE
+      }
+    WRITE_DEST(dest_char);
+  }
   return dest;
 }
 
