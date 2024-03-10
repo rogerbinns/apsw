@@ -730,6 +730,95 @@ has_category(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t f
   Py_RETURN_FALSE;
 }
 
+static PyObject *
+casefold_ascii(PyObject *text)
+{
+  Py_ssize_t source_length = PyUnicode_GET_LENGTH(text);
+  int source_kind = PyUnicode_KIND(text);
+  void *source_data = PyUnicode_DATA(text);
+  Py_ssize_t source_pos;
+
+  for (source_pos = 0; source_pos < source_length; source_pos++)
+  {
+    Py_UCS4 source_char = PyUnicode_READ(source_kind, source_data, source_pos);
+    /* ascii detect */
+    if (source_char >= 'A' && source_char <= 'Z')
+      break;
+  }
+  /* no changes */
+  if (source_pos == source_length)
+    return Py_NewRef(text);
+
+  allocate new pyunicode;
+  copy over chars doing conversion;
+  return new unicode;
+}
+
+static PyObject *
+casefold(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  PyObject *text;
+
+#define casefold_KWARGS "text"
+  ARG_PROLOG(1, casefold_KWARGS);
+  ARG_MANDATORY ARG_PyUnicode(text);
+  ARG_EPILOG(NULL, "casefold(text: str)", );
+
+  if (PyUnicode_MAX_CHAR_VALUE(text) <= 127)
+    return casefold_ascii(text);
+
+  Py_ssize_t source_length = PyUnicode_GET_LENGTH(text);
+  int source_kind = PyUnicode_KIND(text);
+  void *source_data = PyUnicode_DATA(text);
+
+  /* We do two phases - the first looking for how much the result string
+     is expanded because some codepoints expand to more than one folded
+     codepoint.  During this phase we also detect if any changes would be
+     made.  If not the original string can be returned.
+
+     The second phase then does the folding.
+
+     The only codepoint that could change the max char value is U+00B5
+     MICRO SIGN which expands to U+03BC GREEK SMALL LETTER MU which is
+     verified in ucdprops2code.py
+*/
+  int changed = 0;
+  int UB5_seen = 0;
+  Py_ssize_t expansion = 0;
+
+  Py_ssize_t source_pos;
+  for (source_pos = 0; source_pos < source_length; source_pos++)
+  {
+    Py_UCS4 source_char = PyUnicode_READ(source_kind, source_data, source_pos);
+    /* ascii shortcut */
+    if (source_char >= 'A' && source_char <= 'Z')
+    {
+      changed = 1;
+      continue;
+    }
+    if(source_char == 0xB5)
+      UB5_seen = 1;
+    switch (source_char)
+    {
+      /* generated, present in _tr29db.c */
+      CASEFOLD_EXPANSION
+    }
+  }
+
+  if(!changed)
+    return Py_NewRef(text);
+
+  Py_UCS4 dest_max = Py_MAX(PyUnicode_MAX_CHAR_VALUE(text), UB5_seen ? 65535 : 0);
+
+  PyObject *dest = PyUnicode_New(source_length + expansion, dest_max);
+  if(!dest)
+    return NULL;
+
+  copy chars across doing conversion;
+
+  return dest;
+}
+
 static PyMethodDef methods[] = {
   { "category_name", (PyCFunction)category_name, METH_FASTCALL | METH_KEYWORDS,
     "Returns category names codepoint corresponds to" },
@@ -742,6 +831,7 @@ static PyMethodDef methods[] = {
   { "word_next_break", (PyCFunction)word_next_break, METH_FASTCALL | METH_KEYWORDS, "Returns next word break offset" },
   { "has_category", (PyCFunction)has_category, METH_FASTCALL | METH_KEYWORDS,
     "Returns True if any codepoints are covered by the mask" },
+  { "casefold", (PyCFunction)casefold, METH_FASTCALL | METH_KEYWORDS, "Does case folding for comparison" },
   { NULL, NULL, 0, NULL },
 };
 
