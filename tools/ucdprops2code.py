@@ -120,8 +120,36 @@ def generate_c() -> str:
     out.append("")
     out.extend(generate_c_table("category", "Category", category_ranges))
     out.append("")
+    out.extend(generate_casefold_expansion(props["casefold"]))
+    out.append("")
 
     return "\n".join(out) + "\n"
+
+
+def generate_casefold_expansion(src) -> list[str]:
+    res: list[str] = []
+
+    def add_line(l):
+        l = l + " " * (119 - len(l)) + "\\"
+        res.append(l)
+
+    add_line("#define CASEFOLD_EXPANSION")
+
+    indent = "  "
+
+    for key in sorted(src.keys()):
+        for codepoint, _ in src[key]:
+            if codepoint > ord('Z'):
+                add_line(f"{indent}case 0x{ codepoint:04X}:")
+        add_line(f"{indent*2}changed = 1;")
+
+        if key > 1:
+            add_line(f"{indent*2}expansion += { key -1 };")
+        add_line(f"{indent*2}break;")
+
+    res[-1] = res[-1].rstrip("\\").rstrip()
+    res.append("")
+    return res
 
 
 def comment(language, text):
@@ -386,6 +414,7 @@ props = {
     "word": {},
     "sentence": {},
     "category": {},
+    "casefold": {},
 }
 
 ucd_version = None
@@ -516,6 +545,50 @@ def extract_width(source: str, dest: dict[str, Any]):
                 dest["Wide"].append((start, end))
 
 
+def extract_casefold(source: str, dest: dict[int, list]):
+    dest[1] = []
+    dest[2] = []
+    dest[3] = []
+    for line in source.splitlines():
+        if not line.strip() or line.startswith("#"):
+            continue
+        line = line[: line.index("#")].strip()
+        codepoint, kind, repl, blank = line.split(";")
+        assert not blank
+        if kind.strip() in {"S", "T"}:
+            continue
+        repl = tuple(int(r, 16) for r in repl.split())
+        codepoint = int(codepoint, 16)
+        dest[len(repl)].append((codepoint, repl))
+
+    for i in dest:
+        dest[i].sort()
+
+    # check our assumptions about codepoints <=127
+    # no two or three char replacements
+    assert not any(codepoint <= 127 for codepoint, _ in dest[2])
+    assert not any(codepoint <= 127 for codepoint, _ in dest[3])
+
+    # verify the only values for <=127 are ascii 'A' - 'Z'
+    l127 = set()
+    for i in range(ord("A"), ord("Z") + 1):
+        l127.add(i)
+    for codepoint, (repl,) in dest[1]:
+        if codepoint <= 127:
+            l127.remove(codepoint)
+            assert repl - codepoint == 32
+
+    # verify replacements are the same maxchar or less than codepoint
+    # with the exception of U+00B5 MICRO SIGN which expands to U+03BC
+    # GREEK SMALL LETTER MU
+    for val in 127, 255, 65535, 1114111:
+        for codepoint, repl in dest[1] + dest[2] + dest[3]:
+            if codepoint == 0xB5:
+                assert repl == (0x3BC,)
+            elif codepoint <= val:
+                assert all(r <= val for r in repl), f"{repl=} not <={val} for {codepoint=}"
+
+
 def read_props(data_dir: str):
     def get_source(url: str) -> str:
         parts = url.split("/")
@@ -546,8 +619,11 @@ def read_props(data_dir: str):
     extract_version("EastAsianWidth.txt", source)
     extract_width(source, props["category"])
 
-    source = get_source("https://www.unicode.org/Public/UCD/latest/ucd/emoji/emoji-data.txt")
+    source = get_source("https://www.unicode.org/Public/UCD/latest/ucd/CaseFolding.txt")
+    extract_version("CaseFolding.txt", source)
+    extract_casefold(source, props["casefold"])
 
+    source = get_source("https://www.unicode.org/Public/UCD/latest/ucd/emoji/emoji-data.txt")
     extract_version("emoji-data.txt", source)
     extract_prop(source, props["grapheme"], "Extended_Pictographic")
     extract_prop(source, props["word"], "Extended_Pictographic")
