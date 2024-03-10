@@ -262,7 +262,7 @@ def sentence_next_break(test: str, offset: int = 0) -> int:
 
     Finds the next break point according to the `TR29 spec
     <https://www.unicode.org/reports/tr29/#Sentence_Boundary_Rules>`__.
-    Note that the segment returned includes trailing white space.
+    Note that the segment returned includes leading and trailing white space.
 
     :param text: The text to examine
     :param offset: The first codepoint to examine

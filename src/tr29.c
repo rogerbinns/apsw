@@ -209,7 +209,7 @@ grapheme_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ss
   ARG_PROLOG(2, break_KWNAMES);
   ARG_MANDATORY ARG_PyUnicode(text);
   ARG_MANDATORY ARG_PyUnicode_offset(offset, text);
-  ARG_EPILOG(NULL, "sentence_grapheme_break(text: str, offset: int)", );
+  ARG_EPILOG(NULL, "grapheme_next_break(text: str, offset: int)", );
 
   void *text_data = PyUnicode_DATA(text);
   int text_kind = PyUnicode_KIND(text);
