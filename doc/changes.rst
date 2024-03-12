@@ -27,6 +27,13 @@ Added :func:`apsw.ext.ShowResourceUsage` for getting resource and
 SQLite usage in a block, and also use it for the shell :ref:`timer
 <shell-cmd-timer>` command.
 
+3.45.2.0
+========
+
+Minor doc and tests change due to changed behaviour of
+`sqlite3_serialize <https://sqlite.org/c3ref/serialize.html>`__ on an
+empty database, used by :meth:`Connection.serialize`.
+
 3.45.1.0
 ========
 

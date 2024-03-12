@@ -1899,8 +1899,9 @@
 "The memory copy is the same as if the database was backed up to\n" \
 "disk.\n" \
 "\n" \
-"If the database name doesn't exist or is empty, then None is\n" \
-"returned, not an exception (this is SQLite's behaviour).\n" \
+"If the database name doesn't exist, then None is returned, not an\n" \
+"exception (this is SQLite's behaviour).  One exception is than an\n" \
+"empty temp will result in a None return.\n" \
 "\n" \
 " .. seealso::\n" \
 "\n" \
