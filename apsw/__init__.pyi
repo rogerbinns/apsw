@@ -1525,8 +1525,9 @@ class Connection:
         The memory copy is the same as if the database was backed up to
         disk.
 
-        If the database name doesn't exist or is empty, then None is
-        returned, not an exception (this is SQLite's behaviour).
+        If the database name doesn't exist, then None is returned, not an
+        exception (this is SQLite's behaviour).  One exception is than an
+        empty temp will result in a None return.
 
          .. seealso::
 
