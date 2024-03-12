@@ -263,7 +263,7 @@ valgrind_no_fetch: $(PYVALGRIND_DIR)/bin/python3 src/faultinject.h ## valgrind c
 langserver:  ## Language server integration json
 	$(PYTHON) tools/gencompilecommands.py > compile_commands.json
 
-megatest-build: ## Builds podman container for running megatest
+megatest-build: ## Builds and updates podman container for running megatest
 	podman build --squash-all -t apsw-megatest -f tools/apsw-megatest-build
 
 MEGATEST_ARGS=
