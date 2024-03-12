@@ -3322,8 +3322,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, self.db.deserialize, 3)
         self.assertRaises(TypeError, self.db.deserialize, "main", "main")
 
-        # SQLite implementation detail: empty db gives back None
-        self.assertEqual(None, self.db.serialize("main"))
+        # SQLite implementation detail: empty temp db gives back None
         self.assertEqual(None, self.db.serialize("temp"))
 
         # SQLite implementation detail: unknown name gives back None instead of error
