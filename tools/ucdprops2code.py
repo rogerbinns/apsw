@@ -8,7 +8,6 @@ import os
 import itertools
 import pathlib
 import re
-import pprint
 import collections
 import math
 
@@ -680,11 +679,9 @@ def generate_ranges(name, source, dest):
                 cat = category
             all_cp[val] = cat
 
-    print(f"{name} categories and members")
     by_cat = collections.Counter()
     for v in all_cp.values():
         by_cat[v] += 1
-    pprint.pprint(by_cat)
     stats[name.lower()] = by_cat
 
     last = None
