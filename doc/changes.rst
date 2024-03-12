@@ -15,7 +15,7 @@ APSW changes by version
 
 Minor doc and tests change due to changed behaviour of
 `sqlite3_serialize <https://sqlite.org/c3ref/serialize.html>`__ on an
-empty database.
+empty database, used by :meth:`Connection.serialize`.
 
 3.45.1.0
 ========
