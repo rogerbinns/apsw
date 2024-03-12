@@ -138,7 +138,7 @@ def generate_casefold_expansion(src) -> list[str]:
 
     for key in sorted(src.keys()):
         for codepoint, _ in src[key]:
-            if codepoint > ord('Z'):
+            if codepoint > ord("Z"):
                 add_line(f"{indent}case 0x{ codepoint:04X}:")
         add_line(f"{indent*2}changed = 1;")
 
@@ -152,13 +152,12 @@ def generate_casefold_expansion(src) -> list[str]:
     add_line("#define CASEFOLD_WRITE")
     for key in sorted(src.keys()):
         for codepoint, replacement in src[key]:
-            if codepoint > ord('Z'):
+            if codepoint > ord("Z"):
                 add_line(f"{indent}case 0x{ codepoint:04X}:")
                 for r in replacement[:-1]:
                     add_line(f"{indent*2}WRITE_DEST(0x{r:04X});")
                 add_line(f"{indent*2}dest_char = 0x{replacement[-1]:04X};")
                 add_line(f"{indent*2}break;")
-
 
     res[-1] = res[-1].rstrip("\\").rstrip()
     res.append("")
@@ -212,7 +211,9 @@ def category_enum(language: str, name="Category"):
     cat_vals = {}
     if language == "python":
         yield f"class {name}(enum.IntFlag):"
-    yield from comment(language, "Major category values - mutually exclusive")
+    yield from comment(
+        language, ("    " if language == "python" else "") + "Major category values - mutually exclusive"
+    )
     for i, cat in enumerate(sorted(cats)):
         if language == "python":
             yield f"    { cat } = 2**{ i }"

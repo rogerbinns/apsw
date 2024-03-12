@@ -29,7 +29,7 @@ that the rules and data tables implement"""
 
 
 class _Category(enum.IntFlag):
-# Major category values - mutually exclusive
+    # Major category values - mutually exclusive
     Letter = 2**0
     Mark = 2**1
     Number = 2**2
