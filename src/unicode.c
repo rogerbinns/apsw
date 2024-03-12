@@ -199,17 +199,11 @@ typedef struct
   } while (0)
 #endif
 
-static PyObject *
-grapheme_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs,
-                    PyObject *fast_kwnames)
+static Py_ssize_t
+grapheme_next_break(PyObject *text, Py_ssize_t offset)
 {
-  PyObject *text = NULL;
-  Py_ssize_t offset;
-
-  ARG_PROLOG(2, break_KWNAMES);
-  ARG_MANDATORY ARG_PyUnicode(text);
-  ARG_MANDATORY ARG_PyUnicode_offset(offset, text);
-  ARG_EPILOG(NULL, "grapheme_next_break(text: str, offset: int)", );
+  assert(PyUnicode_Check(text));
+  assert(offset >= 0);
 
   void *text_data = PyUnicode_DATA(text);
   int text_kind = PyUnicode_KIND(text);
@@ -316,7 +310,23 @@ grapheme_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ss
     /* GB999 */
     break;
   }
-  return PyLong_FromLong(it.pos);
+
+  return it.pos;
+}
+
+static PyObject *
+grapheme_next_break_api(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                        PyObject *fast_kwnames)
+{
+  PyObject *text = NULL;
+  Py_ssize_t offset;
+
+  ARG_PROLOG(2, break_KWNAMES);
+  ARG_MANDATORY ARG_PyUnicode(text);
+  ARG_MANDATORY ARG_PyUnicode_offset(offset, text);
+  ARG_EPILOG(NULL, "grapheme_next_break(text: str, offset: int)", );
+
+  return PyLong_FromSsize_t(grapheme_next_break(text, offset));
 }
 
 static PyObject *
@@ -875,26 +885,13 @@ grapheme_length(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
   Py_ssize_t text_length = PyUnicode_GET_LENGTH(text);
   size_t count = 0;
 
-  PyObject *vargs[] = { text, NULL };
-
   while (offset < text_length)
   {
-    vargs[1] = PyLong_FromSsize_t(offset);
-    if (!vargs[1])
-      goto error;
-    PyObject *next_offset = grapheme_next_break(NULL, vargs, 2, NULL);
-    if (!next_offset)
-      goto error;
-    Py_CLEAR(vargs[1]);
-    offset = PyLong_AsSsize_t(next_offset);
+    offset = grapheme_next_break(text, offset);
     count++;
   }
 
   return PyLong_FromSize_t(count);
-
-error:
-  Py_CLEAR(vargs[1]);
-  return NULL;
 }
 
 static PyMethodDef methods[] = {
@@ -904,7 +901,7 @@ static PyMethodDef methods[] = {
     "Returns Unicode category" },
   { "sentence_next_break", (PyCFunction)sentence_next_break, METH_FASTCALL | METH_KEYWORDS,
     "Returns next sentence break offset" },
-  { "grapheme_next_break", (PyCFunction)grapheme_next_break, METH_FASTCALL | METH_KEYWORDS,
+  { "grapheme_next_break", (PyCFunction)grapheme_next_break_api, METH_FASTCALL | METH_KEYWORDS,
     "Returns next grapheme break offset" },
   { "word_next_break", (PyCFunction)word_next_break, METH_FASTCALL | METH_KEYWORDS, "Returns next word break offset" },
   { "has_category", (PyCFunction)has_category, METH_FASTCALL | METH_KEYWORDS,
