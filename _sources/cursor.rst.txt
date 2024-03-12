@@ -161,7 +161,7 @@ Calls:
       * `sqlite3_bind_blob64 <https://sqlite.org/c3ref/bind_blob.html>`__
       * `sqlite3_bind_zeroblob <https://sqlite.org/c3ref/bind_blob.html>`__
 
-.. method:: Cursor.executemany(statements: str, sequenceofbindings: Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor
+.. method:: Cursor.executemany(statements: str, sequenceofbindings: Iterable[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor
 
   This method is for when you want to execute the same statements over
   a sequence of bindings.  Conceptually it does this::

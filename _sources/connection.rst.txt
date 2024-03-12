@@ -561,7 +561,7 @@ If `entries` is present, then each list entry is a dict with the following infor
 
    Calls: `sqlite3_deserialize <https://sqlite.org/c3ref/deserialize.html>`__
 
-.. method:: Connection.drop_modules(keep: Optional[Sequence[str]]) -> None
+.. method:: Connection.drop_modules(keep: Optional[Iterable[str]]) -> None
 
   If *keep* is *None* then all registered virtual tables are dropped.
 
@@ -610,7 +610,7 @@ If `entries` is present, then each list entry is a dict with the following infor
 
     See :meth:`Cursor.execute` for more details, and the :ref:`example <example_executing_sql>`.
 
-.. method:: Connection.executemany(statements: str, sequenceofbindings:Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor
+.. method:: Connection.executemany(statements: str, sequenceofbindings:Iterable[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor
 
 This method is for when you want to execute the same statements over a
 sequence of bindings, such as inserting into a database.  (A cursor is
@@ -901,8 +901,9 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
   The memory copy is the same as if the database was backed up to
   disk.
 
-  If the database name doesn't exist or is empty, then None is
-  returned, not an exception (this is SQLite's behaviour).
+  If the database name doesn't exist, then None is returned, not an
+  exception (this is SQLite's behaviour).  One exception is than an
+  empty temp will result in a None return.
 
    .. seealso::
 

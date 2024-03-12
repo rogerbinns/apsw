@@ -64,9 +64,9 @@ Checking APSW and SQLite versions
 .. code-block:: output
 
           Using APSW file /space/apsw/apsw/__init__.cpython-311-x86_64-linux-gnu.so
-             APSW version 3.45.1.0
-    SQLite header version 3045001
-       SQLite lib version 3.45.1
+             APSW version 3.45.2.0
+    SQLite header version 3045002
+       SQLite lib version 3.45.2
        Using amalgamation True
 
 
@@ -911,7 +911,12 @@ query (without running it)
      ('address', 'CHAR'))
     
     description_full
-     None
+     (('id', 'INTEGER', 'main', 'orders', 'id'),
+     ('customer_id', 'INTEGER', 'main', 'orders', 'customer_id'),
+     ('item', 'MY_OWN_TYPE', 'main', 'orders', 'item'),
+     ('id', 'INTEGER', 'main', 'customers', 'id'),
+     ('name', 'CHAR', 'main', 'customers', 'name'),
+     ('address', 'CHAR', 'main', 'customers', 'address'))
     
     query_plan
      QueryPlan(detail='QUERY PLAN',
@@ -1201,7 +1206,7 @@ feedback and allows cancelling.
     progress handler called
     progress handler called
     progress handler called
-    (9495872585,)
+    (9909188373,)
 
 
 .. index:: File Control (example code)
@@ -1309,8 +1314,7 @@ with  :meth:`Connection.set_commit_hook`.
 .. code-block:: output
 
     in commit hook
-    no commits out of hours
-    commit was not allowed
+    commits okay at this time
 
 
 .. index:: Update hook (example code)
@@ -1542,17 +1546,17 @@ useful instead.
 
 .. code-block:: output
 
-    ┌─────────┬──────────────────────────────────────────┬─────────────────────────┐
-    │ st_size │                directory                 │          name           │
-    ├─────────┼──────────────────────────────────────────┼─────────────────────────┤
-    │ 757129  │ /usr/lib/python3.11/pydoc_data           │ topics.py               │
-    ├─────────┼──────────────────────────────────────────┼─────────────────────────┤
-    │ 469024  │ /usr/lib/python3.11/pydoc_data/__pycache │ topics.cpython-311.pyc  │
-    │         │ __                                       │                         │
-    ├─────────┼──────────────────────────────────────────┼─────────────────────────┤
-    │ 257767  │ /usr/lib/python3.11/tkinter/__pycache__  │ __init__.cpython-       │
-    │         │                                          │ 311.pyc                 │
-    └─────────┴──────────────────────────────────────────┴─────────────────────────┘
+    ┌─────────┬────────────────────────────────────────────────┬───────────────────┐
+    │ st_size │                   directory                    │       name        │
+    ├─────────┼────────────────────────────────────────────────┼───────────────────┤
+    │ 1645145 │ /space/apsw/tools/.mypy_cache/3.11             │ builtins.data.jso │
+    │         │                                                │ n                 │
+    ├─────────┼────────────────────────────────────────────────┼───────────────────┤
+    │ 757129  │ /usr/lib/python3.11/pydoc_data                 │ topics.py         │
+    ├─────────┼────────────────────────────────────────────────┼───────────────────┤
+    │ 717967  │ /space/apsw/tools/.mypy_cache/3.11/collections │ __init__.data.jso │
+    │         │                                                │ n                 │
+    └─────────┴────────────────────────────────────────────────┴───────────────────┘
     
 
 
@@ -1594,7 +1598,8 @@ useful instead.
 
     ┌────────────┬────────────┐
     │ extension  │ total_size │
-    │            │ 384127     │
+    │            │ 384164     │
+    │ .TAG       │ 190        │
     │ .a         │ 113404210  │
     │ .allowlist │ 56         │
     │ .bootstrap │ 1756       │
@@ -1604,12 +1609,12 @@ useful instead.
     │ .css       │ 1325       │
     │ .fish      │ 2215       │
     │ .in        │ 3504       │
-    │ .json      │ 2162       │
+    │ .json      │ 7834037    │
     │ .local     │ 1534       │
     │ .o         │ 20696      │
     │ .ps1       │ 9033       │
-    │ .py        │ 11816067   │
-    │ .pyc       │ 13282437   │
+    │ .py        │ 11816118   │
+    │ .pyc       │ 13288659   │
     │ .rst       │ 9561       │
     │ .sh        │ 3941       │
     │ .so        │ 27575368   │
@@ -1878,9 +1883,9 @@ Python.
     
     Dump output
     
-    -- SQLite dump (by APSW 3.45.1.0)
-    -- SQLite version 3.45.1
-    -- Date: Wed Jan 31 07:06:02 2024
+    -- SQLite dump (by APSW 3.45.2.0)
+    -- SQLite version 3.45.2
+    -- Date: Tue Mar 12 10:29:12 2024
     -- Tables like: csvtest%
     -- Database: /space/apsw/dbfile
     -- User: rogerb @ clamps
@@ -1929,8 +1934,8 @@ for per connection statistics.
 
 .. code-block:: output
 
-    SQLite memory usage 505520 max 2489680
-    4648 bytes used to store schema for this connection
+    SQLite memory usage 520456 max 2497232
+    4936 bytes used to store schema for this connection
 
 
 .. index:: Tracing (example code)
@@ -1998,12 +2003,12 @@ This shows using :meth:`Connection.trace_v2`
     
     code is  SQLITE_TRACE_PROFILE
     {'code': 2,
-     'nanoseconds': 17000000,
+     'nanoseconds': 19000000,
      'stmt_status': {'SQLITE_STMTSTATUS_AUTOINDEX': 0,
                      'SQLITE_STMTSTATUS_FILTER_HIT': 0,
                      'SQLITE_STMTSTATUS_FILTER_MISS': 0,
                      'SQLITE_STMTSTATUS_FULLSCAN_STEP': 1365,
-                     'SQLITE_STMTSTATUS_MEMUSED': 15616,
+                     'SQLITE_STMTSTATUS_MEMUSED': 15784,
                      'SQLITE_STMTSTATUS_REPREPARE': 0,
                      'SQLITE_STMTSTATUS_RUN': 1,
                      'SQLITE_STMTSTATUS_SORT': 2,
