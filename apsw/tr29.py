@@ -550,7 +550,8 @@ if __name__ == "__main__":
 
         A suggested source of text is to download the Universal Declaration of
         Human Rights Corpus from https://www.nltk.org/nltk_data/ and
-        concatenate all the files together.
+        concatenate all the files together.  It contains the same text
+        in most written languages.
         """,
     )
 
