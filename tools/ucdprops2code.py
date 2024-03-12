@@ -726,7 +726,7 @@ def replace_if_different(filename: str, contents: str) -> None:
         pathlib.Path(filename).write_text(contents)
 
 
-def get_tr29_section():
+def get_unicode_section():
     res = []
     res.append(f'unicode_version = "{ ucd_version }"')
     res.append('"""The `Unicode version <https://www.unicode.org/versions/enumeratedversions.html>`__')
@@ -784,18 +784,18 @@ if __name__ == "__main__":
 
     lines = []
     in_replacement = False
-    for line in pathlib.Path("apsw/tr29.py").read_text().splitlines():
+    for line in pathlib.Path("apsw/unicode.py").read_text().splitlines():
         if line == "### BEGIN UNICODE UPDATE SECTION ###":
             in_replacement = True
             lines.append(line)
             continue
         if in_replacement and line == "### END UNICODE UPDATE SECTION ###":
             in_replacement = False
-            lines.append(get_tr29_section())
+            lines.append(get_unicode_section())
             lines.append(line)
             continue
         if not in_replacement:
             lines.append(line)
 
     lines = "\n".join(lines) + "\n"
-    replace_if_different("apsw/tr29.py", lines)
+    replace_if_different("apsw/unicode.py", lines)

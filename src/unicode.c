@@ -23,7 +23,7 @@ It is ugly, but it works.
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
-#include "_tr29db.c"
+#include "_unicodedb.c"
 
 /* if pyutil.c is included then the compiler whines about all the
    static definitions that aren't used, so we do these instead */
@@ -813,7 +813,7 @@ casefold(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_
       UB5_seen = 1;
     switch (source_char)
     {
-      /* generated, present in _tr29db.c */
+      /* generated, present in _unicodedb.c */
       CASEFOLD_EXPANSION
     }
   }
@@ -853,7 +853,7 @@ casefold(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_
     else
       switch (dest_char)
       {
-        /* generated, present in _tr29db.c */
+        /* generated, present in _unicodedb.c */
         CASEFOLD_WRITE
       }
     WRITE_DEST(dest_char);
@@ -917,13 +917,13 @@ static PyMethodDef methods[] = {
 
 static PyModuleDef module_def = {
   .m_base = PyModuleDef_HEAD_INIT,
-  .m_name = "apsw._tr29c",
-  .m_doc = "C implementation of Unicode tr29 methods and lookups",
+  .m_name = "apsw._unicode",
+  .m_doc = "C implementation of Unicode methods and lookups",
   .m_methods = methods,
 };
 
 PyObject *
-PyInit__tr29c(void)
+PyInit__unicode(void)
 {
   PyObject *module = PyModule_Create(&module_def);
   if (module)

@@ -326,8 +326,8 @@ Provided by the :mod:`apsw.fts` module.
 Unicode Text Segmentation and lookups
 =====================================
 
-Provided by the :mod:`apsw.tr29` module.
+Provided by the :mod:`apsw.unicode` module.
 
-.. automodule:: apsw.tr29
+.. automodule:: apsw.unicode
     :members:
     :undoc-members:

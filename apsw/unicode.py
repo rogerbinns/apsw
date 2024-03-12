@@ -78,9 +78,9 @@ class _Category(enum.IntFlag):
 
 ### END UNICODE UPDATE SECTION ###
 
-from . import _tr29c as _tr29
+from . import _unicode
 
-assert unicode_version == _tr29.unicode_version
+assert unicode_version == _unicode.unicode_version
 
 
 def grapheme_next_break(text: str, offset: int = 0) -> int:
@@ -99,7 +99,7 @@ def grapheme_next_break(text: str, offset: int = 0) -> int:
         starting at offset. You should extract ``text[offset:span]``
 
     """
-    return _tr29.grapheme_next_break(text, offset)
+    return _unicode.grapheme_next_break(text, offset)
 
 
 def grapheme_next(text: str, offset: int = 0) -> tuple[int, int]:
@@ -111,7 +111,7 @@ def grapheme_next(text: str, offset: int = 0) -> tuple[int, int]:
 def grapheme_iter(text: str, offset: int = 0) -> Generator[str, None, None]:
     "Generator providing text of each grapheme cluster"
     lt = len(text)
-    meth = _tr29.grapheme_next_break
+    meth = _unicode.grapheme_next_break
     start = offset
     while offset < lt:
         offset = meth(text, offset)
@@ -122,7 +122,7 @@ def grapheme_iter(text: str, offset: int = 0) -> Generator[str, None, None]:
 def grapheme_iter_with_offsets(text: str, offset: int = 0) -> Generator[tuple[int, int, str], None, None]:
     "Generator providing start, end, text of each grapheme cluster"
     lt = len(text)
-    meth = _tr29.grapheme_next_break
+    meth = _unicode.grapheme_next_break
     start = offset
     while offset < lt:
         offset = meth(text, offset)
@@ -132,7 +132,7 @@ def grapheme_iter_with_offsets(text: str, offset: int = 0) -> Generator[tuple[in
 
 def grapheme_length(text: str, offset: int = 0) -> int:
     "Returns number of grapheme clusters in the text.  Unicode aware version of len"
-    return _tr29.grapheme_length(text, offset)
+    return _unicode.grapheme_length(text, offset)
 
 
 def grapheme_substr(text: str, start: int | None = None, stop: int | None = None) -> str:
@@ -220,7 +220,7 @@ def word_next_break(text: str, offset: int = 0) -> int:
 
     :returns:  Next break point
     """
-    return _tr29.word_next_break(text, offset)
+    return _unicode.word_next_break(text, offset)
 
 
 def _word_cats_to_mask(letter, number, emoji, regional_indicator):
@@ -257,8 +257,8 @@ def word_next(
 
     mask = _word_cats_to_mask(letter, number, emoji, regional_indicator)
     lt = len(text)
-    meth = _tr29.word_next_break
-    catcheck = _tr29.has_category
+    meth = _unicode.word_next_break
+    catcheck = _unicode.has_category
 
     while offset < lt:
         end = meth(text, offset)
@@ -281,8 +281,8 @@ def word_iter(
 
     mask = _word_cats_to_mask(letter, number, emoji, regional_indicator)
     lt = len(text)
-    meth = _tr29.word_next_break
-    catcheck = _tr29.has_category
+    meth = _unicode.word_next_break
+    catcheck = _unicode.has_category
 
     while offset < lt:
         end = meth(text, offset)
@@ -304,8 +304,8 @@ def word_iter_with_offsets(
 
     mask = _word_cats_to_mask(letter, number, emoji, regional_indicator)
     lt = len(text)
-    meth = _tr29.word_next_break
-    catcheck = _tr29.has_category
+    meth = _unicode.word_next_break
+    catcheck = _unicode.has_category
 
     while offset < lt:
         end = meth(text, offset)
@@ -326,13 +326,13 @@ def sentence_next_break(test: str, offset: int = 0) -> int:
 
     :returns:  Next break point
     """
-    return _tr29.sentence_next_break(text, offset)
+    return _unicode.sentence_next_break(text, offset)
 
 
 def sentence_next(text: str, offset: int = 0) -> tuple[int, int]:
     """Returns span of next sentence"""
     lt = len(text)
-    meth = _tr29.sentence_next_break
+    meth = _unicode.sentence_next_break
 
     while offset < lt:
         end = meth(text, offset=offset)
@@ -343,7 +343,7 @@ def sentence_next(text: str, offset: int = 0) -> tuple[int, int]:
 def sentence_iter(text: str, offset: int = 0):
     "Generator providing text of each sentence"
     lt = len(text)
-    meth = _tr29.sentence_next_break
+    meth = _unicode.sentence_next_break
 
     while offset < lt:
         end = meth(text, offset)
@@ -354,7 +354,7 @@ def sentence_iter(text: str, offset: int = 0):
 def sentence_iter_with_offsets(text: str, offset: int = 0):
     "Generator providing start, end, text of each sentence"
     lt = len(text)
-    meth = _tr29.sentence_next_break
+    meth = _unicode.sentence_next_break
 
     while offset < lt:
         end = meth(text, offset)
@@ -362,7 +362,7 @@ def sentence_iter_with_offsets(text: str, offset: int = 0):
         offset = end
 
 
-_unicode_category = _tr29.category_category
+_unicode_category = _unicode.category_category
 
 
 def unicode_category(codepoint: int | str) -> str:
@@ -443,17 +443,17 @@ def unicode_category(codepoint: int | str) -> str:
 
 def unicode_is_extended_pictographic(text: str) -> bool:
     "Returns True if any of the text has the extended pictographic property (Emoji and similar)"
-    return _tr29.has_category(text, 0, len(text), _Category.Extended_Pictographic)
+    return _unicode.has_category(text, 0, len(text), _Category.Extended_Pictographic)
 
 
 def unicode_is_regional_indicator(text: str) -> bool:
     "Returns True if any of the text is one of the 26 `regional indicators <https://en.wikipedia.org/wiki/Regional_indicator_symbol>`__ used in pairs to represent country flags"
-    return _tr29.has_category(text, 0, len(text), _Category.Regional_Indicator)
+    return _unicode.has_category(text, 0, len(text), _Category.Regional_Indicator)
 
 
 def unicode_is_wide(text: str) -> bool:
     "Returns True if any of the text has the double width property"
-    return _tr29.has_category(text, 0, len(text), _Category.Wide)
+    return _unicode.has_category(text, 0, len(text), _Category.Wide)
 
 
 def text_wrap(
@@ -471,7 +471,7 @@ def casefold(text: str) -> str:
     lower, and title case, the result is not intended to be displayed
     to people.
     """
-    return _tr29.casefold(text)
+    return _unicode.casefold(text)
 
 
 if __name__ == "__main__":
@@ -564,8 +564,8 @@ if __name__ == "__main__":
         cat = unicode_category(ord(c))
         counter = f"#{counter}:" if counter is not None else ""
         name += f" ({ cat } { apsw.fts.unicode_categories[cat] })"
-        tr29_cat = " | ".join(_tr29.category_name(kind, ord(c)))
-        return "{" + f"{counter}U+" + ("%04X" % ord(c)) + f" {name} : { tr29_cat }" + "}"
+        uni_cat = " | ".join(_unicode.category_name(kind, ord(c)))
+        return "{" + f"{counter}U+" + ("%04X" % ord(c)) + f" {name} : { uni_cat }" + "}"
 
     if options.function == "show":
         if not options.text_file and not options.text:
@@ -704,9 +704,9 @@ if __name__ == "__main__":
                 val = ", ".join(f"U+{ ord(v):04X} {uniname(ord(v))}" for v in val)
                 print(f"{ norm }: { val }")
             print(
-                f"TR29 grapheme: { ' | '.join(_tr29.category_name('grapheme', cp)) }   "
-                f"word: { ' | '.join(_tr29.category_name('word', cp )) }   "
-                f"sentence: { ' | '.join(_tr29.category_name('sentence', cp)) }"
+                f"TR29 grapheme: { ' | '.join(_unicode.category_name('grapheme', cp)) }   "
+                f"word: { ' | '.join(_unicode.category_name('word', cp )) }   "
+                f"sentence: { ' | '.join(_unicode.category_name('sentence', cp)) }"
             )
             print()
 
