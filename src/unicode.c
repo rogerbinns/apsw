@@ -894,6 +894,91 @@ grapheme_length(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
   return PyLong_FromSize_t(count);
 }
 
+static PyObject *
+grapheme_substr(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  PyObject *text = NULL;
+  Py_ssize_t start, stop;
+
+#define grapheme_substr_KWNAMES "text", "start", "stop"
+  ARG_PROLOG(3, grapheme_substr_KWNAMES);
+  ARG_MANDATORY ARG_PyUnicode(text);
+  ARG_MANDATORY ARG_Py_ssize_t(start);
+  ARG_MANDATORY ARG_Py_ssize_t(stop);
+  ARG_EPILOG(NULL, "grapheme_substr(text: str, start: int, stop: int)", );
+
+  PyObject *offsets = NULL;
+
+  if (start < 0 || stop < 0)
+  {
+    /* we are doing addressing relative to the end of the string so we
+       have to track offsets of the whole string and then index */
+    offsets = PyList_New(1);
+    if (!offsets)
+      goto error;
+    PyObject *zero = PyLong_FromLong(0);
+    if (!zero)
+      goto error;
+    PyList_SET_ITEM(offsets, 0, zero);
+  }
+
+  Py_ssize_t count = 0;
+  Py_ssize_t text_offset = 0;
+
+  Py_ssize_t len_text = PyUnicode_GET_LENGTH(text);
+
+  Py_ssize_t start_offset = (start == 0) ? 0 : len_text;
+  Py_ssize_t stop_offset = len_text;
+
+  while (text_offset < len_text)
+  {
+    text_offset = grapheme_next_break(text, text_offset);
+    count++;
+    if (offsets)
+    {
+      PyObject *o = PyLong_FromSsize_t(text_offset);
+      if (!o)
+        goto error;
+      if (PyList_Append(offsets, o) != 0)
+      {
+        Py_DECREF(o);
+        goto error;
+      }
+    }
+    if (start == count)
+      start_offset = text_offset;
+    if (stop == count)
+    {
+      stop_offset = text_offset;
+      if (!offsets)
+        break;
+    }
+  }
+
+  if (!offsets)
+  {
+    assert(stop_offset > start_offset);
+    return PyUnicode_Substring(text, start_offset, stop_offset);
+  }
+
+  Py_ssize_t offsets_len = PyList_GET_SIZE(offsets) - 1;
+
+  Py_ssize_t nchars = PySlice_AdjustIndices(offsets_len, &start, &stop, 1);
+  if (nchars)
+  {
+    start_offset = PyLong_AsSsize_t(PyList_GET_ITEM(offsets, start));
+    stop_offset = PyLong_AsSsize_t(PyList_GET_ITEM(offsets, stop));
+    Py_CLEAR(offsets);
+    return PyUnicode_Substring(text, start_offset, stop_offset);
+  }
+
+  Py_CLEAR(offsets);
+  return PyUnicode_New(0, 0);
+error:
+  Py_CLEAR(offsets);
+  return NULL;
+}
+
 static PyMethodDef methods[] = {
   { "category_name", (PyCFunction)category_name, METH_FASTCALL | METH_KEYWORDS,
     "Returns category names codepoint corresponds to" },
@@ -909,6 +994,7 @@ static PyMethodDef methods[] = {
   { "casefold", (PyCFunction)casefold, METH_FASTCALL | METH_KEYWORDS, "Does case folding for comparison" },
   { "grapheme_length", (PyCFunction)grapheme_length, METH_FASTCALL | METH_KEYWORDS,
     "Length of string in grapheme clusters" },
+  { "grapheme_substr", (PyCFunction)grapheme_substr, METH_FASTCALL | METH_KEYWORDS, "Substring in grapheme clusterss" },
   { NULL, NULL, 0, NULL },
 };
 

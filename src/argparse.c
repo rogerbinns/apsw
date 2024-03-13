@@ -315,6 +315,15 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
     argp_optindex++;                                                                                                   \
   } while (0)
 
+#define ARG_Py_ssize_t(varname)                                                                                        \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    varname = PyLong_AsSsize_t(useargs[argp_optindex]);                                                                \
+    if (varname == -1 && PyErr_Occurred())                                                                             \
+      goto param_error;                                                                                                \
+    argp_optindex++;                                                                                                   \
+  } while (0)
+
 #define ARG_TYPE_CHECK(varname, type, cast)                                                                            \
   do                                                                                                                   \
   {                                                                                                                    \
