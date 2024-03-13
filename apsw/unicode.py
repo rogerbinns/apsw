@@ -136,66 +136,12 @@ def grapheme_length(text: str, offset: int = 0) -> int:
 
 
 def grapheme_substr(text: str, start: int | None = None, stop: int | None = None) -> str:
-    "Like text[str:end] but in grapheme cluster units"
-    # start and end can be negative and outside the bounds of the text
-    # but are never an invalid combination (you get empty text
-    # returned)
-    if start is None:
-        start = 0
-    if stop is None:
-        # guaranteed to be at most this many graphemes
-        stop = len(text)
-    if start == stop or stop == 0 or (start > 0 and stop >= 0 and start >= stop):
-        return ""
-    if start < 0 or stop < 0:
-        # we are doing addressing relative to the end of the string
-        # so we have to track offsets of the whole string and then
-        # index
-        offsets = [0]
-    else:
-        offsets = None
+    """Like text[str:end] but in grapheme cluster units
 
-    count = text_offset = 0
-    start_offset = 0 if start == 0 else len(text)
-    stop_offset = len(text)
-
-    while text_offset < len(text):
-        text_offset = grapheme_next_break(text, text_offset)
-        count += 1
-        if offsets is not None:
-            offsets.append(text_offset)
-        if start == count:
-            start_offset = text_offset
-        if stop == count:
-            stop_offset = text_offset
-            if offsets is None:
-                break
-
-    if offsets is None:
-        assert stop_offset >= start_offset, f"{start=} {stop=} {start_offset=} {stop_offset=}"
-        return text[start_offset:stop_offset]
-
-    # see PySlice_AdjustIndices for exact calculations and comment
-    # "this is harder to get right than you might think"
-    length = len(offsets) - 1
-
-    if start < 0:
-        start += length
-        if start < 0:
-            start = 0
-    elif start > length:
-        start = length
-    if stop < 0:
-        stop += length
-        if stop < 0:
-            stop = 0
-    elif stop > length:
-        stop = length
-    if start < stop:
-        start_offset = offsets[start]
-        stop_offset = offsets[stop]
-        return text[start_offset:stop_offset]
-    return ""
+    start and end can be negative to index from the end, or outside
+    the bounds of the text but are never an invalid combination (you
+    get empty string returned)"""
+    return _unicode.grapheme_substr(text, start, stop)
 
 
 def grapheme_width(text: str, offset: int = 0) -> int:

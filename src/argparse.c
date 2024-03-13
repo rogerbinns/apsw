@@ -111,6 +111,14 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
   success:                                                                                                             \
   cleanup;
 
+#define ARG_ifnone(expr)                                                                                               \
+  if (Py_IsNone(useargs[argp_optindex]))                                                                               \
+  {                                                                                                                    \
+    expr;                                                                                                              \
+    argp_optindex++;                                                                                                   \
+  }                                                                                                                    \
+  else
+
 #define ARG_pyobject(varname)                                                                                          \
   do                                                                                                                   \
   {                                                                                                                    \

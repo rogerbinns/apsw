@@ -903,9 +903,13 @@ grapheme_substr(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
 #define grapheme_substr_KWNAMES "text", "start", "stop"
   ARG_PROLOG(3, grapheme_substr_KWNAMES);
   ARG_MANDATORY ARG_PyUnicode(text);
-  ARG_MANDATORY ARG_Py_ssize_t(start);
-  ARG_MANDATORY ARG_Py_ssize_t(stop);
+  Py_ssize_t len_text = PyUnicode_GET_LENGTH(text);
+  ARG_MANDATORY ARG_ifnone(start = 0) ARG_Py_ssize_t(start);
+  ARG_MANDATORY ARG_ifnone(stop = len_text) ARG_Py_ssize_t(stop);
   ARG_EPILOG(NULL, "grapheme_substr(text: str, start: int, stop: int)", );
+
+  if (start > len_text || start == stop || stop == 0 || (start > 0 && stop >= 0 && start >= stop))
+    return PyUnicode_New(0, 0);
 
   PyObject *offsets = NULL;
 
@@ -924,8 +928,6 @@ grapheme_substr(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
 
   Py_ssize_t count = 0;
   Py_ssize_t text_offset = 0;
-
-  Py_ssize_t len_text = PyUnicode_GET_LENGTH(text);
 
   Py_ssize_t start_offset = (start == 0) ? 0 : len_text;
   Py_ssize_t stop_offset = len_text;
