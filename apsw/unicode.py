@@ -1,24 +1,65 @@
 #!/usr/bin/env python3
 
 """
-`Unicode Technical Report #29
-<https://www.unicode.org/reports/tr29/>`__ rules for finding user
-perceived characters (grapheme clusters), words, and sentences from
-Unicode text. Useful for full text search.  Stays :data:`up to date
-<unicode_version>` with Unicode specifications and tables, and
-includes useful table lookup and other related methods.
+Up to date Unicode aware methods and lookups
 
-Multiple code points can combine into what is rendered as one
-character, for example a base character and combining accents, writing
-systems where consonants with vowels added around them, and emoji
-sequences to adjust how they are shown.  Different languages have
-different ways of separating words and sentences.  This Unicode
-standard and rules implemented here deal with that complexity.
+This module helps with :doc:`textsearch` and general Unicode,
+addressing the following:
+
+* The standand library :mod:`unicodedata` has limited information
+  available (eg if a character is an emoji), and is only updated to
+  new `Unicode versions
+  <https://www.unicode.org/versions/enumeratedversions.html>`__ on a
+  new Python version.
+
+* Multiple consecutive codepoints can combine into a single user
+  perceived character (grapheme cluster), such as combining accents,
+  vowels and marks in some writing systems, variant selectors, joiners
+  and linkers, etc.  That means you can't use indexes into
+  :class:`str` safely without potentially breaking them.
+
+* The standard library provides no help in splitting text into
+  grapheme clusters, words, and sentences.
+
+See :data:`unicode_version` for the implemented version.
+
+Unicode lookups
+
+   :func:`category` provides category information, while
+   :func:`is_extended_pictographic` (Emoji),
+   :func:`is_regional_indicator`, :func:`is_wide` provide helpful
+   information.
+
+Case folding
+
+   :func:`casefold` is used to do case insensitive comparisons.
+
+Grapheme cluster, word, and sentence splitting
+
+    `Unicode Technical Report #29
+    <https://www.unicode.org/reports/tr29/>`__ rules for finding
+    grapheme clusters, words, and sentences are implemented.  Tr29
+    specifies break points which can be found via
+    :func:`grapheme_next_break`, :func:`word_next_break`, and
+    :func:`sentence_next_break`.
+
+    Building on those are iterators providing optional offsets and the
+    text.
+
+Helpers
+
+    Methods like :func:`grapheme_length` to get the number of grapheme
+    clusters in a string, :func:`grapheme_substr` to get substrings,
+    :func:`grapheme_width` which counts how wide the text would be if
+    output to a terminal or monospace font, and :func:`text_wrap` to
+    wrap text taking into grapheme clusters, words, and wide grapheme
+    clusters.
+
 """
 
 from __future__ import annotations
 
-from typing import Callable, Any, Generator
+from typing import Generator
 
 import enum
 
@@ -149,7 +190,7 @@ def grapheme_width(text: str, offset: int = 0) -> int:
     # ::TODO:: convert to C
     count = 0
     for start, end in grapheme_iter(text, offset):
-        count += 2 if any(unicode_category(text[i]) & Category.Wide for i in range(start, end)) else 1
+        count += 2 if any(category(text[i]) & Category.Wide for i in range(start, end)) else 1
     return count
 
 
@@ -311,7 +352,7 @@ def sentence_iter_with_offsets(text: str, offset: int = 0):
 _unicode_category = _unicode.category_category
 
 
-def unicode_category(codepoint: int | str) -> str:
+def category(codepoint: int | str) -> str:
     """Returns the `general category <https://en.wikipedia.org/wiki/Unicode_character_property#General_Category>`__ - eg ``Lu`` for Letter Uppercase
 
     See :data:`apsw.fts.unicode_categories` for descriptions mapping"""
@@ -387,17 +428,17 @@ def unicode_category(codepoint: int | str) -> str:
     raise Exception("Unreachable")
 
 
-def unicode_is_extended_pictographic(text: str) -> bool:
+def is_extended_pictographic(text: str) -> bool:
     "Returns True if any of the text has the extended pictographic property (Emoji and similar)"
     return _unicode.has_category(text, 0, len(text), _Category.Extended_Pictographic)
 
 
-def unicode_is_regional_indicator(text: str) -> bool:
+def is_regional_indicator(text: str) -> bool:
     "Returns True if any of the text is one of the 26 `regional indicators <https://en.wikipedia.org/wiki/Regional_indicator_symbol>`__ used in pairs to represent country flags"
     return _unicode.has_category(text, 0, len(text), _Category.Regional_Indicator)
 
 
-def unicode_is_wide(text: str) -> bool:
+def is_wide(text: str) -> bool:
     "Returns True if any of the text has the double width property"
     return _unicode.has_category(text, 0, len(text), _Category.Wide)
 
@@ -507,7 +548,7 @@ if __name__ == "__main__":
         if options.compact_codepoints:
             return f"U+{ord(c):04x}"
         name = unicodedata.name(c, "<NO NAME>")
-        cat = unicode_category(ord(c))
+        cat = category(ord(c))
         counter = f"#{counter}:" if counter is not None else ""
         name += f" ({ cat } { apsw.fts.unicode_categories[cat] })"
         uni_cat = " | ".join(_unicode.category_name(kind, ord(c)))
@@ -636,7 +677,7 @@ if __name__ == "__main__":
                 return "<NO NAME>"
 
         def deets(cp):
-            cat = unicode_category(cp)
+            cat = category(cp)
             return f"{ uniname(cp) } category { cat }: { apsw.fts.unicode_categories[cat] }"
 
         for i, cp in enumerate(codepoints):

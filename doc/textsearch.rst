@@ -323,8 +323,8 @@ Provided by the :mod:`apsw.fts` module.
     :members:
     :undoc-members:
 
-Unicode Text Segmentation and lookups
-=====================================
+Unicode Text Handling
+=====================
 
 Provided by the :mod:`apsw.unicode` module.
 
