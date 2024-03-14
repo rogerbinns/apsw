@@ -160,6 +160,28 @@ statementcache_finalize(StatementCache *sc, APSWStatement *statement)
   return res;
 }
 
+static Py_hash_t
+apsw_hash_bytes(void *data, Py_ssize_t nbytes)
+{
+  /* This is the same algorithm as fts3StrHash from the SQLite source
+     so it is battle tested.  There is also strhash in SQLite showing
+     an algorithm from Knuth but that one has the problem of being
+     32 bit specific and we do 64 bit mostly. */
+
+  const unsigned char *cdata = (const unsigned char *)data;
+
+  /* unsigned must be used because signed overflow is undefined behaviour*/
+  Py_uhash_t hash = 0;
+
+  while (nbytes > 0)
+  {
+    hash = (hash << 3) ^ hash ^ *cdata;
+    cdata++;
+    nbytes--;
+  }
+  return (Py_hash_t)hash;
+}
+
 static int
 statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t utf8size, PyObject *query, APSWStatement **statement_out, APSWStatementOptions *options)
 {
@@ -174,11 +196,8 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
   if (sc->maxentries && utf8size < SC_MAX_ITEM_SIZE && options->can_cache)
   {
     unsigned i;
-#ifdef PYPY_VERSION
-    hash = utf8size;
-#else
-    hash = _Py_HashBytes(utf8, utf8size);
-#endif
+    hash = apsw_hash_bytes((void*)utf8, utf8size);
+
     for (i = 0; i <= sc->highest_used; i++)
     {
       if (sc->hashes[i] == hash && sc->caches[i]->utf8_size == utf8size && 0 == memcmp(utf8, sc->caches[i]->utf8, utf8size) && 0 == memcmp(&sc->caches[i]->options, options, sizeof(APSWStatementOptions)))
