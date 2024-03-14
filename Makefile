@@ -34,7 +34,7 @@ tagpush: ## Tag with version and push
 	git push --tags
 
 clean: ## Cleans up everything
-	make PYTHONPATH="`pwd`" VERSION=$(VERSION) -C doc clean
+	$(MAKE) PYTHONPATH="`pwd`" VERSION=$(VERSION) -C doc clean
 	rm -rf dist build work/* megatestresults apsw.egg-info __pycache__ apsw/__pycache__ :memory: .mypy_cache .ropeproject htmlcov "System Volume Information" doc/docdb.json
 	mkdir dist
 	for i in 'vgcore.*' '.coverage' '*.pyc' '*.pyo' '*~' '*.o' '*.so' '*.dll' '*.pyd' '*.gcov' '*.gcda' '*.gcno' '*.orig' '*.tmp' 'testdb*' 'testextension.sqlext' ; do \
@@ -50,7 +50,7 @@ docs-no-fetch: $(GENDOCS) doc/example.rst doc/.static doc/typing.rstgen doc/rena
 	rm -f testdb
 	env PYTHONPATH=. $(PYTHON) tools/docmissing.py
 	env PYTHONPATH=. $(PYTHON) tools/docupdate.py $(VERSION)
-	make PYTHONPATH="`pwd`" VERSION=$(VERSION) RELEASEDATE=$(RELEASEDATE) -C doc clean html
+	$(MAKE) PYTHONPATH="`pwd`" VERSION=$(VERSION) RELEASEDATE=$(RELEASEDATE) -C doc clean html
 	tools/spellcheck.sh
 	rst2html.py --strict --verbose --exit-status 1 README.rst >/dev/null
 
@@ -134,7 +134,7 @@ test_debug: $(PYDEBUG_DIR)/bin/python3  src/faultinject.h ## Testing in debug mo
 fulltest: test test_debug
 
 linkcheck:  ## Checks links from doc
-	env PYTHONPATH="`pwd`" make RELEASEDATE=$(RELEASEDATE) VERSION=$(VERSION) -C doc linkcheck
+	env PYTHONPATH="`pwd`" $(MAKE) RELEASEDATE=$(RELEASEDATE) VERSION=$(VERSION) -C doc linkcheck
 
 unwrapped:  ## Find SQLite APIs that are not wrapped by APSW
 	env PYTHONPATH=. $(PYTHON) tools/find_unwrapped_apis.py
@@ -155,7 +155,7 @@ fossil: ## Grabs latest trunk from SQLite source control, extracts and builds in
 	-rm -rf sqlite3
 	mkdir sqlite3
 	set -e ; cd sqlite3 ; curl --output - https://www.sqlite.org/src/tarball/sqlite.tar.gz | tar xfz - --strip-components=1
-	set -e ; cd sqlite3 ; ./configure --quiet --enable-all ; make sqlite3.c sqlite3
+	set -e ; cd sqlite3 ; ./configure --quiet --enable-all ; $(MAKE) sqlite3.c sqlite3
 	-mv sqlite3config.h sqlite3/
 
 # the funky test stuff is to exit successfully when grep has rc==1 since that means no lines found.
@@ -234,8 +234,8 @@ pydebug: ## Build a debug python including address sanitizer.  Extensions it bui
 	cd Python-$(PYDEBUG_VER) && \
 	./configure --with-address-sanitizer --with-undefined-behavior-sanitizer --without-pymalloc --with-pydebug --prefix="$(PYDEBUG_DIR)" \
 	CPPFLAGS="-DPyDict_MAXFREELIST=0 -DPyFloat_MAXFREELIST=0 -DPyTuple_MAXFREELIST=0 -DPyList_MAXFREELIST=0" && \
-	env PATH="/usr/lib/ccache:$$PATH" ASAN_OPTIONS=detect_leaks=false make -j install
-	make dev-depends PYTHON=$(PYDEBUG_DIR)/bin/python3
+	env PATH="/usr/lib/ccache:$$PATH" ASAN_OPTIONS=detect_leaks=false $(MAKE) -j install
+	$(MAKE) dev-depends PYTHON=$(PYDEBUG_DIR)/bin/python3
 
 pyvalgrind: ## Build a debug python with valgrind integration
 	set -x && cd "$(PYVALGRIND_DIR)" && find . -delete && \
@@ -243,8 +243,8 @@ pyvalgrind: ## Build a debug python with valgrind integration
 	cd Python-$(PYVALGRIND_VER) && \
 	./configure --with-valgrind --without-pymalloc  --with-pydebug --prefix="$(PYVALGRIND_DIR)" \
 	CPPFLAGS="-DPyDict_MAXFREELIST=0 -DPyFloat_MAXFREELIST=0 -DPyTuple_MAXFREELIST=0 -DPyList_MAXFREELIST=0" && \
-	env PATH="/usr/lib/ccache:$$PATH" make -j install
-	make dev-depends PYTHON=$(PYVALGRIND_DIR)/bin/python3
+	env PATH="/usr/lib/ccache:$$PATH" $(MAKE) -j install
+	$(MAKE) dev-depends PYTHON=$(PYVALGRIND_DIR)/bin/python3
 
 
 valgrind: $(PYVALGRIND_DIR)/bin/python3 src/faultinject.h ## Runs multiple iterations with valgrind to catch leaks
