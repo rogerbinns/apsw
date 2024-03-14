@@ -196,7 +196,7 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
   if (sc->maxentries && utf8size < SC_MAX_ITEM_SIZE && options->can_cache)
   {
     unsigned i;
-    hash = apsw_hash_bytes(utf8, utf8size);
+    hash = apsw_hash_bytes((void*)utf8, utf8size);
 
     for (i = 0; i <= sc->highest_used; i++)
     {
