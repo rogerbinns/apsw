@@ -53,11 +53,19 @@ typedef struct APSWStatement
   unsigned uses; /* how many times the prepared statement has been (re)used */
 } APSWStatement;
 
+/* recycle bin for APSWStatements to avoid repeated malloc/free calls */
+#define SC_STATEMENT_RECYCLE_BIN_ENTRIES 4
+
 typedef struct StatementCache
 {
   Py_hash_t *hashes;      /* array of hash values */
   APSWStatement **caches; /* corresponding statements */
   sqlite3 *db;            /* db to work against */
+#if SC_STATEMENT_RECYCLE_BIN_ENTRIES > 0
+  APSWStatement *recycle_bin[SC_STATEMENT_RECYCLE_BIN_ENTRIES];
+  unsigned recycle_bin_next;
+#endif
+
   unsigned highest_used;  /* largest entry we have used - no point scanning beyond */
   unsigned maxentries;    /* maximum number of entries */
   unsigned next_eviction; /* which entry is evicted next */
@@ -76,14 +84,6 @@ typedef struct StatementCache
 /* the hash value we use for unoccupied */
 #define SC_SENTINEL_HASH (-1)
 
-/* recycle bin for APSWStatements to avoid repeated malloc/free calls */
-#define SC_STATEMENT_RECYCLE_BIN_ENTRIES 32
-
-#if SC_STATEMENT_RECYCLE_BIN_ENTRIES > 0
-static APSWStatement *apsw_sc_recycle_bin[SC_STATEMENT_RECYCLE_BIN_ENTRIES];
-static unsigned apsw_sc_recycle_bin_next = 0;
-#endif
-
 static int
 statementcache_free_statement(StatementCache *sc, APSWStatement *s)
 {
@@ -94,12 +94,15 @@ statementcache_free_statement(StatementCache *sc, APSWStatement *s)
   PYSQLITE_SC_CALL(res = sqlite3_finalize(s->vdbestatement));
 
 #if SC_STATEMENT_RECYCLE_BIN_ENTRIES > 0
-  if (apsw_sc_recycle_bin_next + 1 < SC_STATEMENT_RECYCLE_BIN_ENTRIES)
-    apsw_sc_recycle_bin[apsw_sc_recycle_bin_next++] = s;
+  if (sc->recycle_bin_next + 1 < SC_STATEMENT_RECYCLE_BIN_ENTRIES)
+  {
+    sc->recycle_bin[sc->recycle_bin_next++] = s;
+  }
   else
 #endif
-
+  {
     PyMem_Free(s);
+  }
 
   return res;
 }
@@ -274,8 +277,8 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
   }
 
 #if SC_STATEMENT_RECYCLE_BIN_ENTRIES > 0
-  if (apsw_sc_recycle_bin_next)
-    statement = apsw_sc_recycle_bin[--apsw_sc_recycle_bin_next];
+  if (sc->recycle_bin_next)
+    statement = sc->recycle_bin[--sc->recycle_bin_next];
   else
 #endif
   {
@@ -390,6 +393,15 @@ statementcache_free(StatementCache *sc)
         }
     }
     PyMem_Free(sc->caches);
+#if SC_STATEMENT_RECYCLE_BIN_ENTRIES > 0
+    while(sc->recycle_bin_next > 0)
+    {
+      /* PyMem_Free evaluates its arguments multiple times at the preprocessor level
+         which leads to bizarre errors when these two lines are combined */
+      PyMem_Free(sc->recycle_bin[sc->recycle_bin_next - 1]);
+      sc->recycle_bin_next--;
+    }
+#endif
     PyMem_Free(sc);
   }
 }
@@ -478,14 +490,3 @@ fail:
   Py_XDECREF(entry);
   return NULL;
 }
-
-#ifdef APSW_TESTFIXTURES
-static void
-statementcache_fini(void)
-{
-#if SC_STATEMENT_RECYCLE_BIN_ENTRIES > 0
-  while (apsw_sc_recycle_bin_next)
-    PyMem_Free(apsw_sc_recycle_bin[apsw_sc_recycle_bin_next--]);
-#endif
-}
-#endif
