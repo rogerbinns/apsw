@@ -688,6 +688,20 @@ category_name(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t 
     unsigned int val = sentence_category(codepoint);
     ALL_SC_VALUES;
   }
+  else if (0 == strcmp(which, "line"))
+  {
+    /* these are a traditional enum, not a bitmask */
+    unsigned int val = line_category(codepoint);
+#undef X
+#define X(v)                                                                                                           \
+  case v:                                                                                                              \
+    return Py_BuildValue("(s)", #v);
+    switch(val)
+    {
+      ALL_LINE_VALUES
+      default: return Py_BuildValue("(s)", "NOT_DEFINED_LINE_VALUE");
+    }
+  }
   else
   {
     PyErr_Format(PyExc_ValueError, "Unknown which parameter \"%s\" - should be one of grapheme, word, sentence", which);

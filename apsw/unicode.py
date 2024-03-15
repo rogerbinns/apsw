@@ -693,7 +693,8 @@ if __name__ == "__main__":
             print(
                 f"TR29 grapheme: { ' | '.join(_unicode.category_name('grapheme', cp)) }   "
                 f"word: { ' | '.join(_unicode.category_name('word', cp )) }   "
-                f"sentence: { ' | '.join(_unicode.category_name('sentence', cp)) }"
+                f"sentence: { ' | '.join(_unicode.category_name('sentence', cp)) }  "
+                f"line: { ' | '.join(_unicode.category_name('line', cp)) }"
             )
             print()
 

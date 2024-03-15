@@ -121,6 +121,7 @@ def generate_c() -> str:
     out.append("")
     out.extend(generate_casefold_expansion(props["casefold"]))
     out.append("")
+    out.extend(generate_c_table("line", "Line", line_ranges))
 
     return "\n".join(out) + "\n"
 
@@ -354,7 +355,11 @@ def generate_c_table(name, enum_name, ranges):
             else:
                 all_cats.update(cat)
         for i, cat in enumerate(sorted(all_cats)):
-            yield f"#define { enum_name }_{ cat } (1u << {i})"
+            if enum_name in {"Line"}:
+                # not a bitset
+                yield f"#define { enum_name }_{ cat } {i}"
+            else:
+                yield f"#define { enum_name }_{ cat } (1u << {i})"
         yield ""
         yield f"#define ALL_{ enum_name.upper() }_VALUES \\"
         for cat in sorted(all_cats):
@@ -428,6 +433,7 @@ props = {
     "grapheme": {},
     "word": {},
     "sentence": {},
+    "line": {},
     "category": {},
     "casefold": {},
 }
@@ -645,7 +651,6 @@ def read_props(data_dir: str):
     extract_prop(source, props["category"], "Extended_Pictographic")
 
     source = get_source("https://www.unicode.org/Public/UCD/latest/ucd/DerivedCoreProperties.txt")
-
     extract_version("DerivedCoreProperties.txt", source)
     extract_prop(source, props["grapheme"], "InCB; Linker", "InCB_Linker")
     extract_prop(source, props["grapheme"], "InCB; Consonant", "InCB_Consonant")
@@ -657,6 +662,10 @@ def read_props(data_dir: str):
         populate(source, props[top.lower()])
         if top == "Grapheme":
             extract_prop(source, props["category"], "Regional_Indicator")
+
+    source = get_source("https://www.unicode.org/Public/UCD/latest/ucd/LineBreak.txt")
+    extract_version("LineBreak.txt", source)
+    populate(source, props["line"])
 
 
 grapheme_ranges = []
@@ -721,6 +730,11 @@ def generate_category_ranges():
     generate_ranges("category", props["category"], category_ranges)
 
 
+line_ranges = []
+def generate_line_ranges():
+    generate_ranges("line", props["line"], line_ranges)
+
+
 def replace_if_different(filename: str, contents: str) -> None:
     if not os.path.exists(filename) or pathlib.Path(filename).read_text() != contents:
         print(f"{ 'Creating' if not os.path.exists(filename) else 'Updating' } { filename }")
@@ -776,6 +790,7 @@ if __name__ == "__main__":
     generate_word_ranges()
     generate_sentence_ranges()
     generate_category_ranges()
+    generate_line_ranges()
 
     assert options.out_file.name.endswith(".c")
     c_code = generate_c()
