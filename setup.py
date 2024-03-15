@@ -827,8 +827,8 @@ def get_icu_config() -> IcuConfig | None:
     return None
 
 
-# We depend on every .[ch] file in src
-depends = [f for f in glob.glob("src/*.[ch]") if f != "src/apsw.c"]
+# We depend on every .[ch] file in src except unicode
+depends = [f for f in glob.glob("src/*.[ch]") if f != "src/apsw.c" and "unicode" not in f]
 
 if __name__ == '__main__':
     setup(name="apsw",
@@ -860,6 +860,7 @@ if __name__ == '__main__':
                         define_macros=define_macros,
                         depends=depends),
               Extension("apsw._unicode", ["src/unicode.c"],
+                        depends=["src/_unicodedb.c"],
                         undef_macros = [ "NDEBUG" ] if os.environ.get("UNICODE_DEBUG") else []),
               ],
           packages=["apsw"],
