@@ -21,6 +21,11 @@ addressing the following:
 * The standard library provides no help in splitting text into
   grapheme clusters, words, and sentences.
 
+* Text processing is performance sensitive - FTS5 easily handles
+  hundreds of megabytes to gigabytes of text, and so should this
+  module.  It also affects the latency of each query as that is
+  tokenized, and results can highlight words and sentences.
+
 See :data:`unicode_version` for the implemented version.
 
 Unicode lookups
@@ -54,6 +59,19 @@ Helpers
     output to a terminal or monospace font, and :func:`text_wrap` to
     wrap text taking into grapheme clusters, words, and wide grapheme
     clusters.
+
+Size
+
+    Using the `ICU <https://icu.unicode.org/>`__ library brings in
+    tens of megabytes of shared libraries of code and tables, with
+    their platform and versioning issues.  This module is just over
+    half a megabyte, and about 25% faster.
+
+Performance
+
+    There some pure Python alternatives, with less functionality.
+    They take 5 to 10 times more CPU time to process the same text.
+    Use `python3 -m apsw.unicode benchmark --help`.
 
 """
 
