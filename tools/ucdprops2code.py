@@ -303,8 +303,6 @@ def generate_c_table(name, enum_name, ranges):
         if not isinstance(k, str):
             k = " | ".join(k)
         yield f"  {v: 10,} { k }"
-    others = sys.maxunicode + 1 - stats[name].total()
-    yield f"  {others:10,} (other)"
     yield ""
     yield f"  {len(ranges):,} ranges"
     yield ""
@@ -602,7 +600,7 @@ grapheme_ranges = []
 stats = {}
 
 
-def generate_ranges(name, source, dest):
+def generate_ranges(name, source, dest, other_name="Other"):
     all_cp = {}
     # somewhat messy because the same codepoint can be
     # in multiple categories
@@ -618,14 +616,13 @@ def generate_ranges(name, source, dest):
             all_cp[val] = cat
 
     by_cat = collections.Counter()
-    for v in all_cp.values():
-        by_cat[v] += 1
     stats[name.lower()] = by_cat
 
     last = None
 
     for cp in range(0, sys.maxunicode + 1):
-        cat = all_cp.get(cp, "Other")
+        cat = all_cp.get(cp, other_name)
+        by_cat[cat] += 1
         if cat != last:
             dest.append([cp, cp, cat])
         else:
@@ -659,8 +656,10 @@ def generate_category_ranges():
 
 
 line_ranges = []
+
+
 def generate_line_ranges():
-    generate_ranges("line", props["line"], line_ranges)
+    generate_ranges("line", props["line"], line_ranges, "XX")
 
 
 def replace_if_different(filename: str, contents: str) -> None:
