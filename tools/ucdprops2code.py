@@ -378,7 +378,7 @@ def extract_version(filename: str, source: str):
             raise ValueError("No matching version line found")
     else:
         mo = re.match(r"# [^-]+-(?P<version>.*)\.txt", source.splitlines()[0])
-    # we only care about major.minor
+    # we only care about major.minor - emoji data doesn't even have patch
     version = ".".join(mo.group("version").split(".")[:2])
     if ucd_version is None:
         ucd_version = version
@@ -464,6 +464,7 @@ unicode_categories = {
 
 
 def extract_categories(source: str, dest: dict[str, Any]):
+    global codepoint_to_category  # we also fill this out
     for v in unicode_categories.values():
         v = v.split()
         assert len(v) == 2
@@ -477,9 +478,12 @@ def extract_categories(source: str, dest: dict[str, Any]):
         if end is None:
             dest[v[0]].append(start)
             dest[v[1]].append(start)
+            codepoint_to_category[start] = cat
         else:
             dest[v[0]].append((start, end))
             dest[v[1]].append((start, end))
+            for i in range(start, end + 1):
+                codepoint_to_category[i] = cat
 
 
 def extract_width(source: str, dest: dict[str, Any]):
@@ -594,13 +598,15 @@ def read_props(data_dir: str):
     populate(source, props["line"])
 
 
+codepoint_to_category = {}
+
 grapheme_ranges = []
 
 
 stats = {}
 
 
-def generate_ranges(name, source, dest, other_name="Other"):
+def generate_ranges(name, source, dest, other_name="Other", tailor=None):
     all_cp = {}
     # somewhat messy because the same codepoint can be
     # in multiple categories
@@ -622,6 +628,8 @@ def generate_ranges(name, source, dest, other_name="Other"):
 
     for cp in range(0, sys.maxunicode + 1):
         cat = all_cp.get(cp, other_name)
+        if tailor:
+            cat = tailor(cp, cat)
         by_cat[cat] += 1
         if cat != last:
             dest.append([cp, cp, cat])
@@ -659,7 +667,21 @@ line_ranges = []
 
 
 def generate_line_ranges():
-    generate_ranges("line", props["line"], line_ranges, "XX")
+    generate_ranges("line", props["line"], line_ranges, "XX", line_resolve_classes)
+
+
+def line_resolve_classes(codepoint: int, cat: str) -> str:
+    # this is to do the mapping in 6.1 Resolve line breaking classes
+    # https://www.unicode.org/reports/tr14/#LB1
+    if cat in {"AI", "SG", "XX"}:
+        return "AL"
+    if cat == "SA":
+        if codepoint_to_category[codepoint] in {"Mn", "Mc"}:
+            return "CM"
+        return "AL"
+    if cat == "CJ":
+        return "NS"
+    return cat
 
 
 def replace_if_different(filename: str, contents: str) -> None:
