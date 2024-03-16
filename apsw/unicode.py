@@ -525,7 +525,8 @@ if __name__ == "__main__":
     )
     p.add_argument("--seed", type=int, default=0, help="Random seed to use [%(default)s]")
     p.add_argument(
-        "--grapheme-package", action="store_true", default=False, help="Test the third party grapheme package instead"
+        "--others",
+        help="A comma separated list of other packages to also benchmark.  Use 'all' to get all available ones.  Supported are grapheme, uniseg, pyicu",
     )
     p.add_argument(
         "text_file",
@@ -721,35 +722,127 @@ if __name__ == "__main__":
         # make interesting be 0.1% of base text
         base_text += interesting * int(len(interesting) / (len(base_text) * 0.001))
 
-        if options.grapheme_package:
-            import grapheme
-            import grapheme.finder
+        tests: list[Any] = [
+            (
+                "apsw.unicode",
+                unicode_version,
+                (
+                    ("grapheme", grapheme_iter),
+                    ("word", word_iter),
+                    ("sentence", sentence_iter),
+                ),
+            )
+        ]
 
-        print("Unicode rules version", unicode_version if not options.grapheme_package else grapheme.UNICODE_VERSION)
+        if options.others:
+            if options.others == "all":
+                ok = []
+                try:
+                    import uniseg
+
+                    ok.append("uniseg")
+                except ImportError:
+                    pass
+                try:
+                    import grapheme
+
+                    ok.append("grapheme")
+                except ImportError:
+                    pass
+                try:
+                    import icu
+
+                    ok.append("pyicu")
+                except ImportError:
+                    pass
+                options.others = ",".join(ok)
+
+            for package in options.others.split(","):
+                package = package.strip()
+                if package == "grapheme":
+                    import grapheme
+                    import grapheme.finder
+
+                    tests.append(
+                        ("grapheme", grapheme.UNICODE_VERSION, (("grapheme", grapheme.finder.GraphemeIterator),))
+                    )
+                elif package == "uniseg":
+                    import uniseg
+                    import uniseg.graphemecluster
+                    import uniseg.wordbreak
+                    import uniseg.sentencebreak
+                    import uniseg.linebreak
+
+                    # note that uniseg words doesn't determine which
+                    # segments are words or not so you just get all
+                    # segments
+
+                    tests.append(
+                        (
+                            "uniseg",
+                            uniseg.unidata_version,
+                            (
+                                ("grapheme", uniseg.graphemecluster.grapheme_clusters),
+                                ("word", uniseg.wordbreak.words),
+                                ("sentence", uniseg.sentencebreak.sentences),
+                                ("line", uniseg.linebreak.line_break_units),
+                            ),
+                        )
+                    )
+                elif package == "pyicu":
+                    import icu
+                    import functools
+
+                    # api only returns breakpoints, so make it match
+                    # the others.  It also does its own utf16 based
+                    # strings so there is some conversion overhead
+                    def icu_iterate(kind, text):
+                        icu_it = getattr(icu.BreakIterator, f"create{kind}Instance")(icu.Locale.getEnglish())
+                        icu_str = icu.UnicodeString(text)
+                        icu_it.setText(icu_str)
+                        offset = 0
+                        for pos in icu_it:
+                            yield str(icu_str[offset:pos])
+                            offset = pos
+
+                    tests.append(
+                        (
+                            "pyicu",
+                            icu.UNICODE_VERSION,
+                            (
+                                ("grapheme", functools.partial(icu_iterate, "Character")),
+                                ("word", functools.partial(icu_iterate, "Word")),
+                                ("sentence", functools.partial(icu_iterate, "Sentence")),
+                                ("line", functools.partial(icu_iterate, "Line")),
+                            ),
+                        )
+                    )
+
+                else:
+                    sys.exit(f"Unknown third party package to benchmark '{package}'")
 
         print(f"Expanding text to { options.size:,d} million chars ...", end="", flush=True)
         while len(text) < options.size * 1_000_000:
             text += "".join(random.sample(base_text, len(base_text)))
         text = text[: options.size * 1_000_000]
-        print(f"\nBenchmarking {'grapheme package' if options.grapheme_package else ''}\n")
 
-        tests = (
-            (
-                ("sentence", sentence_iter),
-                ("word", word_iter),
-                ("grapheme", grapheme_iter),
-            )
-            if not options.grapheme_package
-            else (("grapheme", grapheme.finder.GraphemeIterator),)
-        )
+        for name, version, parts in tests:
+            print(f"\nBenchmarking {name:20s} unicode version { version }")
 
-        for kind, func in tests:
-            print(f"{kind:>8}", end=" ", flush=True)
-            count = 0
-            offset = 0
-            start = time.process_time_ns()
-            for _ in func(text):
-                count += 1
-            end = time.process_time_ns()
-            seconds = (end - start) / 1e9
-            print(f"chars per second: { int(len(text)/seconds): 12,d}    segments: {count: 11,d}")
+            for kind, func in parts:
+                print(f"{kind:>8}", end=" ", flush=True)
+                count = 0
+                offset = 0
+                start = time.process_time_ns()
+                exc = None
+                try:
+                    for _ in func(text):
+                        count += 1
+                except Exception as exc2:
+                    exc = exc2
+                end = time.process_time_ns()
+                if exc is not None:
+                    print(f"       EXCEPTION {exc!r}")
+                else:
+                    seconds = (end - start) / 1e9
+                    print(f"chars per second: { int(len(text)/seconds): 12,d}    segments: {count: 11,d}")
