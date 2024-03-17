@@ -995,6 +995,12 @@ error:
   return NULL;
 }
 
+static int
+unicode_exec(PyObject *module)
+{
+  return PyModule_AddStringConstant(module, "unicode_version", unicode_version);
+}
+
 static PyMethodDef methods[] = {
   { "category_name", (PyCFunction)category_name, METH_FASTCALL | METH_KEYWORDS,
     "Returns category names codepoint corresponds to" },
@@ -1014,27 +1020,25 @@ static PyMethodDef methods[] = {
   { NULL, NULL, 0, NULL },
 };
 
+static PyModuleDef_Slot module_slots[] = {
+  { Py_mod_exec, unicode_exec },
+#if PY_VERSION_HEX >= 0x030c0000
+  { Py_mod_multiple_interpreters, Py_MOD_PER_INTERPRETER_GIL_SUPPORTED },
+#endif
+  { 0, NULL },
+};
+
 static PyModuleDef module_def = {
   .m_base = PyModuleDef_HEAD_INIT,
   .m_name = "apsw._unicode",
   .m_doc = "C implementation of Unicode methods and lookups",
   .m_methods = methods,
+  .m_size = 0,
+  .m_slots = module_slots,
 };
 
 PyObject *
 PyInit__unicode(void)
 {
-  PyObject *module = PyModule_Create(&module_def);
-  if (module)
-  {
-    PyObject *ver_str = PyUnicode_FromString(unicode_version);
-    if (!ver_str)
-      Py_CLEAR(module);
-    if (PyModule_AddObject(module, "unicode_version", ver_str) < 0)
-    {
-      Py_CLEAR(module);
-      Py_CLEAR(ver_str);
-    }
-  }
-  return module;
+  return PyModuleDef_Init(&module_def);
 }
