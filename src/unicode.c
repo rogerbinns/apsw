@@ -505,7 +505,7 @@ word_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     /* WB999 */
     break;
   }
-  return PyLong_FromLong(it.pos);
+  return PyLong_FromSsize_t(it.pos);
 }
 
 static PyObject *
@@ -623,7 +623,7 @@ sentence_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ss
     continue;
   }
 
-  return PyLong_FromLong(it.pos);
+  return PyLong_FromSsize_t(it.pos);
 }
 
 #define category_name_KWNAMES "which", "codepoint"
