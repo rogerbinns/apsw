@@ -626,6 +626,36 @@ sentence_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ss
   return PyLong_FromSsize_t(it.pos);
 }
 
+static PyObject *
+line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  PyObject *text = NULL;
+  Py_ssize_t offset;
+
+  ARG_PROLOG(2, break_KWNAMES);
+  ARG_MANDATORY ARG_PyUnicode(text);
+  ARG_MANDATORY ARG_PyUnicode_offset(offset, text);
+  ARG_EPILOG(NULL, "line_next_break(text: str, offset: int)", );
+
+  void *text_data = PyUnicode_DATA(text);
+  int text_kind = PyUnicode_KIND(text);
+  Py_ssize_t text_end = PyUnicode_GET_LENGTH(text);
+
+#undef cat_func
+#define cat_func line_category
+  TextIterator it = TEXT_INIT;
+
+  /* LB2 implicit */
+
+  /* LB3 */
+  while (it.pos < text_end)
+  {
+    it_advance();
+  }
+
+  return PyLong_FromSsize_t(it.pos);
+}
+
 #define category_name_KWNAMES "which", "codepoint"
 static PyObject *
 category_name(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
@@ -696,10 +726,11 @@ category_name(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t 
 #define X(v)                                                                                                           \
   case v:                                                                                                              \
     return Py_BuildValue("(s)", #v);
-    switch(val)
+    switch (val)
     {
       ALL_LINE_VALUES
-      default: return Py_BuildValue("(s)", "NOT_DEFINED_LINE_VALUE");
+    default:
+      return Py_BuildValue("(s)", "NOT_DEFINED_LINE_VALUE");
     }
   }
   else
@@ -1011,6 +1042,7 @@ static PyMethodDef methods[] = {
   { "grapheme_next_break", (PyCFunction)grapheme_next_break_api, METH_FASTCALL | METH_KEYWORDS,
     "Returns next grapheme break offset" },
   { "word_next_break", (PyCFunction)word_next_break, METH_FASTCALL | METH_KEYWORDS, "Returns next word break offset" },
+  { "line_next_break", (PyCFunction)line_next_break, METH_FASTCALL | METH_KEYWORDS, "Returns next line break offset" },
   { "has_category", (PyCFunction)has_category, METH_FASTCALL | METH_KEYWORDS,
     "Returns True if any codepoints are covered by the mask" },
   { "casefold", (PyCFunction)casefold, METH_FASTCALL | METH_KEYWORDS, "Does case folding for comparison" },

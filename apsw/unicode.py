@@ -367,6 +367,20 @@ def sentence_iter_with_offsets(text: str, offset: int = 0):
         offset = end
 
 
+def line_next_break(text: str, offset: int = 0):
+    """Returns next opportunity to break a line
+
+    Finds the next break point according to the `TR14 spec
+    <https://www.unicode.org/reports/tr14/#LB1>`__.
+
+    :param text: The text to examine
+    :param offset: The first codepoint to examine
+
+    :returns:  Next break point
+    """
+    return _unicode.line_next_break(text, offset)
+
+
 _unicode_category = _unicode.category_category
 
 
@@ -506,7 +520,7 @@ if __name__ == "__main__":
     p = subparsers.add_parser("breaktest", help="Run Unicode test file")
     p.set_defaults(function="breaktest")
     p.add_argument("--fail-fast", default=False, action="store_true", help="Exit on first test failure")
-    p.add_argument("test", choices=("grapheme", "word", "sentence"), help="What to test")
+    p.add_argument("test", choices=("grapheme", "word", "sentence", "line"), help="What to test")
     # ::TODO:: auto download file if not provided
     p.add_argument(
         "file",
@@ -623,7 +637,8 @@ if __name__ == "__main__":
             if not line.strip() or line.startswith("#"):
                 continue
             line = line.split("#")[0].strip().split()
-            assert line[0] == ok, f"Line { line_num } doesn't start with { ok }!"
+            expect = not_ok if options.test == "line" else ok
+            assert line[0] == expect, f"Line { line_num } doesn't start with { expect }!"
             assert line[-1] == ok, f"Line { line_num } doesn't end with { ok }!"
             line = line[1:]
             text = ""
