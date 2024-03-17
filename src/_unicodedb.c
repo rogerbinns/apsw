@@ -66494,57 +66494,51 @@ category_category(Py_UCS4 c)
 
 /* line */
 
-#define Line_AI 0
-#define Line_AK 1
-#define Line_AL 2
-#define Line_AP 3
-#define Line_AS 4
-#define Line_B2 5
-#define Line_BA 6
-#define Line_BB 7
-#define Line_BK 8
-#define Line_CB 9
-#define Line_CJ 10
-#define Line_CL 11
-#define Line_CM 12
-#define Line_CP 13
-#define Line_CR 14
-#define Line_EB 15
-#define Line_EM 16
-#define Line_EX 17
-#define Line_GL 18
-#define Line_H2 19
-#define Line_H3 20
-#define Line_HL 21
-#define Line_HY 22
-#define Line_ID 23
-#define Line_IN 24
-#define Line_IS 25
-#define Line_JL 26
-#define Line_JT 27
-#define Line_JV 28
-#define Line_LF 29
-#define Line_NL 30
-#define Line_NS 31
-#define Line_NU 32
-#define Line_OP 33
-#define Line_PO 34
-#define Line_PR 35
-#define Line_QU 36
-#define Line_RI 37
-#define Line_SA 38
-#define Line_SG 39
-#define Line_SP 40
-#define Line_SY 41
-#define Line_VF 42
-#define Line_VI 43
-#define Line_WJ 44
-#define Line_XX 45
-#define Line_ZW 46
-#define Line_ZWJ 47
+#define Line_AK 0
+#define Line_AL 1
+#define Line_AP 2
+#define Line_AS 3
+#define Line_B2 4
+#define Line_BA 5
+#define Line_BB 6
+#define Line_BK 7
+#define Line_CB 8
+#define Line_CL 9
+#define Line_CM 10
+#define Line_CP 11
+#define Line_CR 12
+#define Line_EB 13
+#define Line_EM 14
+#define Line_EX 15
+#define Line_GL 16
+#define Line_H2 17
+#define Line_H3 18
+#define Line_HL 19
+#define Line_HY 20
+#define Line_ID 21
+#define Line_IN 22
+#define Line_IS 23
+#define Line_JL 24
+#define Line_JT 25
+#define Line_JV 26
+#define Line_LF 27
+#define Line_NL 28
+#define Line_NS 29
+#define Line_NU 30
+#define Line_OP 31
+#define Line_PO 32
+#define Line_PR 33
+#define Line_QU 34
+#define Line_RI 35
+#define Line_SP 36
+#define Line_SY 37
+#define Line_VF 38
+#define Line_VI 39
+#define Line_WJ 40
+#define Line_ZW 41
+#define Line_ZWJ 42
 
 #define ALL_LINE_VALUES \
-  X(Line_AI)                                                                                                           \
   X(Line_AK)                                                                                                           \
   X(Line_AL)                                                                                                           \
   X(Line_AP)                                                                                                           \
@@ -66554,7 +66548,6 @@ category_category(Py_UCS4 c)
   X(Line_BB)                                                                                                           \
   X(Line_BK)                                                                                                           \
   X(Line_CB)                                                                                                           \
-  X(Line_CJ)                                                                                                           \
   X(Line_CL)                                                                                                           \
   X(Line_CM)                                                                                                           \
   X(Line_CP)                                                                                                           \
@@ -66582,14 +66575,11 @@ category_category(Py_UCS4 c)
   X(Line_PR)                                                                                                           \
   X(Line_QU)                                                                                                           \
   X(Line_RI)                                                                                                           \
-  X(Line_SA)                                                                                                           \
-  X(Line_SG)                                                                                                           \
   X(Line_SP)                                                                                                           \
   X(Line_SY)                                                                                                           \
   X(Line_VF)                                                                                                           \
   X(Line_VI)                                                                                                           \
   X(Line_WJ)                                                                                                           \
-  X(Line_XX)                                                                                                           \
   X(Line_ZW)                                                                                                           \
   X(Line_ZWJ)                                                                                                          \
 
@@ -66597,14 +66587,10 @@ category_category(Py_UCS4 c)
 
 /* Codepoints by line category
 
-     900,193 XX
+     925,244 AL
      172,568 ID
-      21,729 AL
       10,773 H3
-       2,429 CM
-       2,048 SG
-         758 SA
-         707 AI
+       2,620 CM
          624 NU
          399 H2
          293 AK
@@ -66616,14 +66602,13 @@ category_category(Py_UCS4 c)
           97 CL
           95 OP
           95 JV
+          93 NS
           75 HL
           67 PR
-          60 CJ
           55 BB
           40 EX
           39 QU
           38 PO
-          33 NS
           32 GL
           26 RI
           13 IS
@@ -66646,7 +66631,7 @@ category_category(Py_UCS4 c)
            1 ZWJ
            1 CB
 
-  3,508 ranges
+  2,551 ranges
 
 */
 
@@ -66683,22 +66668,22 @@ static unsigned int line_fast_lookup[] = {
     Line_CM, Line_CM, Line_CM, Line_CM, Line_CM, Line_CM, Line_CM, Line_CM, Line_CM, Line_CM, Line_CM, Line_CM,
     Line_CM, Line_CM, Line_CM, Line_CM,
     /* 00A0 - 00AF */
-    Line_GL, Line_OP, Line_PO, Line_PR, Line_PR, Line_PR, Line_AL, Line_AI, Line_AI, Line_AL, Line_AI, Line_QU,
+    Line_GL, Line_OP, Line_PO, Line_PR, Line_PR, Line_PR, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_QU,
     Line_AL, Line_BA, Line_AL, Line_AL,
     /* 00B0 - 00BF */
-    Line_PO, Line_PR, Line_AI, Line_AI, Line_BB, Line_AL, Line_AI, Line_AI, Line_AI, Line_AI, Line_AI, Line_QU,
-    Line_AI, Line_AI, Line_AI, Line_OP,
+    Line_PO, Line_PR, Line_AL, Line_AL, Line_BB, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_QU,
+    Line_AL, Line_AL, Line_AL, Line_OP,
     /* 00C0 - 00CF */
     Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL,
     Line_AL, Line_AL, Line_AL, Line_AL,
     /* 00D0 - 00DF */
-    Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AI, Line_AL, Line_AL, Line_AL, Line_AL,
+    Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL,
     Line_AL, Line_AL, Line_AL, Line_AL,
     /* 00E0 - 00EF */
     Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL,
     Line_AL, Line_AL, Line_AL, Line_AL,
     /* 00F0 - 00FF */
-    Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AI, Line_AL, Line_AL, Line_AL, Line_AL,
+    Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL,
     Line_AL, Line_AL, Line_AL, Line_AL,
 };
 
@@ -66710,115 +66695,78 @@ line_category(Py_UCS4 c)
   if (c < 0x0100)
     return line_fast_lookup[c];
 
-  if (c < 0xBA55)
+  if (c < 0xBBF9)
   {
-    if (c < 0x212B)
+    if (c < 0x2770)
     {
-      if (c < 0x0DD8)
+      if (c < 0x0F3D)
       {
-        if (c < 0x0A5E)
+        if (c < 0x0AC6)
         {
-          if (c < 0x07FD)
+          if (c < 0x07FA)
           {
-            if (c < 0x05C8)
+            if (c < 0x060C)
             {
-              if (c < 0x038B)
+              if (c < 0x058F)
               {
-                if (c < 0x02E0)
+                if (c < 0x035C)
                 {
-                  if (c < 0x02D0)
+                  if (c < 0x02DF)
                   {
                     if (c < 0x02CC)
                     {
-                      if (c < 0x02C8)
+                      if (c < 0x02C9)
                       {
-                        if ((c >= 0x0100) && (c <= 0x02C6))
+                        if ((c >= 0x0100) && (c <= 0x02C7))
                           return Line_AL;
-                        /* c == 0x02C7 */
-                        return Line_AI;
+                        /* c == 0x02C8 */
+                        return Line_BB;
                       }
                       else
                       {
-                        if (c == 0x02C8)
-                          return Line_BB;
                         /* (c >= 0x02C9) && (c <= 0x02CB) */
-                        return Line_AI;
+                        return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0x02CE)
-                      {
-                        if (c == 0x02CC)
-                          return Line_BB;
-                        /* c == 0x02CD */
-                        return Line_AI;
-                      }
-                      else
-                      {
-                        /* (c >= 0x02CE) && (c <= 0x02CF) */
-                        return Line_AL;
-                      }
+                      if (c == 0x02CC)
+                        return Line_BB;
+                      /* (c >= 0x02CD) && (c <= 0x02DE) */
+                      return Line_AL;
                     }
                   }
                   else
                   {
-                    if (c < 0x02DD)
+                    if (c < 0x034F)
                     {
-                      if (c < 0x02D8)
+                      if (c < 0x0300)
                       {
-                        if (c == 0x02D0)
-                          return Line_AI;
-                        /* (c >= 0x02D1) && (c <= 0x02D7) */
+                        if (c == 0x02DF)
+                          return Line_BB;
+                        /* (c >= 0x02E0) && (c <= 0x02FF) */
                         return Line_AL;
                       }
                       else
                       {
-                        if ((c >= 0x02D8) && (c <= 0x02DB))
-                          return Line_AI;
-                        /* c == 0x02DC */
-                        return Line_AL;
+                        /* (c >= 0x0300) && (c <= 0x034E) */
+                        return Line_CM;
                       }
                     }
                     else
                     {
-                      if (c < 0x02DF)
-                      {
-                        if (c == 0x02DD)
-                          return Line_AI;
-                        /* c == 0x02DE */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x02DF */
-                        return Line_BB;
-                      }
+                      if (c == 0x034F)
+                        return Line_GL;
+                      /* (c >= 0x0350) && (c <= 0x035B) */
+                      return Line_CM;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0x0378)
+                  if (c < 0x0483)
                   {
-                    if (c < 0x035C)
-                    {
-                      if (c < 0x034F)
-                      {
-                        if ((c >= 0x02E0) && (c <= 0x02FF))
-                          return Line_AL;
-                        /* (c >= 0x0300) && (c <= 0x034E) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        if (c == 0x034F)
-                          return Line_GL;
-                        /* (c >= 0x0350) && (c <= 0x035B) */
-                        return Line_CM;
-                      }
-                    }
-                    else
+                    if (c < 0x037E)
                     {
                       if (c < 0x0370)
                       {
@@ -66829,156 +66777,72 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        /* (c >= 0x0370) && (c <= 0x0377) */
+                        /* (c >= 0x0370) && (c <= 0x037D) */
                         return Line_AL;
                       }
+                    }
+                    else
+                    {
+                      if (c == 0x037E)
+                        return Line_IS;
+                      /* (c >= 0x037F) && (c <= 0x0482) */
+                      return Line_AL;
                     }
                   }
                   else
                   {
-                    if (c < 0x037F)
+                    if (c < 0x058A)
                     {
-                      if (c < 0x037E)
+                      if (c < 0x0589)
                       {
-                        if ((c >= 0x0378) && (c <= 0x0379))
-                          return Line_XX;
-                        /* (c >= 0x037A) && (c <= 0x037D) */
+                        if ((c >= 0x0483) && (c <= 0x0489))
+                          return Line_CM;
+                        /* (c >= 0x048A) && (c <= 0x0588) */
                         return Line_AL;
                       }
                       else
                       {
-                        /* c == 0x037E */
+                        /* c == 0x0589 */
                         return Line_IS;
                       }
                     }
                     else
                     {
-                      if (c < 0x0384)
-                      {
-                        if (c == 0x037F)
-                          return Line_AL;
-                        /* (c >= 0x0380) && (c <= 0x0383) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0384) && (c <= 0x038A) */
-                        return Line_AL;
-                      }
+                      if (c == 0x058A)
+                        return Line_BA;
+                      /* (c >= 0x058B) && (c <= 0x058E) */
+                      return Line_AL;
                     }
                   }
                 }
               }
               else
               {
-                if (c < 0x058B)
-                {
-                  if (c < 0x048A)
-                  {
-                    if (c < 0x03A2)
-                    {
-                      if (c < 0x038D)
-                      {
-                        if (c == 0x038B)
-                          return Line_XX;
-                        /* c == 0x038C */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if (c == 0x038D)
-                          return Line_XX;
-                        /* (c >= 0x038E) && (c <= 0x03A1) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0483)
-                      {
-                        if (c == 0x03A2)
-                          return Line_XX;
-                        /* (c >= 0x03A3) && (c <= 0x0482) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0483) && (c <= 0x0489) */
-                        return Line_CM;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x0559)
-                    {
-                      if (c < 0x0531)
-                      {
-                        if ((c >= 0x048A) && (c <= 0x052F))
-                          return Line_AL;
-                        /* c == 0x0530 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x0531) && (c <= 0x0556))
-                          return Line_AL;
-                        /* (c >= 0x0557) && (c <= 0x0558) */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x058A)
-                      {
-                        if ((c >= 0x0559) && (c <= 0x0588))
-                          return Line_AL;
-                        /* c == 0x0589 */
-                        return Line_IS;
-                      }
-                      else
-                      {
-                        /* c == 0x058A */
-                        return Line_BA;
-                      }
-                    }
-                  }
-                }
-                else
+                if (c < 0x05C7)
                 {
                   if (c < 0x05C0)
                   {
-                    if (c < 0x0591)
+                    if (c < 0x05BE)
                     {
-                      if (c < 0x058F)
-                      {
-                        if ((c >= 0x058B) && (c <= 0x058C))
-                          return Line_XX;
-                        /* (c >= 0x058D) && (c <= 0x058E) */
-                        return Line_AL;
-                      }
-                      else
+                      if (c < 0x0591)
                       {
                         if (c == 0x058F)
                           return Line_PR;
                         /* c == 0x0590 */
-                        return Line_XX;
+                        return Line_AL;
+                      }
+                      else
+                      {
+                        /* (c >= 0x0591) && (c <= 0x05BD) */
+                        return Line_CM;
                       }
                     }
                     else
                     {
-                      if (c < 0x05BF)
-                      {
-                        if ((c >= 0x0591) && (c <= 0x05BD))
-                          return Line_CM;
-                        /* c == 0x05BE */
+                      if (c == 0x05BE)
                         return Line_BA;
-                      }
-                      else
-                      {
-                        /* c == 0x05BF */
-                        return Line_CM;
-                      }
+                      /* c == 0x05BF */
+                      return Line_CM;
                     }
                   }
                   else
@@ -67000,18 +66864,55 @@ line_category(Py_UCS4 c)
                     }
                     else
                     {
-                      if (c < 0x05C7)
+                      if ((c >= 0x05C4) && (c <= 0x05C5))
+                        return Line_CM;
+                      /* c == 0x05C6 */
+                      return Line_EX;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x05F3)
+                  {
+                    if (c < 0x05EB)
+                    {
+                      if (c < 0x05D0)
                       {
-                        if ((c >= 0x05C4) && (c <= 0x05C5))
+                        if (c == 0x05C7)
                           return Line_CM;
-                        /* c == 0x05C6 */
-                        return Line_EX;
+                        /* (c >= 0x05C8) && (c <= 0x05CF) */
+                        return Line_AL;
                       }
                       else
                       {
-                        /* c == 0x05C7 */
-                        return Line_CM;
+                        /* (c >= 0x05D0) && (c <= 0x05EA) */
+                        return Line_HL;
                       }
+                    }
+                    else
+                    {
+                      if ((c >= 0x05EB) && (c <= 0x05EE))
+                        return Line_AL;
+                      /* (c >= 0x05EF) && (c <= 0x05F2) */
+                      return Line_HL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x0606)
+                    {
+                      if ((c >= 0x05F3) && (c <= 0x05FF))
+                        return Line_AL;
+                      /* (c >= 0x0600) && (c <= 0x0605) */
+                      return Line_NU;
+                    }
+                    else
+                    {
+                      if ((c >= 0x0606) && (c <= 0x0608))
+                        return Line_AL;
+                      /* (c >= 0x0609) && (c <= 0x060B) */
+                      return Line_PO;
                     }
                   }
                 }
@@ -67019,86 +66920,38 @@ line_category(Py_UCS4 c)
             }
             else
             {
-              if (c < 0x06DE)
+              if (c < 0x06E5)
               {
-                if (c < 0x061D)
+                if (c < 0x066B)
                 {
-                  if (c < 0x0606)
+                  if (c < 0x061D)
                   {
-                    if (c < 0x05F3)
+                    if (c < 0x061B)
                     {
-                      if (c < 0x05EB)
-                      {
-                        if ((c >= 0x05C8) && (c <= 0x05CF))
-                          return Line_XX;
-                        /* (c >= 0x05D0) && (c <= 0x05EA) */
-                        return Line_HL;
-                      }
-                      else
-                      {
-                        if ((c >= 0x05EB) && (c <= 0x05EE))
-                          return Line_XX;
-                        /* (c >= 0x05EF) && (c <= 0x05F2) */
-                        return Line_HL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0600)
-                      {
-                        if ((c >= 0x05F3) && (c <= 0x05F4))
-                          return Line_AL;
-                        /* (c >= 0x05F5) && (c <= 0x05FF) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0600) && (c <= 0x0605) */
-                        return Line_NU;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x0610)
-                    {
-                      if (c < 0x060C)
-                      {
-                        if ((c >= 0x0606) && (c <= 0x0608))
-                          return Line_AL;
-                        /* (c >= 0x0609) && (c <= 0x060B) */
-                        return Line_PO;
-                      }
-                      else
+                      if (c < 0x0610)
                       {
                         if ((c >= 0x060C) && (c <= 0x060D))
                           return Line_IS;
                         /* (c >= 0x060E) && (c <= 0x060F) */
                         return Line_AL;
                       }
-                    }
-                    else
-                    {
-                      if (c < 0x061C)
-                      {
-                        if ((c >= 0x0610) && (c <= 0x061A))
-                          return Line_CM;
-                        /* c == 0x061B */
-                        return Line_EX;
-                      }
                       else
                       {
-                        /* c == 0x061C */
+                        /* (c >= 0x0610) && (c <= 0x061A) */
                         return Line_CM;
                       }
                     }
+                    else
+                    {
+                      if (c == 0x061B)
+                        return Line_EX;
+                      /* c == 0x061C */
+                      return Line_CM;
+                    }
                   }
-                }
-                else
-                {
-                  if (c < 0x0670)
+                  else
                   {
-                    if (c < 0x066A)
+                    if (c < 0x0660)
                     {
                       if (c < 0x064B)
                       {
@@ -67109,46 +66962,49 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        if ((c >= 0x064B) && (c <= 0x065F))
-                          return Line_CM;
-                        /* (c >= 0x0660) && (c <= 0x0669) */
-                        return Line_NU;
+                        /* (c >= 0x064B) && (c <= 0x065F) */
+                        return Line_CM;
                       }
                     }
                     else
                     {
-                      if (c < 0x066D)
-                      {
-                        if (c == 0x066A)
-                          return Line_PO;
-                        /* (c >= 0x066B) && (c <= 0x066C) */
+                      if ((c >= 0x0660) && (c <= 0x0669))
                         return Line_NU;
-                      }
-                      else
+                      /* c == 0x066A */
+                      return Line_PO;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x06D5)
+                  {
+                    if (c < 0x0671)
+                    {
+                      if (c < 0x0670)
                       {
+                        if ((c >= 0x066B) && (c <= 0x066C))
+                          return Line_NU;
                         /* (c >= 0x066D) && (c <= 0x066F) */
                         return Line_AL;
                       }
+                      else
+                      {
+                        /* c == 0x0670 */
+                        return Line_CM;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x0671) && (c <= 0x06D3))
+                        return Line_AL;
+                      /* c == 0x06D4 */
+                      return Line_EX;
                     }
                   }
                   else
                   {
-                    if (c < 0x06D5)
-                    {
-                      if (c < 0x06D4)
-                      {
-                        if (c == 0x0670)
-                          return Line_CM;
-                        /* (c >= 0x0671) && (c <= 0x06D3) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x06D4 */
-                        return Line_EX;
-                      }
-                    }
-                    else
+                    if (c < 0x06DE)
                     {
                       if (c < 0x06DD)
                       {
@@ -67163,6 +67019,13 @@ line_category(Py_UCS4 c)
                         return Line_NU;
                       }
                     }
+                    else
+                    {
+                      if (c == 0x06DE)
+                        return Line_AL;
+                      /* (c >= 0x06DF) && (c <= 0x06E4) */
+                      return Line_CM;
+                    }
                   }
                 }
               }
@@ -67172,72 +67035,52 @@ line_category(Py_UCS4 c)
                 {
                   if (c < 0x06F0)
                   {
-                    if (c < 0x06E9)
+                    if (c < 0x06EA)
                     {
-                      if (c < 0x06E5)
-                      {
-                        if (c == 0x06DE)
-                          return Line_AL;
-                        /* (c >= 0x06DF) && (c <= 0x06E4) */
-                        return Line_CM;
-                      }
-                      else
+                      if (c < 0x06E9)
                       {
                         if ((c >= 0x06E5) && (c <= 0x06E6))
                           return Line_AL;
                         /* (c >= 0x06E7) && (c <= 0x06E8) */
                         return Line_CM;
                       }
+                      else
+                      {
+                        /* c == 0x06E9 */
+                        return Line_AL;
+                      }
                     }
                     else
                     {
-                      if (c < 0x06EE)
-                      {
-                        if (c == 0x06E9)
-                          return Line_AL;
-                        /* (c >= 0x06EA) && (c <= 0x06ED) */
+                      if ((c >= 0x06EA) && (c <= 0x06ED))
                         return Line_CM;
-                      }
-                      else
-                      {
-                        /* (c >= 0x06EE) && (c <= 0x06EF) */
-                        return Line_AL;
-                      }
+                      /* (c >= 0x06EE) && (c <= 0x06EF) */
+                      return Line_AL;
                     }
                   }
                   else
                   {
-                    if (c < 0x0711)
+                    if (c < 0x0712)
                     {
-                      if (c < 0x070E)
+                      if (c < 0x0711)
                       {
                         if ((c >= 0x06F0) && (c <= 0x06F9))
                           return Line_NU;
-                        /* (c >= 0x06FA) && (c <= 0x070D) */
+                        /* (c >= 0x06FA) && (c <= 0x0710) */
                         return Line_AL;
                       }
                       else
                       {
-                        if (c == 0x070E)
-                          return Line_XX;
-                        /* (c >= 0x070F) && (c <= 0x0710) */
-                        return Line_AL;
+                        /* c == 0x0711 */
+                        return Line_CM;
                       }
                     }
                     else
                     {
-                      if (c < 0x0730)
-                      {
-                        if (c == 0x0711)
-                          return Line_CM;
-                        /* (c >= 0x0712) && (c <= 0x072F) */
+                      if ((c >= 0x0712) && (c <= 0x072F))
                         return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0730) && (c <= 0x074A) */
-                        return Line_CM;
-                      }
+                      /* (c >= 0x0730) && (c <= 0x074A) */
+                      return Line_CM;
                     }
                   }
                 }
@@ -67245,70 +67088,44 @@ line_category(Py_UCS4 c)
                 {
                   if (c < 0x07EB)
                   {
-                    if (c < 0x07B2)
+                    if (c < 0x07C0)
                     {
-                      if (c < 0x07A6)
+                      if (c < 0x07B1)
                       {
-                        if ((c >= 0x074B) && (c <= 0x074C))
-                          return Line_XX;
-                        /* (c >= 0x074D) && (c <= 0x07A5) */
-                        return Line_AL;
+                        if ((c >= 0x074B) && (c <= 0x07A5))
+                          return Line_AL;
+                        /* (c >= 0x07A6) && (c <= 0x07B0) */
+                        return Line_CM;
                       }
                       else
                       {
-                        if ((c >= 0x07A6) && (c <= 0x07B0))
-                          return Line_CM;
-                        /* c == 0x07B1 */
+                        /* (c >= 0x07B1) && (c <= 0x07BF) */
                         return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0x07CA)
-                      {
-                        if ((c >= 0x07B2) && (c <= 0x07BF))
-                          return Line_XX;
-                        /* (c >= 0x07C0) && (c <= 0x07C9) */
+                      if ((c >= 0x07C0) && (c <= 0x07C9))
                         return Line_NU;
-                      }
-                      else
-                      {
-                        /* (c >= 0x07CA) && (c <= 0x07EA) */
-                        return Line_AL;
-                      }
+                      /* (c >= 0x07CA) && (c <= 0x07EA) */
+                      return Line_AL;
                     }
                   }
                   else
                   {
-                    if (c < 0x07F9)
+                    if (c < 0x07F8)
                     {
-                      if (c < 0x07F8)
-                      {
-                        if ((c >= 0x07EB) && (c <= 0x07F3))
-                          return Line_CM;
-                        /* (c >= 0x07F4) && (c <= 0x07F7) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x07F8 */
-                        return Line_IS;
-                      }
+                      if ((c >= 0x07EB) && (c <= 0x07F3))
+                        return Line_CM;
+                      /* (c >= 0x07F4) && (c <= 0x07F7) */
+                      return Line_AL;
                     }
                     else
                     {
-                      if (c < 0x07FB)
-                      {
-                        if (c == 0x07F9)
-                          return Line_EX;
-                        /* c == 0x07FA */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x07FB) && (c <= 0x07FC) */
-                        return Line_XX;
-                      }
+                      if (c == 0x07F8)
+                        return Line_IS;
+                      /* c == 0x07F9 */
+                      return Line_EX;
                     }
                   }
                 }
@@ -67317,32 +67134,40 @@ line_category(Py_UCS4 c)
           }
           else
           {
-            if (c < 0x09BC)
+            if (c < 0x09C9)
             {
-              if (c < 0x08E2)
+              if (c < 0x08E3)
               {
-                if (c < 0x0859)
+                if (c < 0x0829)
                 {
-                  if (c < 0x0825)
+                  if (c < 0x081A)
                   {
-                    if (c < 0x081A)
+                    if (c < 0x0800)
                     {
-                      if (c < 0x0800)
+                      if (c < 0x07FE)
                       {
-                        if (c == 0x07FD)
-                          return Line_CM;
-                        /* (c >= 0x07FE) && (c <= 0x07FF) */
-                        return Line_PR;
+                        if ((c >= 0x07FA) && (c <= 0x07FC))
+                          return Line_AL;
+                        /* c == 0x07FD */
+                        return Line_CM;
                       }
                       else
                       {
-                        if ((c >= 0x0800) && (c <= 0x0815))
-                          return Line_AL;
-                        /* (c >= 0x0816) && (c <= 0x0819) */
-                        return Line_CM;
+                        /* (c >= 0x07FE) && (c <= 0x07FF) */
+                        return Line_PR;
                       }
                     }
                     else
+                    {
+                      if ((c >= 0x0800) && (c <= 0x0815))
+                        return Line_AL;
+                      /* (c >= 0x0816) && (c <= 0x0819) */
+                      return Line_CM;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x0825)
                     {
                       if (c < 0x0824)
                       {
@@ -67357,174 +67182,129 @@ line_category(Py_UCS4 c)
                         return Line_AL;
                       }
                     }
-                  }
-                  else
-                  {
-                    if (c < 0x0830)
-                    {
-                      if (c < 0x0829)
-                      {
-                        if ((c >= 0x0825) && (c <= 0x0827))
-                          return Line_CM;
-                        /* c == 0x0828 */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if ((c >= 0x0829) && (c <= 0x082D))
-                          return Line_CM;
-                        /* (c >= 0x082E) && (c <= 0x082F) */
-                        return Line_XX;
-                      }
-                    }
                     else
                     {
-                      if (c < 0x0840)
-                      {
-                        if ((c >= 0x0830) && (c <= 0x083E))
-                          return Line_AL;
-                        /* c == 0x083F */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0840) && (c <= 0x0858) */
-                        return Line_AL;
-                      }
+                      if ((c >= 0x0825) && (c <= 0x0827))
+                        return Line_CM;
+                      /* c == 0x0828 */
+                      return Line_AL;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0x088F)
+                  if (c < 0x0892)
                   {
-                    if (c < 0x0860)
+                    if (c < 0x085C)
                     {
-                      if (c < 0x085E)
+                      if (c < 0x0859)
                       {
-                        if ((c >= 0x0859) && (c <= 0x085B))
+                        if ((c >= 0x0829) && (c <= 0x082D))
                           return Line_CM;
-                        /* (c >= 0x085C) && (c <= 0x085D) */
-                        return Line_XX;
+                        /* (c >= 0x082E) && (c <= 0x0858) */
+                        return Line_AL;
                       }
                       else
                       {
-                        if (c == 0x085E)
-                          return Line_AL;
-                        /* c == 0x085F */
-                        return Line_XX;
+                        /* (c >= 0x0859) && (c <= 0x085B) */
+                        return Line_CM;
                       }
                     }
                     else
                     {
-                      if (c < 0x0870)
-                      {
-                        if ((c >= 0x0860) && (c <= 0x086A))
-                          return Line_AL;
-                        /* (c >= 0x086B) && (c <= 0x086F) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0870) && (c <= 0x088E) */
+                      if ((c >= 0x085C) && (c <= 0x088F))
                         return Line_AL;
-                      }
+                      /* (c >= 0x0890) && (c <= 0x0891) */
+                      return Line_NU;
                     }
                   }
                   else
                   {
-                    if (c < 0x0898)
+                    if (c < 0x08CA)
                     {
-                      if (c < 0x0892)
+                      if (c < 0x08A0)
                       {
-                        if (c == 0x088F)
-                          return Line_XX;
-                        /* (c >= 0x0890) && (c <= 0x0891) */
-                        return Line_NU;
+                        if ((c >= 0x0892) && (c <= 0x0897))
+                          return Line_AL;
+                        /* (c >= 0x0898) && (c <= 0x089F) */
+                        return Line_CM;
                       }
                       else
                       {
-                        /* (c >= 0x0892) && (c <= 0x0897) */
-                        return Line_XX;
+                        /* (c >= 0x08A0) && (c <= 0x08C9) */
+                        return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0x08CA)
-                      {
-                        if ((c >= 0x0898) && (c <= 0x089F))
-                          return Line_CM;
-                        /* (c >= 0x08A0) && (c <= 0x08C9) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x08CA) && (c <= 0x08E1) */
+                      if ((c >= 0x08CA) && (c <= 0x08E1))
                         return Line_CM;
-                      }
+                      /* c == 0x08E2 */
+                      return Line_NU;
                     }
                   }
                 }
               }
               else
               {
-                if (c < 0x0984)
+                if (c < 0x0966)
                 {
-                  if (c < 0x0951)
+                  if (c < 0x0950)
                   {
                     if (c < 0x093D)
                     {
-                      if (c < 0x0904)
+                      if (c < 0x093A)
                       {
-                        if (c == 0x08E2)
-                          return Line_NU;
-                        /* (c >= 0x08E3) && (c <= 0x0903) */
-                        return Line_CM;
+                        if ((c >= 0x08E3) && (c <= 0x0903))
+                          return Line_CM;
+                        /* (c >= 0x0904) && (c <= 0x0939) */
+                        return Line_AL;
                       }
                       else
                       {
-                        if ((c >= 0x0904) && (c <= 0x0939))
-                          return Line_AL;
                         /* (c >= 0x093A) && (c <= 0x093C) */
                         return Line_CM;
                       }
                     }
                     else
                     {
-                      if (c < 0x0950)
-                      {
-                        if (c == 0x093D)
-                          return Line_AL;
-                        /* (c >= 0x093E) && (c <= 0x094F) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* c == 0x0950 */
+                      if (c == 0x093D)
                         return Line_AL;
-                      }
+                      /* (c >= 0x093E) && (c <= 0x094F) */
+                      return Line_CM;
                     }
                   }
                   else
                   {
-                    if (c < 0x0966)
+                    if (c < 0x0962)
                     {
-                      if (c < 0x0962)
+                      if (c < 0x0958)
                       {
-                        if ((c >= 0x0951) && (c <= 0x0957))
-                          return Line_CM;
-                        /* (c >= 0x0958) && (c <= 0x0961) */
-                        return Line_AL;
+                        if (c == 0x0950)
+                          return Line_AL;
+                        /* (c >= 0x0951) && (c <= 0x0957) */
+                        return Line_CM;
                       }
                       else
                       {
-                        if ((c >= 0x0962) && (c <= 0x0963))
-                          return Line_CM;
-                        /* (c >= 0x0964) && (c <= 0x0965) */
-                        return Line_BA;
+                        /* (c >= 0x0958) && (c <= 0x0961) */
+                        return Line_AL;
                       }
                     }
                     else
+                    {
+                      if ((c >= 0x0962) && (c <= 0x0963))
+                        return Line_CM;
+                      /* (c >= 0x0964) && (c <= 0x0965) */
+                      return Line_BA;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x09BD)
+                  {
+                    if (c < 0x0984)
                     {
                       if (c < 0x0981)
                       {
@@ -67539,76 +67319,29 @@ line_category(Py_UCS4 c)
                         return Line_CM;
                       }
                     }
-                  }
-                }
-                else
-                {
-                  if (c < 0x09AA)
-                  {
-                    if (c < 0x0991)
-                    {
-                      if (c < 0x098D)
-                      {
-                        if (c == 0x0984)
-                          return Line_XX;
-                        /* (c >= 0x0985) && (c <= 0x098C) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if ((c >= 0x098D) && (c <= 0x098E))
-                          return Line_XX;
-                        /* (c >= 0x098F) && (c <= 0x0990) */
-                        return Line_AL;
-                      }
-                    }
                     else
                     {
-                      if (c < 0x09A9)
-                      {
-                        if ((c >= 0x0991) && (c <= 0x0992))
-                          return Line_XX;
-                        /* (c >= 0x0993) && (c <= 0x09A8) */
+                      if ((c >= 0x0984) && (c <= 0x09BB))
                         return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x09A9 */
-                        return Line_XX;
-                      }
+                      /* c == 0x09BC */
+                      return Line_CM;
                     }
                   }
                   else
                   {
-                    if (c < 0x09B3)
+                    if (c < 0x09C5)
                     {
-                      if (c < 0x09B2)
-                      {
-                        if ((c >= 0x09AA) && (c <= 0x09B0))
-                          return Line_AL;
-                        /* c == 0x09B1 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* c == 0x09B2 */
+                      if (c == 0x09BD)
                         return Line_AL;
-                      }
+                      /* (c >= 0x09BE) && (c <= 0x09C4) */
+                      return Line_CM;
                     }
                     else
                     {
-                      if (c < 0x09BA)
-                      {
-                        if ((c >= 0x09B3) && (c <= 0x09B5))
-                          return Line_XX;
-                        /* (c >= 0x09B6) && (c <= 0x09B9) */
+                      if ((c >= 0x09C5) && (c <= 0x09C6))
                         return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x09BA) && (c <= 0x09BB) */
-                        return Line_XX;
-                      }
+                      /* (c >= 0x09C7) && (c <= 0x09C8) */
+                      return Line_CM;
                     }
                   }
                 }
@@ -67616,143 +67349,98 @@ line_category(Py_UCS4 c)
             }
             else
             {
-              if (c < 0x0A04)
+              if (c < 0x0A3D)
               {
-                if (c < 0x09E2)
+                if (c < 0x09F4)
                 {
-                  if (c < 0x09CE)
+                  if (c < 0x09E2)
                   {
-                    if (c < 0x09C7)
+                    if (c < 0x09D7)
                     {
-                      if (c < 0x09BE)
+                      if (c < 0x09CE)
                       {
-                        if (c == 0x09BC)
-                          return Line_CM;
-                        /* c == 0x09BD */
-                        return Line_AL;
+                        if ((c >= 0x09C9) && (c <= 0x09CA))
+                          return Line_AL;
+                        /* (c >= 0x09CB) && (c <= 0x09CD) */
+                        return Line_CM;
                       }
                       else
                       {
-                        if ((c >= 0x09BE) && (c <= 0x09C4))
-                          return Line_CM;
-                        /* (c >= 0x09C5) && (c <= 0x09C6) */
-                        return Line_XX;
+                        /* (c >= 0x09CE) && (c <= 0x09D6) */
+                        return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0x09CB)
-                      {
-                        if ((c >= 0x09C7) && (c <= 0x09C8))
-                          return Line_CM;
-                        /* (c >= 0x09C9) && (c <= 0x09CA) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x09CB) && (c <= 0x09CD) */
+                      if (c == 0x09D7)
                         return Line_CM;
-                      }
+                      /* (c >= 0x09D8) && (c <= 0x09E1) */
+                      return Line_AL;
                     }
                   }
                   else
                   {
-                    if (c < 0x09DC)
-                    {
-                      if (c < 0x09D7)
-                      {
-                        if (c == 0x09CE)
-                          return Line_AL;
-                        /* (c >= 0x09CF) && (c <= 0x09D6) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if (c == 0x09D7)
-                          return Line_CM;
-                        /* (c >= 0x09D8) && (c <= 0x09DB) */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x09DF)
-                      {
-                        if ((c >= 0x09DC) && (c <= 0x09DD))
-                          return Line_AL;
-                        /* c == 0x09DE */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x09DF) && (c <= 0x09E1) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x09FA)
-                  {
-                    if (c < 0x09F2)
+                    if (c < 0x09F0)
                     {
                       if (c < 0x09E6)
                       {
                         if ((c >= 0x09E2) && (c <= 0x09E3))
                           return Line_CM;
                         /* (c >= 0x09E4) && (c <= 0x09E5) */
-                        return Line_XX;
+                        return Line_AL;
                       }
                       else
                       {
-                        if ((c >= 0x09E6) && (c <= 0x09EF))
-                          return Line_NU;
-                        /* (c >= 0x09F0) && (c <= 0x09F1) */
+                        /* (c >= 0x09E6) && (c <= 0x09EF) */
+                        return Line_NU;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x09F0) && (c <= 0x09F1))
+                        return Line_AL;
+                      /* (c >= 0x09F2) && (c <= 0x09F3) */
+                      return Line_PO;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x09FE)
+                  {
+                    if (c < 0x09FB)
+                    {
+                      if (c < 0x09FA)
+                      {
+                        if ((c >= 0x09F4) && (c <= 0x09F8))
+                          return Line_AL;
+                        /* c == 0x09F9 */
+                        return Line_PO;
+                      }
+                      else
+                      {
+                        /* c == 0x09FA */
                         return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0x09F9)
-                      {
-                        if ((c >= 0x09F2) && (c <= 0x09F3))
-                          return Line_PO;
-                        /* (c >= 0x09F4) && (c <= 0x09F8) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x09F9 */
-                        return Line_PO;
-                      }
+                      if (c == 0x09FB)
+                        return Line_PR;
+                      /* (c >= 0x09FC) && (c <= 0x09FD) */
+                      return Line_AL;
                     }
                   }
                   else
                   {
-                    if (c < 0x09FE)
-                    {
-                      if (c < 0x09FC)
-                      {
-                        if (c == 0x09FA)
-                          return Line_AL;
-                        /* c == 0x09FB */
-                        return Line_PR;
-                      }
-                      else
-                      {
-                        /* (c >= 0x09FC) && (c <= 0x09FD) */
-                        return Line_AL;
-                      }
-                    }
-                    else
+                    if (c < 0x0A04)
                     {
                       if (c < 0x0A01)
                       {
                         if (c == 0x09FE)
                           return Line_CM;
                         /* (c >= 0x09FF) && (c <= 0x0A00) */
-                        return Line_XX;
+                        return Line_AL;
                       }
                       else
                       {
@@ -67760,119 +67448,43 @@ line_category(Py_UCS4 c)
                         return Line_CM;
                       }
                     }
+                    else
+                    {
+                      if ((c >= 0x0A04) && (c <= 0x0A3B))
+                        return Line_AL;
+                      /* c == 0x0A3C */
+                      return Line_CM;
+                    }
                   }
                 }
               }
               else
               {
-                if (c < 0x0A3A)
-                {
-                  if (c < 0x0A2A)
-                  {
-                    if (c < 0x0A11)
-                    {
-                      if (c < 0x0A0B)
-                      {
-                        if (c == 0x0A04)
-                          return Line_XX;
-                        /* (c >= 0x0A05) && (c <= 0x0A0A) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if ((c >= 0x0A0B) && (c <= 0x0A0E))
-                          return Line_XX;
-                        /* (c >= 0x0A0F) && (c <= 0x0A10) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0A29)
-                      {
-                        if ((c >= 0x0A11) && (c <= 0x0A12))
-                          return Line_XX;
-                        /* (c >= 0x0A13) && (c <= 0x0A28) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x0A29 */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x0A35)
-                    {
-                      if (c < 0x0A32)
-                      {
-                        if ((c >= 0x0A2A) && (c <= 0x0A30))
-                          return Line_AL;
-                        /* c == 0x0A31 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x0A32) && (c <= 0x0A33))
-                          return Line_AL;
-                        /* c == 0x0A34 */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0A38)
-                      {
-                        if ((c >= 0x0A35) && (c <= 0x0A36))
-                          return Line_AL;
-                        /* c == 0x0A37 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0A38) && (c <= 0x0A39) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                }
-                else
+                if (c < 0x0A70)
                 {
                   if (c < 0x0A4B)
                   {
-                    if (c < 0x0A43)
+                    if (c < 0x0A47)
                     {
-                      if (c < 0x0A3D)
+                      if (c < 0x0A43)
                       {
-                        if ((c >= 0x0A3A) && (c <= 0x0A3B))
-                          return Line_XX;
-                        /* c == 0x0A3C */
+                        if (c == 0x0A3D)
+                          return Line_AL;
+                        /* (c >= 0x0A3E) && (c <= 0x0A42) */
                         return Line_CM;
                       }
                       else
                       {
-                        if (c == 0x0A3D)
-                          return Line_XX;
-                        /* (c >= 0x0A3E) && (c <= 0x0A42) */
-                        return Line_CM;
+                        /* (c >= 0x0A43) && (c <= 0x0A46) */
+                        return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0x0A49)
-                      {
-                        if ((c >= 0x0A43) && (c <= 0x0A46))
-                          return Line_XX;
-                        /* (c >= 0x0A47) && (c <= 0x0A48) */
+                      if ((c >= 0x0A47) && (c <= 0x0A48))
                         return Line_CM;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0A49) && (c <= 0x0A4A) */
-                        return Line_XX;
-                      }
+                      /* (c >= 0x0A49) && (c <= 0x0A4A) */
+                      return Line_AL;
                     }
                   }
                   else
@@ -67884,7 +67496,7 @@ line_category(Py_UCS4 c)
                         if ((c >= 0x0A4B) && (c <= 0x0A4D))
                           return Line_CM;
                         /* (c >= 0x0A4E) && (c <= 0x0A50) */
-                        return Line_XX;
+                        return Line_AL;
                       }
                       else
                       {
@@ -67894,18 +67506,55 @@ line_category(Py_UCS4 c)
                     }
                     else
                     {
-                      if (c < 0x0A5D)
+                      if ((c >= 0x0A52) && (c <= 0x0A65))
+                        return Line_AL;
+                      /* (c >= 0x0A66) && (c <= 0x0A6F) */
+                      return Line_NU;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x0A84)
+                  {
+                    if (c < 0x0A76)
+                    {
+                      if (c < 0x0A75)
                       {
-                        if ((c >= 0x0A52) && (c <= 0x0A58))
-                          return Line_XX;
-                        /* (c >= 0x0A59) && (c <= 0x0A5C) */
+                        if ((c >= 0x0A70) && (c <= 0x0A71))
+                          return Line_CM;
+                        /* (c >= 0x0A72) && (c <= 0x0A74) */
                         return Line_AL;
                       }
                       else
                       {
-                        /* c == 0x0A5D */
-                        return Line_XX;
+                        /* c == 0x0A75 */
+                        return Line_CM;
                       }
+                    }
+                    else
+                    {
+                      if ((c >= 0x0A76) && (c <= 0x0A80))
+                        return Line_AL;
+                      /* (c >= 0x0A81) && (c <= 0x0A83) */
+                      return Line_CM;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x0ABD)
+                    {
+                      if ((c >= 0x0A84) && (c <= 0x0ABB))
+                        return Line_AL;
+                      /* c == 0x0ABC */
+                      return Line_CM;
+                    }
+                    else
+                    {
+                      if (c == 0x0ABD)
+                        return Line_AL;
+                      /* (c >= 0x0ABE) && (c <= 0x0AC5) */
+                      return Line_CM;
                     }
                   }
                 }
@@ -67915,300 +67564,216 @@ line_category(Py_UCS4 c)
         }
         else
         {
-          if (c < 0x0BFA)
+          if (c < 0x0CF3)
           {
-            if (c < 0x0B35)
+            if (c < 0x0BE6)
             {
-              if (c < 0x0ACA)
+              if (c < 0x0B49)
               {
-                if (c < 0x0A93)
+                if (c < 0x0AF2)
                 {
-                  if (c < 0x0A77)
+                  if (c < 0x0AE2)
                   {
-                    if (c < 0x0A72)
+                    if (c < 0x0ACB)
                     {
-                      if (c < 0x0A66)
+                      if (c < 0x0ACA)
                       {
-                        if (c == 0x0A5E)
+                        if (c == 0x0AC6)
                           return Line_AL;
-                        /* (c >= 0x0A5F) && (c <= 0x0A65) */
-                        return Line_XX;
+                        /* (c >= 0x0AC7) && (c <= 0x0AC9) */
+                        return Line_CM;
                       }
                       else
                       {
-                        if ((c >= 0x0A66) && (c <= 0x0A6F))
-                          return Line_NU;
-                        /* (c >= 0x0A70) && (c <= 0x0A71) */
-                        return Line_CM;
+                        /* c == 0x0ACA */
+                        return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0x0A76)
-                      {
-                        if ((c >= 0x0A72) && (c <= 0x0A74))
-                          return Line_AL;
-                        /* c == 0x0A75 */
+                      if ((c >= 0x0ACB) && (c <= 0x0ACD))
                         return Line_CM;
-                      }
-                      else
-                      {
-                        /* c == 0x0A76 */
-                        return Line_AL;
-                      }
+                      /* (c >= 0x0ACE) && (c <= 0x0AE1) */
+                      return Line_AL;
                     }
                   }
                   else
                   {
-                    if (c < 0x0A8E)
+                    if (c < 0x0AF0)
                     {
-                      if (c < 0x0A84)
+                      if (c < 0x0AE6)
                       {
-                        if ((c >= 0x0A77) && (c <= 0x0A80))
-                          return Line_XX;
-                        /* (c >= 0x0A81) && (c <= 0x0A83) */
-                        return Line_CM;
+                        if ((c >= 0x0AE2) && (c <= 0x0AE3))
+                          return Line_CM;
+                        /* (c >= 0x0AE4) && (c <= 0x0AE5) */
+                        return Line_AL;
                       }
                       else
                       {
-                        if (c == 0x0A84)
-                          return Line_XX;
-                        /* (c >= 0x0A85) && (c <= 0x0A8D) */
-                        return Line_AL;
+                        /* (c >= 0x0AE6) && (c <= 0x0AEF) */
+                        return Line_NU;
                       }
                     }
                     else
                     {
-                      if (c < 0x0A92)
-                      {
-                        if (c == 0x0A8E)
-                          return Line_XX;
-                        /* (c >= 0x0A8F) && (c <= 0x0A91) */
+                      if (c == 0x0AF0)
                         return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x0A92 */
-                        return Line_XX;
-                      }
+                      /* c == 0x0AF1 */
+                      return Line_PR;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0x0ABA)
+                  if (c < 0x0B3C)
                   {
-                    if (c < 0x0AB2)
+                    if (c < 0x0B01)
                     {
-                      if (c < 0x0AAA)
+                      if (c < 0x0B00)
                       {
-                        if ((c >= 0x0A93) && (c <= 0x0AA8))
+                        if ((c >= 0x0AF2) && (c <= 0x0AF9))
                           return Line_AL;
-                        /* c == 0x0AA9 */
-                        return Line_XX;
+                        /* (c >= 0x0AFA) && (c <= 0x0AFF) */
+                        return Line_CM;
                       }
                       else
                       {
-                        if ((c >= 0x0AAA) && (c <= 0x0AB0))
-                          return Line_AL;
-                        /* c == 0x0AB1 */
-                        return Line_XX;
+                        /* c == 0x0B00 */
+                        return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0x0AB5)
-                      {
-                        if ((c >= 0x0AB2) && (c <= 0x0AB3))
-                          return Line_AL;
-                        /* c == 0x0AB4 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0AB5) && (c <= 0x0AB9) */
-                        return Line_AL;
-                      }
+                      if ((c >= 0x0B01) && (c <= 0x0B03))
+                        return Line_CM;
+                      /* (c >= 0x0B04) && (c <= 0x0B3B) */
+                      return Line_AL;
                     }
                   }
                   else
                   {
-                    if (c < 0x0ABE)
+                    if (c < 0x0B45)
                     {
-                      if (c < 0x0ABD)
+                      if (c < 0x0B3E)
                       {
-                        if ((c >= 0x0ABA) && (c <= 0x0ABB))
-                          return Line_XX;
-                        /* c == 0x0ABC */
-                        return Line_CM;
+                        if (c == 0x0B3C)
+                          return Line_CM;
+                        /* c == 0x0B3D */
+                        return Line_AL;
                       }
                       else
                       {
-                        /* c == 0x0ABD */
-                        return Line_AL;
+                        /* (c >= 0x0B3E) && (c <= 0x0B44) */
+                        return Line_CM;
                       }
                     }
                     else
                     {
-                      if (c < 0x0AC7)
-                      {
-                        if ((c >= 0x0ABE) && (c <= 0x0AC5))
-                          return Line_CM;
-                        /* c == 0x0AC6 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0AC7) && (c <= 0x0AC9) */
-                        return Line_CM;
-                      }
+                      if ((c >= 0x0B45) && (c <= 0x0B46))
+                        return Line_AL;
+                      /* (c >= 0x0B47) && (c <= 0x0B48) */
+                      return Line_CM;
                     }
                   }
                 }
               }
               else
               {
-                if (c < 0x0B00)
+                if (c < 0x0B83)
                 {
-                  if (c < 0x0AE4)
+                  if (c < 0x0B62)
                   {
-                    if (c < 0x0AD1)
+                    if (c < 0x0B55)
                     {
-                      if (c < 0x0ACE)
+                      if (c < 0x0B4E)
                       {
-                        if (c == 0x0ACA)
-                          return Line_XX;
-                        /* (c >= 0x0ACB) && (c <= 0x0ACD) */
+                        if ((c >= 0x0B49) && (c <= 0x0B4A))
+                          return Line_AL;
+                        /* (c >= 0x0B4B) && (c <= 0x0B4D) */
                         return Line_CM;
                       }
                       else
                       {
-                        if ((c >= 0x0ACE) && (c <= 0x0ACF))
-                          return Line_XX;
-                        /* c == 0x0AD0 */
+                        /* (c >= 0x0B4E) && (c <= 0x0B54) */
                         return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0x0AE2)
-                      {
-                        if ((c >= 0x0AD1) && (c <= 0x0ADF))
-                          return Line_XX;
-                        /* (c >= 0x0AE0) && (c <= 0x0AE1) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0AE2) && (c <= 0x0AE3) */
+                      if ((c >= 0x0B55) && (c <= 0x0B57))
                         return Line_CM;
-                      }
+                      /* (c >= 0x0B58) && (c <= 0x0B61) */
+                      return Line_AL;
                     }
                   }
                   else
                   {
-                    if (c < 0x0AF2)
+                    if (c < 0x0B70)
                     {
-                      if (c < 0x0AF0)
+                      if (c < 0x0B66)
                       {
-                        if ((c >= 0x0AE4) && (c <= 0x0AE5))
-                          return Line_XX;
-                        /* (c >= 0x0AE6) && (c <= 0x0AEF) */
-                        return Line_NU;
-                      }
-                      else
-                      {
-                        if (c == 0x0AF0)
-                          return Line_AL;
-                        /* c == 0x0AF1 */
-                        return Line_PR;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0AFA)
-                      {
-                        if ((c >= 0x0AF2) && (c <= 0x0AF8))
-                          return Line_XX;
-                        /* c == 0x0AF9 */
+                        if ((c >= 0x0B62) && (c <= 0x0B63))
+                          return Line_CM;
+                        /* (c >= 0x0B64) && (c <= 0x0B65) */
                         return Line_AL;
                       }
                       else
                       {
-                        /* (c >= 0x0AFA) && (c <= 0x0AFF) */
-                        return Line_CM;
+                        /* (c >= 0x0B66) && (c <= 0x0B6F) */
+                        return Line_NU;
                       }
+                    }
+                    else
+                    {
+                      if ((c >= 0x0B70) && (c <= 0x0B81))
+                        return Line_AL;
+                      /* c == 0x0B82 */
+                      return Line_CM;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0x0B13)
+                  if (c < 0x0BCA)
                   {
-                    if (c < 0x0B0D)
+                    if (c < 0x0BC6)
                     {
-                      if (c < 0x0B04)
+                      if (c < 0x0BC3)
                       {
-                        if (c == 0x0B00)
-                          return Line_XX;
-                        /* (c >= 0x0B01) && (c <= 0x0B03) */
+                        if ((c >= 0x0B83) && (c <= 0x0BBD))
+                          return Line_AL;
+                        /* (c >= 0x0BBE) && (c <= 0x0BC2) */
                         return Line_CM;
                       }
                       else
                       {
-                        if (c == 0x0B04)
-                          return Line_XX;
-                        /* (c >= 0x0B05) && (c <= 0x0B0C) */
+                        /* (c >= 0x0BC3) && (c <= 0x0BC5) */
                         return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0x0B11)
-                      {
-                        if ((c >= 0x0B0D) && (c <= 0x0B0E))
-                          return Line_XX;
-                        /* (c >= 0x0B0F) && (c <= 0x0B10) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0B11) && (c <= 0x0B12) */
-                        return Line_XX;
-                      }
+                      if ((c >= 0x0BC6) && (c <= 0x0BC8))
+                        return Line_CM;
+                      /* c == 0x0BC9 */
+                      return Line_AL;
                     }
                   }
                   else
                   {
-                    if (c < 0x0B31)
+                    if (c < 0x0BD7)
                     {
-                      if (c < 0x0B2A)
-                      {
-                        if ((c >= 0x0B13) && (c <= 0x0B28))
-                          return Line_AL;
-                        /* c == 0x0B29 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0B2A) && (c <= 0x0B30) */
-                        return Line_AL;
-                      }
+                      if ((c >= 0x0BCA) && (c <= 0x0BCD))
+                        return Line_CM;
+                      /* (c >= 0x0BCE) && (c <= 0x0BD6) */
+                      return Line_AL;
                     }
                     else
                     {
-                      if (c < 0x0B34)
-                      {
-                        if (c == 0x0B31)
-                          return Line_XX;
-                        /* (c >= 0x0B32) && (c <= 0x0B33) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x0B34 */
-                        return Line_XX;
-                      }
+                      if (c == 0x0BD7)
+                        return Line_CM;
+                      /* (c >= 0x0BD8) && (c <= 0x0BE5) */
+                      return Line_AL;
                     }
                   }
                 }
@@ -68216,283 +67781,13 @@ line_category(Py_UCS4 c)
             }
             else
             {
-              if (c < 0x0B92)
+              if (c < 0x0C77)
               {
-                if (c < 0x0B5F)
+                if (c < 0x0C46)
                 {
-                  if (c < 0x0B49)
+                  if (c < 0x0C05)
                   {
-                    if (c < 0x0B3E)
-                    {
-                      if (c < 0x0B3C)
-                      {
-                        if ((c >= 0x0B35) && (c <= 0x0B39))
-                          return Line_AL;
-                        /* (c >= 0x0B3A) && (c <= 0x0B3B) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if (c == 0x0B3C)
-                          return Line_CM;
-                        /* c == 0x0B3D */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0B47)
-                      {
-                        if ((c >= 0x0B3E) && (c <= 0x0B44))
-                          return Line_CM;
-                        /* (c >= 0x0B45) && (c <= 0x0B46) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0B47) && (c <= 0x0B48) */
-                        return Line_CM;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x0B58)
-                    {
-                      if (c < 0x0B4E)
-                      {
-                        if ((c >= 0x0B49) && (c <= 0x0B4A))
-                          return Line_XX;
-                        /* (c >= 0x0B4B) && (c <= 0x0B4D) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        if ((c >= 0x0B4E) && (c <= 0x0B54))
-                          return Line_XX;
-                        /* (c >= 0x0B55) && (c <= 0x0B57) */
-                        return Line_CM;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0B5E)
-                      {
-                        if ((c >= 0x0B58) && (c <= 0x0B5B))
-                          return Line_XX;
-                        /* (c >= 0x0B5C) && (c <= 0x0B5D) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x0B5E */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x0B83)
-                  {
-                    if (c < 0x0B70)
-                    {
-                      if (c < 0x0B64)
-                      {
-                        if ((c >= 0x0B5F) && (c <= 0x0B61))
-                          return Line_AL;
-                        /* (c >= 0x0B62) && (c <= 0x0B63) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        if ((c >= 0x0B64) && (c <= 0x0B65))
-                          return Line_XX;
-                        /* (c >= 0x0B66) && (c <= 0x0B6F) */
-                        return Line_NU;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0B82)
-                      {
-                        if ((c >= 0x0B70) && (c <= 0x0B77))
-                          return Line_AL;
-                        /* (c >= 0x0B78) && (c <= 0x0B81) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* c == 0x0B82 */
-                        return Line_CM;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x0B8B)
-                    {
-                      if (c < 0x0B85)
-                      {
-                        if (c == 0x0B83)
-                          return Line_AL;
-                        /* c == 0x0B84 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0B85) && (c <= 0x0B8A) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0B91)
-                      {
-                        if ((c >= 0x0B8B) && (c <= 0x0B8D))
-                          return Line_XX;
-                        /* (c >= 0x0B8E) && (c <= 0x0B90) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x0B91 */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                }
-              }
-              else
-              {
-                if (c < 0x0BBE)
-                {
-                  if (c < 0x0BA0)
-                  {
-                    if (c < 0x0B9C)
-                    {
-                      if (c < 0x0B99)
-                      {
-                        if ((c >= 0x0B92) && (c <= 0x0B95))
-                          return Line_AL;
-                        /* (c >= 0x0B96) && (c <= 0x0B98) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x0B99) && (c <= 0x0B9A))
-                          return Line_AL;
-                        /* c == 0x0B9B */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0B9E)
-                      {
-                        if (c == 0x0B9C)
-                          return Line_AL;
-                        /* c == 0x0B9D */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0B9E) && (c <= 0x0B9F) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x0BAB)
-                    {
-                      if (c < 0x0BA5)
-                      {
-                        if ((c >= 0x0BA0) && (c <= 0x0BA2))
-                          return Line_XX;
-                        /* (c >= 0x0BA3) && (c <= 0x0BA4) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if ((c >= 0x0BA5) && (c <= 0x0BA7))
-                          return Line_XX;
-                        /* (c >= 0x0BA8) && (c <= 0x0BAA) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0BBA)
-                      {
-                        if ((c >= 0x0BAB) && (c <= 0x0BAD))
-                          return Line_XX;
-                        /* (c >= 0x0BAE) && (c <= 0x0BB9) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0BBA) && (c <= 0x0BBD) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x0BD1)
-                  {
-                    if (c < 0x0BCA)
-                    {
-                      if (c < 0x0BC6)
-                      {
-                        if ((c >= 0x0BBE) && (c <= 0x0BC2))
-                          return Line_CM;
-                        /* (c >= 0x0BC3) && (c <= 0x0BC5) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x0BC6) && (c <= 0x0BC8))
-                          return Line_CM;
-                        /* c == 0x0BC9 */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0BD0)
-                      {
-                        if ((c >= 0x0BCA) && (c <= 0x0BCD))
-                          return Line_CM;
-                        /* (c >= 0x0BCE) && (c <= 0x0BCF) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* c == 0x0BD0 */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x0BE6)
-                    {
-                      if (c < 0x0BD8)
-                      {
-                        if ((c >= 0x0BD1) && (c <= 0x0BD6))
-                          return Line_XX;
-                        /* c == 0x0BD7 */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0BD8) && (c <= 0x0BE5) */
-                        return Line_XX;
-                      }
-                    }
-                    else
+                    if (c < 0x0BFA)
                     {
                       if (c < 0x0BF9)
                       {
@@ -68507,6 +67802,192 @@ line_category(Py_UCS4 c)
                         return Line_PR;
                       }
                     }
+                    else
+                    {
+                      if ((c >= 0x0BFA) && (c <= 0x0BFF))
+                        return Line_AL;
+                      /* (c >= 0x0C00) && (c <= 0x0C04) */
+                      return Line_CM;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x0C3E)
+                    {
+                      if (c < 0x0C3D)
+                      {
+                        if ((c >= 0x0C05) && (c <= 0x0C3B))
+                          return Line_AL;
+                        /* c == 0x0C3C */
+                        return Line_CM;
+                      }
+                      else
+                      {
+                        /* c == 0x0C3D */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x0C3E) && (c <= 0x0C44))
+                        return Line_CM;
+                      /* c == 0x0C45 */
+                      return Line_AL;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x0C57)
+                  {
+                    if (c < 0x0C4E)
+                    {
+                      if (c < 0x0C4A)
+                      {
+                        if ((c >= 0x0C46) && (c <= 0x0C48))
+                          return Line_CM;
+                        /* c == 0x0C49 */
+                        return Line_AL;
+                      }
+                      else
+                      {
+                        /* (c >= 0x0C4A) && (c <= 0x0C4D) */
+                        return Line_CM;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x0C4E) && (c <= 0x0C54))
+                        return Line_AL;
+                      /* (c >= 0x0C55) && (c <= 0x0C56) */
+                      return Line_CM;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x0C66)
+                    {
+                      if (c < 0x0C64)
+                      {
+                        if ((c >= 0x0C57) && (c <= 0x0C61))
+                          return Line_AL;
+                        /* (c >= 0x0C62) && (c <= 0x0C63) */
+                        return Line_CM;
+                      }
+                      else
+                      {
+                        /* (c >= 0x0C64) && (c <= 0x0C65) */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x0C66) && (c <= 0x0C6F))
+                        return Line_NU;
+                      /* (c >= 0x0C70) && (c <= 0x0C76) */
+                      return Line_AL;
+                    }
+                  }
+                }
+              }
+              else
+              {
+                if (c < 0x0CC9)
+                {
+                  if (c < 0x0CBC)
+                  {
+                    if (c < 0x0C84)
+                    {
+                      if (c < 0x0C81)
+                      {
+                        if (c == 0x0C77)
+                          return Line_BB;
+                        /* (c >= 0x0C78) && (c <= 0x0C80) */
+                        return Line_AL;
+                      }
+                      else
+                      {
+                        /* (c >= 0x0C81) && (c <= 0x0C83) */
+                        return Line_CM;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0x0C84)
+                        return Line_BB;
+                      /* (c >= 0x0C85) && (c <= 0x0CBB) */
+                      return Line_AL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x0CC5)
+                    {
+                      if (c < 0x0CBE)
+                      {
+                        if (c == 0x0CBC)
+                          return Line_CM;
+                        /* c == 0x0CBD */
+                        return Line_AL;
+                      }
+                      else
+                      {
+                        /* (c >= 0x0CBE) && (c <= 0x0CC4) */
+                        return Line_CM;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0x0CC5)
+                        return Line_AL;
+                      /* (c >= 0x0CC6) && (c <= 0x0CC8) */
+                      return Line_CM;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x0CE2)
+                  {
+                    if (c < 0x0CD5)
+                    {
+                      if (c < 0x0CCE)
+                      {
+                        if (c == 0x0CC9)
+                          return Line_AL;
+                        /* (c >= 0x0CCA) && (c <= 0x0CCD) */
+                        return Line_CM;
+                      }
+                      else
+                      {
+                        /* (c >= 0x0CCE) && (c <= 0x0CD4) */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x0CD5) && (c <= 0x0CD6))
+                        return Line_CM;
+                      /* (c >= 0x0CD7) && (c <= 0x0CE1) */
+                      return Line_AL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x0CE6)
+                    {
+                      if ((c >= 0x0CE2) && (c <= 0x0CE3))
+                        return Line_CM;
+                      /* (c >= 0x0CE4) && (c <= 0x0CE5) */
+                      return Line_AL;
+                    }
+                    else
+                    {
+                      if ((c >= 0x0CE6) && (c <= 0x0CEF))
+                        return Line_NU;
+                      /* (c >= 0x0CF0) && (c <= 0x0CF2) */
+                      return Line_AL;
+                    }
                   }
                 }
               }
@@ -68514,441 +67995,74 @@ line_category(Py_UCS4 c)
           }
           else
           {
-            if (c < 0x0CDD)
+            if (c < 0x0E40)
             {
-              if (c < 0x0C64)
+              if (c < 0x0D81)
               {
-                if (c < 0x0C45)
+                if (c < 0x0D4A)
                 {
-                  if (c < 0x0C12)
-                  {
-                    if (c < 0x0C0D)
-                    {
-                      if (c < 0x0C00)
-                      {
-                        if (c == 0x0BFA)
-                          return Line_AL;
-                        /* (c >= 0x0BFB) && (c <= 0x0BFF) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x0C00) && (c <= 0x0C04))
-                          return Line_CM;
-                        /* (c >= 0x0C05) && (c <= 0x0C0C) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0C11)
-                      {
-                        if (c == 0x0C0D)
-                          return Line_XX;
-                        /* (c >= 0x0C0E) && (c <= 0x0C10) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x0C11 */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x0C3C)
-                    {
-                      if (c < 0x0C2A)
-                      {
-                        if ((c >= 0x0C12) && (c <= 0x0C28))
-                          return Line_AL;
-                        /* c == 0x0C29 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x0C2A) && (c <= 0x0C39))
-                          return Line_AL;
-                        /* (c >= 0x0C3A) && (c <= 0x0C3B) */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0C3E)
-                      {
-                        if (c == 0x0C3C)
-                          return Line_CM;
-                        /* c == 0x0C3D */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0C3E) && (c <= 0x0C44) */
-                        return Line_CM;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x0C58)
-                  {
-                    if (c < 0x0C4E)
-                    {
-                      if (c < 0x0C49)
-                      {
-                        if (c == 0x0C45)
-                          return Line_XX;
-                        /* (c >= 0x0C46) && (c <= 0x0C48) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        if (c == 0x0C49)
-                          return Line_XX;
-                        /* (c >= 0x0C4A) && (c <= 0x0C4D) */
-                        return Line_CM;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0C57)
-                      {
-                        if ((c >= 0x0C4E) && (c <= 0x0C54))
-                          return Line_XX;
-                        /* (c >= 0x0C55) && (c <= 0x0C56) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* c == 0x0C57 */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x0C5E)
-                    {
-                      if (c < 0x0C5D)
-                      {
-                        if ((c >= 0x0C58) && (c <= 0x0C5A))
-                          return Line_AL;
-                        /* (c >= 0x0C5B) && (c <= 0x0C5C) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* c == 0x0C5D */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0C62)
-                      {
-                        if ((c >= 0x0C5E) && (c <= 0x0C5F))
-                          return Line_XX;
-                        /* (c >= 0x0C60) && (c <= 0x0C61) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0C62) && (c <= 0x0C63) */
-                        return Line_CM;
-                      }
-                    }
-                  }
-                }
-              }
-              else
-              {
-                if (c < 0x0CB4)
-                {
-                  if (c < 0x0C85)
-                  {
-                    if (c < 0x0C78)
-                    {
-                      if (c < 0x0C70)
-                      {
-                        if ((c >= 0x0C64) && (c <= 0x0C65))
-                          return Line_XX;
-                        /* (c >= 0x0C66) && (c <= 0x0C6F) */
-                        return Line_NU;
-                      }
-                      else
-                      {
-                        if ((c >= 0x0C70) && (c <= 0x0C76))
-                          return Line_XX;
-                        /* c == 0x0C77 */
-                        return Line_BB;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0C84)
-                      {
-                        if ((c >= 0x0C78) && (c <= 0x0C80))
-                          return Line_AL;
-                        /* (c >= 0x0C81) && (c <= 0x0C83) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* c == 0x0C84 */
-                        return Line_BB;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x0C92)
-                    {
-                      if (c < 0x0C8E)
-                      {
-                        if ((c >= 0x0C85) && (c <= 0x0C8C))
-                          return Line_AL;
-                        /* c == 0x0C8D */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x0C8E) && (c <= 0x0C90))
-                          return Line_AL;
-                        /* c == 0x0C91 */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0CAA)
-                      {
-                        if ((c >= 0x0C92) && (c <= 0x0CA8))
-                          return Line_AL;
-                        /* c == 0x0CA9 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0CAA) && (c <= 0x0CB3) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x0CC6)
-                  {
-                    if (c < 0x0CBD)
-                    {
-                      if (c < 0x0CBA)
-                      {
-                        if (c == 0x0CB4)
-                          return Line_XX;
-                        /* (c >= 0x0CB5) && (c <= 0x0CB9) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if ((c >= 0x0CBA) && (c <= 0x0CBB))
-                          return Line_XX;
-                        /* c == 0x0CBC */
-                        return Line_CM;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0CC5)
-                      {
-                        if (c == 0x0CBD)
-                          return Line_AL;
-                        /* (c >= 0x0CBE) && (c <= 0x0CC4) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* c == 0x0CC5 */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x0CCE)
-                    {
-                      if (c < 0x0CCA)
-                      {
-                        if ((c >= 0x0CC6) && (c <= 0x0CC8))
-                          return Line_CM;
-                        /* c == 0x0CC9 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0CCA) && (c <= 0x0CCD) */
-                        return Line_CM;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0CD7)
-                      {
-                        if ((c >= 0x0CCE) && (c <= 0x0CD4))
-                          return Line_XX;
-                        /* (c >= 0x0CD5) && (c <= 0x0CD6) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0CD7) && (c <= 0x0CDC) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-            else
-            {
-              if (c < 0x0D58)
-              {
-                if (c < 0x0D11)
-                {
-                  if (c < 0x0CF1)
-                  {
-                    if (c < 0x0CE4)
-                    {
-                      if (c < 0x0CE0)
-                      {
-                        if ((c >= 0x0CDD) && (c <= 0x0CDE))
-                          return Line_AL;
-                        /* c == 0x0CDF */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x0CE0) && (c <= 0x0CE1))
-                          return Line_AL;
-                        /* (c >= 0x0CE2) && (c <= 0x0CE3) */
-                        return Line_CM;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0CF0)
-                      {
-                        if ((c >= 0x0CE4) && (c <= 0x0CE5))
-                          return Line_XX;
-                        /* (c >= 0x0CE6) && (c <= 0x0CEF) */
-                        return Line_NU;
-                      }
-                      else
-                      {
-                        /* c == 0x0CF0 */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
+                  if (c < 0x0D3D)
                   {
                     if (c < 0x0D04)
                     {
-                      if (c < 0x0CF4)
+                      if (c < 0x0D00)
                       {
-                        if ((c >= 0x0CF1) && (c <= 0x0CF2))
-                          return Line_AL;
-                        /* c == 0x0CF3 */
-                        return Line_CM;
+                        if (c == 0x0CF3)
+                          return Line_CM;
+                        /* (c >= 0x0CF4) && (c <= 0x0CFF) */
+                        return Line_AL;
                       }
                       else
                       {
-                        if ((c >= 0x0CF4) && (c <= 0x0CFF))
-                          return Line_XX;
                         /* (c >= 0x0D00) && (c <= 0x0D03) */
                         return Line_CM;
                       }
                     }
                     else
                     {
-                      if (c < 0x0D0E)
+                      if ((c >= 0x0D04) && (c <= 0x0D3A))
+                        return Line_AL;
+                      /* (c >= 0x0D3B) && (c <= 0x0D3C) */
+                      return Line_CM;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x0D46)
+                    {
+                      if (c < 0x0D45)
                       {
-                        if ((c >= 0x0D04) && (c <= 0x0D0C))
+                        if (c == 0x0D3D)
                           return Line_AL;
-                        /* c == 0x0D0D */
-                        return Line_XX;
+                        /* (c >= 0x0D3E) && (c <= 0x0D44) */
+                        return Line_CM;
                       }
                       else
                       {
-                        /* (c >= 0x0D0E) && (c <= 0x0D10) */
+                        /* c == 0x0D45 */
                         return Line_AL;
                       }
+                    }
+                    else
+                    {
+                      if ((c >= 0x0D46) && (c <= 0x0D48))
+                        return Line_CM;
+                      /* c == 0x0D49 */
+                      return Line_AL;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0x0D49)
+                  if (c < 0x0D64)
                   {
-                    if (c < 0x0D3E)
-                    {
-                      if (c < 0x0D3B)
-                      {
-                        if (c == 0x0D11)
-                          return Line_XX;
-                        /* (c >= 0x0D12) && (c <= 0x0D3A) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if ((c >= 0x0D3B) && (c <= 0x0D3C))
-                          return Line_CM;
-                        /* c == 0x0D3D */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0D46)
-                      {
-                        if ((c >= 0x0D3E) && (c <= 0x0D44))
-                          return Line_CM;
-                        /* c == 0x0D45 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0D46) && (c <= 0x0D48) */
-                        return Line_CM;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x0D50)
-                    {
-                      if (c < 0x0D4E)
-                      {
-                        if (c == 0x0D49)
-                          return Line_XX;
-                        /* (c >= 0x0D4A) && (c <= 0x0D4D) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0D4E) && (c <= 0x0D4F) */
-                        return Line_AL;
-                      }
-                    }
-                    else
+                    if (c < 0x0D58)
                     {
                       if (c < 0x0D57)
                       {
-                        if ((c >= 0x0D50) && (c <= 0x0D53))
-                          return Line_XX;
-                        /* (c >= 0x0D54) && (c <= 0x0D56) */
+                        if ((c >= 0x0D4A) && (c <= 0x0D4D))
+                          return Line_CM;
+                        /* (c >= 0x0D4E) && (c <= 0x0D56) */
                         return Line_AL;
                       }
                       else
@@ -68957,456 +68071,138 @@ line_category(Py_UCS4 c)
                         return Line_CM;
                       }
                     }
+                    else
+                    {
+                      if ((c >= 0x0D58) && (c <= 0x0D61))
+                        return Line_AL;
+                      /* (c >= 0x0D62) && (c <= 0x0D63) */
+                      return Line_CM;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x0D79)
+                    {
+                      if (c < 0x0D70)
+                      {
+                        if ((c >= 0x0D64) && (c <= 0x0D65))
+                          return Line_AL;
+                        /* (c >= 0x0D66) && (c <= 0x0D6F) */
+                        return Line_NU;
+                      }
+                      else
+                      {
+                        /* (c >= 0x0D70) && (c <= 0x0D78) */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0x0D79)
+                        return Line_PO;
+                      /* (c >= 0x0D7A) && (c <= 0x0D80) */
+                      return Line_AL;
+                    }
                   }
                 }
               }
               else
               {
-                if (c < 0x0DB2)
+                if (c < 0x0DE6)
                 {
-                  if (c < 0x0D80)
+                  if (c < 0x0DD5)
                   {
-                    if (c < 0x0D70)
+                    if (c < 0x0DCB)
                     {
-                      if (c < 0x0D64)
+                      if (c < 0x0DCA)
                       {
-                        if ((c >= 0x0D58) && (c <= 0x0D61))
-                          return Line_AL;
-                        /* (c >= 0x0D62) && (c <= 0x0D63) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        if ((c >= 0x0D64) && (c <= 0x0D65))
-                          return Line_XX;
-                        /* (c >= 0x0D66) && (c <= 0x0D6F) */
-                        return Line_NU;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0D7A)
-                      {
-                        if ((c >= 0x0D70) && (c <= 0x0D78))
-                          return Line_AL;
-                        /* c == 0x0D79 */
-                        return Line_PO;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0D7A) && (c <= 0x0D7F) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x0D85)
-                    {
-                      if (c < 0x0D84)
-                      {
-                        if (c == 0x0D80)
-                          return Line_XX;
-                        /* (c >= 0x0D81) && (c <= 0x0D83) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* c == 0x0D84 */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0D9A)
-                      {
-                        if ((c >= 0x0D85) && (c <= 0x0D96))
-                          return Line_AL;
-                        /* (c >= 0x0D97) && (c <= 0x0D99) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0D9A) && (c <= 0x0DB1) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x0DCA)
-                  {
-                    if (c < 0x0DBE)
-                    {
-                      if (c < 0x0DBC)
-                      {
-                        if (c == 0x0DB2)
-                          return Line_XX;
-                        /* (c >= 0x0DB3) && (c <= 0x0DBB) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if (c == 0x0DBC)
-                          return Line_XX;
-                        /* c == 0x0DBD */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0DC7)
-                      {
-                        if ((c >= 0x0DBE) && (c <= 0x0DBF))
-                          return Line_XX;
-                        /* (c >= 0x0DC0) && (c <= 0x0DC6) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0DC7) && (c <= 0x0DC9) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x0DD5)
-                    {
-                      if (c < 0x0DCF)
-                      {
-                        if (c == 0x0DCA)
+                        if ((c >= 0x0D81) && (c <= 0x0D83))
                           return Line_CM;
-                        /* (c >= 0x0DCB) && (c <= 0x0DCE) */
-                        return Line_XX;
+                        /* (c >= 0x0D84) && (c <= 0x0DC9) */
+                        return Line_AL;
                       }
                       else
                       {
-                        /* (c >= 0x0DCF) && (c <= 0x0DD4) */
+                        /* c == 0x0DCA */
                         return Line_CM;
                       }
                     }
                     else
+                    {
+                      if ((c >= 0x0DCB) && (c <= 0x0DCE))
+                        return Line_AL;
+                      /* (c >= 0x0DCF) && (c <= 0x0DD4) */
+                      return Line_CM;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x0DD8)
                     {
                       if (c < 0x0DD7)
                       {
                         if (c == 0x0DD5)
-                          return Line_XX;
+                          return Line_AL;
                         /* c == 0x0DD6 */
                         return Line_CM;
                       }
                       else
                       {
                         /* c == 0x0DD7 */
-                        return Line_XX;
+                        return Line_AL;
                       }
+                    }
+                    else
+                    {
+                      if ((c >= 0x0DD8) && (c <= 0x0DDF))
+                        return Line_CM;
+                      /* (c >= 0x0DE0) && (c <= 0x0DE5) */
+                      return Line_AL;
                     }
                   }
                 }
-              }
-            }
-          }
-        }
-      }
-      else
-      {
-        if (c < 0x1920)
-        {
-          if (c < 0x1200)
-          {
-            if (c < 0x0F34)
-            {
-              if (c < 0x0EC0)
-              {
-                if (c < 0x0E5C)
+                else
                 {
-                  if (c < 0x0E01)
+                  if (c < 0x0E32)
                   {
-                    if (c < 0x0DF2)
+                    if (c < 0x0DF4)
                     {
-                      if (c < 0x0DE6)
-                      {
-                        if ((c >= 0x0DD8) && (c <= 0x0DDF))
-                          return Line_CM;
-                        /* (c >= 0x0DE0) && (c <= 0x0DE5) */
-                        return Line_XX;
-                      }
-                      else
+                      if (c < 0x0DF2)
                       {
                         if ((c >= 0x0DE6) && (c <= 0x0DEF))
                           return Line_NU;
                         /* (c >= 0x0DF0) && (c <= 0x0DF1) */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0DF5)
-                      {
-                        if ((c >= 0x0DF2) && (c <= 0x0DF3))
-                          return Line_CM;
-                        /* c == 0x0DF4 */
                         return Line_AL;
                       }
                       else
                       {
-                        /* (c >= 0x0DF5) && (c <= 0x0E00) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x0E4F)
-                    {
-                      if (c < 0x0E3F)
-                      {
-                        if ((c >= 0x0E01) && (c <= 0x0E3A))
-                          return Line_SA;
-                        /* (c >= 0x0E3B) && (c <= 0x0E3E) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if (c == 0x0E3F)
-                          return Line_PR;
-                        /* (c >= 0x0E40) && (c <= 0x0E4E) */
-                        return Line_SA;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0E5A)
-                      {
-                        if (c == 0x0E4F)
-                          return Line_AL;
-                        /* (c >= 0x0E50) && (c <= 0x0E59) */
-                        return Line_NU;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0E5A) && (c <= 0x0E5B) */
-                        return Line_BA;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x0E8C)
-                  {
-                    if (c < 0x0E85)
-                    {
-                      if (c < 0x0E83)
-                      {
-                        if ((c >= 0x0E5C) && (c <= 0x0E80))
-                          return Line_XX;
-                        /* (c >= 0x0E81) && (c <= 0x0E82) */
-                        return Line_SA;
-                      }
-                      else
-                      {
-                        if (c == 0x0E83)
-                          return Line_XX;
-                        /* c == 0x0E84 */
-                        return Line_SA;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0E8B)
-                      {
-                        if (c == 0x0E85)
-                          return Line_XX;
-                        /* (c >= 0x0E86) && (c <= 0x0E8A) */
-                        return Line_SA;
-                      }
-                      else
-                      {
-                        /* c == 0x0E8B */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x0EA6)
-                    {
-                      if (c < 0x0EA5)
-                      {
-                        if ((c >= 0x0E8C) && (c <= 0x0EA3))
-                          return Line_SA;
-                        /* c == 0x0EA4 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* c == 0x0EA5 */
-                        return Line_SA;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0EBE)
-                      {
-                        if (c == 0x0EA6)
-                          return Line_XX;
-                        /* (c >= 0x0EA7) && (c <= 0x0EBD) */
-                        return Line_SA;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0EBE) && (c <= 0x0EBF) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                }
-              }
-              else
-              {
-                if (c < 0x0F08)
-                {
-                  if (c < 0x0EDA)
-                  {
-                    if (c < 0x0EC8)
-                    {
-                      if (c < 0x0EC6)
-                      {
-                        if ((c >= 0x0EC0) && (c <= 0x0EC4))
-                          return Line_SA;
-                        /* c == 0x0EC5 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if (c == 0x0EC6)
-                          return Line_SA;
-                        /* c == 0x0EC7 */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0ED0)
-                      {
-                        if ((c >= 0x0EC8) && (c <= 0x0ECE))
-                          return Line_SA;
-                        /* c == 0x0ECF */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0ED0) && (c <= 0x0ED9) */
-                        return Line_NU;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x0F01)
-                    {
-                      if (c < 0x0EE0)
-                      {
-                        if ((c >= 0x0EDA) && (c <= 0x0EDB))
-                          return Line_XX;
-                        /* (c >= 0x0EDC) && (c <= 0x0EDF) */
-                        return Line_SA;
-                      }
-                      else
-                      {
-                        if ((c >= 0x0EE0) && (c <= 0x0EFF))
-                          return Line_XX;
-                        /* c == 0x0F00 */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0F06)
-                      {
-                        if ((c >= 0x0F01) && (c <= 0x0F04))
-                          return Line_BB;
-                        /* c == 0x0F05 */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0F06) && (c <= 0x0F07) */
-                        return Line_BB;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x0F14)
-                  {
-                    if (c < 0x0F0D)
-                    {
-                      if (c < 0x0F0B)
-                      {
-                        if (c == 0x0F08)
-                          return Line_GL;
-                        /* (c >= 0x0F09) && (c <= 0x0F0A) */
-                        return Line_BB;
-                      }
-                      else
-                      {
-                        if (c == 0x0F0B)
-                          return Line_BA;
-                        /* c == 0x0F0C */
-                        return Line_GL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0F13)
-                      {
-                        if ((c >= 0x0F0D) && (c <= 0x0F11))
-                          return Line_EX;
-                        /* c == 0x0F12 */
-                        return Line_GL;
-                      }
-                      else
-                      {
-                        /* c == 0x0F13 */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x0F1A)
-                    {
-                      if (c < 0x0F18)
-                      {
-                        if (c == 0x0F14)
-                          return Line_EX;
-                        /* (c >= 0x0F15) && (c <= 0x0F17) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0F18) && (c <= 0x0F19) */
+                        /* (c >= 0x0DF2) && (c <= 0x0DF3) */
                         return Line_CM;
                       }
                     }
                     else
                     {
-                      if (c < 0x0F2A)
-                      {
-                        if ((c >= 0x0F1A) && (c <= 0x0F1F))
-                          return Line_AL;
-                        /* (c >= 0x0F20) && (c <= 0x0F29) */
-                        return Line_NU;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0F2A) && (c <= 0x0F33) */
+                      if ((c >= 0x0DF4) && (c <= 0x0E30))
                         return Line_AL;
-                      }
+                      /* c == 0x0E31 */
+                      return Line_CM;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x0E3B)
+                    {
+                      if ((c >= 0x0E32) && (c <= 0x0E33))
+                        return Line_AL;
+                      /* (c >= 0x0E34) && (c <= 0x0E3A) */
+                      return Line_CM;
+                    }
+                    else
+                    {
+                      if ((c >= 0x0E3B) && (c <= 0x0E3E))
+                        return Line_AL;
+                      /* c == 0x0E3F */
+                      return Line_PR;
                     }
                   }
                 }
@@ -69414,13 +68210,175 @@ line_category(Py_UCS4 c)
             }
             else
             {
-              if (c < 0x0FC6)
+              if (c < 0x0F0C)
               {
-                if (c < 0x0F6D)
+                if (c < 0x0EC8)
                 {
-                  if (c < 0x0F3B)
+                  if (c < 0x0E5C)
                   {
-                    if (c < 0x0F38)
+                    if (c < 0x0E50)
+                    {
+                      if (c < 0x0E4F)
+                      {
+                        if ((c >= 0x0E40) && (c <= 0x0E46))
+                          return Line_AL;
+                        /* (c >= 0x0E47) && (c <= 0x0E4E) */
+                        return Line_CM;
+                      }
+                      else
+                      {
+                        /* c == 0x0E4F */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x0E50) && (c <= 0x0E59))
+                        return Line_NU;
+                      /* (c >= 0x0E5A) && (c <= 0x0E5B) */
+                      return Line_BA;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x0EB4)
+                    {
+                      if (c < 0x0EB2)
+                      {
+                        if ((c >= 0x0E5C) && (c <= 0x0EB0))
+                          return Line_AL;
+                        /* c == 0x0EB1 */
+                        return Line_CM;
+                      }
+                      else
+                      {
+                        /* (c >= 0x0EB2) && (c <= 0x0EB3) */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x0EB4) && (c <= 0x0EBC))
+                        return Line_CM;
+                      /* (c >= 0x0EBD) && (c <= 0x0EC7) */
+                      return Line_AL;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x0F05)
+                  {
+                    if (c < 0x0EDA)
+                    {
+                      if (c < 0x0ED0)
+                      {
+                        if ((c >= 0x0EC8) && (c <= 0x0ECE))
+                          return Line_CM;
+                        /* c == 0x0ECF */
+                        return Line_AL;
+                      }
+                      else
+                      {
+                        /* (c >= 0x0ED0) && (c <= 0x0ED9) */
+                        return Line_NU;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x0EDA) && (c <= 0x0F00))
+                        return Line_AL;
+                      /* (c >= 0x0F01) && (c <= 0x0F04) */
+                      return Line_BB;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x0F09)
+                    {
+                      if (c < 0x0F08)
+                      {
+                        if (c == 0x0F05)
+                          return Line_AL;
+                        /* (c >= 0x0F06) && (c <= 0x0F07) */
+                        return Line_BB;
+                      }
+                      else
+                      {
+                        /* c == 0x0F08 */
+                        return Line_GL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x0F09) && (c <= 0x0F0A))
+                        return Line_BB;
+                      /* c == 0x0F0B */
+                      return Line_BA;
+                    }
+                  }
+                }
+              }
+              else
+              {
+                if (c < 0x0F34)
+                {
+                  if (c < 0x0F15)
+                  {
+                    if (c < 0x0F13)
+                    {
+                      if (c < 0x0F12)
+                      {
+                        if (c == 0x0F0C)
+                          return Line_GL;
+                        /* (c >= 0x0F0D) && (c <= 0x0F11) */
+                        return Line_EX;
+                      }
+                      else
+                      {
+                        /* c == 0x0F12 */
+                        return Line_GL;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0x0F13)
+                        return Line_AL;
+                      /* c == 0x0F14 */
+                      return Line_EX;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x0F20)
+                    {
+                      if (c < 0x0F1A)
+                      {
+                        if ((c >= 0x0F15) && (c <= 0x0F17))
+                          return Line_AL;
+                        /* (c >= 0x0F18) && (c <= 0x0F19) */
+                        return Line_CM;
+                      }
+                      else
+                      {
+                        /* (c >= 0x0F1A) && (c <= 0x0F1F) */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x0F20) && (c <= 0x0F29))
+                        return Line_NU;
+                      /* (c >= 0x0F2A) && (c <= 0x0F33) */
+                      return Line_AL;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x0F39)
+                  {
+                    if (c < 0x0F37)
                     {
                       if (c < 0x0F36)
                       {
@@ -69431,178 +68389,165 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        if (c == 0x0F36)
-                          return Line_AL;
-                        /* c == 0x0F37 */
-                        return Line_CM;
+                        /* c == 0x0F36 */
+                        return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0x0F3A)
-                      {
-                        if (c == 0x0F38)
-                          return Line_AL;
-                        /* c == 0x0F39 */
+                      if (c == 0x0F37)
                         return Line_CM;
-                      }
-                      else
-                      {
-                        /* c == 0x0F3A */
-                        return Line_OP;
-                      }
+                      /* c == 0x0F38 */
+                      return Line_AL;
                     }
                   }
                   else
                   {
-                    if (c < 0x0F40)
+                    if (c < 0x0F3B)
                     {
-                      if (c < 0x0F3D)
-                      {
-                        if (c == 0x0F3B)
-                          return Line_CL;
-                        /* c == 0x0F3C */
-                        return Line_OP;
-                      }
-                      else
+                      if (c == 0x0F39)
+                        return Line_CM;
+                      /* c == 0x0F3A */
+                      return Line_OP;
+                    }
+                    else
+                    {
+                      if (c == 0x0F3B)
+                        return Line_CL;
+                      /* c == 0x0F3C */
+                      return Line_OP;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      else
+      {
+        if (c < 0x1CD4)
+        {
+          if (c < 0x17DC)
+          {
+            if (c < 0x108E)
+            {
+              if (c < 0x0FD4)
+              {
+                if (c < 0x0F98)
+                {
+                  if (c < 0x0F80)
+                  {
+                    if (c < 0x0F71)
+                    {
+                      if (c < 0x0F40)
                       {
                         if (c == 0x0F3D)
                           return Line_CL;
                         /* (c >= 0x0F3E) && (c <= 0x0F3F) */
                         return Line_CM;
                       }
+                      else
+                      {
+                        /* (c >= 0x0F40) && (c <= 0x0F70) */
+                        return Line_AL;
+                      }
                     }
                     else
                     {
-                      if (c < 0x0F49)
+                      if ((c >= 0x0F71) && (c <= 0x0F7E))
+                        return Line_CM;
+                      /* c == 0x0F7F */
+                      return Line_BA;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x0F88)
+                    {
+                      if (c < 0x0F86)
                       {
-                        if ((c >= 0x0F40) && (c <= 0x0F47))
-                          return Line_AL;
-                        /* c == 0x0F48 */
-                        return Line_XX;
+                        if ((c >= 0x0F80) && (c <= 0x0F84))
+                          return Line_CM;
+                        /* c == 0x0F85 */
+                        return Line_BA;
                       }
                       else
                       {
-                        /* (c >= 0x0F49) && (c <= 0x0F6C) */
-                        return Line_AL;
+                        /* (c >= 0x0F86) && (c <= 0x0F87) */
+                        return Line_CM;
                       }
+                    }
+                    else
+                    {
+                      if ((c >= 0x0F88) && (c <= 0x0F8C))
+                        return Line_AL;
+                      /* (c >= 0x0F8D) && (c <= 0x0F97) */
+                      return Line_CM;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0x0F8D)
+                  if (c < 0x0FC6)
                   {
-                    if (c < 0x0F85)
+                    if (c < 0x0FBE)
                     {
-                      if (c < 0x0F7F)
+                      if (c < 0x0FBD)
                       {
-                        if ((c >= 0x0F6D) && (c <= 0x0F70))
-                          return Line_XX;
-                        /* (c >= 0x0F71) && (c <= 0x0F7E) */
+                        if (c == 0x0F98)
+                          return Line_AL;
+                        /* (c >= 0x0F99) && (c <= 0x0FBC) */
                         return Line_CM;
                       }
                       else
                       {
-                        if (c == 0x0F7F)
-                          return Line_BA;
-                        /* (c >= 0x0F80) && (c <= 0x0F84) */
-                        return Line_CM;
+                        /* c == 0x0FBD */
+                        return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0x0F88)
-                      {
-                        if (c == 0x0F85)
-                          return Line_BA;
-                        /* (c >= 0x0F86) && (c <= 0x0F87) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0F88) && (c <= 0x0F8C) */
-                        return Line_AL;
-                      }
+                      if ((c >= 0x0FBE) && (c <= 0x0FBF))
+                        return Line_BA;
+                      /* (c >= 0x0FC0) && (c <= 0x0FC5) */
+                      return Line_AL;
                     }
                   }
                   else
                   {
-                    if (c < 0x0FBD)
+                    if (c < 0x0FD2)
                     {
-                      if (c < 0x0F99)
+                      if (c < 0x0FD0)
                       {
-                        if ((c >= 0x0F8D) && (c <= 0x0F97))
+                        if (c == 0x0FC6)
                           return Line_CM;
-                        /* c == 0x0F98 */
-                        return Line_XX;
+                        /* (c >= 0x0FC7) && (c <= 0x0FCF) */
+                        return Line_AL;
                       }
                       else
                       {
-                        /* (c >= 0x0F99) && (c <= 0x0FBC) */
-                        return Line_CM;
+                        /* (c >= 0x0FD0) && (c <= 0x0FD1) */
+                        return Line_BB;
                       }
                     }
                     else
                     {
-                      if (c < 0x0FC0)
-                      {
-                        if (c == 0x0FBD)
-                          return Line_XX;
-                        /* (c >= 0x0FBE) && (c <= 0x0FBF) */
+                      if (c == 0x0FD2)
                         return Line_BA;
-                      }
-                      else
-                      {
-                        /* (c >= 0x0FC0) && (c <= 0x0FC5) */
-                        return Line_AL;
-                      }
+                      /* c == 0x0FD3 */
+                      return Line_BB;
                     }
                   }
                 }
               }
               else
               {
-                if (c < 0x1050)
+                if (c < 0x105E)
                 {
-                  if (c < 0x0FD4)
+                  if (c < 0x1040)
                   {
-                    if (c < 0x0FD0)
-                    {
-                      if (c < 0x0FCD)
-                      {
-                        if (c == 0x0FC6)
-                          return Line_CM;
-                        /* (c >= 0x0FC7) && (c <= 0x0FCC) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if (c == 0x0FCD)
-                          return Line_XX;
-                        /* (c >= 0x0FCE) && (c <= 0x0FCF) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x0FD3)
-                      {
-                        if ((c >= 0x0FD0) && (c <= 0x0FD1))
-                          return Line_BB;
-                        /* c == 0x0FD2 */
-                        return Line_BA;
-                      }
-                      else
-                      {
-                        /* c == 0x0FD3 */
-                        return Line_BB;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x1040)
+                    if (c < 0x102B)
                     {
                       if (c < 0x0FDB)
                       {
@@ -69613,13 +68558,21 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        if ((c >= 0x0FDB) && (c <= 0x0FFF))
-                          return Line_XX;
-                        /* (c >= 0x1000) && (c <= 0x103F) */
-                        return Line_SA;
+                        /* (c >= 0x0FDB) && (c <= 0x102A) */
+                        return Line_AL;
                       }
                     }
                     else
+                    {
+                      if ((c >= 0x102B) && (c <= 0x103E))
+                        return Line_CM;
+                      /* c == 0x103F */
+                      return Line_AL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x1056)
                     {
                       if (c < 0x104C)
                       {
@@ -69630,67 +68583,100 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        /* (c >= 0x104C) && (c <= 0x104F) */
+                        /* (c >= 0x104C) && (c <= 0x1055) */
                         return Line_AL;
                       }
+                    }
+                    else
+                    {
+                      if ((c >= 0x1056) && (c <= 0x1059))
+                        return Line_CM;
+                      /* (c >= 0x105A) && (c <= 0x105D) */
+                      return Line_AL;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0x10CD)
+                  if (c < 0x106E)
                   {
-                    if (c < 0x10C6)
+                    if (c < 0x1065)
                     {
-                      if (c < 0x109A)
+                      if (c < 0x1062)
                       {
-                        if ((c >= 0x1050) && (c <= 0x108F))
-                          return Line_SA;
-                        /* (c >= 0x1090) && (c <= 0x1099) */
-                        return Line_NU;
+                        if ((c >= 0x105E) && (c <= 0x1060))
+                          return Line_CM;
+                        /* c == 0x1061 */
+                        return Line_AL;
                       }
                       else
                       {
-                        if ((c >= 0x109A) && (c <= 0x109F))
-                          return Line_SA;
-                        /* (c >= 0x10A0) && (c <= 0x10C5) */
-                        return Line_AL;
+                        /* (c >= 0x1062) && (c <= 0x1064) */
+                        return Line_CM;
                       }
                     }
                     else
                     {
-                      if (c < 0x10C8)
-                      {
-                        if (c == 0x10C6)
-                          return Line_XX;
-                        /* c == 0x10C7 */
+                      if ((c >= 0x1065) && (c <= 0x1066))
                         return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x10C8) && (c <= 0x10CC) */
-                        return Line_XX;
-                      }
+                      /* (c >= 0x1067) && (c <= 0x106D) */
+                      return Line_CM;
                     }
                   }
                   else
                   {
-                    if (c < 0x1100)
+                    if (c < 0x1075)
                     {
-                      if (c < 0x10D0)
+                      if ((c >= 0x106E) && (c <= 0x1070))
+                        return Line_AL;
+                      /* (c >= 0x1071) && (c <= 0x1074) */
+                      return Line_CM;
+                    }
+                    else
+                    {
+                      if ((c >= 0x1075) && (c <= 0x1081))
+                        return Line_AL;
+                      /* (c >= 0x1082) && (c <= 0x108D) */
+                      return Line_CM;
+                    }
+                  }
+                }
+              }
+            }
+            else
+            {
+              if (c < 0x16EB)
+              {
+                if (c < 0x1360)
+                {
+                  if (c < 0x1100)
+                  {
+                    if (c < 0x109A)
+                    {
+                      if (c < 0x1090)
                       {
-                        if (c == 0x10CD)
+                        if (c == 0x108E)
                           return Line_AL;
-                        /* (c >= 0x10CE) && (c <= 0x10CF) */
-                        return Line_XX;
+                        /* c == 0x108F */
+                        return Line_CM;
                       }
                       else
                       {
-                        /* (c >= 0x10D0) && (c <= 0x10FF) */
-                        return Line_AL;
+                        /* (c >= 0x1090) && (c <= 0x1099) */
+                        return Line_NU;
                       }
                     }
                     else
+                    {
+                      if ((c >= 0x109A) && (c <= 0x109D))
+                        return Line_CM;
+                      /* (c >= 0x109E) && (c <= 0x10FF) */
+                      return Line_AL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x1200)
                     {
                       if (c < 0x11A8)
                       {
@@ -69705,259 +68691,45 @@ line_category(Py_UCS4 c)
                         return Line_JT;
                       }
                     }
-                  }
-                }
-              }
-            }
-          }
-          else
-          {
-            if (c < 0x1700)
-            {
-              if (c < 0x1311)
-              {
-                if (c < 0x1290)
-                {
-                  if (c < 0x1259)
-                  {
-                    if (c < 0x1250)
-                    {
-                      if (c < 0x124A)
-                      {
-                        if ((c >= 0x1200) && (c <= 0x1248))
-                          return Line_AL;
-                        /* c == 0x1249 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x124A) && (c <= 0x124D))
-                          return Line_AL;
-                        /* (c >= 0x124E) && (c <= 0x124F) */
-                        return Line_XX;
-                      }
-                    }
                     else
                     {
-                      if (c < 0x1258)
-                      {
-                        if ((c >= 0x1250) && (c <= 0x1256))
-                          return Line_AL;
-                        /* c == 0x1257 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* c == 0x1258 */
+                      if ((c >= 0x1200) && (c <= 0x135C))
                         return Line_AL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x1289)
-                    {
-                      if (c < 0x125E)
-                      {
-                        if (c == 0x1259)
-                          return Line_XX;
-                        /* (c >= 0x125A) && (c <= 0x125D) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if ((c >= 0x125E) && (c <= 0x125F))
-                          return Line_XX;
-                        /* (c >= 0x1260) && (c <= 0x1288) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x128E)
-                      {
-                        if (c == 0x1289)
-                          return Line_XX;
-                        /* (c >= 0x128A) && (c <= 0x128D) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x128E) && (c <= 0x128F) */
-                        return Line_XX;
-                      }
+                      /* (c >= 0x135D) && (c <= 0x135F) */
+                      return Line_CM;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0x12C1)
+                  if (c < 0x1680)
                   {
-                    if (c < 0x12B8)
+                    if (c < 0x1400)
                     {
-                      if (c < 0x12B2)
+                      if (c < 0x1362)
                       {
-                        if ((c >= 0x1290) && (c <= 0x12B0))
+                        if (c == 0x1360)
                           return Line_AL;
-                        /* c == 0x12B1 */
-                        return Line_XX;
+                        /* c == 0x1361 */
+                        return Line_BA;
                       }
                       else
                       {
-                        if ((c >= 0x12B2) && (c <= 0x12B5))
-                          return Line_AL;
-                        /* (c >= 0x12B6) && (c <= 0x12B7) */
-                        return Line_XX;
+                        /* (c >= 0x1362) && (c <= 0x13FF) */
+                        return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0x12C0)
-                      {
-                        if ((c >= 0x12B8) && (c <= 0x12BE))
-                          return Line_AL;
-                        /* c == 0x12BF */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* c == 0x12C0 */
-                        return Line_AL;
-                      }
+                      if (c == 0x1400)
+                        return Line_BA;
+                      /* (c >= 0x1401) && (c <= 0x167F) */
+                      return Line_AL;
                     }
                   }
                   else
                   {
-                    if (c < 0x12C8)
-                    {
-                      if (c < 0x12C6)
-                      {
-                        if (c == 0x12C1)
-                          return Line_XX;
-                        /* (c >= 0x12C2) && (c <= 0x12C5) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x12C6) && (c <= 0x12C7) */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x12D8)
-                      {
-                        if ((c >= 0x12C8) && (c <= 0x12D6))
-                          return Line_AL;
-                        /* c == 0x12D7 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x12D8) && (c <= 0x1310) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                }
-              }
-              else
-              {
-                if (c < 0x13F8)
-                {
-                  if (c < 0x1361)
-                  {
-                    if (c < 0x135B)
-                    {
-                      if (c < 0x1316)
-                      {
-                        if (c == 0x1311)
-                          return Line_XX;
-                        /* (c >= 0x1312) && (c <= 0x1315) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1316) && (c <= 0x1317))
-                          return Line_XX;
-                        /* (c >= 0x1318) && (c <= 0x135A) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1360)
-                      {
-                        if ((c >= 0x135B) && (c <= 0x135C))
-                          return Line_XX;
-                        /* (c >= 0x135D) && (c <= 0x135F) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* c == 0x1360 */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x139A)
-                    {
-                      if (c < 0x137D)
-                      {
-                        if (c == 0x1361)
-                          return Line_BA;
-                        /* (c >= 0x1362) && (c <= 0x137C) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if ((c >= 0x137D) && (c <= 0x137F))
-                          return Line_XX;
-                        /* (c >= 0x1380) && (c <= 0x1399) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x13F6)
-                      {
-                        if ((c >= 0x139A) && (c <= 0x139F))
-                          return Line_XX;
-                        /* (c >= 0x13A0) && (c <= 0x13F5) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x13F6) && (c <= 0x13F7) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x169C)
-                  {
-                    if (c < 0x1680)
-                    {
-                      if (c < 0x1400)
-                      {
-                        if ((c >= 0x13F8) && (c <= 0x13FD))
-                          return Line_AL;
-                        /* (c >= 0x13FE) && (c <= 0x13FF) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if (c == 0x1400)
-                          return Line_BA;
-                        /* (c >= 0x1401) && (c <= 0x167F) */
-                        return Line_AL;
-                      }
-                    }
-                    else
+                    if (c < 0x169C)
                     {
                       if (c < 0x169B)
                       {
@@ -69972,216 +68744,155 @@ line_category(Py_UCS4 c)
                         return Line_OP;
                       }
                     }
-                  }
-                  else
-                  {
-                    if (c < 0x16EB)
-                    {
-                      if (c < 0x16A0)
-                      {
-                        if (c == 0x169C)
-                          return Line_CL;
-                        /* (c >= 0x169D) && (c <= 0x169F) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x16A0) && (c <= 0x16EA) */
-                        return Line_AL;
-                      }
-                    }
                     else
                     {
-                      if (c < 0x16F9)
-                      {
-                        if ((c >= 0x16EB) && (c <= 0x16ED))
-                          return Line_BA;
-                        /* (c >= 0x16EE) && (c <= 0x16F8) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x16F9) && (c <= 0x16FF) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-            else
-            {
-              if (c < 0x17EA)
-              {
-                if (c < 0x1772)
-                {
-                  if (c < 0x1740)
-                  {
-                    if (c < 0x1732)
-                    {
-                      if (c < 0x1716)
-                      {
-                        if ((c >= 0x1700) && (c <= 0x1711))
-                          return Line_AL;
-                        /* (c >= 0x1712) && (c <= 0x1715) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1716) && (c <= 0x171E))
-                          return Line_XX;
-                        /* (c >= 0x171F) && (c <= 0x1731) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1737)
-                      {
-                        if ((c >= 0x1732) && (c <= 0x1734))
-                          return Line_CM;
-                        /* (c >= 0x1735) && (c <= 0x1736) */
-                        return Line_BA;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1737) && (c <= 0x173F) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x176D)
-                    {
-                      if (c < 0x1754)
-                      {
-                        if ((c >= 0x1740) && (c <= 0x1751))
-                          return Line_AL;
-                        /* (c >= 0x1752) && (c <= 0x1753) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1754) && (c <= 0x175F))
-                          return Line_XX;
-                        /* (c >= 0x1760) && (c <= 0x176C) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1771)
-                      {
-                        if (c == 0x176D)
-                          return Line_XX;
-                        /* (c >= 0x176E) && (c <= 0x1770) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x1771 */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x17D9)
-                  {
-                    if (c < 0x17D6)
-                    {
-                      if (c < 0x1780)
-                      {
-                        if ((c >= 0x1772) && (c <= 0x1773))
-                          return Line_CM;
-                        /* (c >= 0x1774) && (c <= 0x177F) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1780) && (c <= 0x17D3))
-                          return Line_SA;
-                        /* (c >= 0x17D4) && (c <= 0x17D5) */
-                        return Line_BA;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x17D8)
-                      {
-                        if (c == 0x17D6)
-                          return Line_NS;
-                        /* c == 0x17D7 */
-                        return Line_SA;
-                      }
-                      else
-                      {
-                        /* c == 0x17D8 */
-                        return Line_BA;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x17DC)
-                    {
-                      if (c < 0x17DB)
-                      {
-                        if (c == 0x17D9)
-                          return Line_AL;
-                        /* c == 0x17DA */
-                        return Line_BA;
-                      }
-                      else
-                      {
-                        /* c == 0x17DB */
-                        return Line_PR;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x17E0)
-                      {
-                        if ((c >= 0x17DC) && (c <= 0x17DD))
-                          return Line_SA;
-                        /* (c >= 0x17DE) && (c <= 0x17DF) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x17E0) && (c <= 0x17E9) */
-                        return Line_NU;
-                      }
+                      if (c == 0x169C)
+                        return Line_CL;
+                      /* (c >= 0x169D) && (c <= 0x16EA) */
+                      return Line_AL;
                     }
                   }
                 }
               }
               else
               {
-                if (c < 0x181A)
+                if (c < 0x1774)
                 {
-                  if (c < 0x1807)
+                  if (c < 0x1735)
                   {
-                    if (c < 0x1802)
+                    if (c < 0x1716)
                     {
-                      if (c < 0x17FA)
+                      if (c < 0x1712)
                       {
-                        if ((c >= 0x17EA) && (c <= 0x17EF))
-                          return Line_XX;
-                        /* (c >= 0x17F0) && (c <= 0x17F9) */
+                        if ((c >= 0x16EB) && (c <= 0x16ED))
+                          return Line_BA;
+                        /* (c >= 0x16EE) && (c <= 0x1711) */
                         return Line_AL;
                       }
                       else
                       {
-                        if ((c >= 0x17FA) && (c <= 0x17FF))
-                          return Line_XX;
-                        /* (c >= 0x1800) && (c <= 0x1801) */
+                        /* (c >= 0x1712) && (c <= 0x1715) */
+                        return Line_CM;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x1716) && (c <= 0x1731))
+                        return Line_AL;
+                      /* (c >= 0x1732) && (c <= 0x1734) */
+                      return Line_CM;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x1754)
+                    {
+                      if (c < 0x1752)
+                      {
+                        if ((c >= 0x1735) && (c <= 0x1736))
+                          return Line_BA;
+                        /* (c >= 0x1737) && (c <= 0x1751) */
+                        return Line_AL;
+                      }
+                      else
+                      {
+                        /* (c >= 0x1752) && (c <= 0x1753) */
+                        return Line_CM;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x1754) && (c <= 0x1771))
+                        return Line_AL;
+                      /* (c >= 0x1772) && (c <= 0x1773) */
+                      return Line_CM;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x17D8)
+                  {
+                    if (c < 0x17D6)
+                    {
+                      if (c < 0x17D4)
+                      {
+                        if ((c >= 0x1774) && (c <= 0x17B3))
+                          return Line_AL;
+                        /* (c >= 0x17B4) && (c <= 0x17D3) */
+                        return Line_CM;
+                      }
+                      else
+                      {
+                        /* (c >= 0x17D4) && (c <= 0x17D5) */
+                        return Line_BA;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0x17D6)
+                        return Line_NS;
+                      /* c == 0x17D7 */
+                      return Line_AL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x17DA)
+                    {
+                      if (c == 0x17D8)
+                        return Line_BA;
+                      /* c == 0x17D9 */
+                      return Line_AL;
+                    }
+                    else
+                    {
+                      if (c == 0x17DA)
+                        return Line_BA;
+                      /* c == 0x17DB */
+                      return Line_PR;
+                    }
+                  }
+                }
+              }
+            }
+          }
+          else
+          {
+            if (c < 0x1A9A)
+            {
+              if (c < 0x1920)
+              {
+                if (c < 0x180A)
+                {
+                  if (c < 0x1802)
+                  {
+                    if (c < 0x17E0)
+                    {
+                      if (c < 0x17DE)
+                      {
+                        if (c == 0x17DC)
+                          return Line_AL;
+                        /* c == 0x17DD */
+                        return Line_CM;
+                      }
+                      else
+                      {
+                        /* (c >= 0x17DE) && (c <= 0x17DF) */
                         return Line_AL;
                       }
                     }
                     else
+                    {
+                      if ((c >= 0x17E0) && (c <= 0x17E9))
+                        return Line_NU;
+                      /* (c >= 0x17EA) && (c <= 0x1801) */
+                      return Line_AL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x1807)
                     {
                       if (c < 0x1806)
                       {
@@ -70196,414 +68907,166 @@ line_category(Py_UCS4 c)
                         return Line_BB;
                       }
                     }
-                  }
-                  else
-                  {
-                    if (c < 0x180E)
+                    else
                     {
-                      if (c < 0x180A)
-                      {
-                        if (c == 0x1807)
-                          return Line_AL;
-                        /* (c >= 0x1808) && (c <= 0x1809) */
-                        return Line_EX;
-                      }
-                      else
+                      if (c == 0x1807)
+                        return Line_AL;
+                      /* (c >= 0x1808) && (c <= 0x1809) */
+                      return Line_EX;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x181A)
+                  {
+                    if (c < 0x180F)
+                    {
+                      if (c < 0x180E)
                       {
                         if (c == 0x180A)
                           return Line_AL;
                         /* (c >= 0x180B) && (c <= 0x180D) */
                         return Line_CM;
                       }
+                      else
+                      {
+                        /* c == 0x180E */
+                        return Line_GL;
+                      }
                     }
                     else
                     {
-                      if (c < 0x1810)
+                      if (c == 0x180F)
+                        return Line_CM;
+                      /* (c >= 0x1810) && (c <= 0x1819) */
+                      return Line_NU;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x18A9)
+                    {
+                      if (c < 0x1887)
                       {
-                        if (c == 0x180E)
-                          return Line_GL;
-                        /* c == 0x180F */
+                        if ((c >= 0x181A) && (c <= 0x1884))
+                          return Line_AL;
+                        /* (c >= 0x1885) && (c <= 0x1886) */
                         return Line_CM;
                       }
                       else
                       {
-                        /* (c >= 0x1810) && (c <= 0x1819) */
-                        return Line_NU;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x18AA)
-                  {
-                    if (c < 0x1885)
-                    {
-                      if (c < 0x1879)
-                      {
-                        if ((c >= 0x181A) && (c <= 0x181F))
-                          return Line_XX;
-                        /* (c >= 0x1820) && (c <= 0x1878) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1879) && (c <= 0x187F))
-                          return Line_XX;
-                        /* (c >= 0x1880) && (c <= 0x1884) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x18A9)
-                      {
-                        if ((c >= 0x1885) && (c <= 0x1886))
-                          return Line_CM;
                         /* (c >= 0x1887) && (c <= 0x18A8) */
                         return Line_AL;
                       }
-                      else
-                      {
-                        /* c == 0x18A9 */
+                    }
+                    else
+                    {
+                      if (c == 0x18A9)
                         return Line_CM;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x18F6)
-                    {
-                      if (c < 0x18B0)
-                      {
-                        if (c == 0x18AA)
-                          return Line_AL;
-                        /* (c >= 0x18AB) && (c <= 0x18AF) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x18B0) && (c <= 0x18F5) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x191F)
-                      {
-                        if ((c >= 0x18F6) && (c <= 0x18FF))
-                          return Line_XX;
-                        /* (c >= 0x1900) && (c <= 0x191E) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x191F */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-        else
-        {
-          if (c < 0x1F5C)
-          {
-            if (c < 0x1BA1)
-            {
-              if (c < 0x1A7D)
-              {
-                if (c < 0x19B0)
-                {
-                  if (c < 0x1946)
-                  {
-                    if (c < 0x1940)
-                    {
-                      if (c < 0x1930)
-                      {
-                        if ((c >= 0x1920) && (c <= 0x192B))
-                          return Line_CM;
-                        /* (c >= 0x192C) && (c <= 0x192F) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1930) && (c <= 0x193B))
-                          return Line_CM;
-                        /* (c >= 0x193C) && (c <= 0x193F) */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1944)
-                      {
-                        if (c == 0x1940)
-                          return Line_AL;
-                        /* (c >= 0x1941) && (c <= 0x1943) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1944) && (c <= 0x1945) */
-                        return Line_EX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x1975)
-                    {
-                      if (c < 0x196E)
-                      {
-                        if ((c >= 0x1946) && (c <= 0x194F))
-                          return Line_NU;
-                        /* (c >= 0x1950) && (c <= 0x196D) */
-                        return Line_SA;
-                      }
-                      else
-                      {
-                        if ((c >= 0x196E) && (c <= 0x196F))
-                          return Line_XX;
-                        /* (c >= 0x1970) && (c <= 0x1974) */
-                        return Line_SA;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x19AC)
-                      {
-                        if ((c >= 0x1975) && (c <= 0x197F))
-                          return Line_XX;
-                        /* (c >= 0x1980) && (c <= 0x19AB) */
-                        return Line_SA;
-                      }
-                      else
-                      {
-                        /* (c >= 0x19AC) && (c <= 0x19AF) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x1A17)
-                  {
-                    if (c < 0x19DB)
-                    {
-                      if (c < 0x19D0)
-                      {
-                        if ((c >= 0x19B0) && (c <= 0x19C9))
-                          return Line_SA;
-                        /* (c >= 0x19CA) && (c <= 0x19CF) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x19D0) && (c <= 0x19D9))
-                          return Line_NU;
-                        /* c == 0x19DA */
-                        return Line_SA;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x19E0)
-                      {
-                        if ((c >= 0x19DB) && (c <= 0x19DD))
-                          return Line_XX;
-                        /* (c >= 0x19DE) && (c <= 0x19DF) */
-                        return Line_SA;
-                      }
-                      else
-                      {
-                        /* (c >= 0x19E0) && (c <= 0x1A16) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x1A20)
-                    {
-                      if (c < 0x1A1E)
-                      {
-                        if ((c >= 0x1A17) && (c <= 0x1A1B))
-                          return Line_CM;
-                        /* (c >= 0x1A1C) && (c <= 0x1A1D) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1A1E) && (c <= 0x1A1F) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1A60)
-                      {
-                        if ((c >= 0x1A20) && (c <= 0x1A5E))
-                          return Line_SA;
-                        /* c == 0x1A5F */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1A60) && (c <= 0x1A7C) */
-                        return Line_SA;
-                      }
+                      /* (c >= 0x18AA) && (c <= 0x191F) */
+                      return Line_AL;
                     }
                   }
                 }
               }
               else
               {
-                if (c < 0x1B45)
+                if (c < 0x1A1C)
                 {
-                  if (c < 0x1AAE)
+                  if (c < 0x1946)
                   {
-                    if (c < 0x1A90)
+                    if (c < 0x193C)
                     {
-                      if (c < 0x1A80)
+                      if (c < 0x1930)
                       {
-                        if ((c >= 0x1A7D) && (c <= 0x1A7E))
-                          return Line_XX;
-                        /* c == 0x1A7F */
-                        return Line_CM;
+                        if ((c >= 0x1920) && (c <= 0x192B))
+                          return Line_CM;
+                        /* (c >= 0x192C) && (c <= 0x192F) */
+                        return Line_AL;
                       }
                       else
                       {
-                        if ((c >= 0x1A80) && (c <= 0x1A89))
-                          return Line_NU;
-                        /* (c >= 0x1A8A) && (c <= 0x1A8F) */
-                        return Line_XX;
+                        /* (c >= 0x1930) && (c <= 0x193B) */
+                        return Line_CM;
                       }
                     }
                     else
                     {
-                      if (c < 0x1AA0)
-                      {
-                        if ((c >= 0x1A90) && (c <= 0x1A99))
-                          return Line_NU;
-                        /* (c >= 0x1A9A) && (c <= 0x1A9F) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1AA0) && (c <= 0x1AAD) */
-                        return Line_SA;
-                      }
+                      if ((c >= 0x193C) && (c <= 0x1943))
+                        return Line_AL;
+                      /* (c >= 0x1944) && (c <= 0x1945) */
+                      return Line_EX;
                     }
                   }
                   else
                   {
-                    if (c < 0x1B05)
+                    if (c < 0x19DA)
                     {
-                      if (c < 0x1ACF)
+                      if (c < 0x19D0)
                       {
-                        if ((c >= 0x1AAE) && (c <= 0x1AAF))
-                          return Line_XX;
-                        /* (c >= 0x1AB0) && (c <= 0x1ACE) */
-                        return Line_CM;
+                        if ((c >= 0x1946) && (c <= 0x194F))
+                          return Line_NU;
+                        /* (c >= 0x1950) && (c <= 0x19CF) */
+                        return Line_AL;
                       }
                       else
                       {
-                        if ((c >= 0x1ACF) && (c <= 0x1AFF))
-                          return Line_XX;
-                        /* (c >= 0x1B00) && (c <= 0x1B04) */
-                        return Line_CM;
+                        /* (c >= 0x19D0) && (c <= 0x19D9) */
+                        return Line_NU;
                       }
                     }
                     else
                     {
-                      if (c < 0x1B44)
-                      {
-                        if ((c >= 0x1B05) && (c <= 0x1B33))
-                          return Line_AK;
-                        /* (c >= 0x1B34) && (c <= 0x1B43) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* c == 0x1B44 */
-                        return Line_VI;
-                      }
+                      if ((c >= 0x19DA) && (c <= 0x1A16))
+                        return Line_AL;
+                      /* (c >= 0x1A17) && (c <= 0x1A1B) */
+                      return Line_CM;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0x1B6B)
+                  if (c < 0x1A7F)
                   {
-                    if (c < 0x1B5C)
+                    if (c < 0x1A60)
                     {
-                      if (c < 0x1B50)
+                      if (c < 0x1A5F)
                       {
-                        if ((c >= 0x1B45) && (c <= 0x1B4C))
-                          return Line_AK;
-                        /* (c >= 0x1B4D) && (c <= 0x1B4F) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1B50) && (c <= 0x1B59))
-                          return Line_ID;
-                        /* (c >= 0x1B5A) && (c <= 0x1B5B) */
-                        return Line_BA;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1B61)
-                      {
-                        if (c == 0x1B5C)
-                          return Line_ID;
-                        /* (c >= 0x1B5D) && (c <= 0x1B60) */
-                        return Line_BA;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1B61) && (c <= 0x1B6A) */
-                        return Line_ID;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x1B7F)
-                    {
-                      if (c < 0x1B7D)
-                      {
-                        if ((c >= 0x1B6B) && (c <= 0x1B73))
-                          return Line_CM;
-                        /* (c >= 0x1B74) && (c <= 0x1B7C) */
-                        return Line_ID;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1B7D) && (c <= 0x1B7E) */
-                        return Line_BA;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1B83)
-                      {
-                        if (c == 0x1B7F)
-                          return Line_XX;
-                        /* (c >= 0x1B80) && (c <= 0x1B82) */
+                        if ((c >= 0x1A1C) && (c <= 0x1A54))
+                          return Line_AL;
+                        /* (c >= 0x1A55) && (c <= 0x1A5E) */
                         return Line_CM;
                       }
                       else
                       {
-                        /* (c >= 0x1B83) && (c <= 0x1BA0) */
+                        /* c == 0x1A5F */
                         return Line_AL;
                       }
+                    }
+                    else
+                    {
+                      if ((c >= 0x1A60) && (c <= 0x1A7C))
+                        return Line_CM;
+                      /* (c >= 0x1A7D) && (c <= 0x1A7E) */
+                      return Line_AL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x1A8A)
+                    {
+                      if (c == 0x1A7F)
+                        return Line_CM;
+                      /* (c >= 0x1A80) && (c <= 0x1A89) */
+                      return Line_NU;
+                    }
+                    else
+                    {
+                      if ((c >= 0x1A8A) && (c <= 0x1A8F))
+                        return Line_AL;
+                      /* (c >= 0x1A90) && (c <= 0x1A99) */
+                      return Line_NU;
                     }
                   }
                 }
@@ -70611,13 +69074,122 @@ line_category(Py_UCS4 c)
             }
             else
             {
-              if (c < 0x1CE9)
+              if (c < 0x1BA1)
               {
-                if (c < 0x1C4D)
+                if (c < 0x1B5A)
                 {
-                  if (c < 0x1BF4)
+                  if (c < 0x1B34)
                   {
-                    if (c < 0x1BC0)
+                    if (c < 0x1B00)
+                    {
+                      if (c < 0x1ACF)
+                      {
+                        if ((c >= 0x1A9A) && (c <= 0x1AAF))
+                          return Line_AL;
+                        /* (c >= 0x1AB0) && (c <= 0x1ACE) */
+                        return Line_CM;
+                      }
+                      else
+                      {
+                        /* (c >= 0x1ACF) && (c <= 0x1AFF) */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x1B00) && (c <= 0x1B04))
+                        return Line_CM;
+                      /* (c >= 0x1B05) && (c <= 0x1B33) */
+                      return Line_AK;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x1B4D)
+                    {
+                      if (c < 0x1B45)
+                      {
+                        if ((c >= 0x1B34) && (c <= 0x1B43))
+                          return Line_CM;
+                        /* c == 0x1B44 */
+                        return Line_VI;
+                      }
+                      else
+                      {
+                        /* (c >= 0x1B45) && (c <= 0x1B4C) */
+                        return Line_AK;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x1B4D) && (c <= 0x1B4F))
+                        return Line_AL;
+                      /* (c >= 0x1B50) && (c <= 0x1B59) */
+                      return Line_ID;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x1B74)
+                  {
+                    if (c < 0x1B61)
+                    {
+                      if (c < 0x1B5D)
+                      {
+                        if ((c >= 0x1B5A) && (c <= 0x1B5B))
+                          return Line_BA;
+                        /* c == 0x1B5C */
+                        return Line_ID;
+                      }
+                      else
+                      {
+                        /* (c >= 0x1B5D) && (c <= 0x1B60) */
+                        return Line_BA;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x1B61) && (c <= 0x1B6A))
+                        return Line_ID;
+                      /* (c >= 0x1B6B) && (c <= 0x1B73) */
+                      return Line_CM;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x1B80)
+                    {
+                      if (c < 0x1B7F)
+                      {
+                        if ((c >= 0x1B74) && (c <= 0x1B7C))
+                          return Line_ID;
+                        /* (c >= 0x1B7D) && (c <= 0x1B7E) */
+                        return Line_BA;
+                      }
+                      else
+                      {
+                        /* c == 0x1B7F */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x1B80) && (c <= 0x1B82))
+                        return Line_CM;
+                      /* (c >= 0x1B83) && (c <= 0x1BA0) */
+                      return Line_AL;
+                    }
+                  }
+                }
+              }
+              else
+              {
+                if (c < 0x1C3B)
+                {
+                  if (c < 0x1BE6)
+                  {
+                    if (c < 0x1BBA)
                     {
                       if (c < 0x1BB0)
                       {
@@ -70628,48 +69200,49 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        if ((c >= 0x1BB0) && (c <= 0x1BB9))
-                          return Line_NU;
-                        /* (c >= 0x1BBA) && (c <= 0x1BBF) */
-                        return Line_AL;
+                        /* (c >= 0x1BB0) && (c <= 0x1BB9) */
+                        return Line_NU;
                       }
                     }
                     else
                     {
-                      if (c < 0x1BF2)
-                      {
-                        if ((c >= 0x1BC0) && (c <= 0x1BE5))
-                          return Line_AS;
-                        /* (c >= 0x1BE6) && (c <= 0x1BF1) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1BF2) && (c <= 0x1BF3) */
-                        return Line_VF;
-                      }
+                      if ((c >= 0x1BBA) && (c <= 0x1BBF))
+                        return Line_AL;
+                      /* (c >= 0x1BC0) && (c <= 0x1BE5) */
+                      return Line_AS;
                     }
                   }
                   else
                   {
-                    if (c < 0x1C3B)
+                    if (c < 0x1C24)
                     {
-                      if (c < 0x1C24)
+                      if (c < 0x1BF4)
                       {
-                        if ((c >= 0x1BF4) && (c <= 0x1BFB))
-                          return Line_XX;
-                        /* (c >= 0x1BFC) && (c <= 0x1C23) */
-                        return Line_AL;
+                        if ((c >= 0x1BE6) && (c <= 0x1BF1))
+                          return Line_CM;
+                        /* (c >= 0x1BF2) && (c <= 0x1BF3) */
+                        return Line_VF;
                       }
                       else
                       {
-                        if ((c >= 0x1C24) && (c <= 0x1C37))
-                          return Line_CM;
-                        /* (c >= 0x1C38) && (c <= 0x1C3A) */
-                        return Line_XX;
+                        /* (c >= 0x1BF4) && (c <= 0x1C23) */
+                        return Line_AL;
                       }
                     }
                     else
+                    {
+                      if ((c >= 0x1C24) && (c <= 0x1C37))
+                        return Line_CM;
+                      /* (c >= 0x1C38) && (c <= 0x1C3A) */
+                      return Line_AL;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x1C7E)
+                  {
+                    if (c < 0x1C50)
                     {
                       if (c < 0x1C4A)
                       {
@@ -70680,108 +69253,78 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        /* (c >= 0x1C4A) && (c <= 0x1C4C) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x1CBB)
-                  {
-                    if (c < 0x1C80)
-                    {
-                      if (c < 0x1C5A)
-                      {
-                        if ((c >= 0x1C4D) && (c <= 0x1C4F))
-                          return Line_AL;
-                        /* (c >= 0x1C50) && (c <= 0x1C59) */
-                        return Line_NU;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1C5A) && (c <= 0x1C7D))
-                          return Line_AL;
-                        /* (c >= 0x1C7E) && (c <= 0x1C7F) */
-                        return Line_BA;
+                        /* (c >= 0x1C4A) && (c <= 0x1C4F) */
+                        return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0x1C90)
-                      {
-                        if ((c >= 0x1C80) && (c <= 0x1C88))
-                          return Line_AL;
-                        /* (c >= 0x1C89) && (c <= 0x1C8F) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1C90) && (c <= 0x1CBA) */
-                        return Line_AL;
-                      }
+                      if ((c >= 0x1C50) && (c <= 0x1C59))
+                        return Line_NU;
+                      /* (c >= 0x1C5A) && (c <= 0x1C7D) */
+                      return Line_AL;
                     }
                   }
                   else
                   {
                     if (c < 0x1CD0)
                     {
-                      if (c < 0x1CC8)
-                      {
-                        if ((c >= 0x1CBB) && (c <= 0x1CBC))
-                          return Line_XX;
-                        /* (c >= 0x1CBD) && (c <= 0x1CC7) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1CC8) && (c <= 0x1CCF) */
-                        return Line_XX;
-                      }
+                      if ((c >= 0x1C7E) && (c <= 0x1C7F))
+                        return Line_BA;
+                      /* (c >= 0x1C80) && (c <= 0x1CCF) */
+                      return Line_AL;
                     }
                     else
                     {
-                      if (c < 0x1CD4)
-                      {
-                        if ((c >= 0x1CD0) && (c <= 0x1CD2))
-                          return Line_CM;
-                        /* c == 0x1CD3 */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1CD4) && (c <= 0x1CE8) */
+                      if ((c >= 0x1CD0) && (c <= 0x1CD2))
                         return Line_CM;
-                      }
+                      /* c == 0x1CD3 */
+                      return Line_AL;
                     }
                   }
                 }
               }
-              else
+            }
+          }
+        }
+        else
+        {
+          if (c < 0x2103)
+          {
+            if (c < 0x2030)
+            {
+              if (c < 0x200C)
               {
-                if (c < 0x1E00)
+                if (c < 0x1DCE)
                 {
-                  if (c < 0x1CFB)
+                  if (c < 0x1CF5)
                   {
-                    if (c < 0x1CF5)
+                    if (c < 0x1CEE)
                     {
-                      if (c < 0x1CEE)
+                      if (c < 0x1CED)
                       {
-                        if ((c >= 0x1CE9) && (c <= 0x1CEC))
-                          return Line_AL;
-                        /* c == 0x1CED */
-                        return Line_CM;
+                        if ((c >= 0x1CD4) && (c <= 0x1CE8))
+                          return Line_CM;
+                        /* (c >= 0x1CE9) && (c <= 0x1CEC) */
+                        return Line_AL;
                       }
                       else
                       {
-                        if ((c >= 0x1CEE) && (c <= 0x1CF3))
-                          return Line_AL;
-                        /* c == 0x1CF4 */
+                        /* c == 0x1CED */
                         return Line_CM;
                       }
                     }
                     else
+                    {
+                      if ((c >= 0x1CEE) && (c <= 0x1CF3))
+                        return Line_AL;
+                      /* c == 0x1CF4 */
+                      return Line_CM;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x1DC0)
                     {
                       if (c < 0x1CFA)
                       {
@@ -70792,31 +69335,24 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        /* c == 0x1CFA */
+                        /* (c >= 0x1CFA) && (c <= 0x1DBF) */
                         return Line_AL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x1DCE)
-                    {
-                      if (c < 0x1DC0)
-                      {
-                        if ((c >= 0x1CFB) && (c <= 0x1CFF))
-                          return Line_XX;
-                        /* (c >= 0x1D00) && (c <= 0x1DBF) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1DC0) && (c <= 0x1DCC))
-                          return Line_CM;
-                        /* c == 0x1DCD */
-                        return Line_GL;
                       }
                     }
                     else
+                    {
+                      if ((c >= 0x1DC0) && (c <= 0x1DCC))
+                        return Line_CM;
+                      /* c == 0x1DCD */
+                      return Line_GL;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x1FFE)
+                  {
+                    if (c < 0x1E00)
                     {
                       if (c < 0x1DFD)
                       {
@@ -70831,363 +69367,177 @@ line_category(Py_UCS4 c)
                         return Line_CM;
                       }
                     }
-                  }
-                }
-                else
-                {
-                  if (c < 0x1F4E)
-                  {
-                    if (c < 0x1F20)
-                    {
-                      if (c < 0x1F18)
-                      {
-                        if ((c >= 0x1E00) && (c <= 0x1F15))
-                          return Line_AL;
-                        /* (c >= 0x1F16) && (c <= 0x1F17) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1F18) && (c <= 0x1F1D))
-                          return Line_AL;
-                        /* (c >= 0x1F1E) && (c <= 0x1F1F) */
-                        return Line_XX;
-                      }
-                    }
                     else
                     {
-                      if (c < 0x1F48)
-                      {
-                        if ((c >= 0x1F20) && (c <= 0x1F45))
-                          return Line_AL;
-                        /* (c >= 0x1F46) && (c <= 0x1F47) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1F48) && (c <= 0x1F4D) */
+                      if ((c >= 0x1E00) && (c <= 0x1FFC))
                         return Line_AL;
-                      }
+                      /* c == 0x1FFD */
+                      return Line_BB;
                     }
                   }
                   else
                   {
-                    if (c < 0x1F59)
+                    if (c < 0x2008)
                     {
-                      if (c < 0x1F58)
+                      if (c < 0x2007)
                       {
-                        if ((c >= 0x1F4E) && (c <= 0x1F4F))
-                          return Line_XX;
-                        /* (c >= 0x1F50) && (c <= 0x1F57) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x1F58 */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1F5B)
-                      {
-                        if (c == 0x1F59)
+                        if ((c >= 0x1FFE) && (c <= 0x1FFF))
                           return Line_AL;
-                        /* c == 0x1F5A */
-                        return Line_XX;
+                        /* (c >= 0x2000) && (c <= 0x2006) */
+                        return Line_BA;
                       }
                       else
                       {
-                        /* c == 0x1F5B */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-          else
-          {
-            if (c < 0x2046)
-            {
-              if (c < 0x200E)
-              {
-                if (c < 0x1FF0)
-                {
-                  if (c < 0x1FB6)
-                  {
-                    if (c < 0x1F7E)
-                    {
-                      if (c < 0x1F5E)
-                      {
-                        if (c == 0x1F5C)
-                          return Line_XX;
-                        /* c == 0x1F5D */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if (c == 0x1F5E)
-                          return Line_XX;
-                        /* (c >= 0x1F5F) && (c <= 0x1F7D) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1FB5)
-                      {
-                        if ((c >= 0x1F7E) && (c <= 0x1F7F))
-                          return Line_XX;
-                        /* (c >= 0x1F80) && (c <= 0x1FB4) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x1FB5 */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x1FD6)
-                    {
-                      if (c < 0x1FC6)
-                      {
-                        if ((c >= 0x1FB6) && (c <= 0x1FC4))
-                          return Line_AL;
-                        /* c == 0x1FC5 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1FC6) && (c <= 0x1FD3))
-                          return Line_AL;
-                        /* (c >= 0x1FD4) && (c <= 0x1FD5) */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1FDD)
-                      {
-                        if ((c >= 0x1FD6) && (c <= 0x1FDB))
-                          return Line_AL;
-                        /* c == 0x1FDC */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1FDD) && (c <= 0x1FEF) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x2000)
-                  {
-                    if (c < 0x1FFD)
-                    {
-                      if (c < 0x1FF5)
-                      {
-                        if ((c >= 0x1FF0) && (c <= 0x1FF1))
-                          return Line_XX;
-                        /* (c >= 0x1FF2) && (c <= 0x1FF4) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if (c == 0x1FF5)
-                          return Line_XX;
-                        /* (c >= 0x1FF6) && (c <= 0x1FFC) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1FFF)
-                      {
-                        if (c == 0x1FFD)
-                          return Line_BB;
-                        /* c == 0x1FFE */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x1FFF */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x200B)
-                    {
-                      if (c < 0x2008)
-                      {
-                        if ((c >= 0x2000) && (c <= 0x2006))
-                          return Line_BA;
                         /* c == 0x2007 */
                         return Line_GL;
                       }
-                      else
-                      {
-                        /* (c >= 0x2008) && (c <= 0x200A) */
-                        return Line_BA;
-                      }
                     }
                     else
                     {
-                      if (c < 0x200D)
-                      {
-                        if (c == 0x200B)
-                          return Line_ZW;
-                        /* c == 0x200C */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* c == 0x200D */
-                        return Line_ZWJ;
-                      }
+                      if ((c >= 0x2008) && (c <= 0x200A))
+                        return Line_BA;
+                      /* c == 0x200B */
+                      return Line_ZW;
                     }
                   }
                 }
               }
               else
               {
-                if (c < 0x2024)
+                if (c < 0x201B)
                 {
-                  if (c < 0x2018)
+                  if (c < 0x2012)
                   {
-                    if (c < 0x2014)
+                    if (c < 0x2010)
                     {
-                      if (c < 0x2011)
+                      if (c < 0x200E)
                       {
-                        if ((c >= 0x200E) && (c <= 0x200F))
+                        if (c == 0x200C)
                           return Line_CM;
-                        /* c == 0x2010 */
-                        return Line_BA;
+                        /* c == 0x200D */
+                        return Line_ZWJ;
                       }
                       else
                       {
-                        if (c == 0x2011)
-                          return Line_GL;
-                        /* (c >= 0x2012) && (c <= 0x2013) */
-                        return Line_BA;
+                        /* (c >= 0x200E) && (c <= 0x200F) */
+                        return Line_CM;
                       }
                     }
                     else
                     {
-                      if (c < 0x2017)
-                      {
-                        if (c == 0x2014)
-                          return Line_B2;
-                        /* (c >= 0x2015) && (c <= 0x2016) */
-                        return Line_AI;
-                      }
-                      else
-                      {
-                        /* c == 0x2017 */
-                        return Line_AL;
-                      }
+                      if (c == 0x2010)
+                        return Line_BA;
+                      /* c == 0x2011 */
+                      return Line_GL;
                     }
                   }
                   else
                   {
-                    if (c < 0x201F)
+                    if (c < 0x2018)
                     {
-                      if (c < 0x201B)
+                      if (c < 0x2015)
                       {
-                        if ((c >= 0x2018) && (c <= 0x2019))
-                          return Line_QU;
-                        /* c == 0x201A */
-                        return Line_OP;
+                        if ((c >= 0x2012) && (c <= 0x2013))
+                          return Line_BA;
+                        /* c == 0x2014 */
+                        return Line_B2;
                       }
                       else
+                      {
+                        /* (c >= 0x2015) && (c <= 0x2017) */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x2018) && (c <= 0x2019))
+                        return Line_QU;
+                      /* c == 0x201A */
+                      return Line_OP;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x2027)
+                  {
+                    if (c < 0x2020)
+                    {
+                      if (c < 0x201F)
                       {
                         if ((c >= 0x201B) && (c <= 0x201D))
                           return Line_QU;
                         /* c == 0x201E */
                         return Line_OP;
                       }
-                    }
-                    else
-                    {
-                      if (c < 0x2022)
-                      {
-                        if (c == 0x201F)
-                          return Line_QU;
-                        /* (c >= 0x2020) && (c <= 0x2021) */
-                        return Line_AI;
-                      }
                       else
                       {
-                        /* (c >= 0x2022) && (c <= 0x2023) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x2039)
-                  {
-                    if (c < 0x202F)
-                    {
-                      if (c < 0x2028)
-                      {
-                        if ((c >= 0x2024) && (c <= 0x2026))
-                          return Line_IN;
-                        /* c == 0x2027 */
-                        return Line_BA;
-                      }
-                      else
-                      {
-                        if ((c >= 0x2028) && (c <= 0x2029))
-                          return Line_BK;
-                        /* (c >= 0x202A) && (c <= 0x202E) */
-                        return Line_CM;
+                        /* c == 0x201F */
+                        return Line_QU;
                       }
                     }
                     else
                     {
-                      if (c < 0x2038)
-                      {
-                        if (c == 0x202F)
-                          return Line_GL;
-                        /* (c >= 0x2030) && (c <= 0x2037) */
-                        return Line_PO;
-                      }
-                      else
-                      {
-                        /* c == 0x2038 */
+                      if ((c >= 0x2020) && (c <= 0x2023))
                         return Line_AL;
-                      }
+                      /* (c >= 0x2024) && (c <= 0x2026) */
+                      return Line_IN;
                     }
                   }
                   else
                   {
-                    if (c < 0x203E)
+                    if (c < 0x202A)
                     {
-                      if (c < 0x203C)
+                      if (c == 0x2027)
+                        return Line_BA;
+                      /* (c >= 0x2028) && (c <= 0x2029) */
+                      return Line_BK;
+                    }
+                    else
+                    {
+                      if ((c >= 0x202A) && (c <= 0x202E))
+                        return Line_CM;
+                      /* c == 0x202F */
+                      return Line_GL;
+                    }
+                  }
+                }
+              }
+            }
+            else
+            {
+              if (c < 0x207D)
+              {
+                if (c < 0x204A)
+                {
+                  if (c < 0x203E)
+                  {
+                    if (c < 0x203B)
+                    {
+                      if (c < 0x2039)
                       {
-                        if ((c >= 0x2039) && (c <= 0x203A))
-                          return Line_QU;
-                        /* c == 0x203B */
-                        return Line_AI;
+                        if ((c >= 0x2030) && (c <= 0x2037))
+                          return Line_PO;
+                        /* c == 0x2038 */
+                        return Line_AL;
                       }
                       else
                       {
-                        /* (c >= 0x203C) && (c <= 0x203D) */
-                        return Line_NS;
+                        /* (c >= 0x2039) && (c <= 0x203A) */
+                        return Line_QU;
                       }
                     }
                     else
+                    {
+                      if (c == 0x203B)
+                        return Line_AL;
+                      /* (c >= 0x203C) && (c <= 0x203D) */
+                      return Line_NS;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x2046)
                     {
                       if (c < 0x2045)
                       {
@@ -71202,49 +69552,40 @@ line_category(Py_UCS4 c)
                         return Line_OP;
                       }
                     }
+                    else
+                    {
+                      if (c == 0x2046)
+                        return Line_CL;
+                      /* (c >= 0x2047) && (c <= 0x2049) */
+                      return Line_NS;
+                    }
                   }
                 }
-              }
-            }
-            else
-            {
-              if (c < 0x20A0)
-              {
-                if (c < 0x2074)
+                else
                 {
                   if (c < 0x205D)
                   {
-                    if (c < 0x2057)
+                    if (c < 0x2058)
                     {
-                      if (c < 0x204A)
-                      {
-                        if (c == 0x2046)
-                          return Line_CL;
-                        /* (c >= 0x2047) && (c <= 0x2049) */
-                        return Line_NS;
-                      }
-                      else
+                      if (c < 0x2057)
                       {
                         if ((c >= 0x204A) && (c <= 0x2055))
                           return Line_AL;
                         /* c == 0x2056 */
                         return Line_BA;
                       }
+                      else
+                      {
+                        /* c == 0x2057 */
+                        return Line_PO;
+                      }
                     }
                     else
                     {
-                      if (c < 0x205C)
-                      {
-                        if (c == 0x2057)
-                          return Line_PO;
-                        /* (c >= 0x2058) && (c <= 0x205B) */
+                      if ((c >= 0x2058) && (c <= 0x205B))
                         return Line_BA;
-                      }
-                      else
-                      {
-                        /* c == 0x205C */
-                        return Line_AL;
-                      }
+                      /* c == 0x205C */
+                      return Line_AL;
                     }
                   }
                   else
@@ -71260,125 +69601,80 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        if ((c >= 0x2061) && (c <= 0x2064))
-                          return Line_AL;
-                        /* c == 0x2065 */
-                        return Line_XX;
+                        /* (c >= 0x2061) && (c <= 0x2065) */
+                        return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0x2072)
-                      {
-                        if ((c >= 0x2066) && (c <= 0x206F))
-                          return Line_CM;
-                        /* (c >= 0x2070) && (c <= 0x2071) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x2072) && (c <= 0x2073) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x2085)
-                  {
-                    if (c < 0x207F)
-                    {
-                      if (c < 0x207D)
-                      {
-                        if (c == 0x2074)
-                          return Line_AI;
-                        /* (c >= 0x2075) && (c <= 0x207C) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if (c == 0x207D)
-                          return Line_OP;
-                        /* c == 0x207E */
-                        return Line_CL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x2081)
-                      {
-                        if (c == 0x207F)
-                          return Line_AI;
-                        /* c == 0x2080 */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x2081) && (c <= 0x2084) */
-                        return Line_AI;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x208F)
-                    {
-                      if (c < 0x208E)
-                      {
-                        if ((c >= 0x2085) && (c <= 0x208C))
-                          return Line_AL;
-                        /* c == 0x208D */
-                        return Line_OP;
-                      }
-                      else
-                      {
-                        /* c == 0x208E */
-                        return Line_CL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x209D)
-                      {
-                        if (c == 0x208F)
-                          return Line_XX;
-                        /* (c >= 0x2090) && (c <= 0x209C) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x209D) && (c <= 0x209F) */
-                        return Line_XX;
-                      }
+                      if ((c >= 0x2066) && (c <= 0x206F))
+                        return Line_CM;
+                      /* (c >= 0x2070) && (c <= 0x207C) */
+                      return Line_AL;
                     }
                   }
                 }
               }
               else
               {
-                if (c < 0x2100)
+                if (c < 0x20B7)
                 {
-                  if (c < 0x20BE)
+                  if (c < 0x208F)
                   {
-                    if (c < 0x20B7)
+                    if (c < 0x208D)
                     {
-                      if (c < 0x20A8)
+                      if (c < 0x207F)
                       {
-                        if ((c >= 0x20A0) && (c <= 0x20A6))
-                          return Line_PR;
-                        /* c == 0x20A7 */
-                        return Line_PO;
+                        if (c == 0x207D)
+                          return Line_OP;
+                        /* c == 0x207E */
+                        return Line_CL;
                       }
                       else
                       {
-                        if ((c >= 0x20A8) && (c <= 0x20B5))
-                          return Line_PR;
-                        /* c == 0x20B6 */
+                        /* (c >= 0x207F) && (c <= 0x208C) */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0x208D)
+                        return Line_OP;
+                      /* c == 0x208E */
+                      return Line_CL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x20A8)
+                    {
+                      if (c < 0x20A7)
+                      {
+                        if ((c >= 0x208F) && (c <= 0x209F))
+                          return Line_AL;
+                        /* (c >= 0x20A0) && (c <= 0x20A6) */
+                        return Line_PR;
+                      }
+                      else
+                      {
+                        /* c == 0x20A7 */
                         return Line_PO;
                       }
                     }
                     else
+                    {
+                      if ((c >= 0x20A8) && (c <= 0x20B5))
+                        return Line_PR;
+                      /* c == 0x20B6 */
+                      return Line_PO;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x20C0)
+                  {
+                    if (c < 0x20BE)
                     {
                       if (c < 0x20BC)
                       {
@@ -71393,109 +69689,458 @@ line_category(Py_UCS4 c)
                         return Line_PR;
                       }
                     }
+                    else
+                    {
+                      if (c == 0x20BE)
+                        return Line_PO;
+                      /* c == 0x20BF */
+                      return Line_PR;
+                    }
                   }
                   else
                   {
-                    if (c < 0x20C1)
+                    if (c < 0x20D0)
                     {
-                      if (c < 0x20C0)
+                      if (c == 0x20C0)
+                        return Line_PO;
+                      /* (c >= 0x20C1) && (c <= 0x20CF) */
+                      return Line_PR;
+                    }
+                    else
+                    {
+                      if ((c >= 0x20D0) && (c <= 0x20F0))
+                        return Line_CM;
+                      /* (c >= 0x20F1) && (c <= 0x2102) */
+                      return Line_AL;
+                    }
+                  }
+                }
+              }
+            }
+          }
+          else
+          {
+            if (c < 0x26C9)
+            {
+              if (c < 0x23F0)
+              {
+                if (c < 0x2308)
+                {
+                  if (c < 0x2117)
+                  {
+                    if (c < 0x210A)
+                    {
+                      if (c < 0x2109)
                       {
-                        if (c == 0x20BE)
+                        if (c == 0x2103)
                           return Line_PO;
-                        /* c == 0x20BF */
-                        return Line_PR;
+                        /* (c >= 0x2104) && (c <= 0x2108) */
+                        return Line_AL;
                       }
                       else
                       {
-                        /* c == 0x20C0 */
+                        /* c == 0x2109 */
                         return Line_PO;
                       }
                     }
                     else
                     {
-                      if (c < 0x20F1)
+                      if ((c >= 0x210A) && (c <= 0x2115))
+                        return Line_AL;
+                      /* c == 0x2116 */
+                      return Line_PR;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x22EF)
+                    {
+                      if (c < 0x2214)
                       {
-                        if ((c >= 0x20C1) && (c <= 0x20CF))
-                          return Line_PR;
-                        /* (c >= 0x20D0) && (c <= 0x20F0) */
-                        return Line_CM;
+                        if ((c >= 0x2117) && (c <= 0x2211))
+                          return Line_AL;
+                        /* (c >= 0x2212) && (c <= 0x2213) */
+                        return Line_PR;
                       }
                       else
                       {
-                        /* (c >= 0x20F1) && (c <= 0x20FF) */
-                        return Line_XX;
+                        /* (c >= 0x2214) && (c <= 0x22EE) */
+                        return Line_AL;
                       }
+                    }
+                    else
+                    {
+                      if (c == 0x22EF)
+                        return Line_IN;
+                      /* (c >= 0x22F0) && (c <= 0x2307) */
+                      return Line_AL;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0x2113)
+                  if (c < 0x231A)
                   {
-                    if (c < 0x2106)
+                    if (c < 0x230B)
                     {
-                      if (c < 0x2104)
+                      if (c < 0x230A)
                       {
-                        if ((c >= 0x2100) && (c <= 0x2102))
-                          return Line_AL;
-                        /* c == 0x2103 */
-                        return Line_PO;
+                        if (c == 0x2308)
+                          return Line_OP;
+                        /* c == 0x2309 */
+                        return Line_CL;
                       }
                       else
                       {
-                        if (c == 0x2104)
-                          return Line_AL;
-                        /* c == 0x2105 */
-                        return Line_AI;
+                        /* c == 0x230A */
+                        return Line_OP;
                       }
                     }
                     else
                     {
-                      if (c < 0x210A)
-                      {
-                        if ((c >= 0x2106) && (c <= 0x2108))
-                          return Line_AL;
-                        /* c == 0x2109 */
-                        return Line_PO;
-                      }
-                      else
-                      {
-                        /* (c >= 0x210A) && (c <= 0x2112) */
-                        return Line_AL;
-                      }
+                      if (c == 0x230B)
+                        return Line_CL;
+                      /* (c >= 0x230C) && (c <= 0x2319) */
+                      return Line_AL;
                     }
                   }
                   else
                   {
-                    if (c < 0x2117)
+                    if (c < 0x232A)
                     {
-                      if (c < 0x2116)
+                      if (c < 0x2329)
                       {
-                        if (c == 0x2113)
-                          return Line_AI;
-                        /* (c >= 0x2114) && (c <= 0x2115) */
+                        if ((c >= 0x231A) && (c <= 0x231B))
+                          return Line_ID;
+                        /* (c >= 0x231C) && (c <= 0x2328) */
                         return Line_AL;
                       }
                       else
                       {
-                        /* c == 0x2116 */
-                        return Line_PR;
+                        /* c == 0x2329 */
+                        return Line_OP;
                       }
                     }
                     else
                     {
-                      if (c < 0x2123)
+                      if (c == 0x232A)
+                        return Line_CL;
+                      /* (c >= 0x232B) && (c <= 0x23EF) */
+                      return Line_AL;
+                    }
+                  }
+                }
+              }
+              else
+              {
+                if (c < 0x261E)
+                {
+                  if (c < 0x2616)
+                  {
+                    if (c < 0x2604)
+                    {
+                      if (c < 0x2600)
                       {
-                        if ((c >= 0x2117) && (c <= 0x2120))
-                          return Line_AL;
-                        /* (c >= 0x2121) && (c <= 0x2122) */
-                        return Line_AI;
+                        if ((c >= 0x23F0) && (c <= 0x23F3))
+                          return Line_ID;
+                        /* (c >= 0x23F4) && (c <= 0x25FF) */
+                        return Line_AL;
                       }
                       else
                       {
-                        /* (c >= 0x2123) && (c <= 0x212A) */
+                        /* (c >= 0x2600) && (c <= 0x2603) */
+                        return Line_ID;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x2604) && (c <= 0x2613))
+                        return Line_AL;
+                      /* (c >= 0x2614) && (c <= 0x2615) */
+                      return Line_ID;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x261A)
+                    {
+                      if (c < 0x2619)
+                      {
+                        if ((c >= 0x2616) && (c <= 0x2617))
+                          return Line_AL;
+                        /* c == 0x2618 */
+                        return Line_ID;
+                      }
+                      else
+                      {
+                        /* c == 0x2619 */
                         return Line_AL;
                       }
+                    }
+                    else
+                    {
+                      if ((c >= 0x261A) && (c <= 0x261C))
+                        return Line_ID;
+                      /* c == 0x261D */
+                      return Line_EB;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x2669)
+                  {
+                    if (c < 0x263C)
+                    {
+                      if (c < 0x2639)
+                      {
+                        if ((c >= 0x261E) && (c <= 0x261F))
+                          return Line_ID;
+                        /* (c >= 0x2620) && (c <= 0x2638) */
+                        return Line_AL;
+                      }
+                      else
+                      {
+                        /* (c >= 0x2639) && (c <= 0x263B) */
+                        return Line_ID;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x263C) && (c <= 0x2667))
+                        return Line_AL;
+                      /* c == 0x2668 */
+                      return Line_ID;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x2680)
+                    {
+                      if ((c >= 0x2669) && (c <= 0x267E))
+                        return Line_AL;
+                      /* c == 0x267F */
+                      return Line_ID;
+                    }
+                    else
+                    {
+                      if ((c >= 0x2680) && (c <= 0x26BC))
+                        return Line_AL;
+                      /* (c >= 0x26BD) && (c <= 0x26C8) */
+                      return Line_ID;
+                    }
+                  }
+                }
+              }
+            }
+            else
+            {
+              if (c < 0x26FB)
+              {
+                if (c < 0x26DD)
+                {
+                  if (c < 0x26D3)
+                  {
+                    if (c < 0x26CF)
+                    {
+                      if (c < 0x26CE)
+                      {
+                        if ((c >= 0x26C9) && (c <= 0x26CC))
+                          return Line_AL;
+                        /* c == 0x26CD */
+                        return Line_ID;
+                      }
+                      else
+                      {
+                        /* c == 0x26CE */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x26CF) && (c <= 0x26D1))
+                        return Line_ID;
+                      /* c == 0x26D2 */
+                      return Line_AL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x26DA)
+                    {
+                      if (c < 0x26D8)
+                      {
+                        if ((c >= 0x26D3) && (c <= 0x26D4))
+                          return Line_ID;
+                        /* (c >= 0x26D5) && (c <= 0x26D7) */
+                        return Line_AL;
+                      }
+                      else
+                      {
+                        /* (c >= 0x26D8) && (c <= 0x26D9) */
+                        return Line_ID;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x26DA) && (c <= 0x26DB))
+                        return Line_AL;
+                      /* c == 0x26DC */
+                      return Line_ID;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x26F1)
+                  {
+                    if (c < 0x26EA)
+                    {
+                      if (c < 0x26E2)
+                      {
+                        if ((c >= 0x26DD) && (c <= 0x26DE))
+                          return Line_AL;
+                        /* (c >= 0x26DF) && (c <= 0x26E1) */
+                        return Line_ID;
+                      }
+                      else
+                      {
+                        /* (c >= 0x26E2) && (c <= 0x26E9) */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0x26EA)
+                        return Line_ID;
+                      /* (c >= 0x26EB) && (c <= 0x26F0) */
+                      return Line_AL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x26F9)
+                    {
+                      if (c < 0x26F7)
+                      {
+                        if ((c >= 0x26F1) && (c <= 0x26F5))
+                          return Line_ID;
+                        /* c == 0x26F6 */
+                        return Line_AL;
+                      }
+                      else
+                      {
+                        /* (c >= 0x26F7) && (c <= 0x26F8) */
+                        return Line_ID;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0x26F9)
+                        return Line_EB;
+                      /* c == 0x26FA */
+                      return Line_ID;
+                    }
+                  }
+                }
+              }
+              else
+              {
+                if (c < 0x2765)
+                {
+                  if (c < 0x270E)
+                  {
+                    if (c < 0x2708)
+                    {
+                      if (c < 0x2705)
+                      {
+                        if ((c >= 0x26FB) && (c <= 0x26FC))
+                          return Line_AL;
+                        /* (c >= 0x26FD) && (c <= 0x2704) */
+                        return Line_ID;
+                      }
+                      else
+                      {
+                        /* (c >= 0x2705) && (c <= 0x2707) */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x2708) && (c <= 0x2709))
+                        return Line_ID;
+                      /* (c >= 0x270A) && (c <= 0x270D) */
+                      return Line_EB;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x2762)
+                    {
+                      if (c < 0x2761)
+                      {
+                        if ((c >= 0x270E) && (c <= 0x275A))
+                          return Line_AL;
+                        /* (c >= 0x275B) && (c <= 0x2760) */
+                        return Line_QU;
+                      }
+                      else
+                      {
+                        /* c == 0x2761 */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x2762) && (c <= 0x2763))
+                        return Line_EX;
+                      /* c == 0x2764 */
+                      return Line_ID;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x276C)
+                  {
+                    if (c < 0x276A)
+                    {
+                      if (c < 0x2769)
+                      {
+                        if ((c >= 0x2765) && (c <= 0x2767))
+                          return Line_AL;
+                        /* c == 0x2768 */
+                        return Line_OP;
+                      }
+                      else
+                      {
+                        /* c == 0x2769 */
+                        return Line_CL;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0x276A)
+                        return Line_OP;
+                      /* c == 0x276B */
+                      return Line_CL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x276E)
+                    {
+                      if (c == 0x276C)
+                        return Line_OP;
+                      /* c == 0x276D */
+                      return Line_CL;
+                    }
+                    else
+                    {
+                      if (c == 0x276E)
+                        return Line_OP;
+                      /* c == 0x276F */
+                      return Line_CL;
                     }
                   }
                 }
@@ -71507,1253 +70152,74 @@ line_category(Py_UCS4 c)
     }
     else
     {
-      if (c < 0x30A7)
+      if (c < 0xAAB2)
       {
-        if (c < 0x2774)
+        if (c < 0x3043)
         {
-          if (c < 0x25A2)
+          if (c < 0x2E25)
           {
-            if (c < 0x224C)
+            if (c < 0x2995)
             {
-              if (c < 0x220B)
+              if (c < 0x27F0)
               {
-                if (c < 0x218C)
+                if (c < 0x27E6)
                 {
-                  if (c < 0x215F)
+                  if (c < 0x2775)
                   {
-                    if (c < 0x215B)
+                    if (c < 0x2773)
                     {
-                      if (c < 0x2154)
+                      if (c < 0x2772)
                       {
-                        if (c == 0x212B)
-                          return Line_AI;
-                        /* (c >= 0x212C) && (c <= 0x2153) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if ((c >= 0x2154) && (c <= 0x2155))
-                          return Line_AI;
-                        /* (c >= 0x2156) && (c <= 0x215A) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x215E)
-                      {
-                        if (c == 0x215B)
-                          return Line_AI;
-                        /* (c >= 0x215C) && (c <= 0x215D) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x215E */
-                        return Line_AI;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x217A)
-                    {
-                      if (c < 0x216C)
-                      {
-                        if (c == 0x215F)
-                          return Line_AL;
-                        /* (c >= 0x2160) && (c <= 0x216B) */
-                        return Line_AI;
-                      }
-                      else
-                      {
-                        if ((c >= 0x216C) && (c <= 0x216F))
-                          return Line_AL;
-                        /* (c >= 0x2170) && (c <= 0x2179) */
-                        return Line_AI;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x218A)
-                      {
-                        if ((c >= 0x217A) && (c <= 0x2188))
-                          return Line_AL;
-                        /* c == 0x2189 */
-                        return Line_AI;
-                      }
-                      else
-                      {
-                        /* (c >= 0x218A) && (c <= 0x218B) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x2200)
-                  {
-                    if (c < 0x21D3)
-                    {
-                      if (c < 0x219A)
-                      {
-                        if ((c >= 0x218C) && (c <= 0x218F))
-                          return Line_XX;
-                        /* (c >= 0x2190) && (c <= 0x2199) */
-                        return Line_AI;
-                      }
-                      else
-                      {
-                        if ((c >= 0x219A) && (c <= 0x21D1))
-                          return Line_AL;
-                        /* c == 0x21D2 */
-                        return Line_AI;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x21D5)
-                      {
-                        if (c == 0x21D3)
-                          return Line_AL;
-                        /* c == 0x21D4 */
-                        return Line_AI;
-                      }
-                      else
-                      {
-                        /* (c >= 0x21D5) && (c <= 0x21FF) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x2204)
-                    {
-                      if (c < 0x2202)
-                      {
-                        if (c == 0x2200)
-                          return Line_AI;
-                        /* c == 0x2201 */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x2202) && (c <= 0x2203) */
-                        return Line_AI;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x2209)
-                      {
-                        if ((c >= 0x2204) && (c <= 0x2206))
-                          return Line_AL;
-                        /* (c >= 0x2207) && (c <= 0x2208) */
-                        return Line_AI;
-                      }
-                      else
-                      {
-                        /* (c >= 0x2209) && (c <= 0x220A) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                }
-              }
-              else
-              {
-                if (c < 0x2224)
-                {
-                  if (c < 0x2215)
-                  {
-                    if (c < 0x2211)
-                    {
-                      if (c < 0x220F)
-                      {
-                        if (c == 0x220B)
-                          return Line_AI;
-                        /* (c >= 0x220C) && (c <= 0x220E) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if (c == 0x220F)
-                          return Line_AI;
-                        /* c == 0x2210 */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x2214)
-                      {
-                        if (c == 0x2211)
-                          return Line_AI;
-                        /* (c >= 0x2212) && (c <= 0x2213) */
-                        return Line_PR;
-                      }
-                      else
-                      {
-                        /* c == 0x2214 */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x221D)
-                    {
-                      if (c < 0x221A)
-                      {
-                        if (c == 0x2215)
-                          return Line_AI;
-                        /* (c >= 0x2216) && (c <= 0x2219) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if (c == 0x221A)
-                          return Line_AI;
-                        /* (c >= 0x221B) && (c <= 0x221C) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x2223)
-                      {
-                        if ((c >= 0x221D) && (c <= 0x2220))
-                          return Line_AI;
-                        /* (c >= 0x2221) && (c <= 0x2222) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x2223 */
-                        return Line_AI;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x2234)
-                  {
-                    if (c < 0x222D)
-                    {
-                      if (c < 0x2226)
-                      {
-                        if (c == 0x2224)
-                          return Line_AL;
-                        /* c == 0x2225 */
-                        return Line_AI;
-                      }
-                      else
-                      {
-                        if (c == 0x2226)
-                          return Line_AL;
-                        /* (c >= 0x2227) && (c <= 0x222C) */
-                        return Line_AI;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x222F)
-                      {
-                        if (c == 0x222D)
-                          return Line_AL;
-                        /* c == 0x222E */
-                        return Line_AI;
-                      }
-                      else
-                      {
-                        /* (c >= 0x222F) && (c <= 0x2233) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x223E)
-                    {
-                      if (c < 0x223C)
-                      {
-                        if ((c >= 0x2234) && (c <= 0x2237))
-                          return Line_AI;
-                        /* (c >= 0x2238) && (c <= 0x223B) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x223C) && (c <= 0x223D) */
-                        return Line_AI;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x2249)
-                      {
-                        if ((c >= 0x223E) && (c <= 0x2247))
-                          return Line_AL;
-                        /* c == 0x2248 */
-                        return Line_AI;
-                      }
-                      else
-                      {
-                        /* (c >= 0x2249) && (c <= 0x224B) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-            else
-            {
-              if (c < 0x2309)
-              {
-                if (c < 0x2286)
-                {
-                  if (c < 0x2268)
-                  {
-                    if (c < 0x2260)
-                    {
-                      if (c < 0x2252)
-                      {
-                        if (c == 0x224C)
-                          return Line_AI;
-                        /* (c >= 0x224D) && (c <= 0x2251) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if (c == 0x2252)
-                          return Line_AI;
-                        /* (c >= 0x2253) && (c <= 0x225F) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x2264)
-                      {
-                        if ((c >= 0x2260) && (c <= 0x2261))
-                          return Line_AI;
-                        /* (c >= 0x2262) && (c <= 0x2263) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x2264) && (c <= 0x2267) */
-                        return Line_AI;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x2270)
-                    {
-                      if (c < 0x226C)
-                      {
-                        if ((c >= 0x2268) && (c <= 0x2269))
-                          return Line_AL;
-                        /* (c >= 0x226A) && (c <= 0x226B) */
-                        return Line_AI;
-                      }
-                      else
-                      {
-                        if ((c >= 0x226C) && (c <= 0x226D))
-                          return Line_AL;
-                        /* (c >= 0x226E) && (c <= 0x226F) */
-                        return Line_AI;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x2284)
-                      {
-                        if ((c >= 0x2270) && (c <= 0x2281))
-                          return Line_AL;
-                        /* (c >= 0x2282) && (c <= 0x2283) */
-                        return Line_AI;
-                      }
-                      else
-                      {
-                        /* (c >= 0x2284) && (c <= 0x2285) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x22A6)
-                  {
-                    if (c < 0x2299)
-                    {
-                      if (c < 0x2295)
-                      {
-                        if ((c >= 0x2286) && (c <= 0x2287))
-                          return Line_AI;
-                        /* (c >= 0x2288) && (c <= 0x2294) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if (c == 0x2295)
-                          return Line_AI;
-                        /* (c >= 0x2296) && (c <= 0x2298) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x22A5)
-                      {
-                        if (c == 0x2299)
-                          return Line_AI;
-                        /* (c >= 0x229A) && (c <= 0x22A4) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x22A5 */
-                        return Line_AI;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x22EF)
-                    {
-                      if (c < 0x22C0)
-                      {
-                        if ((c >= 0x22A6) && (c <= 0x22BE))
-                          return Line_AL;
-                        /* c == 0x22BF */
-                        return Line_AI;
-                      }
-                      else
-                      {
-                        /* (c >= 0x22C0) && (c <= 0x22EE) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x2308)
-                      {
-                        if (c == 0x22EF)
-                          return Line_IN;
-                        /* (c >= 0x22F0) && (c <= 0x2307) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x2308 */
-                        return Line_OP;
-                      }
-                    }
-                  }
-                }
-              }
-              else
-              {
-                if (c < 0x2440)
-                {
-                  if (c < 0x231C)
-                  {
-                    if (c < 0x2312)
-                    {
-                      if (c < 0x230B)
-                      {
-                        if (c == 0x2309)
-                          return Line_CL;
-                        /* c == 0x230A */
-                        return Line_OP;
-                      }
-                      else
-                      {
-                        if (c == 0x230B)
-                          return Line_CL;
-                        /* (c >= 0x230C) && (c <= 0x2311) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x231A)
-                      {
-                        if (c == 0x2312)
-                          return Line_AI;
-                        /* (c >= 0x2313) && (c <= 0x2319) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x231A) && (c <= 0x231B) */
-                        return Line_ID;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x23F0)
-                    {
-                      if (c < 0x232A)
-                      {
-                        if ((c >= 0x231C) && (c <= 0x2328))
-                          return Line_AL;
-                        /* c == 0x2329 */
-                        return Line_OP;
-                      }
-                      else
-                      {
-                        if (c == 0x232A)
-                          return Line_CL;
-                        /* (c >= 0x232B) && (c <= 0x23EF) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x2427)
-                      {
-                        if ((c >= 0x23F0) && (c <= 0x23F3))
-                          return Line_ID;
-                        /* (c >= 0x23F4) && (c <= 0x2426) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x2427) && (c <= 0x243F) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x2575)
-                  {
-                    if (c < 0x2500)
-                    {
-                      if (c < 0x2460)
-                      {
-                        if ((c >= 0x2440) && (c <= 0x244A))
-                          return Line_AL;
-                        /* (c >= 0x244B) && (c <= 0x245F) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x2460) && (c <= 0x24FE))
-                          return Line_AI;
-                        /* c == 0x24FF */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x2550)
-                      {
-                        if ((c >= 0x2500) && (c <= 0x254B))
-                          return Line_AI;
-                        /* (c >= 0x254C) && (c <= 0x254F) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x2550) && (c <= 0x2574) */
-                        return Line_AI;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x2592)
-                    {
-                      if (c < 0x2590)
-                      {
-                        if ((c >= 0x2575) && (c <= 0x257F))
-                          return Line_AL;
-                        /* (c >= 0x2580) && (c <= 0x258F) */
-                        return Line_AI;
-                      }
-                      else
-                      {
-                        /* (c >= 0x2590) && (c <= 0x2591) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x25A0)
-                      {
-                        if ((c >= 0x2592) && (c <= 0x2595))
-                          return Line_AI;
-                        /* (c >= 0x2596) && (c <= 0x259F) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x25A0) && (c <= 0x25A1) */
-                        return Line_AI;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-          else
-          {
-            if (c < 0x2670)
-            {
-              if (c < 0x260E)
-              {
-                if (c < 0x25CC)
-                {
-                  if (c < 0x25BC)
-                  {
-                    if (c < 0x25B4)
-                    {
-                      if (c < 0x25AA)
-                      {
-                        if (c == 0x25A2)
-                          return Line_AL;
-                        /* (c >= 0x25A3) && (c <= 0x25A9) */
-                        return Line_AI;
-                      }
-                      else
-                      {
-                        if ((c >= 0x25AA) && (c <= 0x25B1))
-                          return Line_AL;
-                        /* (c >= 0x25B2) && (c <= 0x25B3) */
-                        return Line_AI;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x25B8)
-                      {
-                        if ((c >= 0x25B4) && (c <= 0x25B5))
-                          return Line_AL;
-                        /* (c >= 0x25B6) && (c <= 0x25B7) */
-                        return Line_AI;
-                      }
-                      else
-                      {
-                        /* (c >= 0x25B8) && (c <= 0x25BB) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x25C6)
-                    {
-                      if (c < 0x25C0)
-                      {
-                        if ((c >= 0x25BC) && (c <= 0x25BD))
-                          return Line_AI;
-                        /* (c >= 0x25BE) && (c <= 0x25BF) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if ((c >= 0x25C0) && (c <= 0x25C1))
-                          return Line_AI;
-                        /* (c >= 0x25C2) && (c <= 0x25C5) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x25CB)
-                      {
-                        if ((c >= 0x25C6) && (c <= 0x25C8))
-                          return Line_AI;
-                        /* (c >= 0x25C9) && (c <= 0x25CA) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x25CB */
-                        return Line_AI;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x2600)
-                  {
-                    if (c < 0x25E6)
-                    {
-                      if (c < 0x25D2)
-                      {
-                        if ((c >= 0x25CC) && (c <= 0x25CD))
-                          return Line_AL;
-                        /* (c >= 0x25CE) && (c <= 0x25D1) */
-                        return Line_AI;
-                      }
-                      else
-                      {
-                        if ((c >= 0x25D2) && (c <= 0x25E1))
-                          return Line_AL;
-                        /* (c >= 0x25E2) && (c <= 0x25E5) */
-                        return Line_AI;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x25F0)
-                      {
-                        if ((c >= 0x25E6) && (c <= 0x25EE))
-                          return Line_AL;
-                        /* c == 0x25EF */
-                        return Line_AI;
-                      }
-                      else
-                      {
-                        /* (c >= 0x25F0) && (c <= 0x25FF) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x2607)
-                    {
-                      if (c < 0x2605)
-                      {
-                        if ((c >= 0x2600) && (c <= 0x2603))
-                          return Line_ID;
-                        /* c == 0x2604 */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x2605) && (c <= 0x2606) */
-                        return Line_AI;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x260A)
-                      {
-                        if ((c >= 0x2607) && (c <= 0x2608))
-                          return Line_AL;
-                        /* c == 0x2609 */
-                        return Line_AI;
-                      }
-                      else
-                      {
-                        /* (c >= 0x260A) && (c <= 0x260D) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                }
-              }
-              else
-              {
-                if (c < 0x2642)
-                {
-                  if (c < 0x261D)
-                  {
-                    if (c < 0x2618)
-                    {
-                      if (c < 0x2614)
-                      {
-                        if ((c >= 0x260E) && (c <= 0x260F))
-                          return Line_AI;
-                        /* (c >= 0x2610) && (c <= 0x2613) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if ((c >= 0x2614) && (c <= 0x2615))
-                          return Line_ID;
-                        /* (c >= 0x2616) && (c <= 0x2617) */
-                        return Line_AI;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x261A)
-                      {
-                        if (c == 0x2618)
-                          return Line_ID;
-                        /* c == 0x2619 */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x261A) && (c <= 0x261C) */
-                        return Line_ID;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x263C)
-                    {
-                      if (c < 0x2620)
-                      {
-                        if (c == 0x261D)
-                          return Line_EB;
-                        /* (c >= 0x261E) && (c <= 0x261F) */
-                        return Line_ID;
-                      }
-                      else
-                      {
-                        if ((c >= 0x2620) && (c <= 0x2638))
-                          return Line_AL;
-                        /* (c >= 0x2639) && (c <= 0x263B) */
-                        return Line_ID;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x2641)
-                      {
-                        if ((c >= 0x263C) && (c <= 0x263F))
-                          return Line_AL;
-                        /* c == 0x2640 */
-                        return Line_AI;
-                      }
-                      else
-                      {
-                        /* c == 0x2641 */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x2668)
-                  {
-                    if (c < 0x2663)
-                    {
-                      if (c < 0x2660)
-                      {
-                        if (c == 0x2642)
-                          return Line_AI;
-                        /* (c >= 0x2643) && (c <= 0x265F) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if ((c >= 0x2660) && (c <= 0x2661))
-                          return Line_AI;
-                        /* c == 0x2662 */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x2667)
-                      {
-                        if ((c >= 0x2663) && (c <= 0x2665))
-                          return Line_AI;
-                        /* c == 0x2666 */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x2667 */
-                        return Line_AI;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x266C)
-                    {
-                      if (c < 0x266B)
-                      {
-                        if (c == 0x2668)
-                          return Line_ID;
-                        /* (c >= 0x2669) && (c <= 0x266A) */
-                        return Line_AI;
-                      }
-                      else
-                      {
-                        /* c == 0x266B */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x266F)
-                      {
-                        if ((c >= 0x266C) && (c <= 0x266D))
-                          return Line_AI;
-                        /* c == 0x266E */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x266F */
-                        return Line_AI;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-            else
-            {
-              if (c < 0x26F9)
-              {
-                if (c < 0x26DA)
-                {
-                  if (c < 0x26CD)
-                  {
-                    if (c < 0x26A0)
-                    {
-                      if (c < 0x2680)
-                      {
-                        if ((c >= 0x2670) && (c <= 0x267E))
-                          return Line_AL;
-                        /* c == 0x267F */
-                        return Line_ID;
-                      }
-                      else
-                      {
-                        if ((c >= 0x2680) && (c <= 0x269D))
-                          return Line_AL;
-                        /* (c >= 0x269E) && (c <= 0x269F) */
-                        return Line_AI;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x26C9)
-                      {
-                        if ((c >= 0x26A0) && (c <= 0x26BC))
-                          return Line_AL;
-                        /* (c >= 0x26BD) && (c <= 0x26C8) */
-                        return Line_ID;
-                      }
-                      else
-                      {
-                        /* (c >= 0x26C9) && (c <= 0x26CC) */
-                        return Line_AI;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x26D3)
-                    {
-                      if (c < 0x26CF)
-                      {
-                        if (c == 0x26CD)
-                          return Line_ID;
-                        /* c == 0x26CE */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if ((c >= 0x26CF) && (c <= 0x26D1))
-                          return Line_ID;
-                        /* c == 0x26D2 */
-                        return Line_AI;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x26D8)
-                      {
-                        if ((c >= 0x26D3) && (c <= 0x26D4))
-                          return Line_ID;
-                        /* (c >= 0x26D5) && (c <= 0x26D7) */
-                        return Line_AI;
-                      }
-                      else
-                      {
-                        /* (c >= 0x26D8) && (c <= 0x26D9) */
-                        return Line_ID;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x26E8)
-                  {
-                    if (c < 0x26E2)
-                    {
-                      if (c < 0x26DD)
-                      {
-                        if ((c >= 0x26DA) && (c <= 0x26DB))
-                          return Line_AI;
-                        /* c == 0x26DC */
-                        return Line_ID;
-                      }
-                      else
-                      {
-                        if ((c >= 0x26DD) && (c <= 0x26DE))
-                          return Line_AI;
-                        /* (c >= 0x26DF) && (c <= 0x26E1) */
-                        return Line_ID;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x26E4)
-                      {
-                        if (c == 0x26E2)
-                          return Line_AL;
-                        /* c == 0x26E3 */
-                        return Line_AI;
-                      }
-                      else
-                      {
-                        /* (c >= 0x26E4) && (c <= 0x26E7) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x26F1)
-                    {
-                      if (c < 0x26EB)
-                      {
-                        if ((c >= 0x26E8) && (c <= 0x26E9))
-                          return Line_AI;
-                        /* c == 0x26EA */
-                        return Line_ID;
-                      }
-                      else
-                      {
-                        /* (c >= 0x26EB) && (c <= 0x26F0) */
-                        return Line_AI;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x26F7)
-                      {
-                        if ((c >= 0x26F1) && (c <= 0x26F5))
-                          return Line_ID;
-                        /* c == 0x26F6 */
-                        return Line_AI;
-                      }
-                      else
-                      {
-                        /* (c >= 0x26F7) && (c <= 0x26F8) */
-                        return Line_ID;
-                      }
-                    }
-                  }
-                }
-              }
-              else
-              {
-                if (c < 0x2765)
-                {
-                  if (c < 0x270E)
-                  {
-                    if (c < 0x2705)
-                    {
-                      if (c < 0x26FB)
-                      {
-                        if (c == 0x26F9)
-                          return Line_EB;
-                        /* c == 0x26FA */
-                        return Line_ID;
-                      }
-                      else
-                      {
-                        if ((c >= 0x26FB) && (c <= 0x26FC))
-                          return Line_AI;
-                        /* (c >= 0x26FD) && (c <= 0x2704) */
-                        return Line_ID;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x270A)
-                      {
-                        if ((c >= 0x2705) && (c <= 0x2707))
-                          return Line_AL;
-                        /* (c >= 0x2708) && (c <= 0x2709) */
-                        return Line_ID;
-                      }
-                      else
-                      {
-                        /* (c >= 0x270A) && (c <= 0x270D) */
-                        return Line_EB;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x2761)
-                    {
-                      if (c < 0x2758)
-                      {
-                        if ((c >= 0x270E) && (c <= 0x2756))
-                          return Line_AL;
-                        /* c == 0x2757 */
-                        return Line_AI;
-                      }
-                      else
-                      {
-                        if ((c >= 0x2758) && (c <= 0x275A))
-                          return Line_AL;
-                        /* (c >= 0x275B) && (c <= 0x2760) */
-                        return Line_QU;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x2764)
-                      {
-                        if (c == 0x2761)
-                          return Line_AL;
-                        /* (c >= 0x2762) && (c <= 0x2763) */
-                        return Line_EX;
-                      }
-                      else
-                      {
-                        /* c == 0x2764 */
-                        return Line_ID;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x276E)
-                  {
-                    if (c < 0x276B)
-                    {
-                      if (c < 0x2769)
-                      {
-                        if ((c >= 0x2765) && (c <= 0x2767))
-                          return Line_AL;
-                        /* c == 0x2768 */
-                        return Line_OP;
-                      }
-                      else
-                      {
-                        if (c == 0x2769)
-                          return Line_CL;
-                        /* c == 0x276A */
-                        return Line_OP;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x276D)
-                      {
-                        if (c == 0x276B)
-                          return Line_CL;
-                        /* c == 0x276C */
-                        return Line_OP;
-                      }
-                      else
-                      {
-                        /* c == 0x276D */
-                        return Line_CL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x2771)
-                    {
-                      if (c < 0x2770)
-                      {
-                        if (c == 0x276E)
+                        if (c == 0x2770)
                           return Line_OP;
-                        /* c == 0x276F */
+                        /* c == 0x2771 */
                         return Line_CL;
                       }
                       else
                       {
-                        /* c == 0x2770 */
-                        return Line_OP;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x2773)
-                      {
-                        if (c == 0x2771)
-                          return Line_CL;
                         /* c == 0x2772 */
                         return Line_OP;
                       }
-                      else
-                      {
-                        /* c == 0x2773 */
-                        return Line_CL;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-        else
-        {
-          if (c < 0x2E26)
-          {
-            if (c < 0x2B97)
-            {
-              if (c < 0x298C)
-              {
-                if (c < 0x27ED)
-                {
-                  if (c < 0x27E6)
-                  {
-                    if (c < 0x27C5)
-                    {
-                      if (c < 0x2776)
-                      {
-                        if (c == 0x2774)
-                          return Line_OP;
-                        /* c == 0x2775 */
-                        return Line_CL;
-                      }
-                      else
-                      {
-                        if ((c >= 0x2776) && (c <= 0x2793))
-                          return Line_AI;
-                        /* (c >= 0x2794) && (c <= 0x27C4) */
-                        return Line_AL;
-                      }
                     }
                     else
                     {
-                      if (c < 0x27C7)
-                      {
-                        if (c == 0x27C5)
-                          return Line_OP;
-                        /* c == 0x27C6 */
+                      if (c == 0x2773)
                         return Line_CL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x27C7) && (c <= 0x27E5) */
-                        return Line_AL;
-                      }
+                      /* c == 0x2774 */
+                      return Line_OP;
                     }
                   }
                   else
                   {
-                    if (c < 0x27EA)
+                    if (c < 0x27C6)
+                    {
+                      if (c < 0x27C5)
+                      {
+                        if (c == 0x2775)
+                          return Line_CL;
+                        /* (c >= 0x2776) && (c <= 0x27C4) */
+                        return Line_AL;
+                      }
+                      else
+                      {
+                        /* c == 0x27C5 */
+                        return Line_OP;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0x27C6)
+                        return Line_CL;
+                      /* (c >= 0x27C7) && (c <= 0x27E5) */
+                      return Line_AL;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x27EB)
+                  {
+                    if (c < 0x27E9)
                     {
                       if (c < 0x27E8)
                       {
@@ -72764,108 +70230,105 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        if (c == 0x27E8)
-                          return Line_OP;
-                        /* c == 0x27E9 */
-                        return Line_CL;
+                        /* c == 0x27E8 */
+                        return Line_OP;
                       }
                     }
                     else
                     {
-                      if (c < 0x27EC)
-                      {
-                        if (c == 0x27EA)
-                          return Line_OP;
-                        /* c == 0x27EB */
+                      if (c == 0x27E9)
                         return Line_CL;
-                      }
-                      else
-                      {
-                        /* c == 0x27EC */
-                        return Line_OP;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x2986)
-                  {
-                    if (c < 0x2983)
-                    {
-                      if (c < 0x27EF)
-                      {
-                        if (c == 0x27ED)
-                          return Line_CL;
-                        /* c == 0x27EE */
-                        return Line_OP;
-                      }
-                      else
-                      {
-                        if (c == 0x27EF)
-                          return Line_CL;
-                        /* (c >= 0x27F0) && (c <= 0x2982) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x2985)
-                      {
-                        if (c == 0x2983)
-                          return Line_OP;
-                        /* c == 0x2984 */
-                        return Line_CL;
-                      }
-                      else
-                      {
-                        /* c == 0x2985 */
-                        return Line_OP;
-                      }
+                      /* c == 0x27EA */
+                      return Line_OP;
                     }
                   }
                   else
                   {
-                    if (c < 0x2989)
+                    if (c < 0x27EE)
                     {
-                      if (c < 0x2988)
+                      if (c < 0x27ED)
                       {
-                        if (c == 0x2986)
+                        if (c == 0x27EB)
                           return Line_CL;
-                        /* c == 0x2987 */
+                        /* c == 0x27EC */
                         return Line_OP;
                       }
                       else
                       {
-                        /* c == 0x2988 */
+                        /* c == 0x27ED */
                         return Line_CL;
                       }
                     }
                     else
                     {
-                      if (c < 0x298B)
-                      {
-                        if (c == 0x2989)
-                          return Line_OP;
-                        /* c == 0x298A */
-                        return Line_CL;
-                      }
-                      else
-                      {
-                        /* c == 0x298B */
+                      if (c == 0x27EE)
                         return Line_OP;
-                      }
+                      /* c == 0x27EF */
+                      return Line_CL;
                     }
                   }
                 }
               }
               else
               {
-                if (c < 0x29D8)
+                if (c < 0x298C)
                 {
-                  if (c < 0x2993)
+                  if (c < 0x2987)
                   {
-                    if (c < 0x2990)
+                    if (c < 0x2985)
+                    {
+                      if (c < 0x2984)
+                      {
+                        if ((c >= 0x27F0) && (c <= 0x2982))
+                          return Line_AL;
+                        /* c == 0x2983 */
+                        return Line_OP;
+                      }
+                      else
+                      {
+                        /* c == 0x2984 */
+                        return Line_CL;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0x2985)
+                        return Line_OP;
+                      /* c == 0x2986 */
+                      return Line_CL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x298A)
+                    {
+                      if (c < 0x2989)
+                      {
+                        if (c == 0x2987)
+                          return Line_OP;
+                        /* c == 0x2988 */
+                        return Line_CL;
+                      }
+                      else
+                      {
+                        /* c == 0x2989 */
+                        return Line_OP;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0x298A)
+                        return Line_CL;
+                      /* c == 0x298B */
+                      return Line_OP;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x2991)
+                  {
+                    if (c < 0x298F)
                     {
                       if (c < 0x298E)
                       {
@@ -72876,69 +70339,72 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        if (c == 0x298E)
-                          return Line_CL;
-                        /* c == 0x298F */
-                        return Line_OP;
+                        /* c == 0x298E */
+                        return Line_CL;
                       }
                     }
                     else
                     {
-                      if (c < 0x2992)
-                      {
-                        if (c == 0x2990)
-                          return Line_CL;
-                        /* c == 0x2991 */
+                      if (c == 0x298F)
                         return Line_OP;
-                      }
-                      else
-                      {
-                        /* c == 0x2992 */
-                        return Line_CL;
-                      }
+                      /* c == 0x2990 */
+                      return Line_CL;
                     }
                   }
                   else
                   {
-                    if (c < 0x2997)
+                    if (c < 0x2993)
                     {
-                      if (c < 0x2995)
-                      {
-                        if (c == 0x2993)
-                          return Line_OP;
-                        /* c == 0x2994 */
-                        return Line_CL;
-                      }
-                      else
+                      if (c == 0x2991)
+                        return Line_OP;
+                      /* c == 0x2992 */
+                      return Line_CL;
+                    }
+                    else
+                    {
+                      if (c == 0x2993)
+                        return Line_OP;
+                      /* c == 0x2994 */
+                      return Line_CL;
+                    }
+                  }
+                }
+              }
+            }
+            else
+            {
+              if (c < 0x2D00)
+              {
+                if (c < 0x29FC)
+                {
+                  if (c < 0x29D8)
+                  {
+                    if (c < 0x2998)
+                    {
+                      if (c < 0x2997)
                       {
                         if (c == 0x2995)
                           return Line_OP;
                         /* c == 0x2996 */
                         return Line_CL;
                       }
+                      else
+                      {
+                        /* c == 0x2997 */
+                        return Line_OP;
+                      }
                     }
                     else
                     {
-                      if (c < 0x2999)
-                      {
-                        if (c == 0x2997)
-                          return Line_OP;
-                        /* c == 0x2998 */
+                      if (c == 0x2998)
                         return Line_CL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x2999) && (c <= 0x29D7) */
-                        return Line_AL;
-                      }
+                      /* (c >= 0x2999) && (c <= 0x29D7) */
+                      return Line_AL;
                     }
                   }
-                }
-                else
-                {
-                  if (c < 0x29FE)
+                  else
                   {
-                    if (c < 0x29DC)
+                    if (c < 0x29DB)
                     {
                       if (c < 0x29DA)
                       {
@@ -72949,90 +70415,49 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        if (c == 0x29DA)
-                          return Line_OP;
-                        /* c == 0x29DB */
-                        return Line_CL;
+                        /* c == 0x29DA */
+                        return Line_OP;
                       }
                     }
                     else
                     {
-                      if (c < 0x29FD)
+                      if (c == 0x29DB)
+                        return Line_CL;
+                      /* (c >= 0x29DC) && (c <= 0x29FB) */
+                      return Line_AL;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x2CF9)
+                  {
+                    if (c < 0x2CEF)
+                    {
+                      if (c < 0x29FE)
                       {
-                        if ((c >= 0x29DC) && (c <= 0x29FB))
-                          return Line_AL;
-                        /* c == 0x29FC */
-                        return Line_OP;
-                      }
-                      else
-                      {
+                        if (c == 0x29FC)
+                          return Line_OP;
                         /* c == 0x29FD */
                         return Line_CL;
                       }
+                      else
+                      {
+                        /* (c >= 0x29FE) && (c <= 0x2CEE) */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x2CEF) && (c <= 0x2CF1))
+                        return Line_CM;
+                      /* (c >= 0x2CF2) && (c <= 0x2CF8) */
+                      return Line_AL;
                     }
                   }
                   else
                   {
-                    if (c < 0x2B74)
-                    {
-                      if (c < 0x2B5A)
-                      {
-                        if ((c >= 0x29FE) && (c <= 0x2B54))
-                          return Line_AL;
-                        /* (c >= 0x2B55) && (c <= 0x2B59) */
-                        return Line_AI;
-                      }
-                      else
-                      {
-                        /* (c >= 0x2B5A) && (c <= 0x2B73) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x2B96)
-                      {
-                        if ((c >= 0x2B74) && (c <= 0x2B75))
-                          return Line_XX;
-                        /* (c >= 0x2B76) && (c <= 0x2B95) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x2B96 */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-            else
-            {
-              if (c < 0x2DB0)
-              {
-                if (c < 0x2D2E)
-                {
-                  if (c < 0x2CFE)
-                  {
-                    if (c < 0x2CF9)
-                    {
-                      if (c < 0x2CF2)
-                      {
-                        if ((c >= 0x2B97) && (c <= 0x2CEE))
-                          return Line_AL;
-                        /* (c >= 0x2CEF) && (c <= 0x2CF1) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        if ((c >= 0x2CF2) && (c <= 0x2CF3))
-                          return Line_AL;
-                        /* (c >= 0x2CF4) && (c <= 0x2CF8) */
-                        return Line_XX;
-                      }
-                    }
-                    else
+                    if (c < 0x2CFE)
                     {
                       if (c < 0x2CFD)
                       {
@@ -73047,258 +70472,113 @@ line_category(Py_UCS4 c)
                         return Line_AL;
                       }
                     }
-                  }
-                  else
-                  {
-                    if (c < 0x2D27)
-                    {
-                      if (c < 0x2D00)
-                      {
-                        if (c == 0x2CFE)
-                          return Line_EX;
-                        /* c == 0x2CFF */
-                        return Line_BA;
-                      }
-                      else
-                      {
-                        if ((c >= 0x2D00) && (c <= 0x2D25))
-                          return Line_AL;
-                        /* c == 0x2D26 */
-                        return Line_XX;
-                      }
-                    }
                     else
                     {
-                      if (c < 0x2D2D)
-                      {
-                        if (c == 0x2D27)
-                          return Line_AL;
-                        /* (c >= 0x2D28) && (c <= 0x2D2C) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* c == 0x2D2D */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x2D80)
-                  {
-                    if (c < 0x2D70)
-                    {
-                      if (c < 0x2D68)
-                      {
-                        if ((c >= 0x2D2E) && (c <= 0x2D2F))
-                          return Line_XX;
-                        /* (c >= 0x2D30) && (c <= 0x2D67) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if ((c >= 0x2D68) && (c <= 0x2D6E))
-                          return Line_XX;
-                        /* c == 0x2D6F */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x2D7F)
-                      {
-                        if (c == 0x2D70)
-                          return Line_BA;
-                        /* (c >= 0x2D71) && (c <= 0x2D7E) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* c == 0x2D7F */
-                        return Line_CM;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x2DA7)
-                    {
-                      if (c < 0x2DA0)
-                      {
-                        if ((c >= 0x2D80) && (c <= 0x2D96))
-                          return Line_AL;
-                        /* (c >= 0x2D97) && (c <= 0x2D9F) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x2DA0) && (c <= 0x2DA6) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x2DAF)
-                      {
-                        if (c == 0x2DA7)
-                          return Line_XX;
-                        /* (c >= 0x2DA8) && (c <= 0x2DAE) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x2DAF */
-                        return Line_XX;
-                      }
+                      if (c == 0x2CFE)
+                        return Line_EX;
+                      /* c == 0x2CFF */
+                      return Line_BA;
                     }
                   }
                 }
               }
               else
               {
-                if (c < 0x2E0E)
+                if (c < 0x2E18)
                 {
-                  if (c < 0x2DCF)
+                  if (c < 0x2DE0)
                   {
-                    if (c < 0x2DC0)
+                    if (c < 0x2D7F)
                     {
-                      if (c < 0x2DB8)
+                      if (c < 0x2D71)
                       {
-                        if ((c >= 0x2DB0) && (c <= 0x2DB6))
+                        if ((c >= 0x2D00) && (c <= 0x2D6F))
                           return Line_AL;
-                        /* c == 0x2DB7 */
-                        return Line_XX;
+                        /* c == 0x2D70 */
+                        return Line_BA;
                       }
                       else
                       {
-                        if ((c >= 0x2DB8) && (c <= 0x2DBE))
-                          return Line_AL;
-                        /* c == 0x2DBF */
-                        return Line_XX;
+                        /* (c >= 0x2D71) && (c <= 0x2D7E) */
+                        return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0x2DC8)
-                      {
-                        if ((c >= 0x2DC0) && (c <= 0x2DC6))
-                          return Line_AL;
-                        /* c == 0x2DC7 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x2DC8) && (c <= 0x2DCE) */
-                        return Line_AL;
-                      }
+                      if (c == 0x2D7F)
+                        return Line_CM;
+                      /* (c >= 0x2D80) && (c <= 0x2DDF) */
+                      return Line_AL;
                     }
                   }
                   else
                   {
-                    if (c < 0x2DDF)
+                    if (c < 0x2E16)
                     {
-                      if (c < 0x2DD7)
+                      if (c < 0x2E0E)
                       {
-                        if (c == 0x2DCF)
-                          return Line_XX;
-                        /* (c >= 0x2DD0) && (c <= 0x2DD6) */
-                        return Line_AL;
+                        if ((c >= 0x2DE0) && (c <= 0x2DFF))
+                          return Line_CM;
+                        /* (c >= 0x2E00) && (c <= 0x2E0D) */
+                        return Line_QU;
                       }
                       else
                       {
-                        if (c == 0x2DD7)
-                          return Line_XX;
-                        /* (c >= 0x2DD8) && (c <= 0x2DDE) */
-                        return Line_AL;
+                        /* (c >= 0x2E0E) && (c <= 0x2E15) */
+                        return Line_BA;
                       }
                     }
                     else
                     {
-                      if (c < 0x2E00)
-                      {
-                        if (c == 0x2DDF)
-                          return Line_XX;
-                        /* (c >= 0x2DE0) && (c <= 0x2DFF) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* (c >= 0x2E00) && (c <= 0x2E0D) */
-                        return Line_QU;
-                      }
+                      if (c == 0x2E16)
+                        return Line_AL;
+                      /* c == 0x2E17 */
+                      return Line_BA;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0x2E1E)
+                  if (c < 0x2E20)
                   {
-                    if (c < 0x2E19)
+                    if (c < 0x2E1C)
                     {
-                      if (c < 0x2E17)
+                      if (c < 0x2E1A)
                       {
-                        if ((c >= 0x2E0E) && (c <= 0x2E15))
-                          return Line_BA;
-                        /* c == 0x2E16 */
-                        return Line_AL;
+                        if (c == 0x2E18)
+                          return Line_OP;
+                        /* c == 0x2E19 */
+                        return Line_BA;
                       }
                       else
                       {
-                        if (c == 0x2E17)
-                          return Line_BA;
-                        /* c == 0x2E18 */
-                        return Line_OP;
+                        /* (c >= 0x2E1A) && (c <= 0x2E1B) */
+                        return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0x2E1C)
-                      {
-                        if (c == 0x2E19)
-                          return Line_BA;
-                        /* (c >= 0x2E1A) && (c <= 0x2E1B) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x2E1C) && (c <= 0x2E1D) */
+                      if ((c >= 0x2E1C) && (c <= 0x2E1D))
                         return Line_QU;
-                      }
+                      /* (c >= 0x2E1E) && (c <= 0x2E1F) */
+                      return Line_AL;
                     }
                   }
                   else
                   {
                     if (c < 0x2E23)
                     {
-                      if (c < 0x2E22)
-                      {
-                        if ((c >= 0x2E1E) && (c <= 0x2E1F))
-                          return Line_AL;
-                        /* (c >= 0x2E20) && (c <= 0x2E21) */
+                      if ((c >= 0x2E20) && (c <= 0x2E21))
                         return Line_QU;
-                      }
-                      else
-                      {
-                        /* c == 0x2E22 */
-                        return Line_OP;
-                      }
+                      /* c == 0x2E22 */
+                      return Line_OP;
                     }
                     else
                     {
-                      if (c < 0x2E25)
-                      {
-                        if (c == 0x2E23)
-                          return Line_CL;
-                        /* c == 0x2E24 */
-                        return Line_OP;
-                      }
-                      else
-                      {
-                        /* c == 0x2E25 */
+                      if (c == 0x2E23)
                         return Line_CL;
-                      }
+                      /* c == 0x2E24 */
+                      return Line_OP;
                     }
                   }
                 }
@@ -73307,32 +70587,40 @@ line_category(Py_UCS4 c)
           }
           else
           {
-            if (c < 0x3011)
+            if (c < 0x2FD6)
             {
-              if (c < 0x2E59)
+              if (c < 0x2E4D)
               {
-                if (c < 0x2E40)
+                if (c < 0x2E33)
                 {
-                  if (c < 0x2E30)
+                  if (c < 0x2E2A)
                   {
-                    if (c < 0x2E2A)
+                    if (c < 0x2E28)
                     {
-                      if (c < 0x2E28)
+                      if (c < 0x2E27)
                       {
-                        if (c == 0x2E26)
-                          return Line_OP;
-                        /* c == 0x2E27 */
-                        return Line_CL;
+                        if (c == 0x2E25)
+                          return Line_CL;
+                        /* c == 0x2E26 */
+                        return Line_OP;
                       }
                       else
                       {
-                        if (c == 0x2E28)
-                          return Line_OP;
-                        /* c == 0x2E29 */
+                        /* c == 0x2E27 */
                         return Line_CL;
                       }
                     }
                     else
+                    {
+                      if (c == 0x2E28)
+                        return Line_OP;
+                      /* c == 0x2E29 */
+                      return Line_CL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x2E30)
                     {
                       if (c < 0x2E2F)
                       {
@@ -73347,48 +70635,45 @@ line_category(Py_UCS4 c)
                         return Line_AL;
                       }
                     }
-                  }
-                  else
-                  {
-                    if (c < 0x2E3A)
+                    else
                     {
-                      if (c < 0x2E33)
-                      {
-                        if ((c >= 0x2E30) && (c <= 0x2E31))
-                          return Line_BA;
-                        /* c == 0x2E32 */
-                        return Line_AL;
-                      }
-                      else
+                      if ((c >= 0x2E30) && (c <= 0x2E31))
+                        return Line_BA;
+                      /* c == 0x2E32 */
+                      return Line_AL;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x2E40)
+                  {
+                    if (c < 0x2E3C)
+                    {
+                      if (c < 0x2E3A)
                       {
                         if ((c >= 0x2E33) && (c <= 0x2E34))
                           return Line_BA;
                         /* (c >= 0x2E35) && (c <= 0x2E39) */
                         return Line_AL;
                       }
+                      else
+                      {
+                        /* (c >= 0x2E3A) && (c <= 0x2E3B) */
+                        return Line_B2;
+                      }
                     }
                     else
                     {
-                      if (c < 0x2E3F)
-                      {
-                        if ((c >= 0x2E3A) && (c <= 0x2E3B))
-                          return Line_B2;
-                        /* (c >= 0x2E3C) && (c <= 0x2E3E) */
+                      if ((c >= 0x2E3C) && (c <= 0x2E3E))
                         return Line_BA;
-                      }
-                      else
-                      {
-                        /* c == 0x2E3F */
-                        return Line_AL;
-                      }
+                      /* c == 0x2E3F */
+                      return Line_AL;
                     }
                   }
-                }
-                else
-                {
-                  if (c < 0x2E50)
+                  else
                   {
-                    if (c < 0x2E4C)
+                    if (c < 0x2E4B)
                     {
                       if (c < 0x2E43)
                       {
@@ -73399,46 +70684,52 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        if ((c >= 0x2E43) && (c <= 0x2E4A))
-                          return Line_BA;
-                        /* c == 0x2E4B */
+                        /* (c >= 0x2E43) && (c <= 0x2E4A) */
+                        return Line_BA;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0x2E4B)
+                        return Line_AL;
+                      /* c == 0x2E4C */
+                      return Line_BA;
+                    }
+                  }
+                }
+              }
+              else
+              {
+                if (c < 0x2E5B)
+                {
+                  if (c < 0x2E56)
+                  {
+                    if (c < 0x2E53)
+                    {
+                      if (c < 0x2E50)
+                      {
+                        if (c == 0x2E4D)
+                          return Line_AL;
+                        /* (c >= 0x2E4E) && (c <= 0x2E4F) */
+                        return Line_BA;
+                      }
+                      else
+                      {
+                        /* (c >= 0x2E50) && (c <= 0x2E52) */
                         return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0x2E4E)
-                      {
-                        if (c == 0x2E4C)
-                          return Line_BA;
-                        /* c == 0x2E4D */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x2E4E) && (c <= 0x2E4F) */
-                        return Line_BA;
-                      }
+                      if ((c >= 0x2E53) && (c <= 0x2E54))
+                        return Line_EX;
+                      /* c == 0x2E55 */
+                      return Line_OP;
                     }
                   }
                   else
                   {
-                    if (c < 0x2E56)
-                    {
-                      if (c < 0x2E55)
-                      {
-                        if ((c >= 0x2E50) && (c <= 0x2E52))
-                          return Line_AL;
-                        /* (c >= 0x2E53) && (c <= 0x2E54) */
-                        return Line_EX;
-                      }
-                      else
-                      {
-                        /* c == 0x2E55 */
-                        return Line_OP;
-                      }
-                    }
-                    else
+                    if (c < 0x2E59)
                     {
                       if (c < 0x2E58)
                       {
@@ -73453,73 +70744,76 @@ line_category(Py_UCS4 c)
                         return Line_CL;
                       }
                     }
+                    else
+                    {
+                      if (c == 0x2E59)
+                        return Line_OP;
+                      /* c == 0x2E5A */
+                      return Line_CL;
+                    }
                   }
                 }
-              }
-              else
-              {
-                if (c < 0x3001)
+                else
                 {
                   if (c < 0x2E9A)
                   {
-                    if (c < 0x2E5D)
+                    if (c < 0x2E5E)
                     {
-                      if (c < 0x2E5B)
-                      {
-                        if (c == 0x2E59)
-                          return Line_OP;
-                        /* c == 0x2E5A */
-                        return Line_CL;
-                      }
-                      else
+                      if (c < 0x2E5D)
                       {
                         if (c == 0x2E5B)
                           return Line_OP;
                         /* c == 0x2E5C */
                         return Line_CL;
                       }
+                      else
+                      {
+                        /* c == 0x2E5D */
+                        return Line_BA;
+                      }
                     }
                     else
                     {
-                      if (c < 0x2E80)
-                      {
-                        if (c == 0x2E5D)
-                          return Line_BA;
-                        /* (c >= 0x2E5E) && (c <= 0x2E7F) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x2E80) && (c <= 0x2E99) */
-                        return Line_ID;
-                      }
+                      if ((c >= 0x2E5E) && (c <= 0x2E7F))
+                        return Line_AL;
+                      /* (c >= 0x2E80) && (c <= 0x2E99) */
+                      return Line_ID;
                     }
                   }
                   else
                   {
-                    if (c < 0x2FD6)
+                    if (c < 0x2EF4)
                     {
-                      if (c < 0x2EF4)
-                      {
-                        if (c == 0x2E9A)
-                          return Line_XX;
-                        /* (c >= 0x2E9B) && (c <= 0x2EF3) */
-                        return Line_ID;
-                      }
-                      else
-                      {
-                        if ((c >= 0x2EF4) && (c <= 0x2EFF))
-                          return Line_XX;
-                        /* (c >= 0x2F00) && (c <= 0x2FD5) */
-                        return Line_ID;
-                      }
+                      if (c == 0x2E9A)
+                        return Line_AL;
+                      /* (c >= 0x2E9B) && (c <= 0x2EF3) */
+                      return Line_ID;
                     }
                     else
+                    {
+                      if ((c >= 0x2EF4) && (c <= 0x2EFF))
+                        return Line_AL;
+                      /* (c >= 0x2F00) && (c <= 0x2FD5) */
+                      return Line_ID;
+                    }
+                  }
+                }
+              }
+            }
+            else
+            {
+              if (c < 0x3016)
+              {
+                if (c < 0x300B)
+                {
+                  if (c < 0x3005)
+                  {
+                    if (c < 0x3001)
                     {
                       if (c < 0x3000)
                       {
                         if ((c >= 0x2FD6) && (c <= 0x2FEF))
-                          return Line_XX;
+                          return Line_AL;
                         /* (c >= 0x2FF0) && (c <= 0x2FFF) */
                         return Line_ID;
                       }
@@ -73529,46 +70823,43 @@ line_category(Py_UCS4 c)
                         return Line_BA;
                       }
                     }
-                  }
-                }
-                else
-                {
-                  if (c < 0x300B)
-                  {
-                    if (c < 0x3008)
+                    else
                     {
-                      if (c < 0x3005)
-                      {
-                        if ((c >= 0x3001) && (c <= 0x3002))
-                          return Line_CL;
-                        /* (c >= 0x3003) && (c <= 0x3004) */
-                        return Line_ID;
-                      }
-                      else
+                      if ((c >= 0x3001) && (c <= 0x3002))
+                        return Line_CL;
+                      /* (c >= 0x3003) && (c <= 0x3004) */
+                      return Line_ID;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x3009)
+                    {
+                      if (c < 0x3008)
                       {
                         if (c == 0x3005)
                           return Line_NS;
                         /* (c >= 0x3006) && (c <= 0x3007) */
                         return Line_ID;
                       }
-                    }
-                    else
-                    {
-                      if (c < 0x300A)
-                      {
-                        if (c == 0x3008)
-                          return Line_OP;
-                        /* c == 0x3009 */
-                        return Line_CL;
-                      }
                       else
                       {
-                        /* c == 0x300A */
+                        /* c == 0x3008 */
                         return Line_OP;
                       }
                     }
+                    else
+                    {
+                      if (c == 0x3009)
+                        return Line_CL;
+                      /* c == 0x300A */
+                      return Line_OP;
+                    }
                   }
-                  else
+                }
+                else
+                {
+                  if (c < 0x3010)
                   {
                     if (c < 0x300E)
                     {
@@ -73587,49 +70878,46 @@ line_category(Py_UCS4 c)
                     }
                     else
                     {
-                      if (c < 0x3010)
+                      if (c == 0x300E)
+                        return Line_OP;
+                      /* c == 0x300F */
+                      return Line_CL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x3014)
+                    {
+                      if (c < 0x3012)
                       {
-                        if (c == 0x300E)
+                        if (c == 0x3010)
                           return Line_OP;
-                        /* c == 0x300F */
+                        /* c == 0x3011 */
                         return Line_CL;
                       }
                       else
                       {
-                        /* c == 0x3010 */
-                        return Line_OP;
+                        /* (c >= 0x3012) && (c <= 0x3013) */
+                        return Line_ID;
                       }
+                    }
+                    else
+                    {
+                      if (c == 0x3014)
+                        return Line_OP;
+                      /* c == 0x3015 */
+                      return Line_CL;
                     }
                   }
                 }
               }
-            }
-            else
-            {
-              if (c < 0x3047)
+              else
               {
                 if (c < 0x302A)
                 {
-                  if (c < 0x3019)
+                  if (c < 0x301B)
                   {
-                    if (c < 0x3016)
-                    {
-                      if (c < 0x3014)
-                      {
-                        if (c == 0x3011)
-                          return Line_CL;
-                        /* (c >= 0x3012) && (c <= 0x3013) */
-                        return Line_ID;
-                      }
-                      else
-                      {
-                        if (c == 0x3014)
-                          return Line_OP;
-                        /* c == 0x3015 */
-                        return Line_CL;
-                      }
-                    }
-                    else
+                    if (c < 0x3019)
                     {
                       if (c < 0x3018)
                       {
@@ -73644,48 +70932,45 @@ line_category(Py_UCS4 c)
                         return Line_OP;
                       }
                     }
+                    else
+                    {
+                      if (c == 0x3019)
+                        return Line_CL;
+                      /* c == 0x301A */
+                      return Line_OP;
+                    }
                   }
                   else
                   {
-                    if (c < 0x301D)
+                    if (c < 0x301E)
                     {
-                      if (c < 0x301B)
-                      {
-                        if (c == 0x3019)
-                          return Line_CL;
-                        /* c == 0x301A */
-                        return Line_OP;
-                      }
-                      else
+                      if (c < 0x301D)
                       {
                         if (c == 0x301B)
                           return Line_CL;
                         /* c == 0x301C */
                         return Line_NS;
                       }
+                      else
+                      {
+                        /* c == 0x301D */
+                        return Line_OP;
+                      }
                     }
                     else
                     {
-                      if (c < 0x3020)
-                      {
-                        if (c == 0x301D)
-                          return Line_OP;
-                        /* (c >= 0x301E) && (c <= 0x301F) */
+                      if ((c >= 0x301E) && (c <= 0x301F))
                         return Line_CL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x3020) && (c <= 0x3029) */
-                        return Line_ID;
-                      }
+                      /* (c >= 0x3020) && (c <= 0x3029) */
+                      return Line_ID;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0x3041)
+                  if (c < 0x303D)
                   {
-                    if (c < 0x303B)
+                    if (c < 0x3036)
                     {
                       if (c < 0x3035)
                       {
@@ -73696,204 +70981,33 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        if (c == 0x3035)
-                          return Line_CM;
-                        /* (c >= 0x3036) && (c <= 0x303A) */
-                        return Line_ID;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x3040)
-                      {
-                        if ((c >= 0x303B) && (c <= 0x303C))
-                          return Line_NS;
-                        /* (c >= 0x303D) && (c <= 0x303F) */
-                        return Line_ID;
-                      }
-                      else
-                      {
-                        /* c == 0x3040 */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x3044)
-                    {
-                      if (c < 0x3043)
-                      {
-                        if (c == 0x3041)
-                          return Line_CJ;
-                        /* c == 0x3042 */
-                        return Line_ID;
-                      }
-                      else
-                      {
-                        /* c == 0x3043 */
-                        return Line_CJ;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x3046)
-                      {
-                        if (c == 0x3044)
-                          return Line_ID;
-                        /* c == 0x3045 */
-                        return Line_CJ;
-                      }
-                      else
-                      {
-                        /* c == 0x3046 */
-                        return Line_ID;
-                      }
-                    }
-                  }
-                }
-              }
-              else
-              {
-                if (c < 0x308F)
-                {
-                  if (c < 0x3084)
-                  {
-                    if (c < 0x3063)
-                    {
-                      if (c < 0x3049)
-                      {
-                        if (c == 0x3047)
-                          return Line_CJ;
-                        /* c == 0x3048 */
-                        return Line_ID;
-                      }
-                      else
-                      {
-                        if (c == 0x3049)
-                          return Line_CJ;
-                        /* (c >= 0x304A) && (c <= 0x3062) */
-                        return Line_ID;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x3083)
-                      {
-                        if (c == 0x3063)
-                          return Line_CJ;
-                        /* (c >= 0x3064) && (c <= 0x3082) */
-                        return Line_ID;
-                      }
-                      else
-                      {
-                        /* c == 0x3083 */
-                        return Line_CJ;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x3087)
-                    {
-                      if (c < 0x3086)
-                      {
-                        if (c == 0x3084)
-                          return Line_ID;
-                        /* c == 0x3085 */
-                        return Line_CJ;
-                      }
-                      else
-                      {
-                        /* c == 0x3086 */
-                        return Line_ID;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x308E)
-                      {
-                        if (c == 0x3087)
-                          return Line_CJ;
-                        /* (c >= 0x3088) && (c <= 0x308D) */
-                        return Line_ID;
-                      }
-                      else
-                      {
-                        /* c == 0x308E */
-                        return Line_CJ;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x30A1)
-                  {
-                    if (c < 0x309B)
-                    {
-                      if (c < 0x3097)
-                      {
-                        if ((c >= 0x308F) && (c <= 0x3094))
-                          return Line_ID;
-                        /* (c >= 0x3095) && (c <= 0x3096) */
-                        return Line_CJ;
-                      }
-                      else
-                      {
-                        if ((c >= 0x3097) && (c <= 0x3098))
-                          return Line_XX;
-                        /* (c >= 0x3099) && (c <= 0x309A) */
+                        /* c == 0x3035 */
                         return Line_CM;
                       }
                     }
                     else
                     {
-                      if (c < 0x30A0)
-                      {
-                        if ((c >= 0x309B) && (c <= 0x309E))
-                          return Line_NS;
-                        /* c == 0x309F */
+                      if ((c >= 0x3036) && (c <= 0x303A))
                         return Line_ID;
-                      }
-                      else
-                      {
-                        /* c == 0x30A0 */
-                        return Line_NS;
-                      }
+                      /* (c >= 0x303B) && (c <= 0x303C) */
+                      return Line_NS;
                     }
                   }
                   else
                   {
-                    if (c < 0x30A4)
+                    if (c < 0x3041)
                     {
-                      if (c < 0x30A3)
-                      {
-                        if (c == 0x30A1)
-                          return Line_CJ;
-                        /* c == 0x30A2 */
+                      if ((c >= 0x303D) && (c <= 0x303F))
                         return Line_ID;
-                      }
-                      else
-                      {
-                        /* c == 0x30A3 */
-                        return Line_CJ;
-                      }
+                      /* c == 0x3040 */
+                      return Line_AL;
                     }
                     else
                     {
-                      if (c < 0x30A6)
-                      {
-                        if (c == 0x30A4)
-                          return Line_ID;
-                        /* c == 0x30A5 */
-                        return Line_CJ;
-                      }
-                      else
-                      {
-                        /* c == 0x30A6 */
-                        return Line_ID;
-                      }
+                      if (c == 0x3041)
+                        return Line_NS;
+                      /* c == 0x3042 */
+                      return Line_ID;
                     }
                   }
                 }
@@ -73901,305 +71015,218 @@ line_category(Py_UCS4 c)
             }
           }
         }
-      }
-      else
-      {
-        if (c < 0xAEA0)
+        else
         {
-          if (c < 0xA95F)
+          if (c < 0xA674)
           {
-            if (c < 0xA674)
+            if (c < 0x30E7)
             {
-              if (c < 0x31EF)
+              if (c < 0x3099)
               {
-                if (c < 0x30F5)
+                if (c < 0x3083)
                 {
-                  if (c < 0x30E4)
+                  if (c < 0x3048)
                   {
-                    if (c < 0x30C3)
+                    if (c < 0x3046)
                     {
-                      if (c < 0x30A9)
+                      if (c < 0x3045)
                       {
-                        if (c == 0x30A7)
-                          return Line_CJ;
-                        /* c == 0x30A8 */
+                        if (c == 0x3043)
+                          return Line_NS;
+                        /* c == 0x3044 */
                         return Line_ID;
                       }
                       else
                       {
-                        if (c == 0x30A9)
-                          return Line_CJ;
-                        /* (c >= 0x30AA) && (c <= 0x30C2) */
-                        return Line_ID;
+                        /* c == 0x3045 */
+                        return Line_NS;
                       }
                     }
                     else
                     {
-                      if (c < 0x30E3)
-                      {
-                        if (c == 0x30C3)
-                          return Line_CJ;
-                        /* (c >= 0x30C4) && (c <= 0x30E2) */
+                      if (c == 0x3046)
                         return Line_ID;
-                      }
-                      else
-                      {
-                        /* c == 0x30E3 */
-                        return Line_CJ;
-                      }
+                      /* c == 0x3047 */
+                      return Line_NS;
                     }
                   }
                   else
                   {
-                    if (c < 0x30E8)
+                    if (c < 0x3063)
                     {
-                      if (c < 0x30E6)
+                      if (c < 0x304A)
                       {
-                        if (c == 0x30E4)
+                        if (c == 0x3048)
                           return Line_ID;
-                        /* c == 0x30E5 */
-                        return Line_CJ;
+                        /* c == 0x3049 */
+                        return Line_NS;
                       }
                       else
                       {
-                        if (c == 0x30E6)
-                          return Line_ID;
-                        /* c == 0x30E7 */
-                        return Line_CJ;
+                        /* (c >= 0x304A) && (c <= 0x3062) */
+                        return Line_ID;
                       }
                     }
                     else
                     {
-                      if (c < 0x30EF)
-                      {
-                        if ((c >= 0x30E8) && (c <= 0x30ED))
-                          return Line_ID;
-                        /* c == 0x30EE */
-                        return Line_CJ;
-                      }
-                      else
-                      {
-                        /* (c >= 0x30EF) && (c <= 0x30F4) */
-                        return Line_ID;
-                      }
+                      if (c == 0x3063)
+                        return Line_NS;
+                      /* (c >= 0x3064) && (c <= 0x3082) */
+                      return Line_ID;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0x3105)
+                  if (c < 0x3088)
                   {
-                    if (c < 0x30FD)
+                    if (c < 0x3086)
                     {
-                      if (c < 0x30FB)
+                      if (c < 0x3085)
                       {
-                        if ((c >= 0x30F5) && (c <= 0x30F6))
-                          return Line_CJ;
-                        /* (c >= 0x30F7) && (c <= 0x30FA) */
+                        if (c == 0x3083)
+                          return Line_NS;
+                        /* c == 0x3084 */
                         return Line_ID;
                       }
                       else
                       {
-                        if (c == 0x30FB)
-                          return Line_NS;
-                        /* c == 0x30FC */
-                        return Line_CJ;
+                        /* c == 0x3085 */
+                        return Line_NS;
                       }
                     }
                     else
                     {
-                      if (c < 0x3100)
-                      {
-                        if ((c >= 0x30FD) && (c <= 0x30FE))
-                          return Line_NS;
-                        /* c == 0x30FF */
+                      if (c == 0x3086)
                         return Line_ID;
-                      }
-                      else
-                      {
-                        /* (c >= 0x3100) && (c <= 0x3104) */
-                        return Line_XX;
-                      }
+                      /* c == 0x3087 */
+                      return Line_NS;
                     }
                   }
                   else
                   {
-                    if (c < 0x318F)
+                    if (c < 0x3095)
                     {
-                      if (c < 0x3131)
+                      if (c < 0x308F)
                       {
-                        if ((c >= 0x3105) && (c <= 0x312F))
+                        if ((c >= 0x3088) && (c <= 0x308D))
                           return Line_ID;
-                        /* c == 0x3130 */
-                        return Line_XX;
+                        /* c == 0x308E */
+                        return Line_NS;
                       }
                       else
                       {
-                        /* (c >= 0x3131) && (c <= 0x318E) */
+                        /* (c >= 0x308F) && (c <= 0x3094) */
                         return Line_ID;
                       }
                     }
                     else
                     {
-                      if (c < 0x31E4)
-                      {
-                        if (c == 0x318F)
-                          return Line_XX;
-                        /* (c >= 0x3190) && (c <= 0x31E3) */
-                        return Line_ID;
-                      }
-                      else
-                      {
-                        /* (c >= 0x31E4) && (c <= 0x31EE) */
-                        return Line_XX;
-                      }
+                      if ((c >= 0x3095) && (c <= 0x3096))
+                        return Line_NS;
+                      /* (c >= 0x3097) && (c <= 0x3098) */
+                      return Line_AL;
                     }
                   }
                 }
               }
               else
               {
-                if (c < 0xA4D0)
+                if (c < 0x30A8)
                 {
-                  if (c < 0x4DC0)
+                  if (c < 0x30A3)
                   {
-                    if (c < 0x3220)
+                    if (c < 0x30A0)
                     {
-                      if (c < 0x3200)
+                      if (c < 0x309F)
                       {
-                        if (c == 0x31EF)
-                          return Line_ID;
-                        /* (c >= 0x31F0) && (c <= 0x31FF) */
-                        return Line_CJ;
+                        if ((c >= 0x3099) && (c <= 0x309A))
+                          return Line_CM;
+                        /* (c >= 0x309B) && (c <= 0x309E) */
+                        return Line_NS;
                       }
                       else
                       {
-                        if ((c >= 0x3200) && (c <= 0x321E))
-                          return Line_ID;
-                        /* c == 0x321F */
-                        return Line_XX;
+                        /* c == 0x309F */
+                        return Line_ID;
                       }
                     }
                     else
                     {
-                      if (c < 0x3250)
-                      {
-                        if ((c >= 0x3220) && (c <= 0x3247))
-                          return Line_ID;
-                        /* (c >= 0x3248) && (c <= 0x324F) */
-                        return Line_AI;
-                      }
-                      else
-                      {
-                        /* (c >= 0x3250) && (c <= 0x4DBF) */
-                        return Line_ID;
-                      }
+                      if ((c >= 0x30A0) && (c <= 0x30A1))
+                        return Line_NS;
+                      /* c == 0x30A2 */
+                      return Line_ID;
                     }
                   }
                   else
                   {
-                    if (c < 0xA48D)
+                    if (c < 0x30A6)
                     {
-                      if (c < 0xA015)
+                      if (c < 0x30A5)
                       {
-                        if ((c >= 0x4DC0) && (c <= 0x4DFF))
-                          return Line_AL;
-                        /* (c >= 0x4E00) && (c <= 0xA014) */
+                        if (c == 0x30A3)
+                          return Line_NS;
+                        /* c == 0x30A4 */
                         return Line_ID;
                       }
                       else
                       {
-                        if (c == 0xA015)
-                          return Line_NS;
-                        /* (c >= 0xA016) && (c <= 0xA48C) */
-                        return Line_ID;
+                        /* c == 0x30A5 */
+                        return Line_NS;
                       }
                     }
                     else
                     {
-                      if (c < 0xA4C7)
-                      {
-                        if ((c >= 0xA48D) && (c <= 0xA48F))
-                          return Line_XX;
-                        /* (c >= 0xA490) && (c <= 0xA4C6) */
+                      if (c == 0x30A6)
                         return Line_ID;
-                      }
-                      else
-                      {
-                        /* (c >= 0xA4C7) && (c <= 0xA4CF) */
-                        return Line_XX;
-                      }
+                      /* c == 0x30A7 */
+                      return Line_NS;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0xA620)
+                  if (c < 0x30E3)
                   {
-                    if (c < 0xA60E)
+                    if (c < 0x30C3)
                     {
-                      if (c < 0xA500)
+                      if (c < 0x30AA)
                       {
-                        if ((c >= 0xA4D0) && (c <= 0xA4FD))
-                          return Line_AL;
-                        /* (c >= 0xA4FE) && (c <= 0xA4FF) */
-                        return Line_BA;
+                        if (c == 0x30A8)
+                          return Line_ID;
+                        /* c == 0x30A9 */
+                        return Line_NS;
                       }
                       else
                       {
-                        if ((c >= 0xA500) && (c <= 0xA60C))
-                          return Line_AL;
-                        /* c == 0xA60D */
-                        return Line_BA;
+                        /* (c >= 0x30AA) && (c <= 0x30C2) */
+                        return Line_ID;
                       }
                     }
                     else
                     {
-                      if (c < 0xA610)
-                      {
-                        if (c == 0xA60E)
-                          return Line_EX;
-                        /* c == 0xA60F */
-                        return Line_BA;
-                      }
-                      else
-                      {
-                        /* (c >= 0xA610) && (c <= 0xA61F) */
-                        return Line_AL;
-                      }
+                      if (c == 0x30C3)
+                        return Line_NS;
+                      /* (c >= 0x30C4) && (c <= 0x30E2) */
+                      return Line_ID;
                     }
                   }
                   else
                   {
-                    if (c < 0xA640)
+                    if (c < 0x30E5)
                     {
-                      if (c < 0xA62C)
-                      {
-                        if ((c >= 0xA620) && (c <= 0xA629))
-                          return Line_NU;
-                        /* (c >= 0xA62A) && (c <= 0xA62B) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0xA62C) && (c <= 0xA63F) */
-                        return Line_XX;
-                      }
+                      if (c == 0x30E3)
+                        return Line_NS;
+                      /* c == 0x30E4 */
+                      return Line_ID;
                     }
                     else
                     {
-                      if (c < 0xA673)
-                      {
-                        if ((c >= 0xA640) && (c <= 0xA66E))
-                          return Line_AL;
-                        /* (c >= 0xA66F) && (c <= 0xA672) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* c == 0xA673 */
-                        return Line_AL;
-                      }
+                      if (c == 0x30E5)
+                        return Line_NS;
+                      /* c == 0x30E6 */
+                      return Line_ID;
                     }
                   }
                 }
@@ -74207,13 +71234,229 @@ line_category(Py_UCS4 c)
             }
             else
             {
-              if (c < 0xA830)
+              if (c < 0x3248)
               {
-                if (c < 0xA7D5)
+                if (c < 0x3130)
                 {
-                  if (c < 0xA6F8)
+                  if (c < 0x30F7)
                   {
-                    if (c < 0xA6F0)
+                    if (c < 0x30EF)
+                    {
+                      if (c < 0x30EE)
+                      {
+                        if (c == 0x30E7)
+                          return Line_NS;
+                        /* (c >= 0x30E8) && (c <= 0x30ED) */
+                        return Line_ID;
+                      }
+                      else
+                      {
+                        /* c == 0x30EE */
+                        return Line_NS;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x30EF) && (c <= 0x30F4))
+                        return Line_ID;
+                      /* (c >= 0x30F5) && (c <= 0x30F6) */
+                      return Line_NS;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x3100)
+                    {
+                      if (c < 0x30FF)
+                      {
+                        if ((c >= 0x30F7) && (c <= 0x30FA))
+                          return Line_ID;
+                        /* (c >= 0x30FB) && (c <= 0x30FE) */
+                        return Line_NS;
+                      }
+                      else
+                      {
+                        /* c == 0x30FF */
+                        return Line_ID;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x3100) && (c <= 0x3104))
+                        return Line_AL;
+                      /* (c >= 0x3105) && (c <= 0x312F) */
+                      return Line_ID;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x31EF)
+                  {
+                    if (c < 0x3190)
+                    {
+                      if (c < 0x318F)
+                      {
+                        if (c == 0x3130)
+                          return Line_AL;
+                        /* (c >= 0x3131) && (c <= 0x318E) */
+                        return Line_ID;
+                      }
+                      else
+                      {
+                        /* c == 0x318F */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x3190) && (c <= 0x31E3))
+                        return Line_ID;
+                      /* (c >= 0x31E4) && (c <= 0x31EE) */
+                      return Line_AL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x321F)
+                    {
+                      if (c < 0x3200)
+                      {
+                        if (c == 0x31EF)
+                          return Line_ID;
+                        /* (c >= 0x31F0) && (c <= 0x31FF) */
+                        return Line_NS;
+                      }
+                      else
+                      {
+                        /* (c >= 0x3200) && (c <= 0x321E) */
+                        return Line_ID;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0x321F)
+                        return Line_AL;
+                      /* (c >= 0x3220) && (c <= 0x3247) */
+                      return Line_ID;
+                    }
+                  }
+                }
+              }
+              else
+              {
+                if (c < 0xA500)
+                {
+                  if (c < 0xA016)
+                  {
+                    if (c < 0x4E00)
+                    {
+                      if (c < 0x4DC0)
+                      {
+                        if ((c >= 0x3248) && (c <= 0x324F))
+                          return Line_AL;
+                        /* (c >= 0x3250) && (c <= 0x4DBF) */
+                        return Line_ID;
+                      }
+                      else
+                      {
+                        /* (c >= 0x4DC0) && (c <= 0x4DFF) */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x4E00) && (c <= 0xA014))
+                        return Line_ID;
+                      /* c == 0xA015 */
+                      return Line_NS;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xA4C7)
+                    {
+                      if (c < 0xA490)
+                      {
+                        if ((c >= 0xA016) && (c <= 0xA48C))
+                          return Line_ID;
+                        /* (c >= 0xA48D) && (c <= 0xA48F) */
+                        return Line_AL;
+                      }
+                      else
+                      {
+                        /* (c >= 0xA490) && (c <= 0xA4C6) */
+                        return Line_ID;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0xA4C7) && (c <= 0xA4FD))
+                        return Line_AL;
+                      /* (c >= 0xA4FE) && (c <= 0xA4FF) */
+                      return Line_BA;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0xA620)
+                  {
+                    if (c < 0xA60F)
+                    {
+                      if (c < 0xA60E)
+                      {
+                        if ((c >= 0xA500) && (c <= 0xA60C))
+                          return Line_AL;
+                        /* c == 0xA60D */
+                        return Line_BA;
+                      }
+                      else
+                      {
+                        /* c == 0xA60E */
+                        return Line_EX;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0xA60F)
+                        return Line_BA;
+                      /* (c >= 0xA610) && (c <= 0xA61F) */
+                      return Line_AL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xA66F)
+                    {
+                      if ((c >= 0xA620) && (c <= 0xA629))
+                        return Line_NU;
+                      /* (c >= 0xA62A) && (c <= 0xA66E) */
+                      return Line_AL;
+                    }
+                    else
+                    {
+                      if ((c >= 0xA66F) && (c <= 0xA672))
+                        return Line_CM;
+                      /* c == 0xA673 */
+                      return Line_AL;
+                    }
+                  }
+                }
+              }
+            }
+          }
+          else
+          {
+            if (c < 0xA930)
+            {
+              if (c < 0xA874)
+              {
+                if (c < 0xA806)
+                {
+                  if (c < 0xA6F2)
+                  {
+                    if (c < 0xA6A0)
                     {
                       if (c < 0xA69E)
                       {
@@ -74224,119 +71467,74 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        if ((c >= 0xA69E) && (c <= 0xA69F))
-                          return Line_CM;
-                        /* (c >= 0xA6A0) && (c <= 0xA6EF) */
-                        return Line_AL;
+                        /* (c >= 0xA69E) && (c <= 0xA69F) */
+                        return Line_CM;
                       }
                     }
                     else
                     {
-                      if (c < 0xA6F3)
-                      {
-                        if ((c >= 0xA6F0) && (c <= 0xA6F1))
-                          return Line_CM;
-                        /* c == 0xA6F2 */
+                      if ((c >= 0xA6A0) && (c <= 0xA6EF))
                         return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0xA6F3) && (c <= 0xA6F7) */
-                        return Line_BA;
-                      }
+                      /* (c >= 0xA6F0) && (c <= 0xA6F1) */
+                      return Line_CM;
                     }
                   }
                   else
                   {
-                    if (c < 0xA7D2)
+                    if (c < 0xA802)
                     {
-                      if (c < 0xA7CB)
+                      if (c < 0xA6F8)
                       {
-                        if ((c >= 0xA6F8) && (c <= 0xA6FF))
-                          return Line_XX;
-                        /* (c >= 0xA700) && (c <= 0xA7CA) */
-                        return Line_AL;
+                        if (c == 0xA6F2)
+                          return Line_AL;
+                        /* (c >= 0xA6F3) && (c <= 0xA6F7) */
+                        return Line_BA;
                       }
                       else
                       {
-                        if ((c >= 0xA7CB) && (c <= 0xA7CF))
-                          return Line_XX;
-                        /* (c >= 0xA7D0) && (c <= 0xA7D1) */
+                        /* (c >= 0xA6F8) && (c <= 0xA801) */
                         return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0xA7D4)
-                      {
-                        if (c == 0xA7D2)
-                          return Line_XX;
-                        /* c == 0xA7D3 */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0xA7D4 */
-                        return Line_XX;
-                      }
+                      if (c == 0xA802)
+                        return Line_CM;
+                      /* (c >= 0xA803) && (c <= 0xA805) */
+                      return Line_AL;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0xA80B)
+                  if (c < 0xA828)
                   {
-                    if (c < 0xA803)
+                    if (c < 0xA80C)
                     {
-                      if (c < 0xA7F2)
+                      if (c < 0xA80B)
                       {
-                        if ((c >= 0xA7D5) && (c <= 0xA7D9))
-                          return Line_AL;
-                        /* (c >= 0xA7DA) && (c <= 0xA7F1) */
-                        return Line_XX;
+                        if (c == 0xA806)
+                          return Line_CM;
+                        /* (c >= 0xA807) && (c <= 0xA80A) */
+                        return Line_AL;
                       }
                       else
                       {
-                        if ((c >= 0xA7F2) && (c <= 0xA801))
-                          return Line_AL;
-                        /* c == 0xA802 */
+                        /* c == 0xA80B */
                         return Line_CM;
                       }
                     }
                     else
                     {
-                      if (c < 0xA807)
-                      {
-                        if ((c >= 0xA803) && (c <= 0xA805))
-                          return Line_AL;
-                        /* c == 0xA806 */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* (c >= 0xA807) && (c <= 0xA80A) */
+                      if ((c >= 0xA80C) && (c <= 0xA822))
                         return Line_AL;
-                      }
+                      /* (c >= 0xA823) && (c <= 0xA827) */
+                      return Line_CM;
                     }
                   }
                   else
                   {
-                    if (c < 0xA828)
-                    {
-                      if (c < 0xA823)
-                      {
-                        if (c == 0xA80B)
-                          return Line_CM;
-                        /* (c >= 0xA80C) && (c <= 0xA822) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0xA823) && (c <= 0xA827) */
-                        return Line_CM;
-                      }
-                    }
-                    else
+                    if (c < 0xA838)
                     {
                       if (c < 0xA82D)
                       {
@@ -74347,143 +71545,131 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        /* (c >= 0xA82D) && (c <= 0xA82F) */
-                        return Line_XX;
+                        /* (c >= 0xA82D) && (c <= 0xA837) */
+                        return Line_AL;
                       }
+                    }
+                    else
+                    {
+                      if (c == 0xA838)
+                        return Line_PO;
+                      /* (c >= 0xA839) && (c <= 0xA873) */
+                      return Line_AL;
                     }
                   }
                 }
               }
               else
               {
-                if (c < 0xA8DA)
+                if (c < 0xA8E0)
                 {
-                  if (c < 0xA878)
+                  if (c < 0xA8B4)
                   {
-                    if (c < 0xA840)
+                    if (c < 0xA880)
                     {
-                      if (c < 0xA839)
+                      if (c < 0xA878)
                       {
-                        if ((c >= 0xA830) && (c <= 0xA837))
-                          return Line_AL;
-                        /* c == 0xA838 */
-                        return Line_PO;
+                        if ((c >= 0xA874) && (c <= 0xA875))
+                          return Line_BB;
+                        /* (c >= 0xA876) && (c <= 0xA877) */
+                        return Line_EX;
                       }
                       else
                       {
-                        if (c == 0xA839)
-                          return Line_AL;
-                        /* (c >= 0xA83A) && (c <= 0xA83F) */
-                        return Line_XX;
+                        /* (c >= 0xA878) && (c <= 0xA87F) */
+                        return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0xA876)
-                      {
-                        if ((c >= 0xA840) && (c <= 0xA873))
-                          return Line_AL;
-                        /* (c >= 0xA874) && (c <= 0xA875) */
-                        return Line_BB;
-                      }
-                      else
-                      {
-                        /* (c >= 0xA876) && (c <= 0xA877) */
-                        return Line_EX;
-                      }
+                      if ((c >= 0xA880) && (c <= 0xA881))
+                        return Line_CM;
+                      /* (c >= 0xA882) && (c <= 0xA8B3) */
+                      return Line_AL;
                     }
                   }
                   else
                   {
-                    if (c < 0xA8C6)
+                    if (c < 0xA8D0)
                     {
-                      if (c < 0xA882)
+                      if (c < 0xA8CE)
                       {
-                        if ((c >= 0xA878) && (c <= 0xA87F))
-                          return Line_XX;
-                        /* (c >= 0xA880) && (c <= 0xA881) */
-                        return Line_CM;
+                        if ((c >= 0xA8B4) && (c <= 0xA8C5))
+                          return Line_CM;
+                        /* (c >= 0xA8C6) && (c <= 0xA8CD) */
+                        return Line_AL;
                       }
                       else
                       {
-                        if ((c >= 0xA882) && (c <= 0xA8B3))
-                          return Line_AL;
-                        /* (c >= 0xA8B4) && (c <= 0xA8C5) */
-                        return Line_CM;
+                        /* (c >= 0xA8CE) && (c <= 0xA8CF) */
+                        return Line_BA;
                       }
                     }
                     else
                     {
-                      if (c < 0xA8D0)
-                      {
-                        if ((c >= 0xA8C6) && (c <= 0xA8CD))
-                          return Line_XX;
-                        /* (c >= 0xA8CE) && (c <= 0xA8CF) */
-                        return Line_BA;
-                      }
-                      else
-                      {
-                        /* (c >= 0xA8D0) && (c <= 0xA8D9) */
+                      if ((c >= 0xA8D0) && (c <= 0xA8D9))
                         return Line_NU;
-                      }
+                      /* (c >= 0xA8DA) && (c <= 0xA8DF) */
+                      return Line_AL;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0xA90A)
+                  if (c < 0xA900)
                   {
                     if (c < 0xA8FD)
                     {
-                      if (c < 0xA8F2)
+                      if (c < 0xA8FC)
                       {
-                        if ((c >= 0xA8DA) && (c <= 0xA8DF))
-                          return Line_XX;
-                        /* (c >= 0xA8E0) && (c <= 0xA8F1) */
-                        return Line_CM;
+                        if ((c >= 0xA8E0) && (c <= 0xA8F1))
+                          return Line_CM;
+                        /* (c >= 0xA8F2) && (c <= 0xA8FB) */
+                        return Line_AL;
                       }
                       else
                       {
-                        if ((c >= 0xA8F2) && (c <= 0xA8FB))
-                          return Line_AL;
                         /* c == 0xA8FC */
                         return Line_BB;
                       }
                     }
                     else
                     {
-                      if (c < 0xA900)
-                      {
-                        if ((c >= 0xA8FD) && (c <= 0xA8FE))
-                          return Line_AL;
-                        /* c == 0xA8FF */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* (c >= 0xA900) && (c <= 0xA909) */
-                        return Line_NU;
-                      }
+                      if ((c >= 0xA8FD) && (c <= 0xA8FE))
+                        return Line_AL;
+                      /* c == 0xA8FF */
+                      return Line_CM;
                     }
                   }
                   else
                   {
-                    if (c < 0xA930)
+                    if (c < 0xA926)
                     {
-                      if (c < 0xA92E)
-                      {
-                        if ((c >= 0xA90A) && (c <= 0xA925))
-                          return Line_AL;
-                        /* (c >= 0xA926) && (c <= 0xA92D) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* (c >= 0xA92E) && (c <= 0xA92F) */
-                        return Line_BA;
-                      }
+                      if ((c >= 0xA900) && (c <= 0xA909))
+                        return Line_NU;
+                      /* (c >= 0xA90A) && (c <= 0xA925) */
+                      return Line_AL;
                     }
                     else
+                    {
+                      if ((c >= 0xA926) && (c <= 0xA92D))
+                        return Line_CM;
+                      /* (c >= 0xA92E) && (c <= 0xA92F) */
+                      return Line_BA;
+                    }
+                  }
+                }
+              }
+            }
+            else
+            {
+              if (c < 0xA9F0)
+              {
+                if (c < 0xA9C7)
+                {
+                  if (c < 0xA980)
+                  {
+                    if (c < 0xA960)
                     {
                       if (c < 0xA954)
                       {
@@ -74494,375 +71680,352 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        /* (c >= 0xA954) && (c <= 0xA95E) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-          else
-          {
-            if (c < 0xABEB)
-            {
-              if (c < 0xAA50)
-              {
-                if (c < 0xA9DE)
-                {
-                  if (c < 0xA9C1)
-                  {
-                    if (c < 0xA984)
-                    {
-                      if (c < 0xA97D)
-                      {
-                        if (c == 0xA95F)
-                          return Line_AL;
-                        /* (c >= 0xA960) && (c <= 0xA97C) */
-                        return Line_JL;
-                      }
-                      else
-                      {
-                        if ((c >= 0xA97D) && (c <= 0xA97F))
-                          return Line_XX;
-                        /* (c >= 0xA980) && (c <= 0xA983) */
-                        return Line_CM;
+                        /* (c >= 0xA954) && (c <= 0xA95F) */
+                        return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0xA9C0)
-                      {
-                        if ((c >= 0xA984) && (c <= 0xA9B2))
-                          return Line_AK;
-                        /* (c >= 0xA9B3) && (c <= 0xA9BF) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* c == 0xA9C0 */
-                        return Line_VI;
-                      }
+                      if ((c >= 0xA960) && (c <= 0xA97C))
+                        return Line_JL;
+                      /* (c >= 0xA97D) && (c <= 0xA97F) */
+                      return Line_AL;
                     }
                   }
                   else
                   {
-                    if (c < 0xA9CF)
+                    if (c < 0xA9C0)
                     {
-                      if (c < 0xA9CA)
+                      if (c < 0xA9B3)
                       {
-                        if ((c >= 0xA9C1) && (c <= 0xA9C6))
-                          return Line_ID;
-                        /* (c >= 0xA9C7) && (c <= 0xA9C9) */
-                        return Line_BA;
+                        if ((c >= 0xA980) && (c <= 0xA983))
+                          return Line_CM;
+                        /* (c >= 0xA984) && (c <= 0xA9B2) */
+                        return Line_AK;
                       }
                       else
                       {
-                        if ((c >= 0xA9CA) && (c <= 0xA9CD))
-                          return Line_ID;
-                        /* c == 0xA9CE */
-                        return Line_XX;
+                        /* (c >= 0xA9B3) && (c <= 0xA9BF) */
+                        return Line_CM;
                       }
                     }
                     else
                     {
-                      if (c < 0xA9DA)
-                      {
-                        if (c == 0xA9CF)
-                          return Line_BA;
-                        /* (c >= 0xA9D0) && (c <= 0xA9D9) */
-                        return Line_ID;
-                      }
-                      else
-                      {
-                        /* (c >= 0xA9DA) && (c <= 0xA9DD) */
-                        return Line_XX;
-                      }
+                      if (c == 0xA9C0)
+                        return Line_VI;
+                      /* (c >= 0xA9C1) && (c <= 0xA9C6) */
+                      return Line_ID;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0xAA37)
+                  if (c < 0xA9DA)
                   {
-                    if (c < 0xA9FF)
+                    if (c < 0xA9CF)
                     {
-                      if (c < 0xA9F0)
+                      if (c < 0xA9CE)
                       {
-                        if ((c >= 0xA9DE) && (c <= 0xA9DF))
-                          return Line_ID;
-                        /* (c >= 0xA9E0) && (c <= 0xA9EF) */
-                        return Line_SA;
+                        if ((c >= 0xA9C7) && (c <= 0xA9C9))
+                          return Line_BA;
+                        /* (c >= 0xA9CA) && (c <= 0xA9CD) */
+                        return Line_ID;
                       }
                       else
                       {
-                        if ((c >= 0xA9F0) && (c <= 0xA9F9))
-                          return Line_NU;
-                        /* (c >= 0xA9FA) && (c <= 0xA9FE) */
-                        return Line_SA;
+                        /* c == 0xA9CE */
+                        return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0xAA29)
-                      {
-                        if (c == 0xA9FF)
-                          return Line_XX;
-                        /* (c >= 0xAA00) && (c <= 0xAA28) */
-                        return Line_AS;
-                      }
-                      else
-                      {
-                        /* (c >= 0xAA29) && (c <= 0xAA36) */
-                        return Line_CM;
-                      }
+                      if (c == 0xA9CF)
+                        return Line_BA;
+                      /* (c >= 0xA9D0) && (c <= 0xA9D9) */
+                      return Line_ID;
                     }
                   }
                   else
                   {
-                    if (c < 0xAA44)
+                    if (c < 0xA9E5)
                     {
-                      if (c < 0xAA43)
+                      if (c < 0xA9E0)
                       {
-                        if ((c >= 0xAA37) && (c <= 0xAA3F))
-                          return Line_XX;
-                        /* (c >= 0xAA40) && (c <= 0xAA42) */
-                        return Line_BA;
+                        if ((c >= 0xA9DA) && (c <= 0xA9DD))
+                          return Line_AL;
+                        /* (c >= 0xA9DE) && (c <= 0xA9DF) */
+                        return Line_ID;
                       }
                       else
                       {
-                        /* c == 0xAA43 */
-                        return Line_CM;
+                        /* (c >= 0xA9E0) && (c <= 0xA9E4) */
+                        return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0xAA4E)
-                      {
-                        if ((c >= 0xAA44) && (c <= 0xAA4B))
-                          return Line_BA;
-                        /* (c >= 0xAA4C) && (c <= 0xAA4D) */
+                      if (c == 0xA9E5)
                         return Line_CM;
-                      }
-                      else
-                      {
-                        /* (c >= 0xAA4E) && (c <= 0xAA4F) */
-                        return Line_XX;
-                      }
+                      /* (c >= 0xA9E6) && (c <= 0xA9EF) */
+                      return Line_AL;
                     }
                   }
                 }
               }
               else
               {
-                if (c < 0xAB07)
+                if (c < 0xAA50)
                 {
-                  if (c < 0xAAE0)
+                  if (c < 0xAA40)
                   {
-                    if (c < 0xAA60)
+                    if (c < 0xAA29)
+                    {
+                      if (c < 0xAA00)
+                      {
+                        if ((c >= 0xA9F0) && (c <= 0xA9F9))
+                          return Line_NU;
+                        /* (c >= 0xA9FA) && (c <= 0xA9FF) */
+                        return Line_AL;
+                      }
+                      else
+                      {
+                        /* (c >= 0xAA00) && (c <= 0xAA28) */
+                        return Line_AS;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0xAA29) && (c <= 0xAA36))
+                        return Line_CM;
+                      /* (c >= 0xAA37) && (c <= 0xAA3F) */
+                      return Line_AL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xAA4C)
+                    {
+                      if (c < 0xAA44)
+                      {
+                        if ((c >= 0xAA40) && (c <= 0xAA42))
+                          return Line_BA;
+                        /* c == 0xAA43 */
+                        return Line_CM;
+                      }
+                      else
+                      {
+                        /* (c >= 0xAA44) && (c <= 0xAA4B) */
+                        return Line_BA;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0xAA4C) && (c <= 0xAA4D))
+                        return Line_CM;
+                      /* (c >= 0xAA4E) && (c <= 0xAA4F) */
+                      return Line_AL;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0xAA7B)
+                  {
+                    if (c < 0xAA5D)
                     {
                       if (c < 0xAA5C)
                       {
                         if ((c >= 0xAA50) && (c <= 0xAA59))
                           return Line_ID;
                         /* (c >= 0xAA5A) && (c <= 0xAA5B) */
-                        return Line_XX;
+                        return Line_AL;
                       }
                       else
                       {
-                        if (c == 0xAA5C)
-                          return Line_ID;
-                        /* (c >= 0xAA5D) && (c <= 0xAA5F) */
+                        /* c == 0xAA5C */
+                        return Line_ID;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0xAA5D) && (c <= 0xAA5F))
                         return Line_BA;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0xAADB)
-                      {
-                        if ((c >= 0xAA60) && (c <= 0xAAC2))
-                          return Line_SA;
-                        /* (c >= 0xAAC3) && (c <= 0xAADA) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0xAADB) && (c <= 0xAADF) */
-                        return Line_SA;
-                      }
+                      /* (c >= 0xAA60) && (c <= 0xAA7A) */
+                      return Line_AL;
                     }
                   }
                   else
                   {
-                    if (c < 0xAAF5)
+                    if (c < 0xAAB0)
                     {
-                      if (c < 0xAAF0)
-                      {
-                        if ((c >= 0xAAE0) && (c <= 0xAAEA))
-                          return Line_AL;
-                        /* (c >= 0xAAEB) && (c <= 0xAAEF) */
+                      if ((c >= 0xAA7B) && (c <= 0xAA7D))
                         return Line_CM;
-                      }
-                      else
-                      {
-                        if ((c >= 0xAAF0) && (c <= 0xAAF1))
-                          return Line_BA;
-                        /* (c >= 0xAAF2) && (c <= 0xAAF4) */
-                        return Line_AL;
-                      }
+                      /* (c >= 0xAA7E) && (c <= 0xAAAF) */
+                      return Line_AL;
                     }
                     else
                     {
-                      if (c < 0xAB01)
-                      {
-                        if ((c >= 0xAAF5) && (c <= 0xAAF6))
-                          return Line_CM;
-                        /* (c >= 0xAAF7) && (c <= 0xAB00) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0xAB01) && (c <= 0xAB06) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0xAB28)
-                  {
-                    if (c < 0xAB17)
-                    {
-                      if (c < 0xAB0F)
-                      {
-                        if ((c >= 0xAB07) && (c <= 0xAB08))
-                          return Line_XX;
-                        /* (c >= 0xAB09) && (c <= 0xAB0E) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if ((c >= 0xAB0F) && (c <= 0xAB10))
-                          return Line_XX;
-                        /* (c >= 0xAB11) && (c <= 0xAB16) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0xAB27)
-                      {
-                        if ((c >= 0xAB17) && (c <= 0xAB1F))
-                          return Line_XX;
-                        /* (c >= 0xAB20) && (c <= 0xAB26) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0xAB27 */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0xAB6C)
-                    {
-                      if (c < 0xAB30)
-                      {
-                        if ((c >= 0xAB28) && (c <= 0xAB2E))
-                          return Line_AL;
-                        /* c == 0xAB2F */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0xAB30) && (c <= 0xAB6B) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0xABE3)
-                      {
-                        if ((c >= 0xAB6C) && (c <= 0xAB6F))
-                          return Line_XX;
-                        /* (c >= 0xAB70) && (c <= 0xABE2) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0xABE3) && (c <= 0xABEA) */
+                      if (c == 0xAAB0)
                         return Line_CM;
-                      }
+                      /* c == 0xAAB1 */
+                      return Line_AL;
                     }
                   }
                 }
               }
             }
-            else
+          }
+        }
+      }
+      else
+      {
+        if (c < 0xB371)
+        {
+          if (c < 0xAF2D)
+          {
+            if (c < 0xAD18)
             {
-              if (c < 0xAD34)
+              if (c < 0xAC01)
               {
-                if (c < 0xAC71)
+                if (c < 0xAAF2)
                 {
-                  if (c < 0xAC1C)
+                  if (c < 0xAAC0)
                   {
-                    if (c < 0xABFA)
+                    if (c < 0xAAB9)
                     {
-                      if (c < 0xABEE)
+                      if (c < 0xAAB7)
                       {
-                        if (c == 0xABEB)
-                          return Line_BA;
-                        /* (c >= 0xABEC) && (c <= 0xABED) */
+                        if ((c >= 0xAAB2) && (c <= 0xAAB4))
+                          return Line_CM;
+                        /* (c >= 0xAAB5) && (c <= 0xAAB6) */
+                        return Line_AL;
+                      }
+                      else
+                      {
+                        /* (c >= 0xAAB7) && (c <= 0xAAB8) */
+                        return Line_CM;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0xAAB9) && (c <= 0xAABD))
+                        return Line_AL;
+                      /* (c >= 0xAABE) && (c <= 0xAABF) */
+                      return Line_CM;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xAAEB)
+                    {
+                      if (c < 0xAAC2)
+                      {
+                        if (c == 0xAAC0)
+                          return Line_AL;
+                        /* c == 0xAAC1 */
                         return Line_CM;
                       }
                       else
                       {
-                        if ((c >= 0xABEE) && (c <= 0xABEF))
-                          return Line_XX;
+                        /* (c >= 0xAAC2) && (c <= 0xAAEA) */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0xAAEB) && (c <= 0xAAEF))
+                        return Line_CM;
+                      /* (c >= 0xAAF0) && (c <= 0xAAF1) */
+                      return Line_BA;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0xABEC)
+                  {
+                    if (c < 0xABE3)
+                    {
+                      if (c < 0xAAF7)
+                      {
+                        if ((c >= 0xAAF2) && (c <= 0xAAF4))
+                          return Line_AL;
+                        /* (c >= 0xAAF5) && (c <= 0xAAF6) */
+                        return Line_CM;
+                      }
+                      else
+                      {
+                        /* (c >= 0xAAF7) && (c <= 0xABE2) */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0xABE3) && (c <= 0xABEA))
+                        return Line_CM;
+                      /* c == 0xABEB */
+                      return Line_BA;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xABFA)
+                    {
+                      if (c < 0xABF0)
+                      {
+                        if ((c >= 0xABEC) && (c <= 0xABED))
+                          return Line_CM;
+                        /* (c >= 0xABEE) && (c <= 0xABEF) */
+                        return Line_AL;
+                      }
+                      else
+                      {
                         /* (c >= 0xABF0) && (c <= 0xABF9) */
                         return Line_NU;
                       }
                     }
                     else
                     {
-                      if (c < 0xAC01)
+                      if ((c >= 0xABFA) && (c <= 0xABFF))
+                        return Line_AL;
+                      /* c == 0xAC00 */
+                      return Line_H2;
+                    }
+                  }
+                }
+              }
+              else
+              {
+                if (c < 0xAC8D)
+                {
+                  if (c < 0xAC54)
+                  {
+                    if (c < 0xAC38)
+                    {
+                      if (c < 0xAC1D)
                       {
-                        if ((c >= 0xABFA) && (c <= 0xABFF))
-                          return Line_XX;
-                        /* c == 0xAC00 */
+                        if ((c >= 0xAC01) && (c <= 0xAC1B))
+                          return Line_H3;
+                        /* c == 0xAC1C */
                         return Line_H2;
                       }
                       else
                       {
-                        /* (c >= 0xAC01) && (c <= 0xAC1B) */
-                        return Line_H3;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0xAC54)
-                    {
-                      if (c < 0xAC38)
-                      {
-                        if (c == 0xAC1C)
-                          return Line_H2;
                         /* (c >= 0xAC1D) && (c <= 0xAC37) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        if (c == 0xAC38)
-                          return Line_H2;
-                        /* (c >= 0xAC39) && (c <= 0xAC53) */
                         return Line_H3;
                       }
                     }
                     else
+                    {
+                      if (c == 0xAC38)
+                        return Line_H2;
+                      /* (c >= 0xAC39) && (c <= 0xAC53) */
+                      return Line_H3;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xAC71)
                     {
                       if (c < 0xAC70)
                       {
@@ -74877,158 +72040,149 @@ line_category(Py_UCS4 c)
                         return Line_H2;
                       }
                     }
+                    else
+                    {
+                      if ((c >= 0xAC71) && (c <= 0xAC8B))
+                        return Line_H3;
+                      /* c == 0xAC8C */
+                      return Line_H2;
+                    }
                   }
                 }
                 else
                 {
                   if (c < 0xACE0)
                   {
-                    if (c < 0xACA9)
+                    if (c < 0xACC4)
                     {
-                      if (c < 0xAC8D)
-                      {
-                        if ((c >= 0xAC71) && (c <= 0xAC8B))
-                          return Line_H3;
-                        /* c == 0xAC8C */
-                        return Line_H2;
-                      }
-                      else
+                      if (c < 0xACA9)
                       {
                         if ((c >= 0xAC8D) && (c <= 0xACA7))
                           return Line_H3;
                         /* c == 0xACA8 */
                         return Line_H2;
                       }
+                      else
+                      {
+                        /* (c >= 0xACA9) && (c <= 0xACC3) */
+                        return Line_H3;
+                      }
                     }
                     else
                     {
-                      if (c < 0xACC5)
-                      {
-                        if ((c >= 0xACA9) && (c <= 0xACC3))
-                          return Line_H3;
-                        /* c == 0xACC4 */
+                      if (c == 0xACC4)
                         return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xACC5) && (c <= 0xACDF) */
-                        return Line_H3;
-                      }
+                      /* (c >= 0xACC5) && (c <= 0xACDF) */
+                      return Line_H3;
                     }
                   }
                   else
                   {
-                    if (c < 0xACFD)
+                    if (c < 0xACFC)
                     {
-                      if (c < 0xACFC)
-                      {
-                        if (c == 0xACE0)
-                          return Line_H2;
-                        /* (c >= 0xACE1) && (c <= 0xACFB) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xACFC */
+                      if (c == 0xACE0)
                         return Line_H2;
-                      }
+                      /* (c >= 0xACE1) && (c <= 0xACFB) */
+                      return Line_H3;
                     }
                     else
                     {
-                      if (c < 0xAD19)
-                      {
-                        if ((c >= 0xACFD) && (c <= 0xAD17))
-                          return Line_H3;
-                        /* c == 0xAD18 */
+                      if (c == 0xACFC)
                         return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xAD19) && (c <= 0xAD33) */
-                        return Line_H3;
-                      }
+                      /* (c >= 0xACFD) && (c <= 0xAD17) */
+                      return Line_H3;
                     }
                   }
                 }
               }
-              else
+            }
+            else
+            {
+              if (c < 0xAE30)
               {
-                if (c < 0xADDD)
+                if (c < 0xADA4)
                 {
-                  if (c < 0xAD89)
+                  if (c < 0xAD51)
                   {
-                    if (c < 0xAD6C)
+                    if (c < 0xAD35)
                     {
-                      if (c < 0xAD50)
+                      if (c < 0xAD34)
                       {
-                        if (c == 0xAD34)
+                        if (c == 0xAD18)
                           return Line_H2;
-                        /* (c >= 0xAD35) && (c <= 0xAD4F) */
+                        /* (c >= 0xAD19) && (c <= 0xAD33) */
                         return Line_H3;
                       }
                       else
                       {
-                        if (c == 0xAD50)
-                          return Line_H2;
-                        /* (c >= 0xAD51) && (c <= 0xAD6B) */
-                        return Line_H3;
+                        /* c == 0xAD34 */
+                        return Line_H2;
                       }
                     }
                     else
                     {
-                      if (c < 0xAD88)
-                      {
-                        if (c == 0xAD6C)
-                          return Line_H2;
-                        /* (c >= 0xAD6D) && (c <= 0xAD87) */
+                      if ((c >= 0xAD35) && (c <= 0xAD4F))
                         return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xAD88 */
-                        return Line_H2;
-                      }
+                      /* c == 0xAD50 */
+                      return Line_H2;
                     }
                   }
                   else
                   {
-                    if (c < 0xADC0)
+                    if (c < 0xAD88)
                     {
-                      if (c < 0xADA5)
+                      if (c < 0xAD6D)
                       {
-                        if ((c >= 0xAD89) && (c <= 0xADA3))
+                        if ((c >= 0xAD51) && (c <= 0xAD6B))
                           return Line_H3;
-                        /* c == 0xADA4 */
+                        /* c == 0xAD6C */
                         return Line_H2;
                       }
                       else
                       {
-                        /* (c >= 0xADA5) && (c <= 0xADBF) */
+                        /* (c >= 0xAD6D) && (c <= 0xAD87) */
                         return Line_H3;
                       }
                     }
                     else
                     {
-                      if (c < 0xADDC)
-                      {
-                        if (c == 0xADC0)
-                          return Line_H2;
-                        /* (c >= 0xADC1) && (c <= 0xADDB) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xADDC */
+                      if (c == 0xAD88)
                         return Line_H2;
-                      }
+                      /* (c >= 0xAD89) && (c <= 0xADA3) */
+                      return Line_H3;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0xAE4C)
+                  if (c < 0xADDD)
                   {
-                    if (c < 0xAE15)
+                    if (c < 0xADC1)
+                    {
+                      if (c < 0xADC0)
+                      {
+                        if (c == 0xADA4)
+                          return Line_H2;
+                        /* (c >= 0xADA5) && (c <= 0xADBF) */
+                        return Line_H3;
+                      }
+                      else
+                      {
+                        /* c == 0xADC0 */
+                        return Line_H2;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0xADC1) && (c <= 0xADDB))
+                        return Line_H3;
+                      /* c == 0xADDC */
+                      return Line_H2;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xAE14)
                     {
                       if (c < 0xADF9)
                       {
@@ -75039,46 +72193,52 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        if ((c >= 0xADF9) && (c <= 0xAE13))
-                          return Line_H3;
-                        /* c == 0xAE14 */
+                        /* (c >= 0xADF9) && (c <= 0xAE13) */
+                        return Line_H3;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0xAE14)
+                        return Line_H2;
+                      /* (c >= 0xAE15) && (c <= 0xAE2F) */
+                      return Line_H3;
+                    }
+                  }
+                }
+              }
+              else
+              {
+                if (c < 0xAEBC)
+                {
+                  if (c < 0xAE69)
+                  {
+                    if (c < 0xAE4D)
+                    {
+                      if (c < 0xAE4C)
+                      {
+                        if (c == 0xAE30)
+                          return Line_H2;
+                        /* (c >= 0xAE31) && (c <= 0xAE4B) */
+                        return Line_H3;
+                      }
+                      else
+                      {
+                        /* c == 0xAE4C */
                         return Line_H2;
                       }
                     }
                     else
                     {
-                      if (c < 0xAE31)
-                      {
-                        if ((c >= 0xAE15) && (c <= 0xAE2F))
-                          return Line_H3;
-                        /* c == 0xAE30 */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xAE31) && (c <= 0xAE4B) */
+                      if ((c >= 0xAE4D) && (c <= 0xAE67))
                         return Line_H3;
-                      }
+                      /* c == 0xAE68 */
+                      return Line_H2;
                     }
                   }
                   else
                   {
-                    if (c < 0xAE69)
-                    {
-                      if (c < 0xAE68)
-                      {
-                        if (c == 0xAE4C)
-                          return Line_H2;
-                        /* (c >= 0xAE4D) && (c <= 0xAE67) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xAE68 */
-                        return Line_H2;
-                      }
-                    }
-                    else
+                    if (c < 0xAEA0)
                     {
                       if (c < 0xAE85)
                       {
@@ -75093,77 +72253,74 @@ line_category(Py_UCS4 c)
                         return Line_H3;
                       }
                     }
+                    else
+                    {
+                      if (c == 0xAEA0)
+                        return Line_H2;
+                      /* (c >= 0xAEA1) && (c <= 0xAEBB) */
+                      return Line_H3;
+                    }
                   }
                 }
-              }
-            }
-          }
-        }
-        else
-        {
-          if (c < 0xB488)
-          {
-            if (c < 0xB194)
-            {
-              if (c < 0xB00D)
-              {
-                if (c < 0xAF64)
+                else
                 {
                   if (c < 0xAEF5)
                   {
-                    if (c < 0xAED8)
+                    if (c < 0xAED9)
                     {
-                      if (c < 0xAEBC)
-                      {
-                        if (c == 0xAEA0)
-                          return Line_H2;
-                        /* (c >= 0xAEA1) && (c <= 0xAEBB) */
-                        return Line_H3;
-                      }
-                      else
+                      if (c < 0xAED8)
                       {
                         if (c == 0xAEBC)
                           return Line_H2;
                         /* (c >= 0xAEBD) && (c <= 0xAED7) */
                         return Line_H3;
                       }
+                      else
+                      {
+                        /* c == 0xAED8 */
+                        return Line_H2;
+                      }
                     }
                     else
                     {
-                      if (c < 0xAEF4)
-                      {
-                        if (c == 0xAED8)
-                          return Line_H2;
-                        /* (c >= 0xAED9) && (c <= 0xAEF3) */
+                      if ((c >= 0xAED9) && (c <= 0xAEF3))
                         return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xAEF4 */
-                        return Line_H2;
-                      }
+                      /* c == 0xAEF4 */
+                      return Line_H2;
                     }
                   }
                   else
                   {
-                    if (c < 0xAF2D)
+                    if (c < 0xAF11)
                     {
-                      if (c < 0xAF11)
-                      {
-                        if ((c >= 0xAEF5) && (c <= 0xAF0F))
-                          return Line_H3;
-                        /* c == 0xAF10 */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        if ((c >= 0xAF11) && (c <= 0xAF2B))
-                          return Line_H3;
-                        /* c == 0xAF2C */
-                        return Line_H2;
-                      }
+                      if ((c >= 0xAEF5) && (c <= 0xAF0F))
+                        return Line_H3;
+                      /* c == 0xAF10 */
+                      return Line_H2;
                     }
                     else
+                    {
+                      if ((c >= 0xAF11) && (c <= 0xAF2B))
+                        return Line_H3;
+                      /* c == 0xAF2C */
+                      return Line_H2;
+                    }
+                  }
+                }
+              }
+            }
+          }
+          else
+          {
+            if (c < 0xB15C)
+            {
+              if (c < 0xB045)
+              {
+                if (c < 0xAFB9)
+                {
+                  if (c < 0xAF80)
+                  {
+                    if (c < 0xAF64)
                     {
                       if (c < 0xAF49)
                       {
@@ -75178,46 +72335,43 @@ line_category(Py_UCS4 c)
                         return Line_H3;
                       }
                     }
-                  }
-                }
-                else
-                {
-                  if (c < 0xAFB9)
-                  {
-                    if (c < 0xAF9C)
+                    else
                     {
-                      if (c < 0xAF80)
-                      {
-                        if (c == 0xAF64)
-                          return Line_H2;
-                        /* (c >= 0xAF65) && (c <= 0xAF7F) */
-                        return Line_H3;
-                      }
-                      else
+                      if (c == 0xAF64)
+                        return Line_H2;
+                      /* (c >= 0xAF65) && (c <= 0xAF7F) */
+                      return Line_H3;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xAF9D)
+                    {
+                      if (c < 0xAF9C)
                       {
                         if (c == 0xAF80)
                           return Line_H2;
                         /* (c >= 0xAF81) && (c <= 0xAF9B) */
                         return Line_H3;
                       }
-                    }
-                    else
-                    {
-                      if (c < 0xAFB8)
-                      {
-                        if (c == 0xAF9C)
-                          return Line_H2;
-                        /* (c >= 0xAF9D) && (c <= 0xAFB7) */
-                        return Line_H3;
-                      }
                       else
                       {
-                        /* c == 0xAFB8 */
+                        /* c == 0xAF9C */
                         return Line_H2;
                       }
                     }
+                    else
+                    {
+                      if ((c >= 0xAF9D) && (c <= 0xAFB7))
+                        return Line_H3;
+                      /* c == 0xAFB8 */
+                      return Line_H2;
+                    }
                   }
-                  else
+                }
+                else
+                {
+                  if (c < 0xB00C)
                   {
                     if (c < 0xAFF0)
                     {
@@ -75236,18 +72390,35 @@ line_category(Py_UCS4 c)
                     }
                     else
                     {
-                      if (c < 0xB00C)
+                      if (c == 0xAFF0)
+                        return Line_H2;
+                      /* (c >= 0xAFF1) && (c <= 0xB00B) */
+                      return Line_H3;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xB029)
+                    {
+                      if (c < 0xB028)
                       {
-                        if (c == 0xAFF0)
+                        if (c == 0xB00C)
                           return Line_H2;
-                        /* (c >= 0xAFF1) && (c <= 0xB00B) */
+                        /* (c >= 0xB00D) && (c <= 0xB027) */
                         return Line_H3;
                       }
                       else
                       {
-                        /* c == 0xB00C */
+                        /* c == 0xB028 */
                         return Line_H2;
                       }
+                    }
+                    else
+                    {
+                      if ((c >= 0xB029) && (c <= 0xB043))
+                        return Line_H3;
+                      /* c == 0xB044 */
+                      return Line_H2;
                     }
                   }
                 }
@@ -75256,26 +72427,9 @@ line_category(Py_UCS4 c)
               {
                 if (c < 0xB0D1)
                 {
-                  if (c < 0xB07C)
+                  if (c < 0xB098)
                   {
-                    if (c < 0xB045)
-                    {
-                      if (c < 0xB029)
-                      {
-                        if ((c >= 0xB00D) && (c <= 0xB027))
-                          return Line_H3;
-                        /* c == 0xB028 */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        if ((c >= 0xB029) && (c <= 0xB043))
-                          return Line_H3;
-                        /* c == 0xB044 */
-                        return Line_H2;
-                      }
-                    }
-                    else
+                    if (c < 0xB07C)
                     {
                       if (c < 0xB061)
                       {
@@ -75290,48 +72444,45 @@ line_category(Py_UCS4 c)
                         return Line_H3;
                       }
                     }
+                    else
+                    {
+                      if (c == 0xB07C)
+                        return Line_H2;
+                      /* (c >= 0xB07D) && (c <= 0xB097) */
+                      return Line_H3;
+                    }
                   }
                   else
                   {
-                    if (c < 0xB0B4)
+                    if (c < 0xB0B5)
                     {
-                      if (c < 0xB098)
-                      {
-                        if (c == 0xB07C)
-                          return Line_H2;
-                        /* (c >= 0xB07D) && (c <= 0xB097) */
-                        return Line_H3;
-                      }
-                      else
+                      if (c < 0xB0B4)
                       {
                         if (c == 0xB098)
                           return Line_H2;
                         /* (c >= 0xB099) && (c <= 0xB0B3) */
                         return Line_H3;
                       }
+                      else
+                      {
+                        /* c == 0xB0B4 */
+                        return Line_H2;
+                      }
                     }
                     else
                     {
-                      if (c < 0xB0D0)
-                      {
-                        if (c == 0xB0B4)
-                          return Line_H2;
-                        /* (c >= 0xB0B5) && (c <= 0xB0CF) */
+                      if ((c >= 0xB0B5) && (c <= 0xB0CF))
                         return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xB0D0 */
-                        return Line_H2;
-                      }
+                      /* c == 0xB0D0 */
+                      return Line_H2;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0xB140)
+                  if (c < 0xB124)
                   {
-                    if (c < 0xB109)
+                    if (c < 0xB108)
                     {
                       if (c < 0xB0ED)
                       {
@@ -75342,59 +72493,33 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        if ((c >= 0xB0ED) && (c <= 0xB107))
-                          return Line_H3;
-                        /* c == 0xB108 */
-                        return Line_H2;
+                        /* (c >= 0xB0ED) && (c <= 0xB107) */
+                        return Line_H3;
                       }
                     }
                     else
                     {
-                      if (c < 0xB125)
-                      {
-                        if ((c >= 0xB109) && (c <= 0xB123))
-                          return Line_H3;
-                        /* c == 0xB124 */
+                      if (c == 0xB108)
                         return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xB125) && (c <= 0xB13F) */
-                        return Line_H3;
-                      }
+                      /* (c >= 0xB109) && (c <= 0xB123) */
+                      return Line_H3;
                     }
                   }
                   else
                   {
-                    if (c < 0xB15D)
+                    if (c < 0xB140)
                     {
-                      if (c < 0xB15C)
-                      {
-                        if (c == 0xB140)
-                          return Line_H2;
-                        /* (c >= 0xB141) && (c <= 0xB15B) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xB15C */
+                      if (c == 0xB124)
                         return Line_H2;
-                      }
+                      /* (c >= 0xB125) && (c <= 0xB13F) */
+                      return Line_H3;
                     }
                     else
                     {
-                      if (c < 0xB179)
-                      {
-                        if ((c >= 0xB15D) && (c <= 0xB177))
-                          return Line_H3;
-                        /* c == 0xB178 */
+                      if (c == 0xB140)
                         return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xB179) && (c <= 0xB193) */
-                        return Line_H3;
-                      }
+                      /* (c >= 0xB141) && (c <= 0xB15B) */
+                      return Line_H3;
                     }
                   }
                 }
@@ -75402,65 +72527,91 @@ line_category(Py_UCS4 c)
             }
             else
             {
-              if (c < 0xB301)
+              if (c < 0xB274)
               {
-                if (c < 0xB258)
+                if (c < 0xB1E8)
                 {
-                  if (c < 0xB1E9)
+                  if (c < 0xB195)
                   {
-                    if (c < 0xB1CC)
+                    if (c < 0xB179)
                     {
-                      if (c < 0xB1B0)
+                      if (c < 0xB178)
                       {
-                        if (c == 0xB194)
+                        if (c == 0xB15C)
                           return Line_H2;
-                        /* (c >= 0xB195) && (c <= 0xB1AF) */
+                        /* (c >= 0xB15D) && (c <= 0xB177) */
                         return Line_H3;
                       }
                       else
                       {
-                        if (c == 0xB1B0)
-                          return Line_H2;
+                        /* c == 0xB178 */
+                        return Line_H2;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0xB179) && (c <= 0xB193))
+                        return Line_H3;
+                      /* c == 0xB194 */
+                      return Line_H2;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xB1CC)
+                    {
+                      if (c < 0xB1B1)
+                      {
+                        if ((c >= 0xB195) && (c <= 0xB1AF))
+                          return Line_H3;
+                        /* c == 0xB1B0 */
+                        return Line_H2;
+                      }
+                      else
+                      {
                         /* (c >= 0xB1B1) && (c <= 0xB1CB) */
                         return Line_H3;
                       }
                     }
                     else
                     {
-                      if (c < 0xB1E8)
+                      if (c == 0xB1CC)
+                        return Line_H2;
+                      /* (c >= 0xB1CD) && (c <= 0xB1E7) */
+                      return Line_H3;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0xB221)
+                  {
+                    if (c < 0xB205)
+                    {
+                      if (c < 0xB204)
                       {
-                        if (c == 0xB1CC)
+                        if (c == 0xB1E8)
                           return Line_H2;
-                        /* (c >= 0xB1CD) && (c <= 0xB1E7) */
+                        /* (c >= 0xB1E9) && (c <= 0xB203) */
                         return Line_H3;
                       }
                       else
                       {
-                        /* c == 0xB1E8 */
-                        return Line_H2;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0xB221)
-                    {
-                      if (c < 0xB205)
-                      {
-                        if ((c >= 0xB1E9) && (c <= 0xB203))
-                          return Line_H3;
                         /* c == 0xB204 */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        if ((c >= 0xB205) && (c <= 0xB21F))
-                          return Line_H3;
-                        /* c == 0xB220 */
                         return Line_H2;
                       }
                     }
                     else
+                    {
+                      if ((c >= 0xB205) && (c <= 0xB21F))
+                        return Line_H3;
+                      /* c == 0xB220 */
+                      return Line_H2;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xB258)
                     {
                       if (c < 0xB23D)
                       {
@@ -75475,43 +72626,43 @@ line_category(Py_UCS4 c)
                         return Line_H3;
                       }
                     }
+                    else
+                    {
+                      if (c == 0xB258)
+                        return Line_H2;
+                      /* (c >= 0xB259) && (c <= 0xB273) */
+                      return Line_H3;
+                    }
                   }
                 }
-                else
+              }
+              else
+              {
+                if (c < 0xB300)
                 {
                   if (c < 0xB2AD)
                   {
-                    if (c < 0xB290)
+                    if (c < 0xB291)
                     {
-                      if (c < 0xB274)
-                      {
-                        if (c == 0xB258)
-                          return Line_H2;
-                        /* (c >= 0xB259) && (c <= 0xB273) */
-                        return Line_H3;
-                      }
-                      else
+                      if (c < 0xB290)
                       {
                         if (c == 0xB274)
                           return Line_H2;
                         /* (c >= 0xB275) && (c <= 0xB28F) */
                         return Line_H3;
                       }
+                      else
+                      {
+                        /* c == 0xB290 */
+                        return Line_H2;
+                      }
                     }
                     else
                     {
-                      if (c < 0xB2AC)
-                      {
-                        if (c == 0xB290)
-                          return Line_H2;
-                        /* (c >= 0xB291) && (c <= 0xB2AB) */
+                      if ((c >= 0xB291) && (c <= 0xB2AB))
                         return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xB2AC */
-                        return Line_H2;
-                      }
+                      /* c == 0xB2AC */
+                      return Line_H2;
                     }
                   }
                   else
@@ -75533,119 +72684,128 @@ line_category(Py_UCS4 c)
                     }
                     else
                     {
-                      if (c < 0xB300)
+                      if (c == 0xB2E4)
+                        return Line_H2;
+                      /* (c >= 0xB2E5) && (c <= 0xB2FF) */
+                      return Line_H3;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0xB339)
+                  {
+                    if (c < 0xB31D)
+                    {
+                      if (c < 0xB31C)
                       {
-                        if (c == 0xB2E4)
+                        if (c == 0xB300)
                           return Line_H2;
-                        /* (c >= 0xB2E5) && (c <= 0xB2FF) */
+                        /* (c >= 0xB301) && (c <= 0xB31B) */
                         return Line_H3;
                       }
                       else
                       {
-                        /* c == 0xB300 */
-                        return Line_H2;
-                      }
-                    }
-                  }
-                }
-              }
-              else
-              {
-                if (c < 0xB3C5)
-                {
-                  if (c < 0xB370)
-                  {
-                    if (c < 0xB339)
-                    {
-                      if (c < 0xB31D)
-                      {
-                        if ((c >= 0xB301) && (c <= 0xB31B))
-                          return Line_H3;
                         /* c == 0xB31C */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        if ((c >= 0xB31D) && (c <= 0xB337))
-                          return Line_H3;
-                        /* c == 0xB338 */
                         return Line_H2;
                       }
                     }
                     else
                     {
-                      if (c < 0xB355)
-                      {
-                        if ((c >= 0xB339) && (c <= 0xB353))
-                          return Line_H3;
-                        /* c == 0xB354 */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xB355) && (c <= 0xB36F) */
+                      if ((c >= 0xB31D) && (c <= 0xB337))
                         return Line_H3;
-                      }
+                      /* c == 0xB338 */
+                      return Line_H2;
                     }
                   }
                   else
                   {
+                    if (c < 0xB355)
+                    {
+                      if ((c >= 0xB339) && (c <= 0xB353))
+                        return Line_H3;
+                      /* c == 0xB354 */
+                      return Line_H2;
+                    }
+                    else
+                    {
+                      if ((c >= 0xB355) && (c <= 0xB36F))
+                        return Line_H3;
+                      /* c == 0xB370 */
+                      return Line_H2;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        else
+        {
+          if (c < 0xB7B5)
+          {
+            if (c < 0xB5A0)
+            {
+              if (c < 0xB489)
+              {
+                if (c < 0xB3FD)
+                {
+                  if (c < 0xB3C4)
+                  {
                     if (c < 0xB3A8)
                     {
-                      if (c < 0xB38C)
+                      if (c < 0xB38D)
                       {
-                        if (c == 0xB370)
-                          return Line_H2;
-                        /* (c >= 0xB371) && (c <= 0xB38B) */
-                        return Line_H3;
+                        if ((c >= 0xB371) && (c <= 0xB38B))
+                          return Line_H3;
+                        /* c == 0xB38C */
+                        return Line_H2;
                       }
                       else
                       {
-                        if (c == 0xB38C)
-                          return Line_H2;
                         /* (c >= 0xB38D) && (c <= 0xB3A7) */
                         return Line_H3;
                       }
                     }
                     else
                     {
-                      if (c < 0xB3C4)
+                      if (c == 0xB3A8)
+                        return Line_H2;
+                      /* (c >= 0xB3A9) && (c <= 0xB3C3) */
+                      return Line_H3;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xB3E1)
+                    {
+                      if (c < 0xB3E0)
                       {
-                        if (c == 0xB3A8)
+                        if (c == 0xB3C4)
                           return Line_H2;
-                        /* (c >= 0xB3A9) && (c <= 0xB3C3) */
+                        /* (c >= 0xB3C5) && (c <= 0xB3DF) */
                         return Line_H3;
                       }
                       else
                       {
-                        /* c == 0xB3C4 */
+                        /* c == 0xB3E0 */
                         return Line_H2;
                       }
+                    }
+                    else
+                    {
+                      if ((c >= 0xB3E1) && (c <= 0xB3FB))
+                        return Line_H3;
+                      /* c == 0xB3FC */
+                      return Line_H2;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0xB434)
+                  if (c < 0xB450)
                   {
-                    if (c < 0xB3FD)
-                    {
-                      if (c < 0xB3E1)
-                      {
-                        if ((c >= 0xB3C5) && (c <= 0xB3DF))
-                          return Line_H3;
-                        /* c == 0xB3E0 */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        if ((c >= 0xB3E1) && (c <= 0xB3FB))
-                          return Line_H3;
-                        /* c == 0xB3FC */
-                        return Line_H2;
-                      }
-                    }
-                    else
+                    if (c < 0xB434)
                     {
                       if (c < 0xB419)
                       {
@@ -75660,107 +72820,101 @@ line_category(Py_UCS4 c)
                         return Line_H3;
                       }
                     }
+                    else
+                    {
+                      if (c == 0xB434)
+                        return Line_H2;
+                      /* (c >= 0xB435) && (c <= 0xB44F) */
+                      return Line_H3;
+                    }
                   }
                   else
                   {
-                    if (c < 0xB451)
+                    if (c < 0xB46D)
                     {
-                      if (c < 0xB450)
+                      if (c < 0xB46C)
                       {
-                        if (c == 0xB434)
+                        if (c == 0xB450)
                           return Line_H2;
-                        /* (c >= 0xB435) && (c <= 0xB44F) */
+                        /* (c >= 0xB451) && (c <= 0xB46B) */
                         return Line_H3;
                       }
                       else
                       {
-                        /* c == 0xB450 */
+                        /* c == 0xB46C */
                         return Line_H2;
                       }
                     }
                     else
                     {
-                      if (c < 0xB46D)
-                      {
-                        if ((c >= 0xB451) && (c <= 0xB46B))
-                          return Line_H3;
-                        /* c == 0xB46C */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xB46D) && (c <= 0xB487) */
+                      if ((c >= 0xB46D) && (c <= 0xB487))
                         return Line_H3;
-                      }
+                      /* c == 0xB488 */
+                      return Line_H2;
                     }
                   }
                 }
               }
-            }
-          }
-          else
-          {
-            if (c < 0xB77C)
-            {
-              if (c < 0xB5F5)
+              else
               {
-                if (c < 0xB54C)
+                if (c < 0xB515)
                 {
-                  if (c < 0xB4DD)
+                  if (c < 0xB4DC)
                   {
                     if (c < 0xB4C0)
                     {
-                      if (c < 0xB4A4)
+                      if (c < 0xB4A5)
                       {
-                        if (c == 0xB488)
-                          return Line_H2;
-                        /* (c >= 0xB489) && (c <= 0xB4A3) */
-                        return Line_H3;
+                        if ((c >= 0xB489) && (c <= 0xB4A3))
+                          return Line_H3;
+                        /* c == 0xB4A4 */
+                        return Line_H2;
                       }
                       else
                       {
-                        if (c == 0xB4A4)
-                          return Line_H2;
                         /* (c >= 0xB4A5) && (c <= 0xB4BF) */
                         return Line_H3;
                       }
                     }
                     else
                     {
-                      if (c < 0xB4DC)
-                      {
-                        if (c == 0xB4C0)
-                          return Line_H2;
-                        /* (c >= 0xB4C1) && (c <= 0xB4DB) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xB4DC */
+                      if (c == 0xB4C0)
                         return Line_H2;
-                      }
+                      /* (c >= 0xB4C1) && (c <= 0xB4DB) */
+                      return Line_H3;
                     }
                   }
                   else
                   {
-                    if (c < 0xB515)
+                    if (c < 0xB4F9)
                     {
-                      if (c < 0xB4F9)
+                      if (c < 0xB4F8)
                       {
-                        if ((c >= 0xB4DD) && (c <= 0xB4F7))
-                          return Line_H3;
-                        /* c == 0xB4F8 */
-                        return Line_H2;
+                        if (c == 0xB4DC)
+                          return Line_H2;
+                        /* (c >= 0xB4DD) && (c <= 0xB4F7) */
+                        return Line_H3;
                       }
                       else
                       {
-                        if ((c >= 0xB4F9) && (c <= 0xB513))
-                          return Line_H3;
-                        /* c == 0xB514 */
+                        /* c == 0xB4F8 */
                         return Line_H2;
                       }
                     }
                     else
+                    {
+                      if ((c >= 0xB4F9) && (c <= 0xB513))
+                        return Line_H3;
+                      /* c == 0xB514 */
+                      return Line_H2;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0xB568)
+                  {
+                    if (c < 0xB54C)
                     {
                       if (c < 0xB531)
                       {
@@ -75775,177 +72929,177 @@ line_category(Py_UCS4 c)
                         return Line_H3;
                       }
                     }
-                  }
-                }
-                else
-                {
-                  if (c < 0xB5A1)
-                  {
-                    if (c < 0xB584)
-                    {
-                      if (c < 0xB568)
-                      {
-                        if (c == 0xB54C)
-                          return Line_H2;
-                        /* (c >= 0xB54D) && (c <= 0xB567) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        if (c == 0xB568)
-                          return Line_H2;
-                        /* (c >= 0xB569) && (c <= 0xB583) */
-                        return Line_H3;
-                      }
-                    }
                     else
                     {
-                      if (c < 0xB5A0)
-                      {
-                        if (c == 0xB584)
-                          return Line_H2;
-                        /* (c >= 0xB585) && (c <= 0xB59F) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xB5A0 */
+                      if (c == 0xB54C)
                         return Line_H2;
-                      }
+                      /* (c >= 0xB54D) && (c <= 0xB567) */
+                      return Line_H3;
                     }
                   }
                   else
                   {
-                    if (c < 0xB5D8)
+                    if (c < 0xB584)
                     {
-                      if (c < 0xB5BD)
-                      {
-                        if ((c >= 0xB5A1) && (c <= 0xB5BB))
-                          return Line_H3;
-                        /* c == 0xB5BC */
+                      if (c == 0xB568)
                         return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xB5BD) && (c <= 0xB5D7) */
-                        return Line_H3;
-                      }
+                      /* (c >= 0xB569) && (c <= 0xB583) */
+                      return Line_H3;
                     }
                     else
                     {
-                      if (c < 0xB5F4)
-                      {
-                        if (c == 0xB5D8)
-                          return Line_H2;
-                        /* (c >= 0xB5D9) && (c <= 0xB5F3) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xB5F4 */
+                      if (c == 0xB584)
                         return Line_H2;
-                      }
+                      /* (c >= 0xB585) && (c <= 0xB59F) */
+                      return Line_H3;
                     }
                   }
                 }
               }
-              else
+            }
+            else
+            {
+              if (c < 0xB6B8)
               {
-                if (c < 0xB6B9)
+                if (c < 0xB62C)
                 {
-                  if (c < 0xB664)
+                  if (c < 0xB5D9)
                   {
-                    if (c < 0xB62D)
+                    if (c < 0xB5BD)
                     {
-                      if (c < 0xB611)
+                      if (c < 0xB5BC)
                       {
-                        if ((c >= 0xB5F5) && (c <= 0xB60F))
-                          return Line_H3;
-                        /* c == 0xB610 */
-                        return Line_H2;
+                        if (c == 0xB5A0)
+                          return Line_H2;
+                        /* (c >= 0xB5A1) && (c <= 0xB5BB) */
+                        return Line_H3;
                       }
                       else
                       {
-                        if ((c >= 0xB611) && (c <= 0xB62B))
-                          return Line_H3;
-                        /* c == 0xB62C */
+                        /* c == 0xB5BC */
                         return Line_H2;
                       }
                     }
                     else
                     {
-                      if (c < 0xB649)
+                      if ((c >= 0xB5BD) && (c <= 0xB5D7))
+                        return Line_H3;
+                      /* c == 0xB5D8 */
+                      return Line_H2;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xB610)
+                    {
+                      if (c < 0xB5F5)
                       {
-                        if ((c >= 0xB62D) && (c <= 0xB647))
+                        if ((c >= 0xB5D9) && (c <= 0xB5F3))
                           return Line_H3;
-                        /* c == 0xB648 */
+                        /* c == 0xB5F4 */
                         return Line_H2;
                       }
                       else
                       {
-                        /* (c >= 0xB649) && (c <= 0xB663) */
+                        /* (c >= 0xB5F5) && (c <= 0xB60F) */
                         return Line_H3;
                       }
+                    }
+                    else
+                    {
+                      if (c == 0xB610)
+                        return Line_H2;
+                      /* (c >= 0xB611) && (c <= 0xB62B) */
+                      return Line_H3;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0xB665)
+                  {
+                    if (c < 0xB649)
+                    {
+                      if (c < 0xB648)
+                      {
+                        if (c == 0xB62C)
+                          return Line_H2;
+                        /* (c >= 0xB62D) && (c <= 0xB647) */
+                        return Line_H3;
+                      }
+                      else
+                      {
+                        /* c == 0xB648 */
+                        return Line_H2;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0xB649) && (c <= 0xB663))
+                        return Line_H3;
+                      /* c == 0xB664 */
+                      return Line_H2;
                     }
                   }
                   else
                   {
                     if (c < 0xB69C)
                     {
-                      if (c < 0xB680)
+                      if (c < 0xB681)
                       {
-                        if (c == 0xB664)
-                          return Line_H2;
-                        /* (c >= 0xB665) && (c <= 0xB67F) */
-                        return Line_H3;
+                        if ((c >= 0xB665) && (c <= 0xB67F))
+                          return Line_H3;
+                        /* c == 0xB680 */
+                        return Line_H2;
                       }
                       else
                       {
-                        if (c == 0xB680)
-                          return Line_H2;
                         /* (c >= 0xB681) && (c <= 0xB69B) */
                         return Line_H3;
                       }
                     }
                     else
                     {
-                      if (c < 0xB6B8)
+                      if (c == 0xB69C)
+                        return Line_H2;
+                      /* (c >= 0xB69D) && (c <= 0xB6B7) */
+                      return Line_H3;
+                    }
+                  }
+                }
+              }
+              else
+              {
+                if (c < 0xB744)
+                {
+                  if (c < 0xB6F1)
+                  {
+                    if (c < 0xB6D5)
+                    {
+                      if (c < 0xB6D4)
                       {
-                        if (c == 0xB69C)
+                        if (c == 0xB6B8)
                           return Line_H2;
-                        /* (c >= 0xB69D) && (c <= 0xB6B7) */
+                        /* (c >= 0xB6B9) && (c <= 0xB6D3) */
                         return Line_H3;
                       }
                       else
                       {
-                        /* c == 0xB6B8 */
-                        return Line_H2;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0xB728)
-                  {
-                    if (c < 0xB6F1)
-                    {
-                      if (c < 0xB6D5)
-                      {
-                        if ((c >= 0xB6B9) && (c <= 0xB6D3))
-                          return Line_H3;
                         /* c == 0xB6D4 */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        if ((c >= 0xB6D5) && (c <= 0xB6EF))
-                          return Line_H3;
-                        /* c == 0xB6F0 */
                         return Line_H2;
                       }
                     }
                     else
+                    {
+                      if ((c >= 0xB6D5) && (c <= 0xB6EF))
+                        return Line_H3;
+                      /* c == 0xB6F0 */
+                      return Line_H2;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xB728)
                     {
                       if (c < 0xB70D)
                       {
@@ -75960,38 +73114,273 @@ line_category(Py_UCS4 c)
                         return Line_H3;
                       }
                     }
-                  }
-                  else
-                  {
-                    if (c < 0xB745)
+                    else
                     {
-                      if (c < 0xB744)
+                      if (c == 0xB728)
+                        return Line_H2;
+                      /* (c >= 0xB729) && (c <= 0xB743) */
+                      return Line_H3;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0xB77D)
+                  {
+                    if (c < 0xB761)
+                    {
+                      if (c < 0xB760)
                       {
-                        if (c == 0xB728)
+                        if (c == 0xB744)
                           return Line_H2;
-                        /* (c >= 0xB729) && (c <= 0xB743) */
+                        /* (c >= 0xB745) && (c <= 0xB75F) */
                         return Line_H3;
                       }
                       else
                       {
-                        /* c == 0xB744 */
+                        /* c == 0xB760 */
                         return Line_H2;
                       }
                     }
                     else
                     {
-                      if (c < 0xB761)
+                      if ((c >= 0xB761) && (c <= 0xB77B))
+                        return Line_H3;
+                      /* c == 0xB77C */
+                      return Line_H2;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xB799)
+                    {
+                      if ((c >= 0xB77D) && (c <= 0xB797))
+                        return Line_H3;
+                      /* c == 0xB798 */
+                      return Line_H2;
+                    }
+                    else
+                    {
+                      if ((c >= 0xB799) && (c <= 0xB7B3))
+                        return Line_H3;
+                      /* c == 0xB7B4 */
+                      return Line_H2;
+                    }
+                  }
+                }
+              }
+            }
+          }
+          else
+          {
+            if (c < 0xB9E4)
+            {
+              if (c < 0xB8CD)
+              {
+                if (c < 0xB841)
+                {
+                  if (c < 0xB808)
+                  {
+                    if (c < 0xB7EC)
+                    {
+                      if (c < 0xB7D1)
                       {
-                        if ((c >= 0xB745) && (c <= 0xB75F))
+                        if ((c >= 0xB7B5) && (c <= 0xB7CF))
                           return Line_H3;
-                        /* c == 0xB760 */
+                        /* c == 0xB7D0 */
                         return Line_H2;
                       }
                       else
                       {
-                        /* (c >= 0xB761) && (c <= 0xB77B) */
+                        /* (c >= 0xB7D1) && (c <= 0xB7EB) */
                         return Line_H3;
                       }
+                    }
+                    else
+                    {
+                      if (c == 0xB7EC)
+                        return Line_H2;
+                      /* (c >= 0xB7ED) && (c <= 0xB807) */
+                      return Line_H3;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xB825)
+                    {
+                      if (c < 0xB824)
+                      {
+                        if (c == 0xB808)
+                          return Line_H2;
+                        /* (c >= 0xB809) && (c <= 0xB823) */
+                        return Line_H3;
+                      }
+                      else
+                      {
+                        /* c == 0xB824 */
+                        return Line_H2;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0xB825) && (c <= 0xB83F))
+                        return Line_H3;
+                      /* c == 0xB840 */
+                      return Line_H2;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0xB894)
+                  {
+                    if (c < 0xB878)
+                    {
+                      if (c < 0xB85D)
+                      {
+                        if ((c >= 0xB841) && (c <= 0xB85B))
+                          return Line_H3;
+                        /* c == 0xB85C */
+                        return Line_H2;
+                      }
+                      else
+                      {
+                        /* (c >= 0xB85D) && (c <= 0xB877) */
+                        return Line_H3;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0xB878)
+                        return Line_H2;
+                      /* (c >= 0xB879) && (c <= 0xB893) */
+                      return Line_H3;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xB8B1)
+                    {
+                      if (c < 0xB8B0)
+                      {
+                        if (c == 0xB894)
+                          return Line_H2;
+                        /* (c >= 0xB895) && (c <= 0xB8AF) */
+                        return Line_H3;
+                      }
+                      else
+                      {
+                        /* c == 0xB8B0 */
+                        return Line_H2;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0xB8B1) && (c <= 0xB8CB))
+                        return Line_H3;
+                      /* c == 0xB8CC */
+                      return Line_H2;
+                    }
+                  }
+                }
+              }
+              else
+              {
+                if (c < 0xB959)
+                {
+                  if (c < 0xB920)
+                  {
+                    if (c < 0xB904)
+                    {
+                      if (c < 0xB8E9)
+                      {
+                        if ((c >= 0xB8CD) && (c <= 0xB8E7))
+                          return Line_H3;
+                        /* c == 0xB8E8 */
+                        return Line_H2;
+                      }
+                      else
+                      {
+                        /* (c >= 0xB8E9) && (c <= 0xB903) */
+                        return Line_H3;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0xB904)
+                        return Line_H2;
+                      /* (c >= 0xB905) && (c <= 0xB91F) */
+                      return Line_H3;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xB93D)
+                    {
+                      if (c < 0xB93C)
+                      {
+                        if (c == 0xB920)
+                          return Line_H2;
+                        /* (c >= 0xB921) && (c <= 0xB93B) */
+                        return Line_H3;
+                      }
+                      else
+                      {
+                        /* c == 0xB93C */
+                        return Line_H2;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0xB93D) && (c <= 0xB957))
+                        return Line_H3;
+                      /* c == 0xB958 */
+                      return Line_H2;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0xB9AC)
+                  {
+                    if (c < 0xB990)
+                    {
+                      if (c < 0xB975)
+                      {
+                        if ((c >= 0xB959) && (c <= 0xB973))
+                          return Line_H3;
+                        /* c == 0xB974 */
+                        return Line_H2;
+                      }
+                      else
+                      {
+                        /* (c >= 0xB975) && (c <= 0xB98F) */
+                        return Line_H3;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0xB990)
+                        return Line_H2;
+                      /* (c >= 0xB991) && (c <= 0xB9AB) */
+                      return Line_H3;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xB9C8)
+                    {
+                      if (c == 0xB9AC)
+                        return Line_H2;
+                      /* (c >= 0xB9AD) && (c <= 0xB9C7) */
+                      return Line_H3;
+                    }
+                    else
+                    {
+                      if (c == 0xB9C8)
+                        return Line_H2;
+                      /* (c >= 0xB9C9) && (c <= 0xB9E3) */
+                      return Line_H3;
                     }
                   }
                 }
@@ -75999,248 +73388,13 @@ line_category(Py_UCS4 c)
             }
             else
             {
-              if (c < 0xB8E9)
+              if (c < 0xBAFC)
               {
-                if (c < 0xB840)
+                if (c < 0xBA70)
                 {
-                  if (c < 0xB7D1)
+                  if (c < 0xBA1D)
                   {
-                    if (c < 0xB7B4)
-                    {
-                      if (c < 0xB798)
-                      {
-                        if (c == 0xB77C)
-                          return Line_H2;
-                        /* (c >= 0xB77D) && (c <= 0xB797) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        if (c == 0xB798)
-                          return Line_H2;
-                        /* (c >= 0xB799) && (c <= 0xB7B3) */
-                        return Line_H3;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0xB7D0)
-                      {
-                        if (c == 0xB7B4)
-                          return Line_H2;
-                        /* (c >= 0xB7B5) && (c <= 0xB7CF) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xB7D0 */
-                        return Line_H2;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0xB809)
-                    {
-                      if (c < 0xB7ED)
-                      {
-                        if ((c >= 0xB7D1) && (c <= 0xB7EB))
-                          return Line_H3;
-                        /* c == 0xB7EC */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        if ((c >= 0xB7ED) && (c <= 0xB807))
-                          return Line_H3;
-                        /* c == 0xB808 */
-                        return Line_H2;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0xB825)
-                      {
-                        if ((c >= 0xB809) && (c <= 0xB823))
-                          return Line_H3;
-                        /* c == 0xB824 */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xB825) && (c <= 0xB83F) */
-                        return Line_H3;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0xB895)
-                  {
-                    if (c < 0xB878)
-                    {
-                      if (c < 0xB85C)
-                      {
-                        if (c == 0xB840)
-                          return Line_H2;
-                        /* (c >= 0xB841) && (c <= 0xB85B) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        if (c == 0xB85C)
-                          return Line_H2;
-                        /* (c >= 0xB85D) && (c <= 0xB877) */
-                        return Line_H3;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0xB894)
-                      {
-                        if (c == 0xB878)
-                          return Line_H2;
-                        /* (c >= 0xB879) && (c <= 0xB893) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xB894 */
-                        return Line_H2;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0xB8CC)
-                    {
-                      if (c < 0xB8B1)
-                      {
-                        if ((c >= 0xB895) && (c <= 0xB8AF))
-                          return Line_H3;
-                        /* c == 0xB8B0 */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xB8B1) && (c <= 0xB8CB) */
-                        return Line_H3;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0xB8E8)
-                      {
-                        if (c == 0xB8CC)
-                          return Line_H2;
-                        /* (c >= 0xB8CD) && (c <= 0xB8E7) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xB8E8 */
-                        return Line_H2;
-                      }
-                    }
-                  }
-                }
-              }
-              else
-              {
-                if (c < 0xB9AC)
-                {
-                  if (c < 0xB958)
-                  {
-                    if (c < 0xB921)
-                    {
-                      if (c < 0xB905)
-                      {
-                        if ((c >= 0xB8E9) && (c <= 0xB903))
-                          return Line_H3;
-                        /* c == 0xB904 */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        if ((c >= 0xB905) && (c <= 0xB91F))
-                          return Line_H3;
-                        /* c == 0xB920 */
-                        return Line_H2;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0xB93D)
-                      {
-                        if ((c >= 0xB921) && (c <= 0xB93B))
-                          return Line_H3;
-                        /* c == 0xB93C */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xB93D) && (c <= 0xB957) */
-                        return Line_H3;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0xB975)
-                    {
-                      if (c < 0xB974)
-                      {
-                        if (c == 0xB958)
-                          return Line_H2;
-                        /* (c >= 0xB959) && (c <= 0xB973) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xB974 */
-                        return Line_H2;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0xB991)
-                      {
-                        if ((c >= 0xB975) && (c <= 0xB98F))
-                          return Line_H3;
-                        /* c == 0xB990 */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xB991) && (c <= 0xB9AB) */
-                        return Line_H3;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0xBA01)
-                  {
-                    if (c < 0xB9E4)
-                    {
-                      if (c < 0xB9C8)
-                      {
-                        if (c == 0xB9AC)
-                          return Line_H2;
-                        /* (c >= 0xB9AD) && (c <= 0xB9C7) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        if (c == 0xB9C8)
-                          return Line_H2;
-                        /* (c >= 0xB9C9) && (c <= 0xB9E3) */
-                        return Line_H3;
-                      }
-                    }
-                    else
+                    if (c < 0xBA01)
                     {
                       if (c < 0xBA00)
                       {
@@ -76255,119 +73409,101 @@ line_category(Py_UCS4 c)
                         return Line_H2;
                       }
                     }
+                    else
+                    {
+                      if ((c >= 0xBA01) && (c <= 0xBA1B))
+                        return Line_H3;
+                      /* c == 0xBA1C */
+                      return Line_H2;
+                    }
                   }
                   else
                   {
-                    if (c < 0xBA38)
+                    if (c < 0xBA54)
                     {
-                      if (c < 0xBA1D)
+                      if (c < 0xBA39)
                       {
-                        if ((c >= 0xBA01) && (c <= 0xBA1B))
+                        if ((c >= 0xBA1D) && (c <= 0xBA37))
                           return Line_H3;
-                        /* c == 0xBA1C */
+                        /* c == 0xBA38 */
                         return Line_H2;
                       }
                       else
                       {
-                        /* (c >= 0xBA1D) && (c <= 0xBA37) */
+                        /* (c >= 0xBA39) && (c <= 0xBA53) */
                         return Line_H3;
                       }
                     }
                     else
                     {
-                      if (c < 0xBA54)
+                      if (c == 0xBA54)
+                        return Line_H2;
+                      /* (c >= 0xBA55) && (c <= 0xBA6F) */
+                      return Line_H3;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0xBAA9)
+                  {
+                    if (c < 0xBA8D)
+                    {
+                      if (c < 0xBA8C)
                       {
-                        if (c == 0xBA38)
+                        if (c == 0xBA70)
                           return Line_H2;
-                        /* (c >= 0xBA39) && (c <= 0xBA53) */
+                        /* (c >= 0xBA71) && (c <= 0xBA8B) */
                         return Line_H3;
                       }
                       else
                       {
-                        /* c == 0xBA54 */
-                        return Line_H2;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  else
-  {
-    if (c < 0x10D3A)
-    {
-      if (c < 0xD1F4)
-      {
-        if (c < 0xC625)
-        {
-          if (c < 0xC03D)
-          {
-            if (c < 0xBD49)
-            {
-              if (c < 0xBBDC)
-              {
-                if (c < 0xBB19)
-                {
-                  if (c < 0xBAC4)
-                  {
-                    if (c < 0xBA8D)
-                    {
-                      if (c < 0xBA71)
-                      {
-                        if ((c >= 0xBA55) && (c <= 0xBA6F))
-                          return Line_H3;
-                        /* c == 0xBA70 */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        if ((c >= 0xBA71) && (c <= 0xBA8B))
-                          return Line_H3;
                         /* c == 0xBA8C */
                         return Line_H2;
                       }
                     }
                     else
                     {
-                      if (c < 0xBAA9)
-                      {
-                        if ((c >= 0xBA8D) && (c <= 0xBAA7))
-                          return Line_H3;
-                        /* c == 0xBAA8 */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xBAA9) && (c <= 0xBAC3) */
+                      if ((c >= 0xBA8D) && (c <= 0xBAA7))
                         return Line_H3;
-                      }
+                      /* c == 0xBAA8 */
+                      return Line_H2;
                     }
                   }
                   else
                   {
-                    if (c < 0xBAFC)
+                    if (c < 0xBAE0)
                     {
-                      if (c < 0xBAE0)
+                      if (c < 0xBAC5)
                       {
-                        if (c == 0xBAC4)
-                          return Line_H2;
-                        /* (c >= 0xBAC5) && (c <= 0xBADF) */
-                        return Line_H3;
+                        if ((c >= 0xBAA9) && (c <= 0xBAC3))
+                          return Line_H3;
+                        /* c == 0xBAC4 */
+                        return Line_H2;
                       }
                       else
                       {
-                        if (c == 0xBAE0)
-                          return Line_H2;
-                        /* (c >= 0xBAE1) && (c <= 0xBAFB) */
+                        /* (c >= 0xBAC5) && (c <= 0xBADF) */
                         return Line_H3;
                       }
                     }
                     else
+                    {
+                      if (c == 0xBAE0)
+                        return Line_H2;
+                      /* (c >= 0xBAE1) && (c <= 0xBAFB) */
+                      return Line_H3;
+                    }
+                  }
+                }
+              }
+              else
+              {
+                if (c < 0xBB88)
+                {
+                  if (c < 0xBB35)
+                  {
+                    if (c < 0xBB19)
                     {
                       if (c < 0xBB18)
                       {
@@ -76382,46 +73518,43 @@ line_category(Py_UCS4 c)
                         return Line_H2;
                       }
                     }
-                  }
-                }
-                else
-                {
-                  if (c < 0xBB88)
-                  {
-                    if (c < 0xBB51)
+                    else
                     {
-                      if (c < 0xBB35)
-                      {
-                        if ((c >= 0xBB19) && (c <= 0xBB33))
-                          return Line_H3;
-                        /* c == 0xBB34 */
-                        return Line_H2;
-                      }
-                      else
+                      if ((c >= 0xBB19) && (c <= 0xBB33))
+                        return Line_H3;
+                      /* c == 0xBB34 */
+                      return Line_H2;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xBB6C)
+                    {
+                      if (c < 0xBB51)
                       {
                         if ((c >= 0xBB35) && (c <= 0xBB4F))
                           return Line_H3;
                         /* c == 0xBB50 */
                         return Line_H2;
                       }
-                    }
-                    else
-                    {
-                      if (c < 0xBB6D)
-                      {
-                        if ((c >= 0xBB51) && (c <= 0xBB6B))
-                          return Line_H3;
-                        /* c == 0xBB6C */
-                        return Line_H2;
-                      }
                       else
                       {
-                        /* (c >= 0xBB6D) && (c <= 0xBB87) */
+                        /* (c >= 0xBB51) && (c <= 0xBB6B) */
                         return Line_H3;
                       }
                     }
+                    else
+                    {
+                      if (c == 0xBB6C)
+                        return Line_H2;
+                      /* (c >= 0xBB6D) && (c <= 0xBB87) */
+                      return Line_H3;
+                    }
                   }
-                  else
+                }
+                else
+                {
+                  if (c < 0xBBC1)
                   {
                     if (c < 0xBBA5)
                     {
@@ -76440,119 +73573,134 @@ line_category(Py_UCS4 c)
                     }
                     else
                     {
-                      if (c < 0xBBC1)
-                      {
-                        if ((c >= 0xBBA5) && (c <= 0xBBBF))
-                          return Line_H3;
-                        /* c == 0xBBC0 */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xBBC1) && (c <= 0xBBDB) */
+                      if ((c >= 0xBBA5) && (c <= 0xBBBF))
                         return Line_H3;
-                      }
+                      /* c == 0xBBC0 */
+                      return Line_H2;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xBBDD)
+                    {
+                      if ((c >= 0xBBC1) && (c <= 0xBBDB))
+                        return Line_H3;
+                      /* c == 0xBBDC */
+                      return Line_H2;
+                    }
+                    else
+                    {
+                      if ((c >= 0xBBDD) && (c <= 0xBBF7))
+                        return Line_H3;
+                      /* c == 0xBBF8 */
+                      return Line_H2;
                     }
                   }
                 }
               }
-              else
+            }
+          }
+        }
+      }
+    }
+  }
+  else
+  {
+    if (c < 0xFFD0)
+    {
+      if (c < 0xCD09)
+      {
+        if (c < 0xC481)
+        {
+          if (c < 0xC03D)
+          {
+            if (c < 0xBE28)
+            {
+              if (c < 0xBD11)
               {
-                if (c < 0xBCA0)
+                if (c < 0xBC85)
                 {
-                  if (c < 0xBC31)
+                  if (c < 0xBC4C)
                   {
-                    if (c < 0xBC14)
+                    if (c < 0xBC30)
                     {
-                      if (c < 0xBBF8)
+                      if (c < 0xBC15)
                       {
-                        if (c == 0xBBDC)
-                          return Line_H2;
-                        /* (c >= 0xBBDD) && (c <= 0xBBF7) */
-                        return Line_H3;
+                        if ((c >= 0xBBF9) && (c <= 0xBC13))
+                          return Line_H3;
+                        /* c == 0xBC14 */
+                        return Line_H2;
                       }
                       else
                       {
-                        if (c == 0xBBF8)
-                          return Line_H2;
-                        /* (c >= 0xBBF9) && (c <= 0xBC13) */
+                        /* (c >= 0xBC15) && (c <= 0xBC2F) */
                         return Line_H3;
                       }
                     }
                     else
                     {
-                      if (c < 0xBC30)
-                      {
-                        if (c == 0xBC14)
-                          return Line_H2;
-                        /* (c >= 0xBC15) && (c <= 0xBC2F) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xBC30 */
+                      if (c == 0xBC30)
                         return Line_H2;
-                      }
+                      /* (c >= 0xBC31) && (c <= 0xBC4B) */
+                      return Line_H3;
                     }
                   }
                   else
                   {
                     if (c < 0xBC69)
                     {
-                      if (c < 0xBC4D)
+                      if (c < 0xBC68)
                       {
-                        if ((c >= 0xBC31) && (c <= 0xBC4B))
-                          return Line_H3;
-                        /* c == 0xBC4C */
-                        return Line_H2;
+                        if (c == 0xBC4C)
+                          return Line_H2;
+                        /* (c >= 0xBC4D) && (c <= 0xBC67) */
+                        return Line_H3;
                       }
                       else
                       {
-                        if ((c >= 0xBC4D) && (c <= 0xBC67))
-                          return Line_H3;
                         /* c == 0xBC68 */
                         return Line_H2;
                       }
                     }
                     else
                     {
-                      if (c < 0xBC85)
-                      {
-                        if ((c >= 0xBC69) && (c <= 0xBC83))
-                          return Line_H3;
-                        /* c == 0xBC84 */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xBC85) && (c <= 0xBC9F) */
+                      if ((c >= 0xBC69) && (c <= 0xBC83))
                         return Line_H3;
-                      }
+                      /* c == 0xBC84 */
+                      return Line_H2;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0xBCF5)
+                  if (c < 0xBCD8)
                   {
-                    if (c < 0xBCD8)
+                    if (c < 0xBCBC)
                     {
-                      if (c < 0xBCBC)
+                      if (c < 0xBCA1)
                       {
-                        if (c == 0xBCA0)
-                          return Line_H2;
-                        /* (c >= 0xBCA1) && (c <= 0xBCBB) */
-                        return Line_H3;
+                        if ((c >= 0xBC85) && (c <= 0xBC9F))
+                          return Line_H3;
+                        /* c == 0xBCA0 */
+                        return Line_H2;
                       }
                       else
                       {
-                        if (c == 0xBCBC)
-                          return Line_H2;
-                        /* (c >= 0xBCBD) && (c <= 0xBCD7) */
+                        /* (c >= 0xBCA1) && (c <= 0xBCBB) */
                         return Line_H3;
                       }
                     }
                     else
+                    {
+                      if (c == 0xBCBC)
+                        return Line_H2;
+                      /* (c >= 0xBCBD) && (c <= 0xBCD7) */
+                      return Line_H3;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xBCF5)
                     {
                       if (c < 0xBCF4)
                       {
@@ -76567,38 +73715,113 @@ line_category(Py_UCS4 c)
                         return Line_H2;
                       }
                     }
-                  }
-                  else
-                  {
-                    if (c < 0xBD2C)
+                    else
                     {
-                      if (c < 0xBD11)
+                      if ((c >= 0xBCF5) && (c <= 0xBD0F))
+                        return Line_H3;
+                      /* c == 0xBD10 */
+                      return Line_H2;
+                    }
+                  }
+                }
+              }
+              else
+              {
+                if (c < 0xBD9D)
+                {
+                  if (c < 0xBD64)
+                  {
+                    if (c < 0xBD48)
+                    {
+                      if (c < 0xBD2D)
                       {
-                        if ((c >= 0xBCF5) && (c <= 0xBD0F))
+                        if ((c >= 0xBD11) && (c <= 0xBD2B))
                           return Line_H3;
-                        /* c == 0xBD10 */
+                        /* c == 0xBD2C */
                         return Line_H2;
                       }
                       else
                       {
-                        /* (c >= 0xBD11) && (c <= 0xBD2B) */
+                        /* (c >= 0xBD2D) && (c <= 0xBD47) */
                         return Line_H3;
                       }
                     }
                     else
                     {
-                      if (c < 0xBD48)
+                      if (c == 0xBD48)
+                        return Line_H2;
+                      /* (c >= 0xBD49) && (c <= 0xBD63) */
+                      return Line_H3;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xBD81)
+                    {
+                      if (c < 0xBD80)
                       {
-                        if (c == 0xBD2C)
+                        if (c == 0xBD64)
                           return Line_H2;
-                        /* (c >= 0xBD2D) && (c <= 0xBD47) */
+                        /* (c >= 0xBD65) && (c <= 0xBD7F) */
                         return Line_H3;
                       }
                       else
                       {
-                        /* c == 0xBD48 */
+                        /* c == 0xBD80 */
                         return Line_H2;
                       }
+                    }
+                    else
+                    {
+                      if ((c >= 0xBD81) && (c <= 0xBD9B))
+                        return Line_H3;
+                      /* c == 0xBD9C */
+                      return Line_H2;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0xBDF0)
+                  {
+                    if (c < 0xBDD4)
+                    {
+                      if (c < 0xBDB9)
+                      {
+                        if ((c >= 0xBD9D) && (c <= 0xBDB7))
+                          return Line_H3;
+                        /* c == 0xBDB8 */
+                        return Line_H2;
+                      }
+                      else
+                      {
+                        /* (c >= 0xBDB9) && (c <= 0xBDD3) */
+                        return Line_H3;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0xBDD4)
+                        return Line_H2;
+                      /* (c >= 0xBDD5) && (c <= 0xBDEF) */
+                      return Line_H3;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xBE0C)
+                    {
+                      if (c == 0xBDF0)
+                        return Line_H2;
+                      /* (c >= 0xBDF1) && (c <= 0xBE0B) */
+                      return Line_H3;
+                    }
+                    else
+                    {
+                      if (c == 0xBE0C)
+                        return Line_H2;
+                      /* (c >= 0xBE0D) && (c <= 0xBE27) */
+                      return Line_H3;
                     }
                   }
                 }
@@ -76606,250 +73829,175 @@ line_category(Py_UCS4 c)
             }
             else
             {
-              if (c < 0xBED0)
+              if (c < 0xBF40)
               {
-                if (c < 0xBE0D)
+                if (c < 0xBEB4)
                 {
-                  if (c < 0xBDB8)
-                  {
-                    if (c < 0xBD81)
-                    {
-                      if (c < 0xBD65)
-                      {
-                        if ((c >= 0xBD49) && (c <= 0xBD63))
-                          return Line_H3;
-                        /* c == 0xBD64 */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        if ((c >= 0xBD65) && (c <= 0xBD7F))
-                          return Line_H3;
-                        /* c == 0xBD80 */
-                        return Line_H2;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0xBD9D)
-                      {
-                        if ((c >= 0xBD81) && (c <= 0xBD9B))
-                          return Line_H3;
-                        /* c == 0xBD9C */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xBD9D) && (c <= 0xBDB7) */
-                        return Line_H3;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0xBDF0)
-                    {
-                      if (c < 0xBDD4)
-                      {
-                        if (c == 0xBDB8)
-                          return Line_H2;
-                        /* (c >= 0xBDB9) && (c <= 0xBDD3) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        if (c == 0xBDD4)
-                          return Line_H2;
-                        /* (c >= 0xBDD5) && (c <= 0xBDEF) */
-                        return Line_H3;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0xBE0C)
-                      {
-                        if (c == 0xBDF0)
-                          return Line_H2;
-                        /* (c >= 0xBDF1) && (c <= 0xBE0B) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xBE0C */
-                        return Line_H2;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0xBE7C)
+                  if (c < 0xBE61)
                   {
                     if (c < 0xBE45)
                     {
-                      if (c < 0xBE29)
+                      if (c < 0xBE44)
                       {
-                        if ((c >= 0xBE0D) && (c <= 0xBE27))
-                          return Line_H3;
-                        /* c == 0xBE28 */
-                        return Line_H2;
+                        if (c == 0xBE28)
+                          return Line_H2;
+                        /* (c >= 0xBE29) && (c <= 0xBE43) */
+                        return Line_H3;
                       }
                       else
                       {
-                        if ((c >= 0xBE29) && (c <= 0xBE43))
-                          return Line_H3;
                         /* c == 0xBE44 */
                         return Line_H2;
                       }
                     }
                     else
                     {
-                      if (c < 0xBE61)
-                      {
-                        if ((c >= 0xBE45) && (c <= 0xBE5F))
-                          return Line_H3;
-                        /* c == 0xBE60 */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xBE61) && (c <= 0xBE7B) */
+                      if ((c >= 0xBE45) && (c <= 0xBE5F))
                         return Line_H3;
-                      }
+                      /* c == 0xBE60 */
+                      return Line_H2;
                     }
                   }
                   else
                   {
-                    if (c < 0xBE99)
+                    if (c < 0xBE98)
                     {
-                      if (c < 0xBE98)
+                      if (c < 0xBE7D)
                       {
-                        if (c == 0xBE7C)
-                          return Line_H2;
+                        if ((c >= 0xBE61) && (c <= 0xBE7B))
+                          return Line_H3;
+                        /* c == 0xBE7C */
+                        return Line_H2;
+                      }
+                      else
+                      {
                         /* (c >= 0xBE7D) && (c <= 0xBE97) */
+                        return Line_H3;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0xBE98)
+                        return Line_H2;
+                      /* (c >= 0xBE99) && (c <= 0xBEB3) */
+                      return Line_H3;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0xBEED)
+                  {
+                    if (c < 0xBED1)
+                    {
+                      if (c < 0xBED0)
+                      {
+                        if (c == 0xBEB4)
+                          return Line_H2;
+                        /* (c >= 0xBEB5) && (c <= 0xBECF) */
                         return Line_H3;
                       }
                       else
                       {
-                        /* c == 0xBE98 */
+                        /* c == 0xBED0 */
                         return Line_H2;
                       }
                     }
                     else
                     {
-                      if (c < 0xBEB5)
+                      if ((c >= 0xBED1) && (c <= 0xBEEB))
+                        return Line_H3;
+                      /* c == 0xBEEC */
+                      return Line_H2;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xBF24)
+                    {
+                      if (c < 0xBF09)
                       {
-                        if ((c >= 0xBE99) && (c <= 0xBEB3))
+                        if ((c >= 0xBEED) && (c <= 0xBF07))
                           return Line_H3;
-                        /* c == 0xBEB4 */
+                        /* c == 0xBF08 */
                         return Line_H2;
                       }
                       else
                       {
-                        /* (c >= 0xBEB5) && (c <= 0xBECF) */
+                        /* (c >= 0xBF09) && (c <= 0xBF23) */
                         return Line_H3;
                       }
+                    }
+                    else
+                    {
+                      if (c == 0xBF24)
+                        return Line_H2;
+                      /* (c >= 0xBF25) && (c <= 0xBF3F) */
+                      return Line_H3;
                     }
                   }
                 }
               }
               else
               {
-                if (c < 0xBF94)
+                if (c < 0xBFCC)
                 {
-                  if (c < 0xBF25)
-                  {
-                    if (c < 0xBF08)
-                    {
-                      if (c < 0xBEEC)
-                      {
-                        if (c == 0xBED0)
-                          return Line_H2;
-                        /* (c >= 0xBED1) && (c <= 0xBEEB) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        if (c == 0xBEEC)
-                          return Line_H2;
-                        /* (c >= 0xBEED) && (c <= 0xBF07) */
-                        return Line_H3;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0xBF24)
-                      {
-                        if (c == 0xBF08)
-                          return Line_H2;
-                        /* (c >= 0xBF09) && (c <= 0xBF23) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xBF24 */
-                        return Line_H2;
-                      }
-                    }
-                  }
-                  else
+                  if (c < 0xBF79)
                   {
                     if (c < 0xBF5D)
                     {
-                      if (c < 0xBF41)
+                      if (c < 0xBF5C)
                       {
-                        if ((c >= 0xBF25) && (c <= 0xBF3F))
-                          return Line_H3;
-                        /* c == 0xBF40 */
-                        return Line_H2;
+                        if (c == 0xBF40)
+                          return Line_H2;
+                        /* (c >= 0xBF41) && (c <= 0xBF5B) */
+                        return Line_H3;
                       }
                       else
                       {
-                        if ((c >= 0xBF41) && (c <= 0xBF5B))
-                          return Line_H3;
                         /* c == 0xBF5C */
                         return Line_H2;
                       }
                     }
                     else
                     {
-                      if (c < 0xBF79)
+                      if ((c >= 0xBF5D) && (c <= 0xBF77))
+                        return Line_H3;
+                      /* c == 0xBF78 */
+                      return Line_H2;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xBFB0)
+                    {
+                      if (c < 0xBF95)
                       {
-                        if ((c >= 0xBF5D) && (c <= 0xBF77))
+                        if ((c >= 0xBF79) && (c <= 0xBF93))
                           return Line_H3;
-                        /* c == 0xBF78 */
+                        /* c == 0xBF94 */
                         return Line_H2;
                       }
                       else
                       {
-                        /* (c >= 0xBF79) && (c <= 0xBF93) */
+                        /* (c >= 0xBF95) && (c <= 0xBFAF) */
                         return Line_H3;
                       }
+                    }
+                    else
+                    {
+                      if (c == 0xBFB0)
+                        return Line_H2;
+                      /* (c >= 0xBFB1) && (c <= 0xBFCB) */
+                      return Line_H3;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0xBFE9)
+                  if (c < 0xC005)
                   {
-                    if (c < 0xBFCC)
-                    {
-                      if (c < 0xBFB0)
-                      {
-                        if (c == 0xBF94)
-                          return Line_H2;
-                        /* (c >= 0xBF95) && (c <= 0xBFAF) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        if (c == 0xBFB0)
-                          return Line_H2;
-                        /* (c >= 0xBFB1) && (c <= 0xBFCB) */
-                        return Line_H3;
-                      }
-                    }
-                    else
+                    if (c < 0xBFE9)
                     {
                       if (c < 0xBFE8)
                       {
@@ -76864,38 +74012,29 @@ line_category(Py_UCS4 c)
                         return Line_H2;
                       }
                     }
+                    else
+                    {
+                      if ((c >= 0xBFE9) && (c <= 0xC003))
+                        return Line_H3;
+                      /* c == 0xC004 */
+                      return Line_H2;
+                    }
                   }
                   else
                   {
-                    if (c < 0xC020)
+                    if (c < 0xC021)
                     {
-                      if (c < 0xC005)
-                      {
-                        if ((c >= 0xBFE9) && (c <= 0xC003))
-                          return Line_H3;
-                        /* c == 0xC004 */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xC005) && (c <= 0xC01F) */
+                      if ((c >= 0xC005) && (c <= 0xC01F))
                         return Line_H3;
-                      }
+                      /* c == 0xC020 */
+                      return Line_H2;
                     }
                     else
                     {
-                      if (c < 0xC03C)
-                      {
-                        if (c == 0xC020)
-                          return Line_H2;
-                        /* (c >= 0xC021) && (c <= 0xC03B) */
+                      if ((c >= 0xC021) && (c <= 0xC03B))
                         return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xC03C */
-                        return Line_H2;
-                      }
+                      /* c == 0xC03C */
+                      return Line_H2;
                     }
                   }
                 }
@@ -76904,15 +74043,15 @@ line_category(Py_UCS4 c)
           }
           else
           {
-            if (c < 0xC331)
+            if (c < 0xC26C)
             {
-              if (c < 0xC1C4)
+              if (c < 0xC155)
               {
-                if (c < 0xC101)
+                if (c < 0xC0C9)
                 {
-                  if (c < 0xC0AC)
+                  if (c < 0xC090)
                   {
-                    if (c < 0xC075)
+                    if (c < 0xC074)
                     {
                       if (c < 0xC059)
                       {
@@ -76923,279 +74062,195 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        if ((c >= 0xC059) && (c <= 0xC073))
-                          return Line_H3;
-                        /* c == 0xC074 */
-                        return Line_H2;
+                        /* (c >= 0xC059) && (c <= 0xC073) */
+                        return Line_H3;
                       }
                     }
                     else
                     {
-                      if (c < 0xC091)
-                      {
-                        if ((c >= 0xC075) && (c <= 0xC08F))
-                          return Line_H3;
-                        /* c == 0xC090 */
+                      if (c == 0xC074)
                         return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xC091) && (c <= 0xC0AB) */
-                        return Line_H3;
-                      }
+                      /* (c >= 0xC075) && (c <= 0xC08F) */
+                      return Line_H3;
                     }
                   }
                   else
                   {
-                    if (c < 0xC0E4)
+                    if (c < 0xC0AD)
                     {
-                      if (c < 0xC0C8)
+                      if (c < 0xC0AC)
                       {
-                        if (c == 0xC0AC)
+                        if (c == 0xC090)
                           return Line_H2;
-                        /* (c >= 0xC0AD) && (c <= 0xC0C7) */
+                        /* (c >= 0xC091) && (c <= 0xC0AB) */
                         return Line_H3;
                       }
                       else
                       {
-                        if (c == 0xC0C8)
-                          return Line_H2;
-                        /* (c >= 0xC0C9) && (c <= 0xC0E3) */
-                        return Line_H3;
+                        /* c == 0xC0AC */
+                        return Line_H2;
                       }
                     }
                     else
                     {
-                      if (c < 0xC100)
-                      {
-                        if (c == 0xC0E4)
-                          return Line_H2;
-                        /* (c >= 0xC0E5) && (c <= 0xC0FF) */
+                      if ((c >= 0xC0AD) && (c <= 0xC0C7))
                         return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xC100 */
-                        return Line_H2;
-                      }
+                      /* c == 0xC0C8 */
+                      return Line_H2;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0xC170)
+                  if (c < 0xC11C)
                   {
-                    if (c < 0xC139)
+                    if (c < 0xC100)
                     {
-                      if (c < 0xC11D)
+                      if (c < 0xC0E5)
                       {
-                        if ((c >= 0xC101) && (c <= 0xC11B))
+                        if ((c >= 0xC0C9) && (c <= 0xC0E3))
                           return Line_H3;
-                        /* c == 0xC11C */
+                        /* c == 0xC0E4 */
                         return Line_H2;
                       }
                       else
                       {
-                        if ((c >= 0xC11D) && (c <= 0xC137))
-                          return Line_H3;
+                        /* (c >= 0xC0E5) && (c <= 0xC0FF) */
+                        return Line_H3;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0xC100)
+                        return Line_H2;
+                      /* (c >= 0xC101) && (c <= 0xC11B) */
+                      return Line_H3;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xC139)
+                    {
+                      if (c < 0xC138)
+                      {
+                        if (c == 0xC11C)
+                          return Line_H2;
+                        /* (c >= 0xC11D) && (c <= 0xC137) */
+                        return Line_H3;
+                      }
+                      else
+                      {
                         /* c == 0xC138 */
                         return Line_H2;
                       }
                     }
                     else
                     {
-                      if (c < 0xC155)
-                      {
-                        if ((c >= 0xC139) && (c <= 0xC153))
-                          return Line_H3;
-                        /* c == 0xC154 */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xC155) && (c <= 0xC16F) */
+                      if ((c >= 0xC139) && (c <= 0xC153))
                         return Line_H3;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0xC18D)
-                    {
-                      if (c < 0xC18C)
-                      {
-                        if (c == 0xC170)
-                          return Line_H2;
-                        /* (c >= 0xC171) && (c <= 0xC18B) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xC18C */
-                        return Line_H2;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0xC1A9)
-                      {
-                        if ((c >= 0xC18D) && (c <= 0xC1A7))
-                          return Line_H3;
-                        /* c == 0xC1A8 */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xC1A9) && (c <= 0xC1C3) */
-                        return Line_H3;
-                      }
+                      /* c == 0xC154 */
+                      return Line_H2;
                     }
                   }
                 }
               }
               else
               {
-                if (c < 0xC288)
+                if (c < 0xC1E1)
                 {
-                  if (c < 0xC219)
+                  if (c < 0xC1A8)
                   {
-                    if (c < 0xC1FC)
+                    if (c < 0xC18C)
                     {
-                      if (c < 0xC1E0)
+                      if (c < 0xC171)
                       {
-                        if (c == 0xC1C4)
-                          return Line_H2;
-                        /* (c >= 0xC1C5) && (c <= 0xC1DF) */
-                        return Line_H3;
+                        if ((c >= 0xC155) && (c <= 0xC16F))
+                          return Line_H3;
+                        /* c == 0xC170 */
+                        return Line_H2;
                       }
                       else
                       {
-                        if (c == 0xC1E0)
-                          return Line_H2;
-                        /* (c >= 0xC1E1) && (c <= 0xC1FB) */
+                        /* (c >= 0xC171) && (c <= 0xC18B) */
                         return Line_H3;
                       }
                     }
                     else
                     {
-                      if (c < 0xC218)
-                      {
-                        if (c == 0xC1FC)
-                          return Line_H2;
-                        /* (c >= 0xC1FD) && (c <= 0xC217) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xC218 */
+                      if (c == 0xC18C)
                         return Line_H2;
-                      }
+                      /* (c >= 0xC18D) && (c <= 0xC1A7) */
+                      return Line_H3;
                     }
                   }
                   else
                   {
-                    if (c < 0xC251)
+                    if (c < 0xC1C5)
                     {
-                      if (c < 0xC235)
+                      if (c < 0xC1C4)
                       {
-                        if ((c >= 0xC219) && (c <= 0xC233))
-                          return Line_H3;
-                        /* c == 0xC234 */
-                        return Line_H2;
+                        if (c == 0xC1A8)
+                          return Line_H2;
+                        /* (c >= 0xC1A9) && (c <= 0xC1C3) */
+                        return Line_H3;
                       }
                       else
                       {
-                        if ((c >= 0xC235) && (c <= 0xC24F))
-                          return Line_H3;
-                        /* c == 0xC250 */
+                        /* c == 0xC1C4 */
                         return Line_H2;
                       }
                     }
                     else
                     {
-                      if (c < 0xC26D)
-                      {
-                        if ((c >= 0xC251) && (c <= 0xC26B))
-                          return Line_H3;
-                        /* c == 0xC26C */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xC26D) && (c <= 0xC287) */
+                      if ((c >= 0xC1C5) && (c <= 0xC1DF))
                         return Line_H3;
-                      }
+                      /* c == 0xC1E0 */
+                      return Line_H2;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0xC2DD)
+                  if (c < 0xC234)
                   {
-                    if (c < 0xC2C0)
+                    if (c < 0xC218)
                     {
-                      if (c < 0xC2A4)
+                      if (c < 0xC1FD)
                       {
-                        if (c == 0xC288)
-                          return Line_H2;
-                        /* (c >= 0xC289) && (c <= 0xC2A3) */
-                        return Line_H3;
+                        if ((c >= 0xC1E1) && (c <= 0xC1FB))
+                          return Line_H3;
+                        /* c == 0xC1FC */
+                        return Line_H2;
                       }
                       else
                       {
-                        if (c == 0xC2A4)
-                          return Line_H2;
-                        /* (c >= 0xC2A5) && (c <= 0xC2BF) */
+                        /* (c >= 0xC1FD) && (c <= 0xC217) */
                         return Line_H3;
                       }
                     }
                     else
                     {
-                      if (c < 0xC2DC)
-                      {
-                        if (c == 0xC2C0)
-                          return Line_H2;
-                        /* (c >= 0xC2C1) && (c <= 0xC2DB) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xC2DC */
+                      if (c == 0xC218)
                         return Line_H2;
-                      }
+                      /* (c >= 0xC219) && (c <= 0xC233) */
+                      return Line_H3;
                     }
                   }
                   else
                   {
-                    if (c < 0xC314)
+                    if (c < 0xC250)
                     {
-                      if (c < 0xC2F9)
-                      {
-                        if ((c >= 0xC2DD) && (c <= 0xC2F7))
-                          return Line_H3;
-                        /* c == 0xC2F8 */
+                      if (c == 0xC234)
                         return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xC2F9) && (c <= 0xC313) */
-                        return Line_H3;
-                      }
+                      /* (c >= 0xC235) && (c <= 0xC24F) */
+                      return Line_H3;
                     }
                     else
                     {
-                      if (c < 0xC330)
-                      {
-                        if (c == 0xC314)
-                          return Line_H2;
-                        /* (c >= 0xC315) && (c <= 0xC32F) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xC330 */
+                      if (c == 0xC250)
                         return Line_H2;
-                      }
+                      /* (c >= 0xC251) && (c <= 0xC26B) */
+                      return Line_H3;
                     }
                   }
                 }
@@ -77203,13 +74258,91 @@ line_category(Py_UCS4 c)
             }
             else
             {
-              if (c < 0xC4B8)
+              if (c < 0xC384)
               {
-                if (c < 0xC3F5)
+                if (c < 0xC2F8)
                 {
-                  if (c < 0xC3A0)
+                  if (c < 0xC2A5)
                   {
-                    if (c < 0xC369)
+                    if (c < 0xC289)
+                    {
+                      if (c < 0xC288)
+                      {
+                        if (c == 0xC26C)
+                          return Line_H2;
+                        /* (c >= 0xC26D) && (c <= 0xC287) */
+                        return Line_H3;
+                      }
+                      else
+                      {
+                        /* c == 0xC288 */
+                        return Line_H2;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0xC289) && (c <= 0xC2A3))
+                        return Line_H3;
+                      /* c == 0xC2A4 */
+                      return Line_H2;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xC2DC)
+                    {
+                      if (c < 0xC2C1)
+                      {
+                        if ((c >= 0xC2A5) && (c <= 0xC2BF))
+                          return Line_H3;
+                        /* c == 0xC2C0 */
+                        return Line_H2;
+                      }
+                      else
+                      {
+                        /* (c >= 0xC2C1) && (c <= 0xC2DB) */
+                        return Line_H3;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0xC2DC)
+                        return Line_H2;
+                      /* (c >= 0xC2DD) && (c <= 0xC2F7) */
+                      return Line_H3;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0xC331)
+                  {
+                    if (c < 0xC315)
+                    {
+                      if (c < 0xC314)
+                      {
+                        if (c == 0xC2F8)
+                          return Line_H2;
+                        /* (c >= 0xC2F9) && (c <= 0xC313) */
+                        return Line_H3;
+                      }
+                      else
+                      {
+                        /* c == 0xC314 */
+                        return Line_H2;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0xC315) && (c <= 0xC32F))
+                        return Line_H3;
+                      /* c == 0xC330 */
+                      return Line_H2;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xC368)
                     {
                       if (c < 0xC34D)
                       {
@@ -77220,119 +74353,137 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        if ((c >= 0xC34D) && (c <= 0xC367))
-                          return Line_H3;
-                        /* c == 0xC368 */
+                        /* (c >= 0xC34D) && (c <= 0xC367) */
+                        return Line_H3;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0xC368)
+                        return Line_H2;
+                      /* (c >= 0xC369) && (c <= 0xC383) */
+                      return Line_H3;
+                    }
+                  }
+                }
+              }
+              else
+              {
+                if (c < 0xC410)
+                {
+                  if (c < 0xC3BD)
+                  {
+                    if (c < 0xC3A1)
+                    {
+                      if (c < 0xC3A0)
+                      {
+                        if (c == 0xC384)
+                          return Line_H2;
+                        /* (c >= 0xC385) && (c <= 0xC39F) */
+                        return Line_H3;
+                      }
+                      else
+                      {
+                        /* c == 0xC3A0 */
                         return Line_H2;
                       }
                     }
                     else
                     {
-                      if (c < 0xC385)
-                      {
-                        if ((c >= 0xC369) && (c <= 0xC383))
-                          return Line_H3;
-                        /* c == 0xC384 */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xC385) && (c <= 0xC39F) */
+                      if ((c >= 0xC3A1) && (c <= 0xC3BB))
                         return Line_H3;
-                      }
+                      /* c == 0xC3BC */
+                      return Line_H2;
                     }
                   }
                   else
                   {
-                    if (c < 0xC3D8)
+                    if (c < 0xC3F4)
                     {
-                      if (c < 0xC3BC)
+                      if (c < 0xC3D9)
                       {
-                        if (c == 0xC3A0)
-                          return Line_H2;
-                        /* (c >= 0xC3A1) && (c <= 0xC3BB) */
-                        return Line_H3;
+                        if ((c >= 0xC3BD) && (c <= 0xC3D7))
+                          return Line_H3;
+                        /* c == 0xC3D8 */
+                        return Line_H2;
                       }
                       else
                       {
-                        if (c == 0xC3BC)
-                          return Line_H2;
-                        /* (c >= 0xC3BD) && (c <= 0xC3D7) */
+                        /* (c >= 0xC3D9) && (c <= 0xC3F3) */
                         return Line_H3;
                       }
                     }
                     else
                     {
-                      if (c < 0xC3F4)
-                      {
-                        if (c == 0xC3D8)
-                          return Line_H2;
-                        /* (c >= 0xC3D9) && (c <= 0xC3F3) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xC3F4 */
+                      if (c == 0xC3F4)
                         return Line_H2;
-                      }
+                      /* (c >= 0xC3F5) && (c <= 0xC40F) */
+                      return Line_H3;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0xC464)
+                  if (c < 0xC449)
                   {
                     if (c < 0xC42D)
                     {
-                      if (c < 0xC411)
+                      if (c < 0xC42C)
                       {
-                        if ((c >= 0xC3F5) && (c <= 0xC40F))
-                          return Line_H3;
-                        /* c == 0xC410 */
-                        return Line_H2;
+                        if (c == 0xC410)
+                          return Line_H2;
+                        /* (c >= 0xC411) && (c <= 0xC42B) */
+                        return Line_H3;
                       }
                       else
                       {
-                        if ((c >= 0xC411) && (c <= 0xC42B))
-                          return Line_H3;
                         /* c == 0xC42C */
                         return Line_H2;
                       }
                     }
                     else
                     {
-                      if (c < 0xC449)
-                      {
-                        if ((c >= 0xC42D) && (c <= 0xC447))
-                          return Line_H3;
-                        /* c == 0xC448 */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xC449) && (c <= 0xC463) */
+                      if ((c >= 0xC42D) && (c <= 0xC447))
                         return Line_H3;
-                      }
+                      /* c == 0xC448 */
+                      return Line_H2;
                     }
                   }
                   else
                   {
-                    if (c < 0xC481)
+                    if (c < 0xC465)
                     {
-                      if (c < 0xC480)
-                      {
-                        if (c == 0xC464)
-                          return Line_H2;
-                        /* (c >= 0xC465) && (c <= 0xC47F) */
+                      if ((c >= 0xC449) && (c <= 0xC463))
                         return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xC480 */
-                        return Line_H2;
-                      }
+                      /* c == 0xC464 */
+                      return Line_H2;
                     }
                     else
+                    {
+                      if ((c >= 0xC465) && (c <= 0xC47F))
+                        return Line_H3;
+                      /* c == 0xC480 */
+                      return Line_H2;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        else
+        {
+          if (c < 0xC8C5)
+          {
+            if (c < 0xC6B0)
+            {
+              if (c < 0xC599)
+              {
+                if (c < 0xC50D)
+                {
+                  if (c < 0xC4D4)
+                  {
+                    if (c < 0xC4B8)
                     {
                       if (c < 0xC49D)
                       {
@@ -77347,51 +74498,45 @@ line_category(Py_UCS4 c)
                         return Line_H3;
                       }
                     }
-                  }
-                }
-              }
-              else
-              {
-                if (c < 0xC57C)
-                {
-                  if (c < 0xC50D)
-                  {
-                    if (c < 0xC4F0)
+                    else
                     {
-                      if (c < 0xC4D4)
-                      {
-                        if (c == 0xC4B8)
-                          return Line_H2;
-                        /* (c >= 0xC4B9) && (c <= 0xC4D3) */
-                        return Line_H3;
-                      }
-                      else
+                      if (c == 0xC4B8)
+                        return Line_H2;
+                      /* (c >= 0xC4B9) && (c <= 0xC4D3) */
+                      return Line_H3;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xC4F1)
+                    {
+                      if (c < 0xC4F0)
                       {
                         if (c == 0xC4D4)
                           return Line_H2;
                         /* (c >= 0xC4D5) && (c <= 0xC4EF) */
                         return Line_H3;
                       }
-                    }
-                    else
-                    {
-                      if (c < 0xC50C)
-                      {
-                        if (c == 0xC4F0)
-                          return Line_H2;
-                        /* (c >= 0xC4F1) && (c <= 0xC50B) */
-                        return Line_H3;
-                      }
                       else
                       {
-                        /* c == 0xC50C */
+                        /* c == 0xC4F0 */
                         return Line_H2;
                       }
                     }
+                    else
+                    {
+                      if ((c >= 0xC4F1) && (c <= 0xC50B))
+                        return Line_H3;
+                      /* c == 0xC50C */
+                      return Line_H2;
+                    }
                   }
-                  else
+                }
+                else
+                {
+                  if (c < 0xC560)
                   {
-                    if (c < 0xC545)
+                    if (c < 0xC544)
                     {
                       if (c < 0xC529)
                       {
@@ -77402,117 +74547,105 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        if ((c >= 0xC529) && (c <= 0xC543))
-                          return Line_H3;
-                        /* c == 0xC544 */
+                        /* (c >= 0xC529) && (c <= 0xC543) */
+                        return Line_H3;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0xC544)
+                        return Line_H2;
+                      /* (c >= 0xC545) && (c <= 0xC55F) */
+                      return Line_H3;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xC57D)
+                    {
+                      if (c < 0xC57C)
+                      {
+                        if (c == 0xC560)
+                          return Line_H2;
+                        /* (c >= 0xC561) && (c <= 0xC57B) */
+                        return Line_H3;
+                      }
+                      else
+                      {
+                        /* c == 0xC57C */
                         return Line_H2;
                       }
                     }
                     else
                     {
-                      if (c < 0xC561)
+                      if ((c >= 0xC57D) && (c <= 0xC597))
+                        return Line_H3;
+                      /* c == 0xC598 */
+                      return Line_H2;
+                    }
+                  }
+                }
+              }
+              else
+              {
+                if (c < 0xC625)
+                {
+                  if (c < 0xC5EC)
+                  {
+                    if (c < 0xC5D0)
+                    {
+                      if (c < 0xC5B5)
                       {
-                        if ((c >= 0xC545) && (c <= 0xC55F))
+                        if ((c >= 0xC599) && (c <= 0xC5B3))
                           return Line_H3;
-                        /* c == 0xC560 */
+                        /* c == 0xC5B4 */
                         return Line_H2;
                       }
                       else
                       {
-                        /* (c >= 0xC561) && (c <= 0xC57B) */
+                        /* (c >= 0xC5B5) && (c <= 0xC5CF) */
                         return Line_H3;
                       }
+                    }
+                    else
+                    {
+                      if (c == 0xC5D0)
+                        return Line_H2;
+                      /* (c >= 0xC5D1) && (c <= 0xC5EB) */
+                      return Line_H3;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xC609)
+                    {
+                      if (c < 0xC608)
+                      {
+                        if (c == 0xC5EC)
+                          return Line_H2;
+                        /* (c >= 0xC5ED) && (c <= 0xC607) */
+                        return Line_H3;
+                      }
+                      else
+                      {
+                        /* c == 0xC608 */
+                        return Line_H2;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0xC609) && (c <= 0xC623))
+                        return Line_H3;
+                      /* c == 0xC624 */
+                      return Line_H2;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0xC5D1)
+                  if (c < 0xC678)
                   {
-                    if (c < 0xC5B4)
-                    {
-                      if (c < 0xC598)
-                      {
-                        if (c == 0xC57C)
-                          return Line_H2;
-                        /* (c >= 0xC57D) && (c <= 0xC597) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        if (c == 0xC598)
-                          return Line_H2;
-                        /* (c >= 0xC599) && (c <= 0xC5B3) */
-                        return Line_H3;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0xC5D0)
-                      {
-                        if (c == 0xC5B4)
-                          return Line_H2;
-                        /* (c >= 0xC5B5) && (c <= 0xC5CF) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xC5D0 */
-                        return Line_H2;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0xC608)
-                    {
-                      if (c < 0xC5ED)
-                      {
-                        if ((c >= 0xC5D1) && (c <= 0xC5EB))
-                          return Line_H3;
-                        /* c == 0xC5EC */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xC5ED) && (c <= 0xC607) */
-                        return Line_H3;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0xC624)
-                      {
-                        if (c == 0xC608)
-                          return Line_H2;
-                        /* (c >= 0xC609) && (c <= 0xC623) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xC624 */
-                        return Line_H2;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-        else
-        {
-          if (c < 0xCC0D)
-          {
-            if (c < 0xC919)
-            {
-              if (c < 0xC7AC)
-              {
-                if (c < 0xC6E9)
-                {
-                  if (c < 0xC694)
-                  {
-                    if (c < 0xC65D)
+                    if (c < 0xC65C)
                     {
                       if (c < 0xC641)
                       {
@@ -77523,69 +74656,72 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        if ((c >= 0xC641) && (c <= 0xC65B))
-                          return Line_H3;
-                        /* c == 0xC65C */
-                        return Line_H2;
+                        /* (c >= 0xC641) && (c <= 0xC65B) */
+                        return Line_H3;
                       }
                     }
                     else
                     {
-                      if (c < 0xC679)
-                      {
-                        if ((c >= 0xC65D) && (c <= 0xC677))
-                          return Line_H3;
-                        /* c == 0xC678 */
+                      if (c == 0xC65C)
                         return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xC679) && (c <= 0xC693) */
-                        return Line_H3;
-                      }
+                      /* (c >= 0xC65D) && (c <= 0xC677) */
+                      return Line_H3;
                     }
                   }
                   else
                   {
-                    if (c < 0xC6CC)
+                    if (c < 0xC694)
                     {
-                      if (c < 0xC6B0)
-                      {
-                        if (c == 0xC694)
-                          return Line_H2;
-                        /* (c >= 0xC695) && (c <= 0xC6AF) */
-                        return Line_H3;
-                      }
-                      else
+                      if (c == 0xC678)
+                        return Line_H2;
+                      /* (c >= 0xC679) && (c <= 0xC693) */
+                      return Line_H3;
+                    }
+                    else
+                    {
+                      if (c == 0xC694)
+                        return Line_H2;
+                      /* (c >= 0xC695) && (c <= 0xC6AF) */
+                      return Line_H3;
+                    }
+                  }
+                }
+              }
+            }
+            else
+            {
+              if (c < 0xC7C8)
+              {
+                if (c < 0xC73C)
+                {
+                  if (c < 0xC6E9)
+                  {
+                    if (c < 0xC6CD)
+                    {
+                      if (c < 0xC6CC)
                       {
                         if (c == 0xC6B0)
                           return Line_H2;
                         /* (c >= 0xC6B1) && (c <= 0xC6CB) */
                         return Line_H3;
                       }
-                    }
-                    else
-                    {
-                      if (c < 0xC6E8)
-                      {
-                        if (c == 0xC6CC)
-                          return Line_H2;
-                        /* (c >= 0xC6CD) && (c <= 0xC6E7) */
-                        return Line_H3;
-                      }
                       else
                       {
-                        /* c == 0xC6E8 */
+                        /* c == 0xC6CC */
                         return Line_H2;
                       }
                     }
+                    else
+                    {
+                      if ((c >= 0xC6CD) && (c <= 0xC6E7))
+                        return Line_H3;
+                      /* c == 0xC6E8 */
+                      return Line_H2;
+                    }
                   }
-                }
-                else
-                {
-                  if (c < 0xC758)
+                  else
                   {
-                    if (c < 0xC721)
+                    if (c < 0xC720)
                     {
                       if (c < 0xC705)
                       {
@@ -77596,46 +74732,49 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        if ((c >= 0xC705) && (c <= 0xC71F))
-                          return Line_H3;
-                        /* c == 0xC720 */
+                        /* (c >= 0xC705) && (c <= 0xC71F) */
+                        return Line_H3;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0xC720)
+                        return Line_H2;
+                      /* (c >= 0xC721) && (c <= 0xC73B) */
+                      return Line_H3;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0xC775)
+                  {
+                    if (c < 0xC759)
+                    {
+                      if (c < 0xC758)
+                      {
+                        if (c == 0xC73C)
+                          return Line_H2;
+                        /* (c >= 0xC73D) && (c <= 0xC757) */
+                        return Line_H3;
+                      }
+                      else
+                      {
+                        /* c == 0xC758 */
                         return Line_H2;
                       }
                     }
                     else
                     {
-                      if (c < 0xC73D)
-                      {
-                        if ((c >= 0xC721) && (c <= 0xC73B))
-                          return Line_H3;
-                        /* c == 0xC73C */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xC73D) && (c <= 0xC757) */
+                      if ((c >= 0xC759) && (c <= 0xC773))
                         return Line_H3;
-                      }
+                      /* c == 0xC774 */
+                      return Line_H2;
                     }
                   }
                   else
                   {
-                    if (c < 0xC775)
-                    {
-                      if (c < 0xC774)
-                      {
-                        if (c == 0xC758)
-                          return Line_H2;
-                        /* (c >= 0xC759) && (c <= 0xC773) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xC774 */
-                        return Line_H2;
-                      }
-                    }
-                    else
+                    if (c < 0xC7AC)
                     {
                       if (c < 0xC791)
                       {
@@ -77650,51 +74789,48 @@ line_category(Py_UCS4 c)
                         return Line_H3;
                       }
                     }
+                    else
+                    {
+                      if (c == 0xC7AC)
+                        return Line_H2;
+                      /* (c >= 0xC7AD) && (c <= 0xC7C7) */
+                      return Line_H3;
+                    }
                   }
                 }
               }
               else
               {
-                if (c < 0xC870)
+                if (c < 0xC854)
                 {
                   if (c < 0xC801)
                   {
-                    if (c < 0xC7E4)
+                    if (c < 0xC7E5)
                     {
-                      if (c < 0xC7C8)
-                      {
-                        if (c == 0xC7AC)
-                          return Line_H2;
-                        /* (c >= 0xC7AD) && (c <= 0xC7C7) */
-                        return Line_H3;
-                      }
-                      else
+                      if (c < 0xC7E4)
                       {
                         if (c == 0xC7C8)
                           return Line_H2;
                         /* (c >= 0xC7C9) && (c <= 0xC7E3) */
                         return Line_H3;
                       }
+                      else
+                      {
+                        /* c == 0xC7E4 */
+                        return Line_H2;
+                      }
                     }
                     else
                     {
-                      if (c < 0xC800)
-                      {
-                        if (c == 0xC7E4)
-                          return Line_H2;
-                        /* (c >= 0xC7E5) && (c <= 0xC7FF) */
+                      if ((c >= 0xC7E5) && (c <= 0xC7FF))
                         return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xC800 */
-                        return Line_H2;
-                      }
+                      /* c == 0xC800 */
+                      return Line_H2;
                     }
                   }
                   else
                   {
-                    if (c < 0xC839)
+                    if (c < 0xC838)
                     {
                       if (c < 0xC81D)
                       {
@@ -77705,67 +74841,76 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        if ((c >= 0xC81D) && (c <= 0xC837))
-                          return Line_H3;
-                        /* c == 0xC838 */
-                        return Line_H2;
+                        /* (c >= 0xC81D) && (c <= 0xC837) */
+                        return Line_H3;
                       }
                     }
                     else
                     {
-                      if (c < 0xC855)
-                      {
-                        if ((c >= 0xC839) && (c <= 0xC853))
-                          return Line_H3;
-                        /* c == 0xC854 */
+                      if (c == 0xC838)
                         return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xC855) && (c <= 0xC86F) */
-                        return Line_H3;
-                      }
+                      /* (c >= 0xC839) && (c <= 0xC853) */
+                      return Line_H3;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0xC8C5)
+                  if (c < 0xC88D)
                   {
-                    if (c < 0xC8A8)
+                    if (c < 0xC871)
                     {
-                      if (c < 0xC88C)
+                      if (c < 0xC870)
                       {
-                        if (c == 0xC870)
+                        if (c == 0xC854)
                           return Line_H2;
-                        /* (c >= 0xC871) && (c <= 0xC88B) */
+                        /* (c >= 0xC855) && (c <= 0xC86F) */
                         return Line_H3;
                       }
                       else
                       {
-                        if (c == 0xC88C)
-                          return Line_H2;
-                        /* (c >= 0xC88D) && (c <= 0xC8A7) */
-                        return Line_H3;
+                        /* c == 0xC870 */
+                        return Line_H2;
                       }
                     }
                     else
                     {
-                      if (c < 0xC8C4)
-                      {
-                        if (c == 0xC8A8)
-                          return Line_H2;
-                        /* (c >= 0xC8A9) && (c <= 0xC8C3) */
+                      if ((c >= 0xC871) && (c <= 0xC88B))
                         return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xC8C4 */
-                        return Line_H2;
-                      }
+                      /* c == 0xC88C */
+                      return Line_H2;
                     }
                   }
                   else
+                  {
+                    if (c < 0xC8A9)
+                    {
+                      if ((c >= 0xC88D) && (c <= 0xC8A7))
+                        return Line_H3;
+                      /* c == 0xC8A8 */
+                      return Line_H2;
+                    }
+                    else
+                    {
+                      if ((c >= 0xC8A9) && (c <= 0xC8C3))
+                        return Line_H3;
+                      /* c == 0xC8C4 */
+                      return Line_H2;
+                    }
+                  }
+                }
+              }
+            }
+          }
+          else
+          {
+            if (c < 0xCAF4)
+            {
+              if (c < 0xC9DD)
+              {
+                if (c < 0xC951)
+                {
+                  if (c < 0xC918)
                   {
                     if (c < 0xC8FC)
                     {
@@ -77784,49 +74929,43 @@ line_category(Py_UCS4 c)
                     }
                     else
                     {
-                      if (c < 0xC918)
+                      if (c == 0xC8FC)
+                        return Line_H2;
+                      /* (c >= 0xC8FD) && (c <= 0xC917) */
+                      return Line_H3;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xC935)
+                    {
+                      if (c < 0xC934)
                       {
-                        if (c == 0xC8FC)
+                        if (c == 0xC918)
                           return Line_H2;
-                        /* (c >= 0xC8FD) && (c <= 0xC917) */
+                        /* (c >= 0xC919) && (c <= 0xC933) */
                         return Line_H3;
                       }
                       else
                       {
-                        /* c == 0xC918 */
-                        return Line_H2;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-            else
-            {
-              if (c < 0xCAA0)
-              {
-                if (c < 0xC9DD)
-                {
-                  if (c < 0xC988)
-                  {
-                    if (c < 0xC951)
-                    {
-                      if (c < 0xC935)
-                      {
-                        if ((c >= 0xC919) && (c <= 0xC933))
-                          return Line_H3;
                         /* c == 0xC934 */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        if ((c >= 0xC935) && (c <= 0xC94F))
-                          return Line_H3;
-                        /* c == 0xC950 */
                         return Line_H2;
                       }
                     }
                     else
+                    {
+                      if ((c >= 0xC935) && (c <= 0xC94F))
+                        return Line_H3;
+                      /* c == 0xC950 */
+                      return Line_H2;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0xC9A4)
+                  {
+                    if (c < 0xC988)
                     {
                       if (c < 0xC96D)
                       {
@@ -77841,48 +74980,48 @@ line_category(Py_UCS4 c)
                         return Line_H3;
                       }
                     }
+                    else
+                    {
+                      if (c == 0xC988)
+                        return Line_H2;
+                      /* (c >= 0xC989) && (c <= 0xC9A3) */
+                      return Line_H3;
+                    }
                   }
                   else
                   {
-                    if (c < 0xC9C0)
+                    if (c < 0xC9C1)
                     {
-                      if (c < 0xC9A4)
-                      {
-                        if (c == 0xC988)
-                          return Line_H2;
-                        /* (c >= 0xC989) && (c <= 0xC9A3) */
-                        return Line_H3;
-                      }
-                      else
+                      if (c < 0xC9C0)
                       {
                         if (c == 0xC9A4)
                           return Line_H2;
                         /* (c >= 0xC9A5) && (c <= 0xC9BF) */
                         return Line_H3;
                       }
-                    }
-                    else
-                    {
-                      if (c < 0xC9DC)
-                      {
-                        if (c == 0xC9C0)
-                          return Line_H2;
-                        /* (c >= 0xC9C1) && (c <= 0xC9DB) */
-                        return Line_H3;
-                      }
                       else
                       {
-                        /* c == 0xC9DC */
+                        /* c == 0xC9C0 */
                         return Line_H2;
                       }
                     }
+                    else
+                    {
+                      if ((c >= 0xC9C1) && (c <= 0xC9DB))
+                        return Line_H3;
+                      /* c == 0xC9DC */
+                      return Line_H2;
+                    }
                   }
                 }
-                else
+              }
+              else
+              {
+                if (c < 0xCA69)
                 {
-                  if (c < 0xCA4C)
+                  if (c < 0xCA30)
                   {
-                    if (c < 0xCA15)
+                    if (c < 0xCA14)
                     {
                       if (c < 0xC9F9)
                       {
@@ -77893,46 +75032,49 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        if ((c >= 0xC9F9) && (c <= 0xCA13))
-                          return Line_H3;
-                        /* c == 0xCA14 */
-                        return Line_H2;
+                        /* (c >= 0xC9F9) && (c <= 0xCA13) */
+                        return Line_H3;
                       }
                     }
                     else
                     {
-                      if (c < 0xCA31)
-                      {
-                        if ((c >= 0xCA15) && (c <= 0xCA2F))
-                          return Line_H3;
-                        /* c == 0xCA30 */
+                      if (c == 0xCA14)
                         return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xCA31) && (c <= 0xCA4B) */
-                        return Line_H3;
-                      }
+                      /* (c >= 0xCA15) && (c <= 0xCA2F) */
+                      return Line_H3;
                     }
                   }
                   else
                   {
-                    if (c < 0xCA69)
+                    if (c < 0xCA4D)
                     {
-                      if (c < 0xCA68)
+                      if (c < 0xCA4C)
                       {
-                        if (c == 0xCA4C)
+                        if (c == 0xCA30)
                           return Line_H2;
-                        /* (c >= 0xCA4D) && (c <= 0xCA67) */
+                        /* (c >= 0xCA31) && (c <= 0xCA4B) */
                         return Line_H3;
                       }
                       else
                       {
-                        /* c == 0xCA68 */
+                        /* c == 0xCA4C */
                         return Line_H2;
                       }
                     }
                     else
+                    {
+                      if ((c >= 0xCA4D) && (c <= 0xCA67))
+                        return Line_H3;
+                      /* c == 0xCA68 */
+                      return Line_H2;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0xCABC)
+                  {
+                    if (c < 0xCAA0)
                     {
                       if (c < 0xCA85)
                       {
@@ -77947,68 +75089,68 @@ line_category(Py_UCS4 c)
                         return Line_H3;
                       }
                     }
-                  }
-                }
-              }
-              else
-              {
-                if (c < 0xCB64)
-                {
-                  if (c < 0xCAF5)
-                  {
-                    if (c < 0xCAD8)
-                    {
-                      if (c < 0xCABC)
-                      {
-                        if (c == 0xCAA0)
-                          return Line_H2;
-                        /* (c >= 0xCAA1) && (c <= 0xCABB) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        if (c == 0xCABC)
-                          return Line_H2;
-                        /* (c >= 0xCABD) && (c <= 0xCAD7) */
-                        return Line_H3;
-                      }
-                    }
                     else
                     {
-                      if (c < 0xCAF4)
-                      {
-                        if (c == 0xCAD8)
-                          return Line_H2;
-                        /* (c >= 0xCAD9) && (c <= 0xCAF3) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xCAF4 */
+                      if (c == 0xCAA0)
                         return Line_H2;
-                      }
+                      /* (c >= 0xCAA1) && (c <= 0xCABB) */
+                      return Line_H3;
                     }
                   }
                   else
                   {
-                    if (c < 0xCB2D)
+                    if (c < 0xCAD8)
                     {
-                      if (c < 0xCB11)
-                      {
-                        if ((c >= 0xCAF5) && (c <= 0xCB0F))
-                          return Line_H3;
-                        /* c == 0xCB10 */
+                      if (c == 0xCABC)
                         return Line_H2;
+                      /* (c >= 0xCABD) && (c <= 0xCAD7) */
+                      return Line_H3;
+                    }
+                    else
+                    {
+                      if (c == 0xCAD8)
+                        return Line_H2;
+                      /* (c >= 0xCAD9) && (c <= 0xCAF3) */
+                      return Line_H3;
+                    }
+                  }
+                }
+              }
+            }
+            else
+            {
+              if (c < 0xCC0C)
+              {
+                if (c < 0xCB80)
+                {
+                  if (c < 0xCB2D)
+                  {
+                    if (c < 0xCB11)
+                    {
+                      if (c < 0xCB10)
+                      {
+                        if (c == 0xCAF4)
+                          return Line_H2;
+                        /* (c >= 0xCAF5) && (c <= 0xCB0F) */
+                        return Line_H3;
                       }
                       else
                       {
-                        if ((c >= 0xCB11) && (c <= 0xCB2B))
-                          return Line_H3;
-                        /* c == 0xCB2C */
+                        /* c == 0xCB10 */
                         return Line_H2;
                       }
                     }
                     else
+                    {
+                      if ((c >= 0xCB11) && (c <= 0xCB2B))
+                        return Line_H3;
+                      /* c == 0xCB2C */
+                      return Line_H2;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xCB64)
                     {
                       if (c < 0xCB49)
                       {
@@ -78023,43 +75165,40 @@ line_category(Py_UCS4 c)
                         return Line_H3;
                       }
                     }
+                    else
+                    {
+                      if (c == 0xCB64)
+                        return Line_H2;
+                      /* (c >= 0xCB65) && (c <= 0xCB7F) */
+                      return Line_H3;
+                    }
                   }
                 }
                 else
                 {
                   if (c < 0xCBB9)
                   {
-                    if (c < 0xCB9C)
+                    if (c < 0xCB9D)
                     {
-                      if (c < 0xCB80)
-                      {
-                        if (c == 0xCB64)
-                          return Line_H2;
-                        /* (c >= 0xCB65) && (c <= 0xCB7F) */
-                        return Line_H3;
-                      }
-                      else
+                      if (c < 0xCB9C)
                       {
                         if (c == 0xCB80)
                           return Line_H2;
                         /* (c >= 0xCB81) && (c <= 0xCB9B) */
                         return Line_H3;
                       }
+                      else
+                      {
+                        /* c == 0xCB9C */
+                        return Line_H2;
+                      }
                     }
                     else
                     {
-                      if (c < 0xCBB8)
-                      {
-                        if (c == 0xCB9C)
-                          return Line_H2;
-                        /* (c >= 0xCB9D) && (c <= 0xCBB7) */
+                      if ((c >= 0xCB9D) && (c <= 0xCBB7))
                         return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xCBB8 */
-                        return Line_H2;
-                      }
+                      /* c == 0xCBB8 */
+                      return Line_H2;
                     }
                   }
                   else
@@ -78081,52 +75220,46 @@ line_category(Py_UCS4 c)
                     }
                     else
                     {
-                      if (c < 0xCC0C)
-                      {
-                        if (c == 0xCBF0)
-                          return Line_H2;
-                        /* (c >= 0xCBF1) && (c <= 0xCC0B) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xCC0C */
+                      if (c == 0xCBF0)
                         return Line_H2;
-                      }
+                      /* (c >= 0xCBF1) && (c <= 0xCC0B) */
+                      return Line_H3;
                     }
                   }
                 }
               }
-            }
-          }
-          else
-          {
-            if (c < 0xCF01)
-            {
-              if (c < 0xCD94)
+              else
               {
-                if (c < 0xCCD1)
+                if (c < 0xCC98)
                 {
-                  if (c < 0xCC7C)
+                  if (c < 0xCC45)
                   {
-                    if (c < 0xCC45)
+                    if (c < 0xCC29)
                     {
-                      if (c < 0xCC29)
+                      if (c < 0xCC28)
                       {
-                        if ((c >= 0xCC0D) && (c <= 0xCC27))
-                          return Line_H3;
-                        /* c == 0xCC28 */
-                        return Line_H2;
+                        if (c == 0xCC0C)
+                          return Line_H2;
+                        /* (c >= 0xCC0D) && (c <= 0xCC27) */
+                        return Line_H3;
                       }
                       else
                       {
-                        if ((c >= 0xCC29) && (c <= 0xCC43))
-                          return Line_H3;
-                        /* c == 0xCC44 */
+                        /* c == 0xCC28 */
                         return Line_H2;
                       }
                     }
                     else
+                    {
+                      if ((c >= 0xCC29) && (c <= 0xCC43))
+                        return Line_H3;
+                      /* c == 0xCC44 */
+                      return Line_H2;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xCC7C)
                     {
                       if (c < 0xCC61)
                       {
@@ -78141,65 +75274,80 @@ line_category(Py_UCS4 c)
                         return Line_H3;
                       }
                     }
-                  }
-                  else
-                  {
-                    if (c < 0xCCB4)
+                    else
                     {
-                      if (c < 0xCC98)
-                      {
-                        if (c == 0xCC7C)
-                          return Line_H2;
-                        /* (c >= 0xCC7D) && (c <= 0xCC97) */
-                        return Line_H3;
-                      }
-                      else
+                      if (c == 0xCC7C)
+                        return Line_H2;
+                      /* (c >= 0xCC7D) && (c <= 0xCC97) */
+                      return Line_H3;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0xCCD1)
+                  {
+                    if (c < 0xCCB5)
+                    {
+                      if (c < 0xCCB4)
                       {
                         if (c == 0xCC98)
                           return Line_H2;
                         /* (c >= 0xCC99) && (c <= 0xCCB3) */
                         return Line_H3;
                       }
+                      else
+                      {
+                        /* c == 0xCCB4 */
+                        return Line_H2;
+                      }
                     }
                     else
                     {
-                      if (c < 0xCCD0)
-                      {
-                        if (c == 0xCCB4)
-                          return Line_H2;
-                        /* (c >= 0xCCB5) && (c <= 0xCCCF) */
+                      if ((c >= 0xCCB5) && (c <= 0xCCCF))
                         return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xCCD0 */
-                        return Line_H2;
-                      }
+                      /* c == 0xCCD0 */
+                      return Line_H2;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xCCED)
+                    {
+                      if ((c >= 0xCCD1) && (c <= 0xCCEB))
+                        return Line_H3;
+                      /* c == 0xCCEC */
+                      return Line_H2;
+                    }
+                    else
+                    {
+                      if ((c >= 0xCCED) && (c <= 0xCD07))
+                        return Line_H3;
+                      /* c == 0xCD08 */
+                      return Line_H2;
                     }
                   }
                 }
-                else
+              }
+            }
+          }
+        }
+      }
+      else
+      {
+        if (c < 0xD591)
+        {
+          if (c < 0xD14D)
+          {
+            if (c < 0xCF38)
+            {
+              if (c < 0xCE21)
+              {
+                if (c < 0xCD95)
                 {
-                  if (c < 0xCD40)
+                  if (c < 0xCD5C)
                   {
-                    if (c < 0xCD09)
-                    {
-                      if (c < 0xCCED)
-                      {
-                        if ((c >= 0xCCD1) && (c <= 0xCCEB))
-                          return Line_H3;
-                        /* c == 0xCCEC */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        if ((c >= 0xCCED) && (c <= 0xCD07))
-                          return Line_H3;
-                        /* c == 0xCD08 */
-                        return Line_H2;
-                      }
-                    }
-                    else
+                    if (c < 0xCD40)
                     {
                       if (c < 0xCD25)
                       {
@@ -78214,101 +75362,101 @@ line_category(Py_UCS4 c)
                         return Line_H3;
                       }
                     }
+                    else
+                    {
+                      if (c == 0xCD40)
+                        return Line_H2;
+                      /* (c >= 0xCD41) && (c <= 0xCD5B) */
+                      return Line_H3;
+                    }
                   }
                   else
                   {
-                    if (c < 0xCD5D)
+                    if (c < 0xCD79)
                     {
-                      if (c < 0xCD5C)
+                      if (c < 0xCD78)
                       {
-                        if (c == 0xCD40)
+                        if (c == 0xCD5C)
                           return Line_H2;
-                        /* (c >= 0xCD41) && (c <= 0xCD5B) */
+                        /* (c >= 0xCD5D) && (c <= 0xCD77) */
                         return Line_H3;
                       }
                       else
                       {
-                        /* c == 0xCD5C */
+                        /* c == 0xCD78 */
                         return Line_H2;
                       }
                     }
                     else
                     {
-                      if (c < 0xCD79)
+                      if ((c >= 0xCD79) && (c <= 0xCD93))
+                        return Line_H3;
+                      /* c == 0xCD94 */
+                      return Line_H2;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0xCDE8)
+                  {
+                    if (c < 0xCDCC)
+                    {
+                      if (c < 0xCDB1)
                       {
-                        if ((c >= 0xCD5D) && (c <= 0xCD77))
+                        if ((c >= 0xCD95) && (c <= 0xCDAF))
                           return Line_H3;
-                        /* c == 0xCD78 */
+                        /* c == 0xCDB0 */
                         return Line_H2;
                       }
                       else
                       {
-                        /* (c >= 0xCD79) && (c <= 0xCD93) */
-                        return Line_H3;
-                      }
-                    }
-                  }
-                }
-              }
-              else
-              {
-                if (c < 0xCE58)
-                {
-                  if (c < 0xCDE9)
-                  {
-                    if (c < 0xCDCC)
-                    {
-                      if (c < 0xCDB0)
-                      {
-                        if (c == 0xCD94)
-                          return Line_H2;
-                        /* (c >= 0xCD95) && (c <= 0xCDAF) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        if (c == 0xCDB0)
-                          return Line_H2;
                         /* (c >= 0xCDB1) && (c <= 0xCDCB) */
                         return Line_H3;
                       }
                     }
                     else
                     {
-                      if (c < 0xCDE8)
-                      {
-                        if (c == 0xCDCC)
-                          return Line_H2;
-                        /* (c >= 0xCDCD) && (c <= 0xCDE7) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xCDE8 */
+                      if (c == 0xCDCC)
                         return Line_H2;
-                      }
+                      /* (c >= 0xCDCD) && (c <= 0xCDE7) */
+                      return Line_H3;
                     }
                   }
                   else
                   {
-                    if (c < 0xCE21)
+                    if (c < 0xCE05)
                     {
-                      if (c < 0xCE05)
+                      if (c < 0xCE04)
                       {
-                        if ((c >= 0xCDE9) && (c <= 0xCE03))
-                          return Line_H3;
-                        /* c == 0xCE04 */
-                        return Line_H2;
+                        if (c == 0xCDE8)
+                          return Line_H2;
+                        /* (c >= 0xCDE9) && (c <= 0xCE03) */
+                        return Line_H3;
                       }
                       else
                       {
-                        if ((c >= 0xCE05) && (c <= 0xCE1F))
-                          return Line_H3;
-                        /* c == 0xCE20 */
+                        /* c == 0xCE04 */
                         return Line_H2;
                       }
                     }
                     else
+                    {
+                      if ((c >= 0xCE05) && (c <= 0xCE1F))
+                        return Line_H3;
+                      /* c == 0xCE20 */
+                      return Line_H2;
+                    }
+                  }
+                }
+              }
+              else
+              {
+                if (c < 0xCEAD)
+                {
+                  if (c < 0xCE74)
+                  {
+                    if (c < 0xCE58)
                     {
                       if (c < 0xCE3D)
                       {
@@ -78323,46 +75471,43 @@ line_category(Py_UCS4 c)
                         return Line_H3;
                       }
                     }
-                  }
-                }
-                else
-                {
-                  if (c < 0xCEAD)
-                  {
-                    if (c < 0xCE90)
+                    else
                     {
-                      if (c < 0xCE74)
-                      {
-                        if (c == 0xCE58)
-                          return Line_H2;
-                        /* (c >= 0xCE59) && (c <= 0xCE73) */
-                        return Line_H3;
-                      }
-                      else
+                      if (c == 0xCE58)
+                        return Line_H2;
+                      /* (c >= 0xCE59) && (c <= 0xCE73) */
+                      return Line_H3;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xCE91)
+                    {
+                      if (c < 0xCE90)
                       {
                         if (c == 0xCE74)
                           return Line_H2;
                         /* (c >= 0xCE75) && (c <= 0xCE8F) */
                         return Line_H3;
                       }
-                    }
-                    else
-                    {
-                      if (c < 0xCEAC)
-                      {
-                        if (c == 0xCE90)
-                          return Line_H2;
-                        /* (c >= 0xCE91) && (c <= 0xCEAB) */
-                        return Line_H3;
-                      }
                       else
                       {
-                        /* c == 0xCEAC */
+                        /* c == 0xCE90 */
                         return Line_H2;
                       }
                     }
+                    else
+                    {
+                      if ((c >= 0xCE91) && (c <= 0xCEAB))
+                        return Line_H3;
+                      /* c == 0xCEAC */
+                      return Line_H2;
+                    }
                   }
-                  else
+                }
+                else
+                {
+                  if (c < 0xCF00)
                   {
                     if (c < 0xCEE4)
                     {
@@ -78381,18 +75526,27 @@ line_category(Py_UCS4 c)
                     }
                     else
                     {
-                      if (c < 0xCF00)
-                      {
-                        if (c == 0xCEE4)
-                          return Line_H2;
-                        /* (c >= 0xCEE5) && (c <= 0xCEFF) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xCF00 */
+                      if (c == 0xCEE4)
                         return Line_H2;
-                      }
+                      /* (c >= 0xCEE5) && (c <= 0xCEFF) */
+                      return Line_H3;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xCF1C)
+                    {
+                      if (c == 0xCF00)
+                        return Line_H2;
+                      /* (c >= 0xCF01) && (c <= 0xCF1B) */
+                      return Line_H3;
+                    }
+                    else
+                    {
+                      if (c == 0xCF1C)
+                        return Line_H2;
+                      /* (c >= 0xCF1D) && (c <= 0xCF37) */
+                      return Line_H3;
                     }
                   }
                 }
@@ -78400,103 +75554,91 @@ line_category(Py_UCS4 c)
             }
             else
             {
-              if (c < 0xD088)
+              if (c < 0xD050)
               {
-                if (c < 0xCFC5)
+                if (c < 0xCFC4)
                 {
-                  if (c < 0xCF70)
+                  if (c < 0xCF71)
                   {
-                    if (c < 0xCF39)
+                    if (c < 0xCF55)
                     {
-                      if (c < 0xCF1D)
+                      if (c < 0xCF54)
                       {
-                        if ((c >= 0xCF01) && (c <= 0xCF1B))
-                          return Line_H3;
-                        /* c == 0xCF1C */
-                        return Line_H2;
+                        if (c == 0xCF38)
+                          return Line_H2;
+                        /* (c >= 0xCF39) && (c <= 0xCF53) */
+                        return Line_H3;
                       }
                       else
                       {
-                        if ((c >= 0xCF1D) && (c <= 0xCF37))
-                          return Line_H3;
-                        /* c == 0xCF38 */
+                        /* c == 0xCF54 */
                         return Line_H2;
                       }
                     }
                     else
                     {
-                      if (c < 0xCF55)
-                      {
-                        if ((c >= 0xCF39) && (c <= 0xCF53))
-                          return Line_H3;
-                        /* c == 0xCF54 */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xCF55) && (c <= 0xCF6F) */
+                      if ((c >= 0xCF55) && (c <= 0xCF6F))
                         return Line_H3;
-                      }
+                      /* c == 0xCF70 */
+                      return Line_H2;
                     }
                   }
                   else
                   {
                     if (c < 0xCFA8)
                     {
-                      if (c < 0xCF8C)
+                      if (c < 0xCF8D)
                       {
-                        if (c == 0xCF70)
-                          return Line_H2;
-                        /* (c >= 0xCF71) && (c <= 0xCF8B) */
-                        return Line_H3;
+                        if ((c >= 0xCF71) && (c <= 0xCF8B))
+                          return Line_H3;
+                        /* c == 0xCF8C */
+                        return Line_H2;
                       }
                       else
                       {
-                        if (c == 0xCF8C)
-                          return Line_H2;
                         /* (c >= 0xCF8D) && (c <= 0xCFA7) */
                         return Line_H3;
                       }
                     }
                     else
                     {
-                      if (c < 0xCFC4)
-                      {
-                        if (c == 0xCFA8)
-                          return Line_H2;
-                        /* (c >= 0xCFA9) && (c <= 0xCFC3) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xCFC4 */
+                      if (c == 0xCFA8)
                         return Line_H2;
-                      }
+                      /* (c >= 0xCFA9) && (c <= 0xCFC3) */
+                      return Line_H3;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0xD034)
+                  if (c < 0xCFFD)
                   {
-                    if (c < 0xCFFD)
+                    if (c < 0xCFE1)
                     {
-                      if (c < 0xCFE1)
+                      if (c < 0xCFE0)
                       {
-                        if ((c >= 0xCFC5) && (c <= 0xCFDF))
-                          return Line_H3;
-                        /* c == 0xCFE0 */
-                        return Line_H2;
+                        if (c == 0xCFC4)
+                          return Line_H2;
+                        /* (c >= 0xCFC5) && (c <= 0xCFDF) */
+                        return Line_H3;
                       }
                       else
                       {
-                        if ((c >= 0xCFE1) && (c <= 0xCFFB))
-                          return Line_H3;
-                        /* c == 0xCFFC */
+                        /* c == 0xCFE0 */
                         return Line_H2;
                       }
                     }
                     else
+                    {
+                      if ((c >= 0xCFE1) && (c <= 0xCFFB))
+                        return Line_H3;
+                      /* c == 0xCFFC */
+                      return Line_H2;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xD034)
                     {
                       if (c < 0xD019)
                       {
@@ -78511,150 +75653,150 @@ line_category(Py_UCS4 c)
                         return Line_H3;
                       }
                     }
-                  }
-                  else
-                  {
-                    if (c < 0xD051)
-                    {
-                      if (c < 0xD050)
-                      {
-                        if (c == 0xD034)
-                          return Line_H2;
-                        /* (c >= 0xD035) && (c <= 0xD04F) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xD050 */
-                        return Line_H2;
-                      }
-                    }
                     else
                     {
-                      if (c < 0xD06D)
-                      {
-                        if ((c >= 0xD051) && (c <= 0xD06B))
-                          return Line_H3;
-                        /* c == 0xD06C */
+                      if (c == 0xD034)
                         return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xD06D) && (c <= 0xD087) */
-                        return Line_H3;
-                      }
+                      /* (c >= 0xD035) && (c <= 0xD04F) */
+                      return Line_H3;
                     }
                   }
                 }
               }
               else
               {
-                if (c < 0xD131)
+                if (c < 0xD0DC)
                 {
-                  if (c < 0xD0DD)
+                  if (c < 0xD089)
                   {
-                    if (c < 0xD0C0)
+                    if (c < 0xD06D)
                     {
-                      if (c < 0xD0A4)
+                      if (c < 0xD06C)
                       {
-                        if (c == 0xD088)
+                        if (c == 0xD050)
                           return Line_H2;
-                        /* (c >= 0xD089) && (c <= 0xD0A3) */
+                        /* (c >= 0xD051) && (c <= 0xD06B) */
                         return Line_H3;
                       }
                       else
                       {
-                        if (c == 0xD0A4)
-                          return Line_H2;
+                        /* c == 0xD06C */
+                        return Line_H2;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0xD06D) && (c <= 0xD087))
+                        return Line_H3;
+                      /* c == 0xD088 */
+                      return Line_H2;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xD0C0)
+                    {
+                      if (c < 0xD0A5)
+                      {
+                        if ((c >= 0xD089) && (c <= 0xD0A3))
+                          return Line_H3;
+                        /* c == 0xD0A4 */
+                        return Line_H2;
+                      }
+                      else
+                      {
                         /* (c >= 0xD0A5) && (c <= 0xD0BF) */
                         return Line_H3;
                       }
                     }
                     else
                     {
-                      if (c < 0xD0DC)
-                      {
-                        if (c == 0xD0C0)
-                          return Line_H2;
-                        /* (c >= 0xD0C1) && (c <= 0xD0DB) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xD0DC */
+                      if (c == 0xD0C0)
                         return Line_H2;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0xD114)
-                    {
-                      if (c < 0xD0F9)
-                      {
-                        if ((c >= 0xD0DD) && (c <= 0xD0F7))
-                          return Line_H3;
-                        /* c == 0xD0F8 */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xD0F9) && (c <= 0xD113) */
-                        return Line_H3;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0xD130)
-                      {
-                        if (c == 0xD114)
-                          return Line_H2;
-                        /* (c >= 0xD115) && (c <= 0xD12F) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xD130 */
-                        return Line_H2;
-                      }
+                      /* (c >= 0xD0C1) && (c <= 0xD0DB) */
+                      return Line_H3;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0xD1A0)
+                  if (c < 0xD115)
                   {
-                    if (c < 0xD169)
+                    if (c < 0xD0F9)
                     {
-                      if (c < 0xD14D)
+                      if (c < 0xD0F8)
                       {
-                        if ((c >= 0xD131) && (c <= 0xD14B))
-                          return Line_H3;
-                        /* c == 0xD14C */
-                        return Line_H2;
+                        if (c == 0xD0DC)
+                          return Line_H2;
+                        /* (c >= 0xD0DD) && (c <= 0xD0F7) */
+                        return Line_H3;
                       }
                       else
+                      {
+                        /* c == 0xD0F8 */
+                        return Line_H2;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0xD0F9) && (c <= 0xD113))
+                        return Line_H3;
+                      /* c == 0xD114 */
+                      return Line_H2;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xD131)
+                    {
+                      if ((c >= 0xD115) && (c <= 0xD12F))
+                        return Line_H3;
+                      /* c == 0xD130 */
+                      return Line_H2;
+                    }
+                    else
+                    {
+                      if ((c >= 0xD131) && (c <= 0xD14B))
+                        return Line_H3;
+                      /* c == 0xD14C */
+                      return Line_H2;
+                    }
+                  }
+                }
+              }
+            }
+          }
+          else
+          {
+            if (c < 0xD37C)
+            {
+              if (c < 0xD265)
+              {
+                if (c < 0xD1D9)
+                {
+                  if (c < 0xD1A0)
+                  {
+                    if (c < 0xD184)
+                    {
+                      if (c < 0xD169)
                       {
                         if ((c >= 0xD14D) && (c <= 0xD167))
                           return Line_H3;
                         /* c == 0xD168 */
                         return Line_H2;
                       }
+                      else
+                      {
+                        /* (c >= 0xD169) && (c <= 0xD183) */
+                        return Line_H3;
+                      }
                     }
                     else
                     {
-                      if (c < 0xD185)
-                      {
-                        if ((c >= 0xD169) && (c <= 0xD183))
-                          return Line_H3;
-                        /* c == 0xD184 */
+                      if (c == 0xD184)
                         return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xD185) && (c <= 0xD19F) */
-                        return Line_H3;
-                      }
+                      /* (c >= 0xD185) && (c <= 0xD19F) */
+                      return Line_H3;
                     }
                   }
                   else
@@ -78676,58 +75818,43 @@ line_category(Py_UCS4 c)
                     }
                     else
                     {
-                      if (c < 0xD1D9)
+                      if ((c >= 0xD1BD) && (c <= 0xD1D7))
+                        return Line_H3;
+                      /* c == 0xD1D8 */
+                      return Line_H2;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0xD22C)
+                  {
+                    if (c < 0xD210)
+                    {
+                      if (c < 0xD1F5)
                       {
-                        if ((c >= 0xD1BD) && (c <= 0xD1D7))
+                        if ((c >= 0xD1D9) && (c <= 0xD1F3))
                           return Line_H3;
-                        /* c == 0xD1D8 */
+                        /* c == 0xD1F4 */
                         return Line_H2;
                       }
                       else
                       {
-                        /* (c >= 0xD1D9) && (c <= 0xD1F3) */
-                        return Line_H3;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-      else
-      {
-        if (c < 0xFF1C)
-        {
-          if (c < 0xD7FC)
-          {
-            if (c < 0xD4E8)
-            {
-              if (c < 0xD361)
-              {
-                if (c < 0xD2B8)
-                {
-                  if (c < 0xD249)
-                  {
-                    if (c < 0xD22C)
-                    {
-                      if (c < 0xD210)
-                      {
-                        if (c == 0xD1F4)
-                          return Line_H2;
                         /* (c >= 0xD1F5) && (c <= 0xD20F) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        if (c == 0xD210)
-                          return Line_H2;
-                        /* (c >= 0xD211) && (c <= 0xD22B) */
                         return Line_H3;
                       }
                     }
                     else
+                    {
+                      if (c == 0xD210)
+                        return Line_H2;
+                      /* (c >= 0xD211) && (c <= 0xD22B) */
+                      return Line_H3;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xD249)
                     {
                       if (c < 0xD248)
                       {
@@ -78742,48 +75869,48 @@ line_category(Py_UCS4 c)
                         return Line_H2;
                       }
                     }
-                  }
-                  else
-                  {
-                    if (c < 0xD281)
+                    else
                     {
-                      if (c < 0xD265)
-                      {
-                        if ((c >= 0xD249) && (c <= 0xD263))
-                          return Line_H3;
-                        /* c == 0xD264 */
-                        return Line_H2;
-                      }
-                      else
+                      if ((c >= 0xD249) && (c <= 0xD263))
+                        return Line_H3;
+                      /* c == 0xD264 */
+                      return Line_H2;
+                    }
+                  }
+                }
+              }
+              else
+              {
+                if (c < 0xD2F1)
+                {
+                  if (c < 0xD2B8)
+                  {
+                    if (c < 0xD29C)
+                    {
+                      if (c < 0xD281)
                       {
                         if ((c >= 0xD265) && (c <= 0xD27F))
                           return Line_H3;
                         /* c == 0xD280 */
                         return Line_H2;
                       }
-                    }
-                    else
-                    {
-                      if (c < 0xD29D)
-                      {
-                        if ((c >= 0xD281) && (c <= 0xD29B))
-                          return Line_H3;
-                        /* c == 0xD29C */
-                        return Line_H2;
-                      }
                       else
                       {
-                        /* (c >= 0xD29D) && (c <= 0xD2B7) */
+                        /* (c >= 0xD281) && (c <= 0xD29B) */
                         return Line_H3;
                       }
                     }
+                    else
+                    {
+                      if (c == 0xD29C)
+                        return Line_H2;
+                      /* (c >= 0xD29D) && (c <= 0xD2B7) */
+                      return Line_H3;
+                    }
                   }
-                }
-                else
-                {
-                  if (c < 0xD30D)
+                  else
                   {
-                    if (c < 0xD2F0)
+                    if (c < 0xD2D5)
                     {
                       if (c < 0xD2D4)
                       {
@@ -78794,122 +75921,128 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        if (c == 0xD2D4)
-                          return Line_H2;
-                        /* (c >= 0xD2D5) && (c <= 0xD2EF) */
+                        /* c == 0xD2D4 */
+                        return Line_H2;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0xD2D5) && (c <= 0xD2EF))
+                        return Line_H3;
+                      /* c == 0xD2F0 */
+                      return Line_H2;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0xD344)
+                  {
+                    if (c < 0xD328)
+                    {
+                      if (c < 0xD30D)
+                      {
+                        if ((c >= 0xD2F1) && (c <= 0xD30B))
+                          return Line_H3;
+                        /* c == 0xD30C */
+                        return Line_H2;
+                      }
+                      else
+                      {
+                        /* (c >= 0xD30D) && (c <= 0xD327) */
                         return Line_H3;
                       }
                     }
                     else
                     {
-                      if (c < 0xD30C)
-                      {
-                        if (c == 0xD2F0)
-                          return Line_H2;
-                        /* (c >= 0xD2F1) && (c <= 0xD30B) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xD30C */
+                      if (c == 0xD328)
                         return Line_H2;
-                      }
+                      /* (c >= 0xD329) && (c <= 0xD343) */
+                      return Line_H3;
                     }
                   }
                   else
                   {
-                    if (c < 0xD344)
+                    if (c < 0xD360)
                     {
-                      if (c < 0xD329)
-                      {
-                        if ((c >= 0xD30D) && (c <= 0xD327))
-                          return Line_H3;
-                        /* c == 0xD328 */
+                      if (c == 0xD344)
                         return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xD329) && (c <= 0xD343) */
-                        return Line_H3;
-                      }
+                      /* (c >= 0xD345) && (c <= 0xD35F) */
+                      return Line_H3;
                     }
                     else
                     {
-                      if (c < 0xD360)
-                      {
-                        if (c == 0xD344)
-                          return Line_H2;
-                        /* (c >= 0xD345) && (c <= 0xD35F) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* c == 0xD360 */
+                      if (c == 0xD360)
                         return Line_H2;
-                      }
+                      /* (c >= 0xD361) && (c <= 0xD37B) */
+                      return Line_H3;
                     }
                   }
                 }
               }
-              else
+            }
+            else
+            {
+              if (c < 0xD494)
               {
-                if (c < 0xD425)
+                if (c < 0xD408)
                 {
-                  if (c < 0xD3D0)
+                  if (c < 0xD3B5)
                   {
                     if (c < 0xD399)
                     {
-                      if (c < 0xD37D)
+                      if (c < 0xD398)
                       {
-                        if ((c >= 0xD361) && (c <= 0xD37B))
-                          return Line_H3;
-                        /* c == 0xD37C */
-                        return Line_H2;
+                        if (c == 0xD37C)
+                          return Line_H2;
+                        /* (c >= 0xD37D) && (c <= 0xD397) */
+                        return Line_H3;
                       }
                       else
                       {
-                        if ((c >= 0xD37D) && (c <= 0xD397))
-                          return Line_H3;
                         /* c == 0xD398 */
                         return Line_H2;
                       }
                     }
                     else
                     {
-                      if (c < 0xD3B5)
-                      {
-                        if ((c >= 0xD399) && (c <= 0xD3B3))
-                          return Line_H3;
-                        /* c == 0xD3B4 */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xD3B5) && (c <= 0xD3CF) */
+                      if ((c >= 0xD399) && (c <= 0xD3B3))
                         return Line_H3;
-                      }
+                      /* c == 0xD3B4 */
+                      return Line_H2;
                     }
                   }
                   else
                   {
-                    if (c < 0xD408)
+                    if (c < 0xD3EC)
                     {
-                      if (c < 0xD3EC)
+                      if (c < 0xD3D1)
                       {
-                        if (c == 0xD3D0)
-                          return Line_H2;
-                        /* (c >= 0xD3D1) && (c <= 0xD3EB) */
-                        return Line_H3;
+                        if ((c >= 0xD3B5) && (c <= 0xD3CF))
+                          return Line_H3;
+                        /* c == 0xD3D0 */
+                        return Line_H2;
                       }
                       else
                       {
-                        if (c == 0xD3EC)
-                          return Line_H2;
-                        /* (c >= 0xD3ED) && (c <= 0xD407) */
+                        /* (c >= 0xD3D1) && (c <= 0xD3EB) */
                         return Line_H3;
                       }
                     }
                     else
+                    {
+                      if (c == 0xD3EC)
+                        return Line_H2;
+                      /* (c >= 0xD3ED) && (c <= 0xD407) */
+                      return Line_H3;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0xD441)
+                  {
+                    if (c < 0xD425)
                     {
                       if (c < 0xD424)
                       {
@@ -78924,46 +76057,46 @@ line_category(Py_UCS4 c)
                         return Line_H2;
                       }
                     }
-                  }
-                }
-                else
-                {
-                  if (c < 0xD494)
-                  {
-                    if (c < 0xD45D)
+                    else
                     {
-                      if (c < 0xD441)
-                      {
-                        if ((c >= 0xD425) && (c <= 0xD43F))
-                          return Line_H3;
-                        /* c == 0xD440 */
-                        return Line_H2;
-                      }
-                      else
+                      if ((c >= 0xD425) && (c <= 0xD43F))
+                        return Line_H3;
+                      /* c == 0xD440 */
+                      return Line_H2;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xD478)
+                    {
+                      if (c < 0xD45D)
                       {
                         if ((c >= 0xD441) && (c <= 0xD45B))
                           return Line_H3;
                         /* c == 0xD45C */
                         return Line_H2;
                       }
-                    }
-                    else
-                    {
-                      if (c < 0xD479)
-                      {
-                        if ((c >= 0xD45D) && (c <= 0xD477))
-                          return Line_H3;
-                        /* c == 0xD478 */
-                        return Line_H2;
-                      }
                       else
                       {
-                        /* (c >= 0xD479) && (c <= 0xD493) */
+                        /* (c >= 0xD45D) && (c <= 0xD477) */
                         return Line_H3;
                       }
                     }
+                    else
+                    {
+                      if (c == 0xD478)
+                        return Line_H2;
+                      /* (c >= 0xD479) && (c <= 0xD493) */
+                      return Line_H3;
+                    }
                   }
-                  else
+                }
+              }
+              else
+              {
+                if (c < 0xD520)
+                {
+                  if (c < 0xD4CD)
                   {
                     if (c < 0xD4B1)
                     {
@@ -78982,49 +76115,43 @@ line_category(Py_UCS4 c)
                     }
                     else
                     {
-                      if (c < 0xD4CD)
+                      if ((c >= 0xD4B1) && (c <= 0xD4CB))
+                        return Line_H3;
+                      /* c == 0xD4CC */
+                      return Line_H2;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xD504)
+                    {
+                      if (c < 0xD4E9)
                       {
-                        if ((c >= 0xD4B1) && (c <= 0xD4CB))
+                        if ((c >= 0xD4CD) && (c <= 0xD4E7))
                           return Line_H3;
-                        /* c == 0xD4CC */
+                        /* c == 0xD4E8 */
                         return Line_H2;
                       }
                       else
                       {
-                        /* (c >= 0xD4CD) && (c <= 0xD4E7) */
-                        return Line_H3;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-            else
-            {
-              if (c < 0xD655)
-              {
-                if (c < 0xD5AC)
-                {
-                  if (c < 0xD53D)
-                  {
-                    if (c < 0xD520)
-                    {
-                      if (c < 0xD504)
-                      {
-                        if (c == 0xD4E8)
-                          return Line_H2;
                         /* (c >= 0xD4E9) && (c <= 0xD503) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        if (c == 0xD504)
-                          return Line_H2;
-                        /* (c >= 0xD505) && (c <= 0xD51F) */
                         return Line_H3;
                       }
                     }
                     else
+                    {
+                      if (c == 0xD504)
+                        return Line_H2;
+                      /* (c >= 0xD505) && (c <= 0xD51F) */
+                      return Line_H3;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0xD559)
+                  {
+                    if (c < 0xD53D)
                     {
                       if (c < 0xD53C)
                       {
@@ -79039,65 +76166,74 @@ line_category(Py_UCS4 c)
                         return Line_H2;
                       }
                     }
+                    else
+                    {
+                      if ((c >= 0xD53D) && (c <= 0xD557))
+                        return Line_H3;
+                      /* c == 0xD558 */
+                      return Line_H2;
+                    }
                   }
                   else
                   {
                     if (c < 0xD575)
                     {
-                      if (c < 0xD559)
-                      {
-                        if ((c >= 0xD53D) && (c <= 0xD557))
-                          return Line_H3;
-                        /* c == 0xD558 */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        if ((c >= 0xD559) && (c <= 0xD573))
-                          return Line_H3;
-                        /* c == 0xD574 */
-                        return Line_H2;
-                      }
+                      if ((c >= 0xD559) && (c <= 0xD573))
+                        return Line_H3;
+                      /* c == 0xD574 */
+                      return Line_H2;
                     }
                     else
                     {
-                      if (c < 0xD591)
-                      {
-                        if ((c >= 0xD575) && (c <= 0xD58F))
-                          return Line_H3;
-                        /* c == 0xD590 */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xD591) && (c <= 0xD5AB) */
+                      if ((c >= 0xD575) && (c <= 0xD58F))
                         return Line_H3;
-                      }
+                      /* c == 0xD590 */
+                      return Line_H2;
                     }
                   }
                 }
-                else
+              }
+            }
+          }
+        }
+        else
+        {
+          if (c < 0xFE37)
+          {
+            if (c < 0xD7C7)
+            {
+              if (c < 0xD6A9)
+              {
+                if (c < 0xD61D)
                 {
-                  if (c < 0xD601)
+                  if (c < 0xD5E4)
                   {
-                    if (c < 0xD5E4)
+                    if (c < 0xD5C8)
                     {
-                      if (c < 0xD5C8)
+                      if (c < 0xD5AD)
                       {
-                        if (c == 0xD5AC)
-                          return Line_H2;
-                        /* (c >= 0xD5AD) && (c <= 0xD5C7) */
-                        return Line_H3;
+                        if ((c >= 0xD591) && (c <= 0xD5AB))
+                          return Line_H3;
+                        /* c == 0xD5AC */
+                        return Line_H2;
                       }
                       else
                       {
-                        if (c == 0xD5C8)
-                          return Line_H2;
-                        /* (c >= 0xD5C9) && (c <= 0xD5E3) */
+                        /* (c >= 0xD5AD) && (c <= 0xD5C7) */
                         return Line_H3;
                       }
                     }
                     else
+                    {
+                      if (c == 0xD5C8)
+                        return Line_H2;
+                      /* (c >= 0xD5C9) && (c <= 0xD5E3) */
+                      return Line_H3;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xD601)
                     {
                       if (c < 0xD600)
                       {
@@ -79112,101 +76248,101 @@ line_category(Py_UCS4 c)
                         return Line_H2;
                       }
                     }
-                  }
-                  else
-                  {
-                    if (c < 0xD638)
+                    else
                     {
-                      if (c < 0xD61D)
+                      if ((c >= 0xD601) && (c <= 0xD61B))
+                        return Line_H3;
+                      /* c == 0xD61C */
+                      return Line_H2;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0xD670)
+                  {
+                    if (c < 0xD654)
+                    {
+                      if (c < 0xD639)
                       {
-                        if ((c >= 0xD601) && (c <= 0xD61B))
+                        if ((c >= 0xD61D) && (c <= 0xD637))
                           return Line_H3;
-                        /* c == 0xD61C */
+                        /* c == 0xD638 */
                         return Line_H2;
                       }
                       else
                       {
-                        /* (c >= 0xD61D) && (c <= 0xD637) */
+                        /* (c >= 0xD639) && (c <= 0xD653) */
                         return Line_H3;
                       }
                     }
                     else
                     {
-                      if (c < 0xD654)
+                      if (c == 0xD654)
+                        return Line_H2;
+                      /* (c >= 0xD655) && (c <= 0xD66F) */
+                      return Line_H3;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xD68D)
+                    {
+                      if (c < 0xD68C)
                       {
-                        if (c == 0xD638)
+                        if (c == 0xD670)
                           return Line_H2;
-                        /* (c >= 0xD639) && (c <= 0xD653) */
+                        /* (c >= 0xD671) && (c <= 0xD68B) */
                         return Line_H3;
                       }
                       else
                       {
-                        /* c == 0xD654 */
-                        return Line_H2;
-                      }
-                    }
-                  }
-                }
-              }
-              else
-              {
-                if (c < 0xD719)
-                {
-                  if (c < 0xD6C4)
-                  {
-                    if (c < 0xD68D)
-                    {
-                      if (c < 0xD671)
-                      {
-                        if ((c >= 0xD655) && (c <= 0xD66F))
-                          return Line_H3;
-                        /* c == 0xD670 */
-                        return Line_H2;
-                      }
-                      else
-                      {
-                        if ((c >= 0xD671) && (c <= 0xD68B))
-                          return Line_H3;
                         /* c == 0xD68C */
                         return Line_H2;
                       }
                     }
                     else
                     {
-                      if (c < 0xD6A9)
+                      if ((c >= 0xD68D) && (c <= 0xD6A7))
+                        return Line_H3;
+                      /* c == 0xD6A8 */
+                      return Line_H2;
+                    }
+                  }
+                }
+              }
+              else
+              {
+                if (c < 0xD735)
+                {
+                  if (c < 0xD6FC)
+                  {
+                    if (c < 0xD6E0)
+                    {
+                      if (c < 0xD6C5)
                       {
-                        if ((c >= 0xD68D) && (c <= 0xD6A7))
+                        if ((c >= 0xD6A9) && (c <= 0xD6C3))
                           return Line_H3;
-                        /* c == 0xD6A8 */
+                        /* c == 0xD6C4 */
                         return Line_H2;
                       }
                       else
                       {
-                        /* (c >= 0xD6A9) && (c <= 0xD6C3) */
-                        return Line_H3;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0xD6FC)
-                    {
-                      if (c < 0xD6E0)
-                      {
-                        if (c == 0xD6C4)
-                          return Line_H2;
                         /* (c >= 0xD6C5) && (c <= 0xD6DF) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        if (c == 0xD6E0)
-                          return Line_H2;
-                        /* (c >= 0xD6E1) && (c <= 0xD6FB) */
                         return Line_H3;
                       }
                     }
                     else
+                    {
+                      if (c == 0xD6E0)
+                        return Line_H2;
+                      /* (c >= 0xD6E1) && (c <= 0xD6FB) */
+                      return Line_H3;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xD719)
                     {
                       if (c < 0xD718)
                       {
@@ -79221,190 +76357,156 @@ line_category(Py_UCS4 c)
                         return Line_H2;
                       }
                     }
+                    else
+                    {
+                      if ((c >= 0xD719) && (c <= 0xD733))
+                        return Line_H3;
+                      /* c == 0xD734 */
+                      return Line_H2;
+                    }
                   }
                 }
                 else
                 {
                   if (c < 0xD788)
                   {
-                    if (c < 0xD751)
+                    if (c < 0xD76C)
                     {
-                      if (c < 0xD735)
-                      {
-                        if ((c >= 0xD719) && (c <= 0xD733))
-                          return Line_H3;
-                        /* c == 0xD734 */
-                        return Line_H2;
-                      }
-                      else
+                      if (c < 0xD751)
                       {
                         if ((c >= 0xD735) && (c <= 0xD74F))
                           return Line_H3;
                         /* c == 0xD750 */
                         return Line_H2;
                       }
+                      else
+                      {
+                        /* (c >= 0xD751) && (c <= 0xD76B) */
+                        return Line_H3;
+                      }
                     }
                     else
                     {
-                      if (c < 0xD76D)
-                      {
-                        if ((c >= 0xD751) && (c <= 0xD76B))
-                          return Line_H3;
-                        /* c == 0xD76C */
+                      if (c == 0xD76C)
                         return Line_H2;
-                      }
-                      else
-                      {
-                        /* (c >= 0xD76D) && (c <= 0xD787) */
-                        return Line_H3;
-                      }
+                      /* (c >= 0xD76D) && (c <= 0xD787) */
+                      return Line_H3;
                     }
                   }
                   else
                   {
-                    if (c < 0xD7B0)
+                    if (c < 0xD7A4)
                     {
-                      if (c < 0xD7A4)
-                      {
-                        if (c == 0xD788)
-                          return Line_H2;
-                        /* (c >= 0xD789) && (c <= 0xD7A3) */
-                        return Line_H3;
-                      }
-                      else
-                      {
-                        /* (c >= 0xD7A4) && (c <= 0xD7AF) */
-                        return Line_XX;
-                      }
+                      if (c == 0xD788)
+                        return Line_H2;
+                      /* (c >= 0xD789) && (c <= 0xD7A3) */
+                      return Line_H3;
                     }
                     else
                     {
-                      if (c < 0xD7CB)
-                      {
-                        if ((c >= 0xD7B0) && (c <= 0xD7C6))
-                          return Line_JV;
-                        /* (c >= 0xD7C7) && (c <= 0xD7CA) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0xD7CB) && (c <= 0xD7FB) */
-                        return Line_JT;
-                      }
+                      if ((c >= 0xD7A4) && (c <= 0xD7AF))
+                        return Line_AL;
+                      /* (c >= 0xD7B0) && (c <= 0xD7C6) */
+                      return Line_JV;
                     }
                   }
                 }
               }
             }
-          }
-          else
-          {
-            if (c < 0xFE3B)
+            else
             {
-              if (c < 0xFD3F)
+              if (c < 0xFB50)
               {
-                if (c < 0xFB38)
+                if (c < 0xFB37)
                 {
-                  if (c < 0xFB18)
+                  if (c < 0xFB1D)
                   {
-                    if (c < 0xFB00)
+                    if (c < 0xF900)
                     {
-                      if (c < 0xE000)
+                      if (c < 0xD7FC)
                       {
-                        if ((c >= 0xD7FC) && (c <= 0xD7FF))
-                          return Line_XX;
-                        /* (c >= 0xD800) && (c <= 0xDFFF) */
-                        return Line_SG;
+                        if ((c >= 0xD7C7) && (c <= 0xD7CA))
+                          return Line_AL;
+                        /* (c >= 0xD7CB) && (c <= 0xD7FB) */
+                        return Line_JT;
                       }
                       else
                       {
-                        if ((c >= 0xE000) && (c <= 0xF8FF))
-                          return Line_XX;
-                        /* (c >= 0xF900) && (c <= 0xFAFF) */
-                        return Line_ID;
+                        /* (c >= 0xD7FC) && (c <= 0xF8FF) */
+                        return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0xFB13)
-                      {
-                        if ((c >= 0xFB00) && (c <= 0xFB06))
-                          return Line_AL;
-                        /* (c >= 0xFB07) && (c <= 0xFB12) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0xFB13) && (c <= 0xFB17) */
-                        return Line_AL;
-                      }
+                      if ((c >= 0xF900) && (c <= 0xFAFF))
+                        return Line_ID;
+                      /* (c >= 0xFB00) && (c <= 0xFB1C) */
+                      return Line_AL;
                     }
                   }
                   else
                   {
                     if (c < 0xFB29)
                     {
-                      if (c < 0xFB1E)
+                      if (c < 0xFB1F)
                       {
-                        if ((c >= 0xFB18) && (c <= 0xFB1C))
-                          return Line_XX;
-                        /* c == 0xFB1D */
-                        return Line_HL;
+                        if (c == 0xFB1D)
+                          return Line_HL;
+                        /* c == 0xFB1E */
+                        return Line_CM;
                       }
                       else
                       {
-                        if (c == 0xFB1E)
-                          return Line_CM;
                         /* (c >= 0xFB1F) && (c <= 0xFB28) */
                         return Line_HL;
                       }
                     }
                     else
                     {
-                      if (c < 0xFB37)
-                      {
-                        if (c == 0xFB29)
-                          return Line_AL;
-                        /* (c >= 0xFB2A) && (c <= 0xFB36) */
-                        return Line_HL;
-                      }
-                      else
-                      {
-                        /* c == 0xFB37 */
-                        return Line_XX;
-                      }
+                      if (c == 0xFB29)
+                        return Line_AL;
+                      /* (c >= 0xFB2A) && (c <= 0xFB36) */
+                      return Line_HL;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0xFB45)
+                  if (c < 0xFB40)
                   {
-                    if (c < 0xFB40)
+                    if (c < 0xFB3E)
                     {
-                      if (c < 0xFB3E)
+                      if (c < 0xFB3D)
                       {
-                        if ((c >= 0xFB38) && (c <= 0xFB3C))
-                          return Line_HL;
-                        /* c == 0xFB3D */
-                        return Line_XX;
+                        if (c == 0xFB37)
+                          return Line_AL;
+                        /* (c >= 0xFB38) && (c <= 0xFB3C) */
+                        return Line_HL;
                       }
                       else
                       {
-                        if (c == 0xFB3E)
-                          return Line_HL;
-                        /* c == 0xFB3F */
-                        return Line_XX;
+                        /* c == 0xFB3D */
+                        return Line_AL;
                       }
                     }
                     else
+                    {
+                      if (c == 0xFB3E)
+                        return Line_HL;
+                      /* c == 0xFB3F */
+                      return Line_AL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xFB45)
                     {
                       if (c < 0xFB43)
                       {
                         if ((c >= 0xFB40) && (c <= 0xFB41))
                           return Line_HL;
                         /* c == 0xFB42 */
-                        return Line_XX;
+                        return Line_AL;
                       }
                       else
                       {
@@ -79412,38 +76514,12 @@ line_category(Py_UCS4 c)
                         return Line_HL;
                       }
                     }
-                  }
-                  else
-                  {
-                    if (c < 0xFBC3)
-                    {
-                      if (c < 0xFB50)
-                      {
-                        if (c == 0xFB45)
-                          return Line_XX;
-                        /* (c >= 0xFB46) && (c <= 0xFB4F) */
-                        return Line_HL;
-                      }
-                      else
-                      {
-                        /* (c >= 0xFB50) && (c <= 0xFBC2) */
-                        return Line_AL;
-                      }
-                    }
                     else
                     {
-                      if (c < 0xFD3E)
-                      {
-                        if ((c >= 0xFBC3) && (c <= 0xFBD2))
-                          return Line_XX;
-                        /* (c >= 0xFBD3) && (c <= 0xFD3D) */
+                      if (c == 0xFB45)
                         return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0xFD3E */
-                        return Line_CL;
-                      }
+                      /* (c >= 0xFB46) && (c <= 0xFB4F) */
+                      return Line_HL;
                     }
                   }
                 }
@@ -79452,82 +76528,62 @@ line_category(Py_UCS4 c)
               {
                 if (c < 0xFE15)
                 {
-                  if (c < 0xFDF0)
+                  if (c < 0xFDFD)
                   {
-                    if (c < 0xFDC8)
+                    if (c < 0xFD40)
                     {
-                      if (c < 0xFD90)
+                      if (c < 0xFD3F)
                       {
-                        if (c == 0xFD3F)
-                          return Line_OP;
-                        /* (c >= 0xFD40) && (c <= 0xFD8F) */
-                        return Line_AL;
+                        if ((c >= 0xFB50) && (c <= 0xFD3D))
+                          return Line_AL;
+                        /* c == 0xFD3E */
+                        return Line_CL;
                       }
                       else
                       {
-                        if ((c >= 0xFD90) && (c <= 0xFD91))
-                          return Line_XX;
-                        /* (c >= 0xFD92) && (c <= 0xFDC7) */
-                        return Line_AL;
+                        /* c == 0xFD3F */
+                        return Line_OP;
                       }
                     }
                     else
                     {
-                      if (c < 0xFDD0)
-                      {
-                        if ((c >= 0xFDC8) && (c <= 0xFDCE))
-                          return Line_XX;
-                        /* c == 0xFDCF */
+                      if ((c >= 0xFD40) && (c <= 0xFDFB))
                         return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0xFDD0) && (c <= 0xFDEF) */
-                        return Line_XX;
-                      }
+                      /* c == 0xFDFC */
+                      return Line_PO;
                     }
                   }
                   else
                   {
-                    if (c < 0xFE10)
+                    if (c < 0xFE11)
                     {
-                      if (c < 0xFDFD)
-                      {
-                        if ((c >= 0xFDF0) && (c <= 0xFDFB))
-                          return Line_AL;
-                        /* c == 0xFDFC */
-                        return Line_PO;
-                      }
-                      else
+                      if (c < 0xFE10)
                       {
                         if ((c >= 0xFDFD) && (c <= 0xFDFF))
                           return Line_AL;
                         /* (c >= 0xFE00) && (c <= 0xFE0F) */
                         return Line_CM;
                       }
+                      else
+                      {
+                        /* c == 0xFE10 */
+                        return Line_IS;
+                      }
                     }
                     else
                     {
-                      if (c < 0xFE13)
-                      {
-                        if (c == 0xFE10)
-                          return Line_IS;
-                        /* (c >= 0xFE11) && (c <= 0xFE12) */
+                      if ((c >= 0xFE11) && (c <= 0xFE12))
                         return Line_CL;
-                      }
-                      else
-                      {
-                        /* (c >= 0xFE13) && (c <= 0xFE14) */
-                        return Line_IS;
-                      }
+                      /* (c >= 0xFE13) && (c <= 0xFE14) */
+                      return Line_IS;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0xFE35)
+                  if (c < 0xFE20)
                   {
-                    if (c < 0xFE1A)
+                    if (c < 0xFE19)
                     {
                       if (c < 0xFE18)
                       {
@@ -79538,125 +76594,128 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        if (c == 0xFE18)
-                          return Line_CL;
-                        /* c == 0xFE19 */
-                        return Line_IN;
+                        /* c == 0xFE18 */
+                        return Line_CL;
                       }
                     }
                     else
                     {
-                      if (c < 0xFE30)
-                      {
-                        if ((c >= 0xFE1A) && (c <= 0xFE1F))
-                          return Line_XX;
-                        /* (c >= 0xFE20) && (c <= 0xFE2F) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* (c >= 0xFE30) && (c <= 0xFE34) */
-                        return Line_ID;
-                      }
+                      if (c == 0xFE19)
+                        return Line_IN;
+                      /* (c >= 0xFE1A) && (c <= 0xFE1F) */
+                      return Line_AL;
                     }
                   }
                   else
                   {
-                    if (c < 0xFE38)
+                    if (c < 0xFE35)
                     {
-                      if (c < 0xFE37)
-                      {
-                        if (c == 0xFE35)
-                          return Line_OP;
-                        /* c == 0xFE36 */
-                        return Line_CL;
-                      }
-                      else
-                      {
-                        /* c == 0xFE37 */
-                        return Line_OP;
-                      }
+                      if ((c >= 0xFE20) && (c <= 0xFE2F))
+                        return Line_CM;
+                      /* (c >= 0xFE30) && (c <= 0xFE34) */
+                      return Line_ID;
                     }
                     else
                     {
-                      if (c < 0xFE3A)
-                      {
-                        if (c == 0xFE38)
-                          return Line_CL;
-                        /* c == 0xFE39 */
+                      if (c == 0xFE35)
                         return Line_OP;
-                      }
-                      else
-                      {
-                        /* c == 0xFE3A */
-                        return Line_CL;
-                      }
+                      /* c == 0xFE36 */
+                      return Line_CL;
                     }
                   }
                 }
               }
             }
-            else
+          }
+          else
+          {
+            if (c < 0xFF00)
             {
-              if (c < 0xFE5F)
+              if (c < 0xFE52)
               {
-                if (c < 0xFE50)
+                if (c < 0xFE41)
                 {
-                  if (c < 0xFE42)
+                  if (c < 0xFE3C)
                   {
-                    if (c < 0xFE3F)
+                    if (c < 0xFE3A)
                     {
-                      if (c < 0xFE3D)
+                      if (c < 0xFE39)
                       {
-                        if (c == 0xFE3B)
+                        if (c == 0xFE37)
                           return Line_OP;
-                        /* c == 0xFE3C */
+                        /* c == 0xFE38 */
                         return Line_CL;
                       }
                       else
                       {
-                        if (c == 0xFE3D)
-                          return Line_OP;
+                        /* c == 0xFE39 */
+                        return Line_OP;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0xFE3A)
+                        return Line_CL;
+                      /* c == 0xFE3B */
+                      return Line_OP;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xFE3F)
+                    {
+                      if (c < 0xFE3E)
+                      {
+                        if (c == 0xFE3C)
+                          return Line_CL;
+                        /* c == 0xFE3D */
+                        return Line_OP;
+                      }
+                      else
+                      {
                         /* c == 0xFE3E */
                         return Line_CL;
                       }
                     }
                     else
                     {
-                      if (c < 0xFE41)
+                      if (c == 0xFE3F)
+                        return Line_OP;
+                      /* c == 0xFE40 */
+                      return Line_CL;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0xFE47)
+                  {
+                    if (c < 0xFE44)
+                    {
+                      if (c < 0xFE43)
                       {
-                        if (c == 0xFE3F)
+                        if (c == 0xFE41)
                           return Line_OP;
-                        /* c == 0xFE40 */
+                        /* c == 0xFE42 */
                         return Line_CL;
                       }
                       else
                       {
-                        /* c == 0xFE41 */
+                        /* c == 0xFE43 */
                         return Line_OP;
                       }
+                    }
+                    else
+                    {
+                      if (c == 0xFE44)
+                        return Line_CL;
+                      /* (c >= 0xFE45) && (c <= 0xFE46) */
+                      return Line_ID;
                     }
                   }
                   else
                   {
-                    if (c < 0xFE47)
-                    {
-                      if (c < 0xFE44)
-                      {
-                        if (c == 0xFE42)
-                          return Line_CL;
-                        /* c == 0xFE43 */
-                        return Line_OP;
-                      }
-                      else
-                      {
-                        if (c == 0xFE44)
-                          return Line_CL;
-                        /* (c >= 0xFE45) && (c <= 0xFE46) */
-                        return Line_ID;
-                      }
-                    }
-                    else
+                    if (c < 0xFE50)
                     {
                       if (c < 0xFE49)
                       {
@@ -79671,43 +76730,43 @@ line_category(Py_UCS4 c)
                         return Line_ID;
                       }
                     }
+                    else
+                    {
+                      if (c == 0xFE50)
+                        return Line_CL;
+                      /* c == 0xFE51 */
+                      return Line_ID;
+                    }
                   }
                 }
-                else
+              }
+              else
+              {
+                if (c < 0xFE5E)
                 {
                   if (c < 0xFE59)
                   {
-                    if (c < 0xFE54)
+                    if (c < 0xFE56)
                     {
-                      if (c < 0xFE52)
-                      {
-                        if (c == 0xFE50)
-                          return Line_CL;
-                        /* c == 0xFE51 */
-                        return Line_ID;
-                      }
-                      else
+                      if (c < 0xFE54)
                       {
                         if (c == 0xFE52)
                           return Line_CL;
                         /* c == 0xFE53 */
-                        return Line_XX;
+                        return Line_AL;
+                      }
+                      else
+                      {
+                        /* (c >= 0xFE54) && (c <= 0xFE55) */
+                        return Line_NS;
                       }
                     }
                     else
                     {
-                      if (c < 0xFE58)
-                      {
-                        if ((c >= 0xFE54) && (c <= 0xFE55))
-                          return Line_NS;
-                        /* (c >= 0xFE56) && (c <= 0xFE57) */
+                      if ((c >= 0xFE56) && (c <= 0xFE57))
                         return Line_EX;
-                      }
-                      else
-                      {
-                        /* c == 0xFE58 */
-                        return Line_ID;
-                      }
+                      /* c == 0xFE58 */
+                      return Line_ID;
                     }
                   }
                   else
@@ -79729,117 +76788,94 @@ line_category(Py_UCS4 c)
                     }
                     else
                     {
-                      if (c < 0xFE5E)
-                      {
-                        if (c == 0xFE5C)
-                          return Line_CL;
-                        /* c == 0xFE5D */
-                        return Line_OP;
-                      }
-                      else
-                      {
-                        /* c == 0xFE5E */
+                      if (c == 0xFE5C)
                         return Line_CL;
-                      }
-                    }
-                  }
-                }
-              }
-              else
-              {
-                if (c < 0xFF01)
-                {
-                  if (c < 0xFE70)
-                  {
-                    if (c < 0xFE6A)
-                    {
-                      if (c < 0xFE68)
-                      {
-                        if ((c >= 0xFE5F) && (c <= 0xFE66))
-                          return Line_ID;
-                        /* c == 0xFE67 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if (c == 0xFE68)
-                          return Line_ID;
-                        /* c == 0xFE69 */
-                        return Line_PR;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0xFE6C)
-                      {
-                        if (c == 0xFE6A)
-                          return Line_PO;
-                        /* c == 0xFE6B */
-                        return Line_ID;
-                      }
-                      else
-                      {
-                        /* (c >= 0xFE6C) && (c <= 0xFE6F) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0xFEFD)
-                    {
-                      if (c < 0xFE76)
-                      {
-                        if ((c >= 0xFE70) && (c <= 0xFE74))
-                          return Line_AL;
-                        /* c == 0xFE75 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0xFE76) && (c <= 0xFEFC) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0xFF00)
-                      {
-                        if ((c >= 0xFEFD) && (c <= 0xFEFE))
-                          return Line_XX;
-                        /* c == 0xFEFF */
-                        return Line_WJ;
-                      }
-                      else
-                      {
-                        /* c == 0xFF00 */
-                        return Line_XX;
-                      }
+                      /* c == 0xFE5D */
+                      return Line_OP;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0xFF0A)
+                  if (c < 0xFE6A)
                   {
-                    if (c < 0xFF06)
+                    if (c < 0xFE68)
                     {
-                      if (c < 0xFF04)
+                      if (c < 0xFE67)
                       {
-                        if (c == 0xFF01)
-                          return Line_EX;
-                        /* (c >= 0xFF02) && (c <= 0xFF03) */
+                        if (c == 0xFE5E)
+                          return Line_CL;
+                        /* (c >= 0xFE5F) && (c <= 0xFE66) */
                         return Line_ID;
                       }
                       else
                       {
-                        if (c == 0xFF04)
-                          return Line_PR;
-                        /* c == 0xFF05 */
-                        return Line_PO;
+                        /* c == 0xFE67 */
+                        return Line_AL;
                       }
                     }
                     else
+                    {
+                      if (c == 0xFE68)
+                        return Line_ID;
+                      /* c == 0xFE69 */
+                      return Line_PR;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xFE6C)
+                    {
+                      if (c == 0xFE6A)
+                        return Line_PO;
+                      /* c == 0xFE6B */
+                      return Line_ID;
+                    }
+                    else
+                    {
+                      if ((c >= 0xFE6C) && (c <= 0xFEFE))
+                        return Line_AL;
+                      /* c == 0xFEFF */
+                      return Line_WJ;
+                    }
+                  }
+                }
+              }
+            }
+            else
+            {
+              if (c < 0xFF3E)
+              {
+                if (c < 0xFF0D)
+                {
+                  if (c < 0xFF06)
+                  {
+                    if (c < 0xFF04)
+                    {
+                      if (c < 0xFF02)
+                      {
+                        if (c == 0xFF00)
+                          return Line_AL;
+                        /* c == 0xFF01 */
+                        return Line_EX;
+                      }
+                      else
+                      {
+                        /* (c >= 0xFF02) && (c <= 0xFF03) */
+                        return Line_ID;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0xFF04)
+                        return Line_PR;
+                      /* c == 0xFF05 */
+                      return Line_PO;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xFF0A)
                     {
                       if (c < 0xFF09)
                       {
@@ -79854,110 +76890,101 @@ line_category(Py_UCS4 c)
                         return Line_CL;
                       }
                     }
-                  }
-                  else
-                  {
-                    if (c < 0xFF0E)
+                    else
                     {
-                      if (c < 0xFF0D)
+                      if ((c >= 0xFF0A) && (c <= 0xFF0B))
+                        return Line_ID;
+                      /* c == 0xFF0C */
+                      return Line_CL;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0xFF1F)
+                  {
+                    if (c < 0xFF1A)
+                    {
+                      if (c < 0xFF0F)
                       {
-                        if ((c >= 0xFF0A) && (c <= 0xFF0B))
+                        if (c == 0xFF0D)
                           return Line_ID;
-                        /* c == 0xFF0C */
+                        /* c == 0xFF0E */
                         return Line_CL;
                       }
                       else
                       {
-                        /* c == 0xFF0D */
+                        /* (c >= 0xFF0F) && (c <= 0xFF19) */
                         return Line_ID;
                       }
                     }
                     else
                     {
-                      if (c < 0xFF1A)
+                      if ((c >= 0xFF1A) && (c <= 0xFF1B))
+                        return Line_NS;
+                      /* (c >= 0xFF1C) && (c <= 0xFF1E) */
+                      return Line_ID;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xFF3C)
+                    {
+                      if (c < 0xFF3B)
                       {
-                        if (c == 0xFF0E)
-                          return Line_CL;
-                        /* (c >= 0xFF0F) && (c <= 0xFF19) */
+                        if (c == 0xFF1F)
+                          return Line_EX;
+                        /* (c >= 0xFF20) && (c <= 0xFF3A) */
                         return Line_ID;
                       }
                       else
                       {
-                        /* (c >= 0xFF1A) && (c <= 0xFF1B) */
-                        return Line_NS;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-        else
-        {
-          if (c < 0x10593)
-          {
-            if (c < 0x100FB)
-            {
-              if (c < 0xFFD8)
-              {
-                if (c < 0xFF63)
-                {
-                  if (c < 0xFF5B)
-                  {
-                    if (c < 0xFF3C)
-                    {
-                      if (c < 0xFF20)
-                      {
-                        if ((c >= 0xFF1C) && (c <= 0xFF1E))
-                          return Line_ID;
-                        /* c == 0xFF1F */
-                        return Line_EX;
-                      }
-                      else
-                      {
-                        if ((c >= 0xFF20) && (c <= 0xFF3A))
-                          return Line_ID;
                         /* c == 0xFF3B */
                         return Line_OP;
                       }
                     }
                     else
                     {
-                      if (c < 0xFF3E)
-                      {
-                        if (c == 0xFF3C)
-                          return Line_ID;
-                        /* c == 0xFF3D */
-                        return Line_CL;
-                      }
-                      else
-                      {
-                        /* (c >= 0xFF3E) && (c <= 0xFF5A) */
+                      if (c == 0xFF3C)
                         return Line_ID;
-                      }
+                      /* c == 0xFF3D */
+                      return Line_CL;
                     }
                   }
-                  else
+                }
+              }
+              else
+              {
+                if (c < 0xFF66)
+                {
+                  if (c < 0xFF5F)
                   {
-                    if (c < 0xFF5F)
+                    if (c < 0xFF5D)
                     {
-                      if (c < 0xFF5D)
+                      if (c < 0xFF5C)
                       {
-                        if (c == 0xFF5B)
-                          return Line_OP;
-                        /* c == 0xFF5C */
-                        return Line_ID;
+                        if ((c >= 0xFF3E) && (c <= 0xFF5A))
+                          return Line_ID;
+                        /* c == 0xFF5B */
+                        return Line_OP;
                       }
                       else
                       {
-                        if (c == 0xFF5D)
-                          return Line_CL;
-                        /* c == 0xFF5E */
+                        /* c == 0xFF5C */
                         return Line_ID;
                       }
                     }
                     else
+                    {
+                      if (c == 0xFF5D)
+                        return Line_CL;
+                      /* c == 0xFF5E */
+                      return Line_ID;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xFF63)
                     {
                       if (c < 0xFF62)
                       {
@@ -79972,1115 +76999,57 @@ line_category(Py_UCS4 c)
                         return Line_OP;
                       }
                     }
+                    else
+                    {
+                      if ((c >= 0xFF63) && (c <= 0xFF64))
+                        return Line_CL;
+                      /* c == 0xFF65 */
+                      return Line_NS;
+                    }
                   }
                 }
                 else
                 {
                   if (c < 0xFFBF)
                   {
-                    if (c < 0xFF71)
+                    if (c < 0xFF9E)
                     {
-                      if (c < 0xFF66)
-                      {
-                        if ((c >= 0xFF63) && (c <= 0xFF64))
-                          return Line_CL;
-                        /* c == 0xFF65 */
-                        return Line_NS;
-                      }
-                      else
+                      if (c < 0xFF71)
                       {
                         if (c == 0xFF66)
                           return Line_ID;
                         /* (c >= 0xFF67) && (c <= 0xFF70) */
-                        return Line_CJ;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0xFFA0)
-                      {
-                        if ((c >= 0xFF71) && (c <= 0xFF9D))
-                          return Line_ID;
-                        /* (c >= 0xFF9E) && (c <= 0xFF9F) */
                         return Line_NS;
                       }
                       else
                       {
-                        /* (c >= 0xFFA0) && (c <= 0xFFBE) */
+                        /* (c >= 0xFF71) && (c <= 0xFF9D) */
                         return Line_ID;
                       }
                     }
-                  }
-                  else
-                  {
-                    if (c < 0xFFCA)
-                    {
-                      if (c < 0xFFC8)
-                      {
-                        if ((c >= 0xFFBF) && (c <= 0xFFC1))
-                          return Line_XX;
-                        /* (c >= 0xFFC2) && (c <= 0xFFC7) */
-                        return Line_ID;
-                      }
-                      else
-                      {
-                        /* (c >= 0xFFC8) && (c <= 0xFFC9) */
-                        return Line_XX;
-                      }
-                    }
                     else
                     {
-                      if (c < 0xFFD2)
-                      {
-                        if ((c >= 0xFFCA) && (c <= 0xFFCF))
-                          return Line_ID;
-                        /* (c >= 0xFFD0) && (c <= 0xFFD1) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0xFFD2) && (c <= 0xFFD7) */
-                        return Line_ID;
-                      }
-                    }
-                  }
-                }
-              }
-              else
-              {
-                if (c < 0x10000)
-                {
-                  if (c < 0xFFE7)
-                  {
-                    if (c < 0xFFE1)
-                    {
-                      if (c < 0xFFDD)
-                      {
-                        if ((c >= 0xFFD8) && (c <= 0xFFD9))
-                          return Line_XX;
-                        /* (c >= 0xFFDA) && (c <= 0xFFDC) */
-                        return Line_ID;
-                      }
-                      else
-                      {
-                        if ((c >= 0xFFDD) && (c <= 0xFFDF))
-                          return Line_XX;
-                        /* c == 0xFFE0 */
-                        return Line_PO;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0xFFE5)
-                      {
-                        if (c == 0xFFE1)
-                          return Line_PR;
-                        /* (c >= 0xFFE2) && (c <= 0xFFE4) */
-                        return Line_ID;
-                      }
-                      else
-                      {
-                        /* (c >= 0xFFE5) && (c <= 0xFFE6) */
-                        return Line_PR;
-                      }
+                      if ((c >= 0xFF9E) && (c <= 0xFF9F))
+                        return Line_NS;
+                      /* (c >= 0xFFA0) && (c <= 0xFFBE) */
+                      return Line_ID;
                     }
                   }
                   else
                   {
-                    if (c < 0xFFFC)
+                    if (c < 0xFFC8)
                     {
-                      if (c < 0xFFEF)
-                      {
-                        if (c == 0xFFE7)
-                          return Line_XX;
-                        /* (c >= 0xFFE8) && (c <= 0xFFEE) */
+                      if ((c >= 0xFFBF) && (c <= 0xFFC1))
                         return Line_AL;
-                      }
-                      else
-                      {
-                        if ((c >= 0xFFEF) && (c <= 0xFFF8))
-                          return Line_XX;
-                        /* (c >= 0xFFF9) && (c <= 0xFFFB) */
-                        return Line_CM;
-                      }
+                      /* (c >= 0xFFC2) && (c <= 0xFFC7) */
+                      return Line_ID;
                     }
                     else
                     {
-                      if (c < 0xFFFE)
-                      {
-                        if (c == 0xFFFC)
-                          return Line_CB;
-                        /* c == 0xFFFD */
-                        return Line_AI;
-                      }
-                      else
-                      {
-                        /* (c >= 0xFFFE) && (c <= 0xFFFF) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x1003E)
-                  {
-                    if (c < 0x10028)
-                    {
-                      if (c < 0x1000D)
-                      {
-                        if ((c >= 0x10000) && (c <= 0x1000B))
-                          return Line_AL;
-                        /* c == 0x1000C */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1000D) && (c <= 0x10026))
-                          return Line_AL;
-                        /* c == 0x10027 */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1003C)
-                      {
-                        if ((c >= 0x10028) && (c <= 0x1003A))
-                          return Line_AL;
-                        /* c == 0x1003B */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1003C) && (c <= 0x1003D) */
+                      if ((c >= 0xFFC8) && (c <= 0xFFC9))
                         return Line_AL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x10050)
-                    {
-                      if (c < 0x1004E)
-                      {
-                        if (c == 0x1003E)
-                          return Line_XX;
-                        /* (c >= 0x1003F) && (c <= 0x1004D) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1004E) && (c <= 0x1004F) */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x10080)
-                      {
-                        if ((c >= 0x10050) && (c <= 0x1005D))
-                          return Line_AL;
-                        /* (c >= 0x1005E) && (c <= 0x1007F) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x10080) && (c <= 0x100FA) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-            else
-            {
-              if (c < 0x1037B)
-              {
-                if (c < 0x10280)
-                {
-                  if (c < 0x10190)
-                  {
-                    if (c < 0x10134)
-                    {
-                      if (c < 0x10103)
-                      {
-                        if ((c >= 0x100FB) && (c <= 0x100FF))
-                          return Line_XX;
-                        /* (c >= 0x10100) && (c <= 0x10102) */
-                        return Line_BA;
-                      }
-                      else
-                      {
-                        if ((c >= 0x10103) && (c <= 0x10106))
-                          return Line_XX;
-                        /* (c >= 0x10107) && (c <= 0x10133) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1018F)
-                      {
-                        if ((c >= 0x10134) && (c <= 0x10136))
-                          return Line_XX;
-                        /* (c >= 0x10137) && (c <= 0x1018E) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x1018F */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x101D0)
-                    {
-                      if (c < 0x101A0)
-                      {
-                        if ((c >= 0x10190) && (c <= 0x1019C))
-                          return Line_AL;
-                        /* (c >= 0x1019D) && (c <= 0x1019F) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if (c == 0x101A0)
-                          return Line_AL;
-                        /* (c >= 0x101A1) && (c <= 0x101CF) */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x101FE)
-                      {
-                        if ((c >= 0x101D0) && (c <= 0x101FC))
-                          return Line_AL;
-                        /* c == 0x101FD */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* (c >= 0x101FE) && (c <= 0x1027F) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x10300)
-                  {
-                    if (c < 0x102E0)
-                    {
-                      if (c < 0x102A0)
-                      {
-                        if ((c >= 0x10280) && (c <= 0x1029C))
-                          return Line_AL;
-                        /* (c >= 0x1029D) && (c <= 0x1029F) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x102A0) && (c <= 0x102D0))
-                          return Line_AL;
-                        /* (c >= 0x102D1) && (c <= 0x102DF) */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x102FC)
-                      {
-                        if (c == 0x102E0)
-                          return Line_CM;
-                        /* (c >= 0x102E1) && (c <= 0x102FB) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x102FC) && (c <= 0x102FF) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x1034B)
-                    {
-                      if (c < 0x1032D)
-                      {
-                        if ((c >= 0x10300) && (c <= 0x10323))
-                          return Line_AL;
-                        /* (c >= 0x10324) && (c <= 0x1032C) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1032D) && (c <= 0x1034A) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x10376)
-                      {
-                        if ((c >= 0x1034B) && (c <= 0x1034F))
-                          return Line_XX;
-                        /* (c >= 0x10350) && (c <= 0x10375) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x10376) && (c <= 0x1037A) */
-                        return Line_CM;
-                      }
-                    }
-                  }
-                }
-              }
-              else
-              {
-                if (c < 0x104B0)
-                {
-                  if (c < 0x103D0)
-                  {
-                    if (c < 0x103A0)
-                    {
-                      if (c < 0x1039E)
-                      {
-                        if ((c >= 0x1037B) && (c <= 0x1037F))
-                          return Line_XX;
-                        /* (c >= 0x10380) && (c <= 0x1039D) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if (c == 0x1039E)
-                          return Line_XX;
-                        /* c == 0x1039F */
-                        return Line_BA;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x103C8)
-                      {
-                        if ((c >= 0x103A0) && (c <= 0x103C3))
-                          return Line_AL;
-                        /* (c >= 0x103C4) && (c <= 0x103C7) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x103C8) && (c <= 0x103CF) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x1049E)
-                    {
-                      if (c < 0x103D6)
-                      {
-                        if (c == 0x103D0)
-                          return Line_BA;
-                        /* (c >= 0x103D1) && (c <= 0x103D5) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if ((c >= 0x103D6) && (c <= 0x103FF))
-                          return Line_XX;
-                        /* (c >= 0x10400) && (c <= 0x1049D) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x104AA)
-                      {
-                        if ((c >= 0x1049E) && (c <= 0x1049F))
-                          return Line_XX;
-                        /* (c >= 0x104A0) && (c <= 0x104A9) */
-                        return Line_NU;
-                      }
-                      else
-                      {
-                        /* (c >= 0x104AA) && (c <= 0x104AF) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x10564)
-                  {
-                    if (c < 0x10500)
-                    {
-                      if (c < 0x104D8)
-                      {
-                        if ((c >= 0x104B0) && (c <= 0x104D3))
-                          return Line_AL;
-                        /* (c >= 0x104D4) && (c <= 0x104D7) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x104D8) && (c <= 0x104FB))
-                          return Line_AL;
-                        /* (c >= 0x104FC) && (c <= 0x104FF) */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x10530)
-                      {
-                        if ((c >= 0x10500) && (c <= 0x10527))
-                          return Line_AL;
-                        /* (c >= 0x10528) && (c <= 0x1052F) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x10530) && (c <= 0x10563) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x1057C)
-                    {
-                      if (c < 0x1057B)
-                      {
-                        if ((c >= 0x10564) && (c <= 0x1056E))
-                          return Line_XX;
-                        /* (c >= 0x1056F) && (c <= 0x1057A) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x1057B */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1058C)
-                      {
-                        if ((c >= 0x1057C) && (c <= 0x1058A))
-                          return Line_AL;
-                        /* c == 0x1058B */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1058C) && (c <= 0x10592) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-          else
-          {
-            if (c < 0x109D0)
-            {
-              if (c < 0x1080A)
-              {
-                if (c < 0x10756)
-                {
-                  if (c < 0x105B3)
-                  {
-                    if (c < 0x105A2)
-                    {
-                      if (c < 0x10596)
-                      {
-                        if (c == 0x10593)
-                          return Line_XX;
-                        /* (c >= 0x10594) && (c <= 0x10595) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if (c == 0x10596)
-                          return Line_XX;
-                        /* (c >= 0x10597) && (c <= 0x105A1) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x105B2)
-                      {
-                        if (c == 0x105A2)
-                          return Line_XX;
-                        /* (c >= 0x105A3) && (c <= 0x105B1) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x105B2 */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x10600)
-                    {
-                      if (c < 0x105BB)
-                      {
-                        if ((c >= 0x105B3) && (c <= 0x105B9))
-                          return Line_AL;
-                        /* c == 0x105BA */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x105BB) && (c <= 0x105BC))
-                          return Line_AL;
-                        /* (c >= 0x105BD) && (c <= 0x105FF) */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x10740)
-                      {
-                        if ((c >= 0x10600) && (c <= 0x10736))
-                          return Line_AL;
-                        /* (c >= 0x10737) && (c <= 0x1073F) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x10740) && (c <= 0x10755) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x107B2)
-                  {
-                    if (c < 0x10786)
-                    {
-                      if (c < 0x10768)
-                      {
-                        if ((c >= 0x10756) && (c <= 0x1075F))
-                          return Line_XX;
-                        /* (c >= 0x10760) && (c <= 0x10767) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if ((c >= 0x10768) && (c <= 0x1077F))
-                          return Line_XX;
-                        /* (c >= 0x10780) && (c <= 0x10785) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x107B1)
-                      {
-                        if (c == 0x10786)
-                          return Line_XX;
-                        /* (c >= 0x10787) && (c <= 0x107B0) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x107B1 */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x10806)
-                    {
-                      if (c < 0x10800)
-                      {
-                        if ((c >= 0x107B2) && (c <= 0x107BA))
-                          return Line_AL;
-                        /* (c >= 0x107BB) && (c <= 0x107FF) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x10800) && (c <= 0x10805) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x10809)
-                      {
-                        if ((c >= 0x10806) && (c <= 0x10807))
-                          return Line_XX;
-                        /* c == 0x10808 */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x10809 */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                }
-              }
-              else
-              {
-                if (c < 0x108F3)
-                {
-                  if (c < 0x10856)
-                  {
-                    if (c < 0x1083C)
-                    {
-                      if (c < 0x10837)
-                      {
-                        if ((c >= 0x1080A) && (c <= 0x10835))
-                          return Line_AL;
-                        /* c == 0x10836 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x10837) && (c <= 0x10838))
-                          return Line_AL;
-                        /* (c >= 0x10839) && (c <= 0x1083B) */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1083F)
-                      {
-                        if (c == 0x1083C)
-                          return Line_AL;
-                        /* (c >= 0x1083D) && (c <= 0x1083E) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1083F) && (c <= 0x10855) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x108A7)
-                    {
-                      if (c < 0x10858)
-                      {
-                        if (c == 0x10856)
-                          return Line_XX;
-                        /* c == 0x10857 */
-                        return Line_BA;
-                      }
-                      else
-                      {
-                        if ((c >= 0x10858) && (c <= 0x1089E))
-                          return Line_AL;
-                        /* (c >= 0x1089F) && (c <= 0x108A6) */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x108E0)
-                      {
-                        if ((c >= 0x108A7) && (c <= 0x108AF))
-                          return Line_AL;
-                        /* (c >= 0x108B0) && (c <= 0x108DF) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x108E0) && (c <= 0x108F2) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x1093A)
-                  {
-                    if (c < 0x1091C)
-                    {
-                      if (c < 0x108F6)
-                      {
-                        if (c == 0x108F3)
-                          return Line_XX;
-                        /* (c >= 0x108F4) && (c <= 0x108F5) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if ((c >= 0x108F6) && (c <= 0x108FA))
-                          return Line_XX;
-                        /* (c >= 0x108FB) && (c <= 0x1091B) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x10920)
-                      {
-                        if ((c >= 0x1091C) && (c <= 0x1091E))
-                          return Line_XX;
-                        /* c == 0x1091F */
-                        return Line_BA;
-                      }
-                      else
-                      {
-                        /* (c >= 0x10920) && (c <= 0x10939) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x10980)
-                    {
-                      if (c < 0x10940)
-                      {
-                        if ((c >= 0x1093A) && (c <= 0x1093E))
-                          return Line_XX;
-                        /* c == 0x1093F */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x10940) && (c <= 0x1097F) */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x109BC)
-                      {
-                        if ((c >= 0x10980) && (c <= 0x109B7))
-                          return Line_AL;
-                        /* (c >= 0x109B8) && (c <= 0x109BB) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x109BC) && (c <= 0x109CF) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-            else
-            {
-              if (c < 0x10AF0)
-              {
-                if (c < 0x10A3B)
-                {
-                  if (c < 0x10A10)
-                  {
-                    if (c < 0x10A05)
-                    {
-                      if (c < 0x10A01)
-                      {
-                        if ((c >= 0x109D0) && (c <= 0x109D1))
-                          return Line_XX;
-                        /* (c >= 0x109D2) && (c <= 0x10A00) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if ((c >= 0x10A01) && (c <= 0x10A03))
-                          return Line_CM;
-                        /* c == 0x10A04 */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x10A0C)
-                      {
-                        if ((c >= 0x10A05) && (c <= 0x10A06))
-                          return Line_CM;
-                        /* (c >= 0x10A07) && (c <= 0x10A0B) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x10A0C) && (c <= 0x10A0F) */
-                        return Line_CM;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x10A19)
-                    {
-                      if (c < 0x10A15)
-                      {
-                        if ((c >= 0x10A10) && (c <= 0x10A13))
-                          return Line_AL;
-                        /* c == 0x10A14 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x10A15) && (c <= 0x10A17))
-                          return Line_AL;
-                        /* c == 0x10A18 */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x10A38)
-                      {
-                        if ((c >= 0x10A19) && (c <= 0x10A35))
-                          return Line_AL;
-                        /* (c >= 0x10A36) && (c <= 0x10A37) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x10A38) && (c <= 0x10A3A) */
-                        return Line_CM;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x10A60)
-                  {
-                    if (c < 0x10A50)
-                    {
-                      if (c < 0x10A40)
-                      {
-                        if ((c >= 0x10A3B) && (c <= 0x10A3E))
-                          return Line_XX;
-                        /* c == 0x10A3F */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        if ((c >= 0x10A40) && (c <= 0x10A48))
-                          return Line_AL;
-                        /* (c >= 0x10A49) && (c <= 0x10A4F) */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x10A59)
-                      {
-                        if ((c >= 0x10A50) && (c <= 0x10A57))
-                          return Line_BA;
-                        /* c == 0x10A58 */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x10A59) && (c <= 0x10A5F) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x10AE5)
-                    {
-                      if (c < 0x10AC0)
-                      {
-                        if ((c >= 0x10A60) && (c <= 0x10A9F))
-                          return Line_AL;
-                        /* (c >= 0x10AA0) && (c <= 0x10ABF) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x10AC0) && (c <= 0x10AE4) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x10AEB)
-                      {
-                        if ((c >= 0x10AE5) && (c <= 0x10AE6))
-                          return Line_CM;
-                        /* (c >= 0x10AE7) && (c <= 0x10AEA) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x10AEB) && (c <= 0x10AEF) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                }
-              }
-              else
-              {
-                if (c < 0x10B9D)
-                {
-                  if (c < 0x10B56)
-                  {
-                    if (c < 0x10B36)
-                    {
-                      if (c < 0x10AF7)
-                      {
-                        if ((c >= 0x10AF0) && (c <= 0x10AF5))
-                          return Line_BA;
-                        /* c == 0x10AF6 */
-                        return Line_IN;
-                      }
-                      else
-                      {
-                        if ((c >= 0x10AF7) && (c <= 0x10AFF))
-                          return Line_XX;
-                        /* (c >= 0x10B00) && (c <= 0x10B35) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x10B40)
-                      {
-                        if ((c >= 0x10B36) && (c <= 0x10B38))
-                          return Line_XX;
-                        /* (c >= 0x10B39) && (c <= 0x10B3F) */
-                        return Line_BA;
-                      }
-                      else
-                      {
-                        /* (c >= 0x10B40) && (c <= 0x10B55) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x10B78)
-                    {
-                      if (c < 0x10B73)
-                      {
-                        if ((c >= 0x10B56) && (c <= 0x10B57))
-                          return Line_XX;
-                        /* (c >= 0x10B58) && (c <= 0x10B72) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x10B73) && (c <= 0x10B77) */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x10B99)
-                      {
-                        if ((c >= 0x10B78) && (c <= 0x10B91))
-                          return Line_AL;
-                        /* (c >= 0x10B92) && (c <= 0x10B98) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x10B99) && (c <= 0x10B9C) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x10CC0)
-                  {
-                    if (c < 0x10C49)
-                    {
-                      if (c < 0x10BB0)
-                      {
-                        if ((c >= 0x10B9D) && (c <= 0x10BA8))
-                          return Line_XX;
-                        /* (c >= 0x10BA9) && (c <= 0x10BAF) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if ((c >= 0x10BB0) && (c <= 0x10BFF))
-                          return Line_XX;
-                        /* (c >= 0x10C00) && (c <= 0x10C48) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x10CB3)
-                      {
-                        if ((c >= 0x10C49) && (c <= 0x10C7F))
-                          return Line_XX;
-                        /* (c >= 0x10C80) && (c <= 0x10CB2) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x10CB3) && (c <= 0x10CBF) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x10D24)
-                    {
-                      if (c < 0x10CFA)
-                      {
-                        if ((c >= 0x10CC0) && (c <= 0x10CF2))
-                          return Line_AL;
-                        /* (c >= 0x10CF3) && (c <= 0x10CF9) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x10CFA) && (c <= 0x10D23) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x10D30)
-                      {
-                        if ((c >= 0x10D24) && (c <= 0x10D27))
-                          return Line_CM;
-                        /* (c >= 0x10D28) && (c <= 0x10D2F) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x10D30) && (c <= 0x10D39) */
-                        return Line_NU;
-                      }
+                      /* (c >= 0xFFCA) && (c <= 0xFFCF) */
+                      return Line_ID;
                     }
                   }
                 }
@@ -81092,192 +77061,403 @@ line_category(Py_UCS4 c)
     }
     else
     {
-      if (c < 0x16F4B)
+      if (c < 0x11F04)
       {
-        if (c < 0x11900)
+        if (c < 0x1134D)
         {
-          if (c < 0x1129E)
+          if (c < 0x1107F)
           {
-            if (c < 0x110FA)
+            if (c < 0x10A3F)
             {
-              if (c < 0x11005)
+              if (c < 0x1037B)
               {
-                if (c < 0x10F46)
+                if (c < 0xFFF9)
                 {
-                  if (c < 0x10EAE)
+                  if (c < 0xFFE0)
                   {
-                    if (c < 0x10EAA)
+                    if (c < 0xFFDA)
                     {
-                      if (c < 0x10E7F)
+                      if (c < 0xFFD8)
                       {
-                        if ((c >= 0x10D3A) && (c <= 0x10E5F))
-                          return Line_XX;
-                        /* (c >= 0x10E60) && (c <= 0x10E7E) */
-                        return Line_AL;
+                        if ((c >= 0xFFD0) && (c <= 0xFFD1))
+                          return Line_AL;
+                        /* (c >= 0xFFD2) && (c <= 0xFFD7) */
+                        return Line_ID;
                       }
                       else
                       {
-                        if (c == 0x10E7F)
-                          return Line_XX;
-                        /* (c >= 0x10E80) && (c <= 0x10EA9) */
+                        /* (c >= 0xFFD8) && (c <= 0xFFD9) */
                         return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0x10EAD)
-                      {
-                        if (c == 0x10EAA)
-                          return Line_XX;
-                        /* (c >= 0x10EAB) && (c <= 0x10EAC) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* c == 0x10EAD */
-                        return Line_BA;
-                      }
+                      if ((c >= 0xFFDA) && (c <= 0xFFDC))
+                        return Line_ID;
+                      /* (c >= 0xFFDD) && (c <= 0xFFDF) */
+                      return Line_AL;
                     }
                   }
                   else
                   {
-                    if (c < 0x10F00)
+                    if (c < 0xFFE5)
                     {
-                      if (c < 0x10EB2)
+                      if (c < 0xFFE2)
                       {
-                        if ((c >= 0x10EAE) && (c <= 0x10EAF))
-                          return Line_XX;
-                        /* (c >= 0x10EB0) && (c <= 0x10EB1) */
-                        return Line_AL;
+                        if (c == 0xFFE0)
+                          return Line_PO;
+                        /* c == 0xFFE1 */
+                        return Line_PR;
                       }
                       else
                       {
-                        if ((c >= 0x10EB2) && (c <= 0x10EFC))
-                          return Line_XX;
-                        /* (c >= 0x10EFD) && (c <= 0x10EFF) */
-                        return Line_CM;
+                        /* (c >= 0xFFE2) && (c <= 0xFFE4) */
+                        return Line_ID;
                       }
                     }
                     else
                     {
-                      if (c < 0x10F30)
-                      {
-                        if ((c >= 0x10F00) && (c <= 0x10F27))
-                          return Line_AL;
-                        /* (c >= 0x10F28) && (c <= 0x10F2F) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x10F30) && (c <= 0x10F45) */
-                        return Line_AL;
-                      }
+                      if ((c >= 0xFFE5) && (c <= 0xFFE6))
+                        return Line_PR;
+                      /* (c >= 0xFFE7) && (c <= 0xFFF8) */
+                      return Line_AL;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0x10FB0)
+                  if (c < 0x101FD)
                   {
-                    if (c < 0x10F82)
+                    if (c < 0x10100)
                     {
-                      if (c < 0x10F5A)
+                      if (c < 0xFFFD)
                       {
-                        if ((c >= 0x10F46) && (c <= 0x10F50))
+                        if ((c >= 0xFFF9) && (c <= 0xFFFB))
                           return Line_CM;
-                        /* (c >= 0x10F51) && (c <= 0x10F59) */
-                        return Line_AL;
+                        /* c == 0xFFFC */
+                        return Line_CB;
                       }
                       else
                       {
-                        if ((c >= 0x10F5A) && (c <= 0x10F6F))
-                          return Line_XX;
-                        /* (c >= 0x10F70) && (c <= 0x10F81) */
+                        /* (c >= 0xFFFD) && (c <= 0x100FF) */
                         return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0x10F8A)
-                      {
-                        if ((c >= 0x10F82) && (c <= 0x10F85))
-                          return Line_CM;
-                        /* (c >= 0x10F86) && (c <= 0x10F89) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x10F8A) && (c <= 0x10FAF) */
-                        return Line_XX;
-                      }
+                      if ((c >= 0x10100) && (c <= 0x10102))
+                        return Line_BA;
+                      /* (c >= 0x10103) && (c <= 0x101FC) */
+                      return Line_AL;
                     }
                   }
                   else
                   {
-                    if (c < 0x10FF7)
+                    if (c < 0x102E1)
                     {
-                      if (c < 0x10FE0)
+                      if (c < 0x102E0)
                       {
-                        if ((c >= 0x10FB0) && (c <= 0x10FCB))
-                          return Line_AL;
-                        /* (c >= 0x10FCC) && (c <= 0x10FDF) */
-                        return Line_XX;
+                        if (c == 0x101FD)
+                          return Line_CM;
+                        /* (c >= 0x101FE) && (c <= 0x102DF) */
+                        return Line_AL;
                       }
                       else
                       {
-                        /* (c >= 0x10FE0) && (c <= 0x10FF6) */
-                        return Line_AL;
+                        /* c == 0x102E0 */
+                        return Line_CM;
                       }
                     }
                     else
                     {
-                      if (c < 0x11003)
-                      {
-                        if ((c >= 0x10FF7) && (c <= 0x10FFF))
-                          return Line_XX;
-                        /* (c >= 0x11000) && (c <= 0x11002) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* (c >= 0x11003) && (c <= 0x11004) */
-                        return Line_AP;
-                      }
+                      if ((c >= 0x102E1) && (c <= 0x10375))
+                        return Line_AL;
+                      /* (c >= 0x10376) && (c <= 0x1037A) */
+                      return Line_CM;
                     }
                   }
                 }
               }
               else
               {
-                if (c < 0x11080)
+                if (c < 0x10920)
                 {
-                  if (c < 0x11066)
+                  if (c < 0x104A0)
                   {
-                    if (c < 0x11049)
+                    if (c < 0x103D0)
                     {
-                      if (c < 0x11046)
+                      if (c < 0x103A0)
                       {
-                        if ((c >= 0x11005) && (c <= 0x11037))
-                          return Line_AK;
-                        /* (c >= 0x11038) && (c <= 0x11045) */
-                        return Line_CM;
+                        if ((c >= 0x1037B) && (c <= 0x1039E))
+                          return Line_AL;
+                        /* c == 0x1039F */
+                        return Line_BA;
                       }
                       else
                       {
-                        if (c == 0x11046)
-                          return Line_VI;
-                        /* (c >= 0x11047) && (c <= 0x11048) */
+                        /* (c >= 0x103A0) && (c <= 0x103CF) */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0x103D0)
+                        return Line_BA;
+                      /* (c >= 0x103D1) && (c <= 0x1049F) */
+                      return Line_AL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x10858)
+                    {
+                      if (c < 0x10857)
+                      {
+                        if ((c >= 0x104A0) && (c <= 0x104A9))
+                          return Line_NU;
+                        /* (c >= 0x104AA) && (c <= 0x10856) */
+                        return Line_AL;
+                      }
+                      else
+                      {
+                        /* c == 0x10857 */
                         return Line_BA;
                       }
                     }
                     else
+                    {
+                      if ((c >= 0x10858) && (c <= 0x1091E))
+                        return Line_AL;
+                      /* c == 0x1091F */
+                      return Line_BA;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x10A0C)
+                  {
+                    if (c < 0x10A05)
+                    {
+                      if (c < 0x10A04)
+                      {
+                        if ((c >= 0x10920) && (c <= 0x10A00))
+                          return Line_AL;
+                        /* (c >= 0x10A01) && (c <= 0x10A03) */
+                        return Line_CM;
+                      }
+                      else
+                      {
+                        /* c == 0x10A04 */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x10A05) && (c <= 0x10A06))
+                        return Line_CM;
+                      /* (c >= 0x10A07) && (c <= 0x10A0B) */
+                      return Line_AL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x10A38)
+                    {
+                      if ((c >= 0x10A0C) && (c <= 0x10A0F))
+                        return Line_CM;
+                      /* (c >= 0x10A10) && (c <= 0x10A37) */
+                      return Line_AL;
+                    }
+                    else
+                    {
+                      if ((c >= 0x10A38) && (c <= 0x10A3A))
+                        return Line_CM;
+                      /* (c >= 0x10A3B) && (c <= 0x10A3E) */
+                      return Line_AL;
+                    }
+                  }
+                }
+              }
+            }
+            else
+            {
+              if (c < 0x10F46)
+              {
+                if (c < 0x10B40)
+                {
+                  if (c < 0x10AE7)
+                  {
+                    if (c < 0x10A58)
+                    {
+                      if (c < 0x10A50)
+                      {
+                        if (c == 0x10A3F)
+                          return Line_CM;
+                        /* (c >= 0x10A40) && (c <= 0x10A4F) */
+                        return Line_AL;
+                      }
+                      else
+                      {
+                        /* (c >= 0x10A50) && (c <= 0x10A57) */
+                        return Line_BA;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x10A58) && (c <= 0x10AE4))
+                        return Line_AL;
+                      /* (c >= 0x10AE5) && (c <= 0x10AE6) */
+                      return Line_CM;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x10AF7)
+                    {
+                      if (c < 0x10AF6)
+                      {
+                        if ((c >= 0x10AE7) && (c <= 0x10AEF))
+                          return Line_AL;
+                        /* (c >= 0x10AF0) && (c <= 0x10AF5) */
+                        return Line_BA;
+                      }
+                      else
+                      {
+                        /* c == 0x10AF6 */
+                        return Line_IN;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x10AF7) && (c <= 0x10B38))
+                        return Line_AL;
+                      /* (c >= 0x10B39) && (c <= 0x10B3F) */
+                      return Line_BA;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x10EAB)
+                  {
+                    if (c < 0x10D30)
+                    {
+                      if (c < 0x10D28)
+                      {
+                        if ((c >= 0x10B40) && (c <= 0x10D23))
+                          return Line_AL;
+                        /* (c >= 0x10D24) && (c <= 0x10D27) */
+                        return Line_CM;
+                      }
+                      else
+                      {
+                        /* (c >= 0x10D28) && (c <= 0x10D2F) */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x10D30) && (c <= 0x10D39))
+                        return Line_NU;
+                      /* (c >= 0x10D3A) && (c <= 0x10EAA) */
+                      return Line_AL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x10EFD)
+                    {
+                      if (c < 0x10EAE)
+                      {
+                        if ((c >= 0x10EAB) && (c <= 0x10EAC))
+                          return Line_CM;
+                        /* c == 0x10EAD */
+                        return Line_BA;
+                      }
+                      else
+                      {
+                        /* (c >= 0x10EAE) && (c <= 0x10EFC) */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x10EFD) && (c <= 0x10EFF))
+                        return Line_CM;
+                      /* (c >= 0x10F00) && (c <= 0x10F45) */
+                      return Line_AL;
+                    }
+                  }
+                }
+              }
+              else
+              {
+                if (c < 0x11049)
+                {
+                  if (c < 0x11003)
+                  {
+                    if (c < 0x10F86)
+                    {
+                      if (c < 0x10F82)
+                      {
+                        if ((c >= 0x10F46) && (c <= 0x10F50))
+                          return Line_CM;
+                        /* (c >= 0x10F51) && (c <= 0x10F81) */
+                        return Line_AL;
+                      }
+                      else
+                      {
+                        /* (c >= 0x10F82) && (c <= 0x10F85) */
+                        return Line_CM;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x10F86) && (c <= 0x10FFF))
+                        return Line_AL;
+                      /* (c >= 0x11000) && (c <= 0x11002) */
+                      return Line_CM;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x11046)
+                    {
+                      if (c < 0x11038)
+                      {
+                        if ((c >= 0x11003) && (c <= 0x11004))
+                          return Line_AP;
+                        /* (c >= 0x11005) && (c <= 0x11037) */
+                        return Line_AK;
+                      }
+                      else
+                      {
+                        /* (c >= 0x11038) && (c <= 0x11045) */
+                        return Line_CM;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0x11046)
+                        return Line_VI;
+                      /* (c >= 0x11047) && (c <= 0x11048) */
+                      return Line_BA;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x11071)
+                  {
+                    if (c < 0x11066)
                     {
                       if (c < 0x11052)
                       {
                         if ((c >= 0x11049) && (c <= 0x1104D))
                           return Line_ID;
                         /* (c >= 0x1104E) && (c <= 0x11051) */
-                        return Line_XX;
+                        return Line_AL;
                       }
                       else
                       {
@@ -81285,65 +77465,71 @@ line_category(Py_UCS4 c)
                         return Line_ID;
                       }
                     }
+                    else
+                    {
+                      if ((c >= 0x11066) && (c <= 0x1106F))
+                        return Line_AS;
+                      /* c == 0x11070 */
+                      return Line_CM;
+                    }
                   }
                   else
                   {
                     if (c < 0x11075)
                     {
-                      if (c < 0x11071)
-                      {
-                        if ((c >= 0x11066) && (c <= 0x1106F))
-                          return Line_AS;
-                        /* c == 0x11070 */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        if ((c >= 0x11071) && (c <= 0x11072))
-                          return Line_AK;
-                        /* (c >= 0x11073) && (c <= 0x11074) */
-                        return Line_CM;
-                      }
+                      if ((c >= 0x11071) && (c <= 0x11072))
+                        return Line_AK;
+                      /* (c >= 0x11073) && (c <= 0x11074) */
+                      return Line_CM;
                     }
                     else
                     {
-                      if (c < 0x1107F)
-                      {
-                        if (c == 0x11075)
-                          return Line_AK;
-                        /* (c >= 0x11076) && (c <= 0x1107E) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* c == 0x1107F */
-                        return Line_GL;
-                      }
+                      if (c == 0x11075)
+                        return Line_AK;
+                      /* (c >= 0x11076) && (c <= 0x1107E) */
+                      return Line_AL;
                     }
                   }
                 }
-                else
+              }
+            }
+          }
+          else
+          {
+            if (c < 0x111DC)
+            {
+              if (c < 0x11145)
+              {
+                if (c < 0x110CE)
                 {
-                  if (c < 0x110C3)
+                  if (c < 0x110BD)
                   {
-                    if (c < 0x110BD)
+                    if (c < 0x110B0)
                     {
-                      if (c < 0x110B0)
+                      if (c < 0x11083)
                       {
-                        if ((c >= 0x11080) && (c <= 0x11082))
-                          return Line_CM;
-                        /* (c >= 0x11083) && (c <= 0x110AF) */
-                        return Line_AL;
+                        if (c == 0x1107F)
+                          return Line_GL;
+                        /* (c >= 0x11080) && (c <= 0x11082) */
+                        return Line_CM;
                       }
                       else
                       {
-                        if ((c >= 0x110B0) && (c <= 0x110BA))
-                          return Line_CM;
-                        /* (c >= 0x110BB) && (c <= 0x110BC) */
+                        /* (c >= 0x11083) && (c <= 0x110AF) */
                         return Line_AL;
                       }
                     }
                     else
+                    {
+                      if ((c >= 0x110B0) && (c <= 0x110BA))
+                        return Line_CM;
+                      /* (c >= 0x110BB) && (c <= 0x110BC) */
+                      return Line_AL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x110C3)
                     {
                       if (c < 0x110C2)
                       {
@@ -81358,158 +77544,127 @@ line_category(Py_UCS4 c)
                         return Line_CM;
                       }
                     }
-                  }
-                  else
-                  {
-                    if (c < 0x110D0)
-                    {
-                      if (c < 0x110CE)
-                      {
-                        if ((c >= 0x110C3) && (c <= 0x110CC))
-                          return Line_XX;
-                        /* c == 0x110CD */
-                        return Line_NU;
-                      }
-                      else
-                      {
-                        /* (c >= 0x110CE) && (c <= 0x110CF) */
-                        return Line_XX;
-                      }
-                    }
                     else
                     {
-                      if (c < 0x110F0)
-                      {
-                        if ((c >= 0x110D0) && (c <= 0x110E8))
-                          return Line_AL;
-                        /* (c >= 0x110E9) && (c <= 0x110EF) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x110F0) && (c <= 0x110F9) */
-                        return Line_NU;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-            else
-            {
-              if (c < 0x111D0)
-              {
-                if (c < 0x11175)
-                {
-                  if (c < 0x11144)
-                  {
-                    if (c < 0x11135)
-                    {
-                      if (c < 0x11103)
-                      {
-                        if ((c >= 0x110FA) && (c <= 0x110FF))
-                          return Line_XX;
-                        /* (c >= 0x11100) && (c <= 0x11102) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        if ((c >= 0x11103) && (c <= 0x11126))
-                          return Line_AL;
-                        /* (c >= 0x11127) && (c <= 0x11134) */
-                        return Line_CM;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x11140)
-                      {
-                        if (c == 0x11135)
-                          return Line_XX;
-                        /* (c >= 0x11136) && (c <= 0x1113F) */
-                        return Line_NU;
-                      }
-                      else
-                      {
-                        /* (c >= 0x11140) && (c <= 0x11143) */
-                        return Line_BA;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x11150)
-                    {
-                      if (c < 0x11147)
-                      {
-                        if (c == 0x11144)
-                          return Line_AL;
-                        /* (c >= 0x11145) && (c <= 0x11146) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        if (c == 0x11147)
-                          return Line_AL;
-                        /* (c >= 0x11148) && (c <= 0x1114F) */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x11174)
-                      {
-                        if ((c >= 0x11150) && (c <= 0x11172))
-                          return Line_AL;
-                        /* c == 0x11173 */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* c == 0x11174 */
+                      if ((c >= 0x110C3) && (c <= 0x110CC))
                         return Line_AL;
-                      }
+                      /* c == 0x110CD */
+                      return Line_NU;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0x111C5)
+                  if (c < 0x11127)
                   {
-                    if (c < 0x11183)
+                    if (c < 0x11100)
                     {
-                      if (c < 0x11177)
+                      if (c < 0x110FA)
                       {
-                        if (c == 0x11175)
-                          return Line_BB;
-                        /* c == 0x11176 */
+                        if ((c >= 0x110CE) && (c <= 0x110EF))
+                          return Line_AL;
+                        /* (c >= 0x110F0) && (c <= 0x110F9) */
+                        return Line_NU;
+                      }
+                      else
+                      {
+                        /* (c >= 0x110FA) && (c <= 0x110FF) */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x11100) && (c <= 0x11102))
+                        return Line_CM;
+                      /* (c >= 0x11103) && (c <= 0x11126) */
+                      return Line_AL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x11140)
+                    {
+                      if (c < 0x11136)
+                      {
+                        if ((c >= 0x11127) && (c <= 0x11134))
+                          return Line_CM;
+                        /* c == 0x11135 */
                         return Line_AL;
                       }
                       else
                       {
-                        if ((c >= 0x11177) && (c <= 0x1117F))
-                          return Line_XX;
-                        /* (c >= 0x11180) && (c <= 0x11182) */
+                        /* (c >= 0x11136) && (c <= 0x1113F) */
+                        return Line_NU;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x11140) && (c <= 0x11143))
+                        return Line_BA;
+                      /* c == 0x11144 */
+                      return Line_AL;
+                    }
+                  }
+                }
+              }
+              else
+              {
+                if (c < 0x111C5)
+                {
+                  if (c < 0x11176)
+                  {
+                    if (c < 0x11174)
+                    {
+                      if (c < 0x11173)
+                      {
+                        if ((c >= 0x11145) && (c <= 0x11146))
+                          return Line_CM;
+                        /* (c >= 0x11147) && (c <= 0x11172) */
+                        return Line_AL;
+                      }
+                      else
+                      {
+                        /* c == 0x11173 */
                         return Line_CM;
                       }
                     }
                     else
                     {
-                      if (c < 0x111C1)
+                      if (c == 0x11174)
+                        return Line_AL;
+                      /* c == 0x11175 */
+                      return Line_BB;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x111B3)
+                    {
+                      if (c < 0x11183)
                       {
-                        if ((c >= 0x11183) && (c <= 0x111B2))
+                        if ((c >= 0x11176) && (c <= 0x1117F))
                           return Line_AL;
-                        /* (c >= 0x111B3) && (c <= 0x111C0) */
+                        /* (c >= 0x11180) && (c <= 0x11182) */
                         return Line_CM;
                       }
                       else
                       {
-                        /* (c >= 0x111C1) && (c <= 0x111C4) */
+                        /* (c >= 0x11183) && (c <= 0x111B2) */
                         return Line_AL;
                       }
                     }
+                    else
+                    {
+                      if ((c >= 0x111B3) && (c <= 0x111C0))
+                        return Line_CM;
+                      /* (c >= 0x111C1) && (c <= 0x111C4) */
+                      return Line_AL;
+                    }
                   }
-                  else
+                }
+                else
+                {
+                  if (c < 0x111CE)
                   {
                     if (c < 0x111C9)
                     {
@@ -81528,241 +77683,157 @@ line_category(Py_UCS4 c)
                     }
                     else
                     {
-                      if (c < 0x111CE)
+                      if ((c >= 0x111C9) && (c <= 0x111CC))
+                        return Line_CM;
+                      /* c == 0x111CD */
+                      return Line_AL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x111DA)
+                    {
+                      if ((c >= 0x111CE) && (c <= 0x111CF))
+                        return Line_CM;
+                      /* (c >= 0x111D0) && (c <= 0x111D9) */
+                      return Line_NU;
+                    }
+                    else
+                    {
+                      if (c == 0x111DA)
+                        return Line_AL;
+                      /* c == 0x111DB */
+                      return Line_BB;
+                    }
+                  }
+                }
+              }
+            }
+            else
+            {
+              if (c < 0x11305)
+              {
+                if (c < 0x11241)
+                {
+                  if (c < 0x1123A)
+                  {
+                    if (c < 0x1122C)
+                    {
+                      if (c < 0x111E0)
                       {
-                        if ((c >= 0x111C9) && (c <= 0x111CC))
+                        if (c == 0x111DC)
+                          return Line_AL;
+                        /* (c >= 0x111DD) && (c <= 0x111DF) */
+                        return Line_BA;
+                      }
+                      else
+                      {
+                        /* (c >= 0x111E0) && (c <= 0x1122B) */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x1122C) && (c <= 0x11237))
+                        return Line_CM;
+                      /* (c >= 0x11238) && (c <= 0x11239) */
+                      return Line_BA;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x1123E)
+                    {
+                      if (c < 0x1123D)
+                      {
+                        if (c == 0x1123A)
+                          return Line_AL;
+                        /* (c >= 0x1123B) && (c <= 0x1123C) */
+                        return Line_BA;
+                      }
+                      else
+                      {
+                        /* c == 0x1123D */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0x1123E)
+                        return Line_CM;
+                      /* (c >= 0x1123F) && (c <= 0x11240) */
+                      return Line_AL;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x112EB)
+                  {
+                    if (c < 0x112AA)
+                    {
+                      if (c < 0x112A9)
+                      {
+                        if (c == 0x11241)
                           return Line_CM;
-                        /* c == 0x111CD */
+                        /* (c >= 0x11242) && (c <= 0x112A8) */
                         return Line_AL;
                       }
                       else
                       {
-                        /* (c >= 0x111CE) && (c <= 0x111CF) */
-                        return Line_CM;
+                        /* c == 0x112A9 */
+                        return Line_BA;
                       }
+                    }
+                    else
+                    {
+                      if ((c >= 0x112AA) && (c <= 0x112DE))
+                        return Line_AL;
+                      /* (c >= 0x112DF) && (c <= 0x112EA) */
+                      return Line_CM;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x11300)
+                    {
+                      if (c < 0x112FA)
+                      {
+                        if ((c >= 0x112EB) && (c <= 0x112EF))
+                          return Line_AL;
+                        /* (c >= 0x112F0) && (c <= 0x112F9) */
+                        return Line_NU;
+                      }
+                      else
+                      {
+                        /* (c >= 0x112FA) && (c <= 0x112FF) */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x11300) && (c <= 0x11303))
+                        return Line_CM;
+                      /* c == 0x11304 */
+                      return Line_AL;
                     }
                   }
                 }
               }
               else
               {
-                if (c < 0x1123B)
+                if (c < 0x11335)
                 {
-                  if (c < 0x111F5)
+                  if (c < 0x11329)
                   {
-                    if (c < 0x111DD)
-                    {
-                      if (c < 0x111DB)
-                      {
-                        if ((c >= 0x111D0) && (c <= 0x111D9))
-                          return Line_NU;
-                        /* c == 0x111DA */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if (c == 0x111DB)
-                          return Line_BB;
-                        /* c == 0x111DC */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x111E1)
-                      {
-                        if ((c >= 0x111DD) && (c <= 0x111DF))
-                          return Line_BA;
-                        /* c == 0x111E0 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x111E1) && (c <= 0x111F4) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x1122C)
-                    {
-                      if (c < 0x11212)
-                      {
-                        if ((c >= 0x111F5) && (c <= 0x111FF))
-                          return Line_XX;
-                        /* (c >= 0x11200) && (c <= 0x11211) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if (c == 0x11212)
-                          return Line_XX;
-                        /* (c >= 0x11213) && (c <= 0x1122B) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1123A)
-                      {
-                        if ((c >= 0x1122C) && (c <= 0x11237))
-                          return Line_CM;
-                        /* (c >= 0x11238) && (c <= 0x11239) */
-                        return Line_BA;
-                      }
-                      else
-                      {
-                        /* c == 0x1123A */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x11287)
-                  {
-                    if (c < 0x11241)
-                    {
-                      if (c < 0x1123E)
-                      {
-                        if ((c >= 0x1123B) && (c <= 0x1123C))
-                          return Line_BA;
-                        /* c == 0x1123D */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if (c == 0x1123E)
-                          return Line_CM;
-                        /* (c >= 0x1123F) && (c <= 0x11240) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x11280)
-                      {
-                        if (c == 0x11241)
-                          return Line_CM;
-                        /* (c >= 0x11242) && (c <= 0x1127F) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x11280) && (c <= 0x11286) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x1128A)
-                    {
-                      if (c < 0x11289)
-                      {
-                        if (c == 0x11287)
-                          return Line_XX;
-                        /* c == 0x11288 */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x11289 */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1128F)
-                      {
-                        if ((c >= 0x1128A) && (c <= 0x1128D))
-                          return Line_AL;
-                        /* c == 0x1128E */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1128F) && (c <= 0x1129D) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-          else
-          {
-            if (c < 0x1145E)
-            {
-              if (c < 0x11347)
-              {
-                if (c < 0x11311)
-                {
-                  if (c < 0x112F0)
-                  {
-                    if (c < 0x112B0)
-                    {
-                      if (c < 0x112A9)
-                      {
-                        if (c == 0x1129E)
-                          return Line_XX;
-                        /* (c >= 0x1129F) && (c <= 0x112A8) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if (c == 0x112A9)
-                          return Line_BA;
-                        /* (c >= 0x112AA) && (c <= 0x112AF) */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x112EB)
-                      {
-                        if ((c >= 0x112B0) && (c <= 0x112DE))
-                          return Line_AL;
-                        /* (c >= 0x112DF) && (c <= 0x112EA) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* (c >= 0x112EB) && (c <= 0x112EF) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x11305)
-                    {
-                      if (c < 0x11300)
-                      {
-                        if ((c >= 0x112F0) && (c <= 0x112F9))
-                          return Line_NU;
-                        /* (c >= 0x112FA) && (c <= 0x112FF) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x11300) && (c <= 0x11303))
-                          return Line_CM;
-                        /* c == 0x11304 */
-                        return Line_XX;
-                      }
-                    }
-                    else
+                    if (c < 0x11311)
                     {
                       if (c < 0x1130F)
                       {
                         if ((c >= 0x11305) && (c <= 0x1130C))
                           return Line_AK;
                         /* (c >= 0x1130D) && (c <= 0x1130E) */
-                        return Line_XX;
+                        return Line_AL;
                       }
                       else
                       {
@@ -81770,46 +77841,43 @@ line_category(Py_UCS4 c)
                         return Line_AK;
                       }
                     }
-                  }
-                }
-                else
-                {
-                  if (c < 0x11335)
-                  {
-                    if (c < 0x11331)
+                    else
                     {
-                      if (c < 0x11329)
+                      if ((c >= 0x11311) && (c <= 0x11312))
+                        return Line_AL;
+                      /* (c >= 0x11313) && (c <= 0x11328) */
+                      return Line_AK;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x11332)
+                    {
+                      if (c < 0x11331)
                       {
-                        if ((c >= 0x11311) && (c <= 0x11312))
-                          return Line_XX;
-                        /* (c >= 0x11313) && (c <= 0x11328) */
+                        if (c == 0x11329)
+                          return Line_AL;
+                        /* (c >= 0x1132A) && (c <= 0x11330) */
                         return Line_AK;
                       }
                       else
                       {
-                        if (c == 0x11329)
-                          return Line_XX;
-                        /* (c >= 0x1132A) && (c <= 0x11330) */
-                        return Line_AK;
+                        /* c == 0x11331 */
+                        return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0x11334)
-                      {
-                        if (c == 0x11331)
-                          return Line_XX;
-                        /* (c >= 0x11332) && (c <= 0x11333) */
+                      if ((c >= 0x11332) && (c <= 0x11333))
                         return Line_AK;
-                      }
-                      else
-                      {
-                        /* c == 0x11334 */
-                        return Line_XX;
-                      }
+                      /* c == 0x11334 */
+                      return Line_AL;
                     }
                   }
-                  else
+                }
+                else
+                {
+                  if (c < 0x11345)
                   {
                     if (c < 0x1133D)
                     {
@@ -81818,7 +77886,7 @@ line_category(Py_UCS4 c)
                         if ((c >= 0x11335) && (c <= 0x11339))
                           return Line_AK;
                         /* c == 0x1133A */
-                        return Line_XX;
+                        return Line_AL;
                       }
                       else
                       {
@@ -81828,462 +77896,27 @@ line_category(Py_UCS4 c)
                     }
                     else
                     {
-                      if (c < 0x11345)
-                      {
-                        if (c == 0x1133D)
-                          return Line_BA;
-                        /* (c >= 0x1133E) && (c <= 0x11344) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* (c >= 0x11345) && (c <= 0x11346) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                }
-              }
-              else
-              {
-                if (c < 0x11366)
-                {
-                  if (c < 0x11357)
-                  {
-                    if (c < 0x1134E)
-                    {
-                      if (c < 0x1134B)
-                      {
-                        if ((c >= 0x11347) && (c <= 0x11348))
-                          return Line_CM;
-                        /* (c >= 0x11349) && (c <= 0x1134A) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1134B) && (c <= 0x1134C))
-                          return Line_CM;
-                        /* c == 0x1134D */
-                        return Line_VI;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x11351)
-                      {
-                        if ((c >= 0x1134E) && (c <= 0x1134F))
-                          return Line_XX;
-                        /* c == 0x11350 */
-                        return Line_AS;
-                      }
-                      else
-                      {
-                        /* (c >= 0x11351) && (c <= 0x11356) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x11360)
-                    {
-                      if (c < 0x1135D)
-                      {
-                        if (c == 0x11357)
-                          return Line_CM;
-                        /* (c >= 0x11358) && (c <= 0x1135C) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if (c == 0x1135D)
-                          return Line_BA;
-                        /* (c >= 0x1135E) && (c <= 0x1135F) */
-                        return Line_AS;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x11364)
-                      {
-                        if ((c >= 0x11360) && (c <= 0x11361))
-                          return Line_AK;
-                        /* (c >= 0x11362) && (c <= 0x11363) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* (c >= 0x11364) && (c <= 0x11365) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x1144B)
-                  {
-                    if (c < 0x11400)
-                    {
-                      if (c < 0x11370)
-                      {
-                        if ((c >= 0x11366) && (c <= 0x1136C))
-                          return Line_CM;
-                        /* (c >= 0x1136D) && (c <= 0x1136F) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x11370) && (c <= 0x11374))
-                          return Line_CM;
-                        /* (c >= 0x11375) && (c <= 0x113FF) */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x11447)
-                      {
-                        if ((c >= 0x11400) && (c <= 0x11434))
-                          return Line_AL;
-                        /* (c >= 0x11435) && (c <= 0x11446) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* (c >= 0x11447) && (c <= 0x1144A) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x1145A)
-                    {
-                      if (c < 0x11450)
-                      {
-                        if ((c >= 0x1144B) && (c <= 0x1144E))
-                          return Line_BA;
-                        /* c == 0x1144F */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x11450) && (c <= 0x11459) */
-                        return Line_NU;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1145D)
-                      {
-                        if ((c >= 0x1145A) && (c <= 0x1145B))
-                          return Line_BA;
-                        /* c == 0x1145C */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* c == 0x1145D */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-            else
-            {
-              if (c < 0x1165A)
-              {
-                if (c < 0x115C2)
-                {
-                  if (c < 0x114D0)
-                  {
-                    if (c < 0x114B0)
-                    {
-                      if (c < 0x11462)
-                      {
-                        if (c == 0x1145E)
-                          return Line_CM;
-                        /* (c >= 0x1145F) && (c <= 0x11461) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if ((c >= 0x11462) && (c <= 0x1147F))
-                          return Line_XX;
-                        /* (c >= 0x11480) && (c <= 0x114AF) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x114C8)
-                      {
-                        if ((c >= 0x114B0) && (c <= 0x114C3))
-                          return Line_CM;
-                        /* (c >= 0x114C4) && (c <= 0x114C7) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x114C8) && (c <= 0x114CF) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x115B6)
-                    {
-                      if (c < 0x11580)
-                      {
-                        if ((c >= 0x114D0) && (c <= 0x114D9))
-                          return Line_NU;
-                        /* (c >= 0x114DA) && (c <= 0x1157F) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x11580) && (c <= 0x115AE))
-                          return Line_AL;
-                        /* (c >= 0x115AF) && (c <= 0x115B5) */
-                        return Line_CM;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x115C1)
-                      {
-                        if ((c >= 0x115B6) && (c <= 0x115B7))
-                          return Line_XX;
-                        /* (c >= 0x115B8) && (c <= 0x115C0) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* c == 0x115C1 */
-                        return Line_BB;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x11600)
-                  {
-                    if (c < 0x115D8)
-                    {
-                      if (c < 0x115C6)
-                      {
-                        if ((c >= 0x115C2) && (c <= 0x115C3))
-                          return Line_BA;
-                        /* (c >= 0x115C4) && (c <= 0x115C5) */
-                        return Line_EX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x115C6) && (c <= 0x115C8))
-                          return Line_AL;
-                        /* (c >= 0x115C9) && (c <= 0x115D7) */
+                      if (c == 0x1133D)
                         return Line_BA;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x115DE)
-                      {
-                        if ((c >= 0x115D8) && (c <= 0x115DB))
-                          return Line_AL;
-                        /* (c >= 0x115DC) && (c <= 0x115DD) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* (c >= 0x115DE) && (c <= 0x115FF) */
-                        return Line_XX;
-                      }
+                      /* (c >= 0x1133E) && (c <= 0x11344) */
+                      return Line_CM;
                     }
                   }
                   else
                   {
-                    if (c < 0x11643)
+                    if (c < 0x11349)
                     {
-                      if (c < 0x11641)
-                      {
-                        if ((c >= 0x11600) && (c <= 0x1162F))
-                          return Line_AL;
-                        /* (c >= 0x11630) && (c <= 0x11640) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* (c >= 0x11641) && (c <= 0x11642) */
-                        return Line_BA;
-                      }
+                      if ((c >= 0x11345) && (c <= 0x11346))
+                        return Line_AL;
+                      /* (c >= 0x11347) && (c <= 0x11348) */
+                      return Line_CM;
                     }
                     else
                     {
-                      if (c < 0x11650)
-                      {
-                        if ((c >= 0x11643) && (c <= 0x11644))
-                          return Line_AL;
-                        /* (c >= 0x11645) && (c <= 0x1164F) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x11650) && (c <= 0x11659) */
-                        return Line_NU;
-                      }
-                    }
-                  }
-                }
-              }
-              else
-              {
-                if (c < 0x1173A)
-                {
-                  if (c < 0x116C0)
-                  {
-                    if (c < 0x116AB)
-                    {
-                      if (c < 0x1166D)
-                      {
-                        if ((c >= 0x1165A) && (c <= 0x1165F))
-                          return Line_XX;
-                        /* (c >= 0x11660) && (c <= 0x1166C) */
-                        return Line_BB;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1166D) && (c <= 0x1167F))
-                          return Line_XX;
-                        /* (c >= 0x11680) && (c <= 0x116AA) */
+                      if ((c >= 0x11349) && (c <= 0x1134A))
                         return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x116BA)
-                      {
-                        if ((c >= 0x116AB) && (c <= 0x116B7))
-                          return Line_CM;
-                        /* (c >= 0x116B8) && (c <= 0x116B9) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x116BA) && (c <= 0x116BF) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x1171D)
-                    {
-                      if (c < 0x11700)
-                      {
-                        if ((c >= 0x116C0) && (c <= 0x116C9))
-                          return Line_NU;
-                        /* (c >= 0x116CA) && (c <= 0x116FF) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x11700) && (c <= 0x1171A))
-                          return Line_SA;
-                        /* (c >= 0x1171B) && (c <= 0x1171C) */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x11730)
-                      {
-                        if ((c >= 0x1171D) && (c <= 0x1172B))
-                          return Line_SA;
-                        /* (c >= 0x1172C) && (c <= 0x1172F) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x11730) && (c <= 0x11739) */
-                        return Line_NU;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x1183C)
-                  {
-                    if (c < 0x11800)
-                    {
-                      if (c < 0x1173F)
-                      {
-                        if ((c >= 0x1173A) && (c <= 0x1173B))
-                          return Line_SA;
-                        /* (c >= 0x1173C) && (c <= 0x1173E) */
-                        return Line_BA;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1173F) && (c <= 0x11746))
-                          return Line_SA;
-                        /* (c >= 0x11747) && (c <= 0x117FF) */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1183B)
-                      {
-                        if ((c >= 0x11800) && (c <= 0x1182B))
-                          return Line_AL;
-                        /* (c >= 0x1182C) && (c <= 0x1183A) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* c == 0x1183B */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x118EA)
-                    {
-                      if (c < 0x118E0)
-                      {
-                        if ((c >= 0x1183C) && (c <= 0x1189F))
-                          return Line_XX;
-                        /* (c >= 0x118A0) && (c <= 0x118DF) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x118E0) && (c <= 0x118E9) */
-                        return Line_NU;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x118FF)
-                      {
-                        if ((c >= 0x118EA) && (c <= 0x118F2))
-                          return Line_AL;
-                        /* (c >= 0x118F3) && (c <= 0x118FE) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* c == 0x118FF */
-                        return Line_AL;
-                      }
+                      /* (c >= 0x1134B) && (c <= 0x1134C) */
+                      return Line_CM;
                     }
                   }
                 }
@@ -82293,41 +77926,371 @@ line_category(Py_UCS4 c)
         }
         else
         {
-          if (c < 0x11D99)
+          if (c < 0x11942)
           {
-            if (c < 0x11AA1)
+            if (c < 0x11630)
             {
-              if (c < 0x119D8)
+              if (c < 0x1145A)
               {
-                if (c < 0x1193E)
+                if (c < 0x11364)
                 {
-                  if (c < 0x11917)
+                  if (c < 0x11358)
                   {
-                    if (c < 0x1190C)
+                    if (c < 0x11351)
                     {
-                      if (c < 0x11909)
+                      if (c < 0x11350)
                       {
-                        if ((c >= 0x11900) && (c <= 0x11906))
-                          return Line_AK;
-                        /* (c >= 0x11907) && (c <= 0x11908) */
-                        return Line_XX;
+                        if (c == 0x1134D)
+                          return Line_VI;
+                        /* (c >= 0x1134E) && (c <= 0x1134F) */
+                        return Line_AL;
                       }
                       else
                       {
-                        if (c == 0x11909)
-                          return Line_AK;
-                        /* (c >= 0x1190A) && (c <= 0x1190B) */
-                        return Line_XX;
+                        /* c == 0x11350 */
+                        return Line_AS;
                       }
                     }
                     else
+                    {
+                      if ((c >= 0x11351) && (c <= 0x11356))
+                        return Line_AL;
+                      /* c == 0x11357 */
+                      return Line_CM;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x11360)
+                    {
+                      if (c < 0x1135E)
+                      {
+                        if ((c >= 0x11358) && (c <= 0x1135C))
+                          return Line_AL;
+                        /* c == 0x1135D */
+                        return Line_BA;
+                      }
+                      else
+                      {
+                        /* (c >= 0x1135E) && (c <= 0x1135F) */
+                        return Line_AS;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x11360) && (c <= 0x11361))
+                        return Line_AK;
+                      /* (c >= 0x11362) && (c <= 0x11363) */
+                      return Line_CM;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x11435)
+                  {
+                    if (c < 0x11370)
+                    {
+                      if (c < 0x1136D)
+                      {
+                        if ((c >= 0x11364) && (c <= 0x11365))
+                          return Line_AL;
+                        /* (c >= 0x11366) && (c <= 0x1136C) */
+                        return Line_CM;
+                      }
+                      else
+                      {
+                        /* (c >= 0x1136D) && (c <= 0x1136F) */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x11370) && (c <= 0x11374))
+                        return Line_CM;
+                      /* (c >= 0x11375) && (c <= 0x11434) */
+                      return Line_AL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x1144F)
+                    {
+                      if (c < 0x1144B)
+                      {
+                        if ((c >= 0x11435) && (c <= 0x11446))
+                          return Line_CM;
+                        /* (c >= 0x11447) && (c <= 0x1144A) */
+                        return Line_AL;
+                      }
+                      else
+                      {
+                        /* (c >= 0x1144B) && (c <= 0x1144E) */
+                        return Line_BA;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0x1144F)
+                        return Line_AL;
+                      /* (c >= 0x11450) && (c <= 0x11459) */
+                      return Line_NU;
+                    }
+                  }
+                }
+              }
+              else
+              {
+                if (c < 0x115B8)
+                {
+                  if (c < 0x114C4)
+                  {
+                    if (c < 0x1145F)
+                    {
+                      if (c < 0x1145E)
+                      {
+                        if ((c >= 0x1145A) && (c <= 0x1145B))
+                          return Line_BA;
+                        /* (c >= 0x1145C) && (c <= 0x1145D) */
+                        return Line_AL;
+                      }
+                      else
+                      {
+                        /* c == 0x1145E */
+                        return Line_CM;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x1145F) && (c <= 0x114AF))
+                        return Line_AL;
+                      /* (c >= 0x114B0) && (c <= 0x114C3) */
+                      return Line_CM;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x115AF)
+                    {
+                      if (c < 0x114DA)
+                      {
+                        if ((c >= 0x114C4) && (c <= 0x114CF))
+                          return Line_AL;
+                        /* (c >= 0x114D0) && (c <= 0x114D9) */
+                        return Line_NU;
+                      }
+                      else
+                      {
+                        /* (c >= 0x114DA) && (c <= 0x115AE) */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x115AF) && (c <= 0x115B5))
+                        return Line_CM;
+                      /* (c >= 0x115B6) && (c <= 0x115B7) */
+                      return Line_AL;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x115C9)
+                  {
+                    if (c < 0x115C4)
+                    {
+                      if (c < 0x115C2)
+                      {
+                        if ((c >= 0x115B8) && (c <= 0x115C0))
+                          return Line_CM;
+                        /* c == 0x115C1 */
+                        return Line_BB;
+                      }
+                      else
+                      {
+                        /* (c >= 0x115C2) && (c <= 0x115C3) */
+                        return Line_BA;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x115C4) && (c <= 0x115C5))
+                        return Line_EX;
+                      /* (c >= 0x115C6) && (c <= 0x115C8) */
+                      return Line_AL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x115DC)
+                    {
+                      if ((c >= 0x115C9) && (c <= 0x115D7))
+                        return Line_BA;
+                      /* (c >= 0x115D8) && (c <= 0x115DB) */
+                      return Line_AL;
+                    }
+                    else
+                    {
+                      if ((c >= 0x115DC) && (c <= 0x115DD))
+                        return Line_CM;
+                      /* (c >= 0x115DE) && (c <= 0x1162F) */
+                      return Line_AL;
+                    }
+                  }
+                }
+              }
+            }
+            else
+            {
+              if (c < 0x118EA)
+              {
+                if (c < 0x116CA)
+                {
+                  if (c < 0x11660)
+                  {
+                    if (c < 0x11650)
+                    {
+                      if (c < 0x11643)
+                      {
+                        if ((c >= 0x11630) && (c <= 0x11640))
+                          return Line_CM;
+                        /* (c >= 0x11641) && (c <= 0x11642) */
+                        return Line_BA;
+                      }
+                      else
+                      {
+                        /* (c >= 0x11643) && (c <= 0x1164F) */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x11650) && (c <= 0x11659))
+                        return Line_NU;
+                      /* (c >= 0x1165A) && (c <= 0x1165F) */
+                      return Line_AL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x116B8)
+                    {
+                      if (c < 0x116AB)
+                      {
+                        if ((c >= 0x11660) && (c <= 0x1166C))
+                          return Line_BB;
+                        /* (c >= 0x1166D) && (c <= 0x116AA) */
+                        return Line_AL;
+                      }
+                      else
+                      {
+                        /* (c >= 0x116AB) && (c <= 0x116B7) */
+                        return Line_CM;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x116B8) && (c <= 0x116BF))
+                        return Line_AL;
+                      /* (c >= 0x116C0) && (c <= 0x116C9) */
+                      return Line_NU;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x1173C)
+                  {
+                    if (c < 0x11730)
+                    {
+                      if (c < 0x1172C)
+                      {
+                        if ((c >= 0x116CA) && (c <= 0x1171C))
+                          return Line_AL;
+                        /* (c >= 0x1171D) && (c <= 0x1172B) */
+                        return Line_CM;
+                      }
+                      else
+                      {
+                        /* (c >= 0x1172C) && (c <= 0x1172F) */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x11730) && (c <= 0x11739))
+                        return Line_NU;
+                      /* (c >= 0x1173A) && (c <= 0x1173B) */
+                      return Line_AL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x1183B)
+                    {
+                      if (c < 0x1182C)
+                      {
+                        if ((c >= 0x1173C) && (c <= 0x1173E))
+                          return Line_BA;
+                        /* (c >= 0x1173F) && (c <= 0x1182B) */
+                        return Line_AL;
+                      }
+                      else
+                      {
+                        /* (c >= 0x1182C) && (c <= 0x1183A) */
+                        return Line_CM;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x1183B) && (c <= 0x118DF))
+                        return Line_AL;
+                      /* (c >= 0x118E0) && (c <= 0x118E9) */
+                      return Line_NU;
+                    }
+                  }
+                }
+              }
+              else
+              {
+                if (c < 0x11930)
+                {
+                  if (c < 0x1190C)
+                  {
+                    if (c < 0x11909)
+                    {
+                      if (c < 0x11907)
+                      {
+                        if ((c >= 0x118EA) && (c <= 0x118FF))
+                          return Line_AL;
+                        /* (c >= 0x11900) && (c <= 0x11906) */
+                        return Line_AK;
+                      }
+                      else
+                      {
+                        /* (c >= 0x11907) && (c <= 0x11908) */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if (c == 0x11909)
+                        return Line_AK;
+                      /* (c >= 0x1190A) && (c <= 0x1190B) */
+                      return Line_AL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x11917)
                     {
                       if (c < 0x11915)
                       {
                         if ((c >= 0x1190C) && (c <= 0x11913))
                           return Line_AK;
                         /* c == 0x11914 */
-                        return Line_XX;
+                        return Line_AL;
                       }
                       else
                       {
@@ -82335,65 +78298,74 @@ line_category(Py_UCS4 c)
                         return Line_AK;
                       }
                     }
-                  }
-                  else
-                  {
-                    if (c < 0x11937)
-                    {
-                      if (c < 0x11930)
-                      {
-                        if (c == 0x11917)
-                          return Line_XX;
-                        /* (c >= 0x11918) && (c <= 0x1192F) */
-                        return Line_AK;
-                      }
-                      else
-                      {
-                        if ((c >= 0x11930) && (c <= 0x11935))
-                          return Line_CM;
-                        /* c == 0x11936 */
-                        return Line_XX;
-                      }
-                    }
                     else
                     {
-                      if (c < 0x1193B)
-                      {
-                        if ((c >= 0x11937) && (c <= 0x11938))
-                          return Line_CM;
-                        /* (c >= 0x11939) && (c <= 0x1193A) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1193B) && (c <= 0x1193D) */
-                        return Line_CM;
-                      }
+                      if (c == 0x11917)
+                        return Line_AL;
+                      /* (c >= 0x11918) && (c <= 0x1192F) */
+                      return Line_AK;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0x11950)
+                  if (c < 0x1193E)
                   {
-                    if (c < 0x11942)
+                    if (c < 0x11939)
                     {
-                      if (c < 0x11940)
+                      if (c < 0x11937)
                       {
-                        if (c == 0x1193E)
-                          return Line_VI;
-                        /* c == 0x1193F */
-                        return Line_AP;
+                        if ((c >= 0x11930) && (c <= 0x11935))
+                          return Line_CM;
+                        /* c == 0x11936 */
+                        return Line_AL;
                       }
                       else
                       {
-                        if (c == 0x11940)
-                          return Line_CM;
-                        /* c == 0x11941 */
-                        return Line_AP;
+                        /* (c >= 0x11937) && (c <= 0x11938) */
+                        return Line_CM;
                       }
                     }
                     else
+                    {
+                      if ((c >= 0x11939) && (c <= 0x1193A))
+                        return Line_AL;
+                      /* (c >= 0x1193B) && (c <= 0x1193D) */
+                      return Line_CM;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x11940)
+                    {
+                      if (c == 0x1193E)
+                        return Line_VI;
+                      /* c == 0x1193F */
+                      return Line_AP;
+                    }
+                    else
+                    {
+                      if (c == 0x11940)
+                        return Line_CM;
+                      /* c == 0x11941 */
+                      return Line_AP;
+                    }
+                  }
+                }
+              }
+            }
+          }
+          else
+          {
+            if (c < 0x11C41)
+            {
+              if (c < 0x11A41)
+              {
+                if (c < 0x119E3)
+                {
+                  if (c < 0x119D1)
+                  {
+                    if (c < 0x11950)
                     {
                       if (c < 0x11947)
                       {
@@ -82405,69 +78377,48 @@ line_category(Py_UCS4 c)
                       else
                       {
                         /* (c >= 0x11947) && (c <= 0x1194F) */
-                        return Line_XX;
+                        return Line_AL;
                       }
+                    }
+                    else
+                    {
+                      if ((c >= 0x11950) && (c <= 0x11959))
+                        return Line_ID;
+                      /* (c >= 0x1195A) && (c <= 0x119D0) */
+                      return Line_AL;
                     }
                   }
                   else
                   {
-                    if (c < 0x119A8)
+                    if (c < 0x119E1)
                     {
-                      if (c < 0x119A0)
+                      if (c < 0x119DA)
                       {
-                        if ((c >= 0x11950) && (c <= 0x11959))
-                          return Line_ID;
-                        /* (c >= 0x1195A) && (c <= 0x1199F) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x119A0) && (c <= 0x119A7) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x119D1)
-                      {
-                        if ((c >= 0x119A8) && (c <= 0x119A9))
-                          return Line_XX;
-                        /* (c >= 0x119AA) && (c <= 0x119D0) */
+                        if ((c >= 0x119D1) && (c <= 0x119D7))
+                          return Line_CM;
+                        /* (c >= 0x119D8) && (c <= 0x119D9) */
                         return Line_AL;
                       }
                       else
                       {
-                        /* (c >= 0x119D1) && (c <= 0x119D7) */
-                        return Line_CM;
-                      }
-                    }
-                  }
-                }
-              }
-              else
-              {
-                if (c < 0x11A40)
-                {
-                  if (c < 0x11A00)
-                  {
-                    if (c < 0x119E3)
-                    {
-                      if (c < 0x119E1)
-                      {
-                        if ((c >= 0x119D8) && (c <= 0x119D9))
-                          return Line_XX;
                         /* (c >= 0x119DA) && (c <= 0x119E0) */
                         return Line_CM;
                       }
-                      else
-                      {
-                        if (c == 0x119E1)
-                          return Line_AL;
-                        /* c == 0x119E2 */
-                        return Line_BB;
-                      }
                     }
                     else
+                    {
+                      if (c == 0x119E1)
+                        return Line_AL;
+                      /* c == 0x119E2 */
+                      return Line_BB;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x11A33)
+                  {
+                    if (c < 0x11A01)
                     {
                       if (c < 0x119E5)
                       {
@@ -82478,82 +78429,72 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        /* (c >= 0x119E5) && (c <= 0x119FF) */
-                        return Line_XX;
+                        /* (c >= 0x119E5) && (c <= 0x11A00) */
+                        return Line_AL;
                       }
+                    }
+                    else
+                    {
+                      if ((c >= 0x11A01) && (c <= 0x11A0A))
+                        return Line_CM;
+                      /* (c >= 0x11A0B) && (c <= 0x11A32) */
+                      return Line_AL;
                     }
                   }
                   else
                   {
-                    if (c < 0x11A3A)
+                    if (c < 0x11A3F)
                     {
-                      if (c < 0x11A0B)
+                      if (c < 0x11A3B)
                       {
-                        if (c == 0x11A00)
-                          return Line_AL;
-                        /* (c >= 0x11A01) && (c <= 0x11A0A) */
-                        return Line_CM;
+                        if ((c >= 0x11A33) && (c <= 0x11A39))
+                          return Line_CM;
+                        /* c == 0x11A3A */
+                        return Line_AL;
                       }
                       else
                       {
-                        if ((c >= 0x11A0B) && (c <= 0x11A32))
-                          return Line_AL;
-                        /* (c >= 0x11A33) && (c <= 0x11A39) */
+                        /* (c >= 0x11A3B) && (c <= 0x11A3E) */
                         return Line_CM;
                       }
                     }
                     else
                     {
-                      if (c < 0x11A3F)
-                      {
-                        if (c == 0x11A3A)
-                          return Line_AL;
-                        /* (c >= 0x11A3B) && (c <= 0x11A3E) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* c == 0x11A3F */
+                      if (c == 0x11A3F)
                         return Line_BB;
-                      }
+                      /* c == 0x11A40 */
+                      return Line_AL;
                     }
                   }
                 }
-                else
+              }
+              else
+              {
+                if (c < 0x11A9E)
                 {
                   if (c < 0x11A51)
                   {
                     if (c < 0x11A47)
                     {
-                      if (c < 0x11A45)
+                      if (c < 0x11A46)
                       {
-                        if (c == 0x11A40)
-                          return Line_AL;
-                        /* (c >= 0x11A41) && (c <= 0x11A44) */
-                        return Line_BA;
+                        if ((c >= 0x11A41) && (c <= 0x11A44))
+                          return Line_BA;
+                        /* c == 0x11A45 */
+                        return Line_BB;
                       }
                       else
                       {
-                        if (c == 0x11A45)
-                          return Line_BB;
                         /* c == 0x11A46 */
                         return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0x11A50)
-                      {
-                        if (c == 0x11A47)
-                          return Line_CM;
-                        /* (c >= 0x11A48) && (c <= 0x11A4F) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* c == 0x11A50 */
-                        return Line_AL;
-                      }
+                      if (c == 0x11A47)
+                        return Line_CM;
+                      /* (c >= 0x11A48) && (c <= 0x11A50) */
+                      return Line_AL;
                     }
                   }
                   else
@@ -82575,18 +78516,55 @@ line_category(Py_UCS4 c)
                     }
                     else
                     {
-                      if (c < 0x11A9E)
+                      if ((c >= 0x11A9A) && (c <= 0x11A9C))
+                        return Line_BA;
+                      /* c == 0x11A9D */
+                      return Line_AL;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x11C2F)
+                  {
+                    if (c < 0x11B00)
+                    {
+                      if (c < 0x11AA3)
                       {
-                        if ((c >= 0x11A9A) && (c <= 0x11A9C))
-                          return Line_BA;
-                        /* c == 0x11A9D */
-                        return Line_AL;
+                        if ((c >= 0x11A9E) && (c <= 0x11AA0))
+                          return Line_BB;
+                        /* (c >= 0x11AA1) && (c <= 0x11AA2) */
+                        return Line_BA;
                       }
                       else
                       {
-                        /* (c >= 0x11A9E) && (c <= 0x11AA0) */
-                        return Line_BB;
+                        /* (c >= 0x11AA3) && (c <= 0x11AFF) */
+                        return Line_AL;
                       }
+                    }
+                    else
+                    {
+                      if ((c >= 0x11B00) && (c <= 0x11B09))
+                        return Line_BB;
+                      /* (c >= 0x11B0A) && (c <= 0x11C2E) */
+                      return Line_AL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x11C38)
+                    {
+                      if ((c >= 0x11C2F) && (c <= 0x11C36))
+                        return Line_CM;
+                      /* c == 0x11C37 */
+                      return Line_AL;
+                    }
+                    else
+                    {
+                      if ((c >= 0x11C38) && (c <= 0x11C3F))
+                        return Line_CM;
+                      /* c == 0x11C40 */
+                      return Line_AL;
                     }
                   }
                 }
@@ -82594,372 +78572,242 @@ line_category(Py_UCS4 c)
             }
             else
             {
-              if (c < 0x11D07)
+              if (c < 0x11D48)
               {
-                if (c < 0x11C46)
+                if (c < 0x11CB7)
                 {
-                  if (c < 0x11C09)
+                  if (c < 0x11C71)
                   {
-                    if (c < 0x11B00)
+                    if (c < 0x11C5A)
                     {
-                      if (c < 0x11AB0)
+                      if (c < 0x11C50)
                       {
-                        if ((c >= 0x11AA1) && (c <= 0x11AA2))
+                        if ((c >= 0x11C41) && (c <= 0x11C45))
                           return Line_BA;
-                        /* (c >= 0x11AA3) && (c <= 0x11AAF) */
-                        return Line_XX;
+                        /* (c >= 0x11C46) && (c <= 0x11C4F) */
+                        return Line_AL;
                       }
                       else
                       {
-                        if ((c >= 0x11AB0) && (c <= 0x11AF8))
-                          return Line_AL;
-                        /* (c >= 0x11AF9) && (c <= 0x11AFF) */
-                        return Line_XX;
+                        /* (c >= 0x11C50) && (c <= 0x11C59) */
+                        return Line_NU;
                       }
                     }
                     else
                     {
-                      if (c < 0x11C00)
-                      {
-                        if ((c >= 0x11B00) && (c <= 0x11B09))
-                          return Line_BB;
-                        /* (c >= 0x11B0A) && (c <= 0x11BFF) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x11C00) && (c <= 0x11C08) */
+                      if ((c >= 0x11C5A) && (c <= 0x11C6F))
                         return Line_AL;
-                      }
+                      /* c == 0x11C70 */
+                      return Line_BB;
                     }
                   }
                   else
                   {
-                    if (c < 0x11C38)
+                    if (c < 0x11CA8)
                     {
-                      if (c < 0x11C2F)
+                      if (c < 0x11C92)
                       {
-                        if (c == 0x11C09)
-                          return Line_XX;
-                        /* (c >= 0x11C0A) && (c <= 0x11C2E) */
+                        if (c == 0x11C71)
+                          return Line_EX;
+                        /* (c >= 0x11C72) && (c <= 0x11C91) */
                         return Line_AL;
                       }
                       else
                       {
-                        if ((c >= 0x11C2F) && (c <= 0x11C36))
-                          return Line_CM;
-                        /* c == 0x11C37 */
-                        return Line_XX;
+                        /* (c >= 0x11C92) && (c <= 0x11CA7) */
+                        return Line_CM;
                       }
                     }
                     else
                     {
-                      if (c < 0x11C41)
-                      {
-                        if ((c >= 0x11C38) && (c <= 0x11C3F))
-                          return Line_CM;
-                        /* c == 0x11C40 */
+                      if (c == 0x11CA8)
                         return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x11C41) && (c <= 0x11C45) */
-                        return Line_BA;
-                      }
+                      /* (c >= 0x11CA9) && (c <= 0x11CB6) */
+                      return Line_CM;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0x11C90)
+                  if (c < 0x11D3C)
                   {
-                    if (c < 0x11C70)
+                    if (c < 0x11D3A)
                     {
-                      if (c < 0x11C5A)
+                      if (c < 0x11D37)
                       {
-                        if ((c >= 0x11C46) && (c <= 0x11C4F))
-                          return Line_XX;
-                        /* (c >= 0x11C50) && (c <= 0x11C59) */
-                        return Line_NU;
-                      }
-                      else
-                      {
-                        if ((c >= 0x11C5A) && (c <= 0x11C6C))
+                        if ((c >= 0x11CB7) && (c <= 0x11D30))
                           return Line_AL;
-                        /* (c >= 0x11C6D) && (c <= 0x11C6F) */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x11C72)
-                      {
-                        if (c == 0x11C70)
-                          return Line_BB;
-                        /* c == 0x11C71 */
-                        return Line_EX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x11C72) && (c <= 0x11C8F) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x11CA9)
-                    {
-                      if (c < 0x11CA8)
-                      {
-                        if ((c >= 0x11C90) && (c <= 0x11C91))
-                          return Line_XX;
-                        /* (c >= 0x11C92) && (c <= 0x11CA7) */
+                        /* (c >= 0x11D31) && (c <= 0x11D36) */
                         return Line_CM;
                       }
                       else
                       {
-                        /* c == 0x11CA8 */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x11D00)
-                      {
-                        if ((c >= 0x11CA9) && (c <= 0x11CB6))
-                          return Line_CM;
-                        /* (c >= 0x11CB7) && (c <= 0x11CFF) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x11D00) && (c <= 0x11D06) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                }
-              }
-              else
-              {
-                if (c < 0x11D50)
-                {
-                  if (c < 0x11D3B)
-                  {
-                    if (c < 0x11D31)
-                    {
-                      if (c < 0x11D0A)
-                      {
-                        if (c == 0x11D07)
-                          return Line_XX;
-                        /* (c >= 0x11D08) && (c <= 0x11D09) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if (c == 0x11D0A)
-                          return Line_XX;
-                        /* (c >= 0x11D0B) && (c <= 0x11D30) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x11D3A)
-                      {
-                        if ((c >= 0x11D31) && (c <= 0x11D36))
-                          return Line_CM;
                         /* (c >= 0x11D37) && (c <= 0x11D39) */
-                        return Line_XX;
+                        return Line_AL;
                       }
-                      else
-                      {
-                        /* c == 0x11D3A */
+                    }
+                    else
+                    {
+                      if (c == 0x11D3A)
                         return Line_CM;
-                      }
+                      /* c == 0x11D3B */
+                      return Line_AL;
                     }
                   }
                   else
                   {
                     if (c < 0x11D46)
                     {
-                      if (c < 0x11D3E)
+                      if (c < 0x11D3F)
                       {
-                        if (c == 0x11D3B)
-                          return Line_XX;
-                        /* (c >= 0x11D3C) && (c <= 0x11D3D) */
-                        return Line_CM;
+                        if ((c >= 0x11D3C) && (c <= 0x11D3D))
+                          return Line_CM;
+                        /* c == 0x11D3E */
+                        return Line_AL;
                       }
                       else
                       {
-                        if (c == 0x11D3E)
-                          return Line_XX;
                         /* (c >= 0x11D3F) && (c <= 0x11D45) */
                         return Line_CM;
                       }
                     }
                     else
                     {
-                      if (c < 0x11D48)
+                      if (c == 0x11D46)
+                        return Line_AL;
+                      /* c == 0x11D47 */
+                      return Line_CM;
+                    }
+                  }
+                }
+              }
+              else
+              {
+                if (c < 0x11DAA)
+                {
+                  if (c < 0x11D90)
+                  {
+                    if (c < 0x11D8A)
+                    {
+                      if (c < 0x11D5A)
                       {
-                        if (c == 0x11D46)
+                        if ((c >= 0x11D48) && (c <= 0x11D4F))
                           return Line_AL;
-                        /* c == 0x11D47 */
-                        return Line_CM;
+                        /* (c >= 0x11D50) && (c <= 0x11D59) */
+                        return Line_NU;
                       }
                       else
                       {
-                        /* (c >= 0x11D48) && (c <= 0x11D4F) */
-                        return Line_XX;
+                        /* (c >= 0x11D5A) && (c <= 0x11D89) */
+                        return Line_AL;
                       }
+                    }
+                    else
+                    {
+                      if ((c >= 0x11D8A) && (c <= 0x11D8E))
+                        return Line_CM;
+                      /* c == 0x11D8F */
+                      return Line_AL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x11D98)
+                    {
+                      if (c < 0x11D93)
+                      {
+                        if ((c >= 0x11D90) && (c <= 0x11D91))
+                          return Line_CM;
+                        /* c == 0x11D92 */
+                        return Line_AL;
+                      }
+                      else
+                      {
+                        /* (c >= 0x11D93) && (c <= 0x11D97) */
+                        return Line_CM;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x11D98) && (c <= 0x11D9F))
+                        return Line_AL;
+                      /* (c >= 0x11DA0) && (c <= 0x11DA9) */
+                      return Line_NU;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0x11D8A)
+                  if (c < 0x11EF9)
                   {
-                    if (c < 0x11D67)
+                    if (c < 0x11EF3)
                     {
-                      if (c < 0x11D60)
+                      if (c < 0x11EF2)
                       {
-                        if ((c >= 0x11D50) && (c <= 0x11D59))
-                          return Line_NU;
-                        /* (c >= 0x11D5A) && (c <= 0x11D5F) */
-                        return Line_XX;
+                        if ((c >= 0x11DAA) && (c <= 0x11EDF))
+                          return Line_AL;
+                        /* (c >= 0x11EE0) && (c <= 0x11EF1) */
+                        return Line_AS;
                       }
                       else
                       {
-                        if ((c >= 0x11D60) && (c <= 0x11D65))
-                          return Line_AL;
-                        /* c == 0x11D66 */
-                        return Line_XX;
+                        /* c == 0x11EF2 */
+                        return Line_BA;
                       }
                     }
                     else
                     {
-                      if (c < 0x11D6A)
-                      {
-                        if ((c >= 0x11D67) && (c <= 0x11D68))
-                          return Line_AL;
-                        /* c == 0x11D69 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x11D6A) && (c <= 0x11D89) */
-                        return Line_AL;
-                      }
+                      if ((c >= 0x11EF3) && (c <= 0x11EF6))
+                        return Line_CM;
+                      /* (c >= 0x11EF7) && (c <= 0x11EF8) */
+                      return Line_BA;
                     }
                   }
                   else
                   {
-                    if (c < 0x11D92)
+                    if (c < 0x11F02)
                     {
-                      if (c < 0x11D90)
-                      {
-                        if ((c >= 0x11D8A) && (c <= 0x11D8E))
-                          return Line_CM;
-                        /* c == 0x11D8F */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x11D90) && (c <= 0x11D91) */
-                        return Line_CM;
-                      }
+                      if ((c >= 0x11EF9) && (c <= 0x11EFF))
+                        return Line_AL;
+                      /* (c >= 0x11F00) && (c <= 0x11F01) */
+                      return Line_CM;
                     }
                     else
                     {
-                      if (c < 0x11D98)
-                      {
-                        if (c == 0x11D92)
-                          return Line_XX;
-                        /* (c >= 0x11D93) && (c <= 0x11D97) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* c == 0x11D98 */
-                        return Line_AL;
-                      }
+                      if (c == 0x11F02)
+                        return Line_AP;
+                      /* c == 0x11F03 */
+                      return Line_CM;
                     }
                   }
                 }
               }
             }
           }
-          else
+        }
+      }
+      else
+      {
+        if (c < 0x1E94B)
+        {
+          if (c < 0x18B00)
           {
-            if (c < 0x13430)
+            if (c < 0x13440)
             {
-              if (c < 0x11FF2)
+              if (c < 0x13282)
               {
-                if (c < 0x11F34)
+                if (c < 0x11F5A)
                 {
-                  if (c < 0x11EF9)
+                  if (c < 0x11F3E)
                   {
-                    if (c < 0x11EF2)
-                    {
-                      if (c < 0x11DAA)
-                      {
-                        if ((c >= 0x11D99) && (c <= 0x11D9F))
-                          return Line_XX;
-                        /* (c >= 0x11DA0) && (c <= 0x11DA9) */
-                        return Line_NU;
-                      }
-                      else
-                      {
-                        if ((c >= 0x11DAA) && (c <= 0x11EDF))
-                          return Line_XX;
-                        /* (c >= 0x11EE0) && (c <= 0x11EF1) */
-                        return Line_AS;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x11EF7)
-                      {
-                        if (c == 0x11EF2)
-                          return Line_BA;
-                        /* (c >= 0x11EF3) && (c <= 0x11EF6) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* (c >= 0x11EF7) && (c <= 0x11EF8) */
-                        return Line_BA;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x11F04)
-                    {
-                      if (c < 0x11F02)
-                      {
-                        if ((c >= 0x11EF9) && (c <= 0x11EFF))
-                          return Line_XX;
-                        /* (c >= 0x11F00) && (c <= 0x11F01) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        if (c == 0x11F02)
-                          return Line_AP;
-                        /* c == 0x11F03 */
-                        return Line_CM;
-                      }
-                    }
-                    else
+                    if (c < 0x11F34)
                     {
                       if (c < 0x11F12)
                       {
                         if ((c >= 0x11F04) && (c <= 0x11F10))
                           return Line_AK;
                         /* c == 0x11F11 */
-                        return Line_XX;
+                        return Line_AL;
                       }
                       else
                       {
@@ -82967,145 +78815,76 @@ line_category(Py_UCS4 c)
                         return Line_AK;
                       }
                     }
-                  }
-                }
-                else
-                {
-                  if (c < 0x11F5A)
-                  {
-                    if (c < 0x11F43)
+                    else
                     {
-                      if (c < 0x11F3E)
-                      {
-                        if ((c >= 0x11F34) && (c <= 0x11F3A))
-                          return Line_CM;
-                        /* (c >= 0x11F3B) && (c <= 0x11F3D) */
-                        return Line_XX;
-                      }
-                      else
+                      if ((c >= 0x11F34) && (c <= 0x11F3A))
+                        return Line_CM;
+                      /* (c >= 0x11F3B) && (c <= 0x11F3D) */
+                      return Line_AL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x11F45)
+                    {
+                      if (c < 0x11F43)
                       {
                         if ((c >= 0x11F3E) && (c <= 0x11F41))
                           return Line_CM;
                         /* c == 0x11F42 */
                         return Line_VI;
                       }
+                      else
+                      {
+                        /* (c >= 0x11F43) && (c <= 0x11F44) */
+                        return Line_BA;
+                      }
                     }
                     else
                     {
-                      if (c < 0x11F50)
-                      {
-                        if ((c >= 0x11F43) && (c <= 0x11F44))
-                          return Line_BA;
-                        /* (c >= 0x11F45) && (c <= 0x11F4F) */
+                      if ((c >= 0x11F45) && (c <= 0x11F4F))
                         return Line_ID;
-                      }
-                      else
-                      {
-                        /* (c >= 0x11F50) && (c <= 0x11F59) */
-                        return Line_AS;
-                      }
+                      /* (c >= 0x11F50) && (c <= 0x11F59) */
+                      return Line_AS;
                     }
                   }
-                  else
+                }
+                else
+                {
+                  if (c < 0x12470)
                   {
-                    if (c < 0x11FC0)
-                    {
-                      if (c < 0x11FB1)
-                      {
-                        if ((c >= 0x11F5A) && (c <= 0x11FAF))
-                          return Line_XX;
-                        /* c == 0x11FB0 */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x11FB1) && (c <= 0x11FBF) */
-                        return Line_XX;
-                      }
-                    }
-                    else
+                    if (c < 0x11FFF)
                     {
                       if (c < 0x11FE1)
                       {
-                        if ((c >= 0x11FC0) && (c <= 0x11FDC))
+                        if ((c >= 0x11F5A) && (c <= 0x11FDC))
                           return Line_AL;
                         /* (c >= 0x11FDD) && (c <= 0x11FE0) */
                         return Line_PO;
                       }
                       else
                       {
-                        /* (c >= 0x11FE1) && (c <= 0x11FF1) */
+                        /* (c >= 0x11FE1) && (c <= 0x11FFE) */
                         return Line_AL;
-                      }
-                    }
-                  }
-                }
-              }
-              else
-              {
-                if (c < 0x1325B)
-                {
-                  if (c < 0x12475)
-                  {
-                    if (c < 0x12400)
-                    {
-                      if (c < 0x12000)
-                      {
-                        if ((c >= 0x11FF2) && (c <= 0x11FFE))
-                          return Line_XX;
-                        /* c == 0x11FFF */
-                        return Line_BA;
-                      }
-                      else
-                      {
-                        if ((c >= 0x12000) && (c <= 0x12399))
-                          return Line_AL;
-                        /* (c >= 0x1239A) && (c <= 0x123FF) */
-                        return Line_XX;
                       }
                     }
                     else
                     {
-                      if (c < 0x12470)
-                      {
-                        if ((c >= 0x12400) && (c <= 0x1246E))
-                          return Line_AL;
-                        /* c == 0x1246F */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x12470) && (c <= 0x12474) */
+                      if (c == 0x11FFF)
                         return Line_BA;
-                      }
+                      /* (c >= 0x12000) && (c <= 0x1246F) */
+                      return Line_AL;
                     }
                   }
                   else
                   {
-                    if (c < 0x12FF3)
-                    {
-                      if (c < 0x12544)
-                      {
-                        if ((c >= 0x12475) && (c <= 0x1247F))
-                          return Line_XX;
-                        /* (c >= 0x12480) && (c <= 0x12543) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if ((c >= 0x12544) && (c <= 0x12F8F))
-                          return Line_XX;
-                        /* (c >= 0x12F90) && (c <= 0x12FF2) */
-                        return Line_AL;
-                      }
-                    }
-                    else
+                    if (c < 0x1325B)
                     {
                       if (c < 0x13258)
                       {
-                        if ((c >= 0x12FF3) && (c <= 0x12FFF))
-                          return Line_XX;
-                        /* (c >= 0x13000) && (c <= 0x13257) */
+                        if ((c >= 0x12470) && (c <= 0x12474))
+                          return Line_BA;
+                        /* (c >= 0x12475) && (c <= 0x13257) */
                         return Line_AL;
                       }
                       else
@@ -83114,43 +78893,43 @@ line_category(Py_UCS4 c)
                         return Line_OP;
                       }
                     }
+                    else
+                    {
+                      if ((c >= 0x1325B) && (c <= 0x1325D))
+                        return Line_CL;
+                      /* (c >= 0x1325E) && (c <= 0x13281) */
+                      return Line_AL;
+                    }
                   }
                 }
-                else
+              }
+              else
+              {
+                if (c < 0x1342F)
                 {
                   if (c < 0x13289)
                   {
-                    if (c < 0x13286)
+                    if (c < 0x13287)
                     {
-                      if (c < 0x13282)
-                      {
-                        if ((c >= 0x1325B) && (c <= 0x1325D))
-                          return Line_CL;
-                        /* (c >= 0x1325E) && (c <= 0x13281) */
-                        return Line_AL;
-                      }
-                      else
+                      if (c < 0x13286)
                       {
                         if (c == 0x13282)
                           return Line_CL;
                         /* (c >= 0x13283) && (c <= 0x13285) */
                         return Line_AL;
                       }
+                      else
+                      {
+                        /* c == 0x13286 */
+                        return Line_OP;
+                      }
                     }
                     else
                     {
-                      if (c < 0x13288)
-                      {
-                        if (c == 0x13286)
-                          return Line_OP;
-                        /* c == 0x13287 */
+                      if (c == 0x13287)
                         return Line_CL;
-                      }
-                      else
-                      {
-                        /* c == 0x13288 */
-                        return Line_OP;
-                      }
+                      /* c == 0x13288 */
+                      return Line_OP;
                     }
                   }
                   else
@@ -83172,18 +78951,55 @@ line_category(Py_UCS4 c)
                     }
                     else
                     {
-                      if (c < 0x1342F)
+                      if ((c >= 0x1337A) && (c <= 0x1337B))
+                        return Line_CL;
+                      /* (c >= 0x1337C) && (c <= 0x1342E) */
+                      return Line_AL;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x1343C)
+                  {
+                    if (c < 0x13438)
+                    {
+                      if (c < 0x13437)
                       {
-                        if ((c >= 0x1337A) && (c <= 0x1337B))
-                          return Line_CL;
-                        /* (c >= 0x1337C) && (c <= 0x1342E) */
-                        return Line_AL;
+                        if (c == 0x1342F)
+                          return Line_OP;
+                        /* (c >= 0x13430) && (c <= 0x13436) */
+                        return Line_GL;
                       }
                       else
                       {
-                        /* c == 0x1342F */
+                        /* c == 0x13437 */
                         return Line_OP;
                       }
+                    }
+                    else
+                    {
+                      if (c == 0x13438)
+                        return Line_CL;
+                      /* (c >= 0x13439) && (c <= 0x1343B) */
+                      return Line_GL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x1343E)
+                    {
+                      if (c == 0x1343C)
+                        return Line_OP;
+                      /* c == 0x1343D */
+                      return Line_CL;
+                    }
+                    else
+                    {
+                      if (c == 0x1343E)
+                        return Line_OP;
+                      /* c == 0x1343F */
+                      return Line_CL;
                     }
                   }
                 }
@@ -83191,897 +79007,212 @@ line_category(Py_UCS4 c)
             }
             else
             {
-              if (c < 0x16ACA)
+              if (c < 0x16B45)
               {
-                if (c < 0x145CF)
+                if (c < 0x16A70)
                 {
-                  if (c < 0x1343F)
-                  {
-                    if (c < 0x1343C)
-                    {
-                      if (c < 0x13438)
-                      {
-                        if ((c >= 0x13430) && (c <= 0x13436))
-                          return Line_GL;
-                        /* c == 0x13437 */
-                        return Line_OP;
-                      }
-                      else
-                      {
-                        if (c == 0x13438)
-                          return Line_CL;
-                        /* (c >= 0x13439) && (c <= 0x1343B) */
-                        return Line_GL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1343E)
-                      {
-                        if (c == 0x1343C)
-                          return Line_OP;
-                        /* c == 0x1343D */
-                        return Line_CL;
-                      }
-                      else
-                      {
-                        /* c == 0x1343E */
-                        return Line_OP;
-                      }
-                    }
-                  }
-                  else
+                  if (c < 0x145CF)
                   {
                     if (c < 0x13456)
                     {
-                      if (c < 0x13441)
+                      if (c < 0x13447)
                       {
-                        if (c == 0x1343F)
-                          return Line_CL;
-                        /* c == 0x13440 */
-                        return Line_CM;
+                        if (c == 0x13440)
+                          return Line_CM;
+                        /* (c >= 0x13441) && (c <= 0x13446) */
+                        return Line_AL;
                       }
                       else
                       {
-                        if ((c >= 0x13441) && (c <= 0x13446))
-                          return Line_AL;
                         /* (c >= 0x13447) && (c <= 0x13455) */
                         return Line_CM;
                       }
                     }
                     else
                     {
-                      if (c < 0x145CE)
+                      if ((c >= 0x13456) && (c <= 0x145CD))
+                        return Line_AL;
+                      /* c == 0x145CE */
+                      return Line_OP;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x16A6A)
+                    {
+                      if (c < 0x16A60)
                       {
-                        if ((c >= 0x13456) && (c <= 0x143FF))
-                          return Line_XX;
-                        /* (c >= 0x14400) && (c <= 0x145CD) */
+                        if (c == 0x145CF)
+                          return Line_CL;
+                        /* (c >= 0x145D0) && (c <= 0x16A5F) */
                         return Line_AL;
                       }
                       else
                       {
-                        /* c == 0x145CE */
-                        return Line_OP;
+                        /* (c >= 0x16A60) && (c <= 0x16A69) */
+                        return Line_NU;
                       }
+                    }
+                    else
+                    {
+                      if ((c >= 0x16A6A) && (c <= 0x16A6D))
+                        return Line_AL;
+                      /* (c >= 0x16A6E) && (c <= 0x16A6F) */
+                      return Line_BA;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0x16A60)
+                  if (c < 0x16AF6)
                   {
-                    if (c < 0x16A39)
+                    if (c < 0x16AF0)
                     {
-                      if (c < 0x14647)
+                      if (c < 0x16ACA)
                       {
-                        if (c == 0x145CF)
-                          return Line_CL;
-                        /* (c >= 0x145D0) && (c <= 0x14646) */
-                        return Line_AL;
+                        if ((c >= 0x16A70) && (c <= 0x16ABF))
+                          return Line_AL;
+                        /* (c >= 0x16AC0) && (c <= 0x16AC9) */
+                        return Line_NU;
                       }
                       else
                       {
-                        if ((c >= 0x14647) && (c <= 0x167FF))
-                          return Line_XX;
-                        /* (c >= 0x16800) && (c <= 0x16A38) */
+                        /* (c >= 0x16ACA) && (c <= 0x16AEF) */
                         return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0x16A5F)
-                      {
-                        if ((c >= 0x16A39) && (c <= 0x16A3F))
-                          return Line_XX;
-                        /* (c >= 0x16A40) && (c <= 0x16A5E) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x16A5F */
-                        return Line_XX;
-                      }
+                      if ((c >= 0x16AF0) && (c <= 0x16AF4))
+                        return Line_CM;
+                      /* c == 0x16AF5 */
+                      return Line_BA;
                     }
                   }
                   else
                   {
-                    if (c < 0x16A70)
+                    if (c < 0x16B3A)
                     {
-                      if (c < 0x16A6E)
+                      if (c < 0x16B37)
                       {
-                        if ((c >= 0x16A60) && (c <= 0x16A69))
-                          return Line_NU;
-                        /* (c >= 0x16A6A) && (c <= 0x16A6D) */
-                        return Line_XX;
+                        if ((c >= 0x16AF6) && (c <= 0x16B2F))
+                          return Line_AL;
+                        /* (c >= 0x16B30) && (c <= 0x16B36) */
+                        return Line_CM;
                       }
                       else
                       {
-                        /* (c >= 0x16A6E) && (c <= 0x16A6F) */
+                        /* (c >= 0x16B37) && (c <= 0x16B39) */
                         return Line_BA;
                       }
                     }
                     else
                     {
-                      if (c < 0x16AC0)
-                      {
-                        if ((c >= 0x16A70) && (c <= 0x16ABE))
-                          return Line_AL;
-                        /* c == 0x16ABF */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x16AC0) && (c <= 0x16AC9) */
-                        return Line_NU;
-                      }
+                      if ((c >= 0x16B3A) && (c <= 0x16B43))
+                        return Line_AL;
+                      /* c == 0x16B44 */
+                      return Line_BA;
                     }
                   }
                 }
               }
               else
               {
-                if (c < 0x16B50)
+                if (c < 0x16F93)
                 {
-                  if (c < 0x16B30)
+                  if (c < 0x16F4F)
                   {
-                    if (c < 0x16AF5)
+                    if (c < 0x16E97)
                     {
-                      if (c < 0x16AEE)
+                      if (c < 0x16B5A)
                       {
-                        if ((c >= 0x16ACA) && (c <= 0x16ACF))
-                          return Line_XX;
-                        /* (c >= 0x16AD0) && (c <= 0x16AED) */
-                        return Line_AL;
+                        if ((c >= 0x16B45) && (c <= 0x16B4F))
+                          return Line_AL;
+                        /* (c >= 0x16B50) && (c <= 0x16B59) */
+                        return Line_NU;
                       }
                       else
                       {
-                        if ((c >= 0x16AEE) && (c <= 0x16AEF))
-                          return Line_XX;
-                        /* (c >= 0x16AF0) && (c <= 0x16AF4) */
-                        return Line_CM;
+                        /* (c >= 0x16B5A) && (c <= 0x16E96) */
+                        return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0x16B00)
-                      {
-                        if (c == 0x16AF5)
-                          return Line_BA;
-                        /* (c >= 0x16AF6) && (c <= 0x16AFF) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x16B00) && (c <= 0x16B2F) */
-                        return Line_AL;
-                      }
+                      if ((c >= 0x16E97) && (c <= 0x16E98))
+                        return Line_BA;
+                      /* (c >= 0x16E99) && (c <= 0x16F4E) */
+                      return Line_AL;
                     }
                   }
                   else
-                  {
-                    if (c < 0x16B44)
-                    {
-                      if (c < 0x16B3A)
-                      {
-                        if ((c >= 0x16B30) && (c <= 0x16B36))
-                          return Line_CM;
-                        /* (c >= 0x16B37) && (c <= 0x16B39) */
-                        return Line_BA;
-                      }
-                      else
-                      {
-                        /* (c >= 0x16B3A) && (c <= 0x16B43) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x16B46)
-                      {
-                        if (c == 0x16B44)
-                          return Line_BA;
-                        /* c == 0x16B45 */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x16B46) && (c <= 0x16B4F) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x16B90)
-                  {
-                    if (c < 0x16B63)
-                    {
-                      if (c < 0x16B5B)
-                      {
-                        if ((c >= 0x16B50) && (c <= 0x16B59))
-                          return Line_NU;
-                        /* c == 0x16B5A */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x16B5B) && (c <= 0x16B61))
-                          return Line_AL;
-                        /* c == 0x16B62 */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x16B7D)
-                      {
-                        if ((c >= 0x16B63) && (c <= 0x16B77))
-                          return Line_AL;
-                        /* (c >= 0x16B78) && (c <= 0x16B7C) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x16B7D) && (c <= 0x16B8F) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x16E99)
-                    {
-                      if (c < 0x16E97)
-                      {
-                        if ((c >= 0x16B90) && (c <= 0x16E3F))
-                          return Line_XX;
-                        /* (c >= 0x16E40) && (c <= 0x16E96) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x16E97) && (c <= 0x16E98) */
-                        return Line_BA;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x16F00)
-                      {
-                        if ((c >= 0x16E99) && (c <= 0x16E9A))
-                          return Line_AL;
-                        /* (c >= 0x16E9B) && (c <= 0x16EFF) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x16F00) && (c <= 0x16F4A) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-      else
-      {
-        if (c < 0x1EE24)
-        {
-          if (c < 0x1D51D)
-          {
-            if (c < 0x1CF47)
-            {
-              if (c < 0x1B123)
-              {
-                if (c < 0x187F8)
-                {
-                  if (c < 0x16FA0)
                   {
                     if (c < 0x16F88)
                     {
-                      if (c < 0x16F50)
+                      if (c < 0x16F51)
                       {
-                        if ((c >= 0x16F4B) && (c <= 0x16F4E))
-                          return Line_XX;
-                        /* c == 0x16F4F */
-                        return Line_CM;
+                        if (c == 0x16F4F)
+                          return Line_CM;
+                        /* c == 0x16F50 */
+                        return Line_AL;
                       }
                       else
                       {
-                        if (c == 0x16F50)
-                          return Line_AL;
                         /* (c >= 0x16F51) && (c <= 0x16F87) */
                         return Line_CM;
                       }
                     }
                     else
                     {
-                      if (c < 0x16F93)
-                      {
-                        if ((c >= 0x16F88) && (c <= 0x16F8E))
-                          return Line_XX;
-                        /* (c >= 0x16F8F) && (c <= 0x16F92) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* (c >= 0x16F93) && (c <= 0x16F9F) */
+                      if ((c >= 0x16F88) && (c <= 0x16F8E))
                         return Line_AL;
-                      }
+                      /* (c >= 0x16F8F) && (c <= 0x16F92) */
+                      return Line_CM;
                     }
                   }
-                  else
+                }
+                else
+                {
+                  if (c < 0x16FF2)
                   {
-                    if (c < 0x16FF0)
+                    if (c < 0x16FE5)
                     {
                       if (c < 0x16FE4)
                       {
-                        if ((c >= 0x16FA0) && (c <= 0x16FDF))
-                          return Line_XX;
+                        if ((c >= 0x16F93) && (c <= 0x16FDF))
+                          return Line_AL;
                         /* (c >= 0x16FE0) && (c <= 0x16FE3) */
                         return Line_NS;
                       }
                       else
                       {
-                        if (c == 0x16FE4)
-                          return Line_GL;
-                        /* (c >= 0x16FE5) && (c <= 0x16FEF) */
-                        return Line_XX;
+                        /* c == 0x16FE4 */
+                        return Line_GL;
                       }
                     }
                     else
                     {
-                      if (c < 0x17000)
-                      {
-                        if ((c >= 0x16FF0) && (c <= 0x16FF1))
-                          return Line_CM;
-                        /* (c >= 0x16FF2) && (c <= 0x16FFF) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x17000) && (c <= 0x187F7) */
-                        return Line_ID;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x1AFF4)
-                  {
-                    if (c < 0x18D00)
-                    {
-                      if (c < 0x18B00)
-                      {
-                        if ((c >= 0x187F8) && (c <= 0x187FF))
-                          return Line_XX;
-                        /* (c >= 0x18800) && (c <= 0x18AFF) */
-                        return Line_ID;
-                      }
-                      else
-                      {
-                        if ((c >= 0x18B00) && (c <= 0x18CD5))
-                          return Line_AL;
-                        /* (c >= 0x18CD6) && (c <= 0x18CFF) */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1AFF0)
-                      {
-                        if ((c >= 0x18D00) && (c <= 0x18D08))
-                          return Line_ID;
-                        /* (c >= 0x18D09) && (c <= 0x1AFEF) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1AFF0) && (c <= 0x1AFF3) */
+                      if ((c >= 0x16FE5) && (c <= 0x16FEF))
                         return Line_AL;
-                      }
+                      /* (c >= 0x16FF0) && (c <= 0x16FF1) */
+                      return Line_CM;
                     }
                   }
                   else
                   {
-                    if (c < 0x1AFFD)
+                    if (c < 0x187F8)
                     {
-                      if (c < 0x1AFFC)
-                      {
-                        if (c == 0x1AFF4)
-                          return Line_XX;
-                        /* (c >= 0x1AFF5) && (c <= 0x1AFFB) */
+                      if ((c >= 0x16FF2) && (c <= 0x16FFF))
                         return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x1AFFC */
-                        return Line_XX;
-                      }
+                      /* (c >= 0x17000) && (c <= 0x187F7) */
+                      return Line_ID;
                     }
                     else
                     {
-                      if (c < 0x1B000)
-                      {
-                        if ((c >= 0x1AFFD) && (c <= 0x1AFFE))
-                          return Line_AL;
-                        /* c == 0x1AFFF */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1B000) && (c <= 0x1B122) */
-                        return Line_ID;
-                      }
-                    }
-                  }
-                }
-              }
-              else
-              {
-                if (c < 0x1BC7D)
-                {
-                  if (c < 0x1B164)
-                  {
-                    if (c < 0x1B153)
-                    {
-                      if (c < 0x1B133)
-                      {
-                        if ((c >= 0x1B123) && (c <= 0x1B131))
-                          return Line_XX;
-                        /* c == 0x1B132 */
-                        return Line_CJ;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1B133) && (c <= 0x1B14F))
-                          return Line_XX;
-                        /* (c >= 0x1B150) && (c <= 0x1B152) */
-                        return Line_CJ;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1B156)
-                      {
-                        if ((c >= 0x1B153) && (c <= 0x1B154))
-                          return Line_XX;
-                        /* c == 0x1B155 */
-                        return Line_CJ;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1B156) && (c <= 0x1B163) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x1BC00)
-                    {
-                      if (c < 0x1B170)
-                      {
-                        if ((c >= 0x1B164) && (c <= 0x1B167))
-                          return Line_CJ;
-                        /* (c >= 0x1B168) && (c <= 0x1B16F) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1B170) && (c <= 0x1B2FB))
-                          return Line_ID;
-                        /* (c >= 0x1B2FC) && (c <= 0x1BBFF) */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1BC70)
-                      {
-                        if ((c >= 0x1BC00) && (c <= 0x1BC6A))
-                          return Line_AL;
-                        /* (c >= 0x1BC6B) && (c <= 0x1BC6F) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1BC70) && (c <= 0x1BC7C) */
+                      if ((c >= 0x187F8) && (c <= 0x187FF))
                         return Line_AL;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x1BC9F)
-                  {
-                    if (c < 0x1BC9A)
-                    {
-                      if (c < 0x1BC89)
-                      {
-                        if ((c >= 0x1BC7D) && (c <= 0x1BC7F))
-                          return Line_XX;
-                        /* (c >= 0x1BC80) && (c <= 0x1BC88) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1BC89) && (c <= 0x1BC8F))
-                          return Line_XX;
-                        /* (c >= 0x1BC90) && (c <= 0x1BC99) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1BC9D)
-                      {
-                        if ((c >= 0x1BC9A) && (c <= 0x1BC9B))
-                          return Line_XX;
-                        /* c == 0x1BC9C */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1BC9D) && (c <= 0x1BC9E) */
-                        return Line_CM;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x1CF00)
-                    {
-                      if (c < 0x1BCA4)
-                      {
-                        if (c == 0x1BC9F)
-                          return Line_BA;
-                        /* (c >= 0x1BCA0) && (c <= 0x1BCA3) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1BCA4) && (c <= 0x1CEFF) */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1CF30)
-                      {
-                        if ((c >= 0x1CF00) && (c <= 0x1CF2D))
-                          return Line_CM;
-                        /* (c >= 0x1CF2E) && (c <= 0x1CF2F) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1CF30) && (c <= 0x1CF46) */
-                        return Line_CM;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-            else
-            {
-              if (c < 0x1D360)
-              {
-                if (c < 0x1D1AA)
-                {
-                  if (c < 0x1D129)
-                  {
-                    if (c < 0x1D0F6)
-                    {
-                      if (c < 0x1CFC4)
-                      {
-                        if ((c >= 0x1CF47) && (c <= 0x1CF4F))
-                          return Line_XX;
-                        /* (c >= 0x1CF50) && (c <= 0x1CFC3) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1CFC4) && (c <= 0x1CFFF))
-                          return Line_XX;
-                        /* (c >= 0x1D000) && (c <= 0x1D0F5) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1D127)
-                      {
-                        if ((c >= 0x1D0F6) && (c <= 0x1D0FF))
-                          return Line_XX;
-                        /* (c >= 0x1D100) && (c <= 0x1D126) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1D127) && (c <= 0x1D128) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x1D183)
-                    {
-                      if (c < 0x1D16A)
-                      {
-                        if ((c >= 0x1D129) && (c <= 0x1D164))
-                          return Line_AL;
-                        /* (c >= 0x1D165) && (c <= 0x1D169) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1D16A) && (c <= 0x1D16C))
-                          return Line_AL;
-                        /* (c >= 0x1D16D) && (c <= 0x1D182) */
-                        return Line_CM;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1D18C)
-                      {
-                        if ((c >= 0x1D183) && (c <= 0x1D184))
-                          return Line_AL;
-                        /* (c >= 0x1D185) && (c <= 0x1D18B) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1D18C) && (c <= 0x1D1A9) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x1D2C0)
-                  {
-                    if (c < 0x1D242)
-                    {
-                      if (c < 0x1D1EB)
-                      {
-                        if ((c >= 0x1D1AA) && (c <= 0x1D1AD))
-                          return Line_CM;
-                        /* (c >= 0x1D1AE) && (c <= 0x1D1EA) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1D1EB) && (c <= 0x1D1FF))
-                          return Line_XX;
-                        /* (c >= 0x1D200) && (c <= 0x1D241) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1D246)
-                      {
-                        if ((c >= 0x1D242) && (c <= 0x1D244))
-                          return Line_CM;
-                        /* c == 0x1D245 */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1D246) && (c <= 0x1D2BF) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x1D2F4)
-                    {
-                      if (c < 0x1D2E0)
-                      {
-                        if ((c >= 0x1D2C0) && (c <= 0x1D2D3))
-                          return Line_AL;
-                        /* (c >= 0x1D2D4) && (c <= 0x1D2DF) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1D2E0) && (c <= 0x1D2F3) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1D357)
-                      {
-                        if ((c >= 0x1D2F4) && (c <= 0x1D2FF))
-                          return Line_XX;
-                        /* (c >= 0x1D300) && (c <= 0x1D356) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1D357) && (c <= 0x1D35F) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                }
-              }
-              else
-              {
-                if (c < 0x1D4AE)
-                {
-                  if (c < 0x1D4A0)
-                  {
-                    if (c < 0x1D456)
-                    {
-                      if (c < 0x1D400)
-                      {
-                        if ((c >= 0x1D360) && (c <= 0x1D378))
-                          return Line_AL;
-                        /* (c >= 0x1D379) && (c <= 0x1D3FF) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1D400) && (c <= 0x1D454))
-                          return Line_AL;
-                        /* c == 0x1D455 */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1D49E)
-                      {
-                        if ((c >= 0x1D456) && (c <= 0x1D49C))
-                          return Line_AL;
-                        /* c == 0x1D49D */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1D49E) && (c <= 0x1D49F) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x1D4A7)
-                    {
-                      if (c < 0x1D4A3)
-                      {
-                        if ((c >= 0x1D4A0) && (c <= 0x1D4A1))
-                          return Line_XX;
-                        /* c == 0x1D4A2 */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1D4A3) && (c <= 0x1D4A4))
-                          return Line_XX;
-                        /* (c >= 0x1D4A5) && (c <= 0x1D4A6) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1D4AD)
-                      {
-                        if ((c >= 0x1D4A7) && (c <= 0x1D4A8))
-                          return Line_XX;
-                        /* (c >= 0x1D4A9) && (c <= 0x1D4AC) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x1D4AD */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x1D506)
-                  {
-                    if (c < 0x1D4BD)
-                    {
-                      if (c < 0x1D4BB)
-                      {
-                        if ((c >= 0x1D4AE) && (c <= 0x1D4B9))
-                          return Line_AL;
-                        /* c == 0x1D4BA */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if (c == 0x1D4BB)
-                          return Line_AL;
-                        /* c == 0x1D4BC */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1D4C5)
-                      {
-                        if ((c >= 0x1D4BD) && (c <= 0x1D4C3))
-                          return Line_AL;
-                        /* c == 0x1D4C4 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1D4C5) && (c <= 0x1D505) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x1D50D)
-                    {
-                      if (c < 0x1D50B)
-                      {
-                        if (c == 0x1D506)
-                          return Line_XX;
-                        /* (c >= 0x1D507) && (c <= 0x1D50A) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1D50B) && (c <= 0x1D50C) */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1D516)
-                      {
-                        if ((c >= 0x1D50D) && (c <= 0x1D514))
-                          return Line_AL;
-                        /* c == 0x1D515 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1D516) && (c <= 0x1D51C) */
-                        return Line_AL;
-                      }
+                      /* (c >= 0x18800) && (c <= 0x18AFF) */
+                      return Line_ID;
                     }
                   }
                 }
@@ -84090,121 +79221,226 @@ line_category(Py_UCS4 c)
           }
           else
           {
-            if (c < 0x1E13E)
+            if (c < 0x1DA75)
             {
-              if (c < 0x1DA8C)
+              if (c < 0x1CF2E)
               {
-                if (c < 0x1D7CC)
+                if (c < 0x1B156)
                 {
-                  if (c < 0x1D546)
+                  if (c < 0x1B132)
                   {
-                    if (c < 0x1D53F)
+                    if (c < 0x1B000)
                     {
-                      if (c < 0x1D53A)
+                      if (c < 0x18D09)
                       {
-                        if (c == 0x1D51D)
-                          return Line_XX;
-                        /* (c >= 0x1D51E) && (c <= 0x1D539) */
-                        return Line_AL;
+                        if ((c >= 0x18B00) && (c <= 0x18CFF))
+                          return Line_AL;
+                        /* (c >= 0x18D00) && (c <= 0x18D08) */
+                        return Line_ID;
                       }
                       else
                       {
-                        if (c == 0x1D53A)
-                          return Line_XX;
-                        /* (c >= 0x1D53B) && (c <= 0x1D53E) */
+                        /* (c >= 0x18D09) && (c <= 0x1AFFF) */
                         return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0x1D545)
-                      {
-                        if (c == 0x1D53F)
-                          return Line_XX;
-                        /* (c >= 0x1D540) && (c <= 0x1D544) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x1D545 */
-                        return Line_XX;
-                      }
+                      if ((c >= 0x1B000) && (c <= 0x1B122))
+                        return Line_ID;
+                      /* (c >= 0x1B123) && (c <= 0x1B131) */
+                      return Line_AL;
                     }
                   }
                   else
                   {
-                    if (c < 0x1D552)
+                    if (c < 0x1B153)
                     {
-                      if (c < 0x1D54A)
+                      if (c < 0x1B150)
                       {
-                        if (c == 0x1D546)
-                          return Line_AL;
-                        /* (c >= 0x1D547) && (c <= 0x1D549) */
-                        return Line_XX;
+                        if (c == 0x1B132)
+                          return Line_NS;
+                        /* (c >= 0x1B133) && (c <= 0x1B14F) */
+                        return Line_AL;
                       }
                       else
                       {
-                        if ((c >= 0x1D54A) && (c <= 0x1D550))
-                          return Line_AL;
-                        /* c == 0x1D551 */
-                        return Line_XX;
+                        /* (c >= 0x1B150) && (c <= 0x1B152) */
+                        return Line_NS;
                       }
                     }
                     else
                     {
-                      if (c < 0x1D6A8)
-                      {
-                        if ((c >= 0x1D552) && (c <= 0x1D6A5))
-                          return Line_AL;
-                        /* (c >= 0x1D6A6) && (c <= 0x1D6A7) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1D6A8) && (c <= 0x1D7CB) */
+                      if ((c >= 0x1B153) && (c <= 0x1B154))
                         return Line_AL;
-                      }
+                      /* c == 0x1B155 */
+                      return Line_NS;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0x1DA75)
+                  if (c < 0x1BC9D)
                   {
-                    if (c < 0x1DA37)
+                    if (c < 0x1B170)
                     {
-                      if (c < 0x1D800)
+                      if (c < 0x1B168)
                       {
-                        if ((c >= 0x1D7CC) && (c <= 0x1D7CD))
-                          return Line_XX;
-                        /* (c >= 0x1D7CE) && (c <= 0x1D7FF) */
-                        return Line_NU;
+                        if ((c >= 0x1B156) && (c <= 0x1B163))
+                          return Line_AL;
+                        /* (c >= 0x1B164) && (c <= 0x1B167) */
+                        return Line_NS;
                       }
                       else
                       {
-                        if ((c >= 0x1D800) && (c <= 0x1D9FF))
-                          return Line_AL;
-                        /* (c >= 0x1DA00) && (c <= 0x1DA36) */
+                        /* (c >= 0x1B168) && (c <= 0x1B16F) */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x1B170) && (c <= 0x1B2FB))
+                        return Line_ID;
+                      /* (c >= 0x1B2FC) && (c <= 0x1BC9C) */
+                      return Line_AL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x1BCA4)
+                    {
+                      if (c < 0x1BCA0)
+                      {
+                        if ((c >= 0x1BC9D) && (c <= 0x1BC9E))
+                          return Line_CM;
+                        /* c == 0x1BC9F */
+                        return Line_BA;
+                      }
+                      else
+                      {
+                        /* (c >= 0x1BCA0) && (c <= 0x1BCA3) */
                         return Line_CM;
                       }
                     }
                     else
                     {
-                      if (c < 0x1DA6D)
+                      if ((c >= 0x1BCA4) && (c <= 0x1CEFF))
+                        return Line_AL;
+                      /* (c >= 0x1CF00) && (c <= 0x1CF2D) */
+                      return Line_CM;
+                    }
+                  }
+                }
+              }
+              else
+              {
+                if (c < 0x1D1AE)
+                {
+                  if (c < 0x1D16D)
+                  {
+                    if (c < 0x1D165)
+                    {
+                      if (c < 0x1CF47)
                       {
-                        if ((c >= 0x1DA37) && (c <= 0x1DA3A))
+                        if ((c >= 0x1CF2E) && (c <= 0x1CF2F))
                           return Line_AL;
-                        /* (c >= 0x1DA3B) && (c <= 0x1DA6C) */
+                        /* (c >= 0x1CF30) && (c <= 0x1CF46) */
                         return Line_CM;
                       }
                       else
                       {
-                        /* (c >= 0x1DA6D) && (c <= 0x1DA74) */
+                        /* (c >= 0x1CF47) && (c <= 0x1D164) */
                         return Line_AL;
                       }
                     }
+                    else
+                    {
+                      if ((c >= 0x1D165) && (c <= 0x1D169))
+                        return Line_CM;
+                      /* (c >= 0x1D16A) && (c <= 0x1D16C) */
+                      return Line_AL;
+                    }
                   }
                   else
+                  {
+                    if (c < 0x1D18C)
+                    {
+                      if (c < 0x1D185)
+                      {
+                        if ((c >= 0x1D16D) && (c <= 0x1D182))
+                          return Line_CM;
+                        /* (c >= 0x1D183) && (c <= 0x1D184) */
+                        return Line_AL;
+                      }
+                      else
+                      {
+                        /* (c >= 0x1D185) && (c <= 0x1D18B) */
+                        return Line_CM;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x1D18C) && (c <= 0x1D1A9))
+                        return Line_AL;
+                      /* (c >= 0x1D1AA) && (c <= 0x1D1AD) */
+                      return Line_CM;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x1DA00)
+                  {
+                    if (c < 0x1D7CE)
+                    {
+                      if (c < 0x1D245)
+                      {
+                        if ((c >= 0x1D1AE) && (c <= 0x1D241))
+                          return Line_AL;
+                        /* (c >= 0x1D242) && (c <= 0x1D244) */
+                        return Line_CM;
+                      }
+                      else
+                      {
+                        /* (c >= 0x1D245) && (c <= 0x1D7CD) */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x1D7CE) && (c <= 0x1D7FF))
+                        return Line_NU;
+                      /* (c >= 0x1D800) && (c <= 0x1D9FF) */
+                      return Line_AL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x1DA3B)
+                    {
+                      if ((c >= 0x1DA00) && (c <= 0x1DA36))
+                        return Line_CM;
+                      /* (c >= 0x1DA37) && (c <= 0x1DA3A) */
+                      return Line_AL;
+                    }
+                    else
+                    {
+                      if ((c >= 0x1DA3B) && (c <= 0x1DA6C))
+                        return Line_CM;
+                      /* (c >= 0x1DA6D) && (c <= 0x1DA74) */
+                      return Line_AL;
+                    }
+                  }
+                }
+              }
+            }
+            else
+            {
+              if (c < 0x1E08F)
+              {
+                if (c < 0x1E000)
+                {
+                  if (c < 0x1DA8B)
                   {
                     if (c < 0x1DA85)
                     {
@@ -84223,397 +79459,234 @@ line_category(Py_UCS4 c)
                     }
                     else
                     {
-                      if (c < 0x1DA8B)
-                      {
-                        if ((c >= 0x1DA85) && (c <= 0x1DA86))
-                          return Line_AL;
-                        /* (c >= 0x1DA87) && (c <= 0x1DA8A) */
-                        return Line_BA;
-                      }
-                      else
-                      {
-                        /* c == 0x1DA8B */
+                      if ((c >= 0x1DA85) && (c <= 0x1DA86))
                         return Line_AL;
-                      }
+                      /* (c >= 0x1DA87) && (c <= 0x1DA8A) */
+                      return Line_BA;
                     }
                   }
-                }
-              }
-              else
-              {
-                if (c < 0x1E022)
-                {
-                  if (c < 0x1DF25)
+                  else
                   {
-                    if (c < 0x1DAB0)
+                    if (c < 0x1DAA1)
                     {
                       if (c < 0x1DAA0)
                       {
-                        if ((c >= 0x1DA8C) && (c <= 0x1DA9A))
-                          return Line_XX;
+                        if ((c >= 0x1DA8B) && (c <= 0x1DA9A))
+                          return Line_AL;
                         /* (c >= 0x1DA9B) && (c <= 0x1DA9F) */
                         return Line_CM;
                       }
                       else
                       {
-                        if (c == 0x1DAA0)
-                          return Line_XX;
-                        /* (c >= 0x1DAA1) && (c <= 0x1DAAF) */
-                        return Line_CM;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1DF1F)
-                      {
-                        if ((c >= 0x1DAB0) && (c <= 0x1DEFF))
-                          return Line_XX;
-                        /* (c >= 0x1DF00) && (c <= 0x1DF1E) */
+                        /* c == 0x1DAA0 */
                         return Line_AL;
                       }
-                      else
-                      {
-                        /* (c >= 0x1DF1F) && (c <= 0x1DF24) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x1E008)
-                    {
-                      if (c < 0x1E000)
-                      {
-                        if ((c >= 0x1DF25) && (c <= 0x1DF2A))
-                          return Line_AL;
-                        /* (c >= 0x1DF2B) && (c <= 0x1DFFF) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1E000) && (c <= 0x1E006))
-                          return Line_CM;
-                        /* c == 0x1E007 */
-                        return Line_XX;
-                      }
                     }
                     else
                     {
-                      if (c < 0x1E01B)
-                      {
-                        if ((c >= 0x1E008) && (c <= 0x1E018))
-                          return Line_CM;
-                        /* (c >= 0x1E019) && (c <= 0x1E01A) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1E01B) && (c <= 0x1E021) */
+                      if ((c >= 0x1DAA1) && (c <= 0x1DAAF))
                         return Line_CM;
-                      }
+                      /* (c >= 0x1DAB0) && (c <= 0x1DFFF) */
+                      return Line_AL;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0x1E08F)
+                  if (c < 0x1E022)
                   {
-                    if (c < 0x1E02B)
+                    if (c < 0x1E019)
+                    {
+                      if (c < 0x1E008)
+                      {
+                        if ((c >= 0x1E000) && (c <= 0x1E006))
+                          return Line_CM;
+                        /* c == 0x1E007 */
+                        return Line_AL;
+                      }
+                      else
+                      {
+                        /* (c >= 0x1E008) && (c <= 0x1E018) */
+                        return Line_CM;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x1E019) && (c <= 0x1E01A))
+                        return Line_AL;
+                      /* (c >= 0x1E01B) && (c <= 0x1E021) */
+                      return Line_CM;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x1E026)
                     {
                       if (c < 0x1E025)
                       {
                         if (c == 0x1E022)
-                          return Line_XX;
+                          return Line_AL;
                         /* (c >= 0x1E023) && (c <= 0x1E024) */
                         return Line_CM;
                       }
                       else
                       {
-                        if (c == 0x1E025)
-                          return Line_XX;
-                        /* (c >= 0x1E026) && (c <= 0x1E02A) */
+                        /* c == 0x1E025 */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x1E026) && (c <= 0x1E02A))
                         return Line_CM;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1E06E)
-                      {
-                        if ((c >= 0x1E02B) && (c <= 0x1E02F))
-                          return Line_XX;
-                        /* (c >= 0x1E030) && (c <= 0x1E06D) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1E06E) && (c <= 0x1E08E) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x1E12D)
-                    {
-                      if (c < 0x1E100)
-                      {
-                        if (c == 0x1E08F)
-                          return Line_CM;
-                        /* (c >= 0x1E090) && (c <= 0x1E0FF) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1E100) && (c <= 0x1E12C) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1E137)
-                      {
-                        if ((c >= 0x1E12D) && (c <= 0x1E12F))
-                          return Line_XX;
-                        /* (c >= 0x1E130) && (c <= 0x1E136) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1E137) && (c <= 0x1E13D) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-            else
-            {
-              if (c < 0x1E8C5)
-              {
-                if (c < 0x1E4D0)
-                {
-                  if (c < 0x1E2AF)
-                  {
-                    if (c < 0x1E150)
-                    {
-                      if (c < 0x1E14A)
-                      {
-                        if ((c >= 0x1E13E) && (c <= 0x1E13F))
-                          return Line_XX;
-                        /* (c >= 0x1E140) && (c <= 0x1E149) */
-                        return Line_NU;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1E14A) && (c <= 0x1E14D))
-                          return Line_XX;
-                        /* (c >= 0x1E14E) && (c <= 0x1E14F) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1E2AE)
-                      {
-                        if ((c >= 0x1E150) && (c <= 0x1E28F))
-                          return Line_XX;
-                        /* (c >= 0x1E290) && (c <= 0x1E2AD) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x1E2AE */
-                        return Line_CM;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x1E2FA)
-                    {
-                      if (c < 0x1E2EC)
-                      {
-                        if ((c >= 0x1E2AF) && (c <= 0x1E2BF))
-                          return Line_XX;
-                        /* (c >= 0x1E2C0) && (c <= 0x1E2EB) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1E2EC) && (c <= 0x1E2EF))
-                          return Line_CM;
-                        /* (c >= 0x1E2F0) && (c <= 0x1E2F9) */
-                        return Line_NU;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1E300)
-                      {
-                        if ((c >= 0x1E2FA) && (c <= 0x1E2FE))
-                          return Line_XX;
-                        /* c == 0x1E2FF */
-                        return Line_PR;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1E300) && (c <= 0x1E4CF) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x1E7EC)
-                  {
-                    if (c < 0x1E7E0)
-                    {
-                      if (c < 0x1E4F0)
-                      {
-                        if ((c >= 0x1E4D0) && (c <= 0x1E4EB))
-                          return Line_AL;
-                        /* (c >= 0x1E4EC) && (c <= 0x1E4EF) */
-                        return Line_CM;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1E4F0) && (c <= 0x1E4F9))
-                          return Line_NU;
-                        /* (c >= 0x1E4FA) && (c <= 0x1E7DF) */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1E7E8)
-                      {
-                        if ((c >= 0x1E7E0) && (c <= 0x1E7E6))
-                          return Line_AL;
-                        /* c == 0x1E7E7 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1E7E8) && (c <= 0x1E7EB) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x1E7F0)
-                    {
-                      if (c < 0x1E7EF)
-                      {
-                        if (c == 0x1E7EC)
-                          return Line_XX;
-                        /* (c >= 0x1E7ED) && (c <= 0x1E7EE) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x1E7EF */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1E800)
-                      {
-                        if ((c >= 0x1E7F0) && (c <= 0x1E7FE))
-                          return Line_AL;
-                        /* c == 0x1E7FF */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1E800) && (c <= 0x1E8C4) */
-                        return Line_AL;
-                      }
+                      /* (c >= 0x1E02B) && (c <= 0x1E08E) */
+                      return Line_AL;
                     }
                   }
                 }
               }
               else
               {
-                if (c < 0x1ECAC)
+                if (c < 0x1E2FA)
                 {
-                  if (c < 0x1E94C)
+                  if (c < 0x1E14A)
                   {
-                    if (c < 0x1E900)
+                    if (c < 0x1E137)
                     {
-                      if (c < 0x1E8D0)
+                      if (c < 0x1E130)
                       {
-                        if ((c >= 0x1E8C5) && (c <= 0x1E8C6))
-                          return Line_XX;
-                        /* (c >= 0x1E8C7) && (c <= 0x1E8CF) */
+                        if (c == 0x1E08F)
+                          return Line_CM;
+                        /* (c >= 0x1E090) && (c <= 0x1E12F) */
                         return Line_AL;
                       }
                       else
                       {
-                        if ((c >= 0x1E8D0) && (c <= 0x1E8D6))
-                          return Line_CM;
-                        /* (c >= 0x1E8D7) && (c <= 0x1E8FF) */
-                        return Line_XX;
+                        /* (c >= 0x1E130) && (c <= 0x1E136) */
+                        return Line_CM;
                       }
                     }
                     else
                     {
-                      if (c < 0x1E94B)
+                      if ((c >= 0x1E137) && (c <= 0x1E13F))
+                        return Line_AL;
+                      /* (c >= 0x1E140) && (c <= 0x1E149) */
+                      return Line_NU;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x1E2EC)
+                    {
+                      if (c < 0x1E2AF)
                       {
-                        if ((c >= 0x1E900) && (c <= 0x1E943))
+                        if ((c >= 0x1E14A) && (c <= 0x1E2AD))
                           return Line_AL;
-                        /* (c >= 0x1E944) && (c <= 0x1E94A) */
+                        /* c == 0x1E2AE */
                         return Line_CM;
                       }
                       else
                       {
-                        /* c == 0x1E94B */
+                        /* (c >= 0x1E2AF) && (c <= 0x1E2EB) */
                         return Line_AL;
                       }
                     }
+                    else
+                    {
+                      if ((c >= 0x1E2EC) && (c <= 0x1E2EF))
+                        return Line_CM;
+                      /* (c >= 0x1E2F0) && (c <= 0x1E2F9) */
+                      return Line_NU;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x1E4FA)
+                  {
+                    if (c < 0x1E4EC)
+                    {
+                      if (c < 0x1E300)
+                      {
+                        if ((c >= 0x1E2FA) && (c <= 0x1E2FE))
+                          return Line_AL;
+                        /* c == 0x1E2FF */
+                        return Line_PR;
+                      }
+                      else
+                      {
+                        /* (c >= 0x1E300) && (c <= 0x1E4EB) */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x1E4EC) && (c <= 0x1E4EF))
+                        return Line_CM;
+                      /* (c >= 0x1E4F0) && (c <= 0x1E4F9) */
+                      return Line_NU;
+                    }
                   }
                   else
+                  {
+                    if (c < 0x1E8D7)
+                    {
+                      if ((c >= 0x1E4FA) && (c <= 0x1E8CF))
+                        return Line_AL;
+                      /* (c >= 0x1E8D0) && (c <= 0x1E8D6) */
+                      return Line_CM;
+                    }
+                    else
+                    {
+                      if ((c >= 0x1E8D7) && (c <= 0x1E943))
+                        return Line_AL;
+                      /* (c >= 0x1E944) && (c <= 0x1E94A) */
+                      return Line_CM;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        else
+        {
+          if (c < 0x1F5F4)
+          {
+            if (c < 0x1F479)
+            {
+              if (c < 0x1F39C)
+              {
+                if (c < 0x1F100)
+                {
+                  if (c < 0x1ECAC)
                   {
                     if (c < 0x1E95E)
                     {
                       if (c < 0x1E95A)
                       {
-                        if ((c >= 0x1E94C) && (c <= 0x1E94F))
-                          return Line_XX;
+                        if ((c >= 0x1E94B) && (c <= 0x1E94F))
+                          return Line_AL;
                         /* (c >= 0x1E950) && (c <= 0x1E959) */
                         return Line_NU;
                       }
                       else
                       {
                         /* (c >= 0x1E95A) && (c <= 0x1E95D) */
-                        return Line_XX;
+                        return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0x1EC71)
-                      {
-                        if ((c >= 0x1E95E) && (c <= 0x1E95F))
-                          return Line_OP;
-                        /* (c >= 0x1E960) && (c <= 0x1EC70) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1EC71) && (c <= 0x1ECAB) */
-                        return Line_AL;
-                      }
+                      if ((c >= 0x1E95E) && (c <= 0x1E95F))
+                        return Line_OP;
+                      /* (c >= 0x1E960) && (c <= 0x1ECAB) */
+                      return Line_AL;
                     }
                   }
-                }
-                else
-                {
-                  if (c < 0x1EE00)
+                  else
                   {
-                    if (c < 0x1ECB5)
+                    if (c < 0x1ECB1)
                     {
                       if (c < 0x1ECB0)
                       {
@@ -84624,523 +79697,105 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        if (c == 0x1ECB0)
-                          return Line_PO;
-                        /* (c >= 0x1ECB1) && (c <= 0x1ECB4) */
-                        return Line_AL;
+                        /* c == 0x1ECB0 */
+                        return Line_PO;
                       }
                     }
                     else
                     {
-                      if (c < 0x1ED3E)
-                      {
-                        if ((c >= 0x1ECB5) && (c <= 0x1ED00))
-                          return Line_XX;
-                        /* (c >= 0x1ED01) && (c <= 0x1ED3D) */
+                      if ((c >= 0x1ECB1) && (c <= 0x1EFFF))
                         return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1ED3E) && (c <= 0x1EDFF) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x1EE20)
-                    {
-                      if (c < 0x1EE05)
-                      {
-                        if ((c >= 0x1EE00) && (c <= 0x1EE03))
-                          return Line_AL;
-                        /* c == 0x1EE04 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1EE05) && (c <= 0x1EE1F) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1EE23)
-                      {
-                        if (c == 0x1EE20)
-                          return Line_XX;
-                        /* (c >= 0x1EE21) && (c <= 0x1EE22) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x1EE23 */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-        else
-        {
-          if (c < 0x1F4A2)
-          {
-            if (c < 0x1EEA1)
-            {
-              if (c < 0x1EE58)
-              {
-                if (c < 0x1EE47)
-                {
-                  if (c < 0x1EE38)
-                  {
-                    if (c < 0x1EE29)
-                    {
-                      if (c < 0x1EE27)
-                      {
-                        if (c == 0x1EE24)
-                          return Line_AL;
-                        /* (c >= 0x1EE25) && (c <= 0x1EE26) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if (c == 0x1EE27)
-                          return Line_AL;
-                        /* c == 0x1EE28 */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1EE34)
-                      {
-                        if ((c >= 0x1EE29) && (c <= 0x1EE32))
-                          return Line_AL;
-                        /* c == 0x1EE33 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1EE34) && (c <= 0x1EE37) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x1EE3C)
-                    {
-                      if (c < 0x1EE3A)
-                      {
-                        if (c == 0x1EE38)
-                          return Line_XX;
-                        /* c == 0x1EE39 */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if (c == 0x1EE3A)
-                          return Line_XX;
-                        /* c == 0x1EE3B */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1EE43)
-                      {
-                        if ((c >= 0x1EE3C) && (c <= 0x1EE41))
-                          return Line_XX;
-                        /* c == 0x1EE42 */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1EE43) && (c <= 0x1EE46) */
-                        return Line_XX;
-                      }
+                      /* (c >= 0x1F000) && (c <= 0x1F0FF) */
+                      return Line_ID;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0x1EE50)
+                  if (c < 0x1F1AD)
                   {
-                    if (c < 0x1EE4B)
+                    if (c < 0x1F16D)
                     {
-                      if (c < 0x1EE49)
-                      {
-                        if (c == 0x1EE47)
-                          return Line_AL;
-                        /* c == 0x1EE48 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if (c == 0x1EE49)
-                          return Line_AL;
-                        /* c == 0x1EE4A */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1EE4D)
-                      {
-                        if (c == 0x1EE4B)
-                          return Line_AL;
-                        /* c == 0x1EE4C */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1EE4D) && (c <= 0x1EE4F) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x1EE54)
-                    {
-                      if (c < 0x1EE53)
-                      {
-                        if (c == 0x1EE50)
-                          return Line_XX;
-                        /* (c >= 0x1EE51) && (c <= 0x1EE52) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x1EE53 */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1EE57)
-                      {
-                        if (c == 0x1EE54)
-                          return Line_AL;
-                        /* (c >= 0x1EE55) && (c <= 0x1EE56) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* c == 0x1EE57 */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                }
-              }
-              else
-              {
-                if (c < 0x1EE6B)
-                {
-                  if (c < 0x1EE5F)
-                  {
-                    if (c < 0x1EE5C)
-                    {
-                      if (c < 0x1EE5A)
-                      {
-                        if (c == 0x1EE58)
-                          return Line_XX;
-                        /* c == 0x1EE59 */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if (c == 0x1EE5A)
-                          return Line_XX;
-                        /* c == 0x1EE5B */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1EE5E)
-                      {
-                        if (c == 0x1EE5C)
-                          return Line_XX;
-                        /* c == 0x1EE5D */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x1EE5E */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x1EE64)
-                    {
-                      if (c < 0x1EE61)
-                      {
-                        if (c == 0x1EE5F)
-                          return Line_AL;
-                        /* c == 0x1EE60 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1EE61) && (c <= 0x1EE62))
-                          return Line_AL;
-                        /* c == 0x1EE63 */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1EE67)
-                      {
-                        if (c == 0x1EE64)
-                          return Line_AL;
-                        /* (c >= 0x1EE65) && (c <= 0x1EE66) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1EE67) && (c <= 0x1EE6A) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x1EE7E)
-                  {
-                    if (c < 0x1EE78)
-                    {
-                      if (c < 0x1EE73)
-                      {
-                        if (c == 0x1EE6B)
-                          return Line_XX;
-                        /* (c >= 0x1EE6C) && (c <= 0x1EE72) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        if (c == 0x1EE73)
-                          return Line_XX;
-                        /* (c >= 0x1EE74) && (c <= 0x1EE77) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1EE7D)
-                      {
-                        if (c == 0x1EE78)
-                          return Line_XX;
-                        /* (c >= 0x1EE79) && (c <= 0x1EE7C) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* c == 0x1EE7D */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x1EE8A)
-                    {
-                      if (c < 0x1EE80)
-                      {
-                        if (c == 0x1EE7E)
-                          return Line_AL;
-                        /* c == 0x1EE7F */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1EE80) && (c <= 0x1EE89) */
-                        return Line_AL;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1EE9C)
-                      {
-                        if (c == 0x1EE8A)
-                          return Line_XX;
-                        /* (c >= 0x1EE8B) && (c <= 0x1EE9B) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1EE9C) && (c <= 0x1EEA0) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-            else
-            {
-              if (c < 0x1F3BD)
-              {
-                if (c < 0x1F16A)
-                {
-                  if (c < 0x1EEF2)
-                  {
-                    if (c < 0x1EEAB)
-                    {
-                      if (c < 0x1EEA5)
-                      {
-                        if ((c >= 0x1EEA1) && (c <= 0x1EEA3))
-                          return Line_AL;
-                        /* c == 0x1EEA4 */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1EEA5) && (c <= 0x1EEA9))
-                          return Line_AL;
-                        /* c == 0x1EEAA */
-                        return Line_XX;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1EEF0)
-                      {
-                        if ((c >= 0x1EEAB) && (c <= 0x1EEBB))
-                          return Line_AL;
-                        /* (c >= 0x1EEBC) && (c <= 0x1EEEF) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1EEF0) && (c <= 0x1EEF1) */
-                        return Line_AL;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x1F110)
-                    {
-                      if (c < 0x1F100)
-                      {
-                        if ((c >= 0x1EEF2) && (c <= 0x1EFFF))
-                          return Line_XX;
-                        /* (c >= 0x1F000) && (c <= 0x1F0FF) */
-                        return Line_ID;
-                      }
-                      else
+                      if (c < 0x1F110)
                       {
                         if ((c >= 0x1F100) && (c <= 0x1F10C))
-                          return Line_AI;
+                          return Line_AL;
                         /* (c >= 0x1F10D) && (c <= 0x1F10F) */
                         return Line_ID;
                       }
-                    }
-                    else
-                    {
-                      if (c < 0x1F130)
+                      else
                       {
-                        if ((c >= 0x1F110) && (c <= 0x1F12D))
-                          return Line_AI;
-                        /* (c >= 0x1F12E) && (c <= 0x1F12F) */
+                        /* (c >= 0x1F110) && (c <= 0x1F16C) */
                         return Line_AL;
                       }
-                      else
-                      {
-                        /* (c >= 0x1F130) && (c <= 0x1F169) */
-                        return Line_AI;
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  if (c < 0x1F386)
-                  {
-                    if (c < 0x1F1E6)
-                    {
-                      if (c < 0x1F170)
-                      {
-                        if ((c >= 0x1F16A) && (c <= 0x1F16C))
-                          return Line_AL;
-                        /* (c >= 0x1F16D) && (c <= 0x1F16F) */
-                        return Line_ID;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1F170) && (c <= 0x1F1AC))
-                          return Line_AI;
-                        /* (c >= 0x1F1AD) && (c <= 0x1F1E5) */
-                        return Line_ID;
-                      }
                     }
                     else
                     {
-                      if (c < 0x1F385)
-                      {
-                        if ((c >= 0x1F1E6) && (c <= 0x1F1FF))
-                          return Line_RI;
-                        /* (c >= 0x1F200) && (c <= 0x1F384) */
+                      if ((c >= 0x1F16D) && (c <= 0x1F16F))
                         return Line_ID;
-                      }
-                      else
-                      {
-                        /* c == 0x1F385 */
-                        return Line_EB;
-                      }
+                      /* (c >= 0x1F170) && (c <= 0x1F1AC) */
+                      return Line_AL;
                     }
                   }
                   else
                   {
-                    if (c < 0x1F3B5)
+                    if (c < 0x1F385)
                     {
-                      if (c < 0x1F39E)
+                      if (c < 0x1F200)
                       {
-                        if ((c >= 0x1F386) && (c <= 0x1F39B))
+                        if ((c >= 0x1F1AD) && (c <= 0x1F1E5))
                           return Line_ID;
-                        /* (c >= 0x1F39C) && (c <= 0x1F39D) */
-                        return Line_AL;
+                        /* (c >= 0x1F1E6) && (c <= 0x1F1FF) */
+                        return Line_RI;
                       }
                       else
                       {
-                        /* (c >= 0x1F39E) && (c <= 0x1F3B4) */
+                        /* (c >= 0x1F200) && (c <= 0x1F384) */
                         return Line_ID;
                       }
                     }
                     else
                     {
-                      if (c < 0x1F3BC)
-                      {
-                        if ((c >= 0x1F3B5) && (c <= 0x1F3B6))
-                          return Line_AL;
-                        /* (c >= 0x1F3B7) && (c <= 0x1F3BB) */
-                        return Line_ID;
-                      }
-                      else
-                      {
-                        /* c == 0x1F3BC */
-                        return Line_AL;
-                      }
+                      if (c == 0x1F385)
+                        return Line_EB;
+                      /* (c >= 0x1F386) && (c <= 0x1F39B) */
+                      return Line_ID;
                     }
                   }
                 }
               }
               else
               {
-                if (c < 0x1F479)
+                if (c < 0x1F3CA)
                 {
-                  if (c < 0x1F3FB)
+                  if (c < 0x1F3BD)
                   {
-                    if (c < 0x1F3C8)
+                    if (c < 0x1F3B7)
+                    {
+                      if (c < 0x1F3B5)
+                      {
+                        if ((c >= 0x1F39C) && (c <= 0x1F39D))
+                          return Line_AL;
+                        /* (c >= 0x1F39E) && (c <= 0x1F3B4) */
+                        return Line_ID;
+                      }
+                      else
+                      {
+                        /* (c >= 0x1F3B5) && (c <= 0x1F3B6) */
+                        return Line_AL;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x1F3B7) && (c <= 0x1F3BB))
+                        return Line_ID;
+                      /* c == 0x1F3BC */
+                      return Line_AL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x1F3C7)
                     {
                       if (c < 0x1F3C5)
                       {
@@ -85151,69 +79806,75 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        if ((c >= 0x1F3C5) && (c <= 0x1F3C6))
-                          return Line_ID;
-                        /* c == 0x1F3C7 */
-                        return Line_EB;
-                      }
-                    }
-                    else
-                    {
-                      if (c < 0x1F3CD)
-                      {
-                        if ((c >= 0x1F3C8) && (c <= 0x1F3C9))
-                          return Line_ID;
-                        /* (c >= 0x1F3CA) && (c <= 0x1F3CC) */
-                        return Line_EB;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1F3CD) && (c <= 0x1F3FA) */
-                        return Line_ID;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0x1F446)
-                    {
-                      if (c < 0x1F442)
-                      {
-                        if ((c >= 0x1F3FB) && (c <= 0x1F3FF))
-                          return Line_EM;
-                        /* (c >= 0x1F400) && (c <= 0x1F441) */
-                        return Line_ID;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1F442) && (c <= 0x1F443))
-                          return Line_EB;
-                        /* (c >= 0x1F444) && (c <= 0x1F445) */
+                        /* (c >= 0x1F3C5) && (c <= 0x1F3C6) */
                         return Line_ID;
                       }
                     }
                     else
                     {
-                      if (c < 0x1F466)
-                      {
-                        if ((c >= 0x1F446) && (c <= 0x1F450))
-                          return Line_EB;
-                        /* (c >= 0x1F451) && (c <= 0x1F465) */
-                        return Line_ID;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1F466) && (c <= 0x1F478) */
+                      if (c == 0x1F3C7)
                         return Line_EB;
-                      }
+                      /* (c >= 0x1F3C8) && (c <= 0x1F3C9) */
+                      return Line_ID;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0x1F48F)
+                  if (c < 0x1F444)
                   {
-                    if (c < 0x1F484)
+                    if (c < 0x1F400)
+                    {
+                      if (c < 0x1F3FB)
+                      {
+                        if ((c >= 0x1F3CA) && (c <= 0x1F3CC))
+                          return Line_EB;
+                        /* (c >= 0x1F3CD) && (c <= 0x1F3FA) */
+                        return Line_ID;
+                      }
+                      else
+                      {
+                        /* (c >= 0x1F3FB) && (c <= 0x1F3FF) */
+                        return Line_EM;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x1F400) && (c <= 0x1F441))
+                        return Line_ID;
+                      /* (c >= 0x1F442) && (c <= 0x1F443) */
+                      return Line_EB;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x1F451)
+                    {
+                      if ((c >= 0x1F444) && (c <= 0x1F445))
+                        return Line_ID;
+                      /* (c >= 0x1F446) && (c <= 0x1F450) */
+                      return Line_EB;
+                    }
+                    else
+                    {
+                      if ((c >= 0x1F451) && (c <= 0x1F465))
+                        return Line_ID;
+                      /* (c >= 0x1F466) && (c <= 0x1F478) */
+                      return Line_EB;
+                    }
+                  }
+                }
+              }
+            }
+            else
+            {
+              if (c < 0x1F4B0)
+              {
+                if (c < 0x1F492)
+                {
+                  if (c < 0x1F485)
+                  {
+                    if (c < 0x1F481)
                     {
                       if (c < 0x1F47D)
                       {
@@ -85224,46 +79885,49 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        if ((c >= 0x1F47D) && (c <= 0x1F480))
-                          return Line_ID;
-                        /* (c >= 0x1F481) && (c <= 0x1F483) */
-                        return Line_EB;
+                        /* (c >= 0x1F47D) && (c <= 0x1F480) */
+                        return Line_ID;
                       }
                     }
                     else
                     {
-                      if (c < 0x1F488)
-                      {
-                        if (c == 0x1F484)
-                          return Line_ID;
-                        /* (c >= 0x1F485) && (c <= 0x1F487) */
+                      if ((c >= 0x1F481) && (c <= 0x1F483))
                         return Line_EB;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1F488) && (c <= 0x1F48E) */
-                        return Line_ID;
-                      }
+                      /* c == 0x1F484 */
+                      return Line_ID;
                     }
                   }
                   else
                   {
-                    if (c < 0x1F492)
+                    if (c < 0x1F490)
                     {
-                      if (c < 0x1F491)
+                      if (c < 0x1F48F)
                       {
-                        if (c == 0x1F48F)
+                        if ((c >= 0x1F485) && (c <= 0x1F487))
                           return Line_EB;
-                        /* c == 0x1F490 */
+                        /* (c >= 0x1F488) && (c <= 0x1F48E) */
                         return Line_ID;
                       }
                       else
                       {
-                        /* c == 0x1F491 */
+                        /* c == 0x1F48F */
                         return Line_EB;
                       }
                     }
                     else
+                    {
+                      if (c == 0x1F490)
+                        return Line_ID;
+                      /* c == 0x1F491 */
+                      return Line_EB;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x1F4A4)
+                  {
+                    if (c < 0x1F4A2)
                     {
                       if (c < 0x1F4A1)
                       {
@@ -85278,57 +79942,48 @@ line_category(Py_UCS4 c)
                         return Line_ID;
                       }
                     }
-                  }
-                }
-              }
-            }
-          }
-          else
-          {
-            if (c < 0x1F860)
-            {
-              if (c < 0x1F5FA)
-              {
-                if (c < 0x1F532)
-                {
-                  if (c < 0x1F4B0)
-                  {
-                    if (c < 0x1F4AA)
+                    else
                     {
-                      if (c < 0x1F4A4)
-                      {
-                        if (c == 0x1F4A2)
-                          return Line_AL;
-                        /* c == 0x1F4A3 */
-                        return Line_ID;
-                      }
-                      else
+                      if (c == 0x1F4A2)
+                        return Line_AL;
+                      /* c == 0x1F4A3 */
+                      return Line_ID;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x1F4AB)
+                    {
+                      if (c < 0x1F4AA)
                       {
                         if (c == 0x1F4A4)
                           return Line_AL;
                         /* (c >= 0x1F4A5) && (c <= 0x1F4A9) */
                         return Line_ID;
                       }
+                      else
+                      {
+                        /* c == 0x1F4AA */
+                        return Line_EB;
+                      }
                     }
                     else
                     {
-                      if (c < 0x1F4AF)
-                      {
-                        if (c == 0x1F4AA)
-                          return Line_EB;
-                        /* (c >= 0x1F4AB) && (c <= 0x1F4AE) */
+                      if ((c >= 0x1F4AB) && (c <= 0x1F4AE))
                         return Line_ID;
-                      }
-                      else
-                      {
-                        /* c == 0x1F4AF */
-                        return Line_AL;
-                      }
+                      /* c == 0x1F4AF */
+                      return Line_AL;
                     }
                   }
-                  else
+                }
+              }
+              else
+              {
+                if (c < 0x1F576)
+                {
+                  if (c < 0x1F517)
                   {
-                    if (c < 0x1F507)
+                    if (c < 0x1F500)
                     {
                       if (c < 0x1F4B3)
                       {
@@ -85339,125 +79994,128 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        if ((c >= 0x1F4B3) && (c <= 0x1F4FF))
-                          return Line_ID;
-                        /* (c >= 0x1F500) && (c <= 0x1F506) */
+                        /* (c >= 0x1F4B3) && (c <= 0x1F4FF) */
+                        return Line_ID;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x1F500) && (c <= 0x1F506))
+                        return Line_AL;
+                      /* (c >= 0x1F507) && (c <= 0x1F516) */
+                      return Line_ID;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x1F54A)
+                    {
+                      if (c < 0x1F532)
+                      {
+                        if ((c >= 0x1F517) && (c <= 0x1F524))
+                          return Line_AL;
+                        /* (c >= 0x1F525) && (c <= 0x1F531) */
+                        return Line_ID;
+                      }
+                      else
+                      {
+                        /* (c >= 0x1F532) && (c <= 0x1F549) */
                         return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0x1F525)
-                      {
-                        if ((c >= 0x1F507) && (c <= 0x1F516))
-                          return Line_ID;
-                        /* (c >= 0x1F517) && (c <= 0x1F524) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1F525) && (c <= 0x1F531) */
+                      if ((c >= 0x1F54A) && (c <= 0x1F573))
                         return Line_ID;
-                      }
+                      /* (c >= 0x1F574) && (c <= 0x1F575) */
+                      return Line_EB;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0x1F591)
+                  if (c < 0x1F595)
                   {
-                    if (c < 0x1F57A)
+                    if (c < 0x1F590)
                     {
-                      if (c < 0x1F574)
+                      if (c < 0x1F57B)
                       {
-                        if ((c >= 0x1F532) && (c <= 0x1F549))
-                          return Line_AL;
-                        /* (c >= 0x1F54A) && (c <= 0x1F573) */
-                        return Line_ID;
+                        if ((c >= 0x1F576) && (c <= 0x1F579))
+                          return Line_ID;
+                        /* c == 0x1F57A */
+                        return Line_EB;
                       }
                       else
                       {
-                        if ((c >= 0x1F574) && (c <= 0x1F575))
-                          return Line_EB;
-                        /* (c >= 0x1F576) && (c <= 0x1F579) */
+                        /* (c >= 0x1F57B) && (c <= 0x1F58F) */
                         return Line_ID;
                       }
                     }
                     else
                     {
-                      if (c < 0x1F590)
-                      {
-                        if (c == 0x1F57A)
-                          return Line_EB;
-                        /* (c >= 0x1F57B) && (c <= 0x1F58F) */
-                        return Line_ID;
-                      }
-                      else
-                      {
-                        /* c == 0x1F590 */
+                      if (c == 0x1F590)
                         return Line_EB;
-                      }
+                      /* (c >= 0x1F591) && (c <= 0x1F594) */
+                      return Line_ID;
                     }
                   }
                   else
                   {
                     if (c < 0x1F5D4)
                     {
-                      if (c < 0x1F597)
-                      {
-                        if ((c >= 0x1F591) && (c <= 0x1F594))
-                          return Line_ID;
-                        /* (c >= 0x1F595) && (c <= 0x1F596) */
+                      if ((c >= 0x1F595) && (c <= 0x1F596))
                         return Line_EB;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1F597) && (c <= 0x1F5D3) */
-                        return Line_ID;
-                      }
+                      /* (c >= 0x1F597) && (c <= 0x1F5D3) */
+                      return Line_ID;
                     }
                     else
                     {
-                      if (c < 0x1F5F4)
-                      {
-                        if ((c >= 0x1F5D4) && (c <= 0x1F5DB))
-                          return Line_AL;
-                        /* (c >= 0x1F5DC) && (c <= 0x1F5F3) */
-                        return Line_ID;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1F5F4) && (c <= 0x1F5F9) */
+                      if ((c >= 0x1F5D4) && (c <= 0x1F5DB))
                         return Line_AL;
-                      }
+                      /* (c >= 0x1F5DC) && (c <= 0x1F5F3) */
+                      return Line_ID;
                     }
                   }
                 }
               }
-              else
+            }
+          }
+          else
+          {
+            if (c < 0x1F926)
+            {
+              if (c < 0x1F780)
               {
-                if (c < 0x1F6C1)
+                if (c < 0x1F6A3)
                 {
-                  if (c < 0x1F67C)
+                  if (c < 0x1F650)
                   {
-                    if (c < 0x1F650)
+                    if (c < 0x1F648)
                     {
-                      if (c < 0x1F648)
+                      if (c < 0x1F645)
                       {
-                        if ((c >= 0x1F5FA) && (c <= 0x1F644))
-                          return Line_ID;
-                        /* (c >= 0x1F645) && (c <= 0x1F647) */
-                        return Line_EB;
+                        if ((c >= 0x1F5F4) && (c <= 0x1F5F9))
+                          return Line_AL;
+                        /* (c >= 0x1F5FA) && (c <= 0x1F644) */
+                        return Line_ID;
                       }
                       else
                       {
-                        if ((c >= 0x1F648) && (c <= 0x1F64A))
-                          return Line_ID;
-                        /* (c >= 0x1F64B) && (c <= 0x1F64F) */
+                        /* (c >= 0x1F645) && (c <= 0x1F647) */
                         return Line_EB;
                       }
                     }
                     else
+                    {
+                      if ((c >= 0x1F648) && (c <= 0x1F64A))
+                        return Line_ID;
+                      /* (c >= 0x1F64B) && (c <= 0x1F64F) */
+                      return Line_EB;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x1F67C)
                     {
                       if (c < 0x1F679)
                       {
@@ -85472,48 +80130,45 @@ line_category(Py_UCS4 c)
                         return Line_NS;
                       }
                     }
-                  }
-                  else
-                  {
-                    if (c < 0x1F6B4)
+                    else
                     {
-                      if (c < 0x1F6A3)
-                      {
-                        if ((c >= 0x1F67C) && (c <= 0x1F67F))
-                          return Line_AL;
-                        /* (c >= 0x1F680) && (c <= 0x1F6A2) */
-                        return Line_ID;
-                      }
-                      else
+                      if ((c >= 0x1F67C) && (c <= 0x1F67F))
+                        return Line_AL;
+                      /* (c >= 0x1F680) && (c <= 0x1F6A2) */
+                      return Line_ID;
+                    }
+                  }
+                }
+                else
+                {
+                  if (c < 0x1F6C1)
+                  {
+                    if (c < 0x1F6B7)
+                    {
+                      if (c < 0x1F6B4)
                       {
                         if (c == 0x1F6A3)
                           return Line_EB;
                         /* (c >= 0x1F6A4) && (c <= 0x1F6B3) */
                         return Line_ID;
                       }
-                    }
-                    else
-                    {
-                      if (c < 0x1F6C0)
-                      {
-                        if ((c >= 0x1F6B4) && (c <= 0x1F6B6))
-                          return Line_EB;
-                        /* (c >= 0x1F6B7) && (c <= 0x1F6BF) */
-                        return Line_ID;
-                      }
                       else
                       {
-                        /* c == 0x1F6C0 */
+                        /* (c >= 0x1F6B4) && (c <= 0x1F6B6) */
                         return Line_EB;
                       }
                     }
+                    else
+                    {
+                      if ((c >= 0x1F6B7) && (c <= 0x1F6BF))
+                        return Line_ID;
+                      /* c == 0x1F6C0 */
+                      return Line_EB;
+                    }
                   }
-                }
-                else
-                {
-                  if (c < 0x1F800)
+                  else
                   {
-                    if (c < 0x1F774)
+                    if (c < 0x1F700)
                     {
                       if (c < 0x1F6CD)
                       {
@@ -85524,46 +80179,52 @@ line_category(Py_UCS4 c)
                       }
                       else
                       {
-                        if ((c >= 0x1F6CD) && (c <= 0x1F6FF))
-                          return Line_ID;
-                        /* (c >= 0x1F700) && (c <= 0x1F773) */
+                        /* (c >= 0x1F6CD) && (c <= 0x1F6FF) */
+                        return Line_ID;
+                      }
+                    }
+                    else
+                    {
+                      if ((c >= 0x1F700) && (c <= 0x1F773))
+                        return Line_AL;
+                      /* (c >= 0x1F774) && (c <= 0x1F77F) */
+                      return Line_ID;
+                    }
+                  }
+                }
+              }
+              else
+              {
+                if (c < 0x1F890)
+                {
+                  if (c < 0x1F848)
+                  {
+                    if (c < 0x1F80C)
+                    {
+                      if (c < 0x1F800)
+                      {
+                        if ((c >= 0x1F780) && (c <= 0x1F7D4))
+                          return Line_AL;
+                        /* (c >= 0x1F7D5) && (c <= 0x1F7FF) */
+                        return Line_ID;
+                      }
+                      else
+                      {
+                        /* (c >= 0x1F800) && (c <= 0x1F80B) */
                         return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0x1F7D5)
-                      {
-                        if ((c >= 0x1F774) && (c <= 0x1F77F))
-                          return Line_ID;
-                        /* (c >= 0x1F780) && (c <= 0x1F7D4) */
-                        return Line_AL;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1F7D5) && (c <= 0x1F7FF) */
+                      if ((c >= 0x1F80C) && (c <= 0x1F80F))
                         return Line_ID;
-                      }
+                      /* (c >= 0x1F810) && (c <= 0x1F847) */
+                      return Line_AL;
                     }
                   }
                   else
                   {
-                    if (c < 0x1F848)
-                    {
-                      if (c < 0x1F810)
-                      {
-                        if ((c >= 0x1F800) && (c <= 0x1F80B))
-                          return Line_AL;
-                        /* (c >= 0x1F80C) && (c <= 0x1F80F) */
-                        return Line_ID;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1F810) && (c <= 0x1F847) */
-                        return Line_AL;
-                      }
-                    }
-                    else
+                    if (c < 0x1F860)
                     {
                       if (c < 0x1F85A)
                       {
@@ -85578,71 +80239,71 @@ line_category(Py_UCS4 c)
                         return Line_ID;
                       }
                     }
+                    else
+                    {
+                      if ((c >= 0x1F860) && (c <= 0x1F887))
+                        return Line_AL;
+                      /* (c >= 0x1F888) && (c <= 0x1F88F) */
+                      return Line_ID;
+                    }
                   }
                 }
-              }
-            }
-            else
-            {
-              if (c < 0x1F9D1)
-              {
-                if (c < 0x1F93A)
+                else
                 {
                   if (c < 0x1F90F)
                   {
-                    if (c < 0x1F900)
+                    if (c < 0x1F90C)
                     {
-                      if (c < 0x1F890)
-                      {
-                        if ((c >= 0x1F860) && (c <= 0x1F887))
-                          return Line_AL;
-                        /* (c >= 0x1F888) && (c <= 0x1F88F) */
-                        return Line_ID;
-                      }
-                      else
+                      if (c < 0x1F900)
                       {
                         if ((c >= 0x1F890) && (c <= 0x1F8AD))
                           return Line_AL;
                         /* (c >= 0x1F8AE) && (c <= 0x1F8FF) */
                         return Line_ID;
                       }
+                      else
+                      {
+                        /* (c >= 0x1F900) && (c <= 0x1F90B) */
+                        return Line_AL;
+                      }
                     }
                     else
                     {
-                      if (c < 0x1F90D)
-                      {
-                        if ((c >= 0x1F900) && (c <= 0x1F90B))
-                          return Line_AL;
-                        /* c == 0x1F90C */
+                      if (c == 0x1F90C)
                         return Line_EB;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1F90D) && (c <= 0x1F90E) */
-                        return Line_ID;
-                      }
+                      /* (c >= 0x1F90D) && (c <= 0x1F90E) */
+                      return Line_ID;
                     }
                   }
                   else
                   {
-                    if (c < 0x1F926)
+                    if (c < 0x1F918)
                     {
-                      if (c < 0x1F918)
-                      {
-                        if (c == 0x1F90F)
-                          return Line_EB;
-                        /* (c >= 0x1F910) && (c <= 0x1F917) */
-                        return Line_ID;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1F918) && (c <= 0x1F91F))
-                          return Line_EB;
-                        /* (c >= 0x1F920) && (c <= 0x1F925) */
-                        return Line_ID;
-                      }
+                      if (c == 0x1F90F)
+                        return Line_EB;
+                      /* (c >= 0x1F910) && (c <= 0x1F917) */
+                      return Line_ID;
                     }
                     else
+                    {
+                      if ((c >= 0x1F918) && (c <= 0x1F91F))
+                        return Line_EB;
+                      /* (c >= 0x1F920) && (c <= 0x1F925) */
+                      return Line_ID;
+                    }
+                  }
+                }
+              }
+            }
+            else
+            {
+              if (c < 0x1FAC3)
+              {
+                if (c < 0x1F9B8)
+                {
+                  if (c < 0x1F93F)
+                  {
+                    if (c < 0x1F93A)
                     {
                       if (c < 0x1F930)
                       {
@@ -85657,46 +80318,43 @@ line_category(Py_UCS4 c)
                         return Line_EB;
                       }
                     }
-                  }
-                }
-                else
-                {
-                  if (c < 0x1F9B8)
-                  {
-                    if (c < 0x1F978)
+                    else
                     {
-                      if (c < 0x1F93F)
-                      {
-                        if ((c >= 0x1F93A) && (c <= 0x1F93B))
-                          return Line_ID;
-                        /* (c >= 0x1F93C) && (c <= 0x1F93E) */
-                        return Line_EB;
-                      }
-                      else
+                      if ((c >= 0x1F93A) && (c <= 0x1F93B))
+                        return Line_ID;
+                      /* (c >= 0x1F93C) && (c <= 0x1F93E) */
+                      return Line_EB;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x1F9B5)
+                    {
+                      if (c < 0x1F978)
                       {
                         if ((c >= 0x1F93F) && (c <= 0x1F976))
                           return Line_ID;
                         /* c == 0x1F977 */
                         return Line_EB;
                       }
-                    }
-                    else
-                    {
-                      if (c < 0x1F9B7)
-                      {
-                        if ((c >= 0x1F978) && (c <= 0x1F9B4))
-                          return Line_ID;
-                        /* (c >= 0x1F9B5) && (c <= 0x1F9B6) */
-                        return Line_EB;
-                      }
                       else
                       {
-                        /* c == 0x1F9B7 */
+                        /* (c >= 0x1F978) && (c <= 0x1F9B4) */
                         return Line_ID;
                       }
                     }
+                    else
+                    {
+                      if ((c >= 0x1F9B5) && (c <= 0x1F9B6))
+                        return Line_EB;
+                      /* c == 0x1F9B7 */
+                      return Line_ID;
+                    }
                   }
-                  else
+                }
+                else
+                {
+                  if (c < 0x1F9D0)
                   {
                     if (c < 0x1F9BC)
                     {
@@ -85715,46 +80373,46 @@ line_category(Py_UCS4 c)
                     }
                     else
                     {
-                      if (c < 0x1F9D0)
+                      if ((c >= 0x1F9BC) && (c <= 0x1F9CC))
+                        return Line_ID;
+                      /* (c >= 0x1F9CD) && (c <= 0x1F9CF) */
+                      return Line_EB;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0x1FA00)
+                    {
+                      if (c < 0x1F9DE)
                       {
-                        if ((c >= 0x1F9BC) && (c <= 0x1F9CC))
+                        if (c == 0x1F9D0)
                           return Line_ID;
-                        /* (c >= 0x1F9CD) && (c <= 0x1F9CF) */
+                        /* (c >= 0x1F9D1) && (c <= 0x1F9DD) */
                         return Line_EB;
                       }
                       else
                       {
-                        /* c == 0x1F9D0 */
+                        /* (c >= 0x1F9DE) && (c <= 0x1F9FF) */
                         return Line_ID;
                       }
+                    }
+                    else
+                    {
+                      if ((c >= 0x1FA00) && (c <= 0x1FA53))
+                        return Line_AL;
+                      /* (c >= 0x1FA54) && (c <= 0x1FAC2) */
+                      return Line_ID;
                     }
                   }
                 }
               }
               else
               {
-                if (c < 0x1FBFA)
+                if (c < 0x2FFFE)
                 {
-                  if (c < 0x1FAF9)
+                  if (c < 0x1FBF0)
                   {
-                    if (c < 0x1FAC3)
-                    {
-                      if (c < 0x1FA00)
-                      {
-                        if ((c >= 0x1F9D1) && (c <= 0x1F9DD))
-                          return Line_EB;
-                        /* (c >= 0x1F9DE) && (c <= 0x1F9FF) */
-                        return Line_ID;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1FA00) && (c <= 0x1FA53))
-                          return Line_AL;
-                        /* (c >= 0x1FA54) && (c <= 0x1FAC2) */
-                        return Line_ID;
-                      }
-                    }
-                    else
+                    if (c < 0x1FAF9)
                     {
                       if (c < 0x1FAF0)
                       {
@@ -85769,109 +80427,82 @@ line_category(Py_UCS4 c)
                         return Line_EB;
                       }
                     }
+                    else
+                    {
+                      if ((c >= 0x1FAF9) && (c <= 0x1FAFF))
+                        return Line_ID;
+                      /* (c >= 0x1FB00) && (c <= 0x1FBEF) */
+                      return Line_AL;
+                    }
                   }
                   else
                   {
-                    if (c < 0x1FB94)
+                    if (c < 0x1FFFE)
                     {
-                      if (c < 0x1FB93)
+                      if (c < 0x1FC00)
                       {
-                        if ((c >= 0x1FAF9) && (c <= 0x1FAFF))
-                          return Line_ID;
-                        /* (c >= 0x1FB00) && (c <= 0x1FB92) */
+                        if ((c >= 0x1FBF0) && (c <= 0x1FBF9))
+                          return Line_NU;
+                        /* (c >= 0x1FBFA) && (c <= 0x1FBFF) */
                         return Line_AL;
                       }
                       else
                       {
-                        /* c == 0x1FB93 */
-                        return Line_XX;
+                        /* (c >= 0x1FC00) && (c <= 0x1FFFD) */
+                        return Line_ID;
                       }
                     }
                     else
                     {
-                      if (c < 0x1FBF0)
-                      {
-                        if ((c >= 0x1FB94) && (c <= 0x1FBCA))
-                          return Line_AL;
-                        /* (c >= 0x1FBCB) && (c <= 0x1FBEF) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0x1FBF0) && (c <= 0x1FBF9) */
-                        return Line_NU;
-                      }
+                      if ((c >= 0x1FFFE) && (c <= 0x1FFFF))
+                        return Line_AL;
+                      /* (c >= 0x20000) && (c <= 0x2FFFD) */
+                      return Line_ID;
                     }
                   }
                 }
                 else
                 {
-                  if (c < 0xE0001)
+                  if (c < 0xE0020)
                   {
-                    if (c < 0x2FFFE)
-                    {
-                      if (c < 0x1FFFE)
-                      {
-                        if ((c >= 0x1FBFA) && (c <= 0x1FBFF))
-                          return Line_XX;
-                        /* (c >= 0x1FC00) && (c <= 0x1FFFD) */
-                        return Line_ID;
-                      }
-                      else
-                      {
-                        if ((c >= 0x1FFFE) && (c <= 0x1FFFF))
-                          return Line_XX;
-                        /* (c >= 0x20000) && (c <= 0x2FFFD) */
-                        return Line_ID;
-                      }
-                    }
-                    else
+                    if (c < 0xE0001)
                     {
                       if (c < 0x3FFFE)
                       {
                         if ((c >= 0x2FFFE) && (c <= 0x2FFFF))
-                          return Line_XX;
+                          return Line_AL;
                         /* (c >= 0x30000) && (c <= 0x3FFFD) */
                         return Line_ID;
                       }
                       else
                       {
                         /* (c >= 0x3FFFE) && (c <= 0xE0000) */
-                        return Line_XX;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (c < 0xE0080)
-                    {
-                      if (c < 0xE0020)
-                      {
-                        if (c == 0xE0001)
-                          return Line_CM;
-                        /* (c >= 0xE0002) && (c <= 0xE001F) */
-                        return Line_XX;
-                      }
-                      else
-                      {
-                        /* (c >= 0xE0020) && (c <= 0xE007F) */
-                        return Line_CM;
+                        return Line_AL;
                       }
                     }
                     else
                     {
-                      if (c < 0xE01F0)
-                      {
-                        if ((c >= 0xE0080) && (c <= 0xE00FF))
-                          return Line_XX;
-                        /* (c >= 0xE0100) && (c <= 0xE01EF) */
+                      if (c == 0xE0001)
                         return Line_CM;
-                      }
-                      else
-                      {
-                        /* (c >= 0xE01F0) && (c <= 0x10FFFF) */
-                        return Line_XX;
-                      }
+                      /* (c >= 0xE0002) && (c <= 0xE001F) */
+                      return Line_AL;
+                    }
+                  }
+                  else
+                  {
+                    if (c < 0xE0100)
+                    {
+                      if ((c >= 0xE0020) && (c <= 0xE007F))
+                        return Line_CM;
+                      /* (c >= 0xE0080) && (c <= 0xE00FF) */
+                      return Line_AL;
+                    }
+                    else
+                    {
+                      if ((c >= 0xE0100) && (c <= 0xE01EF))
+                        return Line_CM;
+                      /* (c >= 0xE01F0) && (c <= 0x10FFFF) */
+                      return Line_AL;
                     }
                   }
                 }
