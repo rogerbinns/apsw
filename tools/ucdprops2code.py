@@ -122,6 +122,8 @@ def generate_c() -> str:
     out.extend(generate_casefold_expansion(props["casefold"]))
     out.append("")
     out.extend(generate_c_table("line", "LB", line_ranges))
+    out.append("")
+    out.extend(generate_LB30_stuff())
 
     return "\n".join(out) + "\n"
 
@@ -486,9 +488,17 @@ def extract_categories(source: str, dest: dict[str, Any]):
                 codepoint_to_category[i] = cat
 
 
+east_asian_widths_FWH = set()
+
+
 def extract_width(source: str, dest: dict[str, Any]):
     dest["Wide"] = []
     for start, end, width in parse_source_lines(source):
+        # See line rules LB30 for why this is here
+        if width in {"F", "H", "W"}:
+            for cp in range(start, 1 + (end if end is not None else start)):
+                east_asian_widths_FWH.add(cp)
+
         if width in {"F", "W"}:
             if end is None:
                 dest["Wide"].append(start)
@@ -665,12 +675,34 @@ def generate_category_ranges():
 
 line_ranges = []
 
+# see rule LB30
+line_OP_not_FWH = []
+line_CP_not_FWH = []
+
+
+def generate_LB30_stuff():
+    yield "#define ALL_LB30_OP_not_FWH \\"
+    for _, is_last, v in augiter(line_OP_not_FWH):
+        yield f"  X(0x{v:04X}) " + ("\\" if not is_last else "")
+    yield ""
+    yield "#define ALL_LB30_CP_not_FWH \\"
+    for _, is_last, v in augiter(line_CP_not_FWH):
+        yield f"  X(0x{v:04X}) " + ("\\" if not is_last else "")
+
 
 def generate_line_ranges():
     generate_ranges("line", props["line"], line_ranges, "XX", line_resolve_classes)
 
 
 def line_resolve_classes(codepoint: int, cat: str) -> str:
+    # rule LB30 needs this
+    if cat == "OP":
+        if codepoint not in east_asian_widths_FWH:
+            line_OP_not_FWH.append(codepoint)
+    elif cat == "CP":
+        if codepoint not in east_asian_widths_FWH:
+            line_CP_not_FWH.append(codepoint)
+
     # this is to do the mapping in 6.1 Resolve line breaking classes
     # https://www.unicode.org/reports/tr14/#LB1
     if cat in {"AI", "SG", "XX"}:
