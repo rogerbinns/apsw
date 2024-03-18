@@ -23,6 +23,7 @@ It is ugly, but it works.
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
+#define EOT 0
 #include "_unicodedb.c"
 
 /* if pyutil.c is included then the compiler whines about all the
@@ -108,7 +109,7 @@ typedef struct
 #define TEXT_INIT                                                                                                      \
   {                                                                                                                    \
     .pos = offset, .curchar = 0,                                                                                       \
-    .lookahead = (offset == text_end) ? 0 : cat_func(PyUnicode_READ(text_kind, text_data, offset)),                    \
+    .lookahead = (offset == text_end) ? EOT : cat_func(PyUnicode_READ(text_kind, text_data, offset)),                  \
   }
 
 #define it_advance()                                                                                                   \
@@ -117,8 +118,14 @@ typedef struct
     assert(it.pos < text_end);                                                                                         \
     it.curchar = it.lookahead;                                                                                         \
     it.pos++;                                                                                                          \
-    it.lookahead = (it.pos == text_end) ? 0 : cat_func(PyUnicode_READ(text_kind, text_data, it.pos));                  \
+    it.lookahead = (it.pos == text_end) ? EOT : cat_func(PyUnicode_READ(text_kind, text_data, it.pos));                \
   } while (0)
+
+#define it_lookahead_category(value)                                                                                   \
+  ((category_category(PyUnicode_READ(text_kind, text_data, it.pos)) & (value)) == (value))
+
+#define it_curchar_category(value)                                                                                     \
+  ((category_category(PyUnicode_READ(text_kind, text_data, it.pos - 1)) & (value)) == (value))
 
 /* the first advance sets pos == offset + 1 but nothing is accepted
    yet, hence +1 */
@@ -645,12 +652,205 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
 #define cat_func line_category
   TextIterator it = TEXT_INIT;
 
+  /*
+    Important note:  We have to use equality checking NOT bitwise and
+    because there were too many categories to use a bitset.
+  */
+
   /* LB2 implicit */
 
   /* LB3 */
   while (it.pos < text_end)
   {
     it_advance();
+
+    /* LB4 */
+    if (it.curchar == LB_BK)
+      break;
+
+    /* LB5 */
+    if (it.curchar == LB_CR && it.lookahead == LB_LF)
+    {
+      it.pos++;
+      break;
+    }
+
+    if (it.curchar == LB_CR || it.curchar == LB_LF || it.curchar == LB_NL)
+      break;
+
+    /* LB6 */
+    if (it.lookahead == LB_BK || it.lookahead == LB_CR || it.lookahead == LB_LF || it.lookahead == LB_NL)
+      continue;
+
+    /* LB7 */
+    if (it.lookahead == LB_SP || it.lookahead == LB_ZW)
+      continue;
+
+    /* LB8 */
+    if (it.curchar == LB_ZW)
+    {
+      while (it.lookahead == LB_SP)
+        it_advance();
+      break;
+    }
+
+    /* LB8a */
+    if (it.curchar == LB_ZWJ)
+      continue;
+
+    /* LB9 */
+    if (it.lookahead == LB_CM || it.lookahead == LB_ZWJ)
+    {
+      unsigned savechar = it.curchar;
+      while (it.lookahead == LB_CM || it.lookahead == LB_ZWJ)
+        it_advance();
+      it.curchar = savechar;
+    }
+
+    /* LB10 */
+    if (it.curchar == LB_CM || it.curchar == LB_ZWJ)
+      it.curchar = LB_AL;
+
+    /* LB11 */
+    if (it.lookahead == LB_WJ || it.curchar == LB_WJ)
+      continue;
+
+    /* LB12 */
+    if (it.curchar == LB_GL)
+      continue;
+
+    /* LB12a */
+    if (it.lookahead == LB_GL)
+      if (it.curchar == LB_SP || it.curchar == LB_BA || it.curchar == LB_HY)
+        break;
+
+    /* LB13 */
+    if (it.curchar == LB_CL || it.curchar == LB_CP || it.curchar == LB_EX || it.curchar == LB_IS || it.curchar == LB_SY)
+      continue;
+
+    /* LB14 */
+    if (it.curchar == LB_OP)
+    {
+      while (it.lookahead == LB_SP)
+        it_advance();
+      continue;
+    }
+
+    /* LB15a */
+    if (it.lookahead == LB_QU && it_lookahead_category(Category_Punctuation_InitialQuote)
+        && (it.curchar == LB_BK || it.curchar == LB_CR || it.curchar == LB_NL || it.curchar == LB_OP
+            || it.curchar == LB_QU || it.curchar == LB_GL || it.curchar == LB_SP || it.curchar == LB_ZW))
+    {
+      it_advance();
+      assert(it.curchar == LB_QU);
+      while (it.lookahead == LB_SP)
+        it_advance();
+      /* ::TODO:: this may require another advance ... */
+      continue;
+    }
+
+    /* LB15b */
+    if (it.curchar == LB_QU && it_curchar_category(Category_Punctuation_FinalQuote)
+        && (it.lookahead == LB_SP || it.lookahead == LB_GL || it.lookahead == LB_WJ || it.lookahead == LB_CL
+            || it.lookahead == LB_QU || it.lookahead == LB_CP || it.lookahead == LB_EX || it.lookahead == LB_IS
+            || it.lookahead == LB_SY || it.lookahead == LB_BK || it.lookahead == LB_CR || it.lookahead == LB_LF
+            || it.lookahead == LB_NL || it.lookahead == LB_ZW || it.lookahead == 0))
+    {
+      continue;
+    }
+
+    /* LB16 */
+    if ((it.curchar == LB_CL || it.curchar == LB_CP) && (it.lookahead == LB_SP || it.lookahead == LB_NS))
+    {
+      it_begin();
+      while (it.lookahead == LB_SP)
+        it_advance();
+      if (it.lookahead == LB_NS)
+      {
+        it_advance();
+        it_commit();
+        continue;
+      }
+      it_rollback();
+    }
+
+    /* LB17 */
+    if (it.curchar == LB_B2 && (it.lookahead == LB_SP || it.lookahead == LB_B2))
+    {
+      it_begin();
+      while (it.lookahead == LB_SP)
+        it_advance();
+      if (it.lookahead == LB_B2)
+      {
+        it_advance();
+        it_commit();
+        continue;
+      }
+      it_rollback();
+    }
+
+    /* LB18 */
+    if (it.curchar == LB_SP)
+      break;
+
+    /* LB19 */
+    if (it.curchar == LB_QU)
+      continue;
+    if (it.lookahead == LB_QU)
+    {
+      it_advance();
+      continue;
+    }
+
+    /* LB20 */
+    if (it.curchar == LB_CB)
+      continue;
+    if (it.lookahead == LB_CB)
+    {
+      it_advance();
+      continue;
+    }
+
+    /* LB21 */
+    if (it.lookahead == LB_BA || it.lookahead == LB_HY || it.lookahead == LB_NS)
+    {
+      it_advance();
+      continue;
+    }
+    if (it.curchar == LB_BB)
+      continue;
+
+    /* LB22 */
+    if (it.curchar == LB_IN)
+      continue;
+
+    /* LB23 */
+    if ((it.curchar == LB_AL || it.curchar == LB_HL) && it.lookahead == LB_NU)
+      continue;
+    if (it.curchar == LB_NU && (it.curchar == LB_AL || it.curchar == LB_HL))
+      continue;
+
+    /* LB23a */
+    if (it.curchar == LB_PR && (it.lookahead == LB_ID || it.lookahead == LB_EB || it.lookahead == LB_EM))
+      continue;
+    if ((it.curchar == LB_ID || it.curchar == LB_EB || it.curchar == LB_EM) && it.lookahead == LB_PO)
+      continue;
+
+    /* LB24 */
+    if ((it.curchar == LB_PR || it.curchar == LB_PO) && (it.lookahead == LB_AL || it.lookahead == LB_HL))
+      continue;
+    if ((it.curchar == LB_AL || it.curchar == LB_HL) && (it.lookahead == LB_PR || it.lookahead == LB_PO))
+      continue;
+
+/* LB25 */
+#define PAIR(x, y) (it.curchar == LB_##x && it.lookahead == LB_##y)
+    if (PAIR(CL, PO) || PAIR(CP, PO) || PAIR(CL, PR) || PAIR(CP, PR) || PAIR(NU, PO) || PAIR(NU, PR) || PAIR(PO, OP)
+        || PAIR(PO, NU) || PAIR(PR, OP) || PAIR(PR, NU) || PAIR(HY, NU) || PAIR(IS, NU) || PAIR(NU, NU) || PAIR(SY, NU))
+      continue;
+#undef PAIR
+
+    /* LB31 */
+    break;
   }
 
   return PyLong_FromSsize_t(it.pos);
@@ -728,9 +928,9 @@ category_name(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t 
     return Py_BuildValue("(s)", #v);
     switch (val)
     {
-      ALL_LINE_VALUES
+      ALL_LB_VALUES
     default:
-      return Py_BuildValue("(s)", "NOT_DEFINED_LINE_VALUE");
+      return Py_BuildValue("(s)", "NOT_DEFINED_LB_VALUE");
     }
   }
   else
