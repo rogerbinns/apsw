@@ -121,11 +121,16 @@ typedef struct
     it.lookahead = (it.pos == text_end) ? EOT : cat_func(PyUnicode_READ(text_kind, text_data, it.pos));                \
   } while (0)
 
+/* note it.pos currently points to lookahead and subtract one for curchar */
 #define it_lookahead_category(value)                                                                                   \
   ((category_category(PyUnicode_READ(text_kind, text_data, it.pos)) & (value)) == (value))
 
 #define it_curchar_category(value)                                                                                     \
   ((category_category(PyUnicode_READ(text_kind, text_data, it.pos - 1)) & (value)) == (value))
+
+#define it_lookahead_ischar(c) ((c) == PyUnicode_READ(text_kind, text_data, it.pos))
+
+#define it_curchar_ischar(c) ((c) == PyUnicode_READ(text_kind, text_data, it.pos - 1))
 
 /* the first advance sets pos == offset + 1 but nothing is accepted
    yet, hence +1 */
@@ -842,12 +847,74 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     if ((it.curchar == LB_AL || it.curchar == LB_HL) && (it.lookahead == LB_PR || it.lookahead == LB_PO))
       continue;
 
-/* LB25 */
 #define PAIR(x, y) (it.curchar == LB_##x && it.lookahead == LB_##y)
+
+    /* LB25 */
     if (PAIR(CL, PO) || PAIR(CP, PO) || PAIR(CL, PR) || PAIR(CP, PR) || PAIR(NU, PO) || PAIR(NU, PR) || PAIR(PO, OP)
         || PAIR(PO, NU) || PAIR(PR, OP) || PAIR(PR, NU) || PAIR(HY, NU) || PAIR(IS, NU) || PAIR(NU, NU) || PAIR(SY, NU))
       continue;
+
 #undef PAIR
+
+    /* LB26 */
+    if (it.curchar == LB_JL
+        && (it.lookahead == LB_JL || it.lookahead == LB_JV || it.lookahead == LB_H2 || it.lookahead == LB_H3))
+      continue;
+    if ((it.curchar == LB_JV || it.curchar == LB_H2) && (it.lookahead == LB_JV || it.lookahead == LB_JT))
+      continue;
+    if ((it.curchar == LB_JT || it.curchar == LB_H3) && it.lookahead == LB_JT)
+      continue;
+
+    /* LB27 */
+    if ((it.curchar == LB_JL || it.curchar == LB_JV || it.curchar == LB_JT || it.curchar == LB_H2
+         || it.curchar == LB_H3)
+        && it.lookahead == LB_PO)
+      continue;
+    if (it.curchar == LB_PR
+        && (it.lookahead == LB_JL || it.lookahead == LB_JV || it.lookahead == LB_JT || it.lookahead == LB_H2
+            || it.lookahead == LB_H3))
+      continue;
+
+    /* LB28 */
+    if ((it.curchar == LB_AL || it.curchar == LB_HL) && (it.lookahead == LB_AL || it.lookahead == LB_HL))
+      continue;
+
+#define DOTCIRCLE 0x25CC /* ◌ */
+
+    /* LB28A */
+    if (it.curchar == LB_AP && (it.lookahead == LB_AK || it_lookahead_ischar(DOTCIRCLE) || it.lookahead == LB_AS))
+      continue;
+    if ((it.curchar == LB_AK || it_curchar_ischar(DOTCIRCLE) || it.curchar == LB_AS)
+        && (it.lookahead == LB_VF || it.lookahead == LB_VI))
+      continue;
+    if ((it.curchar == LB_AK || it_curchar_ischar(DOTCIRCLE) || it.curchar == LB_AS) && it.lookahead == LB_VI)
+    {
+      it_begin();
+      it_advance();
+      assert(it.curchar == LB_VI);
+      if (it.lookahead == LB_AK || it_lookahead_ischar(DOTCIRCLE))
+      {
+        it_commit();
+        continue;
+      }
+      it_rollback();
+    }
+    if ((it.curchar == LB_AK || it_curchar_ischar(DOTCIRCLE) || it.curchar == LB_AS)
+        && (it.lookahead == LB_AK || it_lookahead_ischar(DOTCIRCLE) || it.lookahead == LB_AS))
+    {
+      it_begin();
+      it_advance();
+      if (it.lookahead == LB_VF)
+      {
+        it_commit();
+        continue;
+      }
+      it_rollback();
+    }
+
+    /* LB29 */
+    if (it.curchar == LB_IS && (it.lookahead == LB_AL || it.lookahead == LB_HL))
+      continue;
 
     /* LB31 */
     break;
