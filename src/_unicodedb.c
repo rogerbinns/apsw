@@ -66494,94 +66494,94 @@ category_category(Py_UCS4 c)
 
 /* line */
 
-#define Line_AK 0
-#define Line_AL 1
-#define Line_AP 2
-#define Line_AS 3
-#define Line_B2 4
-#define Line_BA 5
-#define Line_BB 6
-#define Line_BK 7
-#define Line_CB 8
-#define Line_CL 9
-#define Line_CM 10
-#define Line_CP 11
-#define Line_CR 12
-#define Line_EB 13
-#define Line_EM 14
-#define Line_EX 15
-#define Line_GL 16
-#define Line_H2 17
-#define Line_H3 18
-#define Line_HL 19
-#define Line_HY 20
-#define Line_ID 21
-#define Line_IN 22
-#define Line_IS 23
-#define Line_JL 24
-#define Line_JT 25
-#define Line_JV 26
-#define Line_LF 27
-#define Line_NL 28
-#define Line_NS 29
-#define Line_NU 30
-#define Line_OP 31
-#define Line_PO 32
-#define Line_PR 33
-#define Line_QU 34
-#define Line_RI 35
-#define Line_SP 36
-#define Line_SY 37
-#define Line_VF 38
-#define Line_VI 39
-#define Line_WJ 40
-#define Line_ZW 41
-#define Line_ZWJ 42
+#define LB_AK 1
+#define LB_AL 2
+#define LB_AP 3
+#define LB_AS 4
+#define LB_B2 5
+#define LB_BA 6
+#define LB_BB 7
+#define LB_BK 8
+#define LB_CB 9
+#define LB_CL 10
+#define LB_CM 11
+#define LB_CP 12
+#define LB_CR 13
+#define LB_EB 14
+#define LB_EM 15
+#define LB_EX 16
+#define LB_GL 17
+#define LB_H2 18
+#define LB_H3 19
+#define LB_HL 20
+#define LB_HY 21
+#define LB_ID 22
+#define LB_IN 23
+#define LB_IS 24
+#define LB_JL 25
+#define LB_JT 26
+#define LB_JV 27
+#define LB_LF 28
+#define LB_NL 29
+#define LB_NS 30
+#define LB_NU 31
+#define LB_OP 32
+#define LB_PO 33
+#define LB_PR 34
+#define LB_QU 35
+#define LB_RI 36
+#define LB_SP 37
+#define LB_SY 38
+#define LB_VF 39
+#define LB_VI 40
+#define LB_WJ 41
+#define LB_ZW 42
+#define LB_ZWJ 43
 
-#define ALL_LINE_VALUES \
-  X(Line_AK)                                                                                                           \
-  X(Line_AL)                                                                                                           \
-  X(Line_AP)                                                                                                           \
-  X(Line_AS)                                                                                                           \
-  X(Line_B2)                                                                                                           \
-  X(Line_BA)                                                                                                           \
-  X(Line_BB)                                                                                                           \
-  X(Line_BK)                                                                                                           \
-  X(Line_CB)                                                                                                           \
-  X(Line_CL)                                                                                                           \
-  X(Line_CM)                                                                                                           \
-  X(Line_CP)                                                                                                           \
-  X(Line_CR)                                                                                                           \
-  X(Line_EB)                                                                                                           \
-  X(Line_EM)                                                                                                           \
-  X(Line_EX)                                                                                                           \
-  X(Line_GL)                                                                                                           \
-  X(Line_H2)                                                                                                           \
-  X(Line_H3)                                                                                                           \
-  X(Line_HL)                                                                                                           \
-  X(Line_HY)                                                                                                           \
-  X(Line_ID)                                                                                                           \
-  X(Line_IN)                                                                                                           \
-  X(Line_IS)                                                                                                           \
-  X(Line_JL)                                                                                                           \
-  X(Line_JT)                                                                                                           \
-  X(Line_JV)                                                                                                           \
-  X(Line_LF)                                                                                                           \
-  X(Line_NL)                                                                                                           \
-  X(Line_NS)                                                                                                           \
-  X(Line_NU)                                                                                                           \
-  X(Line_OP)                                                                                                           \
-  X(Line_PO)                                                                                                           \
-  X(Line_PR)                                                                                                           \
-  X(Line_QU)                                                                                                           \
-  X(Line_RI)                                                                                                           \
-  X(Line_SP)                                                                                                           \
-  X(Line_SY)                                                                                                           \
-  X(Line_VF)                                                                                                           \
-  X(Line_VI)                                                                                                           \
-  X(Line_WJ)                                                                                                           \
-  X(Line_ZW)                                                                                                           \
-  X(Line_ZWJ)                                                                                                          \
+#define ALL_LB_VALUES \
+  X(LB_AK)                                                                                                             \
+  X(LB_AL)                                                                                                             \
+  X(LB_AP)                                                                                                             \
+  X(LB_AS)                                                                                                             \
+  X(LB_B2)                                                                                                             \
+  X(LB_BA)                                                                                                             \
+  X(LB_BB)                                                                                                             \
+  X(LB_BK)                                                                                                             \
+  X(LB_CB)                                                                                                             \
+  X(LB_CL)                                                                                                             \
+  X(LB_CM)                                                                                                             \
+  X(LB_CP)                                                                                                             \
+  X(LB_CR)                                                                                                             \
+  X(LB_EB)                                                                                                             \
+  X(LB_EM)                                                                                                             \
+  X(LB_EX)                                                                                                             \
+  X(LB_GL)                                                                                                             \
+  X(LB_H2)                                                                                                             \
+  X(LB_H3)                                                                                                             \
+  X(LB_HL)                                                                                                             \
+  X(LB_HY)                                                                                                             \
+  X(LB_ID)                                                                                                             \
+  X(LB_IN)                                                                                                             \
+  X(LB_IS)                                                                                                             \
+  X(LB_JL)                                                                                                             \
+  X(LB_JT)                                                                                                             \
+  X(LB_JV)                                                                                                             \
+  X(LB_LF)                                                                                                             \
+  X(LB_NL)                                                                                                             \
+  X(LB_NS)                                                                                                             \
+  X(LB_NU)                                                                                                             \
+  X(LB_OP)                                                                                                             \
+  X(LB_PO)                                                                                                             \
+  X(LB_PR)                                                                                                             \
+  X(LB_QU)                                                                                                             \
+  X(LB_RI)                                                                                                             \
+  X(LB_SP)                                                                                                             \
+  X(LB_SY)                                                                                                             \
+  X(LB_VF)                                                                                                             \
+  X(LB_VI)                                                                                                             \
+  X(LB_WJ)                                                                                                             \
+  X(LB_ZW)                                                                                                             \
+  X(LB_ZWJ)                                                                                                            \
 
 
 
@@ -66638,53 +66638,37 @@ category_category(Py_UCS4 c)
 
 static unsigned int line_fast_lookup[] = {
     /* 0000 - 000F */
-    Line_CM, Line_CM, Line_CM, Line_CM, Line_CM, Line_CM, Line_CM, Line_CM, Line_CM, Line_BA, Line_LF, Line_BK,
-    Line_BK, Line_CR, Line_CM, Line_CM,
+    LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_BA, LB_LF, LB_BK, LB_BK, LB_CR, LB_CM, LB_CM,
     /* 0010 - 001F */
-    Line_CM, Line_CM, Line_CM, Line_CM, Line_CM, Line_CM, Line_CM, Line_CM, Line_CM, Line_CM, Line_CM, Line_CM,
-    Line_CM, Line_CM, Line_CM, Line_CM,
+    LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_CM,
     /* 0020 - 002F */
-    Line_SP, Line_EX, Line_QU, Line_AL, Line_PR, Line_PO, Line_AL, Line_QU, Line_OP, Line_CP, Line_AL, Line_PR,
-    Line_IS, Line_HY, Line_IS, Line_SY,
+    LB_SP, LB_EX, LB_QU, LB_AL, LB_PR, LB_PO, LB_AL, LB_QU, LB_OP, LB_CP, LB_AL, LB_PR, LB_IS, LB_HY, LB_IS, LB_SY,
     /* 0030 - 003F */
-    Line_NU, Line_NU, Line_NU, Line_NU, Line_NU, Line_NU, Line_NU, Line_NU, Line_NU, Line_NU, Line_IS, Line_IS,
-    Line_AL, Line_AL, Line_AL, Line_EX,
+    LB_NU, LB_NU, LB_NU, LB_NU, LB_NU, LB_NU, LB_NU, LB_NU, LB_NU, LB_NU, LB_IS, LB_IS, LB_AL, LB_AL, LB_AL, LB_EX,
     /* 0040 - 004F */
-    Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL,
-    Line_AL, Line_AL, Line_AL, Line_AL,
+    LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL,
     /* 0050 - 005F */
-    Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_OP,
-    Line_PR, Line_CP, Line_AL, Line_AL,
+    LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_OP, LB_PR, LB_CP, LB_AL, LB_AL,
     /* 0060 - 006F */
-    Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL,
-    Line_AL, Line_AL, Line_AL, Line_AL,
+    LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL,
     /* 0070 - 007F */
-    Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_OP,
-    Line_BA, Line_CL, Line_AL, Line_CM,
+    LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_OP, LB_BA, LB_CL, LB_AL, LB_CM,
     /* 0080 - 008F */
-    Line_CM, Line_CM, Line_CM, Line_CM, Line_CM, Line_NL, Line_CM, Line_CM, Line_CM, Line_CM, Line_CM, Line_CM,
-    Line_CM, Line_CM, Line_CM, Line_CM,
+    LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_NL, LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_CM,
     /* 0090 - 009F */
-    Line_CM, Line_CM, Line_CM, Line_CM, Line_CM, Line_CM, Line_CM, Line_CM, Line_CM, Line_CM, Line_CM, Line_CM,
-    Line_CM, Line_CM, Line_CM, Line_CM,
+    LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_CM, LB_CM,
     /* 00A0 - 00AF */
-    Line_GL, Line_OP, Line_PO, Line_PR, Line_PR, Line_PR, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_QU,
-    Line_AL, Line_BA, Line_AL, Line_AL,
+    LB_GL, LB_OP, LB_PO, LB_PR, LB_PR, LB_PR, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_QU, LB_AL, LB_BA, LB_AL, LB_AL,
     /* 00B0 - 00BF */
-    Line_PO, Line_PR, Line_AL, Line_AL, Line_BB, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_QU,
-    Line_AL, Line_AL, Line_AL, Line_OP,
+    LB_PO, LB_PR, LB_AL, LB_AL, LB_BB, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_QU, LB_AL, LB_AL, LB_AL, LB_OP,
     /* 00C0 - 00CF */
-    Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL,
-    Line_AL, Line_AL, Line_AL, Line_AL,
+    LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL,
     /* 00D0 - 00DF */
-    Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL,
-    Line_AL, Line_AL, Line_AL, Line_AL,
+    LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL,
     /* 00E0 - 00EF */
-    Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL,
-    Line_AL, Line_AL, Line_AL, Line_AL,
+    LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL,
     /* 00F0 - 00FF */
-    Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL, Line_AL,
-    Line_AL, Line_AL, Line_AL, Line_AL,
+    LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL, LB_AL,
 };
 
 static unsigned int
@@ -66718,22 +66702,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x02C9)
                       {
                         if ((c >= 0x0100) && (c <= 0x02C7))
-                          return Line_AL;
+                          return LB_AL;
                         /* c == 0x02C8 */
-                        return Line_BB;
+                        return LB_BB;
                       }
                       else
                       {
                         /* (c >= 0x02C9) && (c <= 0x02CB) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if (c == 0x02CC)
-                        return Line_BB;
+                        return LB_BB;
                       /* (c >= 0x02CD) && (c <= 0x02DE) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -66743,22 +66727,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0300)
                       {
                         if (c == 0x02DF)
-                          return Line_BB;
+                          return LB_BB;
                         /* (c >= 0x02E0) && (c <= 0x02FF) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x0300) && (c <= 0x034E) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if (c == 0x034F)
-                        return Line_GL;
+                        return LB_GL;
                       /* (c >= 0x0350) && (c <= 0x035B) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                 }
@@ -66771,22 +66755,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0370)
                       {
                         if ((c >= 0x035C) && (c <= 0x0362))
-                          return Line_GL;
+                          return LB_GL;
                         /* (c >= 0x0363) && (c <= 0x036F) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0x0370) && (c <= 0x037D) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if (c == 0x037E)
-                        return Line_IS;
+                        return LB_IS;
                       /* (c >= 0x037F) && (c <= 0x0482) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -66796,22 +66780,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0589)
                       {
                         if ((c >= 0x0483) && (c <= 0x0489))
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x048A) && (c <= 0x0588) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* c == 0x0589 */
-                        return Line_IS;
+                        return LB_IS;
                       }
                     }
                     else
                     {
                       if (c == 0x058A)
-                        return Line_BA;
+                        return LB_BA;
                       /* (c >= 0x058B) && (c <= 0x058E) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -66827,22 +66811,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0591)
                       {
                         if (c == 0x058F)
-                          return Line_PR;
+                          return LB_PR;
                         /* c == 0x0590 */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x0591) && (c <= 0x05BD) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if (c == 0x05BE)
-                        return Line_BA;
+                        return LB_BA;
                       /* c == 0x05BF */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                   else
@@ -66852,22 +66836,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x05C3)
                       {
                         if (c == 0x05C0)
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x05C1) && (c <= 0x05C2) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* c == 0x05C3 */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x05C4) && (c <= 0x05C5))
-                        return Line_CM;
+                        return LB_CM;
                       /* c == 0x05C6 */
-                      return Line_EX;
+                      return LB_EX;
                     }
                   }
                 }
@@ -66880,22 +66864,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x05D0)
                       {
                         if (c == 0x05C7)
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x05C8) && (c <= 0x05CF) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x05D0) && (c <= 0x05EA) */
-                        return Line_HL;
+                        return LB_HL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x05EB) && (c <= 0x05EE))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x05EF) && (c <= 0x05F2) */
-                      return Line_HL;
+                      return LB_HL;
                     }
                   }
                   else
@@ -66903,16 +66887,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x0606)
                     {
                       if ((c >= 0x05F3) && (c <= 0x05FF))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x0600) && (c <= 0x0605) */
-                      return Line_NU;
+                      return LB_NU;
                     }
                     else
                     {
                       if ((c >= 0x0606) && (c <= 0x0608))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x0609) && (c <= 0x060B) */
-                      return Line_PO;
+                      return LB_PO;
                     }
                   }
                 }
@@ -66931,22 +66915,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0610)
                       {
                         if ((c >= 0x060C) && (c <= 0x060D))
-                          return Line_IS;
+                          return LB_IS;
                         /* (c >= 0x060E) && (c <= 0x060F) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x0610) && (c <= 0x061A) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if (c == 0x061B)
-                        return Line_EX;
+                        return LB_EX;
                       /* c == 0x061C */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                   else
@@ -66956,22 +66940,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x064B)
                       {
                         if ((c >= 0x061D) && (c <= 0x061F))
-                          return Line_EX;
+                          return LB_EX;
                         /* (c >= 0x0620) && (c <= 0x064A) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x064B) && (c <= 0x065F) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0660) && (c <= 0x0669))
-                        return Line_NU;
+                        return LB_NU;
                       /* c == 0x066A */
-                      return Line_PO;
+                      return LB_PO;
                     }
                   }
                 }
@@ -66984,22 +66968,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0670)
                       {
                         if ((c >= 0x066B) && (c <= 0x066C))
-                          return Line_NU;
+                          return LB_NU;
                         /* (c >= 0x066D) && (c <= 0x066F) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* c == 0x0670 */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0671) && (c <= 0x06D3))
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0x06D4 */
-                      return Line_EX;
+                      return LB_EX;
                     }
                   }
                   else
@@ -67009,22 +66993,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x06DD)
                       {
                         if (c == 0x06D5)
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x06D6) && (c <= 0x06DC) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* c == 0x06DD */
-                        return Line_NU;
+                        return LB_NU;
                       }
                     }
                     else
                     {
                       if (c == 0x06DE)
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x06DF) && (c <= 0x06E4) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                 }
@@ -67040,22 +67024,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x06E9)
                       {
                         if ((c >= 0x06E5) && (c <= 0x06E6))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x06E7) && (c <= 0x06E8) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* c == 0x06E9 */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x06EA) && (c <= 0x06ED))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x06EE) && (c <= 0x06EF) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -67065,22 +67049,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0711)
                       {
                         if ((c >= 0x06F0) && (c <= 0x06F9))
-                          return Line_NU;
+                          return LB_NU;
                         /* (c >= 0x06FA) && (c <= 0x0710) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* c == 0x0711 */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0712) && (c <= 0x072F))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x0730) && (c <= 0x074A) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                 }
@@ -67093,22 +67077,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x07B1)
                       {
                         if ((c >= 0x074B) && (c <= 0x07A5))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x07A6) && (c <= 0x07B0) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0x07B1) && (c <= 0x07BF) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x07C0) && (c <= 0x07C9))
-                        return Line_NU;
+                        return LB_NU;
                       /* (c >= 0x07CA) && (c <= 0x07EA) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -67116,16 +67100,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x07F8)
                     {
                       if ((c >= 0x07EB) && (c <= 0x07F3))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x07F4) && (c <= 0x07F7) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                     else
                     {
                       if (c == 0x07F8)
-                        return Line_IS;
+                        return LB_IS;
                       /* c == 0x07F9 */
-                      return Line_EX;
+                      return LB_EX;
                     }
                   }
                 }
@@ -67147,22 +67131,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x07FE)
                       {
                         if ((c >= 0x07FA) && (c <= 0x07FC))
-                          return Line_AL;
+                          return LB_AL;
                         /* c == 0x07FD */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0x07FE) && (c <= 0x07FF) */
-                        return Line_PR;
+                        return LB_PR;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0800) && (c <= 0x0815))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x0816) && (c <= 0x0819) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                   else
@@ -67172,22 +67156,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0824)
                       {
                         if (c == 0x081A)
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x081B) && (c <= 0x0823) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* c == 0x0824 */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0825) && (c <= 0x0827))
-                        return Line_CM;
+                        return LB_CM;
                       /* c == 0x0828 */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -67200,22 +67184,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0859)
                       {
                         if ((c >= 0x0829) && (c <= 0x082D))
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x082E) && (c <= 0x0858) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x0859) && (c <= 0x085B) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x085C) && (c <= 0x088F))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x0890) && (c <= 0x0891) */
-                      return Line_NU;
+                      return LB_NU;
                     }
                   }
                   else
@@ -67225,22 +67209,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x08A0)
                       {
                         if ((c >= 0x0892) && (c <= 0x0897))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x0898) && (c <= 0x089F) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0x08A0) && (c <= 0x08C9) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x08CA) && (c <= 0x08E1))
-                        return Line_CM;
+                        return LB_CM;
                       /* c == 0x08E2 */
-                      return Line_NU;
+                      return LB_NU;
                     }
                   }
                 }
@@ -67256,22 +67240,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x093A)
                       {
                         if ((c >= 0x08E3) && (c <= 0x0903))
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x0904) && (c <= 0x0939) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x093A) && (c <= 0x093C) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if (c == 0x093D)
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x093E) && (c <= 0x094F) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                   else
@@ -67281,22 +67265,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0958)
                       {
                         if (c == 0x0950)
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x0951) && (c <= 0x0957) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0x0958) && (c <= 0x0961) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0962) && (c <= 0x0963))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x0964) && (c <= 0x0965) */
-                      return Line_BA;
+                      return LB_BA;
                     }
                   }
                 }
@@ -67309,22 +67293,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0981)
                       {
                         if ((c >= 0x0966) && (c <= 0x096F))
-                          return Line_NU;
+                          return LB_NU;
                         /* (c >= 0x0970) && (c <= 0x0980) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x0981) && (c <= 0x0983) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0984) && (c <= 0x09BB))
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0x09BC */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                   else
@@ -67332,16 +67316,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x09C5)
                     {
                       if (c == 0x09BD)
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x09BE) && (c <= 0x09C4) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                     else
                     {
                       if ((c >= 0x09C5) && (c <= 0x09C6))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x09C7) && (c <= 0x09C8) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                 }
@@ -67360,22 +67344,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x09CE)
                       {
                         if ((c >= 0x09C9) && (c <= 0x09CA))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x09CB) && (c <= 0x09CD) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0x09CE) && (c <= 0x09D6) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if (c == 0x09D7)
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x09D8) && (c <= 0x09E1) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -67385,22 +67369,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x09E6)
                       {
                         if ((c >= 0x09E2) && (c <= 0x09E3))
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x09E4) && (c <= 0x09E5) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x09E6) && (c <= 0x09EF) */
-                        return Line_NU;
+                        return LB_NU;
                       }
                     }
                     else
                     {
                       if ((c >= 0x09F0) && (c <= 0x09F1))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x09F2) && (c <= 0x09F3) */
-                      return Line_PO;
+                      return LB_PO;
                     }
                   }
                 }
@@ -67413,22 +67397,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x09FA)
                       {
                         if ((c >= 0x09F4) && (c <= 0x09F8))
-                          return Line_AL;
+                          return LB_AL;
                         /* c == 0x09F9 */
-                        return Line_PO;
+                        return LB_PO;
                       }
                       else
                       {
                         /* c == 0x09FA */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if (c == 0x09FB)
-                        return Line_PR;
+                        return LB_PR;
                       /* (c >= 0x09FC) && (c <= 0x09FD) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -67438,22 +67422,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0A01)
                       {
                         if (c == 0x09FE)
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x09FF) && (c <= 0x0A00) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x0A01) && (c <= 0x0A03) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0A04) && (c <= 0x0A3B))
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0x0A3C */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                 }
@@ -67469,22 +67453,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0A43)
                       {
                         if (c == 0x0A3D)
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x0A3E) && (c <= 0x0A42) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0x0A43) && (c <= 0x0A46) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0A47) && (c <= 0x0A48))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x0A49) && (c <= 0x0A4A) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -67494,22 +67478,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0A51)
                       {
                         if ((c >= 0x0A4B) && (c <= 0x0A4D))
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x0A4E) && (c <= 0x0A50) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* c == 0x0A51 */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0A52) && (c <= 0x0A65))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x0A66) && (c <= 0x0A6F) */
-                      return Line_NU;
+                      return LB_NU;
                     }
                   }
                 }
@@ -67522,22 +67506,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0A75)
                       {
                         if ((c >= 0x0A70) && (c <= 0x0A71))
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x0A72) && (c <= 0x0A74) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* c == 0x0A75 */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0A76) && (c <= 0x0A80))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x0A81) && (c <= 0x0A83) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                   else
@@ -67545,16 +67529,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x0ABD)
                     {
                       if ((c >= 0x0A84) && (c <= 0x0ABB))
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0x0ABC */
-                      return Line_CM;
+                      return LB_CM;
                     }
                     else
                     {
                       if (c == 0x0ABD)
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x0ABE) && (c <= 0x0AC5) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                 }
@@ -67579,22 +67563,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0ACA)
                       {
                         if (c == 0x0AC6)
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x0AC7) && (c <= 0x0AC9) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* c == 0x0ACA */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0ACB) && (c <= 0x0ACD))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x0ACE) && (c <= 0x0AE1) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -67604,22 +67588,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0AE6)
                       {
                         if ((c >= 0x0AE2) && (c <= 0x0AE3))
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x0AE4) && (c <= 0x0AE5) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x0AE6) && (c <= 0x0AEF) */
-                        return Line_NU;
+                        return LB_NU;
                       }
                     }
                     else
                     {
                       if (c == 0x0AF0)
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0x0AF1 */
-                      return Line_PR;
+                      return LB_PR;
                     }
                   }
                 }
@@ -67632,22 +67616,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0B00)
                       {
                         if ((c >= 0x0AF2) && (c <= 0x0AF9))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x0AFA) && (c <= 0x0AFF) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* c == 0x0B00 */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0B01) && (c <= 0x0B03))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x0B04) && (c <= 0x0B3B) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -67657,22 +67641,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0B3E)
                       {
                         if (c == 0x0B3C)
-                          return Line_CM;
+                          return LB_CM;
                         /* c == 0x0B3D */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x0B3E) && (c <= 0x0B44) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0B45) && (c <= 0x0B46))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x0B47) && (c <= 0x0B48) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                 }
@@ -67688,22 +67672,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0B4E)
                       {
                         if ((c >= 0x0B49) && (c <= 0x0B4A))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x0B4B) && (c <= 0x0B4D) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0x0B4E) && (c <= 0x0B54) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0B55) && (c <= 0x0B57))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x0B58) && (c <= 0x0B61) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -67713,22 +67697,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0B66)
                       {
                         if ((c >= 0x0B62) && (c <= 0x0B63))
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x0B64) && (c <= 0x0B65) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x0B66) && (c <= 0x0B6F) */
-                        return Line_NU;
+                        return LB_NU;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0B70) && (c <= 0x0B81))
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0x0B82 */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                 }
@@ -67741,22 +67725,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0BC3)
                       {
                         if ((c >= 0x0B83) && (c <= 0x0BBD))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x0BBE) && (c <= 0x0BC2) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0x0BC3) && (c <= 0x0BC5) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0BC6) && (c <= 0x0BC8))
-                        return Line_CM;
+                        return LB_CM;
                       /* c == 0x0BC9 */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -67764,16 +67748,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x0BD7)
                     {
                       if ((c >= 0x0BCA) && (c <= 0x0BCD))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x0BCE) && (c <= 0x0BD6) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                     else
                     {
                       if (c == 0x0BD7)
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x0BD8) && (c <= 0x0BE5) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -67792,22 +67776,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0BF9)
                       {
                         if ((c >= 0x0BE6) && (c <= 0x0BEF))
-                          return Line_NU;
+                          return LB_NU;
                         /* (c >= 0x0BF0) && (c <= 0x0BF8) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* c == 0x0BF9 */
-                        return Line_PR;
+                        return LB_PR;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0BFA) && (c <= 0x0BFF))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x0C00) && (c <= 0x0C04) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                   else
@@ -67817,22 +67801,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0C3D)
                       {
                         if ((c >= 0x0C05) && (c <= 0x0C3B))
-                          return Line_AL;
+                          return LB_AL;
                         /* c == 0x0C3C */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* c == 0x0C3D */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0C3E) && (c <= 0x0C44))
-                        return Line_CM;
+                        return LB_CM;
                       /* c == 0x0C45 */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -67845,22 +67829,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0C4A)
                       {
                         if ((c >= 0x0C46) && (c <= 0x0C48))
-                          return Line_CM;
+                          return LB_CM;
                         /* c == 0x0C49 */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x0C4A) && (c <= 0x0C4D) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0C4E) && (c <= 0x0C54))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x0C55) && (c <= 0x0C56) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                   else
@@ -67870,22 +67854,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0C64)
                       {
                         if ((c >= 0x0C57) && (c <= 0x0C61))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x0C62) && (c <= 0x0C63) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0x0C64) && (c <= 0x0C65) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0C66) && (c <= 0x0C6F))
-                        return Line_NU;
+                        return LB_NU;
                       /* (c >= 0x0C70) && (c <= 0x0C76) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -67901,22 +67885,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0C81)
                       {
                         if (c == 0x0C77)
-                          return Line_BB;
+                          return LB_BB;
                         /* (c >= 0x0C78) && (c <= 0x0C80) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x0C81) && (c <= 0x0C83) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if (c == 0x0C84)
-                        return Line_BB;
+                        return LB_BB;
                       /* (c >= 0x0C85) && (c <= 0x0CBB) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -67926,22 +67910,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0CBE)
                       {
                         if (c == 0x0CBC)
-                          return Line_CM;
+                          return LB_CM;
                         /* c == 0x0CBD */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x0CBE) && (c <= 0x0CC4) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if (c == 0x0CC5)
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x0CC6) && (c <= 0x0CC8) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                 }
@@ -67954,22 +67938,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0CCE)
                       {
                         if (c == 0x0CC9)
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x0CCA) && (c <= 0x0CCD) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0x0CCE) && (c <= 0x0CD4) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0CD5) && (c <= 0x0CD6))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x0CD7) && (c <= 0x0CE1) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -67977,16 +67961,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x0CE6)
                     {
                       if ((c >= 0x0CE2) && (c <= 0x0CE3))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x0CE4) && (c <= 0x0CE5) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                     else
                     {
                       if ((c >= 0x0CE6) && (c <= 0x0CEF))
-                        return Line_NU;
+                        return LB_NU;
                       /* (c >= 0x0CF0) && (c <= 0x0CF2) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -68008,22 +67992,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0D00)
                       {
                         if (c == 0x0CF3)
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x0CF4) && (c <= 0x0CFF) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x0D00) && (c <= 0x0D03) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0D04) && (c <= 0x0D3A))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x0D3B) && (c <= 0x0D3C) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                   else
@@ -68033,22 +68017,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0D45)
                       {
                         if (c == 0x0D3D)
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x0D3E) && (c <= 0x0D44) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* c == 0x0D45 */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0D46) && (c <= 0x0D48))
-                        return Line_CM;
+                        return LB_CM;
                       /* c == 0x0D49 */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -68061,22 +68045,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0D57)
                       {
                         if ((c >= 0x0D4A) && (c <= 0x0D4D))
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x0D4E) && (c <= 0x0D56) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* c == 0x0D57 */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0D58) && (c <= 0x0D61))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x0D62) && (c <= 0x0D63) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                   else
@@ -68086,22 +68070,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0D70)
                       {
                         if ((c >= 0x0D64) && (c <= 0x0D65))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x0D66) && (c <= 0x0D6F) */
-                        return Line_NU;
+                        return LB_NU;
                       }
                       else
                       {
                         /* (c >= 0x0D70) && (c <= 0x0D78) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if (c == 0x0D79)
-                        return Line_PO;
+                        return LB_PO;
                       /* (c >= 0x0D7A) && (c <= 0x0D80) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -68117,22 +68101,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0DCA)
                       {
                         if ((c >= 0x0D81) && (c <= 0x0D83))
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x0D84) && (c <= 0x0DC9) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* c == 0x0DCA */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0DCB) && (c <= 0x0DCE))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x0DCF) && (c <= 0x0DD4) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                   else
@@ -68142,22 +68126,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0DD7)
                       {
                         if (c == 0x0DD5)
-                          return Line_AL;
+                          return LB_AL;
                         /* c == 0x0DD6 */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* c == 0x0DD7 */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0DD8) && (c <= 0x0DDF))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x0DE0) && (c <= 0x0DE5) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -68170,22 +68154,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0DF2)
                       {
                         if ((c >= 0x0DE6) && (c <= 0x0DEF))
-                          return Line_NU;
+                          return LB_NU;
                         /* (c >= 0x0DF0) && (c <= 0x0DF1) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x0DF2) && (c <= 0x0DF3) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0DF4) && (c <= 0x0E30))
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0x0E31 */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                   else
@@ -68193,16 +68177,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x0E3B)
                     {
                       if ((c >= 0x0E32) && (c <= 0x0E33))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x0E34) && (c <= 0x0E3A) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                     else
                     {
                       if ((c >= 0x0E3B) && (c <= 0x0E3E))
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0x0E3F */
-                      return Line_PR;
+                      return LB_PR;
                     }
                   }
                 }
@@ -68221,22 +68205,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0E4F)
                       {
                         if ((c >= 0x0E40) && (c <= 0x0E46))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x0E47) && (c <= 0x0E4E) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* c == 0x0E4F */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0E50) && (c <= 0x0E59))
-                        return Line_NU;
+                        return LB_NU;
                       /* (c >= 0x0E5A) && (c <= 0x0E5B) */
-                      return Line_BA;
+                      return LB_BA;
                     }
                   }
                   else
@@ -68246,22 +68230,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0EB2)
                       {
                         if ((c >= 0x0E5C) && (c <= 0x0EB0))
-                          return Line_AL;
+                          return LB_AL;
                         /* c == 0x0EB1 */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0x0EB2) && (c <= 0x0EB3) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0EB4) && (c <= 0x0EBC))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x0EBD) && (c <= 0x0EC7) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -68274,22 +68258,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0ED0)
                       {
                         if ((c >= 0x0EC8) && (c <= 0x0ECE))
-                          return Line_CM;
+                          return LB_CM;
                         /* c == 0x0ECF */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x0ED0) && (c <= 0x0ED9) */
-                        return Line_NU;
+                        return LB_NU;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0EDA) && (c <= 0x0F00))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x0F01) && (c <= 0x0F04) */
-                      return Line_BB;
+                      return LB_BB;
                     }
                   }
                   else
@@ -68299,22 +68283,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0F08)
                       {
                         if (c == 0x0F05)
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x0F06) && (c <= 0x0F07) */
-                        return Line_BB;
+                        return LB_BB;
                       }
                       else
                       {
                         /* c == 0x0F08 */
-                        return Line_GL;
+                        return LB_GL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0F09) && (c <= 0x0F0A))
-                        return Line_BB;
+                        return LB_BB;
                       /* c == 0x0F0B */
-                      return Line_BA;
+                      return LB_BA;
                     }
                   }
                 }
@@ -68330,22 +68314,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0F12)
                       {
                         if (c == 0x0F0C)
-                          return Line_GL;
+                          return LB_GL;
                         /* (c >= 0x0F0D) && (c <= 0x0F11) */
-                        return Line_EX;
+                        return LB_EX;
                       }
                       else
                       {
                         /* c == 0x0F12 */
-                        return Line_GL;
+                        return LB_GL;
                       }
                     }
                     else
                     {
                       if (c == 0x0F13)
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0x0F14 */
-                      return Line_EX;
+                      return LB_EX;
                     }
                   }
                   else
@@ -68355,22 +68339,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0F1A)
                       {
                         if ((c >= 0x0F15) && (c <= 0x0F17))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x0F18) && (c <= 0x0F19) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0x0F1A) && (c <= 0x0F1F) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0F20) && (c <= 0x0F29))
-                        return Line_NU;
+                        return LB_NU;
                       /* (c >= 0x0F2A) && (c <= 0x0F33) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -68383,22 +68367,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0F36)
                       {
                         if (c == 0x0F34)
-                          return Line_BA;
+                          return LB_BA;
                         /* c == 0x0F35 */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* c == 0x0F36 */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if (c == 0x0F37)
-                        return Line_CM;
+                        return LB_CM;
                       /* c == 0x0F38 */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -68406,16 +68390,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x0F3B)
                     {
                       if (c == 0x0F39)
-                        return Line_CM;
+                        return LB_CM;
                       /* c == 0x0F3A */
-                      return Line_OP;
+                      return LB_OP;
                     }
                     else
                     {
                       if (c == 0x0F3B)
-                        return Line_CL;
+                        return LB_CL;
                       /* c == 0x0F3C */
-                      return Line_OP;
+                      return LB_OP;
                     }
                   }
                 }
@@ -68443,22 +68427,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0F40)
                       {
                         if (c == 0x0F3D)
-                          return Line_CL;
+                          return LB_CL;
                         /* (c >= 0x0F3E) && (c <= 0x0F3F) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0x0F40) && (c <= 0x0F70) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0F71) && (c <= 0x0F7E))
-                        return Line_CM;
+                        return LB_CM;
                       /* c == 0x0F7F */
-                      return Line_BA;
+                      return LB_BA;
                     }
                   }
                   else
@@ -68468,22 +68452,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0F86)
                       {
                         if ((c >= 0x0F80) && (c <= 0x0F84))
-                          return Line_CM;
+                          return LB_CM;
                         /* c == 0x0F85 */
-                        return Line_BA;
+                        return LB_BA;
                       }
                       else
                       {
                         /* (c >= 0x0F86) && (c <= 0x0F87) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0F88) && (c <= 0x0F8C))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x0F8D) && (c <= 0x0F97) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                 }
@@ -68496,22 +68480,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0FBD)
                       {
                         if (c == 0x0F98)
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x0F99) && (c <= 0x0FBC) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* c == 0x0FBD */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x0FBE) && (c <= 0x0FBF))
-                        return Line_BA;
+                        return LB_BA;
                       /* (c >= 0x0FC0) && (c <= 0x0FC5) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -68521,22 +68505,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0FD0)
                       {
                         if (c == 0x0FC6)
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x0FC7) && (c <= 0x0FCF) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x0FD0) && (c <= 0x0FD1) */
-                        return Line_BB;
+                        return LB_BB;
                       }
                     }
                     else
                     {
                       if (c == 0x0FD2)
-                        return Line_BA;
+                        return LB_BA;
                       /* c == 0x0FD3 */
-                      return Line_BB;
+                      return LB_BB;
                     }
                   }
                 }
@@ -68552,22 +68536,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x0FDB)
                       {
                         if ((c >= 0x0FD4) && (c <= 0x0FD8))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x0FD9) && (c <= 0x0FDA) */
-                        return Line_GL;
+                        return LB_GL;
                       }
                       else
                       {
                         /* (c >= 0x0FDB) && (c <= 0x102A) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x102B) && (c <= 0x103E))
-                        return Line_CM;
+                        return LB_CM;
                       /* c == 0x103F */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -68577,22 +68561,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x104C)
                       {
                         if ((c >= 0x1040) && (c <= 0x1049))
-                          return Line_NU;
+                          return LB_NU;
                         /* (c >= 0x104A) && (c <= 0x104B) */
-                        return Line_BA;
+                        return LB_BA;
                       }
                       else
                       {
                         /* (c >= 0x104C) && (c <= 0x1055) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1056) && (c <= 0x1059))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x105A) && (c <= 0x105D) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -68605,22 +68589,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1062)
                       {
                         if ((c >= 0x105E) && (c <= 0x1060))
-                          return Line_CM;
+                          return LB_CM;
                         /* c == 0x1061 */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x1062) && (c <= 0x1064) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1065) && (c <= 0x1066))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x1067) && (c <= 0x106D) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                   else
@@ -68628,16 +68612,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x1075)
                     {
                       if ((c >= 0x106E) && (c <= 0x1070))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x1071) && (c <= 0x1074) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                     else
                     {
                       if ((c >= 0x1075) && (c <= 0x1081))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x1082) && (c <= 0x108D) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                 }
@@ -68656,22 +68640,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1090)
                       {
                         if (c == 0x108E)
-                          return Line_AL;
+                          return LB_AL;
                         /* c == 0x108F */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0x1090) && (c <= 0x1099) */
-                        return Line_NU;
+                        return LB_NU;
                       }
                     }
                     else
                     {
                       if ((c >= 0x109A) && (c <= 0x109D))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x109E) && (c <= 0x10FF) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -68681,22 +68665,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x11A8)
                       {
                         if ((c >= 0x1100) && (c <= 0x115F))
-                          return Line_JL;
+                          return LB_JL;
                         /* (c >= 0x1160) && (c <= 0x11A7) */
-                        return Line_JV;
+                        return LB_JV;
                       }
                       else
                       {
                         /* (c >= 0x11A8) && (c <= 0x11FF) */
-                        return Line_JT;
+                        return LB_JT;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1200) && (c <= 0x135C))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x135D) && (c <= 0x135F) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                 }
@@ -68709,22 +68693,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1362)
                       {
                         if (c == 0x1360)
-                          return Line_AL;
+                          return LB_AL;
                         /* c == 0x1361 */
-                        return Line_BA;
+                        return LB_BA;
                       }
                       else
                       {
                         /* (c >= 0x1362) && (c <= 0x13FF) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if (c == 0x1400)
-                        return Line_BA;
+                        return LB_BA;
                       /* (c >= 0x1401) && (c <= 0x167F) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -68734,22 +68718,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x169B)
                       {
                         if (c == 0x1680)
-                          return Line_BA;
+                          return LB_BA;
                         /* (c >= 0x1681) && (c <= 0x169A) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* c == 0x169B */
-                        return Line_OP;
+                        return LB_OP;
                       }
                     }
                     else
                     {
                       if (c == 0x169C)
-                        return Line_CL;
+                        return LB_CL;
                       /* (c >= 0x169D) && (c <= 0x16EA) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -68765,22 +68749,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1712)
                       {
                         if ((c >= 0x16EB) && (c <= 0x16ED))
-                          return Line_BA;
+                          return LB_BA;
                         /* (c >= 0x16EE) && (c <= 0x1711) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x1712) && (c <= 0x1715) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1716) && (c <= 0x1731))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x1732) && (c <= 0x1734) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                   else
@@ -68790,22 +68774,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1752)
                       {
                         if ((c >= 0x1735) && (c <= 0x1736))
-                          return Line_BA;
+                          return LB_BA;
                         /* (c >= 0x1737) && (c <= 0x1751) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x1752) && (c <= 0x1753) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1754) && (c <= 0x1771))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x1772) && (c <= 0x1773) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                 }
@@ -68818,22 +68802,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x17D4)
                       {
                         if ((c >= 0x1774) && (c <= 0x17B3))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x17B4) && (c <= 0x17D3) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0x17D4) && (c <= 0x17D5) */
-                        return Line_BA;
+                        return LB_BA;
                       }
                     }
                     else
                     {
                       if (c == 0x17D6)
-                        return Line_NS;
+                        return LB_NS;
                       /* c == 0x17D7 */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -68841,16 +68825,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x17DA)
                     {
                       if (c == 0x17D8)
-                        return Line_BA;
+                        return LB_BA;
                       /* c == 0x17D9 */
-                      return Line_AL;
+                      return LB_AL;
                     }
                     else
                     {
                       if (c == 0x17DA)
-                        return Line_BA;
+                        return LB_BA;
                       /* c == 0x17DB */
-                      return Line_PR;
+                      return LB_PR;
                     }
                   }
                 }
@@ -68872,22 +68856,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x17DE)
                       {
                         if (c == 0x17DC)
-                          return Line_AL;
+                          return LB_AL;
                         /* c == 0x17DD */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0x17DE) && (c <= 0x17DF) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x17E0) && (c <= 0x17E9))
-                        return Line_NU;
+                        return LB_NU;
                       /* (c >= 0x17EA) && (c <= 0x1801) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -68897,22 +68881,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1806)
                       {
                         if ((c >= 0x1802) && (c <= 0x1803))
-                          return Line_EX;
+                          return LB_EX;
                         /* (c >= 0x1804) && (c <= 0x1805) */
-                        return Line_BA;
+                        return LB_BA;
                       }
                       else
                       {
                         /* c == 0x1806 */
-                        return Line_BB;
+                        return LB_BB;
                       }
                     }
                     else
                     {
                       if (c == 0x1807)
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x1808) && (c <= 0x1809) */
-                      return Line_EX;
+                      return LB_EX;
                     }
                   }
                 }
@@ -68925,22 +68909,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x180E)
                       {
                         if (c == 0x180A)
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x180B) && (c <= 0x180D) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* c == 0x180E */
-                        return Line_GL;
+                        return LB_GL;
                       }
                     }
                     else
                     {
                       if (c == 0x180F)
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x1810) && (c <= 0x1819) */
-                      return Line_NU;
+                      return LB_NU;
                     }
                   }
                   else
@@ -68950,22 +68934,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1887)
                       {
                         if ((c >= 0x181A) && (c <= 0x1884))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x1885) && (c <= 0x1886) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0x1887) && (c <= 0x18A8) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if (c == 0x18A9)
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x18AA) && (c <= 0x191F) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -68981,22 +68965,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1930)
                       {
                         if ((c >= 0x1920) && (c <= 0x192B))
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x192C) && (c <= 0x192F) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x1930) && (c <= 0x193B) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x193C) && (c <= 0x1943))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x1944) && (c <= 0x1945) */
-                      return Line_EX;
+                      return LB_EX;
                     }
                   }
                   else
@@ -69006,22 +68990,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x19D0)
                       {
                         if ((c >= 0x1946) && (c <= 0x194F))
-                          return Line_NU;
+                          return LB_NU;
                         /* (c >= 0x1950) && (c <= 0x19CF) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x19D0) && (c <= 0x19D9) */
-                        return Line_NU;
+                        return LB_NU;
                       }
                     }
                     else
                     {
                       if ((c >= 0x19DA) && (c <= 0x1A16))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x1A17) && (c <= 0x1A1B) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                 }
@@ -69034,22 +69018,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1A5F)
                       {
                         if ((c >= 0x1A1C) && (c <= 0x1A54))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x1A55) && (c <= 0x1A5E) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* c == 0x1A5F */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1A60) && (c <= 0x1A7C))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x1A7D) && (c <= 0x1A7E) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -69057,16 +69041,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x1A8A)
                     {
                       if (c == 0x1A7F)
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x1A80) && (c <= 0x1A89) */
-                      return Line_NU;
+                      return LB_NU;
                     }
                     else
                     {
                       if ((c >= 0x1A8A) && (c <= 0x1A8F))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x1A90) && (c <= 0x1A99) */
-                      return Line_NU;
+                      return LB_NU;
                     }
                   }
                 }
@@ -69085,22 +69069,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1ACF)
                       {
                         if ((c >= 0x1A9A) && (c <= 0x1AAF))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x1AB0) && (c <= 0x1ACE) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0x1ACF) && (c <= 0x1AFF) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1B00) && (c <= 0x1B04))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x1B05) && (c <= 0x1B33) */
-                      return Line_AK;
+                      return LB_AK;
                     }
                   }
                   else
@@ -69110,22 +69094,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1B45)
                       {
                         if ((c >= 0x1B34) && (c <= 0x1B43))
-                          return Line_CM;
+                          return LB_CM;
                         /* c == 0x1B44 */
-                        return Line_VI;
+                        return LB_VI;
                       }
                       else
                       {
                         /* (c >= 0x1B45) && (c <= 0x1B4C) */
-                        return Line_AK;
+                        return LB_AK;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1B4D) && (c <= 0x1B4F))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x1B50) && (c <= 0x1B59) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                 }
@@ -69138,22 +69122,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1B5D)
                       {
                         if ((c >= 0x1B5A) && (c <= 0x1B5B))
-                          return Line_BA;
+                          return LB_BA;
                         /* c == 0x1B5C */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* (c >= 0x1B5D) && (c <= 0x1B60) */
-                        return Line_BA;
+                        return LB_BA;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1B61) && (c <= 0x1B6A))
-                        return Line_ID;
+                        return LB_ID;
                       /* (c >= 0x1B6B) && (c <= 0x1B73) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                   else
@@ -69163,22 +69147,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1B7F)
                       {
                         if ((c >= 0x1B74) && (c <= 0x1B7C))
-                          return Line_ID;
+                          return LB_ID;
                         /* (c >= 0x1B7D) && (c <= 0x1B7E) */
-                        return Line_BA;
+                        return LB_BA;
                       }
                       else
                       {
                         /* c == 0x1B7F */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1B80) && (c <= 0x1B82))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x1B83) && (c <= 0x1BA0) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -69194,22 +69178,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1BB0)
                       {
                         if ((c >= 0x1BA1) && (c <= 0x1BAD))
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x1BAE) && (c <= 0x1BAF) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x1BB0) && (c <= 0x1BB9) */
-                        return Line_NU;
+                        return LB_NU;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1BBA) && (c <= 0x1BBF))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x1BC0) && (c <= 0x1BE5) */
-                      return Line_AS;
+                      return LB_AS;
                     }
                   }
                   else
@@ -69219,22 +69203,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1BF4)
                       {
                         if ((c >= 0x1BE6) && (c <= 0x1BF1))
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x1BF2) && (c <= 0x1BF3) */
-                        return Line_VF;
+                        return LB_VF;
                       }
                       else
                       {
                         /* (c >= 0x1BF4) && (c <= 0x1C23) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1C24) && (c <= 0x1C37))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x1C38) && (c <= 0x1C3A) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -69247,22 +69231,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1C4A)
                       {
                         if ((c >= 0x1C3B) && (c <= 0x1C3F))
-                          return Line_BA;
+                          return LB_BA;
                         /* (c >= 0x1C40) && (c <= 0x1C49) */
-                        return Line_NU;
+                        return LB_NU;
                       }
                       else
                       {
                         /* (c >= 0x1C4A) && (c <= 0x1C4F) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1C50) && (c <= 0x1C59))
-                        return Line_NU;
+                        return LB_NU;
                       /* (c >= 0x1C5A) && (c <= 0x1C7D) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -69270,16 +69254,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x1CD0)
                     {
                       if ((c >= 0x1C7E) && (c <= 0x1C7F))
-                        return Line_BA;
+                        return LB_BA;
                       /* (c >= 0x1C80) && (c <= 0x1CCF) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                     else
                     {
                       if ((c >= 0x1CD0) && (c <= 0x1CD2))
-                        return Line_CM;
+                        return LB_CM;
                       /* c == 0x1CD3 */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -69304,22 +69288,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1CED)
                       {
                         if ((c >= 0x1CD4) && (c <= 0x1CE8))
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x1CE9) && (c <= 0x1CEC) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* c == 0x1CED */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1CEE) && (c <= 0x1CF3))
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0x1CF4 */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                   else
@@ -69329,22 +69313,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1CFA)
                       {
                         if ((c >= 0x1CF5) && (c <= 0x1CF6))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x1CF7) && (c <= 0x1CF9) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0x1CFA) && (c <= 0x1DBF) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1DC0) && (c <= 0x1DCC))
-                        return Line_CM;
+                        return LB_CM;
                       /* c == 0x1DCD */
-                      return Line_GL;
+                      return LB_GL;
                     }
                   }
                 }
@@ -69357,22 +69341,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1DFD)
                       {
                         if ((c >= 0x1DCE) && (c <= 0x1DFB))
-                          return Line_CM;
+                          return LB_CM;
                         /* c == 0x1DFC */
-                        return Line_GL;
+                        return LB_GL;
                       }
                       else
                       {
                         /* (c >= 0x1DFD) && (c <= 0x1DFF) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1E00) && (c <= 0x1FFC))
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0x1FFD */
-                      return Line_BB;
+                      return LB_BB;
                     }
                   }
                   else
@@ -69382,22 +69366,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x2007)
                       {
                         if ((c >= 0x1FFE) && (c <= 0x1FFF))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x2000) && (c <= 0x2006) */
-                        return Line_BA;
+                        return LB_BA;
                       }
                       else
                       {
                         /* c == 0x2007 */
-                        return Line_GL;
+                        return LB_GL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x2008) && (c <= 0x200A))
-                        return Line_BA;
+                        return LB_BA;
                       /* c == 0x200B */
-                      return Line_ZW;
+                      return LB_ZW;
                     }
                   }
                 }
@@ -69413,22 +69397,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x200E)
                       {
                         if (c == 0x200C)
-                          return Line_CM;
+                          return LB_CM;
                         /* c == 0x200D */
-                        return Line_ZWJ;
+                        return LB_ZWJ;
                       }
                       else
                       {
                         /* (c >= 0x200E) && (c <= 0x200F) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if (c == 0x2010)
-                        return Line_BA;
+                        return LB_BA;
                       /* c == 0x2011 */
-                      return Line_GL;
+                      return LB_GL;
                     }
                   }
                   else
@@ -69438,22 +69422,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x2015)
                       {
                         if ((c >= 0x2012) && (c <= 0x2013))
-                          return Line_BA;
+                          return LB_BA;
                         /* c == 0x2014 */
-                        return Line_B2;
+                        return LB_B2;
                       }
                       else
                       {
                         /* (c >= 0x2015) && (c <= 0x2017) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x2018) && (c <= 0x2019))
-                        return Line_QU;
+                        return LB_QU;
                       /* c == 0x201A */
-                      return Line_OP;
+                      return LB_OP;
                     }
                   }
                 }
@@ -69466,22 +69450,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x201F)
                       {
                         if ((c >= 0x201B) && (c <= 0x201D))
-                          return Line_QU;
+                          return LB_QU;
                         /* c == 0x201E */
-                        return Line_OP;
+                        return LB_OP;
                       }
                       else
                       {
                         /* c == 0x201F */
-                        return Line_QU;
+                        return LB_QU;
                       }
                     }
                     else
                     {
                       if ((c >= 0x2020) && (c <= 0x2023))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x2024) && (c <= 0x2026) */
-                      return Line_IN;
+                      return LB_IN;
                     }
                   }
                   else
@@ -69489,16 +69473,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x202A)
                     {
                       if (c == 0x2027)
-                        return Line_BA;
+                        return LB_BA;
                       /* (c >= 0x2028) && (c <= 0x2029) */
-                      return Line_BK;
+                      return LB_BK;
                     }
                     else
                     {
                       if ((c >= 0x202A) && (c <= 0x202E))
-                        return Line_CM;
+                        return LB_CM;
                       /* c == 0x202F */
-                      return Line_GL;
+                      return LB_GL;
                     }
                   }
                 }
@@ -69517,22 +69501,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x2039)
                       {
                         if ((c >= 0x2030) && (c <= 0x2037))
-                          return Line_PO;
+                          return LB_PO;
                         /* c == 0x2038 */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x2039) && (c <= 0x203A) */
-                        return Line_QU;
+                        return LB_QU;
                       }
                     }
                     else
                     {
                       if (c == 0x203B)
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x203C) && (c <= 0x203D) */
-                      return Line_NS;
+                      return LB_NS;
                     }
                   }
                   else
@@ -69542,22 +69526,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x2045)
                       {
                         if ((c >= 0x203E) && (c <= 0x2043))
-                          return Line_AL;
+                          return LB_AL;
                         /* c == 0x2044 */
-                        return Line_IS;
+                        return LB_IS;
                       }
                       else
                       {
                         /* c == 0x2045 */
-                        return Line_OP;
+                        return LB_OP;
                       }
                     }
                     else
                     {
                       if (c == 0x2046)
-                        return Line_CL;
+                        return LB_CL;
                       /* (c >= 0x2047) && (c <= 0x2049) */
-                      return Line_NS;
+                      return LB_NS;
                     }
                   }
                 }
@@ -69570,22 +69554,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x2057)
                       {
                         if ((c >= 0x204A) && (c <= 0x2055))
-                          return Line_AL;
+                          return LB_AL;
                         /* c == 0x2056 */
-                        return Line_BA;
+                        return LB_BA;
                       }
                       else
                       {
                         /* c == 0x2057 */
-                        return Line_PO;
+                        return LB_PO;
                       }
                     }
                     else
                     {
                       if ((c >= 0x2058) && (c <= 0x205B))
-                        return Line_BA;
+                        return LB_BA;
                       /* c == 0x205C */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -69595,22 +69579,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x2061)
                       {
                         if ((c >= 0x205D) && (c <= 0x205F))
-                          return Line_BA;
+                          return LB_BA;
                         /* c == 0x2060 */
-                        return Line_WJ;
+                        return LB_WJ;
                       }
                       else
                       {
                         /* (c >= 0x2061) && (c <= 0x2065) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x2066) && (c <= 0x206F))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x2070) && (c <= 0x207C) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -69626,22 +69610,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x207F)
                       {
                         if (c == 0x207D)
-                          return Line_OP;
+                          return LB_OP;
                         /* c == 0x207E */
-                        return Line_CL;
+                        return LB_CL;
                       }
                       else
                       {
                         /* (c >= 0x207F) && (c <= 0x208C) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if (c == 0x208D)
-                        return Line_OP;
+                        return LB_OP;
                       /* c == 0x208E */
-                      return Line_CL;
+                      return LB_CL;
                     }
                   }
                   else
@@ -69651,22 +69635,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x20A7)
                       {
                         if ((c >= 0x208F) && (c <= 0x209F))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x20A0) && (c <= 0x20A6) */
-                        return Line_PR;
+                        return LB_PR;
                       }
                       else
                       {
                         /* c == 0x20A7 */
-                        return Line_PO;
+                        return LB_PO;
                       }
                     }
                     else
                     {
                       if ((c >= 0x20A8) && (c <= 0x20B5))
-                        return Line_PR;
+                        return LB_PR;
                       /* c == 0x20B6 */
-                      return Line_PO;
+                      return LB_PO;
                     }
                   }
                 }
@@ -69679,22 +69663,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x20BC)
                       {
                         if ((c >= 0x20B7) && (c <= 0x20BA))
-                          return Line_PR;
+                          return LB_PR;
                         /* c == 0x20BB */
-                        return Line_PO;
+                        return LB_PO;
                       }
                       else
                       {
                         /* (c >= 0x20BC) && (c <= 0x20BD) */
-                        return Line_PR;
+                        return LB_PR;
                       }
                     }
                     else
                     {
                       if (c == 0x20BE)
-                        return Line_PO;
+                        return LB_PO;
                       /* c == 0x20BF */
-                      return Line_PR;
+                      return LB_PR;
                     }
                   }
                   else
@@ -69702,16 +69686,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x20D0)
                     {
                       if (c == 0x20C0)
-                        return Line_PO;
+                        return LB_PO;
                       /* (c >= 0x20C1) && (c <= 0x20CF) */
-                      return Line_PR;
+                      return LB_PR;
                     }
                     else
                     {
                       if ((c >= 0x20D0) && (c <= 0x20F0))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x20F1) && (c <= 0x2102) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -69733,22 +69717,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x2109)
                       {
                         if (c == 0x2103)
-                          return Line_PO;
+                          return LB_PO;
                         /* (c >= 0x2104) && (c <= 0x2108) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* c == 0x2109 */
-                        return Line_PO;
+                        return LB_PO;
                       }
                     }
                     else
                     {
                       if ((c >= 0x210A) && (c <= 0x2115))
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0x2116 */
-                      return Line_PR;
+                      return LB_PR;
                     }
                   }
                   else
@@ -69758,22 +69742,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x2214)
                       {
                         if ((c >= 0x2117) && (c <= 0x2211))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x2212) && (c <= 0x2213) */
-                        return Line_PR;
+                        return LB_PR;
                       }
                       else
                       {
                         /* (c >= 0x2214) && (c <= 0x22EE) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if (c == 0x22EF)
-                        return Line_IN;
+                        return LB_IN;
                       /* (c >= 0x22F0) && (c <= 0x2307) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -69786,22 +69770,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x230A)
                       {
                         if (c == 0x2308)
-                          return Line_OP;
+                          return LB_OP;
                         /* c == 0x2309 */
-                        return Line_CL;
+                        return LB_CL;
                       }
                       else
                       {
                         /* c == 0x230A */
-                        return Line_OP;
+                        return LB_OP;
                       }
                     }
                     else
                     {
                       if (c == 0x230B)
-                        return Line_CL;
+                        return LB_CL;
                       /* (c >= 0x230C) && (c <= 0x2319) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -69811,22 +69795,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x2329)
                       {
                         if ((c >= 0x231A) && (c <= 0x231B))
-                          return Line_ID;
+                          return LB_ID;
                         /* (c >= 0x231C) && (c <= 0x2328) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* c == 0x2329 */
-                        return Line_OP;
+                        return LB_OP;
                       }
                     }
                     else
                     {
                       if (c == 0x232A)
-                        return Line_CL;
+                        return LB_CL;
                       /* (c >= 0x232B) && (c <= 0x23EF) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -69842,22 +69826,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x2600)
                       {
                         if ((c >= 0x23F0) && (c <= 0x23F3))
-                          return Line_ID;
+                          return LB_ID;
                         /* (c >= 0x23F4) && (c <= 0x25FF) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x2600) && (c <= 0x2603) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                     }
                     else
                     {
                       if ((c >= 0x2604) && (c <= 0x2613))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x2614) && (c <= 0x2615) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                   else
@@ -69867,22 +69851,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x2619)
                       {
                         if ((c >= 0x2616) && (c <= 0x2617))
-                          return Line_AL;
+                          return LB_AL;
                         /* c == 0x2618 */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* c == 0x2619 */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x261A) && (c <= 0x261C))
-                        return Line_ID;
+                        return LB_ID;
                       /* c == 0x261D */
-                      return Line_EB;
+                      return LB_EB;
                     }
                   }
                 }
@@ -69895,22 +69879,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x2639)
                       {
                         if ((c >= 0x261E) && (c <= 0x261F))
-                          return Line_ID;
+                          return LB_ID;
                         /* (c >= 0x2620) && (c <= 0x2638) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x2639) && (c <= 0x263B) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                     }
                     else
                     {
                       if ((c >= 0x263C) && (c <= 0x2667))
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0x2668 */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                   else
@@ -69918,16 +69902,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x2680)
                     {
                       if ((c >= 0x2669) && (c <= 0x267E))
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0x267F */
-                      return Line_ID;
+                      return LB_ID;
                     }
                     else
                     {
                       if ((c >= 0x2680) && (c <= 0x26BC))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x26BD) && (c <= 0x26C8) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                 }
@@ -69946,22 +69930,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x26CE)
                       {
                         if ((c >= 0x26C9) && (c <= 0x26CC))
-                          return Line_AL;
+                          return LB_AL;
                         /* c == 0x26CD */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* c == 0x26CE */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x26CF) && (c <= 0x26D1))
-                        return Line_ID;
+                        return LB_ID;
                       /* c == 0x26D2 */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -69971,22 +69955,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x26D8)
                       {
                         if ((c >= 0x26D3) && (c <= 0x26D4))
-                          return Line_ID;
+                          return LB_ID;
                         /* (c >= 0x26D5) && (c <= 0x26D7) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x26D8) && (c <= 0x26D9) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                     }
                     else
                     {
                       if ((c >= 0x26DA) && (c <= 0x26DB))
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0x26DC */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                 }
@@ -69999,22 +69983,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x26E2)
                       {
                         if ((c >= 0x26DD) && (c <= 0x26DE))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x26DF) && (c <= 0x26E1) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* (c >= 0x26E2) && (c <= 0x26E9) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if (c == 0x26EA)
-                        return Line_ID;
+                        return LB_ID;
                       /* (c >= 0x26EB) && (c <= 0x26F0) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -70024,22 +70008,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x26F7)
                       {
                         if ((c >= 0x26F1) && (c <= 0x26F5))
-                          return Line_ID;
+                          return LB_ID;
                         /* c == 0x26F6 */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x26F7) && (c <= 0x26F8) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                     }
                     else
                     {
                       if (c == 0x26F9)
-                        return Line_EB;
+                        return LB_EB;
                       /* c == 0x26FA */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                 }
@@ -70055,22 +70039,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x2705)
                       {
                         if ((c >= 0x26FB) && (c <= 0x26FC))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x26FD) && (c <= 0x2704) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* (c >= 0x2705) && (c <= 0x2707) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x2708) && (c <= 0x2709))
-                        return Line_ID;
+                        return LB_ID;
                       /* (c >= 0x270A) && (c <= 0x270D) */
-                      return Line_EB;
+                      return LB_EB;
                     }
                   }
                   else
@@ -70080,22 +70064,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x2761)
                       {
                         if ((c >= 0x270E) && (c <= 0x275A))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x275B) && (c <= 0x2760) */
-                        return Line_QU;
+                        return LB_QU;
                       }
                       else
                       {
                         /* c == 0x2761 */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x2762) && (c <= 0x2763))
-                        return Line_EX;
+                        return LB_EX;
                       /* c == 0x2764 */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                 }
@@ -70108,22 +70092,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x2769)
                       {
                         if ((c >= 0x2765) && (c <= 0x2767))
-                          return Line_AL;
+                          return LB_AL;
                         /* c == 0x2768 */
-                        return Line_OP;
+                        return LB_OP;
                       }
                       else
                       {
                         /* c == 0x2769 */
-                        return Line_CL;
+                        return LB_CL;
                       }
                     }
                     else
                     {
                       if (c == 0x276A)
-                        return Line_OP;
+                        return LB_OP;
                       /* c == 0x276B */
-                      return Line_CL;
+                      return LB_CL;
                     }
                   }
                   else
@@ -70131,16 +70115,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x276E)
                     {
                       if (c == 0x276C)
-                        return Line_OP;
+                        return LB_OP;
                       /* c == 0x276D */
-                      return Line_CL;
+                      return LB_CL;
                     }
                     else
                     {
                       if (c == 0x276E)
-                        return Line_OP;
+                        return LB_OP;
                       /* c == 0x276F */
-                      return Line_CL;
+                      return LB_CL;
                     }
                   }
                 }
@@ -70171,22 +70155,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x2772)
                       {
                         if (c == 0x2770)
-                          return Line_OP;
+                          return LB_OP;
                         /* c == 0x2771 */
-                        return Line_CL;
+                        return LB_CL;
                       }
                       else
                       {
                         /* c == 0x2772 */
-                        return Line_OP;
+                        return LB_OP;
                       }
                     }
                     else
                     {
                       if (c == 0x2773)
-                        return Line_CL;
+                        return LB_CL;
                       /* c == 0x2774 */
-                      return Line_OP;
+                      return LB_OP;
                     }
                   }
                   else
@@ -70196,22 +70180,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x27C5)
                       {
                         if (c == 0x2775)
-                          return Line_CL;
+                          return LB_CL;
                         /* (c >= 0x2776) && (c <= 0x27C4) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* c == 0x27C5 */
-                        return Line_OP;
+                        return LB_OP;
                       }
                     }
                     else
                     {
                       if (c == 0x27C6)
-                        return Line_CL;
+                        return LB_CL;
                       /* (c >= 0x27C7) && (c <= 0x27E5) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -70224,22 +70208,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x27E8)
                       {
                         if (c == 0x27E6)
-                          return Line_OP;
+                          return LB_OP;
                         /* c == 0x27E7 */
-                        return Line_CL;
+                        return LB_CL;
                       }
                       else
                       {
                         /* c == 0x27E8 */
-                        return Line_OP;
+                        return LB_OP;
                       }
                     }
                     else
                     {
                       if (c == 0x27E9)
-                        return Line_CL;
+                        return LB_CL;
                       /* c == 0x27EA */
-                      return Line_OP;
+                      return LB_OP;
                     }
                   }
                   else
@@ -70249,22 +70233,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x27ED)
                       {
                         if (c == 0x27EB)
-                          return Line_CL;
+                          return LB_CL;
                         /* c == 0x27EC */
-                        return Line_OP;
+                        return LB_OP;
                       }
                       else
                       {
                         /* c == 0x27ED */
-                        return Line_CL;
+                        return LB_CL;
                       }
                     }
                     else
                     {
                       if (c == 0x27EE)
-                        return Line_OP;
+                        return LB_OP;
                       /* c == 0x27EF */
-                      return Line_CL;
+                      return LB_CL;
                     }
                   }
                 }
@@ -70280,22 +70264,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x2984)
                       {
                         if ((c >= 0x27F0) && (c <= 0x2982))
-                          return Line_AL;
+                          return LB_AL;
                         /* c == 0x2983 */
-                        return Line_OP;
+                        return LB_OP;
                       }
                       else
                       {
                         /* c == 0x2984 */
-                        return Line_CL;
+                        return LB_CL;
                       }
                     }
                     else
                     {
                       if (c == 0x2985)
-                        return Line_OP;
+                        return LB_OP;
                       /* c == 0x2986 */
-                      return Line_CL;
+                      return LB_CL;
                     }
                   }
                   else
@@ -70305,22 +70289,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x2989)
                       {
                         if (c == 0x2987)
-                          return Line_OP;
+                          return LB_OP;
                         /* c == 0x2988 */
-                        return Line_CL;
+                        return LB_CL;
                       }
                       else
                       {
                         /* c == 0x2989 */
-                        return Line_OP;
+                        return LB_OP;
                       }
                     }
                     else
                     {
                       if (c == 0x298A)
-                        return Line_CL;
+                        return LB_CL;
                       /* c == 0x298B */
-                      return Line_OP;
+                      return LB_OP;
                     }
                   }
                 }
@@ -70333,22 +70317,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x298E)
                       {
                         if (c == 0x298C)
-                          return Line_CL;
+                          return LB_CL;
                         /* c == 0x298D */
-                        return Line_OP;
+                        return LB_OP;
                       }
                       else
                       {
                         /* c == 0x298E */
-                        return Line_CL;
+                        return LB_CL;
                       }
                     }
                     else
                     {
                       if (c == 0x298F)
-                        return Line_OP;
+                        return LB_OP;
                       /* c == 0x2990 */
-                      return Line_CL;
+                      return LB_CL;
                     }
                   }
                   else
@@ -70356,16 +70340,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x2993)
                     {
                       if (c == 0x2991)
-                        return Line_OP;
+                        return LB_OP;
                       /* c == 0x2992 */
-                      return Line_CL;
+                      return LB_CL;
                     }
                     else
                     {
                       if (c == 0x2993)
-                        return Line_OP;
+                        return LB_OP;
                       /* c == 0x2994 */
-                      return Line_CL;
+                      return LB_CL;
                     }
                   }
                 }
@@ -70384,22 +70368,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x2997)
                       {
                         if (c == 0x2995)
-                          return Line_OP;
+                          return LB_OP;
                         /* c == 0x2996 */
-                        return Line_CL;
+                        return LB_CL;
                       }
                       else
                       {
                         /* c == 0x2997 */
-                        return Line_OP;
+                        return LB_OP;
                       }
                     }
                     else
                     {
                       if (c == 0x2998)
-                        return Line_CL;
+                        return LB_CL;
                       /* (c >= 0x2999) && (c <= 0x29D7) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -70409,22 +70393,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x29DA)
                       {
                         if (c == 0x29D8)
-                          return Line_OP;
+                          return LB_OP;
                         /* c == 0x29D9 */
-                        return Line_CL;
+                        return LB_CL;
                       }
                       else
                       {
                         /* c == 0x29DA */
-                        return Line_OP;
+                        return LB_OP;
                       }
                     }
                     else
                     {
                       if (c == 0x29DB)
-                        return Line_CL;
+                        return LB_CL;
                       /* (c >= 0x29DC) && (c <= 0x29FB) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -70437,22 +70421,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x29FE)
                       {
                         if (c == 0x29FC)
-                          return Line_OP;
+                          return LB_OP;
                         /* c == 0x29FD */
-                        return Line_CL;
+                        return LB_CL;
                       }
                       else
                       {
                         /* (c >= 0x29FE) && (c <= 0x2CEE) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x2CEF) && (c <= 0x2CF1))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x2CF2) && (c <= 0x2CF8) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -70462,22 +70446,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x2CFD)
                       {
                         if (c == 0x2CF9)
-                          return Line_EX;
+                          return LB_EX;
                         /* (c >= 0x2CFA) && (c <= 0x2CFC) */
-                        return Line_BA;
+                        return LB_BA;
                       }
                       else
                       {
                         /* c == 0x2CFD */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if (c == 0x2CFE)
-                        return Line_EX;
+                        return LB_EX;
                       /* c == 0x2CFF */
-                      return Line_BA;
+                      return LB_BA;
                     }
                   }
                 }
@@ -70493,22 +70477,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x2D71)
                       {
                         if ((c >= 0x2D00) && (c <= 0x2D6F))
-                          return Line_AL;
+                          return LB_AL;
                         /* c == 0x2D70 */
-                        return Line_BA;
+                        return LB_BA;
                       }
                       else
                       {
                         /* (c >= 0x2D71) && (c <= 0x2D7E) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if (c == 0x2D7F)
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x2D80) && (c <= 0x2DDF) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -70518,22 +70502,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x2E0E)
                       {
                         if ((c >= 0x2DE0) && (c <= 0x2DFF))
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x2E00) && (c <= 0x2E0D) */
-                        return Line_QU;
+                        return LB_QU;
                       }
                       else
                       {
                         /* (c >= 0x2E0E) && (c <= 0x2E15) */
-                        return Line_BA;
+                        return LB_BA;
                       }
                     }
                     else
                     {
                       if (c == 0x2E16)
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0x2E17 */
-                      return Line_BA;
+                      return LB_BA;
                     }
                   }
                 }
@@ -70546,22 +70530,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x2E1A)
                       {
                         if (c == 0x2E18)
-                          return Line_OP;
+                          return LB_OP;
                         /* c == 0x2E19 */
-                        return Line_BA;
+                        return LB_BA;
                       }
                       else
                       {
                         /* (c >= 0x2E1A) && (c <= 0x2E1B) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x2E1C) && (c <= 0x2E1D))
-                        return Line_QU;
+                        return LB_QU;
                       /* (c >= 0x2E1E) && (c <= 0x2E1F) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -70569,16 +70553,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x2E23)
                     {
                       if ((c >= 0x2E20) && (c <= 0x2E21))
-                        return Line_QU;
+                        return LB_QU;
                       /* c == 0x2E22 */
-                      return Line_OP;
+                      return LB_OP;
                     }
                     else
                     {
                       if (c == 0x2E23)
-                        return Line_CL;
+                        return LB_CL;
                       /* c == 0x2E24 */
-                      return Line_OP;
+                      return LB_OP;
                     }
                   }
                 }
@@ -70600,22 +70584,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x2E27)
                       {
                         if (c == 0x2E25)
-                          return Line_CL;
+                          return LB_CL;
                         /* c == 0x2E26 */
-                        return Line_OP;
+                        return LB_OP;
                       }
                       else
                       {
                         /* c == 0x2E27 */
-                        return Line_CL;
+                        return LB_CL;
                       }
                     }
                     else
                     {
                       if (c == 0x2E28)
-                        return Line_OP;
+                        return LB_OP;
                       /* c == 0x2E29 */
-                      return Line_CL;
+                      return LB_CL;
                     }
                   }
                   else
@@ -70625,22 +70609,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x2E2F)
                       {
                         if ((c >= 0x2E2A) && (c <= 0x2E2D))
-                          return Line_BA;
+                          return LB_BA;
                         /* c == 0x2E2E */
-                        return Line_EX;
+                        return LB_EX;
                       }
                       else
                       {
                         /* c == 0x2E2F */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x2E30) && (c <= 0x2E31))
-                        return Line_BA;
+                        return LB_BA;
                       /* c == 0x2E32 */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -70653,22 +70637,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x2E3A)
                       {
                         if ((c >= 0x2E33) && (c <= 0x2E34))
-                          return Line_BA;
+                          return LB_BA;
                         /* (c >= 0x2E35) && (c <= 0x2E39) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x2E3A) && (c <= 0x2E3B) */
-                        return Line_B2;
+                        return LB_B2;
                       }
                     }
                     else
                     {
                       if ((c >= 0x2E3C) && (c <= 0x2E3E))
-                        return Line_BA;
+                        return LB_BA;
                       /* c == 0x2E3F */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -70678,22 +70662,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x2E43)
                       {
                         if ((c >= 0x2E40) && (c <= 0x2E41))
-                          return Line_BA;
+                          return LB_BA;
                         /* c == 0x2E42 */
-                        return Line_OP;
+                        return LB_OP;
                       }
                       else
                       {
                         /* (c >= 0x2E43) && (c <= 0x2E4A) */
-                        return Line_BA;
+                        return LB_BA;
                       }
                     }
                     else
                     {
                       if (c == 0x2E4B)
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0x2E4C */
-                      return Line_BA;
+                      return LB_BA;
                     }
                   }
                 }
@@ -70709,22 +70693,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x2E50)
                       {
                         if (c == 0x2E4D)
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x2E4E) && (c <= 0x2E4F) */
-                        return Line_BA;
+                        return LB_BA;
                       }
                       else
                       {
                         /* (c >= 0x2E50) && (c <= 0x2E52) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x2E53) && (c <= 0x2E54))
-                        return Line_EX;
+                        return LB_EX;
                       /* c == 0x2E55 */
-                      return Line_OP;
+                      return LB_OP;
                     }
                   }
                   else
@@ -70734,22 +70718,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x2E58)
                       {
                         if (c == 0x2E56)
-                          return Line_CL;
+                          return LB_CL;
                         /* c == 0x2E57 */
-                        return Line_OP;
+                        return LB_OP;
                       }
                       else
                       {
                         /* c == 0x2E58 */
-                        return Line_CL;
+                        return LB_CL;
                       }
                     }
                     else
                     {
                       if (c == 0x2E59)
-                        return Line_OP;
+                        return LB_OP;
                       /* c == 0x2E5A */
-                      return Line_CL;
+                      return LB_CL;
                     }
                   }
                 }
@@ -70762,22 +70746,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x2E5D)
                       {
                         if (c == 0x2E5B)
-                          return Line_OP;
+                          return LB_OP;
                         /* c == 0x2E5C */
-                        return Line_CL;
+                        return LB_CL;
                       }
                       else
                       {
                         /* c == 0x2E5D */
-                        return Line_BA;
+                        return LB_BA;
                       }
                     }
                     else
                     {
                       if ((c >= 0x2E5E) && (c <= 0x2E7F))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x2E80) && (c <= 0x2E99) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                   else
@@ -70785,16 +70769,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x2EF4)
                     {
                       if (c == 0x2E9A)
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x2E9B) && (c <= 0x2EF3) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                     else
                     {
                       if ((c >= 0x2EF4) && (c <= 0x2EFF))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x2F00) && (c <= 0x2FD5) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                 }
@@ -70813,22 +70797,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x3000)
                       {
                         if ((c >= 0x2FD6) && (c <= 0x2FEF))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x2FF0) && (c <= 0x2FFF) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* c == 0x3000 */
-                        return Line_BA;
+                        return LB_BA;
                       }
                     }
                     else
                     {
                       if ((c >= 0x3001) && (c <= 0x3002))
-                        return Line_CL;
+                        return LB_CL;
                       /* (c >= 0x3003) && (c <= 0x3004) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                   else
@@ -70838,22 +70822,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x3008)
                       {
                         if (c == 0x3005)
-                          return Line_NS;
+                          return LB_NS;
                         /* (c >= 0x3006) && (c <= 0x3007) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* c == 0x3008 */
-                        return Line_OP;
+                        return LB_OP;
                       }
                     }
                     else
                     {
                       if (c == 0x3009)
-                        return Line_CL;
+                        return LB_CL;
                       /* c == 0x300A */
-                      return Line_OP;
+                      return LB_OP;
                     }
                   }
                 }
@@ -70866,22 +70850,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x300D)
                       {
                         if (c == 0x300B)
-                          return Line_CL;
+                          return LB_CL;
                         /* c == 0x300C */
-                        return Line_OP;
+                        return LB_OP;
                       }
                       else
                       {
                         /* c == 0x300D */
-                        return Line_CL;
+                        return LB_CL;
                       }
                     }
                     else
                     {
                       if (c == 0x300E)
-                        return Line_OP;
+                        return LB_OP;
                       /* c == 0x300F */
-                      return Line_CL;
+                      return LB_CL;
                     }
                   }
                   else
@@ -70891,22 +70875,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x3012)
                       {
                         if (c == 0x3010)
-                          return Line_OP;
+                          return LB_OP;
                         /* c == 0x3011 */
-                        return Line_CL;
+                        return LB_CL;
                       }
                       else
                       {
                         /* (c >= 0x3012) && (c <= 0x3013) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                     }
                     else
                     {
                       if (c == 0x3014)
-                        return Line_OP;
+                        return LB_OP;
                       /* c == 0x3015 */
-                      return Line_CL;
+                      return LB_CL;
                     }
                   }
                 }
@@ -70922,22 +70906,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x3018)
                       {
                         if (c == 0x3016)
-                          return Line_OP;
+                          return LB_OP;
                         /* c == 0x3017 */
-                        return Line_CL;
+                        return LB_CL;
                       }
                       else
                       {
                         /* c == 0x3018 */
-                        return Line_OP;
+                        return LB_OP;
                       }
                     }
                     else
                     {
                       if (c == 0x3019)
-                        return Line_CL;
+                        return LB_CL;
                       /* c == 0x301A */
-                      return Line_OP;
+                      return LB_OP;
                     }
                   }
                   else
@@ -70947,22 +70931,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x301D)
                       {
                         if (c == 0x301B)
-                          return Line_CL;
+                          return LB_CL;
                         /* c == 0x301C */
-                        return Line_NS;
+                        return LB_NS;
                       }
                       else
                       {
                         /* c == 0x301D */
-                        return Line_OP;
+                        return LB_OP;
                       }
                     }
                     else
                     {
                       if ((c >= 0x301E) && (c <= 0x301F))
-                        return Line_CL;
+                        return LB_CL;
                       /* (c >= 0x3020) && (c <= 0x3029) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                 }
@@ -70975,22 +70959,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x3035)
                       {
                         if ((c >= 0x302A) && (c <= 0x302F))
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x3030) && (c <= 0x3034) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* c == 0x3035 */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x3036) && (c <= 0x303A))
-                        return Line_ID;
+                        return LB_ID;
                       /* (c >= 0x303B) && (c <= 0x303C) */
-                      return Line_NS;
+                      return LB_NS;
                     }
                   }
                   else
@@ -70998,16 +70982,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x3041)
                     {
                       if ((c >= 0x303D) && (c <= 0x303F))
-                        return Line_ID;
+                        return LB_ID;
                       /* c == 0x3040 */
-                      return Line_AL;
+                      return LB_AL;
                     }
                     else
                     {
                       if (c == 0x3041)
-                        return Line_NS;
+                        return LB_NS;
                       /* c == 0x3042 */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                 }
@@ -71032,22 +71016,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x3045)
                       {
                         if (c == 0x3043)
-                          return Line_NS;
+                          return LB_NS;
                         /* c == 0x3044 */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* c == 0x3045 */
-                        return Line_NS;
+                        return LB_NS;
                       }
                     }
                     else
                     {
                       if (c == 0x3046)
-                        return Line_ID;
+                        return LB_ID;
                       /* c == 0x3047 */
-                      return Line_NS;
+                      return LB_NS;
                     }
                   }
                   else
@@ -71057,22 +71041,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x304A)
                       {
                         if (c == 0x3048)
-                          return Line_ID;
+                          return LB_ID;
                         /* c == 0x3049 */
-                        return Line_NS;
+                        return LB_NS;
                       }
                       else
                       {
                         /* (c >= 0x304A) && (c <= 0x3062) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                     }
                     else
                     {
                       if (c == 0x3063)
-                        return Line_NS;
+                        return LB_NS;
                       /* (c >= 0x3064) && (c <= 0x3082) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                 }
@@ -71085,22 +71069,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x3085)
                       {
                         if (c == 0x3083)
-                          return Line_NS;
+                          return LB_NS;
                         /* c == 0x3084 */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* c == 0x3085 */
-                        return Line_NS;
+                        return LB_NS;
                       }
                     }
                     else
                     {
                       if (c == 0x3086)
-                        return Line_ID;
+                        return LB_ID;
                       /* c == 0x3087 */
-                      return Line_NS;
+                      return LB_NS;
                     }
                   }
                   else
@@ -71110,22 +71094,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x308F)
                       {
                         if ((c >= 0x3088) && (c <= 0x308D))
-                          return Line_ID;
+                          return LB_ID;
                         /* c == 0x308E */
-                        return Line_NS;
+                        return LB_NS;
                       }
                       else
                       {
                         /* (c >= 0x308F) && (c <= 0x3094) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                     }
                     else
                     {
                       if ((c >= 0x3095) && (c <= 0x3096))
-                        return Line_NS;
+                        return LB_NS;
                       /* (c >= 0x3097) && (c <= 0x3098) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -71141,22 +71125,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x309F)
                       {
                         if ((c >= 0x3099) && (c <= 0x309A))
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x309B) && (c <= 0x309E) */
-                        return Line_NS;
+                        return LB_NS;
                       }
                       else
                       {
                         /* c == 0x309F */
-                        return Line_ID;
+                        return LB_ID;
                       }
                     }
                     else
                     {
                       if ((c >= 0x30A0) && (c <= 0x30A1))
-                        return Line_NS;
+                        return LB_NS;
                       /* c == 0x30A2 */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                   else
@@ -71166,22 +71150,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x30A5)
                       {
                         if (c == 0x30A3)
-                          return Line_NS;
+                          return LB_NS;
                         /* c == 0x30A4 */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* c == 0x30A5 */
-                        return Line_NS;
+                        return LB_NS;
                       }
                     }
                     else
                     {
                       if (c == 0x30A6)
-                        return Line_ID;
+                        return LB_ID;
                       /* c == 0x30A7 */
-                      return Line_NS;
+                      return LB_NS;
                     }
                   }
                 }
@@ -71194,22 +71178,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x30AA)
                       {
                         if (c == 0x30A8)
-                          return Line_ID;
+                          return LB_ID;
                         /* c == 0x30A9 */
-                        return Line_NS;
+                        return LB_NS;
                       }
                       else
                       {
                         /* (c >= 0x30AA) && (c <= 0x30C2) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                     }
                     else
                     {
                       if (c == 0x30C3)
-                        return Line_NS;
+                        return LB_NS;
                       /* (c >= 0x30C4) && (c <= 0x30E2) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                   else
@@ -71217,16 +71201,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x30E5)
                     {
                       if (c == 0x30E3)
-                        return Line_NS;
+                        return LB_NS;
                       /* c == 0x30E4 */
-                      return Line_ID;
+                      return LB_ID;
                     }
                     else
                     {
                       if (c == 0x30E5)
-                        return Line_NS;
+                        return LB_NS;
                       /* c == 0x30E6 */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                 }
@@ -71245,22 +71229,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x30EE)
                       {
                         if (c == 0x30E7)
-                          return Line_NS;
+                          return LB_NS;
                         /* (c >= 0x30E8) && (c <= 0x30ED) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* c == 0x30EE */
-                        return Line_NS;
+                        return LB_NS;
                       }
                     }
                     else
                     {
                       if ((c >= 0x30EF) && (c <= 0x30F4))
-                        return Line_ID;
+                        return LB_ID;
                       /* (c >= 0x30F5) && (c <= 0x30F6) */
-                      return Line_NS;
+                      return LB_NS;
                     }
                   }
                   else
@@ -71270,22 +71254,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x30FF)
                       {
                         if ((c >= 0x30F7) && (c <= 0x30FA))
-                          return Line_ID;
+                          return LB_ID;
                         /* (c >= 0x30FB) && (c <= 0x30FE) */
-                        return Line_NS;
+                        return LB_NS;
                       }
                       else
                       {
                         /* c == 0x30FF */
-                        return Line_ID;
+                        return LB_ID;
                       }
                     }
                     else
                     {
                       if ((c >= 0x3100) && (c <= 0x3104))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x3105) && (c <= 0x312F) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                 }
@@ -71298,22 +71282,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x318F)
                       {
                         if (c == 0x3130)
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x3131) && (c <= 0x318E) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* c == 0x318F */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x3190) && (c <= 0x31E3))
-                        return Line_ID;
+                        return LB_ID;
                       /* (c >= 0x31E4) && (c <= 0x31EE) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -71323,22 +71307,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x3200)
                       {
                         if (c == 0x31EF)
-                          return Line_ID;
+                          return LB_ID;
                         /* (c >= 0x31F0) && (c <= 0x31FF) */
-                        return Line_NS;
+                        return LB_NS;
                       }
                       else
                       {
                         /* (c >= 0x3200) && (c <= 0x321E) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                     }
                     else
                     {
                       if (c == 0x321F)
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x3220) && (c <= 0x3247) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                 }
@@ -71354,22 +71338,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x4DC0)
                       {
                         if ((c >= 0x3248) && (c <= 0x324F))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x3250) && (c <= 0x4DBF) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* (c >= 0x4DC0) && (c <= 0x4DFF) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x4E00) && (c <= 0xA014))
-                        return Line_ID;
+                        return LB_ID;
                       /* c == 0xA015 */
-                      return Line_NS;
+                      return LB_NS;
                     }
                   }
                   else
@@ -71379,22 +71363,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xA490)
                       {
                         if ((c >= 0xA016) && (c <= 0xA48C))
-                          return Line_ID;
+                          return LB_ID;
                         /* (c >= 0xA48D) && (c <= 0xA48F) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0xA490) && (c <= 0xA4C6) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                     }
                     else
                     {
                       if ((c >= 0xA4C7) && (c <= 0xA4FD))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0xA4FE) && (c <= 0xA4FF) */
-                      return Line_BA;
+                      return LB_BA;
                     }
                   }
                 }
@@ -71407,22 +71391,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xA60E)
                       {
                         if ((c >= 0xA500) && (c <= 0xA60C))
-                          return Line_AL;
+                          return LB_AL;
                         /* c == 0xA60D */
-                        return Line_BA;
+                        return LB_BA;
                       }
                       else
                       {
                         /* c == 0xA60E */
-                        return Line_EX;
+                        return LB_EX;
                       }
                     }
                     else
                     {
                       if (c == 0xA60F)
-                        return Line_BA;
+                        return LB_BA;
                       /* (c >= 0xA610) && (c <= 0xA61F) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -71430,16 +71414,16 @@ line_category(Py_UCS4 c)
                     if (c < 0xA66F)
                     {
                       if ((c >= 0xA620) && (c <= 0xA629))
-                        return Line_NU;
+                        return LB_NU;
                       /* (c >= 0xA62A) && (c <= 0xA66E) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                     else
                     {
                       if ((c >= 0xA66F) && (c <= 0xA672))
-                        return Line_CM;
+                        return LB_CM;
                       /* c == 0xA673 */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -71461,22 +71445,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xA69E)
                       {
                         if ((c >= 0xA674) && (c <= 0xA67D))
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0xA67E) && (c <= 0xA69D) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0xA69E) && (c <= 0xA69F) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0xA6A0) && (c <= 0xA6EF))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0xA6F0) && (c <= 0xA6F1) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                   else
@@ -71486,22 +71470,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xA6F8)
                       {
                         if (c == 0xA6F2)
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0xA6F3) && (c <= 0xA6F7) */
-                        return Line_BA;
+                        return LB_BA;
                       }
                       else
                       {
                         /* (c >= 0xA6F8) && (c <= 0xA801) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if (c == 0xA802)
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0xA803) && (c <= 0xA805) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -71514,22 +71498,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xA80B)
                       {
                         if (c == 0xA806)
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0xA807) && (c <= 0xA80A) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* c == 0xA80B */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0xA80C) && (c <= 0xA822))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0xA823) && (c <= 0xA827) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                   else
@@ -71539,22 +71523,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xA82D)
                       {
                         if ((c >= 0xA828) && (c <= 0xA82B))
-                          return Line_AL;
+                          return LB_AL;
                         /* c == 0xA82C */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0xA82D) && (c <= 0xA837) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if (c == 0xA838)
-                        return Line_PO;
+                        return LB_PO;
                       /* (c >= 0xA839) && (c <= 0xA873) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -71570,22 +71554,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xA878)
                       {
                         if ((c >= 0xA874) && (c <= 0xA875))
-                          return Line_BB;
+                          return LB_BB;
                         /* (c >= 0xA876) && (c <= 0xA877) */
-                        return Line_EX;
+                        return LB_EX;
                       }
                       else
                       {
                         /* (c >= 0xA878) && (c <= 0xA87F) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0xA880) && (c <= 0xA881))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0xA882) && (c <= 0xA8B3) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -71595,22 +71579,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xA8CE)
                       {
                         if ((c >= 0xA8B4) && (c <= 0xA8C5))
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0xA8C6) && (c <= 0xA8CD) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0xA8CE) && (c <= 0xA8CF) */
-                        return Line_BA;
+                        return LB_BA;
                       }
                     }
                     else
                     {
                       if ((c >= 0xA8D0) && (c <= 0xA8D9))
-                        return Line_NU;
+                        return LB_NU;
                       /* (c >= 0xA8DA) && (c <= 0xA8DF) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -71623,22 +71607,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xA8FC)
                       {
                         if ((c >= 0xA8E0) && (c <= 0xA8F1))
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0xA8F2) && (c <= 0xA8FB) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* c == 0xA8FC */
-                        return Line_BB;
+                        return LB_BB;
                       }
                     }
                     else
                     {
                       if ((c >= 0xA8FD) && (c <= 0xA8FE))
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0xA8FF */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                   else
@@ -71646,16 +71630,16 @@ line_category(Py_UCS4 c)
                     if (c < 0xA926)
                     {
                       if ((c >= 0xA900) && (c <= 0xA909))
-                        return Line_NU;
+                        return LB_NU;
                       /* (c >= 0xA90A) && (c <= 0xA925) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                     else
                     {
                       if ((c >= 0xA926) && (c <= 0xA92D))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0xA92E) && (c <= 0xA92F) */
-                      return Line_BA;
+                      return LB_BA;
                     }
                   }
                 }
@@ -71674,22 +71658,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xA954)
                       {
                         if ((c >= 0xA930) && (c <= 0xA946))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0xA947) && (c <= 0xA953) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0xA954) && (c <= 0xA95F) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0xA960) && (c <= 0xA97C))
-                        return Line_JL;
+                        return LB_JL;
                       /* (c >= 0xA97D) && (c <= 0xA97F) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -71699,22 +71683,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xA9B3)
                       {
                         if ((c >= 0xA980) && (c <= 0xA983))
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0xA984) && (c <= 0xA9B2) */
-                        return Line_AK;
+                        return LB_AK;
                       }
                       else
                       {
                         /* (c >= 0xA9B3) && (c <= 0xA9BF) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if (c == 0xA9C0)
-                        return Line_VI;
+                        return LB_VI;
                       /* (c >= 0xA9C1) && (c <= 0xA9C6) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                 }
@@ -71727,22 +71711,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xA9CE)
                       {
                         if ((c >= 0xA9C7) && (c <= 0xA9C9))
-                          return Line_BA;
+                          return LB_BA;
                         /* (c >= 0xA9CA) && (c <= 0xA9CD) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* c == 0xA9CE */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if (c == 0xA9CF)
-                        return Line_BA;
+                        return LB_BA;
                       /* (c >= 0xA9D0) && (c <= 0xA9D9) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                   else
@@ -71752,22 +71736,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xA9E0)
                       {
                         if ((c >= 0xA9DA) && (c <= 0xA9DD))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0xA9DE) && (c <= 0xA9DF) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* (c >= 0xA9E0) && (c <= 0xA9E4) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if (c == 0xA9E5)
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0xA9E6) && (c <= 0xA9EF) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -71783,22 +71767,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xAA00)
                       {
                         if ((c >= 0xA9F0) && (c <= 0xA9F9))
-                          return Line_NU;
+                          return LB_NU;
                         /* (c >= 0xA9FA) && (c <= 0xA9FF) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0xAA00) && (c <= 0xAA28) */
-                        return Line_AS;
+                        return LB_AS;
                       }
                     }
                     else
                     {
                       if ((c >= 0xAA29) && (c <= 0xAA36))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0xAA37) && (c <= 0xAA3F) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -71808,22 +71792,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xAA44)
                       {
                         if ((c >= 0xAA40) && (c <= 0xAA42))
-                          return Line_BA;
+                          return LB_BA;
                         /* c == 0xAA43 */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0xAA44) && (c <= 0xAA4B) */
-                        return Line_BA;
+                        return LB_BA;
                       }
                     }
                     else
                     {
                       if ((c >= 0xAA4C) && (c <= 0xAA4D))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0xAA4E) && (c <= 0xAA4F) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -71836,22 +71820,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xAA5C)
                       {
                         if ((c >= 0xAA50) && (c <= 0xAA59))
-                          return Line_ID;
+                          return LB_ID;
                         /* (c >= 0xAA5A) && (c <= 0xAA5B) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* c == 0xAA5C */
-                        return Line_ID;
+                        return LB_ID;
                       }
                     }
                     else
                     {
                       if ((c >= 0xAA5D) && (c <= 0xAA5F))
-                        return Line_BA;
+                        return LB_BA;
                       /* (c >= 0xAA60) && (c <= 0xAA7A) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -71859,16 +71843,16 @@ line_category(Py_UCS4 c)
                     if (c < 0xAAB0)
                     {
                       if ((c >= 0xAA7B) && (c <= 0xAA7D))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0xAA7E) && (c <= 0xAAAF) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                     else
                     {
                       if (c == 0xAAB0)
-                        return Line_CM;
+                        return LB_CM;
                       /* c == 0xAAB1 */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -71896,22 +71880,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xAAB7)
                       {
                         if ((c >= 0xAAB2) && (c <= 0xAAB4))
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0xAAB5) && (c <= 0xAAB6) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0xAAB7) && (c <= 0xAAB8) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0xAAB9) && (c <= 0xAABD))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0xAABE) && (c <= 0xAABF) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                   else
@@ -71921,22 +71905,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xAAC2)
                       {
                         if (c == 0xAAC0)
-                          return Line_AL;
+                          return LB_AL;
                         /* c == 0xAAC1 */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0xAAC2) && (c <= 0xAAEA) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0xAAEB) && (c <= 0xAAEF))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0xAAF0) && (c <= 0xAAF1) */
-                      return Line_BA;
+                      return LB_BA;
                     }
                   }
                 }
@@ -71949,22 +71933,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xAAF7)
                       {
                         if ((c >= 0xAAF2) && (c <= 0xAAF4))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0xAAF5) && (c <= 0xAAF6) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0xAAF7) && (c <= 0xABE2) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0xABE3) && (c <= 0xABEA))
-                        return Line_CM;
+                        return LB_CM;
                       /* c == 0xABEB */
-                      return Line_BA;
+                      return LB_BA;
                     }
                   }
                   else
@@ -71974,22 +71958,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xABF0)
                       {
                         if ((c >= 0xABEC) && (c <= 0xABED))
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0xABEE) && (c <= 0xABEF) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0xABF0) && (c <= 0xABF9) */
-                        return Line_NU;
+                        return LB_NU;
                       }
                     }
                     else
                     {
                       if ((c >= 0xABFA) && (c <= 0xABFF))
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0xAC00 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -72005,22 +71989,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xAC1D)
                       {
                         if ((c >= 0xAC01) && (c <= 0xAC1B))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xAC1C */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xAC1D) && (c <= 0xAC37) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xAC38)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xAC39) && (c <= 0xAC53) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -72030,22 +72014,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xAC70)
                       {
                         if (c == 0xAC54)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xAC55) && (c <= 0xAC6F) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xAC70 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xAC71) && (c <= 0xAC8B))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xAC8C */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -72058,22 +72042,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xACA9)
                       {
                         if ((c >= 0xAC8D) && (c <= 0xACA7))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xACA8 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xACA9) && (c <= 0xACC3) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xACC4)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xACC5) && (c <= 0xACDF) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -72081,16 +72065,16 @@ line_category(Py_UCS4 c)
                     if (c < 0xACFC)
                     {
                       if (c == 0xACE0)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xACE1) && (c <= 0xACFB) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                     else
                     {
                       if (c == 0xACFC)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xACFD) && (c <= 0xAD17) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -72109,22 +72093,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xAD34)
                       {
                         if (c == 0xAD18)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xAD19) && (c <= 0xAD33) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xAD34 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xAD35) && (c <= 0xAD4F))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xAD50 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -72134,22 +72118,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xAD6D)
                       {
                         if ((c >= 0xAD51) && (c <= 0xAD6B))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xAD6C */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xAD6D) && (c <= 0xAD87) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xAD88)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xAD89) && (c <= 0xADA3) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -72162,22 +72146,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xADC0)
                       {
                         if (c == 0xADA4)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xADA5) && (c <= 0xADBF) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xADC0 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xADC1) && (c <= 0xADDB))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xADDC */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -72187,22 +72171,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xADF9)
                       {
                         if ((c >= 0xADDD) && (c <= 0xADF7))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xADF8 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xADF9) && (c <= 0xAE13) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xAE14)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xAE15) && (c <= 0xAE2F) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -72218,22 +72202,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xAE4C)
                       {
                         if (c == 0xAE30)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xAE31) && (c <= 0xAE4B) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xAE4C */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xAE4D) && (c <= 0xAE67))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xAE68 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -72243,22 +72227,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xAE85)
                       {
                         if ((c >= 0xAE69) && (c <= 0xAE83))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xAE84 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xAE85) && (c <= 0xAE9F) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xAEA0)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xAEA1) && (c <= 0xAEBB) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -72271,22 +72255,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xAED8)
                       {
                         if (c == 0xAEBC)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xAEBD) && (c <= 0xAED7) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xAED8 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xAED9) && (c <= 0xAEF3))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xAEF4 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -72294,16 +72278,16 @@ line_category(Py_UCS4 c)
                     if (c < 0xAF11)
                     {
                       if ((c >= 0xAEF5) && (c <= 0xAF0F))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xAF10 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                     else
                     {
                       if ((c >= 0xAF11) && (c <= 0xAF2B))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xAF2C */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -72325,22 +72309,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xAF49)
                       {
                         if ((c >= 0xAF2D) && (c <= 0xAF47))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xAF48 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xAF49) && (c <= 0xAF63) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xAF64)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xAF65) && (c <= 0xAF7F) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -72350,22 +72334,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xAF9C)
                       {
                         if (c == 0xAF80)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xAF81) && (c <= 0xAF9B) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xAF9C */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xAF9D) && (c <= 0xAFB7))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xAFB8 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -72378,22 +72362,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xAFD5)
                       {
                         if ((c >= 0xAFB9) && (c <= 0xAFD3))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xAFD4 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xAFD5) && (c <= 0xAFEF) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xAFF0)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xAFF1) && (c <= 0xB00B) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -72403,22 +72387,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xB028)
                       {
                         if (c == 0xB00C)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xB00D) && (c <= 0xB027) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xB028 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xB029) && (c <= 0xB043))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xB044 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -72434,22 +72418,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xB061)
                       {
                         if ((c >= 0xB045) && (c <= 0xB05F))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xB060 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xB061) && (c <= 0xB07B) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xB07C)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xB07D) && (c <= 0xB097) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -72459,22 +72443,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xB0B4)
                       {
                         if (c == 0xB098)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xB099) && (c <= 0xB0B3) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xB0B4 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xB0B5) && (c <= 0xB0CF))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xB0D0 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -72487,22 +72471,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xB0ED)
                       {
                         if ((c >= 0xB0D1) && (c <= 0xB0EB))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xB0EC */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xB0ED) && (c <= 0xB107) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xB108)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xB109) && (c <= 0xB123) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -72510,16 +72494,16 @@ line_category(Py_UCS4 c)
                     if (c < 0xB140)
                     {
                       if (c == 0xB124)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xB125) && (c <= 0xB13F) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                     else
                     {
                       if (c == 0xB140)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xB141) && (c <= 0xB15B) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -72538,22 +72522,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xB178)
                       {
                         if (c == 0xB15C)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xB15D) && (c <= 0xB177) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xB178 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xB179) && (c <= 0xB193))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xB194 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -72563,22 +72547,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xB1B1)
                       {
                         if ((c >= 0xB195) && (c <= 0xB1AF))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xB1B0 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xB1B1) && (c <= 0xB1CB) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xB1CC)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xB1CD) && (c <= 0xB1E7) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -72591,22 +72575,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xB204)
                       {
                         if (c == 0xB1E8)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xB1E9) && (c <= 0xB203) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xB204 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xB205) && (c <= 0xB21F))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xB220 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -72616,22 +72600,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xB23D)
                       {
                         if ((c >= 0xB221) && (c <= 0xB23B))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xB23C */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xB23D) && (c <= 0xB257) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xB258)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xB259) && (c <= 0xB273) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -72647,22 +72631,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xB290)
                       {
                         if (c == 0xB274)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xB275) && (c <= 0xB28F) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xB290 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xB291) && (c <= 0xB2AB))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xB2AC */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -72672,22 +72656,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xB2C9)
                       {
                         if ((c >= 0xB2AD) && (c <= 0xB2C7))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xB2C8 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xB2C9) && (c <= 0xB2E3) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xB2E4)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xB2E5) && (c <= 0xB2FF) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -72700,22 +72684,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xB31C)
                       {
                         if (c == 0xB300)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xB301) && (c <= 0xB31B) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xB31C */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xB31D) && (c <= 0xB337))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xB338 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -72723,16 +72707,16 @@ line_category(Py_UCS4 c)
                     if (c < 0xB355)
                     {
                       if ((c >= 0xB339) && (c <= 0xB353))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xB354 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                     else
                     {
                       if ((c >= 0xB355) && (c <= 0xB36F))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xB370 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -72757,22 +72741,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xB38D)
                       {
                         if ((c >= 0xB371) && (c <= 0xB38B))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xB38C */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xB38D) && (c <= 0xB3A7) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xB3A8)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xB3A9) && (c <= 0xB3C3) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -72782,22 +72766,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xB3E0)
                       {
                         if (c == 0xB3C4)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xB3C5) && (c <= 0xB3DF) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xB3E0 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xB3E1) && (c <= 0xB3FB))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xB3FC */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -72810,22 +72794,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xB419)
                       {
                         if ((c >= 0xB3FD) && (c <= 0xB417))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xB418 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xB419) && (c <= 0xB433) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xB434)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xB435) && (c <= 0xB44F) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -72835,22 +72819,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xB46C)
                       {
                         if (c == 0xB450)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xB451) && (c <= 0xB46B) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xB46C */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xB46D) && (c <= 0xB487))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xB488 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -72866,22 +72850,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xB4A5)
                       {
                         if ((c >= 0xB489) && (c <= 0xB4A3))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xB4A4 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xB4A5) && (c <= 0xB4BF) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xB4C0)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xB4C1) && (c <= 0xB4DB) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -72891,22 +72875,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xB4F8)
                       {
                         if (c == 0xB4DC)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xB4DD) && (c <= 0xB4F7) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xB4F8 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xB4F9) && (c <= 0xB513))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xB514 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -72919,22 +72903,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xB531)
                       {
                         if ((c >= 0xB515) && (c <= 0xB52F))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xB530 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xB531) && (c <= 0xB54B) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xB54C)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xB54D) && (c <= 0xB567) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -72942,16 +72926,16 @@ line_category(Py_UCS4 c)
                     if (c < 0xB584)
                     {
                       if (c == 0xB568)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xB569) && (c <= 0xB583) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                     else
                     {
                       if (c == 0xB584)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xB585) && (c <= 0xB59F) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -72970,22 +72954,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xB5BC)
                       {
                         if (c == 0xB5A0)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xB5A1) && (c <= 0xB5BB) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xB5BC */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xB5BD) && (c <= 0xB5D7))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xB5D8 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -72995,22 +72979,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xB5F5)
                       {
                         if ((c >= 0xB5D9) && (c <= 0xB5F3))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xB5F4 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xB5F5) && (c <= 0xB60F) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xB610)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xB611) && (c <= 0xB62B) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -73023,22 +73007,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xB648)
                       {
                         if (c == 0xB62C)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xB62D) && (c <= 0xB647) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xB648 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xB649) && (c <= 0xB663))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xB664 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -73048,22 +73032,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xB681)
                       {
                         if ((c >= 0xB665) && (c <= 0xB67F))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xB680 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xB681) && (c <= 0xB69B) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xB69C)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xB69D) && (c <= 0xB6B7) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -73079,22 +73063,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xB6D4)
                       {
                         if (c == 0xB6B8)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xB6B9) && (c <= 0xB6D3) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xB6D4 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xB6D5) && (c <= 0xB6EF))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xB6F0 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -73104,22 +73088,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xB70D)
                       {
                         if ((c >= 0xB6F1) && (c <= 0xB70B))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xB70C */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xB70D) && (c <= 0xB727) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xB728)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xB729) && (c <= 0xB743) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -73132,22 +73116,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xB760)
                       {
                         if (c == 0xB744)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xB745) && (c <= 0xB75F) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xB760 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xB761) && (c <= 0xB77B))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xB77C */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -73155,16 +73139,16 @@ line_category(Py_UCS4 c)
                     if (c < 0xB799)
                     {
                       if ((c >= 0xB77D) && (c <= 0xB797))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xB798 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                     else
                     {
                       if ((c >= 0xB799) && (c <= 0xB7B3))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xB7B4 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -73186,22 +73170,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xB7D1)
                       {
                         if ((c >= 0xB7B5) && (c <= 0xB7CF))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xB7D0 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xB7D1) && (c <= 0xB7EB) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xB7EC)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xB7ED) && (c <= 0xB807) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -73211,22 +73195,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xB824)
                       {
                         if (c == 0xB808)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xB809) && (c <= 0xB823) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xB824 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xB825) && (c <= 0xB83F))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xB840 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -73239,22 +73223,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xB85D)
                       {
                         if ((c >= 0xB841) && (c <= 0xB85B))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xB85C */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xB85D) && (c <= 0xB877) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xB878)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xB879) && (c <= 0xB893) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -73264,22 +73248,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xB8B0)
                       {
                         if (c == 0xB894)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xB895) && (c <= 0xB8AF) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xB8B0 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xB8B1) && (c <= 0xB8CB))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xB8CC */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -73295,22 +73279,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xB8E9)
                       {
                         if ((c >= 0xB8CD) && (c <= 0xB8E7))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xB8E8 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xB8E9) && (c <= 0xB903) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xB904)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xB905) && (c <= 0xB91F) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -73320,22 +73304,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xB93C)
                       {
                         if (c == 0xB920)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xB921) && (c <= 0xB93B) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xB93C */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xB93D) && (c <= 0xB957))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xB958 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -73348,22 +73332,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xB975)
                       {
                         if ((c >= 0xB959) && (c <= 0xB973))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xB974 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xB975) && (c <= 0xB98F) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xB990)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xB991) && (c <= 0xB9AB) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -73371,16 +73355,16 @@ line_category(Py_UCS4 c)
                     if (c < 0xB9C8)
                     {
                       if (c == 0xB9AC)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xB9AD) && (c <= 0xB9C7) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                     else
                     {
                       if (c == 0xB9C8)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xB9C9) && (c <= 0xB9E3) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -73399,22 +73383,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xBA00)
                       {
                         if (c == 0xB9E4)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xB9E5) && (c <= 0xB9FF) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xBA00 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xBA01) && (c <= 0xBA1B))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xBA1C */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -73424,22 +73408,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xBA39)
                       {
                         if ((c >= 0xBA1D) && (c <= 0xBA37))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xBA38 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xBA39) && (c <= 0xBA53) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xBA54)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xBA55) && (c <= 0xBA6F) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -73452,22 +73436,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xBA8C)
                       {
                         if (c == 0xBA70)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xBA71) && (c <= 0xBA8B) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xBA8C */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xBA8D) && (c <= 0xBAA7))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xBAA8 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -73477,22 +73461,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xBAC5)
                       {
                         if ((c >= 0xBAA9) && (c <= 0xBAC3))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xBAC4 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xBAC5) && (c <= 0xBADF) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xBAE0)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xBAE1) && (c <= 0xBAFB) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -73508,22 +73492,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xBB18)
                       {
                         if (c == 0xBAFC)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xBAFD) && (c <= 0xBB17) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xBB18 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xBB19) && (c <= 0xBB33))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xBB34 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -73533,22 +73517,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xBB51)
                       {
                         if ((c >= 0xBB35) && (c <= 0xBB4F))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xBB50 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xBB51) && (c <= 0xBB6B) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xBB6C)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xBB6D) && (c <= 0xBB87) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -73561,22 +73545,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xBBA4)
                       {
                         if (c == 0xBB88)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xBB89) && (c <= 0xBBA3) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xBBA4 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xBBA5) && (c <= 0xBBBF))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xBBC0 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -73584,16 +73568,16 @@ line_category(Py_UCS4 c)
                     if (c < 0xBBDD)
                     {
                       if ((c >= 0xBBC1) && (c <= 0xBBDB))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xBBDC */
-                      return Line_H2;
+                      return LB_H2;
                     }
                     else
                     {
                       if ((c >= 0xBBDD) && (c <= 0xBBF7))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xBBF8 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -73627,22 +73611,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xBC15)
                       {
                         if ((c >= 0xBBF9) && (c <= 0xBC13))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xBC14 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xBC15) && (c <= 0xBC2F) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xBC30)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xBC31) && (c <= 0xBC4B) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -73652,22 +73636,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xBC68)
                       {
                         if (c == 0xBC4C)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xBC4D) && (c <= 0xBC67) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xBC68 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xBC69) && (c <= 0xBC83))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xBC84 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -73680,22 +73664,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xBCA1)
                       {
                         if ((c >= 0xBC85) && (c <= 0xBC9F))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xBCA0 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xBCA1) && (c <= 0xBCBB) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xBCBC)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xBCBD) && (c <= 0xBCD7) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -73705,22 +73689,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xBCF4)
                       {
                         if (c == 0xBCD8)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xBCD9) && (c <= 0xBCF3) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xBCF4 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xBCF5) && (c <= 0xBD0F))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xBD10 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -73736,22 +73720,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xBD2D)
                       {
                         if ((c >= 0xBD11) && (c <= 0xBD2B))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xBD2C */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xBD2D) && (c <= 0xBD47) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xBD48)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xBD49) && (c <= 0xBD63) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -73761,22 +73745,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xBD80)
                       {
                         if (c == 0xBD64)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xBD65) && (c <= 0xBD7F) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xBD80 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xBD81) && (c <= 0xBD9B))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xBD9C */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -73789,22 +73773,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xBDB9)
                       {
                         if ((c >= 0xBD9D) && (c <= 0xBDB7))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xBDB8 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xBDB9) && (c <= 0xBDD3) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xBDD4)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xBDD5) && (c <= 0xBDEF) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -73812,16 +73796,16 @@ line_category(Py_UCS4 c)
                     if (c < 0xBE0C)
                     {
                       if (c == 0xBDF0)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xBDF1) && (c <= 0xBE0B) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                     else
                     {
                       if (c == 0xBE0C)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xBE0D) && (c <= 0xBE27) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -73840,22 +73824,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xBE44)
                       {
                         if (c == 0xBE28)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xBE29) && (c <= 0xBE43) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xBE44 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xBE45) && (c <= 0xBE5F))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xBE60 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -73865,22 +73849,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xBE7D)
                       {
                         if ((c >= 0xBE61) && (c <= 0xBE7B))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xBE7C */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xBE7D) && (c <= 0xBE97) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xBE98)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xBE99) && (c <= 0xBEB3) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -73893,22 +73877,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xBED0)
                       {
                         if (c == 0xBEB4)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xBEB5) && (c <= 0xBECF) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xBED0 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xBED1) && (c <= 0xBEEB))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xBEEC */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -73918,22 +73902,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xBF09)
                       {
                         if ((c >= 0xBEED) && (c <= 0xBF07))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xBF08 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xBF09) && (c <= 0xBF23) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xBF24)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xBF25) && (c <= 0xBF3F) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -73949,22 +73933,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xBF5C)
                       {
                         if (c == 0xBF40)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xBF41) && (c <= 0xBF5B) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xBF5C */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xBF5D) && (c <= 0xBF77))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xBF78 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -73974,22 +73958,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xBF95)
                       {
                         if ((c >= 0xBF79) && (c <= 0xBF93))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xBF94 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xBF95) && (c <= 0xBFAF) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xBFB0)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xBFB1) && (c <= 0xBFCB) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -74002,22 +73986,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xBFE8)
                       {
                         if (c == 0xBFCC)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xBFCD) && (c <= 0xBFE7) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xBFE8 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xBFE9) && (c <= 0xC003))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xC004 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -74025,16 +74009,16 @@ line_category(Py_UCS4 c)
                     if (c < 0xC021)
                     {
                       if ((c >= 0xC005) && (c <= 0xC01F))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xC020 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                     else
                     {
                       if ((c >= 0xC021) && (c <= 0xC03B))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xC03C */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -74056,22 +74040,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC059)
                       {
                         if ((c >= 0xC03D) && (c <= 0xC057))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xC058 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xC059) && (c <= 0xC073) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xC074)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xC075) && (c <= 0xC08F) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -74081,22 +74065,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC0AC)
                       {
                         if (c == 0xC090)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xC091) && (c <= 0xC0AB) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xC0AC */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xC0AD) && (c <= 0xC0C7))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xC0C8 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -74109,22 +74093,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC0E5)
                       {
                         if ((c >= 0xC0C9) && (c <= 0xC0E3))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xC0E4 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xC0E5) && (c <= 0xC0FF) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xC100)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xC101) && (c <= 0xC11B) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -74134,22 +74118,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC138)
                       {
                         if (c == 0xC11C)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xC11D) && (c <= 0xC137) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xC138 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xC139) && (c <= 0xC153))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xC154 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -74165,22 +74149,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC171)
                       {
                         if ((c >= 0xC155) && (c <= 0xC16F))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xC170 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xC171) && (c <= 0xC18B) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xC18C)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xC18D) && (c <= 0xC1A7) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -74190,22 +74174,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC1C4)
                       {
                         if (c == 0xC1A8)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xC1A9) && (c <= 0xC1C3) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xC1C4 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xC1C5) && (c <= 0xC1DF))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xC1E0 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -74218,22 +74202,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC1FD)
                       {
                         if ((c >= 0xC1E1) && (c <= 0xC1FB))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xC1FC */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xC1FD) && (c <= 0xC217) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xC218)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xC219) && (c <= 0xC233) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -74241,16 +74225,16 @@ line_category(Py_UCS4 c)
                     if (c < 0xC250)
                     {
                       if (c == 0xC234)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xC235) && (c <= 0xC24F) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                     else
                     {
                       if (c == 0xC250)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xC251) && (c <= 0xC26B) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -74269,22 +74253,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC288)
                       {
                         if (c == 0xC26C)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xC26D) && (c <= 0xC287) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xC288 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xC289) && (c <= 0xC2A3))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xC2A4 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -74294,22 +74278,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC2C1)
                       {
                         if ((c >= 0xC2A5) && (c <= 0xC2BF))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xC2C0 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xC2C1) && (c <= 0xC2DB) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xC2DC)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xC2DD) && (c <= 0xC2F7) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -74322,22 +74306,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC314)
                       {
                         if (c == 0xC2F8)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xC2F9) && (c <= 0xC313) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xC314 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xC315) && (c <= 0xC32F))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xC330 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -74347,22 +74331,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC34D)
                       {
                         if ((c >= 0xC331) && (c <= 0xC34B))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xC34C */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xC34D) && (c <= 0xC367) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xC368)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xC369) && (c <= 0xC383) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -74378,22 +74362,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC3A0)
                       {
                         if (c == 0xC384)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xC385) && (c <= 0xC39F) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xC3A0 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xC3A1) && (c <= 0xC3BB))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xC3BC */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -74403,22 +74387,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC3D9)
                       {
                         if ((c >= 0xC3BD) && (c <= 0xC3D7))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xC3D8 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xC3D9) && (c <= 0xC3F3) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xC3F4)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xC3F5) && (c <= 0xC40F) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -74431,22 +74415,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC42C)
                       {
                         if (c == 0xC410)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xC411) && (c <= 0xC42B) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xC42C */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xC42D) && (c <= 0xC447))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xC448 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -74454,16 +74438,16 @@ line_category(Py_UCS4 c)
                     if (c < 0xC465)
                     {
                       if ((c >= 0xC449) && (c <= 0xC463))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xC464 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                     else
                     {
                       if ((c >= 0xC465) && (c <= 0xC47F))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xC480 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -74488,22 +74472,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC49D)
                       {
                         if ((c >= 0xC481) && (c <= 0xC49B))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xC49C */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xC49D) && (c <= 0xC4B7) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xC4B8)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xC4B9) && (c <= 0xC4D3) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -74513,22 +74497,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC4F0)
                       {
                         if (c == 0xC4D4)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xC4D5) && (c <= 0xC4EF) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xC4F0 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xC4F1) && (c <= 0xC50B))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xC50C */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -74541,22 +74525,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC529)
                       {
                         if ((c >= 0xC50D) && (c <= 0xC527))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xC528 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xC529) && (c <= 0xC543) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xC544)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xC545) && (c <= 0xC55F) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -74566,22 +74550,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC57C)
                       {
                         if (c == 0xC560)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xC561) && (c <= 0xC57B) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xC57C */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xC57D) && (c <= 0xC597))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xC598 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -74597,22 +74581,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC5B5)
                       {
                         if ((c >= 0xC599) && (c <= 0xC5B3))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xC5B4 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xC5B5) && (c <= 0xC5CF) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xC5D0)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xC5D1) && (c <= 0xC5EB) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -74622,22 +74606,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC608)
                       {
                         if (c == 0xC5EC)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xC5ED) && (c <= 0xC607) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xC608 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xC609) && (c <= 0xC623))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xC624 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -74650,22 +74634,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC641)
                       {
                         if ((c >= 0xC625) && (c <= 0xC63F))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xC640 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xC641) && (c <= 0xC65B) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xC65C)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xC65D) && (c <= 0xC677) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -74673,16 +74657,16 @@ line_category(Py_UCS4 c)
                     if (c < 0xC694)
                     {
                       if (c == 0xC678)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xC679) && (c <= 0xC693) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                     else
                     {
                       if (c == 0xC694)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xC695) && (c <= 0xC6AF) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -74701,22 +74685,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC6CC)
                       {
                         if (c == 0xC6B0)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xC6B1) && (c <= 0xC6CB) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xC6CC */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xC6CD) && (c <= 0xC6E7))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xC6E8 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -74726,22 +74710,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC705)
                       {
                         if ((c >= 0xC6E9) && (c <= 0xC703))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xC704 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xC705) && (c <= 0xC71F) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xC720)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xC721) && (c <= 0xC73B) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -74754,22 +74738,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC758)
                       {
                         if (c == 0xC73C)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xC73D) && (c <= 0xC757) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xC758 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xC759) && (c <= 0xC773))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xC774 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -74779,22 +74763,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC791)
                       {
                         if ((c >= 0xC775) && (c <= 0xC78F))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xC790 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xC791) && (c <= 0xC7AB) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xC7AC)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xC7AD) && (c <= 0xC7C7) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -74810,22 +74794,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC7E4)
                       {
                         if (c == 0xC7C8)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xC7C9) && (c <= 0xC7E3) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xC7E4 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xC7E5) && (c <= 0xC7FF))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xC800 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -74835,22 +74819,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC81D)
                       {
                         if ((c >= 0xC801) && (c <= 0xC81B))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xC81C */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xC81D) && (c <= 0xC837) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xC838)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xC839) && (c <= 0xC853) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -74863,22 +74847,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC870)
                       {
                         if (c == 0xC854)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xC855) && (c <= 0xC86F) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xC870 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xC871) && (c <= 0xC88B))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xC88C */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -74886,16 +74870,16 @@ line_category(Py_UCS4 c)
                     if (c < 0xC8A9)
                     {
                       if ((c >= 0xC88D) && (c <= 0xC8A7))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xC8A8 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                     else
                     {
                       if ((c >= 0xC8A9) && (c <= 0xC8C3))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xC8C4 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -74917,22 +74901,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC8E1)
                       {
                         if ((c >= 0xC8C5) && (c <= 0xC8DF))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xC8E0 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xC8E1) && (c <= 0xC8FB) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xC8FC)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xC8FD) && (c <= 0xC917) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -74942,22 +74926,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC934)
                       {
                         if (c == 0xC918)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xC919) && (c <= 0xC933) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xC934 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xC935) && (c <= 0xC94F))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xC950 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -74970,22 +74954,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC96D)
                       {
                         if ((c >= 0xC951) && (c <= 0xC96B))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xC96C */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xC96D) && (c <= 0xC987) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xC988)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xC989) && (c <= 0xC9A3) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -74995,22 +74979,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC9C0)
                       {
                         if (c == 0xC9A4)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xC9A5) && (c <= 0xC9BF) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xC9C0 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xC9C1) && (c <= 0xC9DB))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xC9DC */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -75026,22 +75010,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xC9F9)
                       {
                         if ((c >= 0xC9DD) && (c <= 0xC9F7))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xC9F8 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xC9F9) && (c <= 0xCA13) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xCA14)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xCA15) && (c <= 0xCA2F) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -75051,22 +75035,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xCA4C)
                       {
                         if (c == 0xCA30)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xCA31) && (c <= 0xCA4B) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xCA4C */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xCA4D) && (c <= 0xCA67))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xCA68 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -75079,22 +75063,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xCA85)
                       {
                         if ((c >= 0xCA69) && (c <= 0xCA83))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xCA84 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xCA85) && (c <= 0xCA9F) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xCAA0)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xCAA1) && (c <= 0xCABB) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -75102,16 +75086,16 @@ line_category(Py_UCS4 c)
                     if (c < 0xCAD8)
                     {
                       if (c == 0xCABC)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xCABD) && (c <= 0xCAD7) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                     else
                     {
                       if (c == 0xCAD8)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xCAD9) && (c <= 0xCAF3) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -75130,22 +75114,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xCB10)
                       {
                         if (c == 0xCAF4)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xCAF5) && (c <= 0xCB0F) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xCB10 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xCB11) && (c <= 0xCB2B))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xCB2C */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -75155,22 +75139,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xCB49)
                       {
                         if ((c >= 0xCB2D) && (c <= 0xCB47))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xCB48 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xCB49) && (c <= 0xCB63) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xCB64)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xCB65) && (c <= 0xCB7F) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -75183,22 +75167,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xCB9C)
                       {
                         if (c == 0xCB80)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xCB81) && (c <= 0xCB9B) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xCB9C */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xCB9D) && (c <= 0xCBB7))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xCBB8 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -75208,22 +75192,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xCBD5)
                       {
                         if ((c >= 0xCBB9) && (c <= 0xCBD3))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xCBD4 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xCBD5) && (c <= 0xCBEF) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xCBF0)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xCBF1) && (c <= 0xCC0B) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -75239,22 +75223,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xCC28)
                       {
                         if (c == 0xCC0C)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xCC0D) && (c <= 0xCC27) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xCC28 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xCC29) && (c <= 0xCC43))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xCC44 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -75264,22 +75248,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xCC61)
                       {
                         if ((c >= 0xCC45) && (c <= 0xCC5F))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xCC60 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xCC61) && (c <= 0xCC7B) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xCC7C)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xCC7D) && (c <= 0xCC97) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -75292,22 +75276,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xCCB4)
                       {
                         if (c == 0xCC98)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xCC99) && (c <= 0xCCB3) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xCCB4 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xCCB5) && (c <= 0xCCCF))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xCCD0 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -75315,16 +75299,16 @@ line_category(Py_UCS4 c)
                     if (c < 0xCCED)
                     {
                       if ((c >= 0xCCD1) && (c <= 0xCCEB))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xCCEC */
-                      return Line_H2;
+                      return LB_H2;
                     }
                     else
                     {
                       if ((c >= 0xCCED) && (c <= 0xCD07))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xCD08 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -75352,22 +75336,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xCD25)
                       {
                         if ((c >= 0xCD09) && (c <= 0xCD23))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xCD24 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xCD25) && (c <= 0xCD3F) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xCD40)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xCD41) && (c <= 0xCD5B) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -75377,22 +75361,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xCD78)
                       {
                         if (c == 0xCD5C)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xCD5D) && (c <= 0xCD77) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xCD78 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xCD79) && (c <= 0xCD93))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xCD94 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -75405,22 +75389,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xCDB1)
                       {
                         if ((c >= 0xCD95) && (c <= 0xCDAF))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xCDB0 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xCDB1) && (c <= 0xCDCB) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xCDCC)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xCDCD) && (c <= 0xCDE7) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -75430,22 +75414,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xCE04)
                       {
                         if (c == 0xCDE8)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xCDE9) && (c <= 0xCE03) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xCE04 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xCE05) && (c <= 0xCE1F))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xCE20 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -75461,22 +75445,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xCE3D)
                       {
                         if ((c >= 0xCE21) && (c <= 0xCE3B))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xCE3C */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xCE3D) && (c <= 0xCE57) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xCE58)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xCE59) && (c <= 0xCE73) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -75486,22 +75470,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xCE90)
                       {
                         if (c == 0xCE74)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xCE75) && (c <= 0xCE8F) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xCE90 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xCE91) && (c <= 0xCEAB))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xCEAC */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -75514,22 +75498,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xCEC9)
                       {
                         if ((c >= 0xCEAD) && (c <= 0xCEC7))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xCEC8 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xCEC9) && (c <= 0xCEE3) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xCEE4)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xCEE5) && (c <= 0xCEFF) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -75537,16 +75521,16 @@ line_category(Py_UCS4 c)
                     if (c < 0xCF1C)
                     {
                       if (c == 0xCF00)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xCF01) && (c <= 0xCF1B) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                     else
                     {
                       if (c == 0xCF1C)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xCF1D) && (c <= 0xCF37) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -75565,22 +75549,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xCF54)
                       {
                         if (c == 0xCF38)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xCF39) && (c <= 0xCF53) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xCF54 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xCF55) && (c <= 0xCF6F))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xCF70 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -75590,22 +75574,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xCF8D)
                       {
                         if ((c >= 0xCF71) && (c <= 0xCF8B))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xCF8C */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xCF8D) && (c <= 0xCFA7) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xCFA8)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xCFA9) && (c <= 0xCFC3) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -75618,22 +75602,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xCFE0)
                       {
                         if (c == 0xCFC4)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xCFC5) && (c <= 0xCFDF) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xCFE0 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xCFE1) && (c <= 0xCFFB))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xCFFC */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -75643,22 +75627,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xD019)
                       {
                         if ((c >= 0xCFFD) && (c <= 0xD017))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xD018 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xD019) && (c <= 0xD033) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xD034)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xD035) && (c <= 0xD04F) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -75674,22 +75658,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xD06C)
                       {
                         if (c == 0xD050)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xD051) && (c <= 0xD06B) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xD06C */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xD06D) && (c <= 0xD087))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xD088 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -75699,22 +75683,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xD0A5)
                       {
                         if ((c >= 0xD089) && (c <= 0xD0A3))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xD0A4 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xD0A5) && (c <= 0xD0BF) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xD0C0)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xD0C1) && (c <= 0xD0DB) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -75727,22 +75711,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xD0F8)
                       {
                         if (c == 0xD0DC)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xD0DD) && (c <= 0xD0F7) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xD0F8 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xD0F9) && (c <= 0xD113))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xD114 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -75750,16 +75734,16 @@ line_category(Py_UCS4 c)
                     if (c < 0xD131)
                     {
                       if ((c >= 0xD115) && (c <= 0xD12F))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xD130 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                     else
                     {
                       if ((c >= 0xD131) && (c <= 0xD14B))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xD14C */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -75781,22 +75765,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xD169)
                       {
                         if ((c >= 0xD14D) && (c <= 0xD167))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xD168 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xD169) && (c <= 0xD183) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xD184)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xD185) && (c <= 0xD19F) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -75806,22 +75790,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xD1BC)
                       {
                         if (c == 0xD1A0)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xD1A1) && (c <= 0xD1BB) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xD1BC */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xD1BD) && (c <= 0xD1D7))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xD1D8 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -75834,22 +75818,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xD1F5)
                       {
                         if ((c >= 0xD1D9) && (c <= 0xD1F3))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xD1F4 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xD1F5) && (c <= 0xD20F) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xD210)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xD211) && (c <= 0xD22B) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -75859,22 +75843,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xD248)
                       {
                         if (c == 0xD22C)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xD22D) && (c <= 0xD247) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xD248 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xD249) && (c <= 0xD263))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xD264 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -75890,22 +75874,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xD281)
                       {
                         if ((c >= 0xD265) && (c <= 0xD27F))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xD280 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xD281) && (c <= 0xD29B) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xD29C)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xD29D) && (c <= 0xD2B7) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -75915,22 +75899,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xD2D4)
                       {
                         if (c == 0xD2B8)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xD2B9) && (c <= 0xD2D3) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xD2D4 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xD2D5) && (c <= 0xD2EF))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xD2F0 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -75943,22 +75927,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xD30D)
                       {
                         if ((c >= 0xD2F1) && (c <= 0xD30B))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xD30C */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xD30D) && (c <= 0xD327) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xD328)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xD329) && (c <= 0xD343) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -75966,16 +75950,16 @@ line_category(Py_UCS4 c)
                     if (c < 0xD360)
                     {
                       if (c == 0xD344)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xD345) && (c <= 0xD35F) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                     else
                     {
                       if (c == 0xD360)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xD361) && (c <= 0xD37B) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -75994,22 +75978,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xD398)
                       {
                         if (c == 0xD37C)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xD37D) && (c <= 0xD397) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xD398 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xD399) && (c <= 0xD3B3))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xD3B4 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -76019,22 +76003,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xD3D1)
                       {
                         if ((c >= 0xD3B5) && (c <= 0xD3CF))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xD3D0 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xD3D1) && (c <= 0xD3EB) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xD3EC)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xD3ED) && (c <= 0xD407) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -76047,22 +76031,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xD424)
                       {
                         if (c == 0xD408)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xD409) && (c <= 0xD423) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xD424 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xD425) && (c <= 0xD43F))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xD440 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -76072,22 +76056,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xD45D)
                       {
                         if ((c >= 0xD441) && (c <= 0xD45B))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xD45C */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xD45D) && (c <= 0xD477) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xD478)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xD479) && (c <= 0xD493) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -76103,22 +76087,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xD4B0)
                       {
                         if (c == 0xD494)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xD495) && (c <= 0xD4AF) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xD4B0 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xD4B1) && (c <= 0xD4CB))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xD4CC */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -76128,22 +76112,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xD4E9)
                       {
                         if ((c >= 0xD4CD) && (c <= 0xD4E7))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xD4E8 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xD4E9) && (c <= 0xD503) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xD504)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xD505) && (c <= 0xD51F) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                 }
@@ -76156,22 +76140,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xD53C)
                       {
                         if (c == 0xD520)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xD521) && (c <= 0xD53B) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xD53C */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xD53D) && (c <= 0xD557))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xD558 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                   else
@@ -76179,16 +76163,16 @@ line_category(Py_UCS4 c)
                     if (c < 0xD575)
                     {
                       if ((c >= 0xD559) && (c <= 0xD573))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xD574 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                     else
                     {
                       if ((c >= 0xD575) && (c <= 0xD58F))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xD590 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -76213,22 +76197,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xD5AD)
                       {
                         if ((c >= 0xD591) && (c <= 0xD5AB))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xD5AC */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xD5AD) && (c <= 0xD5C7) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xD5C8)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xD5C9) && (c <= 0xD5E3) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -76238,22 +76222,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xD600)
                       {
                         if (c == 0xD5E4)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xD5E5) && (c <= 0xD5FF) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xD600 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xD601) && (c <= 0xD61B))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xD61C */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -76266,22 +76250,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xD639)
                       {
                         if ((c >= 0xD61D) && (c <= 0xD637))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xD638 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xD639) && (c <= 0xD653) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xD654)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xD655) && (c <= 0xD66F) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -76291,22 +76275,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xD68C)
                       {
                         if (c == 0xD670)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xD671) && (c <= 0xD68B) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xD68C */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xD68D) && (c <= 0xD6A7))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xD6A8 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -76322,22 +76306,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xD6C5)
                       {
                         if ((c >= 0xD6A9) && (c <= 0xD6C3))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xD6C4 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xD6C5) && (c <= 0xD6DF) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xD6E0)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xD6E1) && (c <= 0xD6FB) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -76347,22 +76331,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xD718)
                       {
                         if (c == 0xD6FC)
-                          return Line_H2;
+                          return LB_H2;
                         /* (c >= 0xD6FD) && (c <= 0xD717) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                       else
                       {
                         /* c == 0xD718 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                     }
                     else
                     {
                       if ((c >= 0xD719) && (c <= 0xD733))
-                        return Line_H3;
+                        return LB_H3;
                       /* c == 0xD734 */
-                      return Line_H2;
+                      return LB_H2;
                     }
                   }
                 }
@@ -76375,22 +76359,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xD751)
                       {
                         if ((c >= 0xD735) && (c <= 0xD74F))
-                          return Line_H3;
+                          return LB_H3;
                         /* c == 0xD750 */
-                        return Line_H2;
+                        return LB_H2;
                       }
                       else
                       {
                         /* (c >= 0xD751) && (c <= 0xD76B) */
-                        return Line_H3;
+                        return LB_H3;
                       }
                     }
                     else
                     {
                       if (c == 0xD76C)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xD76D) && (c <= 0xD787) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                   }
                   else
@@ -76398,16 +76382,16 @@ line_category(Py_UCS4 c)
                     if (c < 0xD7A4)
                     {
                       if (c == 0xD788)
-                        return Line_H2;
+                        return LB_H2;
                       /* (c >= 0xD789) && (c <= 0xD7A3) */
-                      return Line_H3;
+                      return LB_H3;
                     }
                     else
                     {
                       if ((c >= 0xD7A4) && (c <= 0xD7AF))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0xD7B0) && (c <= 0xD7C6) */
-                      return Line_JV;
+                      return LB_JV;
                     }
                   }
                 }
@@ -76426,22 +76410,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xD7FC)
                       {
                         if ((c >= 0xD7C7) && (c <= 0xD7CA))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0xD7CB) && (c <= 0xD7FB) */
-                        return Line_JT;
+                        return LB_JT;
                       }
                       else
                       {
                         /* (c >= 0xD7FC) && (c <= 0xF8FF) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0xF900) && (c <= 0xFAFF))
-                        return Line_ID;
+                        return LB_ID;
                       /* (c >= 0xFB00) && (c <= 0xFB1C) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -76451,22 +76435,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xFB1F)
                       {
                         if (c == 0xFB1D)
-                          return Line_HL;
+                          return LB_HL;
                         /* c == 0xFB1E */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0xFB1F) && (c <= 0xFB28) */
-                        return Line_HL;
+                        return LB_HL;
                       }
                     }
                     else
                     {
                       if (c == 0xFB29)
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0xFB2A) && (c <= 0xFB36) */
-                      return Line_HL;
+                      return LB_HL;
                     }
                   }
                 }
@@ -76479,22 +76463,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xFB3D)
                       {
                         if (c == 0xFB37)
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0xFB38) && (c <= 0xFB3C) */
-                        return Line_HL;
+                        return LB_HL;
                       }
                       else
                       {
                         /* c == 0xFB3D */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if (c == 0xFB3E)
-                        return Line_HL;
+                        return LB_HL;
                       /* c == 0xFB3F */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -76504,22 +76488,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xFB43)
                       {
                         if ((c >= 0xFB40) && (c <= 0xFB41))
-                          return Line_HL;
+                          return LB_HL;
                         /* c == 0xFB42 */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0xFB43) && (c <= 0xFB44) */
-                        return Line_HL;
+                        return LB_HL;
                       }
                     }
                     else
                     {
                       if (c == 0xFB45)
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0xFB46) && (c <= 0xFB4F) */
-                      return Line_HL;
+                      return LB_HL;
                     }
                   }
                 }
@@ -76535,22 +76519,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xFD3F)
                       {
                         if ((c >= 0xFB50) && (c <= 0xFD3D))
-                          return Line_AL;
+                          return LB_AL;
                         /* c == 0xFD3E */
-                        return Line_CL;
+                        return LB_CL;
                       }
                       else
                       {
                         /* c == 0xFD3F */
-                        return Line_OP;
+                        return LB_OP;
                       }
                     }
                     else
                     {
                       if ((c >= 0xFD40) && (c <= 0xFDFB))
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0xFDFC */
-                      return Line_PO;
+                      return LB_PO;
                     }
                   }
                   else
@@ -76560,22 +76544,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xFE10)
                       {
                         if ((c >= 0xFDFD) && (c <= 0xFDFF))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0xFE00) && (c <= 0xFE0F) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* c == 0xFE10 */
-                        return Line_IS;
+                        return LB_IS;
                       }
                     }
                     else
                     {
                       if ((c >= 0xFE11) && (c <= 0xFE12))
-                        return Line_CL;
+                        return LB_CL;
                       /* (c >= 0xFE13) && (c <= 0xFE14) */
-                      return Line_IS;
+                      return LB_IS;
                     }
                   }
                 }
@@ -76588,22 +76572,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xFE18)
                       {
                         if ((c >= 0xFE15) && (c <= 0xFE16))
-                          return Line_EX;
+                          return LB_EX;
                         /* c == 0xFE17 */
-                        return Line_OP;
+                        return LB_OP;
                       }
                       else
                       {
                         /* c == 0xFE18 */
-                        return Line_CL;
+                        return LB_CL;
                       }
                     }
                     else
                     {
                       if (c == 0xFE19)
-                        return Line_IN;
+                        return LB_IN;
                       /* (c >= 0xFE1A) && (c <= 0xFE1F) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -76611,16 +76595,16 @@ line_category(Py_UCS4 c)
                     if (c < 0xFE35)
                     {
                       if ((c >= 0xFE20) && (c <= 0xFE2F))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0xFE30) && (c <= 0xFE34) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                     else
                     {
                       if (c == 0xFE35)
-                        return Line_OP;
+                        return LB_OP;
                       /* c == 0xFE36 */
-                      return Line_CL;
+                      return LB_CL;
                     }
                   }
                 }
@@ -76642,22 +76626,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xFE39)
                       {
                         if (c == 0xFE37)
-                          return Line_OP;
+                          return LB_OP;
                         /* c == 0xFE38 */
-                        return Line_CL;
+                        return LB_CL;
                       }
                       else
                       {
                         /* c == 0xFE39 */
-                        return Line_OP;
+                        return LB_OP;
                       }
                     }
                     else
                     {
                       if (c == 0xFE3A)
-                        return Line_CL;
+                        return LB_CL;
                       /* c == 0xFE3B */
-                      return Line_OP;
+                      return LB_OP;
                     }
                   }
                   else
@@ -76667,22 +76651,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xFE3E)
                       {
                         if (c == 0xFE3C)
-                          return Line_CL;
+                          return LB_CL;
                         /* c == 0xFE3D */
-                        return Line_OP;
+                        return LB_OP;
                       }
                       else
                       {
                         /* c == 0xFE3E */
-                        return Line_CL;
+                        return LB_CL;
                       }
                     }
                     else
                     {
                       if (c == 0xFE3F)
-                        return Line_OP;
+                        return LB_OP;
                       /* c == 0xFE40 */
-                      return Line_CL;
+                      return LB_CL;
                     }
                   }
                 }
@@ -76695,22 +76679,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xFE43)
                       {
                         if (c == 0xFE41)
-                          return Line_OP;
+                          return LB_OP;
                         /* c == 0xFE42 */
-                        return Line_CL;
+                        return LB_CL;
                       }
                       else
                       {
                         /* c == 0xFE43 */
-                        return Line_OP;
+                        return LB_OP;
                       }
                     }
                     else
                     {
                       if (c == 0xFE44)
-                        return Line_CL;
+                        return LB_CL;
                       /* (c >= 0xFE45) && (c <= 0xFE46) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                   else
@@ -76720,22 +76704,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xFE49)
                       {
                         if (c == 0xFE47)
-                          return Line_OP;
+                          return LB_OP;
                         /* c == 0xFE48 */
-                        return Line_CL;
+                        return LB_CL;
                       }
                       else
                       {
                         /* (c >= 0xFE49) && (c <= 0xFE4F) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                     }
                     else
                     {
                       if (c == 0xFE50)
-                        return Line_CL;
+                        return LB_CL;
                       /* c == 0xFE51 */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                 }
@@ -76751,22 +76735,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xFE54)
                       {
                         if (c == 0xFE52)
-                          return Line_CL;
+                          return LB_CL;
                         /* c == 0xFE53 */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0xFE54) && (c <= 0xFE55) */
-                        return Line_NS;
+                        return LB_NS;
                       }
                     }
                     else
                     {
                       if ((c >= 0xFE56) && (c <= 0xFE57))
-                        return Line_EX;
+                        return LB_EX;
                       /* c == 0xFE58 */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                   else
@@ -76776,22 +76760,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xFE5B)
                       {
                         if (c == 0xFE59)
-                          return Line_OP;
+                          return LB_OP;
                         /* c == 0xFE5A */
-                        return Line_CL;
+                        return LB_CL;
                       }
                       else
                       {
                         /* c == 0xFE5B */
-                        return Line_OP;
+                        return LB_OP;
                       }
                     }
                     else
                     {
                       if (c == 0xFE5C)
-                        return Line_CL;
+                        return LB_CL;
                       /* c == 0xFE5D */
-                      return Line_OP;
+                      return LB_OP;
                     }
                   }
                 }
@@ -76804,22 +76788,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xFE67)
                       {
                         if (c == 0xFE5E)
-                          return Line_CL;
+                          return LB_CL;
                         /* (c >= 0xFE5F) && (c <= 0xFE66) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* c == 0xFE67 */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if (c == 0xFE68)
-                        return Line_ID;
+                        return LB_ID;
                       /* c == 0xFE69 */
-                      return Line_PR;
+                      return LB_PR;
                     }
                   }
                   else
@@ -76827,16 +76811,16 @@ line_category(Py_UCS4 c)
                     if (c < 0xFE6C)
                     {
                       if (c == 0xFE6A)
-                        return Line_PO;
+                        return LB_PO;
                       /* c == 0xFE6B */
-                      return Line_ID;
+                      return LB_ID;
                     }
                     else
                     {
                       if ((c >= 0xFE6C) && (c <= 0xFEFE))
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0xFEFF */
-                      return Line_WJ;
+                      return LB_WJ;
                     }
                   }
                 }
@@ -76855,22 +76839,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xFF02)
                       {
                         if (c == 0xFF00)
-                          return Line_AL;
+                          return LB_AL;
                         /* c == 0xFF01 */
-                        return Line_EX;
+                        return LB_EX;
                       }
                       else
                       {
                         /* (c >= 0xFF02) && (c <= 0xFF03) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                     }
                     else
                     {
                       if (c == 0xFF04)
-                        return Line_PR;
+                        return LB_PR;
                       /* c == 0xFF05 */
-                      return Line_PO;
+                      return LB_PO;
                     }
                   }
                   else
@@ -76880,22 +76864,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xFF09)
                       {
                         if ((c >= 0xFF06) && (c <= 0xFF07))
-                          return Line_ID;
+                          return LB_ID;
                         /* c == 0xFF08 */
-                        return Line_OP;
+                        return LB_OP;
                       }
                       else
                       {
                         /* c == 0xFF09 */
-                        return Line_CL;
+                        return LB_CL;
                       }
                     }
                     else
                     {
                       if ((c >= 0xFF0A) && (c <= 0xFF0B))
-                        return Line_ID;
+                        return LB_ID;
                       /* c == 0xFF0C */
-                      return Line_CL;
+                      return LB_CL;
                     }
                   }
                 }
@@ -76908,22 +76892,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xFF0F)
                       {
                         if (c == 0xFF0D)
-                          return Line_ID;
+                          return LB_ID;
                         /* c == 0xFF0E */
-                        return Line_CL;
+                        return LB_CL;
                       }
                       else
                       {
                         /* (c >= 0xFF0F) && (c <= 0xFF19) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                     }
                     else
                     {
                       if ((c >= 0xFF1A) && (c <= 0xFF1B))
-                        return Line_NS;
+                        return LB_NS;
                       /* (c >= 0xFF1C) && (c <= 0xFF1E) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                   else
@@ -76933,22 +76917,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xFF3B)
                       {
                         if (c == 0xFF1F)
-                          return Line_EX;
+                          return LB_EX;
                         /* (c >= 0xFF20) && (c <= 0xFF3A) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* c == 0xFF3B */
-                        return Line_OP;
+                        return LB_OP;
                       }
                     }
                     else
                     {
                       if (c == 0xFF3C)
-                        return Line_ID;
+                        return LB_ID;
                       /* c == 0xFF3D */
-                      return Line_CL;
+                      return LB_CL;
                     }
                   }
                 }
@@ -76964,22 +76948,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xFF5C)
                       {
                         if ((c >= 0xFF3E) && (c <= 0xFF5A))
-                          return Line_ID;
+                          return LB_ID;
                         /* c == 0xFF5B */
-                        return Line_OP;
+                        return LB_OP;
                       }
                       else
                       {
                         /* c == 0xFF5C */
-                        return Line_ID;
+                        return LB_ID;
                       }
                     }
                     else
                     {
                       if (c == 0xFF5D)
-                        return Line_CL;
+                        return LB_CL;
                       /* c == 0xFF5E */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                   else
@@ -76989,22 +76973,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xFF62)
                       {
                         if (c == 0xFF5F)
-                          return Line_OP;
+                          return LB_OP;
                         /* (c >= 0xFF60) && (c <= 0xFF61) */
-                        return Line_CL;
+                        return LB_CL;
                       }
                       else
                       {
                         /* c == 0xFF62 */
-                        return Line_OP;
+                        return LB_OP;
                       }
                     }
                     else
                     {
                       if ((c >= 0xFF63) && (c <= 0xFF64))
-                        return Line_CL;
+                        return LB_CL;
                       /* c == 0xFF65 */
-                      return Line_NS;
+                      return LB_NS;
                     }
                   }
                 }
@@ -77017,22 +77001,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xFF71)
                       {
                         if (c == 0xFF66)
-                          return Line_ID;
+                          return LB_ID;
                         /* (c >= 0xFF67) && (c <= 0xFF70) */
-                        return Line_NS;
+                        return LB_NS;
                       }
                       else
                       {
                         /* (c >= 0xFF71) && (c <= 0xFF9D) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                     }
                     else
                     {
                       if ((c >= 0xFF9E) && (c <= 0xFF9F))
-                        return Line_NS;
+                        return LB_NS;
                       /* (c >= 0xFFA0) && (c <= 0xFFBE) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                   else
@@ -77040,16 +77024,16 @@ line_category(Py_UCS4 c)
                     if (c < 0xFFC8)
                     {
                       if ((c >= 0xFFBF) && (c <= 0xFFC1))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0xFFC2) && (c <= 0xFFC7) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                     else
                     {
                       if ((c >= 0xFFC8) && (c <= 0xFFC9))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0xFFCA) && (c <= 0xFFCF) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                 }
@@ -77080,22 +77064,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xFFD8)
                       {
                         if ((c >= 0xFFD0) && (c <= 0xFFD1))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0xFFD2) && (c <= 0xFFD7) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* (c >= 0xFFD8) && (c <= 0xFFD9) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0xFFDA) && (c <= 0xFFDC))
-                        return Line_ID;
+                        return LB_ID;
                       /* (c >= 0xFFDD) && (c <= 0xFFDF) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -77105,22 +77089,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xFFE2)
                       {
                         if (c == 0xFFE0)
-                          return Line_PO;
+                          return LB_PO;
                         /* c == 0xFFE1 */
-                        return Line_PR;
+                        return LB_PR;
                       }
                       else
                       {
                         /* (c >= 0xFFE2) && (c <= 0xFFE4) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                     }
                     else
                     {
                       if ((c >= 0xFFE5) && (c <= 0xFFE6))
-                        return Line_PR;
+                        return LB_PR;
                       /* (c >= 0xFFE7) && (c <= 0xFFF8) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -77133,22 +77117,22 @@ line_category(Py_UCS4 c)
                       if (c < 0xFFFD)
                       {
                         if ((c >= 0xFFF9) && (c <= 0xFFFB))
-                          return Line_CM;
+                          return LB_CM;
                         /* c == 0xFFFC */
-                        return Line_CB;
+                        return LB_CB;
                       }
                       else
                       {
                         /* (c >= 0xFFFD) && (c <= 0x100FF) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x10100) && (c <= 0x10102))
-                        return Line_BA;
+                        return LB_BA;
                       /* (c >= 0x10103) && (c <= 0x101FC) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -77158,22 +77142,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x102E0)
                       {
                         if (c == 0x101FD)
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x101FE) && (c <= 0x102DF) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* c == 0x102E0 */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x102E1) && (c <= 0x10375))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x10376) && (c <= 0x1037A) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                 }
@@ -77189,22 +77173,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x103A0)
                       {
                         if ((c >= 0x1037B) && (c <= 0x1039E))
-                          return Line_AL;
+                          return LB_AL;
                         /* c == 0x1039F */
-                        return Line_BA;
+                        return LB_BA;
                       }
                       else
                       {
                         /* (c >= 0x103A0) && (c <= 0x103CF) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if (c == 0x103D0)
-                        return Line_BA;
+                        return LB_BA;
                       /* (c >= 0x103D1) && (c <= 0x1049F) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -77214,22 +77198,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x10857)
                       {
                         if ((c >= 0x104A0) && (c <= 0x104A9))
-                          return Line_NU;
+                          return LB_NU;
                         /* (c >= 0x104AA) && (c <= 0x10856) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* c == 0x10857 */
-                        return Line_BA;
+                        return LB_BA;
                       }
                     }
                     else
                     {
                       if ((c >= 0x10858) && (c <= 0x1091E))
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0x1091F */
-                      return Line_BA;
+                      return LB_BA;
                     }
                   }
                 }
@@ -77242,22 +77226,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x10A04)
                       {
                         if ((c >= 0x10920) && (c <= 0x10A00))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x10A01) && (c <= 0x10A03) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* c == 0x10A04 */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x10A05) && (c <= 0x10A06))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x10A07) && (c <= 0x10A0B) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -77265,16 +77249,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x10A38)
                     {
                       if ((c >= 0x10A0C) && (c <= 0x10A0F))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x10A10) && (c <= 0x10A37) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                     else
                     {
                       if ((c >= 0x10A38) && (c <= 0x10A3A))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x10A3B) && (c <= 0x10A3E) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -77293,22 +77277,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x10A50)
                       {
                         if (c == 0x10A3F)
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x10A40) && (c <= 0x10A4F) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x10A50) && (c <= 0x10A57) */
-                        return Line_BA;
+                        return LB_BA;
                       }
                     }
                     else
                     {
                       if ((c >= 0x10A58) && (c <= 0x10AE4))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x10AE5) && (c <= 0x10AE6) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                   else
@@ -77318,22 +77302,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x10AF6)
                       {
                         if ((c >= 0x10AE7) && (c <= 0x10AEF))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x10AF0) && (c <= 0x10AF5) */
-                        return Line_BA;
+                        return LB_BA;
                       }
                       else
                       {
                         /* c == 0x10AF6 */
-                        return Line_IN;
+                        return LB_IN;
                       }
                     }
                     else
                     {
                       if ((c >= 0x10AF7) && (c <= 0x10B38))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x10B39) && (c <= 0x10B3F) */
-                      return Line_BA;
+                      return LB_BA;
                     }
                   }
                 }
@@ -77346,22 +77330,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x10D28)
                       {
                         if ((c >= 0x10B40) && (c <= 0x10D23))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x10D24) && (c <= 0x10D27) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0x10D28) && (c <= 0x10D2F) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x10D30) && (c <= 0x10D39))
-                        return Line_NU;
+                        return LB_NU;
                       /* (c >= 0x10D3A) && (c <= 0x10EAA) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -77371,22 +77355,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x10EAE)
                       {
                         if ((c >= 0x10EAB) && (c <= 0x10EAC))
-                          return Line_CM;
+                          return LB_CM;
                         /* c == 0x10EAD */
-                        return Line_BA;
+                        return LB_BA;
                       }
                       else
                       {
                         /* (c >= 0x10EAE) && (c <= 0x10EFC) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x10EFD) && (c <= 0x10EFF))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x10F00) && (c <= 0x10F45) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -77402,22 +77386,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x10F82)
                       {
                         if ((c >= 0x10F46) && (c <= 0x10F50))
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x10F51) && (c <= 0x10F81) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x10F82) && (c <= 0x10F85) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x10F86) && (c <= 0x10FFF))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x11000) && (c <= 0x11002) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                   else
@@ -77427,22 +77411,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x11038)
                       {
                         if ((c >= 0x11003) && (c <= 0x11004))
-                          return Line_AP;
+                          return LB_AP;
                         /* (c >= 0x11005) && (c <= 0x11037) */
-                        return Line_AK;
+                        return LB_AK;
                       }
                       else
                       {
                         /* (c >= 0x11038) && (c <= 0x11045) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if (c == 0x11046)
-                        return Line_VI;
+                        return LB_VI;
                       /* (c >= 0x11047) && (c <= 0x11048) */
-                      return Line_BA;
+                      return LB_BA;
                     }
                   }
                 }
@@ -77455,22 +77439,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x11052)
                       {
                         if ((c >= 0x11049) && (c <= 0x1104D))
-                          return Line_ID;
+                          return LB_ID;
                         /* (c >= 0x1104E) && (c <= 0x11051) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x11052) && (c <= 0x11065) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                     }
                     else
                     {
                       if ((c >= 0x11066) && (c <= 0x1106F))
-                        return Line_AS;
+                        return LB_AS;
                       /* c == 0x11070 */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                   else
@@ -77478,16 +77462,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x11075)
                     {
                       if ((c >= 0x11071) && (c <= 0x11072))
-                        return Line_AK;
+                        return LB_AK;
                       /* (c >= 0x11073) && (c <= 0x11074) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                     else
                     {
                       if (c == 0x11075)
-                        return Line_AK;
+                        return LB_AK;
                       /* (c >= 0x11076) && (c <= 0x1107E) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -77509,22 +77493,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x11083)
                       {
                         if (c == 0x1107F)
-                          return Line_GL;
+                          return LB_GL;
                         /* (c >= 0x11080) && (c <= 0x11082) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0x11083) && (c <= 0x110AF) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x110B0) && (c <= 0x110BA))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x110BB) && (c <= 0x110BC) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -77534,22 +77518,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x110C2)
                       {
                         if (c == 0x110BD)
-                          return Line_NU;
+                          return LB_NU;
                         /* (c >= 0x110BE) && (c <= 0x110C1) */
-                        return Line_BA;
+                        return LB_BA;
                       }
                       else
                       {
                         /* c == 0x110C2 */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x110C3) && (c <= 0x110CC))
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0x110CD */
-                      return Line_NU;
+                      return LB_NU;
                     }
                   }
                 }
@@ -77562,22 +77546,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x110FA)
                       {
                         if ((c >= 0x110CE) && (c <= 0x110EF))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x110F0) && (c <= 0x110F9) */
-                        return Line_NU;
+                        return LB_NU;
                       }
                       else
                       {
                         /* (c >= 0x110FA) && (c <= 0x110FF) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x11100) && (c <= 0x11102))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x11103) && (c <= 0x11126) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -77587,22 +77571,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x11136)
                       {
                         if ((c >= 0x11127) && (c <= 0x11134))
-                          return Line_CM;
+                          return LB_CM;
                         /* c == 0x11135 */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x11136) && (c <= 0x1113F) */
-                        return Line_NU;
+                        return LB_NU;
                       }
                     }
                     else
                     {
                       if ((c >= 0x11140) && (c <= 0x11143))
-                        return Line_BA;
+                        return LB_BA;
                       /* c == 0x11144 */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -77618,22 +77602,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x11173)
                       {
                         if ((c >= 0x11145) && (c <= 0x11146))
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x11147) && (c <= 0x11172) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* c == 0x11173 */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if (c == 0x11174)
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0x11175 */
-                      return Line_BB;
+                      return LB_BB;
                     }
                   }
                   else
@@ -77643,22 +77627,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x11183)
                       {
                         if ((c >= 0x11176) && (c <= 0x1117F))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x11180) && (c <= 0x11182) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0x11183) && (c <= 0x111B2) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x111B3) && (c <= 0x111C0))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x111C1) && (c <= 0x111C4) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -77671,22 +77655,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x111C8)
                       {
                         if ((c >= 0x111C5) && (c <= 0x111C6))
-                          return Line_BA;
+                          return LB_BA;
                         /* c == 0x111C7 */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* c == 0x111C8 */
-                        return Line_BA;
+                        return LB_BA;
                       }
                     }
                     else
                     {
                       if ((c >= 0x111C9) && (c <= 0x111CC))
-                        return Line_CM;
+                        return LB_CM;
                       /* c == 0x111CD */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -77694,16 +77678,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x111DA)
                     {
                       if ((c >= 0x111CE) && (c <= 0x111CF))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x111D0) && (c <= 0x111D9) */
-                      return Line_NU;
+                      return LB_NU;
                     }
                     else
                     {
                       if (c == 0x111DA)
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0x111DB */
-                      return Line_BB;
+                      return LB_BB;
                     }
                   }
                 }
@@ -77722,22 +77706,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x111E0)
                       {
                         if (c == 0x111DC)
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x111DD) && (c <= 0x111DF) */
-                        return Line_BA;
+                        return LB_BA;
                       }
                       else
                       {
                         /* (c >= 0x111E0) && (c <= 0x1122B) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1122C) && (c <= 0x11237))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x11238) && (c <= 0x11239) */
-                      return Line_BA;
+                      return LB_BA;
                     }
                   }
                   else
@@ -77747,22 +77731,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1123D)
                       {
                         if (c == 0x1123A)
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x1123B) && (c <= 0x1123C) */
-                        return Line_BA;
+                        return LB_BA;
                       }
                       else
                       {
                         /* c == 0x1123D */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if (c == 0x1123E)
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x1123F) && (c <= 0x11240) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -77775,22 +77759,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x112A9)
                       {
                         if (c == 0x11241)
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x11242) && (c <= 0x112A8) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* c == 0x112A9 */
-                        return Line_BA;
+                        return LB_BA;
                       }
                     }
                     else
                     {
                       if ((c >= 0x112AA) && (c <= 0x112DE))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x112DF) && (c <= 0x112EA) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                   else
@@ -77800,22 +77784,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x112FA)
                       {
                         if ((c >= 0x112EB) && (c <= 0x112EF))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x112F0) && (c <= 0x112F9) */
-                        return Line_NU;
+                        return LB_NU;
                       }
                       else
                       {
                         /* (c >= 0x112FA) && (c <= 0x112FF) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x11300) && (c <= 0x11303))
-                        return Line_CM;
+                        return LB_CM;
                       /* c == 0x11304 */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -77831,22 +77815,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1130F)
                       {
                         if ((c >= 0x11305) && (c <= 0x1130C))
-                          return Line_AK;
+                          return LB_AK;
                         /* (c >= 0x1130D) && (c <= 0x1130E) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x1130F) && (c <= 0x11310) */
-                        return Line_AK;
+                        return LB_AK;
                       }
                     }
                     else
                     {
                       if ((c >= 0x11311) && (c <= 0x11312))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x11313) && (c <= 0x11328) */
-                      return Line_AK;
+                      return LB_AK;
                     }
                   }
                   else
@@ -77856,22 +77840,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x11331)
                       {
                         if (c == 0x11329)
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x1132A) && (c <= 0x11330) */
-                        return Line_AK;
+                        return LB_AK;
                       }
                       else
                       {
                         /* c == 0x11331 */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x11332) && (c <= 0x11333))
-                        return Line_AK;
+                        return LB_AK;
                       /* c == 0x11334 */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -77884,22 +77868,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1133B)
                       {
                         if ((c >= 0x11335) && (c <= 0x11339))
-                          return Line_AK;
+                          return LB_AK;
                         /* c == 0x1133A */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x1133B) && (c <= 0x1133C) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if (c == 0x1133D)
-                        return Line_BA;
+                        return LB_BA;
                       /* (c >= 0x1133E) && (c <= 0x11344) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                   else
@@ -77907,16 +77891,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x11349)
                     {
                       if ((c >= 0x11345) && (c <= 0x11346))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x11347) && (c <= 0x11348) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                     else
                     {
                       if ((c >= 0x11349) && (c <= 0x1134A))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x1134B) && (c <= 0x1134C) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                 }
@@ -77941,22 +77925,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x11350)
                       {
                         if (c == 0x1134D)
-                          return Line_VI;
+                          return LB_VI;
                         /* (c >= 0x1134E) && (c <= 0x1134F) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* c == 0x11350 */
-                        return Line_AS;
+                        return LB_AS;
                       }
                     }
                     else
                     {
                       if ((c >= 0x11351) && (c <= 0x11356))
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0x11357 */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                   else
@@ -77966,22 +77950,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1135E)
                       {
                         if ((c >= 0x11358) && (c <= 0x1135C))
-                          return Line_AL;
+                          return LB_AL;
                         /* c == 0x1135D */
-                        return Line_BA;
+                        return LB_BA;
                       }
                       else
                       {
                         /* (c >= 0x1135E) && (c <= 0x1135F) */
-                        return Line_AS;
+                        return LB_AS;
                       }
                     }
                     else
                     {
                       if ((c >= 0x11360) && (c <= 0x11361))
-                        return Line_AK;
+                        return LB_AK;
                       /* (c >= 0x11362) && (c <= 0x11363) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                 }
@@ -77994,22 +77978,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1136D)
                       {
                         if ((c >= 0x11364) && (c <= 0x11365))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x11366) && (c <= 0x1136C) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0x1136D) && (c <= 0x1136F) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x11370) && (c <= 0x11374))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x11375) && (c <= 0x11434) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -78019,22 +78003,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1144B)
                       {
                         if ((c >= 0x11435) && (c <= 0x11446))
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x11447) && (c <= 0x1144A) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x1144B) && (c <= 0x1144E) */
-                        return Line_BA;
+                        return LB_BA;
                       }
                     }
                     else
                     {
                       if (c == 0x1144F)
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x11450) && (c <= 0x11459) */
-                      return Line_NU;
+                      return LB_NU;
                     }
                   }
                 }
@@ -78050,22 +78034,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1145E)
                       {
                         if ((c >= 0x1145A) && (c <= 0x1145B))
-                          return Line_BA;
+                          return LB_BA;
                         /* (c >= 0x1145C) && (c <= 0x1145D) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* c == 0x1145E */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1145F) && (c <= 0x114AF))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x114B0) && (c <= 0x114C3) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                   else
@@ -78075,22 +78059,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x114DA)
                       {
                         if ((c >= 0x114C4) && (c <= 0x114CF))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x114D0) && (c <= 0x114D9) */
-                        return Line_NU;
+                        return LB_NU;
                       }
                       else
                       {
                         /* (c >= 0x114DA) && (c <= 0x115AE) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x115AF) && (c <= 0x115B5))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x115B6) && (c <= 0x115B7) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -78103,22 +78087,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x115C2)
                       {
                         if ((c >= 0x115B8) && (c <= 0x115C0))
-                          return Line_CM;
+                          return LB_CM;
                         /* c == 0x115C1 */
-                        return Line_BB;
+                        return LB_BB;
                       }
                       else
                       {
                         /* (c >= 0x115C2) && (c <= 0x115C3) */
-                        return Line_BA;
+                        return LB_BA;
                       }
                     }
                     else
                     {
                       if ((c >= 0x115C4) && (c <= 0x115C5))
-                        return Line_EX;
+                        return LB_EX;
                       /* (c >= 0x115C6) && (c <= 0x115C8) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -78126,16 +78110,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x115DC)
                     {
                       if ((c >= 0x115C9) && (c <= 0x115D7))
-                        return Line_BA;
+                        return LB_BA;
                       /* (c >= 0x115D8) && (c <= 0x115DB) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                     else
                     {
                       if ((c >= 0x115DC) && (c <= 0x115DD))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x115DE) && (c <= 0x1162F) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -78154,22 +78138,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x11643)
                       {
                         if ((c >= 0x11630) && (c <= 0x11640))
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x11641) && (c <= 0x11642) */
-                        return Line_BA;
+                        return LB_BA;
                       }
                       else
                       {
                         /* (c >= 0x11643) && (c <= 0x1164F) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x11650) && (c <= 0x11659))
-                        return Line_NU;
+                        return LB_NU;
                       /* (c >= 0x1165A) && (c <= 0x1165F) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -78179,22 +78163,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x116AB)
                       {
                         if ((c >= 0x11660) && (c <= 0x1166C))
-                          return Line_BB;
+                          return LB_BB;
                         /* (c >= 0x1166D) && (c <= 0x116AA) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x116AB) && (c <= 0x116B7) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x116B8) && (c <= 0x116BF))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x116C0) && (c <= 0x116C9) */
-                      return Line_NU;
+                      return LB_NU;
                     }
                   }
                 }
@@ -78207,22 +78191,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1172C)
                       {
                         if ((c >= 0x116CA) && (c <= 0x1171C))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x1171D) && (c <= 0x1172B) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0x1172C) && (c <= 0x1172F) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x11730) && (c <= 0x11739))
-                        return Line_NU;
+                        return LB_NU;
                       /* (c >= 0x1173A) && (c <= 0x1173B) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -78232,22 +78216,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1182C)
                       {
                         if ((c >= 0x1173C) && (c <= 0x1173E))
-                          return Line_BA;
+                          return LB_BA;
                         /* (c >= 0x1173F) && (c <= 0x1182B) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x1182C) && (c <= 0x1183A) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1183B) && (c <= 0x118DF))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x118E0) && (c <= 0x118E9) */
-                      return Line_NU;
+                      return LB_NU;
                     }
                   }
                 }
@@ -78263,22 +78247,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x11907)
                       {
                         if ((c >= 0x118EA) && (c <= 0x118FF))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x11900) && (c <= 0x11906) */
-                        return Line_AK;
+                        return LB_AK;
                       }
                       else
                       {
                         /* (c >= 0x11907) && (c <= 0x11908) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if (c == 0x11909)
-                        return Line_AK;
+                        return LB_AK;
                       /* (c >= 0x1190A) && (c <= 0x1190B) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -78288,22 +78272,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x11915)
                       {
                         if ((c >= 0x1190C) && (c <= 0x11913))
-                          return Line_AK;
+                          return LB_AK;
                         /* c == 0x11914 */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x11915) && (c <= 0x11916) */
-                        return Line_AK;
+                        return LB_AK;
                       }
                     }
                     else
                     {
                       if (c == 0x11917)
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x11918) && (c <= 0x1192F) */
-                      return Line_AK;
+                      return LB_AK;
                     }
                   }
                 }
@@ -78316,22 +78300,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x11937)
                       {
                         if ((c >= 0x11930) && (c <= 0x11935))
-                          return Line_CM;
+                          return LB_CM;
                         /* c == 0x11936 */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x11937) && (c <= 0x11938) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x11939) && (c <= 0x1193A))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x1193B) && (c <= 0x1193D) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                   else
@@ -78339,16 +78323,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x11940)
                     {
                       if (c == 0x1193E)
-                        return Line_VI;
+                        return LB_VI;
                       /* c == 0x1193F */
-                      return Line_AP;
+                      return LB_AP;
                     }
                     else
                     {
                       if (c == 0x11940)
-                        return Line_CM;
+                        return LB_CM;
                       /* c == 0x11941 */
-                      return Line_AP;
+                      return LB_AP;
                     }
                   }
                 }
@@ -78370,22 +78354,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x11947)
                       {
                         if ((c >= 0x11942) && (c <= 0x11943))
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x11944) && (c <= 0x11946) */
-                        return Line_BA;
+                        return LB_BA;
                       }
                       else
                       {
                         /* (c >= 0x11947) && (c <= 0x1194F) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x11950) && (c <= 0x11959))
-                        return Line_ID;
+                        return LB_ID;
                       /* (c >= 0x1195A) && (c <= 0x119D0) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -78395,22 +78379,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x119DA)
                       {
                         if ((c >= 0x119D1) && (c <= 0x119D7))
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x119D8) && (c <= 0x119D9) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x119DA) && (c <= 0x119E0) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if (c == 0x119E1)
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0x119E2 */
-                      return Line_BB;
+                      return LB_BB;
                     }
                   }
                 }
@@ -78423,22 +78407,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x119E5)
                       {
                         if (c == 0x119E3)
-                          return Line_AL;
+                          return LB_AL;
                         /* c == 0x119E4 */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0x119E5) && (c <= 0x11A00) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x11A01) && (c <= 0x11A0A))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x11A0B) && (c <= 0x11A32) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -78448,22 +78432,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x11A3B)
                       {
                         if ((c >= 0x11A33) && (c <= 0x11A39))
-                          return Line_CM;
+                          return LB_CM;
                         /* c == 0x11A3A */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x11A3B) && (c <= 0x11A3E) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if (c == 0x11A3F)
-                        return Line_BB;
+                        return LB_BB;
                       /* c == 0x11A40 */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -78479,22 +78463,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x11A46)
                       {
                         if ((c >= 0x11A41) && (c <= 0x11A44))
-                          return Line_BA;
+                          return LB_BA;
                         /* c == 0x11A45 */
-                        return Line_BB;
+                        return LB_BB;
                       }
                       else
                       {
                         /* c == 0x11A46 */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if (c == 0x11A47)
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x11A48) && (c <= 0x11A50) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -78504,22 +78488,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x11A8A)
                       {
                         if ((c >= 0x11A51) && (c <= 0x11A5B))
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x11A5C) && (c <= 0x11A89) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x11A8A) && (c <= 0x11A99) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x11A9A) && (c <= 0x11A9C))
-                        return Line_BA;
+                        return LB_BA;
                       /* c == 0x11A9D */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -78532,22 +78516,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x11AA3)
                       {
                         if ((c >= 0x11A9E) && (c <= 0x11AA0))
-                          return Line_BB;
+                          return LB_BB;
                         /* (c >= 0x11AA1) && (c <= 0x11AA2) */
-                        return Line_BA;
+                        return LB_BA;
                       }
                       else
                       {
                         /* (c >= 0x11AA3) && (c <= 0x11AFF) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x11B00) && (c <= 0x11B09))
-                        return Line_BB;
+                        return LB_BB;
                       /* (c >= 0x11B0A) && (c <= 0x11C2E) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -78555,16 +78539,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x11C38)
                     {
                       if ((c >= 0x11C2F) && (c <= 0x11C36))
-                        return Line_CM;
+                        return LB_CM;
                       /* c == 0x11C37 */
-                      return Line_AL;
+                      return LB_AL;
                     }
                     else
                     {
                       if ((c >= 0x11C38) && (c <= 0x11C3F))
-                        return Line_CM;
+                        return LB_CM;
                       /* c == 0x11C40 */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -78583,22 +78567,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x11C50)
                       {
                         if ((c >= 0x11C41) && (c <= 0x11C45))
-                          return Line_BA;
+                          return LB_BA;
                         /* (c >= 0x11C46) && (c <= 0x11C4F) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x11C50) && (c <= 0x11C59) */
-                        return Line_NU;
+                        return LB_NU;
                       }
                     }
                     else
                     {
                       if ((c >= 0x11C5A) && (c <= 0x11C6F))
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0x11C70 */
-                      return Line_BB;
+                      return LB_BB;
                     }
                   }
                   else
@@ -78608,22 +78592,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x11C92)
                       {
                         if (c == 0x11C71)
-                          return Line_EX;
+                          return LB_EX;
                         /* (c >= 0x11C72) && (c <= 0x11C91) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x11C92) && (c <= 0x11CA7) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if (c == 0x11CA8)
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x11CA9) && (c <= 0x11CB6) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                 }
@@ -78636,22 +78620,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x11D37)
                       {
                         if ((c >= 0x11CB7) && (c <= 0x11D30))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x11D31) && (c <= 0x11D36) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0x11D37) && (c <= 0x11D39) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if (c == 0x11D3A)
-                        return Line_CM;
+                        return LB_CM;
                       /* c == 0x11D3B */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -78661,22 +78645,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x11D3F)
                       {
                         if ((c >= 0x11D3C) && (c <= 0x11D3D))
-                          return Line_CM;
+                          return LB_CM;
                         /* c == 0x11D3E */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x11D3F) && (c <= 0x11D45) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if (c == 0x11D46)
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0x11D47 */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                 }
@@ -78692,22 +78676,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x11D5A)
                       {
                         if ((c >= 0x11D48) && (c <= 0x11D4F))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x11D50) && (c <= 0x11D59) */
-                        return Line_NU;
+                        return LB_NU;
                       }
                       else
                       {
                         /* (c >= 0x11D5A) && (c <= 0x11D89) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x11D8A) && (c <= 0x11D8E))
-                        return Line_CM;
+                        return LB_CM;
                       /* c == 0x11D8F */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -78717,22 +78701,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x11D93)
                       {
                         if ((c >= 0x11D90) && (c <= 0x11D91))
-                          return Line_CM;
+                          return LB_CM;
                         /* c == 0x11D92 */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x11D93) && (c <= 0x11D97) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x11D98) && (c <= 0x11D9F))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x11DA0) && (c <= 0x11DA9) */
-                      return Line_NU;
+                      return LB_NU;
                     }
                   }
                 }
@@ -78745,22 +78729,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x11EF2)
                       {
                         if ((c >= 0x11DAA) && (c <= 0x11EDF))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x11EE0) && (c <= 0x11EF1) */
-                        return Line_AS;
+                        return LB_AS;
                       }
                       else
                       {
                         /* c == 0x11EF2 */
-                        return Line_BA;
+                        return LB_BA;
                       }
                     }
                     else
                     {
                       if ((c >= 0x11EF3) && (c <= 0x11EF6))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x11EF7) && (c <= 0x11EF8) */
-                      return Line_BA;
+                      return LB_BA;
                     }
                   }
                   else
@@ -78768,16 +78752,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x11F02)
                     {
                       if ((c >= 0x11EF9) && (c <= 0x11EFF))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x11F00) && (c <= 0x11F01) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                     else
                     {
                       if (c == 0x11F02)
-                        return Line_AP;
+                        return LB_AP;
                       /* c == 0x11F03 */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                 }
@@ -78805,22 +78789,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x11F12)
                       {
                         if ((c >= 0x11F04) && (c <= 0x11F10))
-                          return Line_AK;
+                          return LB_AK;
                         /* c == 0x11F11 */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x11F12) && (c <= 0x11F33) */
-                        return Line_AK;
+                        return LB_AK;
                       }
                     }
                     else
                     {
                       if ((c >= 0x11F34) && (c <= 0x11F3A))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x11F3B) && (c <= 0x11F3D) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -78830,22 +78814,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x11F43)
                       {
                         if ((c >= 0x11F3E) && (c <= 0x11F41))
-                          return Line_CM;
+                          return LB_CM;
                         /* c == 0x11F42 */
-                        return Line_VI;
+                        return LB_VI;
                       }
                       else
                       {
                         /* (c >= 0x11F43) && (c <= 0x11F44) */
-                        return Line_BA;
+                        return LB_BA;
                       }
                     }
                     else
                     {
                       if ((c >= 0x11F45) && (c <= 0x11F4F))
-                        return Line_ID;
+                        return LB_ID;
                       /* (c >= 0x11F50) && (c <= 0x11F59) */
-                      return Line_AS;
+                      return LB_AS;
                     }
                   }
                 }
@@ -78858,22 +78842,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x11FE1)
                       {
                         if ((c >= 0x11F5A) && (c <= 0x11FDC))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x11FDD) && (c <= 0x11FE0) */
-                        return Line_PO;
+                        return LB_PO;
                       }
                       else
                       {
                         /* (c >= 0x11FE1) && (c <= 0x11FFE) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if (c == 0x11FFF)
-                        return Line_BA;
+                        return LB_BA;
                       /* (c >= 0x12000) && (c <= 0x1246F) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -78883,22 +78867,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x13258)
                       {
                         if ((c >= 0x12470) && (c <= 0x12474))
-                          return Line_BA;
+                          return LB_BA;
                         /* (c >= 0x12475) && (c <= 0x13257) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x13258) && (c <= 0x1325A) */
-                        return Line_OP;
+                        return LB_OP;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1325B) && (c <= 0x1325D))
-                        return Line_CL;
+                        return LB_CL;
                       /* (c >= 0x1325E) && (c <= 0x13281) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -78914,22 +78898,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x13286)
                       {
                         if (c == 0x13282)
-                          return Line_CL;
+                          return LB_CL;
                         /* (c >= 0x13283) && (c <= 0x13285) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* c == 0x13286 */
-                        return Line_OP;
+                        return LB_OP;
                       }
                     }
                     else
                     {
                       if (c == 0x13287)
-                        return Line_CL;
+                        return LB_CL;
                       /* c == 0x13288 */
-                      return Line_OP;
+                      return LB_OP;
                     }
                   }
                   else
@@ -78939,22 +78923,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x13379)
                       {
                         if (c == 0x13289)
-                          return Line_CL;
+                          return LB_CL;
                         /* (c >= 0x1328A) && (c <= 0x13378) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* c == 0x13379 */
-                        return Line_OP;
+                        return LB_OP;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1337A) && (c <= 0x1337B))
-                        return Line_CL;
+                        return LB_CL;
                       /* (c >= 0x1337C) && (c <= 0x1342E) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -78967,22 +78951,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x13437)
                       {
                         if (c == 0x1342F)
-                          return Line_OP;
+                          return LB_OP;
                         /* (c >= 0x13430) && (c <= 0x13436) */
-                        return Line_GL;
+                        return LB_GL;
                       }
                       else
                       {
                         /* c == 0x13437 */
-                        return Line_OP;
+                        return LB_OP;
                       }
                     }
                     else
                     {
                       if (c == 0x13438)
-                        return Line_CL;
+                        return LB_CL;
                       /* (c >= 0x13439) && (c <= 0x1343B) */
-                      return Line_GL;
+                      return LB_GL;
                     }
                   }
                   else
@@ -78990,16 +78974,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x1343E)
                     {
                       if (c == 0x1343C)
-                        return Line_OP;
+                        return LB_OP;
                       /* c == 0x1343D */
-                      return Line_CL;
+                      return LB_CL;
                     }
                     else
                     {
                       if (c == 0x1343E)
-                        return Line_OP;
+                        return LB_OP;
                       /* c == 0x1343F */
-                      return Line_CL;
+                      return LB_CL;
                     }
                   }
                 }
@@ -79018,22 +79002,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x13447)
                       {
                         if (c == 0x13440)
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x13441) && (c <= 0x13446) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x13447) && (c <= 0x13455) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x13456) && (c <= 0x145CD))
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0x145CE */
-                      return Line_OP;
+                      return LB_OP;
                     }
                   }
                   else
@@ -79043,22 +79027,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x16A60)
                       {
                         if (c == 0x145CF)
-                          return Line_CL;
+                          return LB_CL;
                         /* (c >= 0x145D0) && (c <= 0x16A5F) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x16A60) && (c <= 0x16A69) */
-                        return Line_NU;
+                        return LB_NU;
                       }
                     }
                     else
                     {
                       if ((c >= 0x16A6A) && (c <= 0x16A6D))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x16A6E) && (c <= 0x16A6F) */
-                      return Line_BA;
+                      return LB_BA;
                     }
                   }
                 }
@@ -79071,22 +79055,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x16ACA)
                       {
                         if ((c >= 0x16A70) && (c <= 0x16ABF))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x16AC0) && (c <= 0x16AC9) */
-                        return Line_NU;
+                        return LB_NU;
                       }
                       else
                       {
                         /* (c >= 0x16ACA) && (c <= 0x16AEF) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x16AF0) && (c <= 0x16AF4))
-                        return Line_CM;
+                        return LB_CM;
                       /* c == 0x16AF5 */
-                      return Line_BA;
+                      return LB_BA;
                     }
                   }
                   else
@@ -79096,22 +79080,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x16B37)
                       {
                         if ((c >= 0x16AF6) && (c <= 0x16B2F))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x16B30) && (c <= 0x16B36) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0x16B37) && (c <= 0x16B39) */
-                        return Line_BA;
+                        return LB_BA;
                       }
                     }
                     else
                     {
                       if ((c >= 0x16B3A) && (c <= 0x16B43))
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0x16B44 */
-                      return Line_BA;
+                      return LB_BA;
                     }
                   }
                 }
@@ -79127,22 +79111,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x16B5A)
                       {
                         if ((c >= 0x16B45) && (c <= 0x16B4F))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x16B50) && (c <= 0x16B59) */
-                        return Line_NU;
+                        return LB_NU;
                       }
                       else
                       {
                         /* (c >= 0x16B5A) && (c <= 0x16E96) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x16E97) && (c <= 0x16E98))
-                        return Line_BA;
+                        return LB_BA;
                       /* (c >= 0x16E99) && (c <= 0x16F4E) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -79152,22 +79136,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x16F51)
                       {
                         if (c == 0x16F4F)
-                          return Line_CM;
+                          return LB_CM;
                         /* c == 0x16F50 */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x16F51) && (c <= 0x16F87) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x16F88) && (c <= 0x16F8E))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x16F8F) && (c <= 0x16F92) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                 }
@@ -79180,22 +79164,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x16FE4)
                       {
                         if ((c >= 0x16F93) && (c <= 0x16FDF))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x16FE0) && (c <= 0x16FE3) */
-                        return Line_NS;
+                        return LB_NS;
                       }
                       else
                       {
                         /* c == 0x16FE4 */
-                        return Line_GL;
+                        return LB_GL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x16FE5) && (c <= 0x16FEF))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x16FF0) && (c <= 0x16FF1) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                   else
@@ -79203,16 +79187,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x187F8)
                     {
                       if ((c >= 0x16FF2) && (c <= 0x16FFF))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x17000) && (c <= 0x187F7) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                     else
                     {
                       if ((c >= 0x187F8) && (c <= 0x187FF))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x18800) && (c <= 0x18AFF) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                 }
@@ -79234,22 +79218,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x18D09)
                       {
                         if ((c >= 0x18B00) && (c <= 0x18CFF))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x18D00) && (c <= 0x18D08) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* (c >= 0x18D09) && (c <= 0x1AFFF) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1B000) && (c <= 0x1B122))
-                        return Line_ID;
+                        return LB_ID;
                       /* (c >= 0x1B123) && (c <= 0x1B131) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -79259,22 +79243,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1B150)
                       {
                         if (c == 0x1B132)
-                          return Line_NS;
+                          return LB_NS;
                         /* (c >= 0x1B133) && (c <= 0x1B14F) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x1B150) && (c <= 0x1B152) */
-                        return Line_NS;
+                        return LB_NS;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1B153) && (c <= 0x1B154))
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0x1B155 */
-                      return Line_NS;
+                      return LB_NS;
                     }
                   }
                 }
@@ -79287,22 +79271,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1B168)
                       {
                         if ((c >= 0x1B156) && (c <= 0x1B163))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x1B164) && (c <= 0x1B167) */
-                        return Line_NS;
+                        return LB_NS;
                       }
                       else
                       {
                         /* (c >= 0x1B168) && (c <= 0x1B16F) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1B170) && (c <= 0x1B2FB))
-                        return Line_ID;
+                        return LB_ID;
                       /* (c >= 0x1B2FC) && (c <= 0x1BC9C) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -79312,22 +79296,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1BCA0)
                       {
                         if ((c >= 0x1BC9D) && (c <= 0x1BC9E))
-                          return Line_CM;
+                          return LB_CM;
                         /* c == 0x1BC9F */
-                        return Line_BA;
+                        return LB_BA;
                       }
                       else
                       {
                         /* (c >= 0x1BCA0) && (c <= 0x1BCA3) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1BCA4) && (c <= 0x1CEFF))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x1CF00) && (c <= 0x1CF2D) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                 }
@@ -79343,22 +79327,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1CF47)
                       {
                         if ((c >= 0x1CF2E) && (c <= 0x1CF2F))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x1CF30) && (c <= 0x1CF46) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0x1CF47) && (c <= 0x1D164) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1D165) && (c <= 0x1D169))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x1D16A) && (c <= 0x1D16C) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -79368,22 +79352,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1D185)
                       {
                         if ((c >= 0x1D16D) && (c <= 0x1D182))
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x1D183) && (c <= 0x1D184) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x1D185) && (c <= 0x1D18B) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1D18C) && (c <= 0x1D1A9))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x1D1AA) && (c <= 0x1D1AD) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                 }
@@ -79396,22 +79380,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1D245)
                       {
                         if ((c >= 0x1D1AE) && (c <= 0x1D241))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x1D242) && (c <= 0x1D244) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0x1D245) && (c <= 0x1D7CD) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1D7CE) && (c <= 0x1D7FF))
-                        return Line_NU;
+                        return LB_NU;
                       /* (c >= 0x1D800) && (c <= 0x1D9FF) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -79419,16 +79403,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x1DA3B)
                     {
                       if ((c >= 0x1DA00) && (c <= 0x1DA36))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x1DA37) && (c <= 0x1DA3A) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                     else
                     {
                       if ((c >= 0x1DA3B) && (c <= 0x1DA6C))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x1DA6D) && (c <= 0x1DA74) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -79447,22 +79431,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1DA84)
                       {
                         if (c == 0x1DA75)
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x1DA76) && (c <= 0x1DA83) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* c == 0x1DA84 */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1DA85) && (c <= 0x1DA86))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x1DA87) && (c <= 0x1DA8A) */
-                      return Line_BA;
+                      return LB_BA;
                     }
                   }
                   else
@@ -79472,22 +79456,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1DAA0)
                       {
                         if ((c >= 0x1DA8B) && (c <= 0x1DA9A))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x1DA9B) && (c <= 0x1DA9F) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* c == 0x1DAA0 */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1DAA1) && (c <= 0x1DAAF))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x1DAB0) && (c <= 0x1DFFF) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -79500,22 +79484,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1E008)
                       {
                         if ((c >= 0x1E000) && (c <= 0x1E006))
-                          return Line_CM;
+                          return LB_CM;
                         /* c == 0x1E007 */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x1E008) && (c <= 0x1E018) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1E019) && (c <= 0x1E01A))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x1E01B) && (c <= 0x1E021) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                   else
@@ -79525,22 +79509,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1E025)
                       {
                         if (c == 0x1E022)
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x1E023) && (c <= 0x1E024) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* c == 0x1E025 */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1E026) && (c <= 0x1E02A))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x1E02B) && (c <= 0x1E08E) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -79556,22 +79540,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1E130)
                       {
                         if (c == 0x1E08F)
-                          return Line_CM;
+                          return LB_CM;
                         /* (c >= 0x1E090) && (c <= 0x1E12F) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x1E130) && (c <= 0x1E136) */
-                        return Line_CM;
+                        return LB_CM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1E137) && (c <= 0x1E13F))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x1E140) && (c <= 0x1E149) */
-                      return Line_NU;
+                      return LB_NU;
                     }
                   }
                   else
@@ -79581,22 +79565,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1E2AF)
                       {
                         if ((c >= 0x1E14A) && (c <= 0x1E2AD))
-                          return Line_AL;
+                          return LB_AL;
                         /* c == 0x1E2AE */
-                        return Line_CM;
+                        return LB_CM;
                       }
                       else
                       {
                         /* (c >= 0x1E2AF) && (c <= 0x1E2EB) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1E2EC) && (c <= 0x1E2EF))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x1E2F0) && (c <= 0x1E2F9) */
-                      return Line_NU;
+                      return LB_NU;
                     }
                   }
                 }
@@ -79609,22 +79593,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1E300)
                       {
                         if ((c >= 0x1E2FA) && (c <= 0x1E2FE))
-                          return Line_AL;
+                          return LB_AL;
                         /* c == 0x1E2FF */
-                        return Line_PR;
+                        return LB_PR;
                       }
                       else
                       {
                         /* (c >= 0x1E300) && (c <= 0x1E4EB) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1E4EC) && (c <= 0x1E4EF))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0x1E4F0) && (c <= 0x1E4F9) */
-                      return Line_NU;
+                      return LB_NU;
                     }
                   }
                   else
@@ -79632,16 +79616,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x1E8D7)
                     {
                       if ((c >= 0x1E4FA) && (c <= 0x1E8CF))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x1E8D0) && (c <= 0x1E8D6) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                     else
                     {
                       if ((c >= 0x1E8D7) && (c <= 0x1E943))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x1E944) && (c <= 0x1E94A) */
-                      return Line_CM;
+                      return LB_CM;
                     }
                   }
                 }
@@ -79666,22 +79650,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1E95A)
                       {
                         if ((c >= 0x1E94B) && (c <= 0x1E94F))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x1E950) && (c <= 0x1E959) */
-                        return Line_NU;
+                        return LB_NU;
                       }
                       else
                       {
                         /* (c >= 0x1E95A) && (c <= 0x1E95D) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1E95E) && (c <= 0x1E95F))
-                        return Line_OP;
+                        return LB_OP;
                       /* (c >= 0x1E960) && (c <= 0x1ECAB) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -79691,22 +79675,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1ECB0)
                       {
                         if (c == 0x1ECAC)
-                          return Line_PO;
+                          return LB_PO;
                         /* (c >= 0x1ECAD) && (c <= 0x1ECAF) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* c == 0x1ECB0 */
-                        return Line_PO;
+                        return LB_PO;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1ECB1) && (c <= 0x1EFFF))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x1F000) && (c <= 0x1F0FF) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                 }
@@ -79719,22 +79703,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1F110)
                       {
                         if ((c >= 0x1F100) && (c <= 0x1F10C))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x1F10D) && (c <= 0x1F10F) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* (c >= 0x1F110) && (c <= 0x1F16C) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1F16D) && (c <= 0x1F16F))
-                        return Line_ID;
+                        return LB_ID;
                       /* (c >= 0x1F170) && (c <= 0x1F1AC) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -79744,22 +79728,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1F200)
                       {
                         if ((c >= 0x1F1AD) && (c <= 0x1F1E5))
-                          return Line_ID;
+                          return LB_ID;
                         /* (c >= 0x1F1E6) && (c <= 0x1F1FF) */
-                        return Line_RI;
+                        return LB_RI;
                       }
                       else
                       {
                         /* (c >= 0x1F200) && (c <= 0x1F384) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                     }
                     else
                     {
                       if (c == 0x1F385)
-                        return Line_EB;
+                        return LB_EB;
                       /* (c >= 0x1F386) && (c <= 0x1F39B) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                 }
@@ -79775,22 +79759,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1F3B5)
                       {
                         if ((c >= 0x1F39C) && (c <= 0x1F39D))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x1F39E) && (c <= 0x1F3B4) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* (c >= 0x1F3B5) && (c <= 0x1F3B6) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1F3B7) && (c <= 0x1F3BB))
-                        return Line_ID;
+                        return LB_ID;
                       /* c == 0x1F3BC */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -79800,22 +79784,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1F3C5)
                       {
                         if ((c >= 0x1F3BD) && (c <= 0x1F3C1))
-                          return Line_ID;
+                          return LB_ID;
                         /* (c >= 0x1F3C2) && (c <= 0x1F3C4) */
-                        return Line_EB;
+                        return LB_EB;
                       }
                       else
                       {
                         /* (c >= 0x1F3C5) && (c <= 0x1F3C6) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                     }
                     else
                     {
                       if (c == 0x1F3C7)
-                        return Line_EB;
+                        return LB_EB;
                       /* (c >= 0x1F3C8) && (c <= 0x1F3C9) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                 }
@@ -79828,22 +79812,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1F3FB)
                       {
                         if ((c >= 0x1F3CA) && (c <= 0x1F3CC))
-                          return Line_EB;
+                          return LB_EB;
                         /* (c >= 0x1F3CD) && (c <= 0x1F3FA) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* (c >= 0x1F3FB) && (c <= 0x1F3FF) */
-                        return Line_EM;
+                        return LB_EM;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1F400) && (c <= 0x1F441))
-                        return Line_ID;
+                        return LB_ID;
                       /* (c >= 0x1F442) && (c <= 0x1F443) */
-                      return Line_EB;
+                      return LB_EB;
                     }
                   }
                   else
@@ -79851,16 +79835,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x1F451)
                     {
                       if ((c >= 0x1F444) && (c <= 0x1F445))
-                        return Line_ID;
+                        return LB_ID;
                       /* (c >= 0x1F446) && (c <= 0x1F450) */
-                      return Line_EB;
+                      return LB_EB;
                     }
                     else
                     {
                       if ((c >= 0x1F451) && (c <= 0x1F465))
-                        return Line_ID;
+                        return LB_ID;
                       /* (c >= 0x1F466) && (c <= 0x1F478) */
-                      return Line_EB;
+                      return LB_EB;
                     }
                   }
                 }
@@ -79879,22 +79863,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1F47D)
                       {
                         if ((c >= 0x1F479) && (c <= 0x1F47B))
-                          return Line_ID;
+                          return LB_ID;
                         /* c == 0x1F47C */
-                        return Line_EB;
+                        return LB_EB;
                       }
                       else
                       {
                         /* (c >= 0x1F47D) && (c <= 0x1F480) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1F481) && (c <= 0x1F483))
-                        return Line_EB;
+                        return LB_EB;
                       /* c == 0x1F484 */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                   else
@@ -79904,22 +79888,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1F48F)
                       {
                         if ((c >= 0x1F485) && (c <= 0x1F487))
-                          return Line_EB;
+                          return LB_EB;
                         /* (c >= 0x1F488) && (c <= 0x1F48E) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* c == 0x1F48F */
-                        return Line_EB;
+                        return LB_EB;
                       }
                     }
                     else
                     {
                       if (c == 0x1F490)
-                        return Line_ID;
+                        return LB_ID;
                       /* c == 0x1F491 */
-                      return Line_EB;
+                      return LB_EB;
                     }
                   }
                 }
@@ -79932,22 +79916,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1F4A1)
                       {
                         if ((c >= 0x1F492) && (c <= 0x1F49F))
-                          return Line_ID;
+                          return LB_ID;
                         /* c == 0x1F4A0 */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* c == 0x1F4A1 */
-                        return Line_ID;
+                        return LB_ID;
                       }
                     }
                     else
                     {
                       if (c == 0x1F4A2)
-                        return Line_AL;
+                        return LB_AL;
                       /* c == 0x1F4A3 */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                   else
@@ -79957,22 +79941,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1F4AA)
                       {
                         if (c == 0x1F4A4)
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x1F4A5) && (c <= 0x1F4A9) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* c == 0x1F4AA */
-                        return Line_EB;
+                        return LB_EB;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1F4AB) && (c <= 0x1F4AE))
-                        return Line_ID;
+                        return LB_ID;
                       /* c == 0x1F4AF */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
@@ -79988,22 +79972,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1F4B3)
                       {
                         if (c == 0x1F4B0)
-                          return Line_ID;
+                          return LB_ID;
                         /* (c >= 0x1F4B1) && (c <= 0x1F4B2) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x1F4B3) && (c <= 0x1F4FF) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1F500) && (c <= 0x1F506))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x1F507) && (c <= 0x1F516) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                   else
@@ -80013,22 +79997,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1F532)
                       {
                         if ((c >= 0x1F517) && (c <= 0x1F524))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x1F525) && (c <= 0x1F531) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* (c >= 0x1F532) && (c <= 0x1F549) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1F54A) && (c <= 0x1F573))
-                        return Line_ID;
+                        return LB_ID;
                       /* (c >= 0x1F574) && (c <= 0x1F575) */
-                      return Line_EB;
+                      return LB_EB;
                     }
                   }
                 }
@@ -80041,22 +80025,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1F57B)
                       {
                         if ((c >= 0x1F576) && (c <= 0x1F579))
-                          return Line_ID;
+                          return LB_ID;
                         /* c == 0x1F57A */
-                        return Line_EB;
+                        return LB_EB;
                       }
                       else
                       {
                         /* (c >= 0x1F57B) && (c <= 0x1F58F) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                     }
                     else
                     {
                       if (c == 0x1F590)
-                        return Line_EB;
+                        return LB_EB;
                       /* (c >= 0x1F591) && (c <= 0x1F594) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                   else
@@ -80064,16 +80048,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x1F5D4)
                     {
                       if ((c >= 0x1F595) && (c <= 0x1F596))
-                        return Line_EB;
+                        return LB_EB;
                       /* (c >= 0x1F597) && (c <= 0x1F5D3) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                     else
                     {
                       if ((c >= 0x1F5D4) && (c <= 0x1F5DB))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x1F5DC) && (c <= 0x1F5F3) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                 }
@@ -80095,22 +80079,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1F645)
                       {
                         if ((c >= 0x1F5F4) && (c <= 0x1F5F9))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x1F5FA) && (c <= 0x1F644) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* (c >= 0x1F645) && (c <= 0x1F647) */
-                        return Line_EB;
+                        return LB_EB;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1F648) && (c <= 0x1F64A))
-                        return Line_ID;
+                        return LB_ID;
                       /* (c >= 0x1F64B) && (c <= 0x1F64F) */
-                      return Line_EB;
+                      return LB_EB;
                     }
                   }
                   else
@@ -80120,22 +80104,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1F679)
                       {
                         if ((c >= 0x1F650) && (c <= 0x1F675))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x1F676) && (c <= 0x1F678) */
-                        return Line_QU;
+                        return LB_QU;
                       }
                       else
                       {
                         /* (c >= 0x1F679) && (c <= 0x1F67B) */
-                        return Line_NS;
+                        return LB_NS;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1F67C) && (c <= 0x1F67F))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x1F680) && (c <= 0x1F6A2) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                 }
@@ -80148,22 +80132,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1F6B4)
                       {
                         if (c == 0x1F6A3)
-                          return Line_EB;
+                          return LB_EB;
                         /* (c >= 0x1F6A4) && (c <= 0x1F6B3) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* (c >= 0x1F6B4) && (c <= 0x1F6B6) */
-                        return Line_EB;
+                        return LB_EB;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1F6B7) && (c <= 0x1F6BF))
-                        return Line_ID;
+                        return LB_ID;
                       /* c == 0x1F6C0 */
-                      return Line_EB;
+                      return LB_EB;
                     }
                   }
                   else
@@ -80173,22 +80157,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1F6CD)
                       {
                         if ((c >= 0x1F6C1) && (c <= 0x1F6CB))
-                          return Line_ID;
+                          return LB_ID;
                         /* c == 0x1F6CC */
-                        return Line_EB;
+                        return LB_EB;
                       }
                       else
                       {
                         /* (c >= 0x1F6CD) && (c <= 0x1F6FF) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1F700) && (c <= 0x1F773))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x1F774) && (c <= 0x1F77F) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                 }
@@ -80204,22 +80188,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1F800)
                       {
                         if ((c >= 0x1F780) && (c <= 0x1F7D4))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x1F7D5) && (c <= 0x1F7FF) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* (c >= 0x1F800) && (c <= 0x1F80B) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1F80C) && (c <= 0x1F80F))
-                        return Line_ID;
+                        return LB_ID;
                       /* (c >= 0x1F810) && (c <= 0x1F847) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -80229,22 +80213,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1F85A)
                       {
                         if ((c >= 0x1F848) && (c <= 0x1F84F))
-                          return Line_ID;
+                          return LB_ID;
                         /* (c >= 0x1F850) && (c <= 0x1F859) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x1F85A) && (c <= 0x1F85F) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1F860) && (c <= 0x1F887))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x1F888) && (c <= 0x1F88F) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                 }
@@ -80257,22 +80241,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1F900)
                       {
                         if ((c >= 0x1F890) && (c <= 0x1F8AD))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x1F8AE) && (c <= 0x1F8FF) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* (c >= 0x1F900) && (c <= 0x1F90B) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if (c == 0x1F90C)
-                        return Line_EB;
+                        return LB_EB;
                       /* (c >= 0x1F90D) && (c <= 0x1F90E) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                   else
@@ -80280,16 +80264,16 @@ line_category(Py_UCS4 c)
                     if (c < 0x1F918)
                     {
                       if (c == 0x1F90F)
-                        return Line_EB;
+                        return LB_EB;
                       /* (c >= 0x1F910) && (c <= 0x1F917) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                     else
                     {
                       if ((c >= 0x1F918) && (c <= 0x1F91F))
-                        return Line_EB;
+                        return LB_EB;
                       /* (c >= 0x1F920) && (c <= 0x1F925) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                 }
@@ -80308,22 +80292,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1F930)
                       {
                         if (c == 0x1F926)
-                          return Line_EB;
+                          return LB_EB;
                         /* (c >= 0x1F927) && (c <= 0x1F92F) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* (c >= 0x1F930) && (c <= 0x1F939) */
-                        return Line_EB;
+                        return LB_EB;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1F93A) && (c <= 0x1F93B))
-                        return Line_ID;
+                        return LB_ID;
                       /* (c >= 0x1F93C) && (c <= 0x1F93E) */
-                      return Line_EB;
+                      return LB_EB;
                     }
                   }
                   else
@@ -80333,22 +80317,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1F978)
                       {
                         if ((c >= 0x1F93F) && (c <= 0x1F976))
-                          return Line_ID;
+                          return LB_ID;
                         /* c == 0x1F977 */
-                        return Line_EB;
+                        return LB_EB;
                       }
                       else
                       {
                         /* (c >= 0x1F978) && (c <= 0x1F9B4) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1F9B5) && (c <= 0x1F9B6))
-                        return Line_EB;
+                        return LB_EB;
                       /* c == 0x1F9B7 */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                 }
@@ -80361,22 +80345,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1F9BB)
                       {
                         if ((c >= 0x1F9B8) && (c <= 0x1F9B9))
-                          return Line_EB;
+                          return LB_EB;
                         /* c == 0x1F9BA */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* c == 0x1F9BB */
-                        return Line_EB;
+                        return LB_EB;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1F9BC) && (c <= 0x1F9CC))
-                        return Line_ID;
+                        return LB_ID;
                       /* (c >= 0x1F9CD) && (c <= 0x1F9CF) */
-                      return Line_EB;
+                      return LB_EB;
                     }
                   }
                   else
@@ -80386,22 +80370,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1F9DE)
                       {
                         if (c == 0x1F9D0)
-                          return Line_ID;
+                          return LB_ID;
                         /* (c >= 0x1F9D1) && (c <= 0x1F9DD) */
-                        return Line_EB;
+                        return LB_EB;
                       }
                       else
                       {
                         /* (c >= 0x1F9DE) && (c <= 0x1F9FF) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1FA00) && (c <= 0x1FA53))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x1FA54) && (c <= 0x1FAC2) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                 }
@@ -80417,22 +80401,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1FAF0)
                       {
                         if ((c >= 0x1FAC3) && (c <= 0x1FAC5))
-                          return Line_EB;
+                          return LB_EB;
                         /* (c >= 0x1FAC6) && (c <= 0x1FAEF) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* (c >= 0x1FAF0) && (c <= 0x1FAF8) */
-                        return Line_EB;
+                        return LB_EB;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1FAF9) && (c <= 0x1FAFF))
-                        return Line_ID;
+                        return LB_ID;
                       /* (c >= 0x1FB00) && (c <= 0x1FBEF) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -80442,22 +80426,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x1FC00)
                       {
                         if ((c >= 0x1FBF0) && (c <= 0x1FBF9))
-                          return Line_NU;
+                          return LB_NU;
                         /* (c >= 0x1FBFA) && (c <= 0x1FBFF) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                       else
                       {
                         /* (c >= 0x1FC00) && (c <= 0x1FFFD) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                     }
                     else
                     {
                       if ((c >= 0x1FFFE) && (c <= 0x1FFFF))
-                        return Line_AL;
+                        return LB_AL;
                       /* (c >= 0x20000) && (c <= 0x2FFFD) */
-                      return Line_ID;
+                      return LB_ID;
                     }
                   }
                 }
@@ -80470,22 +80454,22 @@ line_category(Py_UCS4 c)
                       if (c < 0x3FFFE)
                       {
                         if ((c >= 0x2FFFE) && (c <= 0x2FFFF))
-                          return Line_AL;
+                          return LB_AL;
                         /* (c >= 0x30000) && (c <= 0x3FFFD) */
-                        return Line_ID;
+                        return LB_ID;
                       }
                       else
                       {
                         /* (c >= 0x3FFFE) && (c <= 0xE0000) */
-                        return Line_AL;
+                        return LB_AL;
                       }
                     }
                     else
                     {
                       if (c == 0xE0001)
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0xE0002) && (c <= 0xE001F) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                   else
@@ -80493,16 +80477,16 @@ line_category(Py_UCS4 c)
                     if (c < 0xE0100)
                     {
                       if ((c >= 0xE0020) && (c <= 0xE007F))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0xE0080) && (c <= 0xE00FF) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                     else
                     {
                       if ((c >= 0xE0100) && (c <= 0xE01EF))
-                        return Line_CM;
+                        return LB_CM;
                       /* (c >= 0xE01F0) && (c <= 0x10FFFF) */
-                      return Line_AL;
+                      return LB_AL;
                     }
                   }
                 }
