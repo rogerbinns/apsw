@@ -121,7 +121,7 @@ def generate_c() -> str:
     out.append("")
     out.extend(generate_casefold_expansion(props["casefold"]))
     out.append("")
-    out.extend(generate_c_table("line", "Line", line_ranges))
+    out.extend(generate_c_table("line", "LB", line_ranges))
 
     return "\n".join(out) + "\n"
 
@@ -283,9 +283,9 @@ def generate_c_table(name, enum_name, ranges):
             else:
                 all_cats.update(cat)
         for i, cat in enumerate(sorted(all_cats)):
-            if enum_name in {"Line"}:
-                # not a bitset
-                yield f"#define { enum_name }_{ cat } {i}"
+            if enum_name in {"LB"}:
+                # not a bitset - we start at one because 0 is no match
+                yield f"#define { enum_name }_{ cat } {i + 1}"
             else:
                 yield f"#define { enum_name }_{ cat } (1u << {i})"
         yield ""
