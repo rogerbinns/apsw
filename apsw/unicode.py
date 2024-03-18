@@ -380,6 +380,38 @@ def line_next_break(text: str, offset: int = 0):
     """
     return _unicode.line_next_break(text, offset)
 
+def line_next(text: str, offset: int = 0) -> tuple[int, int]:
+    """Returns span of next line"""
+    lt = len(text)
+    meth = _unicode.line_next_break
+
+    while offset < lt:
+        end = meth(text, offset=offset)
+        return offset, end
+    return offset, offset
+
+
+def line_iter(text: str, offset: int = 0):
+    "Generator providing text of each line"
+    lt = len(text)
+    meth = _unicode.line_next_break
+
+    while offset < lt:
+        end = meth(text, offset)
+        yield text[offset:end]
+        offset = end
+
+
+def line_iter_with_offsets(text: str, offset: int = 0):
+    "Generator providing start, end, text of each line"
+    lt = len(text)
+    meth = _unicode.line_next_break
+
+    while offset < lt:
+        end = meth(text, offset)
+        yield (offset, end, text[offset:end])
+        offset = end
+
 
 _unicode_category = _unicode.category_category
 
@@ -763,6 +795,7 @@ if __name__ == "__main__":
                     ("grapheme", grapheme_iter),
                     ("word", word_iter),
                     ("sentence", sentence_iter),
+                    ("line", line_iter),
                 ),
             )
         ]
@@ -859,6 +892,8 @@ if __name__ == "__main__":
             text += "".join(random.sample(base_text, len(base_text)))
         text = text[: options.size * 1_000_000]
 
+        print("\nResults in codepoints per second processed, returning each segment.  Higher is faster.")
+
         for name, version, parts in tests:
             print(f"\nBenchmarking {name:20s} unicode version { version }")
 
@@ -878,4 +913,4 @@ if __name__ == "__main__":
                     print(f"       EXCEPTION {exc!r}")
                 else:
                     seconds = (end - start) / 1e9
-                    print(f"chars per second: { int(len(text)/seconds): 12,d}    segments: {count: 11,d}")
+                    print(f"codepoints per second: { int(len(text)/seconds): 12,d}    segments: {count: 11,d}")
