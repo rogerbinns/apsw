@@ -121,16 +121,17 @@ typedef struct
     it.lookahead = (it.pos == text_end) ? EOT : cat_func(PyUnicode_READ(text_kind, text_data, it.pos));                \
   } while (0)
 
-/* note it.pos currently points to lookahead and subtract one for curchar */
-#define it_lookahead_category(value)                                                                                   \
-  ((category_category(PyUnicode_READ(text_kind, text_data, it.pos)) & (value)) == (value))
+/* note it.pos currently points to lookahead and subtract one for curchar. */
+#define it_lookahead_char() ((it.pos == text_end) ? EOT : PyUnicode_READ(text_kind, text_data, it.pos))
+#define it_curchar() (PyUnicode_READ(text_kind, text_data, it.pos - 1))
 
-#define it_curchar_category(value)                                                                                     \
-  ((category_category(PyUnicode_READ(text_kind, text_data, it.pos - 1)) & (value)) == (value))
+#define it_lookahead_category(value) ((category_category(it_lookahead_char()) & (value)) == (value))
 
-#define it_lookahead_ischar(c) ((c) == PyUnicode_READ(text_kind, text_data, it.pos))
+#define it_curchar_category(value) ((category_category(it_curchar()) & (value)) == (value))
 
-#define it_curchar_ischar(c) ((c) == PyUnicode_READ(text_kind, text_data, it.pos - 1))
+#define it_lookahead_ischar(c) ((c) == it_lookahead_char())
+
+#define it_curchar_ischar(c) ((c) == it_curchar())
 
 /* the first advance sets pos == offset + 1 but nothing is accepted
    yet, hence +1 */
@@ -914,6 +915,51 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
 
     /* LB29 */
     if (it.curchar == LB_IS && (it.lookahead == LB_AL || it.lookahead == LB_HL))
+      continue;
+
+    /* LB30 */
+    if ((it.curchar == LB_AL || it.curchar == LB_HL || it.curchar == LB_NU) && it.lookahead == LB_OP)
+    {
+      switch (it_lookahead_char())
+      {
+        /* at the time of writing, there were 95 OP of which 65 were not FWH */
+#define X(v)                                                                                                           \
+  case v:                                                                                                              \
+    ALL_LB30_OP_not_FWH
+#undef X
+        continue;
+      default:
+        break;
+      }
+    }
+
+    if (it.curchar == LB_CP && (it.lookahead == LB_AL || it.lookahead == LB_HL || it.lookahead == LB_NU))
+    {
+      switch (it_curchar())
+      {
+        /* at the time of writing, there were 2 CP of which 2 were not FWH */
+#define X(v)                                                                                                           \
+  case v:                                                                                                              \
+    ALL_LB30_CP_not_FWH
+#undef X
+        continue;
+      default:
+        break;
+      }
+    }
+
+    /* LB30a */
+    if (it.curchar == LB_RI && it.lookahead == LB_RI)
+    {
+      it_advance();
+      break;
+    }
+
+    /* LB30b */
+    if (it.curchar == LB_EB && it.lookahead == LB_EM)
+      continue;
+    if ((it_curchar_category(Category_Extended_Pictographic) || it_curchar_category(Category_Other_NotAssigned))
+        && it.lookahead == LB_EM)
       continue;
 
     /* LB31 */
