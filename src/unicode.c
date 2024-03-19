@@ -677,7 +677,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     /* LB5 */
     if (it.curchar == LB_CR && it.lookahead == LB_LF)
     {
-      it.pos++;
+      it_advance();
       break;
     }
 
@@ -710,16 +710,23 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
       unsigned savechar = it.curchar;
       while (it.lookahead == LB_CM || it.lookahead == LB_ZWJ)
         it_advance();
+      /* ::TODO:: this won't help with it_curchar* macros because they reread the character
+          and will have the wrong position */
       it.curchar = savechar;
     }
 
     /* LB10 */
     if (it.curchar == LB_CM || it.curchar == LB_ZWJ)
-      it.curchar = LB_AL;
+      it.curchar = LB_AL; /* See ::TODO:: above, the ~3 rules mentioniung AL could just be applied here */
 
     /* LB11 */
-    if (it.lookahead == LB_WJ || it.curchar == LB_WJ)
+    if (it.curchar == LB_WJ)
       continue;
+    if (it.lookahead == LB_WJ)
+    {
+      it_advance();
+      continue;
+    }
 
     /* LB12 */
     if (it.curchar == LB_GL)
@@ -810,11 +817,11 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
 
     /* LB20 */
     if (it.curchar == LB_CB)
-      continue;
+      break;
     if (it.lookahead == LB_CB)
     {
       it_advance();
-      continue;
+      break;
     }
 
     /* LB21 */
@@ -826,14 +833,25 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     if (it.curchar == LB_BB)
       continue;
 
+    /* LB21a */
+    if (it.curchar == LB_HL && (it.lookahead == LB_HY || it.lookahead == LB_BA))
+    {
+      it_advance();
+      continue;
+    }
+
+    /* LB21b */
+    if (it.curchar == LB_SY && it.lookahead == LB_HL)
+      continue;
+
     /* LB22 */
-    if (it.curchar == LB_IN)
+    if (it.lookahead == LB_IN)
       continue;
 
     /* LB23 */
     if ((it.curchar == LB_AL || it.curchar == LB_HL) && it.lookahead == LB_NU)
       continue;
-    if (it.curchar == LB_NU && (it.curchar == LB_AL || it.curchar == LB_HL))
+    if (it.curchar == LB_NU && (it.lookahead == LB_AL || it.lookahead == LB_HL))
       continue;
 
     /* LB23a */
