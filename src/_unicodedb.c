@@ -80571,3 +80571,13 @@ line_category(Py_UCS4 c)
 #define ALL_LB30_CP_not_FWH \
   X(0x0029) \
   X(0x005D) 
+
+#define ALL_LINE_HARD_BREAKS \
+  X(0x000A) \
+  X(0x000B) \
+  X(0x000C) \
+  X(0x000D) \
+  X(0x0085) \
+  X(0x2028) \
+  X(0x2029) 
+
