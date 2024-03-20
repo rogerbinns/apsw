@@ -206,10 +206,16 @@ def grapheme_substr(text: str, start: int | None = None, stop: int | None = None
 def grapheme_width(text: str, offset: int = 0) -> int:
     "Returns number of grapheme clusters in the text, counting wide ones as two"
     # ::TODO:: convert to C
-    count = 0
+    width = 0
+    # each grapheme cluster
     for start, end in grapheme_iter(text, offset):
-        count += 2 if any(category(text[i]) & Category.Wide for i in range(start, end)) else 1
-    return count
+        # each codepoint in grapheme cluster
+        wide = 2 if any(category(text[i]) & _Category.Wide for i in range(start, end)) else 1
+        # zero width space
+        if wide == 1 and all(text[i] == 0x200B for i in range(start, end)):
+            wide = 0
+        width += wide
+    return width
 
 
 def word_next_break(text: str, offset: int = 0) -> int:
@@ -379,6 +385,7 @@ def line_next_break(text: str, offset: int = 0):
     :returns:  Next break point
     """
     return _unicode.line_next_break(text, offset)
+
 
 def line_next(text: str, offset: int = 0) -> tuple[int, int]:
     """Returns span of next line"""
