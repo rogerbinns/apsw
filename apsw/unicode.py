@@ -514,8 +514,34 @@ def is_wide(text: str) -> bool:
     return _unicode.has_category(text, 0, len(text), _Category.Wide)
 
 
+def split_lines(text: str, offset: int = 0) -> Generator[str, None, None]:
+    """Each line, using hard line break rules
+
+    This is a generator yielding a line at a time.
+
+    The end of line will not include the hard line break characters
+    """
+    lt = len(text)
+    while offset < lt:
+        end = _unicode.line_next_hard_break(text, offset)
+        for hard in range(-1, offset - end - 1, -1):
+            if ord(text[end + hard]) not in _unicode.hard_breaks:
+                yield text[offset : end + hard + 1]
+                break
+        else:
+            # it was entirely hard break chars
+            yield ""
+        offset = end
+
+
 def text_wrap(
-    text: str, width=70, *, initial_indent="", subsequent_indent="", max_lines=None, placeholder=" [...] "
+    text: str,
+    width: int = 70,
+    *,
+    initial_indent: str = "",
+    subsequent_indent: str = "",
+    max_lines=None,
+    placeholder=" [...] ",
 ) -> str:
     "Like :func:`textwrap.wrap` but Unicode grapheme cluster and words aware"
     raise NotImplementedError()

@@ -124,6 +124,8 @@ def generate_c() -> str:
     out.extend(generate_c_table("line", "LB", line_ranges))
     out.append("")
     out.extend(generate_LB30_stuff())
+    out.append("")
+    out.extend(generate_line_hard_breaks())
 
     return "\n".join(out) + "\n"
 
@@ -675,6 +677,16 @@ def generate_category_ranges():
 
 line_ranges = []
 
+line_hard_breaks = []
+
+
+def generate_line_hard_breaks():
+    yield "#define ALL_LINE_HARD_BREAKS \\"
+    for _, is_last, v in augiter(line_hard_breaks):
+        yield f"  X(0x{v:04X}) " + ("\\" if not is_last else "")
+    yield ""
+
+
 # see rule LB30
 line_OP_not_FWH = []
 line_CP_not_FWH = []
@@ -702,6 +714,9 @@ def line_resolve_classes(codepoint: int, cat: str) -> str:
     elif cat == "CP":
         if codepoint not in east_asian_widths_FWH:
             line_CP_not_FWH.append(codepoint)
+
+    if cat in {"BK", "CR", "LF", "NL"}:
+        line_hard_breaks.append(codepoint)
 
     # this is to do the mapping in 6.1 Resolve line breaking classes
     # https://www.unicode.org/reports/tr14/#LB1

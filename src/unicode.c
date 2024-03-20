@@ -640,6 +640,46 @@ sentence_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ss
 }
 
 static PyObject *
+line_next_hard_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                     PyObject *fast_kwnames)
+{
+  PyObject *text = NULL;
+  Py_ssize_t offset;
+
+  ARG_PROLOG(2, break_KWNAMES);
+  ARG_MANDATORY ARG_PyUnicode(text);
+  ARG_MANDATORY ARG_PyUnicode_offset(offset, text);
+  ARG_EPILOG(NULL, "line_next_hard_break(text: str, offset: int)", );
+
+  void *text_data = PyUnicode_DATA(text);
+  int text_kind = PyUnicode_KIND(text);
+  Py_ssize_t text_end = PyUnicode_GET_LENGTH(text);
+
+#undef cat_func
+#define cat_func line_category
+  TextIterator it = TEXT_INIT;
+
+  while (it.pos < text_end)
+  {
+    it_advance();
+
+    if (it.curchar == LB_BK)
+      break;
+
+    if (it.curchar == LB_CR && it.lookahead == LB_LF)
+    {
+      it_advance();
+      break;
+    }
+
+    if (it.curchar == LB_CR || it.curchar == LB_LF || it.curchar == LB_NL)
+      break;
+  }
+
+  return PyLong_FromSsize_t(it.pos);
+}
+
+static PyObject *
 line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   PyObject *text = NULL;
@@ -1360,7 +1400,36 @@ error:
 static int
 unicode_exec(PyObject *module)
 {
-  return PyModule_AddStringConstant(module, "unicode_version", unicode_version);
+  int rc;
+  PyObject *hard_breaks = NULL, *tmp = NULL;
+  rc = PyModule_AddStringConstant(module, "unicode_version", unicode_version);
+  if (rc != 0)
+    goto error;
+  hard_breaks = PyFrozenSet_New(NULL);
+#undef X
+#define X(v)                                                                                                           \
+  {                                                                                                                    \
+    tmp = PyLong_FromLong(v);                                                                                          \
+    if (!v)                                                                                                            \
+      goto error;                                                                                                      \
+    rc = PySet_Add(hard_breaks, tmp);                                                                                  \
+    if (rc != 0)                                                                                                       \
+      goto error;                                                                                                      \
+    Py_CLEAR(tmp);                                                                                                     \
+  }
+
+  ALL_LINE_HARD_BREAKS
+
+  rc = PyModule_AddObject(module, "hard_breaks", hard_breaks);
+  if (rc != 0)
+    goto error;
+  hard_breaks = NULL; /* ref was stolen in addobject */
+
+  return 0;
+error:
+  Py_XDECREF(tmp);
+  Py_XDECREF(hard_breaks);
+  return -1;
 }
 
 static PyMethodDef methods[] = {
@@ -1374,6 +1443,8 @@ static PyMethodDef methods[] = {
     "Returns next grapheme break offset" },
   { "word_next_break", (PyCFunction)word_next_break, METH_FASTCALL | METH_KEYWORDS, "Returns next word break offset" },
   { "line_next_break", (PyCFunction)line_next_break, METH_FASTCALL | METH_KEYWORDS, "Returns next line break offset" },
+  { "line_next_hard_break", (PyCFunction)line_next_hard_break, METH_FASTCALL | METH_KEYWORDS,
+    "Returns next line hard break offset" },
   { "has_category", (PyCFunction)has_category, METH_FASTCALL | METH_KEYWORDS,
     "Returns True if any codepoints are covered by the mask" },
   { "casefold", (PyCFunction)casefold, METH_FASTCALL | METH_KEYWORDS, "Does case folding for comparison" },
