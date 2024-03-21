@@ -658,7 +658,7 @@ if __name__ == "__main__":
     p = subparsers.add_parser("breaktest", help="Run Unicode test file")
     p.set_defaults(function="breaktest")
     p.add_argument("--fail-fast", default=False, action="store_true", help="Exit on first test failure")
-    p.add_argument("test", choices=("grapheme", "word", "sentence", "line"), help="What to test")
+    p.add_argument("test", choices=("grapheme", "word", "sentence", "line_break"), help="What to test")
     # ::TODO:: auto download file if not provided
     p.add_argument(
         "file",
@@ -668,7 +668,7 @@ if __name__ == "__main__":
 
     p = subparsers.add_parser("show", help="Run against provided text")
     p.set_defaults(function="show")
-    p.add_argument("show", choices=("grapheme", "word", "sentence"), help="What to show [%(default)s]")
+    p.add_argument("show", choices=("grapheme", "word", "sentence", "line_break"), help="What to show [%(default)s]")
     p.add_argument("--text-file", type=argparse.FileType("rt", encoding="utf8"))
     p.add_argument("--width", default=width, help="Output width [%(default)s]", type=int)
     p.add_argument(
@@ -775,7 +775,7 @@ if __name__ == "__main__":
             if not line.strip() or line.startswith("#"):
                 continue
             line = line.split("#")[0].strip().split()
-            expect = not_ok if options.test == "line" else ok
+            expect = not_ok if options.test == "line_break" else ok
             assert line[0] == expect, f"Line { line_num } doesn't start with { expect }!"
             assert line[-1] == ok, f"Line { line_num } doesn't end with { ok }!"
             line = line[1:]
