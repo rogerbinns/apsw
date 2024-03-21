@@ -846,6 +846,12 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     if (it.curchar == LB_SP)
       break;
 
+    if (it.lookahead == LB_SP)
+    {
+      it_advance();
+      break;
+    }
+
     /* LB19 */
     if (it.curchar == LB_QU)
       continue;
@@ -1089,7 +1095,7 @@ category_name(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t 
     unsigned int val = sentence_category(codepoint);
     ALL_SC_VALUES;
   }
-  else if (0 == strcmp(which, "line"))
+  else if (0 == strcmp(which, "line_break"))
   {
     /* these are a traditional enum, not a bitmask */
     unsigned int val = line_category(codepoint);
