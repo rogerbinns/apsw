@@ -534,6 +534,35 @@ def split_lines(text: str, offset: int = 0) -> Generator[str, None, None]:
         offset = end
 
 
+def expand_tabs(text: str, tabsize: int = 8) -> str:
+    """Turns tabs into spaces aligning on tabsize boundaries, similar to :func:`str.expandtabs`
+
+    This is aware of grapheme clusters and double width ones.
+    """
+    if "\t" not in text:
+        return text
+
+    res: list[str] = []
+    for line in line_break_iter(text):
+        if "\t" not in line:
+            res.append(line)
+            continue
+        clusters: list[str] = []
+        pos: int = 0
+        for gr in grapheme_iter(line):
+            if gr != "\t":
+                clusters.append(gr)
+                pos += grapheme_width(gr)
+            else:
+                incr = tabsize - (pos % tabsize)
+                clusters.append(" " * incr)
+                pos += incr
+
+        res.append("".join(clusters))
+
+    return "".join(res)
+
+
 def text_wrap(
     text: str,
     width: int = 70,
