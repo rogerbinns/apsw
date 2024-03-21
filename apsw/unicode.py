@@ -567,13 +567,55 @@ def text_wrap(
     text: str,
     width: int = 70,
     *,
-    initial_indent: str = "",
-    subsequent_indent: str = "",
-    max_lines=None,
-    placeholder=" [...] ",
-) -> str:
-    "Like :func:`textwrap.wrap` but Unicode grapheme cluster and words aware"
-    raise NotImplementedError()
+    tabsize: int = 8,
+    hyphen: str = "-",
+    combine_space: bool = True,
+) -> Generator[str, None, None]:
+    """Similar to :func:`textwrap.wrap` but Unicode grapheme cluster and wide character aware
+
+    :param text: string to process
+    :param width: width of yielded lines, if rendered using a monospace font such as to a terminal
+    :param tabsize: Tab stop spacing as tabs are expanded
+    :param hyphen: Used to show a segment was broken because it was wider than `width`
+    :param combine_space: Leading space on each (indent) is always preserved.  Other spaces where
+          multiple occur are combined into one space.
+    """
+    hyphen_width = grapheme_width(hyphen)
+    if hyphen_width + 1 >= width:
+        raise ValueError(f"hyphen is too wide { hyphen_width } for width { width }")
+
+    text = expand_tabs(text, tabsize)
+
+    for line in split_lines(text):
+        accumulated: list[str] = []
+        line_width = 0
+        for segment in line_break_iter(line):
+            # the first segment of the line that is indented will start with space, so ignore them
+            if combine_space and segment[0] != " " and segment[-1] == " ":
+                trim = 0
+                for trim in range(-2, -len(segment), -1):
+                    if segment[trim] != " ":
+                        break
+                if trim + 1 < 0:
+                    segment = segment[: trim + 1]
+            seg_width = grapheme_width(segment)
+            while line_width + seg_width > width:
+                if line_width == 0:
+                    # hyphenate too long
+                    yield grapheme_substr(segment, 0, width - hyphen_width) + hyphen
+                    segment = grapheme_substr(segment, width - hyphen_width)
+                    accumulated = []
+                    line_width = 0
+                    seg_width = grapheme_width(segment)
+                    continue
+                yield "".join(accumulated) + " " * (width - line_width)
+                accumulated = []
+                line_width = 0
+                continue
+            accumulated.append(segment)
+            line_width += seg_width
+        if accumulated:
+            yield "".join(accumulated) + " " * (width - line_width)
 
 
 def casefold(text: str) -> str:
