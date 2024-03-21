@@ -206,13 +206,15 @@ def grapheme_substr(text: str, start: int | None = None, stop: int | None = None
 def grapheme_width(text: str, offset: int = 0) -> int:
     "Returns number of grapheme clusters in the text, counting wide ones as two"
     # ::TODO:: convert to C
+    # ::TODO:: find out if only the first codepoint affects width
+    # or any of them as implemented here
     width = 0
     # each grapheme cluster
-    for start, end in grapheme_iter(text, offset):
+    for gr in grapheme_iter(text, offset):
         # each codepoint in grapheme cluster
-        wide = 2 if any(category(text[i]) & _Category.Wide for i in range(start, end)) else 1
+        wide = 2 if any(_unicode_category(c) & _Category.Wide for c in gr) else 1
         # zero width space
-        if wide == 1 and all(text[i] == 0x200B for i in range(start, end)):
+        if wide == 1 and all(ord(c) == 0x200B for c in gr):
             wide = 0
         width += wide
     return width
@@ -351,7 +353,7 @@ def sentence_next(text: str, offset: int = 0) -> tuple[int, int]:
     return offset, offset
 
 
-def sentence_iter(text: str, offset: int = 0):
+def sentence_iter(text: str, offset: int = 0) -> Generator[str, None, None]:
     "Generator providing text of each sentence"
     lt = len(text)
     meth = _unicode.sentence_next_break
@@ -362,7 +364,7 @@ def sentence_iter(text: str, offset: int = 0):
         offset = end
 
 
-def sentence_iter_with_offsets(text: str, offset: int = 0):
+def sentence_iter_with_offsets(text: str, offset: int = 0) -> Generator[tuple[int, int, str], None, None]:
     "Generator providing start, end, text of each sentence"
     lt = len(text)
     meth = _unicode.sentence_next_break
@@ -373,7 +375,7 @@ def sentence_iter_with_offsets(text: str, offset: int = 0):
         offset = end
 
 
-def line_next_break(text: str, offset: int = 0):
+def line_break_next_break(text: str, offset: int = 0) -> int:
     """Returns next opportunity to break a line
 
     Finds the next break point according to the `TR14 spec
@@ -387,7 +389,7 @@ def line_next_break(text: str, offset: int = 0):
     return _unicode.line_next_break(text, offset)
 
 
-def line_next(text: str, offset: int = 0) -> tuple[int, int]:
+def line_break_next(text: str, offset: int = 0) -> tuple[int, int]:
     """Returns span of next line"""
     lt = len(text)
     meth = _unicode.line_next_break
@@ -398,7 +400,7 @@ def line_next(text: str, offset: int = 0) -> tuple[int, int]:
     return offset, offset
 
 
-def line_iter(text: str, offset: int = 0):
+def line_break_iter(text: str, offset: int = 0) -> Generator[str, None, None]:
     "Generator providing text of each line"
     lt = len(text)
     meth = _unicode.line_next_break
@@ -409,7 +411,7 @@ def line_iter(text: str, offset: int = 0):
         offset = end
 
 
-def line_iter_with_offsets(text: str, offset: int = 0):
+def line_break_iter_with_offsets(text: str, offset: int = 0) -> Generator[tuple[int, int, str], None, None]:
     "Generator providing start, end, text of each line"
     lt = len(text)
     meth = _unicode.line_next_break
@@ -519,7 +521,7 @@ def split_lines(text: str, offset: int = 0) -> Generator[str, None, None]:
 
     This is a generator yielding a line at a time.
 
-    The end of line will not include the hard line break characters
+    The end of line yielded will not include the hard line break characters
     """
     lt = len(text)
     while offset < lt:
@@ -899,7 +901,7 @@ if __name__ == "__main__":
                     ("grapheme", grapheme_iter),
                     ("word", word_iter),
                     ("sentence", sentence_iter),
-                    ("line", line_iter),
+                    ("line", line_break_iter),
                 ),
             )
         ]
