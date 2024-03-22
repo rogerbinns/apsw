@@ -134,7 +134,9 @@ typedef struct
 #define it_curchar_ischar(c) ((c) == it_curchar())
 
 /* the first advance sets pos == offset + 1 but nothing is accepted
-   yet, hence +1 */
+   yet, hence +1.  this also wrong if the first char we are processing is
+   followed by combiners, so technically nothing has actually been
+   accepted yet  */
 #define it_has_accepted() (it.pos > offset + 1)
 
 #define it_absorb(match, extend)                                                                                       \
@@ -709,6 +711,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
   while (it.pos < text_end)
   {
     it_advance();
+  top_of_loop:
 
     /* LB4 */
     if (it.curchar == LB_BK)
@@ -753,6 +756,10 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
       /* ::TODO:: this won't help with it_curchar* macros because they reread the character
           and will have the wrong position */
       it.curchar = savechar;
+      /* the previous rules need to be re-applied, but we've already advanced */
+      if (it.pos >= text_end)
+        break;
+      goto top_of_loop;
     }
 
     /* LB10 */
@@ -774,11 +781,16 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
 
     /* LB12a */
     if (it.lookahead == LB_GL)
+    {
       if (it.curchar == LB_SP || it.curchar == LB_BA || it.curchar == LB_HY)
         break;
+      it_advance();
+      continue;
+    }
 
     /* LB13 */
-    if (it.curchar == LB_CL || it.curchar == LB_CP || it.curchar == LB_EX || it.curchar == LB_IS || it.curchar == LB_SY)
+    if (it.lookahead == LB_CL || it.lookahead == LB_CP || it.lookahead == LB_EX || it.lookahead == LB_IS
+        || it.lookahead == LB_SY)
       continue;
 
     /* LB14 */
@@ -862,13 +874,13 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     }
 
     /* LB20 */
-    if (it.curchar == LB_CB)
-      break;
-    if (it.lookahead == LB_CB)
+    if (it.curchar == LB_CB && it_has_accepted())
     {
-      it_advance();
+      it.pos--;
       break;
     }
+    if (it.lookahead == LB_CB)
+      break;
 
     /* LB21 */
     if (it.lookahead == LB_BA || it.lookahead == LB_HY || it.lookahead == LB_NS)
@@ -1027,6 +1039,8 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
       continue;
 
     /* LB31 */
+    //if(it_has_accepted())
+    //  it.pos--;
     break;
   }
 
