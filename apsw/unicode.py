@@ -592,6 +592,11 @@ def text_wrap(
         accumulated: list[str] = []
         line_width = 0
         for segment in line_break_iter(line):
+
+            # ::TODO:: the handling of consecutive spaces is wrong.  they don't accumulate as many
+            # as possible in each segment, and instead there will be at most one usually, and then
+            # segments made up of individual spaces
+
             # the first segment of the line that is indented will start with space, so ignore them
             if combine_space and segment[0] != " " and segment[-1] == " ":
                 trim = 0
