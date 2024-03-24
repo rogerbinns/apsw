@@ -871,7 +871,7 @@ if __name__ == "__main__":
                 f"TR29 grapheme: { ' | '.join(_unicode.category_name('grapheme', cp)) }   "
                 f"word: { ' | '.join(_unicode.category_name('word', cp )) }   "
                 f"sentence: { ' | '.join(_unicode.category_name('sentence', cp)) }  "
-                f"line: { ' | '.join(_unicode.category_name('line', cp)) }"
+                f"TR14 line break: { ' | '.join(_unicode.category_name('line_break', cp)) }"
             )
             print()
 
