@@ -748,13 +748,15 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
       continue;
 
     /* LB9 */
-    if (it.lookahead == LB_CM || it.lookahead == LB_ZWJ)
+    if ((it.curchar != LB_BK && it.curchar != LB_CR && it.curchar != LB_LF && it.curchar != LB_NL && it.curchar != LB_SP
+         && it.curchar != LB_ZW)
+        && (it.lookahead == LB_CM || it.lookahead == LB_ZWJ))
     {
       unsigned savechar = it.curchar;
       while (it.lookahead == LB_CM || it.lookahead == LB_ZWJ)
         it_advance();
       /* ::TODO:: this won't help with it_curchar* macros because they reread the character
-          and will have the wrong position */
+          and will have the wrong position. maybe it won't matter? */
       it.curchar = savechar;
       /* the previous rules need to be re-applied, but we've already advanced */
       if (it.pos >= text_end)
@@ -806,22 +808,33 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
         && (it.curchar == LB_BK || it.curchar == LB_CR || it.curchar == LB_NL || it.curchar == LB_OP
             || it.curchar == LB_QU || it.curchar == LB_GL || it.curchar == LB_SP || it.curchar == LB_ZW))
     {
+      it_begin();
       it_advance();
       assert(it.curchar == LB_QU);
       while (it.lookahead == LB_SP)
         it_advance();
-      /* ::TODO:: this may require another advance ... */
-      continue;
+      if (it.lookahead)
+      {
+        it_commit();
+        continue;
+      }
+      it_rollback();
     }
 
     /* LB15b */
-    if (it.curchar == LB_QU && it_curchar_category(Category_Punctuation_FinalQuote)
-        && (it.lookahead == LB_SP || it.lookahead == LB_GL || it.lookahead == LB_WJ || it.lookahead == LB_CL
-            || it.lookahead == LB_QU || it.lookahead == LB_CP || it.lookahead == LB_EX || it.lookahead == LB_IS
-            || it.lookahead == LB_SY || it.lookahead == LB_BK || it.lookahead == LB_CR || it.lookahead == LB_LF
-            || it.lookahead == LB_NL || it.lookahead == LB_ZW || it.lookahead == 0))
+    if (it.lookahead == LB_QU && it_lookahead_category(Category_Punctuation_FinalQuote))
     {
-      continue;
+      it_begin();
+      it_advance();
+      if (it.lookahead == LB_SP || it.lookahead == LB_GL || it.lookahead == LB_WJ || it.lookahead == LB_CL
+          || it.lookahead == LB_QU || it.lookahead == LB_CP || it.lookahead == LB_EX || it.lookahead == LB_IS
+          || it.lookahead == LB_SY || it.lookahead == LB_BK || it.lookahead == LB_CR || it.lookahead == LB_LF
+          || it.lookahead == LB_NL || it.lookahead == LB_ZW || it.lookahead == EOT)
+      {
+        it_commit();
+        continue;
+      }
+      it_rollback();
     }
 
     /* LB16 */
@@ -857,12 +870,6 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     /* LB18 */
     if (it.curchar == LB_SP)
       break;
-
-    if (it.lookahead == LB_SP)
-    {
-      it_advance();
-      break;
-    }
 
     /* LB19 */
     if (it.curchar == LB_QU)
@@ -999,11 +1006,10 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
       switch (it_lookahead_char())
       {
         /* at the time of writing, there were 95 OP of which 65 were not FWH */
-#define X(v)                                                                                                           \
-  case v:                                                                                                              \
-    ALL_LB30_OP_not_FWH
+#define X(v) case v:
+        ALL_LB30_OP_not_FWH
 #undef X
-        continue;
+            continue;
       default:
         break;
       }
@@ -1014,11 +1020,10 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
       switch (it_curchar())
       {
         /* at the time of writing, there were 2 CP of which 2 were not FWH */
-#define X(v)                                                                                                           \
-  case v:                                                                                                              \
-    ALL_LB30_CP_not_FWH
+#define X(v) case v:
+        ALL_LB30_CP_not_FWH
 #undef X
-        continue;
+            continue;
       default:
         break;
       }
@@ -1126,7 +1131,8 @@ category_name(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t 
   }
   else
   {
-    PyErr_Format(PyExc_ValueError, "Unknown which parameter \"%s\" - should be one of grapheme, word, sentence", which);
+    PyErr_Format(PyExc_ValueError,
+                 "Unknown which parameter \"%s\" - should be one of grapheme, word, sentence, line_break", which);
     Py_CLEAR(res);
   }
 
