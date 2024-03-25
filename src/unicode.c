@@ -731,6 +731,21 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     if (it.lookahead == LB_BK || it.lookahead == LB_CR || it.lookahead == LB_LF || it.lookahead == LB_NL)
       continue;
 
+    /* LB17 - LB7 lookahead==SP, so we have to be evaluated first */
+    if (it.curchar == LB_B2 && (it.lookahead == LB_SP || it.lookahead == LB_B2))
+    {
+      it_begin();
+      while (it.lookahead == LB_SP)
+        it_advance();
+      if (it.lookahead == LB_B2)
+      {
+        it_advance();
+        it_commit();
+        continue;
+      }
+      it_rollback();
+    }
+
     /* LB7 */
     if (it.lookahead == LB_SP || it.lookahead == LB_ZW)
       continue;
@@ -758,15 +773,13 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
       /* ::TODO:: this won't help with it_curchar* macros because they reread the character
           and will have the wrong position. maybe it won't matter? */
       it.curchar = savechar;
-      /* the previous rules need to be re-applied, but we've already advanced */
-      if (it.pos >= text_end)
-        break;
+      /* We already advanced so re-evaluate above rules again */
       goto top_of_loop;
     }
 
     /* LB10 */
     if (it.curchar == LB_CM || it.curchar == LB_ZWJ)
-      it.curchar = LB_AL; /* See ::TODO:: above, the ~3 rules mentioniung AL could just be applied here */
+      it.curchar = LB_AL; /* See ::TODO:: above, the ~3 rules mentioning AL could just be applied here */
 
     /* LB11 */
     if (it.curchar == LB_WJ)
@@ -852,7 +865,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
       it_rollback();
     }
 
-    /* LB17 */
+    /* LB17 again */
     if (it.curchar == LB_B2 && (it.lookahead == LB_SP || it.lookahead == LB_B2))
     {
       it_begin();
