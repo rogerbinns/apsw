@@ -67,19 +67,19 @@ more extends is treated as though it was just X.  This keeps advancing
 while those criteria are met.  Crucially curchar retains its original
 value during the advancing.
 
-it_begin
+it_begin()
 
 Saves the current state.
 
-it_rollback
+it_rollback()
 
 Restores prior saved state.
 
-it_commit
+it_commit()
 
 Saved state is not needed.
 
-it_has_accepted
+it_has_accepted - variable
 
 True if at least one character has been accepted.
 
@@ -132,12 +132,6 @@ typedef struct
 #define it_lookahead_ischar(c) ((c) == it_lookahead_char())
 
 #define it_curchar_ischar(c) ((c) == it_curchar())
-
-/* the first advance sets pos == offset + 1 but nothing is accepted
-   yet, hence +1.  this also wrong if the first char we are processing is
-   followed by combiners, so technically nothing has actually been
-   accepted yet  */
-#define it_has_accepted() (it.pos > offset + 1)
 
 #define it_absorb(match, extend)                                                                                       \
   do                                                                                                                   \
@@ -226,12 +220,14 @@ grapheme_next_break(PyObject *text, Py_ssize_t offset)
 
 #define cat_func grapheme_category
   TextIterator it = TEXT_INIT;
+  int it_has_accepted = 0;
 
   /* GB1 implicit */
 
   /* GB2 */
   while (it.pos < text_end)
   {
+    it_has_accepted = it.pos > offset;
     it_advance();
 
     /* GB3 */
@@ -245,7 +241,7 @@ grapheme_next_break(PyObject *text, Py_ssize_t offset)
     if (it.curchar & (GC_Control | GC_CR | GC_LF))
     {
       /* GB5: break before if any chars are accepted */
-      if (it_has_accepted())
+      if (it_has_accepted)
         it.pos--;
       break;
     }
@@ -362,6 +358,7 @@ word_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
 #undef cat_func
 #define cat_func word_category
   TextIterator it = TEXT_INIT;
+  int it_has_accepted = 0;
 
   /* From spec */
 #define AHLetter (WC_ALetter | WC_Hebrew_Letter)
@@ -373,6 +370,7 @@ word_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
   while (it.pos < text_end)
   {
   loop_top:
+    it_has_accepted = it.pos > offset;
     it_advance();
 
     /* WB3 */
@@ -386,7 +384,7 @@ word_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     if (it.curchar & (WC_Newline | WC_CR | WC_LF))
     {
       /* break before if any chars are accepted */
-      if (it_has_accepted())
+      if (it_has_accepted)
       {
         it.pos--;
         break;
@@ -699,6 +697,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
 #undef cat_func
 #define cat_func line_category
   TextIterator it = TEXT_INIT;
+  int it_has_accepted = 0;
 
   /*
     Important note:  We have to use equality checking NOT bitwise and
@@ -710,6 +709,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
   /* LB3 */
   while (it.pos < text_end)
   {
+    it_has_accepted = it.pos > offset;
     it_advance();
   top_of_loop:
 
@@ -894,7 +894,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     }
 
     /* LB20 */
-    if (it.curchar == LB_CB && it_has_accepted())
+    if (it.curchar == LB_CB && it_has_accepted)
     {
       it.pos--;
       break;
@@ -1056,9 +1056,6 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
         && it.lookahead == LB_EM)
       continue;
 
-    /* LB31 */
-    //if(it_has_accepted())
-    //  it.pos--;
     break;
   }
 
