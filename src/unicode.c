@@ -894,11 +894,8 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     }
 
     /* LB20 */
-    if (it.curchar == LB_CB && it_has_accepted)
-    {
-      it.pos--;
+    if (it.curchar == LB_CB)
       break;
-    }
     if (it.lookahead == LB_CB)
       break;
 
