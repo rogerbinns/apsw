@@ -734,6 +734,21 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     if (it.lookahead == LB_BK || it.lookahead == LB_CR || it.lookahead == LB_LF || it.lookahead == LB_NL)
       continue;
 
+    /* LB16 - LB7 lookahead==SP, so we have to be evaluated first */
+    if ((it.curchar == LB_CL || it.curchar == LB_CP) && (it.lookahead == LB_SP || it.lookahead == LB_NS))
+    {
+      it_begin();
+      while (it.lookahead == LB_SP)
+        it_advance();
+      if (it.lookahead == LB_NS)
+      {
+        it_advance();
+        it_commit();
+        continue;
+      }
+      it_rollback();
+    }
+
     /* LB17 - LB7 lookahead==SP, so we have to be evaluated first */
     if (it.curchar == LB_B2 && (it.lookahead == LB_SP || it.lookahead == LB_B2))
     {
@@ -853,7 +868,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
       it_rollback();
     }
 
-    /* LB16 */
+    /* LB16 again */
     if ((it.curchar == LB_CL || it.curchar == LB_CP) && (it.lookahead == LB_SP || it.lookahead == LB_NS))
     {
       it_begin();
@@ -1056,6 +1071,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
         && it.lookahead == LB_EM)
       continue;
 
+    /* LB999 */
     break;
   }
 
