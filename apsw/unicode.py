@@ -662,6 +662,7 @@ if __name__ == "__main__":
     subparsers = parser.add_subparsers(required=True)
     p = subparsers.add_parser("breaktest", help="Run Unicode test file")
     p.set_defaults(function="breaktest")
+    p.add_argument("-v", default=False, action="store_true", dest="verbose", help="Show each line as it is tested")
     p.add_argument("--fail-fast", default=False, action="store_true", help="Exit on first test failure")
     p.add_argument("test", choices=("grapheme", "word", "sentence", "line_break"), help="What to test")
     # ::TODO:: auto download file if not provided
@@ -780,6 +781,8 @@ if __name__ == "__main__":
             if not line.strip() or line.startswith("#"):
                 continue
             line = line.split("#")[0].strip().split()
+            if options.verbose:
+                print(f"{ line_num }: { orig_line.rstrip() }")
             expect = not_ok if options.test == "line_break" else ok
             assert line[0] == expect, f"Line { line_num } doesn't start with { expect }!"
             assert line[-1] == ok, f"Line { line_num } doesn't end with { ok }!"
