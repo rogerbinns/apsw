@@ -734,6 +734,26 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     if (it.lookahead == LB_BK || it.lookahead == LB_CR || it.lookahead == LB_LF || it.lookahead == LB_NL)
       continue;
 
+    /* LB8 - LB7 lookahead==SP, so we have to be evaluated first */
+    if (it.curchar == LB_ZW)
+    {
+      while (it.lookahead == LB_SP || it.lookahead == LB_ZW)
+        it_advance();
+      if (it.lookahead == LB_BK || it.lookahead == LB_CR || it.lookahead == LB_LF || it.lookahead == LB_NL)
+        continue;
+      break;
+    }
+
+    /* LB14 - LB7 lookahead==SP, so we have to be evaluated first */
+    if (it.curchar == LB_OP)
+    {
+      while (it.lookahead == LB_CM)
+        it_advance();
+      while (it.lookahead == LB_SP)
+        it_advance();
+      continue;
+    }
+
     /* LB16 - LB7 lookahead==SP, so we have to be evaluated first */
     if ((it.curchar == LB_CL || it.curchar == LB_CP) && (it.lookahead == LB_SP || it.lookahead == LB_NS))
     {
@@ -768,11 +788,13 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     if (it.lookahead == LB_SP || it.lookahead == LB_ZW)
       continue;
 
-    /* LB8 */
+    /* LB8 - again */
     if (it.curchar == LB_ZW)
     {
-      while (it.lookahead == LB_SP)
+      while (it.lookahead == LB_SP || it.lookahead == LB_ZW)
         it_advance();
+      if (it.lookahead == LB_BK || it.lookahead == LB_CR || it.lookahead == LB_LF || it.lookahead == LB_NL)
+        continue;
       break;
     }
 
@@ -826,7 +848,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
         || it.lookahead == LB_SY)
       continue;
 
-    /* LB14 */
+    /* LB14 again */
     if (it.curchar == LB_OP)
     {
       while (it.lookahead == LB_SP)
