@@ -959,14 +959,62 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     if ((it.curchar == LB_AL || it.curchar == LB_HL) && (it.lookahead == LB_PR || it.lookahead == LB_PO))
       continue;
 
-#define PAIR(x, y) (it.curchar == LB_##x && it.lookahead == LB_##y)
-
     /* LB25 */
-    if (PAIR(CL, PO) || PAIR(CP, PO) || PAIR(CL, PR) || PAIR(CP, PR) || PAIR(NU, PO) || PAIR(NU, PR) || PAIR(PO, OP)
-        || PAIR(PO, NU) || PAIR(PR, OP) || PAIR(PR, NU) || PAIR(HY, NU) || PAIR(IS, NU) || PAIR(NU, NU) || PAIR(SY, NU))
-      continue;
-
-#undef PAIR
+    /* This was originally implemented as the pairwise don't break
+       list.  However that then fails many tests because they do expect a
+       break between CL and PO as the first example (without the stuff
+       preceding that) and also because CM from LB9/10 isn't handled.  So
+       here we implement the full regex equivalent.
+    */
+    if (it.curchar == LB_PR || it.curchar == LB_PO || it.curchar == LB_OP || it.curchar == LB_HY || it.curchar == LB_NU)
+    {
+      int is_lb25 = 1;
+      do
+      {
+        it_begin();
+        if (it.curchar == LB_PR || it.curchar == LB_PO)
+        {
+          it_advance();
+          while (it.curchar == LB_CM)
+            it_advance();
+        }
+        if (it.curchar == LB_OP || it.curchar == LB_HY)
+        {
+          it_advance();
+          while (it.curchar == LB_CM)
+            it_advance();
+        }
+        if (it.curchar != LB_NU)
+        {
+          is_lb25 = 0;
+          break;
+        }
+        while (it.lookahead == LB_CM)
+          it_advance();
+        while (it.lookahead == LB_NU || it.lookahead == LB_SY || it.lookahead == LB_IS)
+        {
+          it_advance();
+          while (it.lookahead == LB_CM)
+            it_advance();
+        }
+        if (it.lookahead == LB_CL || it.lookahead == LB_CP)
+        {
+          it_advance();
+          while (it.lookahead == LB_CM)
+            it_advance();
+        }
+        if (it.lookahead == LB_PR || it.lookahead == LB_PO)
+        {
+          it_advance();
+          while (it.lookahead == LB_CM)
+            it_advance();
+        }
+      } while (0);
+      if (is_lb25)
+        it_commit();
+      else
+        it_rollback();
+    }
 
     /* LB26 */
     if (it.curchar == LB_JL
