@@ -108,17 +108,20 @@ typedef struct
 
 #define TEXT_INIT                                                                                                      \
   {                                                                                                                    \
-    .pos = offset, .curchar = 0,                                                                                       \
+    .pos = offset, .curchar = -1,                                                                                      \
     .lookahead = (offset == text_end) ? EOT : cat_func(PyUnicode_READ(text_kind, text_data, offset)),                  \
   }
 
 #define it_advance()                                                                                                   \
   do                                                                                                                   \
   {                                                                                                                    \
-    assert(it.pos < text_end);                                                                                         \
+    assert(it.curchar != EOT);                                                                                         \
     it.curchar = it.lookahead;                                                                                         \
-    it.pos++;                                                                                                          \
-    it.lookahead = (it.pos == text_end) ? EOT : cat_func(PyUnicode_READ(text_kind, text_data, it.pos));                \
+    if (it.curchar != EOT)                                                                                             \
+    {                                                                                                                  \
+      it.pos++;                                                                                                        \
+      it.lookahead = (it.pos == text_end) ? EOT : cat_func(PyUnicode_READ(text_kind, text_data, it.pos));              \
+    }                                                                                                                  \
   } while (0)
 
 /* note it.pos currently points to lookahead and subtract one for curchar. */
