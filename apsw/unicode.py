@@ -609,6 +609,8 @@ def text_wrap(
             while line_width + seg_width > width:
                 if line_width == 0:
                     # hyphenate too long
+                    # ::TODO:: grapheme clusters != grapheme width
+                    # is a grapheme_width_substr needed?
                     yield grapheme_substr(segment, 0, width - hyphen_width) + hyphen
                     segment = grapheme_substr(segment, width - hyphen_width)
                     accumulated = []
