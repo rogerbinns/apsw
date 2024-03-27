@@ -786,7 +786,12 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
 
     /* LB7 */
     if (it.lookahead == LB_SP || it.lookahead == LB_ZW)
-      continue;
+    {
+      if (!
+          /* LB15 consumes the space */
+          (!it_has_accepted && it.curchar == LB_QU && it_curchar_category(Category_Punctuation_InitialQuote)))
+        continue;
+    }
 
     /* LB8 - again */
     if (it.curchar == LB_ZW)
@@ -814,6 +819,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
           and will have the wrong position. maybe it won't matter? */
       it.curchar = savechar;
       /* We already advanced so re-evaluate above rules again */
+      it_has_accepted = 1;
       goto top_of_loop;
     }
 
@@ -857,12 +863,16 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     }
 
     /* LB15a */
-    if (it.lookahead == LB_QU && it_lookahead_category(Category_Punctuation_InitialQuote)
-        && (it.curchar == LB_BK || it.curchar == LB_CR || it.curchar == LB_NL || it.curchar == LB_OP
-            || it.curchar == LB_QU || it.curchar == LB_GL || it.curchar == LB_SP || it.curchar == LB_ZW))
+    if ((it.lookahead == LB_QU && it_lookahead_category(Category_Punctuation_InitialQuote)
+         && (it.curchar == LB_BK || it.curchar == LB_CR || it.curchar == LB_NL || it.curchar == LB_OP
+             || it.curchar == LB_QU || it.curchar == LB_GL || it.curchar == LB_SP || it.curchar == LB_ZW))
+        ||
+        /* handle SOT case */
+        (!it_has_accepted && it.curchar == LB_QU && it_curchar_category(Category_Punctuation_InitialQuote)))
     {
       it_begin();
-      it_advance();
+      if (!(!it_has_accepted && it.curchar == LB_QU && it_curchar_category(Category_Punctuation_InitialQuote)))
+        it_advance();
       assert(it.curchar == LB_QU);
       while (it.lookahead == LB_SP)
         it_advance();
