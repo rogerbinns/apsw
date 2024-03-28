@@ -717,6 +717,14 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     if (it.lookahead & (LB_BK | LB_CR | LB_LF | LB_NL))
       continue;
 
+      /* LB7 can't be implemented here because rules lower down match
+       longer sequences including lookahead space.  Originally I tried to
+       incorporate those rules here which got unmanageable.  So now we check
+       for LB7 applying in lower locations that would otherwise break using
+       this macro */
+
+#define LB7_APPLIES (it.lookahead & (LB_SP | LB_ZW))
+
     /* LB8 */
     if (it.curchar & LB_ZW)
     {
@@ -840,7 +848,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     }
 
     /* LB18 - but LB7 is higher priority */
-    if (it.curchar & LB_SP && 0 == (it.lookahead & LB_SP))
+    if (it.curchar & LB_SP && !LB7_APPLIES)
       break;
 
     /* LB19 */
@@ -853,7 +861,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     }
 
     /* LB20 */
-    if (it.curchar & LB_CB)
+    if (it.curchar & LB_CB && !LB7_APPLIES)
       break;
     if (it.lookahead & LB_CB)
       break;
@@ -1022,8 +1030,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     if (it.curchar & (LB_Extended_Pictographic | LB_Other_NotAssigned) && it.lookahead & LB_EM)
       continue;
 
-    /* LB7 */
-    if (it.lookahead & LB_SP)
+    if (LB7_APPLIES)
       continue;
 
     /* LB999 */
