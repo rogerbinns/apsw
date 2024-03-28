@@ -88,8 +88,8 @@ True if at least one character has been accepted.
 typedef struct
 {
   Py_ssize_t pos;
-  unsigned curchar;
-  unsigned lookahead;
+  unsigned long long curchar;
+  unsigned long long lookahead;
 
 #ifndef NDEBUG
   /* This field is used to catch attempts at nested transactions which
@@ -100,8 +100,8 @@ typedef struct
   struct
   {
     Py_ssize_t pos;
-    unsigned curchar;
-    unsigned lookahead;
+    unsigned long long curchar;
+    unsigned long long lookahead;
   } saved;
 
 } TextIterator;
@@ -124,24 +124,12 @@ typedef struct
     }                                                                                                                  \
   } while (0)
 
-/* note it.pos currently points to lookahead and subtract one for curchar. */
-#define it_lookahead_char() ((it.pos == text_end) ? EOT : PyUnicode_READ(text_kind, text_data, it.pos))
-#define it_curchar() (PyUnicode_READ(text_kind, text_data, it.pos - 1))
-
-#define it_lookahead_category(value) ((category_category(it_lookahead_char()) & (value)) == (value))
-
-#define it_curchar_category(value) ((category_category(it_curchar()) & (value)) == (value))
-
-#define it_lookahead_ischar(c) ((c) == it_lookahead_char())
-
-#define it_curchar_ischar(c) ((c) == it_curchar())
-
 #define it_absorb(match, extend)                                                                                       \
   do                                                                                                                   \
   {                                                                                                                    \
     if (it.lookahead & (match))                                                                                        \
     {                                                                                                                  \
-      unsigned savechar = it.curchar;                                                                                  \
+      unsigned long long savechar = it.curchar;                                                                        \
       while (it.lookahead & (match))                                                                                   \
       {                                                                                                                \
         it_advance();                                                                                                  \
@@ -702,11 +690,6 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
   TextIterator it = TEXT_INIT;
   int it_has_accepted = 0;
 
-  /*
-    Important note:  We have to use equality checking NOT bitwise and
-    because there were too many categories to use a bitset.
-  */
-
   /* LB2 implicit */
 
   /* LB3 */
@@ -815,8 +798,6 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
       unsigned savechar = it.curchar;
       while (it.lookahead == LB_CM || it.lookahead == LB_ZWJ)
         it_advance();
-      /* ::TODO:: this won't help with it_curchar* macros because they reread the character
-          and will have the wrong position. maybe it won't matter? */
       it.curchar = savechar;
       /* We already advanced so re-evaluate above rules again */
       it_has_accepted = 1;
