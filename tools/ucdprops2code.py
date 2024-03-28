@@ -123,8 +123,6 @@ def generate_c() -> str:
     out.append("")
     out.extend(generate_c_table("line", "LB", line_ranges))
     out.append("")
-    out.extend(generate_LB30_stuff())
-    out.append("")
     out.extend(generate_line_hard_breaks())
 
     return "\n".join(out) + "\n"
@@ -274,6 +272,10 @@ def category_enum(language: str, name="Category"):
 
 
 def generate_c_table(name, enum_name, ranges):
+    # we can use 32 bit values for all tables except line/LB
+    ret_type = "unsigned int" if enum_name != "LB" else "unsigned long long"
+    int_suffix = "u" if enum_name != "LB" else "ull"
+
     yield f"/* { name } */"
     yield ""
     if name == "category":
@@ -287,11 +289,7 @@ def generate_c_table(name, enum_name, ranges):
             else:
                 all_cats.update(cat)
         for i, cat in enumerate(sorted(all_cats)):
-            if enum_name in {"LB"}:
-                # not a bitset - we start at one because 0 is no match
-                yield f"#define { enum_name }_{ cat } {i + 1}"
-            else:
-                yield f"#define { enum_name }_{ cat } (1u << {i})"
+            yield f"#define { enum_name }_{ cat } (1{int_suffix} << {i})"
         yield ""
         yield f"#define ALL_{ enum_name.upper() }_VALUES \\"
         for cat in sorted(all_cats):
@@ -320,7 +318,7 @@ def generate_c_table(name, enum_name, ranges):
     table_limit = options.table_limit
 
     if table_limit:
-        yield f"static unsigned int { name}_fast_lookup[] = {{"
+        yield f"static {ret_type} { name}_fast_lookup[] = {{"
         line = ""
         for cp in range(table_limit):
             if cp % 16 == 0:
@@ -344,7 +342,7 @@ def generate_c_table(name, enum_name, ranges):
         yield ""
         ranges[0][0] = table_limit
 
-    yield "static unsigned int"
+    yield f"static {ret_type}"
     yield f"{ name }_category(Py_UCS4 c)"
     yield "{"
     yield "  /* Returns category corresponding to codepoint */"
@@ -591,6 +589,7 @@ def read_props(data_dir: str):
     extract_prop(source, props["grapheme"], "Extended_Pictographic")
     extract_prop(source, props["word"], "Extended_Pictographic")
     extract_prop(source, props["category"], "Extended_Pictographic")
+    extract_prop(source, props["line"], "Extended_Pictographic")
 
     source = get_source("https://www.unicode.org/Public/UCD/latest/ucd/DerivedCoreProperties.txt")
     extract_version("DerivedCoreProperties.txt", source)
@@ -687,47 +686,49 @@ def generate_line_hard_breaks():
     yield ""
 
 
-# see rule LB30
-line_OP_not_FWH = []
-line_CP_not_FWH = []
-
-
-def generate_LB30_stuff():
-    yield "#define ALL_LB30_OP_not_FWH \\"
-    for _, is_last, v in augiter(line_OP_not_FWH):
-        yield f"  X(0x{v:04X}) " + ("\\" if not is_last else "")
-    yield ""
-    yield "#define ALL_LB30_CP_not_FWH \\"
-    for _, is_last, v in augiter(line_CP_not_FWH):
-        yield f"  X(0x{v:04X}) " + ("\\" if not is_last else "")
-
-
 def generate_line_ranges():
     generate_ranges("line", props["line"], line_ranges, "XX", line_resolve_classes)
 
 
-def line_resolve_classes(codepoint: int, cat: str) -> str:
-    # rule LB30 needs this
-    if cat == "OP":
-        if codepoint not in east_asian_widths_FWH:
-            line_OP_not_FWH.append(codepoint)
-    elif cat == "CP":
-        if codepoint not in east_asian_widths_FWH:
-            line_CP_not_FWH.append(codepoint)
-
+def line_resolve_classes(codepoint: int, cat: str | tuple[str]) -> str:
     if cat in {"BK", "CR", "LF", "NL"}:
         line_hard_breaks.append(codepoint)
 
     # this is to do the mapping in 6.1 Resolve line breaking classes
     # https://www.unicode.org/reports/tr14/#LB1
     if cat in {"AI", "SG", "XX"}:
-        return "AL"
+        cat = "AL"
     if cat == "SA":
         if codepoint_to_category[codepoint] in {"Mn", "Mc"}:
-            return "CM"
-        return "AL"
+            cat = "CM"
+        else:
+            cat = "AL"
     if cat == "CJ":
-        return "NS"
+        cat = "NS"
+
+    def add_cat(c: str):
+        nonlocal cat
+        if isinstance(cat, tuple):
+            cat = tuple(list(cat) + [c])
+        else:
+            cat = (cat, c)
+
+    if codepoint_to_category[codepoint] == "Pi":
+        add_cat("Punctuation_Initial_Quote")
+    if codepoint_to_category[codepoint] == "Pf":
+        add_cat("Punctuation_Final_Quote")
+    if codepoint_to_category[codepoint] == "Cn":
+        add_cat("Other_NotAssigned")
+
+    # For EastAsianWidth in F, W, H only OP and CP matter
+    if (cat == "OP" or "OP" in cat) or (cat == "CP" or "CP" in cat):
+        if codepoint in east_asian_widths_FWH:
+            add_cat("EastAsianWidth_FWH")
+
+    # DOTCIRCLE U+25CC is in the rules
+    if codepoint == 0x2555:
+        add_cat("DOTCIRCLE")
+
     return cat
 
 
