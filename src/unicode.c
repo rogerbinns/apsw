@@ -868,10 +868,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
 
     /* LB21 */
     if (it.lookahead & (LB_BA | LB_HY | LB_NS))
-    {
-      it_advance();
       continue;
-    }
     if (it.curchar & LB_BB)
       continue;
 
@@ -1027,7 +1024,9 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     /* LB30b */
     if (it.curchar & LB_EB && it.lookahead & LB_EM)
       continue;
-    if (it.curchar & (LB_Extended_Pictographic | LB_Other_NotAssigned) && it.lookahead & LB_EM)
+    if ((it.curchar & (LB_Extended_Pictographic | LB_Other_NotAssigned))
+            == (LB_Extended_Pictographic | LB_Other_NotAssigned)
+        && it.lookahead & LB_EM)
       continue;
 
     if (LB7_APPLIES)
