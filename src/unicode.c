@@ -717,61 +717,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     if (it.lookahead & (LB_BK | LB_CR | LB_LF | LB_NL))
       continue;
 
-    /* LB8 - LB7 lookahead==SP, so we have to be evaluated first */
-    if (it.curchar & LB_ZW)
-    {
-      it_absorb(LB_SP | LB_ZW, 0);
-      if (it.lookahead & (LB_BK | LB_CR | LB_LF | LB_NL))
-        continue;
-      break;
-    }
-
-    /* LB14 - LB7 lookahead==SP, so we have to be evaluated first */
-    if (it.curchar & LB_OP)
-    {
-      it_absorb(LB_CM, 0);
-      it_absorb(LB_SP, 0);
-      continue;
-    }
-
-    /* LB16 - LB7 lookahead==SP, so we have to be evaluated first */
-    if (it.curchar & (LB_CL | LB_CP) && it.lookahead & (LB_SP | LB_NS))
-    {
-      it_begin();
-      it_absorb(LB_SP, 0);
-      if (it.lookahead & LB_NS)
-      {
-        it_advance();
-        it_commit();
-        continue;
-      }
-      it_rollback();
-    }
-
-    /* LB17 - LB7 lookahead==SP, so we have to be evaluated first */
-    if (it.curchar & LB_B2 && it.lookahead & (LB_SP | LB_B2))
-    {
-      it_begin();
-      it_absorb(LB_SP, 0);
-      if (it.lookahead & LB_B2)
-      {
-        it_advance();
-        it_commit();
-        continue;
-      }
-      it_rollback();
-    }
-
-    /* LB7 */
-    if (it.lookahead & (LB_SP | LB_ZW))
-    {
-      if (!
-          /* LB15 consumes the space */
-          (!it_has_accepted && it.curchar & LB_QU && it.curchar & LB_Punctuation_Initial_Quote))
-        continue;
-    }
-
-    /* LB8 - again */
+    /* LB8 */
     if (it.curchar & LB_ZW)
     {
       it_absorb(LB_SP | LB_ZW, 0);
@@ -788,8 +734,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     if (!(it.curchar & (LB_BK | LB_CR | LB_LF | LB_NL | LB_SP | LB_ZW)) && it.lookahead & (LB_CM | LB_ZWJ))
     {
       it_absorb(LB_CM | LB_ZWJ, 0);
-      /* We already advanced so re-evaluate above rules again */
-      it_has_accepted = 1;
+      /* We already advanced and have to rerun the earlier rules again */
       goto top_of_loop;
     }
 
@@ -823,7 +768,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     if (it.lookahead & (LB_CL | LB_CP | LB_EX | LB_IS | LB_SY))
       continue;
 
-    /* LB14 again */
+    /* LB14 */
     if (it.curchar & LB_OP)
     {
       it_absorb(LB_SP, 0);
@@ -866,7 +811,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
       it_rollback();
     }
 
-    /* LB16 again */
+    /* LB16 */
     if (it.curchar & (LB_CL | LB_CP) && it.lookahead & (LB_SP | LB_NS))
     {
       it_begin();
@@ -880,7 +825,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
       it_rollback();
     }
 
-    /* LB17 again */
+    /* LB17 */
     if (it.curchar & LB_B2 && it.lookahead & (LB_SP | LB_B2))
     {
       it_begin();
@@ -894,8 +839,8 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
       it_rollback();
     }
 
-    /* LB18 */
-    if (it.curchar & LB_SP)
+    /* LB18 - but LB7 is higher priority */
+    if (it.curchar & LB_SP && 0 == (it.lookahead & LB_SP))
       break;
 
     /* LB19 */
@@ -1075,6 +1020,10 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     if (it.curchar & LB_EB && it.lookahead & LB_EM)
       continue;
     if (it.curchar & (LB_Extended_Pictographic | LB_Other_NotAssigned) && it.lookahead & LB_EM)
+      continue;
+
+    /* LB7 */
+    if (it.lookahead & LB_SP)
       continue;
 
     /* LB999 */
