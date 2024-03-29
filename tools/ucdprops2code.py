@@ -725,9 +725,9 @@ def line_resolve_classes(codepoint: int, cat: str | tuple[str]) -> str:
         if codepoint in east_asian_widths_FWH:
             add_cat("EastAsianWidth_FWH")
 
-    # DOTCIRCLE U+25CC is in the rules
-    if codepoint == 0x2555:
-        add_cat("DOTCIRCLE")
+    # DOTTED CIRCLE U+25CC is in the rules
+    if codepoint == 0x25CC:
+        add_cat("DOTTED_CIRCLE")
 
     return cat
 
