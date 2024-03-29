@@ -783,7 +783,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     /* LB14 */
     if (it.curchar & LB_OP)
     {
-      it_absorb(LB_SP, 0);
+      it_absorb(LB_SP, LB_CM);
       continue;
     }
 
@@ -798,7 +798,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
       if (!(!it_has_accepted && it.curchar & LB_QU && it.curchar & LB_Punctuation_Initial_Quote))
         it_advance();
       assert(it.curchar & LB_QU);
-      it_absorb(LB_SP, 0);
+      it_absorb(LB_SP, LB_CM);
       if (it.lookahead)
       {
         it_commit();
@@ -827,7 +827,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     if (it.curchar & (LB_CL | LB_CP) && it.lookahead & (LB_SP | LB_NS))
     {
       it_begin();
-      it_absorb(LB_SP, 0);
+      it_absorb(LB_SP, LB_CM);
       if (it.lookahead & LB_NS)
       {
         it_advance();
@@ -841,7 +841,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     if (it.curchar & LB_B2 && it.lookahead & (LB_SP | LB_B2))
     {
       it_begin();
-      it_absorb(LB_SP, 0);
+      it_absorb(LB_SP, LB_CM);
       if (it.lookahead & LB_B2)
       {
         it_advance();
@@ -871,18 +871,18 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     if (it.lookahead & LB_CB)
       break;
 
-    /* LB21 */
-    if (it.lookahead & (LB_BA | LB_HY | LB_NS))
-      continue;
-    if (it.curchar & LB_BB)
-      continue;
-
-    /* LB21a */
+    /* LB21a - has ot be before LB21 */
     if (it.curchar & LB_HL && it.lookahead & (LB_HY | LB_BA))
     {
       it_advance();
       continue;
     }
+
+    /* LB21 */
+    if (it.lookahead & (LB_BA | LB_HY | LB_NS))
+      continue;
+    if (it.curchar & LB_BB)
+      continue;
 
     /* LB21b */
     if (it.curchar & LB_SY && it.lookahead & LB_HL)
@@ -993,6 +993,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
       it_begin();
       it_advance();
       assert(it.curchar & LB_VI);
+      it_absorb(LB_CM, 0);
       if (it.lookahead & (LB_AK | LB_DOTTED_CIRCLE))
       {
         it_commit();
