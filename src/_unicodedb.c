@@ -66508,7 +66508,7 @@ category_category(Py_UCS4 c)
 #define LB_CM (1ull << 11)
 #define LB_CP (1ull << 12)
 #define LB_CR (1ull << 13)
-#define LB_DOTCIRCLE (1ull << 14)
+#define LB_DOTTED_CIRCLE (1ull << 14)
 #define LB_EB (1ull << 15)
 #define LB_EM (1ull << 16)
 #define LB_EX (1ull << 17)
@@ -66560,7 +66560,7 @@ category_category(Py_UCS4 c)
   X(LB_CM)                                                                                                             \
   X(LB_CP)                                                                                                             \
   X(LB_CR)                                                                                                             \
-  X(LB_DOTCIRCLE)                                                                                                      \
+  X(LB_DOTTED_CIRCLE)                                                                                                  \
   X(LB_EB)                                                                                                             \
   X(LB_EM)                                                                                                             \
   X(LB_EX)                                                                                                             \
@@ -66654,7 +66654,7 @@ category_category(Py_UCS4 c)
            1 NL
            1 ZW
            1 ZWJ
-           1 AL | DOTCIRCLE
+           1 AL | DOTTED_CIRCLE
            1 EX | Extended_Pictographic
            1 CB
 
@@ -71557,7 +71557,7 @@ line_category(Py_UCS4 c)
           {
             if (c < 0x2640)
             {
-              if (c < 0x25AA)
+              if (c < 0x25B6)
               {
                 if (c < 0x23D0)
                 {
@@ -71690,16 +71690,16 @@ line_category(Py_UCS4 c)
                     }
                     else
                     {
-                      if (c < 0x2556)
+                      if (c < 0x25AC)
                       {
-                        if ((c >= 0x24C3) && (c <= 0x2554))
+                        if ((c >= 0x24C3) && (c <= 0x25A9))
                           return LB_AL;
-                        /* c == 0x2555 */
-                        return (LB_AL | LB_DOTCIRCLE);
+                        /* (c >= 0x25AA) && (c <= 0x25AB) */
+                        return (LB_AL | LB_Extended_Pictographic);
                       }
                       else
                       {
-                        /* (c >= 0x2556) && (c <= 0x25A9) */
+                        /* (c >= 0x25AC) && (c <= 0x25B5) */
                         return LB_AL;
                       }
                     }
@@ -71712,20 +71712,20 @@ line_category(Py_UCS4 c)
                 {
                   if (c < 0x25FF)
                   {
-                    if (c < 0x25C0)
+                    if (c < 0x25CC)
                     {
-                      if (c < 0x25B6)
-                      {
-                        if ((c >= 0x25AA) && (c <= 0x25AB))
-                          return (LB_AL | LB_Extended_Pictographic);
-                        /* (c >= 0x25AC) && (c <= 0x25B5) */
-                        return LB_AL;
-                      }
-                      else
+                      if (c < 0x25C0)
                       {
                         if (c == 0x25B6)
                           return (LB_AI | LB_Extended_Pictographic);
                         /* (c >= 0x25B7) && (c <= 0x25BF) */
+                        return LB_AL;
+                      }
+                      else
+                      {
+                        if (c == 0x25C0)
+                          return (LB_AI | LB_Extended_Pictographic);
+                        /* (c >= 0x25C1) && (c <= 0x25CB) */
                         return LB_AL;
                       }
                     }
@@ -71733,9 +71733,9 @@ line_category(Py_UCS4 c)
                     {
                       if (c < 0x25FB)
                       {
-                        if (c == 0x25C0)
-                          return (LB_AI | LB_Extended_Pictographic);
-                        /* (c >= 0x25C1) && (c <= 0x25FA) */
+                        if (c == 0x25CC)
+                          return (LB_AL | LB_DOTTED_CIRCLE);
+                        /* (c >= 0x25CD) && (c <= 0x25FA) */
                         return LB_AL;
                       }
                       else
