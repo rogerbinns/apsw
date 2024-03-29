@@ -774,7 +774,11 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
 
     /* LB13 */
     if (it.lookahead & (LB_CL | LB_CP | LB_EX | LB_IS | LB_SY))
-      continue;
+    {
+      /* LB25 matches longer sequence */
+      if (!(it.curchar & LB_NU && it.lookahead & (LB_IS | LB_SY)))
+        continue;
+    }
 
     /* LB14 */
     if (it.curchar & LB_OP)
@@ -913,9 +917,11 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
        preceding that) and also because CM from LB9/10 isn't handled.  So
        here we implement the full regex equivalent.
     */
+  lb25_again:
     if (it.curchar & (LB_PR | LB_PO | LB_OP | LB_HY | LB_NU))
     {
       int is_lb25 = 1;
+      Py_ssize_t initial_pos = it.pos;
       do
       {
         it_begin();
@@ -950,7 +956,12 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
         }
       } while (0);
       if (is_lb25)
+      {
         it_commit();
+        /* directly adjacent LB25 can't be broken, so repeat if we absorbed chars */
+        if (it.pos != initial_pos)
+          goto lb25_again;
+      }
       else
         it_rollback();
     }
