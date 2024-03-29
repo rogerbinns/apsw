@@ -828,9 +828,9 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
       {
         it_advance();
         it_commit();
-        continue;
       }
-      it_rollback();
+      else
+        it_rollback();
     }
 
     /* LB17 */
@@ -859,6 +859,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
       it_advance();
       continue;
     }
+#define LB19_APPLIES (it.lookahead & LB_QU)
 
     /* LB20 */
     if (it.curchar & LB_CB && !LB7_APPLIES)
@@ -972,24 +973,26 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     if (it.curchar & (LB_AL | LB_HL) && it.lookahead & (LB_AL | LB_HL))
       continue;
 
-    /* LB28A */
-    if (it.curchar & LB_AP && it.lookahead & (LB_AK | LB_DOTCIRCLE | LB_AS))
+    /* LB28A  */
+    if (it.curchar & LB_AP && it.lookahead & (LB_AK | LB_DOTTED_CIRCLE | LB_AS))
       continue;
-    if (it.curchar & (LB_AK | LB_DOTCIRCLE | LB_AS) && it.lookahead & (LB_VF | LB_VI))
-      continue;
-    if (it.curchar & (LB_AK | LB_DOTCIRCLE | LB_AS) && it.lookahead & LB_VI)
+    /* 3rd rule before 2nd because it matches more text */
+    if (it.curchar & (LB_AK | LB_DOTTED_CIRCLE | LB_AS) && it.lookahead & LB_VI)
     {
       it_begin();
       it_advance();
       assert(it.curchar & LB_VI);
-      if (it.lookahead & (LB_AK | LB_DOTCIRCLE))
+      if (it.lookahead & (LB_AK | LB_DOTTED_CIRCLE))
       {
         it_commit();
         continue;
       }
       it_rollback();
     }
-    if (it.curchar & (LB_AK | LB_DOTCIRCLE | LB_AS) && it.lookahead & (LB_AK | LB_DOTCIRCLE | LB_AS))
+    /* 2nd rule */
+    if (it.curchar & (LB_AK | LB_DOTTED_CIRCLE | LB_AS) && it.lookahead & (LB_VF | LB_VI))
+      continue;
+    if (it.curchar & (LB_AK | LB_DOTTED_CIRCLE | LB_AS) && it.lookahead & (LB_AK | LB_DOTTED_CIRCLE | LB_AS))
     {
       it_begin();
       it_advance();
@@ -1010,15 +1013,15 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
       continue;
 
     if ((it.curchar & (LB_CP | LB_EastAsianWidth_FWH)) == LB_CP && it.lookahead & (LB_AL | LB_HL | LB_NU))
-    {
       continue;
-    }
 
     /* LB30a */
     if (it.curchar & LB_RI && it.lookahead & LB_RI)
     {
       it_advance();
-      break;
+      it_absorb(LB_CM, 0);
+      if (!LB7_APPLIES && !LB19_APPLIES)
+        break;
     }
 
     /* LB30b */
@@ -1029,7 +1032,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
         && it.lookahead & LB_EM)
       continue;
 
-    if (LB7_APPLIES)
+    if (LB7_APPLIES || LB19_APPLIES)
       continue;
 
     /* LB999 */
