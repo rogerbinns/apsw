@@ -937,8 +937,12 @@ if __name__ == "__main__":
                     ok.append("pyicu")
                 except ImportError:
                     pass
-                options.others = ",".join(ok)
+                if ok:
+                    options.others = ",".join(ok)
+                else:
+                    options.others = None
 
+        if options.others:
             for package in options.others.split(","):
                 package = package.strip()
                 if package == "grapheme":
