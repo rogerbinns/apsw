@@ -788,8 +788,10 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     }
 
     /* LB15a */
+    /* LB_SP was in the curchar mask, but LB18 forces a break after
+       space so we can't use it here */
     if ((it.lookahead & LB_QU && it.lookahead & LB_Punctuation_Initial_Quote
-         && it.curchar & (LB_BK | LB_CR | LB_NL | LB_OP | LB_QU | LB_GL | LB_SP | LB_ZW))
+         && it.curchar & (LB_BK | LB_CR | LB_NL | LB_OP | LB_QU | LB_GL | LB_ZW))
         ||
         /* handle SOT case */
         (!it_has_accepted && it.curchar & LB_QU && it.curchar & LB_Punctuation_Initial_Quote))
@@ -799,12 +801,8 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
         it_advance();
       assert(it.curchar & LB_QU);
       it_absorb(LB_SP, LB_CM);
-      if (it.lookahead)
-      {
-        it_commit();
-        continue;
-      }
-      it_rollback();
+      it_commit();
+      continue;
     }
 
     /* LB15b */
