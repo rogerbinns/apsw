@@ -592,7 +592,6 @@ def text_wrap(
         accumulated: list[str] = []
         line_width = 0
         for segment in line_break_iter(line):
-
             # ::TODO:: the handling of consecutive spaces is wrong.  they don't accumulate as many
             # as possible in each segment, and instead there will be at most one usually, and then
             # segments made up of individual spaces
@@ -644,6 +643,7 @@ if __name__ == "__main__":
     import os
     import textwrap
     import sys
+    import atexit
     import apsw.fts
     import apsw.ext
 
@@ -666,6 +666,11 @@ if __name__ == "__main__":
     p.set_defaults(function="breaktest")
     p.add_argument("-v", default=False, action="store_true", dest="verbose", help="Show each line as it is tested")
     p.add_argument("--fail-fast", default=False, action="store_true", help="Exit on first test failure")
+    p.add_argument(
+        "--fail-codepoints-separator",
+        default=" ",
+        help="What to separate the list pf codepoints with on failure.  Useful for long test strings [%(default)s]",
+    )
     p.add_argument("test", choices=("grapheme", "word", "sentence", "line_break"), help="What to test")
     # ::TODO:: auto download file if not provided
     p.add_argument(
@@ -772,6 +777,9 @@ if __name__ == "__main__":
             counter += 1
 
     elif options.function == "breaktest":
+        # stop debug interpreter whining about file not being closed
+        atexit.register(lambda: options.file.close())
+
         next_break_func = globals()[f"{ options.test }_next_break"]
 
         ok = "÷"
@@ -805,7 +813,7 @@ if __name__ == "__main__":
                 codepoints = []
                 for counter, c in enumerate(text):
                     codepoints.append(codepoint_details(options.test, c, counter))
-                fails.append(" ".join(codepoints))
+                fails.append(options.fail_codepoints_separator.join(codepoints))
                 fails.append("")
 
             offset = 0
