@@ -780,13 +780,6 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
         continue;
     }
 
-    /* LB14 */
-    if (it.curchar & LB_OP)
-    {
-      it_absorb(LB_SP, LB_CM);
-      continue;
-    }
-
     /* LB15a */
     /* LB_SP was in the curchar mask, but LB18 forces a break after
        space so we can't use it here */
@@ -819,6 +812,13 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
         continue;
       }
       it_rollback();
+    }
+
+    /* LB14 - has to be after LB15 because LB15 looks for curchar & LB_OP */
+    if (it.curchar & LB_OP)
+    {
+      it_absorb(LB_SP, LB_CM);
+      continue;
     }
 
     /* LB16 */
@@ -869,7 +869,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     if (it.lookahead & LB_CB)
       break;
 
-    /* LB21a - has ot be before LB21 */
+    /* LB21a - has to be before LB21 */
     if (it.curchar & LB_HL && it.lookahead & (LB_HY | LB_BA))
     {
       it_advance();
