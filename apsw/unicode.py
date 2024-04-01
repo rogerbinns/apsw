@@ -30,10 +30,9 @@ See :data:`unicode_version` for the implemented version.
 
 Unicode lookups
 
-   :func:`category` provides category information, while
-   :func:`is_extended_pictographic` (Emoji),
-   :func:`is_regional_indicator`, :func:`is_wide` provide helpful
-   information.
+   * Category information :func:`category`
+   * Is an emoji or similar `is_extended_pictographic`
+   * Flag characters :func:`is_regional_indicator`
 
 Case folding
 
@@ -51,14 +50,27 @@ Grapheme cluster, word, and sentence splitting
     Building on those are iterators providing optional offsets and the
     text.
 
+Line break splitting
+
+    `Unicode Technical Report #14
+    <https://www.unicode.org/reports/tr14/>`__ rules for finding where
+    text cam be broken and resumed on the next line.  Tr14 specifies
+    break points which can be found via :func:`line_break_next_break`.
+
+    Building on those are iterators providing optional offsets and the
+    text.
+
 Helpers
 
-    Methods like :func:`grapheme_length` to get the number of grapheme
-    clusters in a string, :func:`grapheme_substr` to get substrings,
-    :func:`grapheme_width` which counts how wide the text would be if
-    output to a terminal or monospace font, and :func:`text_wrap` to
-    wrap text taking into grapheme clusters, words, and wide grapheme
-    clusters.
+    * :func:`grapheme_length` to get the number of grapheme
+       clusters in a string
+    * :func:`grapheme_substr` to get substrings
+    * :func:`text_width` to count how wide the text would be if
+      output to a terminal
+    * :func:`text_wrap` to wrap text taking into grapheme clusters,
+      words, and text width
+    * :func:`split_lines` to split text into lines using all the
+      Unicode hard line break codepoints
 
 Size
 
@@ -272,7 +284,8 @@ def word_next(
 ) -> tuple[int, int]:
     """Returns span of next word
 
-    A segment is considered a word based on the codepoints it contains and their category:
+    A segment is considered a word based on the codepoints it contains and their category.
+    Use the keyword arguments to include or exclude as needed:
 
     * letter
     * number
@@ -526,9 +539,8 @@ def is_regional_indicator(text: str) -> bool:
 def split_lines(text: str, offset: int = 0) -> Generator[str, None, None]:
     """Each line, using hard line break rules
 
-    This is a generator yielding a line at a time.
-
-    The end of line yielded will not include the hard line break characters
+    This is a generator yielding a line at a time.  The end of line
+    yielded will not include the hard line break characters.
     """
     lt = len(text)
     while offset < lt:
@@ -544,9 +556,9 @@ def split_lines(text: str, offset: int = 0) -> Generator[str, None, None]:
 
 
 def expand_tabs(text: str, tabsize: int = 8) -> str:
-    """Turns tabs into spaces aligning on tabsize boundaries, similar to :func:`str.expandtabs`
+    """Turns tabs into spaces aligning on tabsize boundaries, similar to :meth:`str.expandtabs`
 
-    This is aware of grapheme clusters and double width ones.
+    This is aware of grapheme clusters and text width.
     """
     if "\t" not in text:
         return text
@@ -561,7 +573,7 @@ def expand_tabs(text: str, tabsize: int = 8) -> str:
         for gr in grapheme_iter(line):
             if gr != "\t":
                 clusters.append(gr)
-                pos += grapheme_width(gr)
+                pos += text_width(gr)
             else:
                 incr = tabsize - (pos % tabsize)
                 clusters.append(" " * incr)
@@ -611,7 +623,7 @@ def text_wrap(
                         break
                 if trim + 1 < 0:
                     segment = segment[: trim + 1]
-            seg_width = grapheme_width(segment)
+            seg_width = text_width(segment)
             while line_width + seg_width > width:
                 if line_width == 0:
                     # hyphenate too long
@@ -621,7 +633,7 @@ def text_wrap(
                     segment = grapheme_substr(segment, width - hyphen_width)
                     accumulated = []
                     line_width = 0
-                    seg_width = grapheme_width(segment)
+                    seg_width = text_width(segment)
                     continue
                 yield "".join(accumulated) + " " * (width - line_width)
                 accumulated = []
