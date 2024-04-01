@@ -626,39 +626,40 @@ def text_wrap(
     for line in split_lines(text):
         accumulated: list[str] = []
         line_width = 0
+        indent = None
         for segment in line_break_iter(line):
-            # ::TODO:: the handling of consecutive spaces is wrong.  they don't accumulate as many
-            # as possible in each segment, and instead there will be at most one usually, and then
-            # segments made up of individual spaces
+            if indent is None:
+                indent = segment if segment[0] == " " else ""
+                if len(indent) >= width - hyphen_width:
+                    # make space for two chars if indent wider than width
+                    indent=indent[:max(0, width-hyphen_width-2)]
+                accumulated = [indent]
+                line_width = len(indent)
 
-            # the first segment of the line that is indented will start with space, so ignore them
-            if combine_space and segment[0] != " " and segment[-1] == " ":
-                trim = 0
-                for trim in range(-2, -len(segment), -1):
-                    if segment[trim] != " ":
-                        break
-                if trim + 1 < 0:
-                    segment = segment[: trim + 1]
+            # ::TODO:: remove all trailing spaces on last item
+            # ::TODO:: remove all but one trailing space on non-indent items
+
             seg_width = text_width(segment)
             while line_width + seg_width > width:
-                if line_width == 0:
+                if len(accumulated) == 1:  # only indent present
                     # hyphenate too long
-                    seg_width, substr = text_width_substr(segment, 0, width - hyphen_width)
+                    desired = width - hyphen_width - line_width
+                    seg_width, substr = text_width_substr(segment, 0, desired)
                     segment = segment[len(substr) :]
-                    if width - hyphen_width - seg_width:  # did we get less than asked for?
-                        substr += " " * (width - hyphen_width - seg_width)
-                    yield substr + hyphen
-                    accumulated = []
-                    line_width = 0
+                    if desired - seg_width:  # did we get less than asked for?
+                        substr += " " * (desired - seg_width)
+                    yield indent + substr + hyphen
+                    accumulated = [indent]
+                    line_width = len(indent)
                     seg_width = text_width(segment)
                     continue
                 yield "".join(accumulated) + " " * (width - line_width)
-                accumulated = []
-                line_width = 0
+                accumulated = [indent]
+                line_width = len(indent)
                 continue
             accumulated.append(segment)
             line_width += seg_width
-        if accumulated:
+        if len(accumulated) > 1:
             yield "".join(accumulated) + " " * (width - line_width)
 
 
