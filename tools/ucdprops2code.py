@@ -261,15 +261,6 @@ def category_enum(language: str, name="Category"):
             else:
                 yield f"#define Category_{ cat } (1u << { max_used})"
 
-    if language == "c" and False:  # Not used at the moment
-        yield ""
-        yield "/* deliberately leaves out the major category values */"
-        yield "#define ALL_CATEGORY_VALUES \\"
-        for cat in sorted(all_cats):
-            if cat not in cat_vals:
-                yield f"    X({cat}) \\"
-        yield ""
-
 
 def generate_c_table(name, enum_name, ranges):
     # we can use 32 bit values for all tables except line/LB
@@ -490,9 +481,11 @@ def extract_categories(source: str, dest: dict[str, Any]):
 
 east_asian_widths_FWH = set()
 
+# FW only
+wide_codepoints = set()
 
-def extract_width(source: str, dest: dict[str, Any]):
-    dest["Wide"] = []
+
+def extract_width(source: str):
     for start, end, width in parse_source_lines(source):
         # See line rules LB30 for why this is here
         if width in {"F", "H", "W"}:
@@ -500,10 +493,8 @@ def extract_width(source: str, dest: dict[str, Any]):
                 east_asian_widths_FWH.add(cp)
 
         if width in {"F", "W"}:
-            if end is None:
-                dest["Wide"].append(start)
-            else:
-                dest["Wide"].append((start, end))
+            for cp in range(start, 1 + (end if end is not None else start)):
+                wide_codepoints.add(cp)
 
 
 def extract_casefold(source: str, dest: dict[int, list]):
@@ -578,7 +569,7 @@ def read_props(data_dir: str):
 
     source = get_source("https://www.unicode.org/Public/UCD/latest/ucd/EastAsianWidth.txt")
     extract_version("EastAsianWidth.txt", source)
-    extract_width(source, props["category"])
+    extract_width(source)
 
     source = get_source("https://www.unicode.org/Public/UCD/latest/ucd/CaseFolding.txt")
     extract_version("CaseFolding.txt", source)
@@ -670,8 +661,40 @@ def generate_sentence_ranges():
 category_ranges = []
 
 
+def category_width(codepoint: int, cat: str | tuple[str]):
+    def add_cat(c: str):
+        nonlocal cat
+        if isinstance(cat, tuple):
+            cat = tuple(list(cat) + [c])
+        else:
+            cat = (cat, c)
+
+    # Always zero no matter what the wide codepoints say
+    if codepoint_to_category[codepoint] in {
+        "Mn",  # Mark NonSpacing
+        "Me",  # Mark enclosing
+        "Mc",  # Mark spacing combining
+        "Cf",  # Other format
+        "Cc",  # Other control
+    }:
+        add_cat("WIDTH_ZERO")
+        return cat
+
+    # Always 1 no matter what the wide codepoints say
+    if codepoint_to_category[codepoint] in {
+        "Cn",  # Other Not Assigned
+    }:
+        return cat
+
+    # now use wide codepoints
+    if codepoint in wide_codepoints:
+        add_cat("WIDTH_TWO")
+
+    return cat
+
+
 def generate_category_ranges():
-    generate_ranges("category", props["category"], category_ranges)
+    generate_ranges("category", props["category"], category_ranges, tailor=category_width)
 
 
 line_ranges = []
@@ -690,7 +713,7 @@ def generate_line_ranges():
     generate_ranges("line", props["line"], line_ranges, "XX", line_resolve_classes)
 
 
-def line_resolve_classes(codepoint: int, cat: str | tuple[str]) -> str:
+def line_resolve_classes(codepoint: int, cat: str | tuple[str]):
     if cat in {"BK", "CR", "LF", "NL"}:
         line_hard_breaks.append(codepoint)
 

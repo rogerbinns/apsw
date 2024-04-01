@@ -132,7 +132,8 @@ class _Category(enum.IntFlag):
     # Remaining non-category convenience flags
     Extended_Pictographic = 2**14
     Regional_Indicator = 2**15
-    Wide = 2**16
+    WIDTH_TWO = 2**16
+    WIDTH_ZERO = 2**17
 
 
 ### END UNICODE UPDATE SECTION ###
@@ -203,20 +204,31 @@ def grapheme_substr(text: str, start: int | None = None, stop: int | None = None
     return _unicode.grapheme_substr(text, start, stop)
 
 
-def grapheme_width(text: str, offset: int = 0) -> int:
-    "Returns number of grapheme clusters in the text, counting wide ones as two"
+def text_width(text: str, offset: int = 0) -> int:
+    """Returns how wide the text would be if displayed in a terminal
+
+    You should :func:`split_lines` first and then operate on each line
+    separately.
+
+    Terminals aren't entirely consistent with each other, and Unicode
+    has many kinds of codepoints.  Consequently this is right the vast
+    majority of the time, but not always.
+
+    Note that web browsers do variable widths even in monospaced
+    sections like <pre> so they won't always agree with the terminal
+    either.
+    """
     # ::TODO:: convert to C
-    # ::TODO:: find out if only the first codepoint affects width
-    # or any of them as implemented here
     width = 0
     # each grapheme cluster
-    for gr in grapheme_iter(text, offset):
-        # each codepoint in grapheme cluster
-        wide = 2 if any(_unicode_category(c) & _Category.Wide for c in gr) else 1
-        # zero width space
-        if wide == 1 and all(ord(c) == 0x200B for c in gr):
-            wide = 0
-        width += wide
+    for i in range(offset, len(text)):
+        cat = _unicode_category(text[i])
+        if cat & _Category.WIDTH_TWO:
+            width += 2
+        elif cat & _Category.WIDTH_ZERO:
+            pass
+        else:
+            width += 1
     return width
 
 
@@ -509,11 +521,6 @@ def is_extended_pictographic(text: str) -> bool:
 def is_regional_indicator(text: str) -> bool:
     "Returns True if any of the text is one of the 26 `regional indicators <https://en.wikipedia.org/wiki/Regional_indicator_symbol>`__ used in pairs to represent country flags"
     return _unicode.has_category(text, 0, len(text), _Category.Regional_Indicator)
-
-
-def is_wide(text: str) -> bool:
-    "Returns True if any of the text has the double width property"
-    return _unicode.has_category(text, 0, len(text), _Category.Wide)
 
 
 def split_lines(text: str, offset: int = 0) -> Generator[str, None, None]:
