@@ -232,7 +232,6 @@ def text_width(text: str, offset: int = 0) -> int:
     """
     # ::TODO:: convert to C
     width = 0
-    # each grapheme cluster
     for i in range(offset, len(text)):
         cat = _unicode_category(text[i])
         if cat & _Category.WIDTH_TWO:
@@ -242,6 +241,23 @@ def text_width(text: str, offset: int = 0) -> int:
         else:
             width += 1
     return width
+
+
+def text_width_substr(text: str, offset: int, width: int) -> tuple[int, str]:
+    """Extacts substring width or less wide being aware of grapheme cluster boundaries"""
+    # ::TODO:: convert to C
+    substr = []
+    width_so_far = 0
+    for grapheme in grapheme_iter(text, offset):
+        seg_width = text_width(grapheme)
+        if width_so_far + seg_width <= width:
+            width_so_far += seg_width
+            substr.append(grapheme)
+        else:
+            break
+        if width_so_far == width:
+            break
+    return width_so_far, "".join(substr)
 
 
 def word_next_break(text: str, offset: int = 0) -> int:
@@ -601,7 +617,7 @@ def text_wrap(
     :param combine_space: Leading space on each (indent) is always preserved.  Other spaces where
           multiple occur are combined into one space.
     """
-    hyphen_width = grapheme_width(hyphen)
+    hyphen_width = text_width(hyphen)
     if hyphen_width + 1 >= width:
         raise ValueError(f"hyphen is too wide { hyphen_width } for width { width }")
 
@@ -627,10 +643,11 @@ def text_wrap(
             while line_width + seg_width > width:
                 if line_width == 0:
                     # hyphenate too long
-                    # ::TODO:: grapheme clusters != grapheme width
-                    # is a grapheme_width_substr needed?
-                    yield grapheme_substr(segment, 0, width - hyphen_width) + hyphen
-                    segment = grapheme_substr(segment, width - hyphen_width)
+                    seg_width, substr = text_width_substr(segment, 0, width - hyphen_width)
+                    segment = segment[len(substr) :]
+                    if width - hyphen_width - seg_width:  # did we get less than asked for?
+                        substr += " " * (width - hyphen_width - seg_width)
+                    yield substr + hyphen
                     accumulated = []
                     line_width = 0
                     seg_width = text_width(segment)
@@ -660,7 +677,6 @@ if __name__ == "__main__":
     import argparse
     import unicodedata
     import os
-    import textwrap
     import sys
     import atexit
     import apsw.fts
@@ -745,6 +761,34 @@ if __name__ == "__main__":
         """,
     )
 
+    p = subparsers.add_parser(
+        "textwrap",
+        help="Measure how long segmentation takes to iterate each segment",
+    )
+    p.set_defaults(function="textwrap")
+    p.add_argument(
+        "--width",
+        type=int,
+        default=width,
+        help="How wide to wrap to [%(default)s]",
+    )
+    p.add_argument("--tabsize", type=int, default=8, help="Tabstop size [%(default)s]")
+    p.add_argument("--hyphen", default="-", help="Text to use when a segment is longer that width [%(default)s]")
+    p.add_argument(
+        "--no-combine-space",
+        dest="combine_space",
+        default=True,
+        action="store_false",
+        help="Disable combining multiple spaces into one.  Note that leading indents are always preserved",
+    )
+    p.add_argument(
+        "--start", default="", help="Text output at the beginning of each line.  It counts against the width"
+    )
+    p.add_argument("--end", default="", help="Text output at the end of each line.  It counts against the width")
+    p.add_argument(
+        "text_file", type=argparse.FileType("rt", encoding="utf8"), help="""Text source to use encoded in UTF8"""
+    )
+
     options = parser.parse_args()
 
     def codepoint_details(kind, c: str, counter=None) -> str:
@@ -791,9 +835,24 @@ if __name__ == "__main__":
             codepoints = []
             for i in range(begin, end):
                 codepoints.append(codepoint_details(options.show, text[i]))
-            print("\n".join(textwrap.wrap(" ".join(codepoints), width=options.width)))
+            print("\n".join(text_wrap(" ".join(codepoints), width=options.width)))
             offset = end
             counter += 1
+
+    elif options.function == "textwrap":
+        # stop debug interpreter whining about file not being closed
+        atexit.register(lambda: options.text_file.close())
+        width = options.width
+        width = width - text_width(options.start) - text_width(options.end)
+
+        for line in text_wrap(
+            options.text_file.read(),
+            width,
+            tabsize=options.tabsize,
+            hyphen=options.hyphen,
+            combine_space=options.combine_space,
+        ):
+            print(f"{options.start}{line}{options.end}")
 
     elif options.function == "breaktest":
         # stop debug interpreter whining about file not being closed
@@ -880,10 +939,7 @@ if __name__ == "__main__":
                 codepoints.extend(ord(c) for c in t)
 
         def uniname(cp):
-            try:
-                return unicodedata.name(chr(cp))
-            except ValueError:
-                return "<NO NAME>"
+            return unicodedata.name(chr(cp), "<NO NAME>")
 
         def deets(cp):
             cat = category(cp)
@@ -900,6 +956,7 @@ if __name__ == "__main__":
                 val = ", ".join(f"U+{ ord(v):04X} {uniname(ord(v))}" for v in val)
                 print(f"{ norm }: { val }")
             print(
+                f"Width: { text_width(chr(cp)) }  "
                 f"TR29 grapheme: { ' | '.join(_unicode.category_name('grapheme', cp)) }   "
                 f"word: { ' | '.join(_unicode.category_name('word', cp )) }   "
                 f"sentence: { ' | '.join(_unicode.category_name('sentence', cp)) }  "
