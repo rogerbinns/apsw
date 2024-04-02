@@ -232,14 +232,23 @@ def text_width(text: str, offset: int = 0) -> int:
     """
     # ::TODO:: convert to C
     width = 0
+    last_was_zwj = False
     for i in range(offset, len(text)):
-        cat = _unicode_category(text[i])
-        if cat & _Category.WIDTH_TWO:
+        cp = ord(text[i])
+        cat = _unicode_category(cp)
+        if last_was_zwj and cat & _Category.Extended_Pictographic:
+            # ZWJ followed by Extended Pictographic is zero
+            # even though the Extended Pictographic will be marked
+            # as two wide
+            pass
+        elif cat & _Category.WIDTH_TWO:
             width += 2
         elif cat & _Category.WIDTH_ZERO:
             pass
         else:
             width += 1
+        last_was_zwj = cp == 0x200D
+
     return width
 
 
@@ -632,7 +641,7 @@ def text_wrap(
                 indent = segment if segment[0] == " " else ""
                 if len(indent) >= width - hyphen_width:
                     # make space for two chars if indent wider than width
-                    indent=indent[:max(0, width-hyphen_width-2)]
+                    indent = indent[: max(0, width - hyphen_width - 2)]
                 accumulated = [indent]
                 line_width = len(indent)
 
