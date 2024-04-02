@@ -661,6 +661,22 @@ def generate_sentence_ranges():
 category_ranges = []
 
 
+# we need this for better width values
+grapheme_prop_by_codepoint = {}
+
+
+def grapheme_prop(codepoint: int) -> str:
+    # build this
+    if not grapheme_prop_by_codepoint:
+        for tag, ranges in props["grapheme"].items():
+            for item in ranges:
+                if isinstance(item, int):
+                    item = (item, item)
+                for cp in range(item[0], item[1] + 1):
+                    grapheme_prop_by_codepoint[cp] = tag
+    return grapheme_prop_by_codepoint.get(codepoint, "Other")
+
+
 def category_width(codepoint: int, cat: str | tuple[str]):
     def add_cat(c: str):
         nonlocal cat
@@ -668,6 +684,14 @@ def category_width(codepoint: int, cat: str | tuple[str]):
             cat = tuple(list(cat) + [c])
         else:
             cat = (cat, c)
+
+    GC = grapheme_prop(codepoint)
+
+    if GC == "SpacingMark":
+        # These are usually category Mc but it is usually the case
+        # that the codepoint they combine with then ends up two wide
+        # so we treat them as width 1
+        return cat
 
     # Always zero no matter what the wide codepoints say
     if codepoint_to_category[codepoint] in {
@@ -680,7 +704,15 @@ def category_width(codepoint: int, cat: str | tuple[str]):
         add_cat("WIDTH_ZERO")
         return cat
 
-    # Always 1 no matter what the wide codepoints say
+    if GC in {
+        "V",  # Hangul
+        "T",  # Hangul
+        "Extend",  # don't really adjust the width of the codepoint they extend
+    }:
+        add_cat("WIDTH_ZERO")
+        return cat
+
+    # Not Assigned are 2 in wcwidth but 1 in every terminal emulator I tried
     if codepoint_to_category[codepoint] in {
         "Cn",  # Other Not Assigned
     }:
