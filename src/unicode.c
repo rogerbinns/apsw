@@ -741,7 +741,17 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     /* LB9 */
     if (!(it.curchar & (LB_BK | LB_CR | LB_LF | LB_NL | LB_SP | LB_ZW)) && it.lookahead & (LB_CM | LB_ZWJ))
     {
-      it_absorb(LB_CM | LB_ZWJ, 0);
+      unsigned long long savedchar = it.curchar;
+      while (it.lookahead & (LB_CM | LB_ZWJ))
+      {
+        /* We need to remember if ZWJ was present so LB8a can be
+           applied.  It would also be possible to outwit this with silly
+           combinations of CM and ZWJ.  THe 10k item test suite passed without
+           this! */
+        savedchar |= it.lookahead & LB_ZWJ;
+        it_advance();
+      }
+      it.curchar = savedchar;
       /* We already advanced and have to rerun the earlier rules again */
       goto top_of_loop;
     }
