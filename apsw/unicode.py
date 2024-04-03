@@ -31,7 +31,7 @@ See :data:`unicode_version` for the implemented version.
 Unicode lookups
 
    * Category information :func:`category`
-   * Is an emoji or similar `is_extended_pictographic`
+   * Is an emoji or similar :func:`is_extended_pictographic`
    * Flag characters :func:`is_regional_indicator`
 
 Case folding
@@ -48,7 +48,9 @@ Grapheme cluster, word, and sentence splitting
     :func:`sentence_next_break`.
 
     Building on those are iterators providing optional offsets and the
-    text.
+    text.  This is used for tokenization (getting character and word
+    boundaries correct), and for result highlighting (showing
+    words/sentences before and after match).
 
 Line break splitting
 
@@ -58,31 +60,33 @@ Line break splitting
     break points which can be found via :func:`line_break_next_break`.
 
     Building on those are iterators providing optional offsets and the
-    text.
+    text.  This is used for :func:`text_wrap`.
 
 Helpers
 
-    * :func:`grapheme_length` to get the number of grapheme
-       clusters in a string
+    * :func:`grapheme_length` to get the number of grapheme clusters
+      in a string
     * :func:`grapheme_substr` to get substrings
-    * :func:`text_width` to count how wide the text would be if
-      output to a terminal
-    * :func:`text_wrap` to wrap text taking into grapheme clusters,
-      words, and text width
+    * :func:`text_width` to count how wide the text would be if output
+      to a terminal
+    * :func:`text_wrap` to wrap text taking into account grapheme
+      clusters, words, and text width
     * :func:`split_lines` to split text into lines using all the
       Unicode hard line break codepoints
 
 Size
 
-    Using the `ICU <https://icu.unicode.org/>`__ library brings in
-    tens of megabytes of shared libraries of code and tables, with
-    their platform and versioning issues.  This module is just over
-    half a megabyte, and about 25% faster.
+    Using the `ICU <https://icu.unicode.org/>`__ `extension
+    <https://pypi.org/project/PyICU/>`__ is 5MB of code that then
+    links to shared libraries containing another 5MB of code, and 30MB
+    of data.  This module is under 400KB, and 5 to 50% faster, and has
+    no dependencies.  (ICU includes numerous extra customisations,
+    formatting, locale helpers etc.)
 
 Performance
 
     There some pure Python alternatives, with less functionality.
-    They take 5 to 10 times more CPU time to process the same text.
+    They take 5 to 15 times more CPU time to process the same text.
     Use `python3 -m apsw.unicode benchmark --help`.
 
 """
