@@ -636,6 +636,7 @@ def text_wrap(
         accumulated: list[str] = []
         line_width = 0
         indent = None
+        space = False
         for segment in line_break_iter(line):
             if indent is None:
                 indent = segment if segment[0] == " " else ""
@@ -647,12 +648,20 @@ def text_wrap(
                 if line_width:
                     continue
 
-            # ::TODO:: remove all trailing spaces on last item
-            # ::TODO:: remove all but one trailing space on non-indent items
+            if combine_space:
+                new_segment = segment.rstrip(" ")
+                new_space = new_segment != segment
+                # we want to prepend a space if the previous segment
+                # ended in space
+                segment = (" " if space else "") + new_segment
+                space = new_space
 
             seg_width = text_width(segment)
             while line_width + seg_width > width:
                 if len(accumulated) == 1:  # only indent present
+                    if combine_space and segment[0] == " ":
+                        # we added a space, but don't need it on new line
+                        segment = segment[1:]
                     # hyphenate too long
                     desired = width - hyphen_width - line_width
                     seg_width, substr = text_width_substr(segment, 0, desired)
@@ -665,6 +674,10 @@ def text_wrap(
                     seg_width = text_width(segment)
                     continue
                 yield "".join(accumulated) + " " * (width - line_width)
+                if combine_space and segment[0] == " ":
+                    # we added a space, but don't need it on new line
+                    segment = segment[1:]
+                    seg_width -= 1
                 accumulated = [indent]
                 line_width = len(indent)
                 continue
