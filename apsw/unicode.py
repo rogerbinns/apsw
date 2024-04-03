@@ -796,6 +796,12 @@ if __name__ == "__main__":
     )
     p.add_argument("--end", default="", help="Text output at the end of each line.  It counts against the width")
     p.add_argument(
+        "--use-stdlib",
+        default=False,
+        action="store_true",
+        help="Uses the system textwrap library instead.  hyphen is ignored and start/end are applied by this code.",
+    )
+    p.add_argument(
         "text_file", type=argparse.FileType("rt", encoding="utf8"), help="""Text source to use encoded in UTF8"""
     )
 
@@ -855,14 +861,30 @@ if __name__ == "__main__":
         width = options.width
         width = width - text_width(options.start) - text_width(options.end)
 
-        for line in text_wrap(
-            options.text_file.read(),
-            width,
-            tabsize=options.tabsize,
-            hyphen=options.hyphen,
-            combine_space=options.combine_space,
-        ):
-            print(f"{options.start}{line}{options.end}")
+        if options.use_stdlib:
+            import textwrap
+            import re
+
+            for line in textwrap.wrap(
+                options.text_file.read(),
+                width,
+                tabsize=options.tabsize,
+                drop_whitespace=options.combine_space,
+                replace_whitespace=False,
+            ):
+                for line in line.splitlines():
+                    padding = max(0, width - text_width(line))
+                    print(f"{options.start}{line}{' ' * padding}{options.end}")
+
+        else:
+            for line in text_wrap(
+                options.text_file.read(),
+                width,
+                tabsize=options.tabsize,
+                hyphen=options.hyphen,
+                combine_space=options.combine_space,
+            ):
+                print(f"{options.start}{line}{options.end}")
 
     elif options.function == "breaktest":
         # stop debug interpreter whining about file not being closed
