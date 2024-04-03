@@ -644,6 +644,8 @@ def text_wrap(
                     indent = indent[: max(0, width - hyphen_width - 2)]
                 accumulated = [indent]
                 line_width = len(indent)
+                if line_width:
+                    continue
 
             # ::TODO:: remove all trailing spaces on last item
             # ::TODO:: remove all but one trailing space on non-indent items
@@ -668,7 +670,10 @@ def text_wrap(
                 continue
             accumulated.append(segment)
             line_width += seg_width
-        if len(accumulated) > 1:
+        if len(accumulated) == 1:
+            # only indent
+            yield " " * width
+        else:
             yield "".join(accumulated) + " " * (width - line_width)
 
 
