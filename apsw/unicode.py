@@ -96,6 +96,7 @@ from __future__ import annotations
 from typing import Generator
 
 import enum
+import re
 
 ### BEGIN UNICODE UPDATE SECTION ###
 unicode_version = "15.1"
@@ -613,6 +614,109 @@ def expand_tabs(text: str, tabsize: int = 8) -> str:
     return "".join(res)
 
 
+def guess_paragraphs(text: str, tabsize: int = 8) -> str:
+    """Given text that contains paragraphs containing newlines, guesses where the paragraphs end
+
+    .. code-block:: output
+
+        If you have text like this, where paragraphs have newlines in
+        them, then each line gets wrapped separately by text_wrap.
+        This function tries to guess where the paragraphs end.
+
+        Blank lines like above are definite.
+          Indented lines that continue preserving the indent
+          are considered the same paragraph, and a change of indent
+          (in or out) is a new paragraph.
+        So this will be a new paragraph.
+
+         * Punctuation/numbers at the start of line
+           followed by indented text are considered the same
+           paragraph
+        2. So this ia new paragraph, while
+           this line is part of the line above
+
+        3. Optional numbers followed by punctuation then space
+        - are considered new paragraphs
+
+    """
+    # regex to match what looks like an (optionally numbered) list
+    # item
+    list_item_re = r"^(?P<indent>\s*[0-9+=,\.*-]+\s+).*"
+
+    # what we turn definite end of paragraph into
+    parasep = "\u2029"
+
+    # Force unicode end of line, form feed, next line to parasep
+    text = text.replace("\u2028", parasep)
+    text = text.replace("\u000d", parasep)
+    text = text.replace("\u0085", parasep)
+
+    # tabify
+    text = expand_tabs(text, tabsize)
+
+    # Fix Windows EOL
+    text = text.replace("\r\n", "\n")
+
+    # Any stray CR become parasep
+    text = text.replace("\r", parasep)
+
+    # Two newlines is definite
+    text = text.replace("\n\n", parasep + parasep)
+
+    paragraphs: list[str] = []
+
+    def append_paragraph(p: list[str]) -> None:
+        # appends the list of strings as a paragraph
+        # but we have to strip any indent from second and
+        # succeeding line
+        not_first = [line.lstrip(" ") for line in p[1:]]
+        paragraphs.append(" ".join([p[0]] + not_first))
+
+    # each segment is one or more paragraphs
+    for segment in text.split(parasep):
+        if "\n" not in segment:
+            paragraphs.append(segment)
+            continue
+        para: list[str] = []
+
+        for line in segment.split("\n"):
+            if not para:
+                # this is definitely a new paragraph
+                para.append(line)
+                continue
+
+            # optional spaces, followed by digits|punctuation followed by space
+            # is considered a new paragraph as a list item.
+            if re.match(list_item_re, line):
+                if para:
+                    append_paragraph(para)
+                para = [line]
+                continue
+
+            # Does indent match previous line
+            if len(line) - len(line.lstrip(" ")) == len(para[-1]) - len(para[-1].lstrip(" ")):
+                para.append(line)
+                continue
+
+            # Does indent match previous line as a list item indent?
+            mo = re.match(list_item_re, para[-1])
+            if mo:
+                if len(mo.group("indent")) == len(line) - len(line.lstrip(" ")):
+                    para.append(line)
+                    continue
+
+            # new paragraph
+            append_paragraph(para)
+            para = [line]
+            continue
+
+        if para:
+            append_paragraph(para)
+
+    # turn back into newline as the expected delimiter
+    return "\n".join(paragraphs) + "\n"
+
+
 def text_wrap(
     text: str,
     width: int = 70,
@@ -621,7 +725,12 @@ def text_wrap(
     hyphen: str = "-",
     combine_space: bool = True,
 ) -> Generator[str, None, None]:
-    """Similar to :func:`textwrap.wrap` but Unicode grapheme cluster and wide character aware
+    """Similar to :func:`textwrap.wrap` but Unicode grapheme cluster and line break aware
+
+    .. note::
+
+       Newlines in the text are treated as end of paragraph.  If your text has paragraphs
+       with newlines in them, then :func:`guess_paragraphs` can help.
 
     :param text: string to process
     :param width: width of yielded lines, if rendered using a monospace font such as to a terminal
@@ -827,7 +936,15 @@ if __name__ == "__main__":
         help="Uses the system textwrap library instead.  hyphen is ignored and start/end are applied by this code.",
     )
     p.add_argument(
-        "text_file", type=argparse.FileType("rt", encoding="utf8"), help="""Text source to use encoded in UTF8"""
+        "--guess-paragraphs",
+        default=False,
+        action="store_true",
+        help="Guess if newlines in text are the same paragraphs.  See the doc for apsw.unicode.guess_paragraphs for details",
+    )
+    p.add_argument(
+        "text_file",
+        type=argparse.FileType("rt", encoding="utf8"),
+        help="""Text source to use encoded in UTF8. Newlines are considered to delimit each paragraph, so consider --guess-paragraphs""",
     )
 
     options = parser.parse_args()
@@ -886,12 +1003,15 @@ if __name__ == "__main__":
         width = options.width
         width = width - text_width(options.start) - text_width(options.end)
 
+        text = options.text_file.read()
+        if options.guess_paragraphs:
+            text = guess_paragraphs(text)
+
         if options.use_stdlib:
             import textwrap
-            import re
 
             for line in textwrap.wrap(
-                options.text_file.read(),
+                text,
                 width,
                 tabsize=options.tabsize,
                 drop_whitespace=options.combine_space,
@@ -903,7 +1023,7 @@ if __name__ == "__main__":
 
         else:
             for line in text_wrap(
-                options.text_file.read(),
+                text,
                 width,
                 tabsize=options.tabsize,
                 hyphen=options.hyphen,
