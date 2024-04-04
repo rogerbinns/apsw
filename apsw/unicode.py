@@ -781,9 +781,17 @@ def text_wrap(
                     # hyphenate too long
                     desired = width - hyphen_width - line_width
                     seg_width, substr = text_width_substr(segment, 0, desired)
-                    segment = segment[len(substr) :]
-                    if desired - seg_width:  # did we get less than asked for?
-                        substr += " " * (desired - seg_width)
+                    if seg_width == 0:
+                        # the first grapheme cluster is wider than desired which is
+                        # 1 or 2 depending on indent
+                        assert desired in {1, 2}
+                        # we will display '*' instead for that first grapheme cluster
+                        segment = grapheme_substr(segment, 1)
+                        substr = "*" * desired
+                    else:
+                        segment = segment[len(substr) :]
+                        if desired - seg_width:  # did we get less than asked for?
+                            substr += " " * (desired - seg_width)
                     yield indent + substr + hyphen
                     accumulated = [indent]
                     line_width = len(indent)
