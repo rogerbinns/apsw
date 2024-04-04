@@ -643,14 +643,17 @@ def text_wrap(
         space = False
         for segment in line_break_iter(line):
             if indent is None:
-                indent = segment if segment[0] == " " else ""
+                indent = " " * (len(segment) - len(segment.lstrip(" "))) if segment[0] == " " else ""
                 if len(indent) >= width - hyphen_width:
                     # make space for two chars if indent wider than width
                     indent = indent[: max(0, width - hyphen_width - 2)]
                 accumulated = [indent]
                 line_width = len(indent)
                 if line_width:
-                    continue
+                    if len(indent) != len(segment): # there was spaces and text
+                        segment = segment[line_width:]
+                    else:
+                        continue
 
             if combine_space:
                 new_segment = segment.rstrip(" ")
