@@ -741,7 +741,7 @@ def text_wrap(
     """
     hyphen_width = text_width(hyphen)
     if hyphen_width + 1 >= width:
-        raise ValueError(f"hyphen is too wide { hyphen_width } for width { width }")
+        raise ValueError(f"hyphen is too wide { hyphen_width } to allow content for width { width }")
 
     text = expand_tabs(text, tabsize)
 
@@ -754,12 +754,12 @@ def text_wrap(
             if indent is None:
                 indent = " " * (len(segment) - len(segment.lstrip(" "))) if segment[0] == " " else ""
                 if len(indent) >= width - hyphen_width:
-                    # make space for two chars if indent wider than width
+                    # make space for double width char if indent wider than width
                     indent = indent[: max(0, width - hyphen_width - 2)]
                 accumulated = [indent]
                 line_width = len(indent)
                 if line_width:
-                    if len(indent) != len(segment): # there was spaces and text
+                    if len(indent) != len(segment):  # there was spaces and text
                         segment = segment[line_width:]
                     else:
                         continue
