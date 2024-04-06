@@ -79,7 +79,7 @@ Size
     Using the `ICU <https://icu.unicode.org/>`__ `extension
     <https://pypi.org/project/PyICU/>`__ is 5MB of code that then
     links to shared libraries containing another 5MB of code, and 30MB
-    of data.  This module is under 400KB, and 5 to 50% faster, and has
+    of data.  This module is under 500KB, 5 to 50% faster, and has
     no dependencies.  (ICU includes numerous extra customisations,
     formatting, locale helpers etc.)
 
@@ -824,6 +824,24 @@ def casefold(text: str) -> str:
     """
     return _unicode.casefold(text)
 
+def strip(text: str) -> str:
+    """Returns the text for less exact comparison with accents, punctuation, marks etc removed
+
+    It will strip diacritics leaving the underlying characters so ``áççéñțś`` becomes ``accents``,
+    punctuation so ``e.g.`` becomes ``eg``,  marks so ``देवनागरी`` becomes ``दवनगर``, as well as all
+    spacing, formatting, and similar codepoints.
+
+    Codepoints are also converted to their comparability representation.  For example
+    the single codepoint Roman numeral ``Ⅲ`` becomes ``III`` (three separate regular upper case `I`),
+    and ``🄷🄴🄻🄻🄾`` becomes ``HELLO``.
+
+    The resulting text should not be shown to people, and is intended for doing relaxed equality
+    comparisons, at the expense of false positives when the accents, marks, punctuation etc were
+    intended.
+
+    You should do :func:`case folding <casefold>` after this.
+    """
+    return _unicode.strip(text)
 
 if __name__ == "__main__":
     import argparse
@@ -1128,18 +1146,19 @@ if __name__ == "__main__":
 
         def deets(cp):
             cat = category(cp)
-            return f"{ uniname(cp) } category { cat }: { apsw.fts.unicode_categories[cat] }"
+            return f"{ uniname(cp) } { cat }: { apsw.fts.unicode_categories[cat] }"
 
         for i, cp in enumerate(codepoints):
             print(f"#{ i } U+{ cp:04X} - { chr(cp) }")
-            print(f"unicodedata: { deets(cp) }")
-            normalized = []
-            for form in "NFD", "NFKD":
-                if chr(cp) != unicodedata.normalize(form, chr(cp)):
-                    normalized.append((form, unicodedata.normalize(form, chr(cp))))
-            for norm, val in normalized:
-                val = ", ".join(f"U+{ ord(v):04X} {uniname(ord(v))}" for v in val)
-                print(f"{ norm }: { val }")
+            print(f"Name: { deets(cp) }")
+
+            mangled = []
+            for mangle in casefold(chr(cp)), strip(chr(cp)):
+                if not mangle:
+                    mangled.append("(nothing)")
+                else:
+                    mangled.append(", ".join(f"U+{ ord(v):04X} {uniname(ord(v))}" for v in mangle))
+            print(f"casefold: { mangled[0] }   stripped: { mangled[1] }")
             print(
                 f"Width: { text_width(chr(cp)) }  "
                 f"TR29 grapheme: { ' | '.join(_unicode.category_name('grapheme', cp)) }   "
