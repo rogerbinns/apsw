@@ -626,6 +626,7 @@ strip_categories = {
     "Zl",  # Separator line
     "Zp",  # Separator paragraph
     "Cc",  # Other control
+    "Cf",  # Other format
     "Cs",  # Other surrogate
     "Co",  # Other private use
     "Cn",  # Other not assigned
