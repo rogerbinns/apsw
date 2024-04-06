@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 # Generates code from unicode properties db
+# It has evolved over time and was not intelligently designed
+# in advance
 
 
 import sys
@@ -63,10 +65,30 @@ def fmt_cat(enum_name: str, cat: str | tuple[str, ...]):
     return " | ".join(f"{ enum_name }.{ c }" for c in cat)
 
 
+EXPANDS_RANGE = object()
+
+
 def fmt_cat_c(enum_name: str, cat: str | tuple[str, ...]):
-    if isinstance(cat, str):
-        return f"{ enum_name }_{ cat }"
-    return "(" + " | ".join(f"{ enum_name }_{ c }" for c in cat) + ")"
+    if enum_name != "strip":
+        if isinstance(cat, str):
+            return f"{ enum_name }_{ cat }"
+        return "(" + " | ".join(f"{ enum_name }_{ c }" for c in cat) + ")"
+    if isinstance(cat, int):
+        cat = [cat]
+    if not isinstance(cat, int) and cat[0] is EXPANDS_RANGE:
+        prefix = "STRIP_MAXCHAR_INCREASE | "
+        cat = cat[1:]
+    else:
+        prefix = ""
+
+    if len(cat) == 1:
+        if 0 <= cat[0] <= 30:
+            return f"{prefix}{cat[0]}"
+        return f"{prefix}0x{cat[0]:04X}"
+    if len(cat) == 2:
+        return f"({prefix}0x{cat[0]:04X} | (0x{cat[1]:04X}ull << 21))"
+    assert len(cat) == 3
+    return f"({prefix}0x{cat[0]:04X} | (0x{cat[1]:04X}ull << 21) | (0x{cat[2]:04X}ull << 42))"
 
 
 def bsearch(enum_name: str, indent: int, items: list, n: int):
@@ -124,6 +146,11 @@ def generate_c() -> str:
     out.extend(generate_c_table("line", "LB", line_ranges))
     out.append("")
     out.extend(generate_line_hard_breaks())
+    out.append("")
+    out.extend(generate_c_table("strip", "strip", strip_ranges))
+    out.append("")
+    out.extend(generate_strip_special_handling())
+    out.append("")
 
     return "\n".join(out) + "\n"
 
@@ -162,6 +189,29 @@ def generate_casefold_expansion(src) -> list[str]:
                 add_line(f"{indent*2}dest_char = 0x{replacement[-1]:04X};")
                 add_line(f"{indent*2}break;")
 
+    res[-1] = res[-1].rstrip("\\").rstrip()
+    res.append("")
+
+    return res
+
+
+def generate_strip_special_handling():
+    res: list[str] = []
+
+    def add_line(l):
+        l = l + " " * (119 - len(l)) + "\\"
+        res.append(l)
+
+    res.append(f"/* The {len(strip_special_handling)} codepoints that expand to 4+ codepoints */")
+    res.append("")
+
+    add_line("#define STRIP_WRITE")
+    for codepoint, expansion in sorted(strip_special_handling.items()):
+        assert len(expansion) >= 4
+        add_line(f"case 0x{codepoint:04X}:")
+        for c in expansion:
+            add_line(f"    WRITE_DEST(0x{c:04X});")
+        add_line("    break;")
     res[-1] = res[-1].rstrip("\\").rstrip()
     res.append("")
 
@@ -264,14 +314,16 @@ def category_enum(language: str, name="Category"):
 
 def generate_c_table(name, enum_name, ranges):
     # we can use 32 bit values for all tables except line/LB
-    ret_type = "unsigned int" if enum_name != "LB" else "unsigned long long"
-    int_suffix = "u" if enum_name != "LB" else "ull"
+    ret_type = "unsigned int" if enum_name not in {"LB", "strip"} else "unsigned long long"
+    int_suffix = "u" if enum_name not in {"LB", "strip"} else "ull"
 
     yield f"/* { name } */"
     yield ""
     if name == "category":
         assert ranges is category_ranges
         yield from category_enum("c")
+    elif name == "strip":
+        pass
     else:
         all_cats = set()
         for _, _, cat in ranges:
@@ -302,6 +354,10 @@ def generate_c_table(name, enum_name, ranges):
     yield "*/"
     yield ""
     yield ""
+    if name == "strip":
+        yield "/* increases the max char value - bit above 3 packed 21 bit values */"
+        yield "#define STRIP_MAXCHAR_INCREASE (1ull << (21 * 3))"
+        yield ""
 
     # make a copy because we modify it
     ranges = ranges[:]
@@ -336,7 +392,17 @@ def generate_c_table(name, enum_name, ranges):
     yield f"static {ret_type}"
     yield f"{ name }_category(Py_UCS4 c)"
     yield "{"
-    yield "  /* Returns category corresponding to codepoint */"
+    if enum_name != "strip":
+        yield "  /* Returns category corresponding to codepoint */"
+    else:
+        yield "  /* Returns value corresponding to codepoint "
+        yield ""
+        yield "     We pack 3 replacement codepoints as 21 bit values (lowest first)"
+        yield "     The next bit up indicates that the max char value also increases"
+        yield "     A value of zero means skip/omit the codepoint"
+        yield "     One means it stays unchanged"
+        yield "     4 through 30 means it turns into that many codepoints (about 80, handled separately)"
+        yield "  */"
     yield ""
     if options.table_limit:
         yield f"  if (c < 0x{ table_limit:04X})"
@@ -355,6 +421,7 @@ props = {
     "line": {},
     "category": {},
     "casefold": {},
+    "strip": {},
 }
 
 ucd_version = None
@@ -541,6 +608,95 @@ def extract_casefold(source: str, dest: dict[int, list]):
                 assert all(r <= val for r in repl), f"{repl=} not <={val} for {codepoint=}"
 
 
+# codepoints in these categories are removed
+strip_categories = {
+    "Lm",  # Letter modifier"
+    "Mn",  # Mark non-spacing
+    "Mc",  # Mark spacing combining
+    "Me",  # Mark enclosing
+    "Pc",  # Punctuation connector
+    "Pd",  # Punctuation dash
+    "Po",  # Punctuation open
+    "Pc",  # Punctuation close
+    "Pi",  # Punctuation initial quote
+    "Pf",  # Punctuation final quote
+    "Po",  # Punctuation other
+    "Sk",  # Symbol modifier
+    "Zs",  # Separator space
+    "Zl",  # Separator line
+    "Zp",  # Separator paragraph
+    "Cc",  # Other control
+    "Cs",  # Other surrogate
+    "Co",  # Other private use
+    "Cn",  # Other not assigned
+}
+
+# track which coddepoints increase the maxval passed to PyUnicode constructor
+strip_expands_range: list[int] = []
+
+
+def next_pyuni_maxval(val: int) -> int:
+    # https://docs.python.org/3/c-api/unicode.html#c.PyUnicode_New
+    for size in 127, 255, 65535, 1114111:
+        if val <= size:
+            return size
+    raise Exception("Can't get here")
+
+
+def extract_strip(source: str, dest):
+    # see the comment generated in generate_c_table which explains
+    # how the information is represented.  generate_strip_ranges
+    # takes this output to do that
+    dest[0] = []
+    dest[1] = []
+    for line in source.splitlines():
+        codepoint, name, category, combining_class, bidi, decomp, *_ = line.split(";")
+        codepoint = int(codepoint, 16)
+
+        # double check the data matches
+        assert category == codepoint_to_category[codepoint]
+
+        if category in strip_categories:
+            dest[0].append(codepoint)
+            continue
+
+        if not decomp:
+            dest[1].append(codepoint)
+            continue
+
+        decomp = decomp.split()
+        if decomp[0][0] == "<":
+            decomp = decomp[1:]
+
+        # unhexify
+        decomp = [int(d, 16) for d in decomp]
+
+        # filter
+        decomp = [d for d in decomp if codepoint_to_category[d] not in strip_categories]
+        if len(decomp) == 0:
+            dest[0].append(codepoint)
+            continue
+
+        # expands max char value detection
+        if any(d > next_pyuni_maxval(codepoint) for d in decomp):
+            strip_expands_range.append(codepoint)
+
+        if len(decomp) == 1:
+            if decomp[0] == codepoint:
+                # this shouldn't happen - decomposing to include self
+                raise Exception("this can't happen")
+            if decomp[0] not in dest:
+                dest[decomp[0]] = []
+            dest[decomp[0]].append(codepoint)
+            continue
+
+        decomp = tuple(decomp)
+        if decomp in dest:
+            dest[decomp].append(codepoint)
+        else:
+            dest[decomp] = [codepoint]
+
+
 def read_props(data_dir: str):
     def get_source(url: str) -> str:
         parts = url.split("/")
@@ -587,6 +743,10 @@ def read_props(data_dir: str):
     extract_prop(source, props["grapheme"], "InCB; Linker", "InCB_Linker")
     extract_prop(source, props["grapheme"], "InCB; Consonant", "InCB_Consonant")
     extract_prop(source, props["grapheme"], "InCB; Extend", "InCB_Extend")
+
+    source = get_source("https://www.unicode.org/Public/UCD/latest/ucd/UnicodeData.txt")
+    # it has no version
+    extract_strip(source, props["strip"])
 
     for top in "Grapheme", "Word", "Sentence":
         source = get_source(f"https://www.unicode.org/Public/UCD/latest/ucd/auxiliary/{ top }BreakProperty.txt")
@@ -787,6 +947,40 @@ def line_resolve_classes(codepoint: int, cat: str | tuple[str]):
     return cat
 
 
+strip_ranges = []
+
+strip_stats = collections.Counter()
+
+
+def generate_strip_ranges():
+    generate_ranges("strip", props["strip"], strip_ranges, 0, tailor=strip_tailor)
+    stats["strip"] = strip_stats
+
+
+strip_special_handling = {}
+
+
+def strip_tailor(codepoint, cat):
+    if cat in {0, 1}:
+        strip_stats[("(stripped)", "self")[cat]] += 1
+        return cat
+
+    cat = [cat] if isinstance(cat, int) else list(cat)
+
+    strip_stats[f"length {len(cat)}"] += 1
+
+    if len(cat) > 3:
+        strip_special_handling[codepoint] = cat
+        strip_stats["Special handling because 4+ codepoints"] += 1
+        cat = [len(cat)]
+
+    if codepoint in strip_expands_range:
+        cat = [EXPANDS_RANGE] + cat
+        strip_stats["Expands maxchar"] += 1
+
+    return tuple(cat)
+
+
 def replace_if_different(filename: str, contents: str) -> None:
     if not os.path.exists(filename) or pathlib.Path(filename).read_text() != contents:
         print(f"{ 'Creating' if not os.path.exists(filename) else 'Updating' } { filename }")
@@ -843,6 +1037,7 @@ if __name__ == "__main__":
     generate_sentence_ranges()
     generate_category_ranges()
     generate_line_ranges()
+    generate_strip_ranges()
 
     assert options.out_file.name.endswith(".c")
     c_code = generate_c()
