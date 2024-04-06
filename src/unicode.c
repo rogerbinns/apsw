@@ -1328,7 +1328,7 @@ strip(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nar
   void *source_data = PyUnicode_DATA(text);
 
   /* We pack replacement codepoints into 21 bit chunks in the 64 bit value */
-#define BITS21_MASK ((1 << 22) - 1)
+#define BITS21_MASK ((1 << 21) - 1)
 #define CP0(x) ((x) & BITS21_MASK)
 #define CP1(x) (((x) >> 21) & BITS21_MASK)
 #define CP2(x) (((x) >> 42) & BITS21_MASK)
@@ -1429,6 +1429,8 @@ strip(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nar
         Py_UNREACHABLE();
       }
   }
+
+  assert(dest_pos == result_length);
 
   return dest;
 }
