@@ -1314,6 +1314,126 @@ casefold(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_
 }
 
 static PyObject *
+strip(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+#define strip_KWNAMES "text"
+  PyObject *text = NULL;
+
+  ARG_PROLOG(1, strip_KWNAMES);
+  ARG_MANDATORY ARG_PyUnicode(text);
+  ARG_EPILOG(NULL, "strip(text: str)", );
+
+  Py_ssize_t source_length = PyUnicode_GET_LENGTH(text);
+  int source_kind = PyUnicode_KIND(text);
+  void *source_data = PyUnicode_DATA(text);
+
+  /* We pack replacement codepoints into 21 bit chunks in the 64 bit value */
+#define BITS21_MASK ((1 << 22) - 1)
+#define CP0(x) ((x) & BITS21_MASK)
+#define CP1(x) (((x) >> 21) & BITS21_MASK)
+#define CP2(x) (((x) >> 42) & BITS21_MASK)
+
+  /* Pass 1:
+      * Figure out if there is any change
+      * Figure out if max char value changes
+      * Figure out length of replacement
+  */
+  /* would the result be any different */
+  int is_changed = 0;
+  /* does the result need a different MAX_CHAR_VALUE  */
+  int bump_max = 0;
+  /* number of codepoints in result */
+  Py_ssize_t result_length = 0;
+
+  Py_ssize_t source_pos;
+  for (source_pos = 0; source_pos < source_length; source_pos++)
+  {
+    Py_UCS4 source_char = PyUnicode_READ(source_kind, source_data, source_pos);
+    unsigned long long conv = strip_category(source_char);
+    if (conv == 1)
+    {
+      result_length += 1;
+      continue;
+    }
+    is_changed = 1;
+    if (conv == 0)
+      continue;
+
+    bump_max = bump_max || (conv & STRIP_MAXCHAR_INCREASE);
+    conv &= ~STRIP_MAXCHAR_INCREASE;
+
+    if (conv < 30)
+    {
+      result_length += conv;
+      continue;
+    }
+    result_length += 1;
+    if (CP1(conv))
+    {
+      result_length += 1;
+      if (CP2(conv))
+        result_length += 1;
+    }
+  }
+
+  if (!is_changed)
+  {
+    /* Sanity check */
+    assert(result_length == source_length);
+    return Py_NewRef(text);
+  }
+
+  /* Pass 2:
+    Create and populate result string
+  */
+  PyObject *dest = PyUnicode_New(result_length, bump_max ? 1114111 : PyUnicode_MAX_CHAR_VALUE(text));
+  if (!dest)
+    return NULL;
+
+  int dest_kind = PyUnicode_KIND(dest);
+  void *dest_data = PyUnicode_DATA(dest);
+
+  Py_ssize_t dest_pos;
+
+  for (source_pos = dest_pos = 0; source_pos < source_length; source_pos++)
+  {
+    /* WRITE_DEST comes from casefold above */
+    Py_UCS4 source_char = PyUnicode_READ(source_kind, source_data, source_pos);
+    unsigned long long conv = strip_category(source_char) & ~STRIP_MAXCHAR_INCREASE;
+    if(conv==0)
+      continue;
+    if(conv==1)
+    {
+      WRITE_DEST(source_char);
+      continue;
+    }
+    if(conv>=30)
+    {
+      Py_UCS4 c = CP0(conv);
+      WRITE_DEST(c);
+      c = CP1(conv);
+      if(c)
+      {
+        WRITE_DEST(c);
+        c = CP2(conv);
+        if(c)
+          WRITE_DEST(c);
+      }
+      continue;
+    }
+    switch(source_char)
+    {
+      /* generated, present in _unicodedb.c */
+      STRIP_WRITE
+      default:
+        Py_UNREACHABLE();
+      }
+  }
+
+  return dest;
+}
+
+static PyObject *
 grapheme_length(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   PyObject *text = NULL;
@@ -1474,6 +1594,8 @@ static PyMethodDef methods[] = {
   { "has_category", (PyCFunction)has_category, METH_FASTCALL | METH_KEYWORDS,
     "Returns True if any codepoints are covered by the mask" },
   { "casefold", (PyCFunction)casefold, METH_FASTCALL | METH_KEYWORDS, "Does case folding for comparison" },
+  { "strip", (PyCFunction)strip, METH_FASTCALL | METH_KEYWORDS,
+    "Returns new string omitting accents, punctuation etc" },
   { "grapheme_length", (PyCFunction)grapheme_length, METH_FASTCALL | METH_KEYWORDS,
     "Length of string in grapheme clusters" },
   { "grapheme_substr", (PyCFunction)grapheme_substr, METH_FASTCALL | METH_KEYWORDS, "Substring in grapheme clusterss" },
