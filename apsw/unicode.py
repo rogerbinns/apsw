@@ -848,7 +848,7 @@ def word_iter_with_offsets(
         offset = end
 
 
-def sentence_next_break(test: str, offset: int = 0) -> int:
+def sentence_next_break(text: str, offset: int = 0) -> int:
     """Returns end of sentence location.
 
     Finds the next break point according to the `TR29 spec
