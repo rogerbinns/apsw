@@ -34,9 +34,31 @@ Unicode lookups
    * Is an emoji or similar :func:`is_extended_pictographic`
    * Flag characters :func:`is_regional_indicator`
 
-Case folding
+Case folding, accent removal
 
-   :func:`casefold` is used to do case insensitive comparisons.
+   * :func:`casefold` is used to do case insensitive comparisons.
+   * :func:`strip` is used to remove accents, marks, punctuation,
+     joiners etc
+
+Helpers
+
+These are aware of grapheme cluster boundaries which Python's builtin
+string operations are not.  The text width functions take into account
+how wide the text is when displayed on most terminals.
+
+    * :func:`grapheme_length` to get the number of grapheme clusters
+      in a string
+    * :func:`grapheme_substr` to get substrings
+    * :func:`grapheme_startswith` and :func:`grapheme_endswith`
+    * :func:`grapheme_find` to find a substring
+    * :func:`split_lines` to split text into lines using all the
+      Unicode hard line break codepoints
+    * :func:`text_width` to count how wide the text is
+    * :func:`expand_tabs` to expand tabs using text width
+    * :func:`text_width_substr` to extract substrings based text width
+    * :func:`text_wrap` to wrap paragraphs using Unicode words, line
+      breaking, and text width
+    * :func:`guess_paragraphs` to establish paragraph boundaries
 
 Grapheme cluster, word, and sentence splitting
 
@@ -62,25 +84,13 @@ Line break splitting
     Building on those are iterators providing optional offsets and the
     text.  This is used for :func:`text_wrap`.
 
-Helpers
-
-    * :func:`grapheme_length` to get the number of grapheme clusters
-      in a string
-    * :func:`grapheme_substr` to get substrings
-    * :func:`text_width` to count how wide the text would be if output
-      to a terminal
-    * :func:`text_wrap` to wrap text taking into account grapheme
-      clusters, words, and text width
-    * :func:`split_lines` to split text into lines using all the
-      Unicode hard line break codepoints
-
 Size
 
     Using the `ICU <https://icu.unicode.org/>`__ `extension
     <https://pypi.org/project/PyICU/>`__ is 5MB of code that then
     links to shared libraries containing another 5MB of code, and 30MB
-    of data.  This module is under 500KB, 5 to 50% faster, and has
-    no dependencies.  (ICU includes numerous extra customisations,
+    of data.  This module is under 500KB, 5 to 50% faster, and has no
+    dependencies.  (ICU includes numerous extra customisations,
     formatting, locale helpers etc.)
 
 Performance
@@ -342,7 +352,13 @@ def grapheme_substr(text: str, start: int | None = None, stop: int | None = None
 
     start and end can be negative to index from the end, or outside
     the bounds of the text but are never an invalid combination (you
-    get empty string returned)"""
+    get empty string returned).
+
+    To get a particular grapheme cluster make stop one more than start.
+    For example to get the 3rd last grapheme cluster::
+
+        grapheme_substr(text, -3, -3 + 1)
+    """
     return _unicode.grapheme_substr(text, start, stop)
 
 
