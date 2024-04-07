@@ -258,7 +258,9 @@ def text_width(text: str, offset: int = 0) -> int:
 
 
 def text_width_substr(text: str, offset: int, width: int) -> tuple[int, str]:
-    """Extacts substring width or less wide being aware of grapheme cluster boundaries"""
+    """Extracts substring width or less wide being aware of grapheme cluster boundaries
+
+    :returns: A tuple of how wide the substring is, and the substring"""
     # ::TODO:: convert to C
     substr = []
     width_so_far = 0
@@ -828,10 +830,11 @@ def strip(text: str) -> str:
     """Returns the text for less exact comparison with accents, punctuation, marks etc removed
 
     It will strip diacritics leaving the underlying characters so ``áççéñțś`` becomes ``accents``,
-    punctuation so ``e.g.`` becomes ``eg``,  marks so ``देवनागरी`` becomes ``दवनगर``, as well as all
-    spacing, formatting, and similar codepoints.
+    punctuation so ``e.g.`` becomes ``eg`` and ``don't`` becomes ``dont``,  marks so ``देवनागरी``
+    becomes ``दवनगर``, as well as all spacing, formatting, `variation selectors
+    <https://en.wikipedia.org/wiki/Variation_Selectors_%28Unicode_block%29>`__ and similar codepoints.
 
-    Codepoints are also converted to their comparability representation.  For example
+    Codepoints are also converted to their compatibility representation.  For example
     the single codepoint Roman numeral ``Ⅲ`` becomes ``III`` (three separate regular upper case `I`),
     and ``🄷🄴🄻🄻🄾`` becomes ``HELLO``.
 
@@ -840,6 +843,11 @@ def strip(text: str) -> str:
     intended.
 
     You should do :func:`case folding <casefold>` after this.
+
+    Emoji are preserved but variation selectors, `fitzpatrick <https://en.wikipedia.org/wiki/Emoji#Skin_color>`__
+    and `joiners <https://en.wikipedia.org/wiki/Zero-width_joiner>`__ are stripped.
+
+    `Regional indicators <https://en.wikipedia.org/wiki/Regional_indicator_symbol>`__ are preserved.
     """
     return _unicode.strip(text)
 
