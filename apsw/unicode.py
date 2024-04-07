@@ -1073,6 +1073,16 @@ if __name__ == "__main__":
         help="""Text source to use encoded in UTF8. Newlines are considered to delimit each paragraph, so consider --guess-paragraphs""",
     )
 
+    p = subparsers.add_parser(
+        "breaktestgen",
+        help="""Extracts data strings to be added to test suite""",
+    )
+    p.set_defaults(function="breaktestgen")
+    p.add_argument("grapheme", type=argparse.FileType("rt", encoding="utf8"), help="Grapheme break test file")
+    p.add_argument("word", type=argparse.FileType("rt", encoding="utf8"), help="Word break test file")
+    p.add_argument("sentence", type=argparse.FileType("rt", encoding="utf8"), help="Sentence break test file")
+    p.add_argument("line_break", type=argparse.FileType("rt", encoding="utf8"), help="Line break test file")
+
     options = parser.parse_args()
 
     def codepoint_details(kind, c: str, counter=None) -> str:
@@ -1422,3 +1432,57 @@ if __name__ == "__main__":
                 else:
                     seconds = (end - start) / 1e9
                     print(f"codepoints per second: { int(len(text)/seconds): 12,d}    segments: {count: 11,d}")
+
+    elif options.function == "breaktestgen":
+        # char used to mark ok and not in the files
+        ok = "÷"
+        not_ok = "\u00d7"
+
+        def get_strings(fh):
+            for line in fh:
+                if not line.strip() or line.startswith("#"):
+                    continue
+                line = line.split("#")[0].strip().split()
+
+                line.pop(0)  # remove initial marker
+                line.pop(-1)  # and final
+
+                text = ""
+                while line:
+                    c = line.pop(0)
+                    if c == not_ok:
+                        continue
+                    elif c == ok:
+                        text += c
+                    else:
+                        text += chr(int(c, 16))
+                        assert text[-1] != "÷"
+                yield text
+
+        def fmt(text):
+            res = ""
+            for c in text:
+                if category(c) in {"Lu", "Ll", "Nd", "Nl", "Pd", "Sm", "Sc", "So", "Zs"}:
+                    res += c
+                else:
+                    c = ord(c)
+                    if c <= 0xFFFF:
+                        res += f"\\u{c:04X}"
+                    else:
+                        res += f"\\U{c:08X}"
+            return '"' + res + '"'
+
+        for name in ("grapheme", "word", "sentence", "line_break"):
+            lines = list(get_strings(getattr(options, name)))
+
+            lines.sort(key=lambda l: len(l))
+
+            print(f'"{name}":')
+            print("(")
+            # we always take the shorted and longest
+            print(fmt(lines.pop(0)), ",")
+            print(fmt(lines.pop(-1)), ",")
+            # and 20 of the rest
+            for offset in range(len(lines) // 20, len(lines), len(lines) // 20):
+                print(fmt(lines[offset]), ",")
+            print("),")
