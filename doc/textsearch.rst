@@ -331,3 +331,4 @@ Provided by the :mod:`apsw.unicode` module.
 .. automodule:: apsw.unicode
     :members:
     :undoc-members:
+    :member-order: bysource

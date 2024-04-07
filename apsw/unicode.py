@@ -158,53 +158,178 @@ class _Category(enum.IntFlag):
 from . import _unicode
 
 assert unicode_version == _unicode.unicode_version
+_unicode_category = _unicode.category_category
 
 
-def grapheme_next_break(text: str, offset: int = 0) -> int:
-    """Returns end of Grapheme cluster /  User Perceived Character
+def category(codepoint: int | str) -> str:
+    """Returns the `general category <https://en.wikipedia.org/wiki/Unicode_character_property#General_Category>`__ - eg ``Lu`` for Letter Uppercase
 
-    For example regional indicators are in pairs, and a base codepoint
-    can be combined with zero or more additional codepoints providing
-    diacritics, marks, and variations.  Break points are defined in
-    the `TR29 spec
-    <https://www.unicode.org/reports/tr29/#Grapheme_Cluster_Boundary_Rules>`__.
+    See :data:`apsw.fts.unicode_categories` for descriptions mapping"""
+    cat = _unicode_category(codepoint)
+    if cat & _Category.Letter:
+        if cat & _Category.Letter_Lowercase == _Category.Letter_Lowercase:
+            return "Ll"
+        if cat & _Category.Letter_Modifier == _Category.Letter_Modifier:
+            return "Lm"
+        if cat & _Category.Letter_Other == _Category.Letter_Other:
+            return "Lo"
+        if cat & _Category.Letter_Titlecase == _Category.Letter_Titlecase:
+            return "Lt"
+        if cat & _Category.Letter_Uppercase == _Category.Letter_Uppercase:
+            return "Lu"
+    if cat & _Category.Mark:
+        if cat & _Category.Mark_Enclosing == _Category.Mark_Enclosing:
+            return "Me"
+        if cat & _Category.Mark_NonSpacing == _Category.Mark_NonSpacing:
+            return "Mn"
+        if cat & _Category.Mark_SpacingCombining == _Category.Mark_SpacingCombining:
+            return "Mc"
+    if cat & _Category.Number:
+        if cat & _Category.Number_DecimalDigit == _Category.Number_DecimalDigit:
+            return "Nd"
+        if cat & _Category.Number_Letter == _Category.Number_Letter:
+            return "Nl"
+        if cat & _Category.Number_Other == _Category.Number_Other:
+            return "No"
+    if cat & _Category.Other:
+        if cat & _Category.Other_Control == _Category.Other_Control:
+            return "Cc"
+        if cat & _Category.Other_Format == _Category.Other_Format:
+            return "Cf"
+        if cat & _Category.Other_NotAssigned == _Category.Other_NotAssigned:
+            return "Cn"
+        if cat & _Category.Other_PrivateUse == _Category.Other_PrivateUse:
+            return "Co"
+        if cat & _Category.Other_Surrogate == _Category.Other_Surrogate:
+            return "Cs"
+    if cat & _Category.Punctuation:
+        if cat & _Category.Punctuation_Close == _Category.Punctuation_Close:
+            return "Pe"
+        if cat & _Category.Punctuation_Connector == _Category.Punctuation_Connector:
+            return "Pc"
+        if cat & _Category.Punctuation_Dash == _Category.Punctuation_Dash:
+            return "Pd"
+        if cat & _Category.Punctuation_FinalQuote == _Category.Punctuation_FinalQuote:
+            return "Pf"
+        if cat & _Category.Punctuation_InitialQuote == _Category.Punctuation_InitialQuote:
+            return "Pi"
+        if cat & _Category.Punctuation_Open == _Category.Punctuation_Open:
+            return "Ps"
+        if cat & _Category.Punctuation_Other == _Category.Punctuation_Other:
+            return "Po"
+    if cat & _Category.Separator:
+        if cat & _Category.Separator_Line == _Category.Separator_Line:
+            return "Zl"
+        if cat & _Category.Separator_Paragraph == _Category.Separator_Paragraph:
+            return "Zp"
+        if cat & _Category.Separator_Space == _Category.Separator_Space:
+            return "Zs"
+    if cat & _Category.Symbol:
+        if cat & _Category.Symbol_Currency == _Category.Symbol_Currency:
+            return "Sc"
+        if cat & _Category.Symbol_Math == _Category.Symbol_Math:
+            return "Sm"
+        if cat & _Category.Symbol_Modifier == _Category.Symbol_Modifier:
+            return "Sk"
+        if cat & _Category.Symbol_Other == _Category.Symbol_Other:
+            return "So"
 
-    :param text: The text to examine
-    :param offset: The first codepoint to examine
+    raise Exception("Unreachable")
 
-    :returns:  Index of first codepoint not part of the grapheme cluster
-        starting at offset. You should extract ``text[offset:span]``
 
+def is_extended_pictographic(text: str) -> bool:
+    "Returns True if any of the text has the extended pictographic property (Emoji and similar)"
+    return _unicode.has_category(text, 0, len(text), _Category.Extended_Pictographic)
+
+
+def is_regional_indicator(text: str) -> bool:
+    "Returns True if any of the text is one of the 26 `regional indicators <https://en.wikipedia.org/wiki/Regional_indicator_symbol>`__ used in pairs to represent country flags"
+    return _unicode.has_category(text, 0, len(text), _Category.Regional_Indicator)
+
+
+def casefold(text: str) -> str:
+    """Returns the text for equality comparison without case distinction
+
+    Case folding maps text to a canonical form where case differences
+    are removed allowing case insensitive comparison.  Unlike upper,
+    lower, and title case, the result is not intended to be displayed
+    to people.
     """
-    return _unicode.grapheme_next_break(text, offset)
+    return _unicode.casefold(text)
 
 
-def grapheme_next(text: str, offset: int = 0) -> tuple[int, int]:
-    "Returns span of next grapheme cluster"
-    end = grapheme_next_break(text, offset)
-    return offset, end
+def strip(text: str) -> str:
+    """Returns the text for less exact comparison with accents, punctuation, marks etc removed
+
+    It will strip diacritics leaving the underlying characters so ``áççéñțś`` becomes ``accents``,
+    punctuation so ``e.g.`` becomes ``eg`` and ``don't`` becomes ``dont``,  marks so ``देवनागरी``
+    becomes ``दवनगर``, as well as all spacing, formatting, `variation selectors
+    <https://en.wikipedia.org/wiki/Variation_Selectors_%28Unicode_block%29>`__ and similar codepoints.
+
+    Codepoints are also converted to their compatibility representation.  For example
+    the single codepoint Roman numeral ``Ⅲ`` becomes ``III`` (three separate regular upper case `I`),
+    and ``🄷🄴🄻🄻🄾`` becomes ``HELLO``.
+
+    The resulting text should not be shown to people, and is intended for doing relaxed equality
+    comparisons, at the expense of false positives when the accents, marks, punctuation etc were
+    intended.
+
+    You should do :func:`case folding <casefold>` after this.
+
+    Emoji are preserved but variation selectors, `fitzpatrick <https://en.wikipedia.org/wiki/Emoji#Skin_color>`__
+    and `joiners <https://en.wikipedia.org/wiki/Zero-width_joiner>`__ are stripped.
+
+    `Regional indicators <https://en.wikipedia.org/wiki/Regional_indicator_symbol>`__ are preserved.
+    """
+    return _unicode.strip(text)
 
 
-def grapheme_iter(text: str, offset: int = 0) -> Generator[str, None, None]:
-    "Generator providing text of each grapheme cluster"
+def split_lines(text: str, offset: int = 0) -> Generator[str, None, None]:
+    """Each line, using hard line break rules
+
+    This is a generator yielding a line at a time.  The end of line
+    yielded will not include the hard line break characters.
+    """
     lt = len(text)
-    meth = _unicode.grapheme_next_break
-    start = offset
     while offset < lt:
-        offset = meth(text, offset)
-        yield text[start:offset]
-        start = offset
+        end = _unicode.line_next_hard_break(text, offset)
+        for hard in range(-1, offset - end - 1, -1):
+            if ord(text[end + hard]) not in _unicode.hard_breaks:
+                yield text[offset : end + hard + 1]
+                break
+        else:
+            # it was entirely hard break chars
+            yield ""
+        offset = end
 
 
-def grapheme_iter_with_offsets(text: str, offset: int = 0) -> Generator[tuple[int, int, str], None, None]:
-    "Generator providing start, end, text of each grapheme cluster"
-    lt = len(text)
-    meth = _unicode.grapheme_next_break
-    start = offset
-    while offset < lt:
-        offset = meth(text, offset)
-        yield (start, offset, text[start:offset])
-        start = offset
+def expand_tabs(text: str, tabsize: int = 8) -> str:
+    """Turns tabs into spaces aligning on tabsize boundaries, similar to :meth:`str.expandtabs`
+
+    This is aware of grapheme clusters and text width.
+    """
+    if "\t" not in text:
+        return text
+
+    res: list[str] = []
+    for line in line_break_iter(text):
+        if "\t" not in line:
+            res.append(line)
+            continue
+        clusters: list[str] = []
+        pos: int = 0
+        for gr in grapheme_iter(line):
+            if gr != "\t":
+                clusters.append(gr)
+                pos += text_width(gr)
+            else:
+                incr = tabsize - (pos % tabsize)
+                clusters.append(" " * incr)
+                pos += incr
+
+        res.append("".join(clusters))
+
+    return "".join(res)
 
 
 def grapheme_length(text: str, offset: int = 0) -> int:
@@ -274,6 +399,253 @@ def text_width_substr(text: str, offset: int, width: int) -> tuple[int, str]:
         if width_so_far == width:
             break
     return width_so_far, "".join(substr)
+
+
+def guess_paragraphs(text: str, tabsize: int = 8) -> str:
+    """Given text that contains paragraphs containing newlines, guesses where the paragraphs end
+
+    .. code-block:: output
+
+        If you have text like this, where paragraphs have newlines in
+        them, then each line gets wrapped separately by text_wrap.
+        This function tries to guess where the paragraphs end.
+
+        Blank lines like above are definite.
+          Indented lines that continue preserving the indent
+          are considered the same paragraph, and a change of indent
+          (in or out) is a new paragraph.
+        So this will be a new paragraph.
+
+         * Punctuation/numbers at the start of line
+           followed by indented text are considered the same
+           paragraph
+        2. So this ia new paragraph, while
+           this line is part of the line above
+
+        3. Optional numbers followed by punctuation then space
+        - are considered new paragraphs
+
+    """
+    # regex to match what looks like an (optionally numbered) list
+    # item
+    list_item_re = r"^(?P<indent>\s*[0-9+=,\.*-]+\s+).*"
+
+    # what we turn definite end of paragraph into
+    parasep = "\u2029"
+
+    # Force unicode end of line, form feed, next line to parasep
+    text = text.replace("\u2028", parasep)
+    text = text.replace("\u000d", parasep)
+    text = text.replace("\u0085", parasep)
+
+    # tabify
+    text = expand_tabs(text, tabsize)
+
+    # Fix Windows EOL
+    text = text.replace("\r\n", "\n")
+
+    # Any stray CR become parasep
+    text = text.replace("\r", parasep)
+
+    # Two newlines is definite
+    text = text.replace("\n\n", parasep + parasep)
+
+    paragraphs: list[str] = []
+
+    def append_paragraph(p: list[str]) -> None:
+        # appends the list of strings as a paragraph
+        # but we have to strip any indent from second and
+        # succeeding line
+        not_first = [line.lstrip(" ") for line in p[1:]]
+        paragraphs.append(" ".join([p[0]] + not_first))
+
+    # each segment is one or more paragraphs
+    for segment in text.split(parasep):
+        if "\n" not in segment:
+            paragraphs.append(segment)
+            continue
+        para: list[str] = []
+
+        for line in segment.split("\n"):
+            if not para:
+                # this is definitely a new paragraph
+                para.append(line)
+                continue
+
+            # optional spaces, followed by digits|punctuation followed by space
+            # is considered a new paragraph as a list item.
+            if re.match(list_item_re, line):
+                if para:
+                    append_paragraph(para)
+                para = [line]
+                continue
+
+            # Does indent match previous line
+            if len(line) - len(line.lstrip(" ")) == len(para[-1]) - len(para[-1].lstrip(" ")):
+                para.append(line)
+                continue
+
+            # Does indent match previous line as a list item indent?
+            mo = re.match(list_item_re, para[-1])
+            if mo:
+                if len(mo.group("indent")) == len(line) - len(line.lstrip(" ")):
+                    para.append(line)
+                    continue
+
+            # new paragraph
+            append_paragraph(para)
+            para = [line]
+            continue
+
+        if para:
+            append_paragraph(para)
+
+    # turn back into newline as the expected delimiter
+    return "\n".join(paragraphs) + "\n"
+
+
+def text_wrap(
+    text: str,
+    width: int = 70,
+    *,
+    tabsize: int = 8,
+    hyphen: str = "-",
+    combine_space: bool = True,
+) -> Generator[str, None, None]:
+    """Similar to :func:`textwrap.wrap` but Unicode grapheme cluster and line break aware
+
+    .. note::
+
+       Newlines in the text are treated as end of paragraph.  If your text has paragraphs
+       with newlines in them, then :func:`guess_paragraphs` can help.
+
+    :param text: string to process
+    :param width: width of yielded lines, if rendered using a monospace font such as to a terminal
+    :param tabsize: Tab stop spacing as tabs are expanded
+    :param hyphen: Used to show a segment was broken because it was wider than `width`
+    :param combine_space: Leading space on each (indent) is always preserved.  Other spaces where
+          multiple occur are combined into one space.
+    """
+    hyphen_width = text_width(hyphen)
+    if hyphen_width + 1 >= width:
+        raise ValueError(f"hyphen is too wide { hyphen_width } to allow content for width { width }")
+
+    text = expand_tabs(text, tabsize)
+
+    for line in split_lines(text):
+        accumulated: list[str] = []
+        line_width = 0
+        indent = None
+        space = False
+        for segment in line_break_iter(line):
+            if indent is None:
+                indent = " " * (len(segment) - len(segment.lstrip(" "))) if segment[0] == " " else ""
+                if len(indent) >= width - hyphen_width:
+                    # make space for double width char if indent wider than width
+                    indent = indent[: max(0, width - hyphen_width - 2)]
+                accumulated = [indent]
+                line_width = len(indent)
+                if line_width:
+                    if len(indent) != len(segment):  # there was spaces and text
+                        segment = segment[line_width:]
+                    else:
+                        continue
+
+            if combine_space:
+                new_segment = segment.rstrip(" ")
+                new_space = new_segment != segment
+                # we want to prepend a space if the previous segment
+                # ended in space
+                segment = (" " if space else "") + new_segment
+                space = new_space
+
+            seg_width = text_width(segment)
+            while line_width + seg_width > width:
+                if len(accumulated) == 1:  # only indent present
+                    if combine_space and segment[0] == " ":
+                        # we added a space, but don't need it on new line
+                        segment = segment[1:]
+                    # hyphenate too long
+                    desired = width - hyphen_width - line_width
+                    seg_width, substr = text_width_substr(segment, 0, desired)
+                    if seg_width == 0:
+                        # the first grapheme cluster is wider than desired which is
+                        # 1 or 2 depending on indent
+                        assert desired in {1, 2}
+                        # we will display '*' instead for that first grapheme cluster
+                        segment = grapheme_substr(segment, 1)
+                        substr = "*" * desired
+                    else:
+                        segment = segment[len(substr) :]
+                        if desired - seg_width:  # did we get less than asked for?
+                            substr += " " * (desired - seg_width)
+                    yield indent + substr + hyphen
+                    accumulated = [indent]
+                    line_width = len(indent)
+                    seg_width = text_width(segment)
+                    continue
+                yield "".join(accumulated) + " " * (width - line_width)
+                if combine_space and segment[0] == " ":
+                    # we added a space, but don't need it on new line
+                    segment = segment[1:]
+                    seg_width -= 1
+                accumulated = [indent]
+                line_width = len(indent)
+                continue
+            accumulated.append(segment)
+            line_width += seg_width
+        if len(accumulated) == 1:
+            # only indent
+            yield " " * width
+        else:
+            yield "".join(accumulated) + " " * (width - line_width)
+
+
+def grapheme_next_break(text: str, offset: int = 0) -> int:
+    """Returns end of Grapheme cluster /  User Perceived Character
+
+    For example regional indicators are in pairs, and a base codepoint
+    can be combined with zero or more additional codepoints providing
+    diacritics, marks, and variations.  Break points are defined in
+    the `TR29 spec
+    <https://www.unicode.org/reports/tr29/#Grapheme_Cluster_Boundary_Rules>`__.
+
+    :param text: The text to examine
+    :param offset: The first codepoint to examine
+
+    :returns:  Index of first codepoint not part of the grapheme cluster
+        starting at offset. You should extract ``text[offset:span]``
+
+    """
+    return _unicode.grapheme_next_break(text, offset)
+
+
+def grapheme_next(text: str, offset: int = 0) -> tuple[int, int]:
+    "Returns span of next grapheme cluster"
+    end = grapheme_next_break(text, offset)
+    return offset, end
+
+
+def grapheme_iter(text: str, offset: int = 0) -> Generator[str, None, None]:
+    "Generator providing text of each grapheme cluster"
+    lt = len(text)
+    meth = _unicode.grapheme_next_break
+    start = offset
+    while offset < lt:
+        offset = meth(text, offset)
+        yield text[start:offset]
+        start = offset
+
+
+def grapheme_iter_with_offsets(text: str, offset: int = 0) -> Generator[tuple[int, int, str], None, None]:
+    "Generator providing start, end, text of each grapheme cluster"
+    lt = len(text)
+    meth = _unicode.grapheme_next_break
+    start = offset
+    while offset < lt:
+        offset = meth(text, offset)
+        yield (start, offset, text[start:offset])
+        start = offset
 
 
 def word_next_break(text: str, offset: int = 0) -> int:
@@ -478,378 +850,6 @@ def line_break_iter_with_offsets(text: str, offset: int = 0) -> Generator[tuple[
         yield (offset, end, text[offset:end])
         offset = end
 
-
-_unicode_category = _unicode.category_category
-
-
-def category(codepoint: int | str) -> str:
-    """Returns the `general category <https://en.wikipedia.org/wiki/Unicode_character_property#General_Category>`__ - eg ``Lu`` for Letter Uppercase
-
-    See :data:`apsw.fts.unicode_categories` for descriptions mapping"""
-    cat = _unicode_category(codepoint)
-    if cat & _Category.Letter:
-        if cat & _Category.Letter_Lowercase == _Category.Letter_Lowercase:
-            return "Ll"
-        if cat & _Category.Letter_Modifier == _Category.Letter_Modifier:
-            return "Lm"
-        if cat & _Category.Letter_Other == _Category.Letter_Other:
-            return "Lo"
-        if cat & _Category.Letter_Titlecase == _Category.Letter_Titlecase:
-            return "Lt"
-        if cat & _Category.Letter_Uppercase == _Category.Letter_Uppercase:
-            return "Lu"
-    if cat & _Category.Mark:
-        if cat & _Category.Mark_Enclosing == _Category.Mark_Enclosing:
-            return "Me"
-        if cat & _Category.Mark_NonSpacing == _Category.Mark_NonSpacing:
-            return "Mn"
-        if cat & _Category.Mark_SpacingCombining == _Category.Mark_SpacingCombining:
-            return "Mc"
-    if cat & _Category.Number:
-        if cat & _Category.Number_DecimalDigit == _Category.Number_DecimalDigit:
-            return "Nd"
-        if cat & _Category.Number_Letter == _Category.Number_Letter:
-            return "Nl"
-        if cat & _Category.Number_Other == _Category.Number_Other:
-            return "No"
-    if cat & _Category.Other:
-        if cat & _Category.Other_Control == _Category.Other_Control:
-            return "Cc"
-        if cat & _Category.Other_Format == _Category.Other_Format:
-            return "Cf"
-        if cat & _Category.Other_NotAssigned == _Category.Other_NotAssigned:
-            return "Cn"
-        if cat & _Category.Other_PrivateUse == _Category.Other_PrivateUse:
-            return "Co"
-        if cat & _Category.Other_Surrogate == _Category.Other_Surrogate:
-            return "Cs"
-    if cat & _Category.Punctuation:
-        if cat & _Category.Punctuation_Close == _Category.Punctuation_Close:
-            return "Pe"
-        if cat & _Category.Punctuation_Connector == _Category.Punctuation_Connector:
-            return "Pc"
-        if cat & _Category.Punctuation_Dash == _Category.Punctuation_Dash:
-            return "Pd"
-        if cat & _Category.Punctuation_FinalQuote == _Category.Punctuation_FinalQuote:
-            return "Pf"
-        if cat & _Category.Punctuation_InitialQuote == _Category.Punctuation_InitialQuote:
-            return "Pi"
-        if cat & _Category.Punctuation_Open == _Category.Punctuation_Open:
-            return "Ps"
-        if cat & _Category.Punctuation_Other == _Category.Punctuation_Other:
-            return "Po"
-    if cat & _Category.Separator:
-        if cat & _Category.Separator_Line == _Category.Separator_Line:
-            return "Zl"
-        if cat & _Category.Separator_Paragraph == _Category.Separator_Paragraph:
-            return "Zp"
-        if cat & _Category.Separator_Space == _Category.Separator_Space:
-            return "Zs"
-    if cat & _Category.Symbol:
-        if cat & _Category.Symbol_Currency == _Category.Symbol_Currency:
-            return "Sc"
-        if cat & _Category.Symbol_Math == _Category.Symbol_Math:
-            return "Sm"
-        if cat & _Category.Symbol_Modifier == _Category.Symbol_Modifier:
-            return "Sk"
-        if cat & _Category.Symbol_Other == _Category.Symbol_Other:
-            return "So"
-
-    raise Exception("Unreachable")
-
-
-def is_extended_pictographic(text: str) -> bool:
-    "Returns True if any of the text has the extended pictographic property (Emoji and similar)"
-    return _unicode.has_category(text, 0, len(text), _Category.Extended_Pictographic)
-
-
-def is_regional_indicator(text: str) -> bool:
-    "Returns True if any of the text is one of the 26 `regional indicators <https://en.wikipedia.org/wiki/Regional_indicator_symbol>`__ used in pairs to represent country flags"
-    return _unicode.has_category(text, 0, len(text), _Category.Regional_Indicator)
-
-
-def split_lines(text: str, offset: int = 0) -> Generator[str, None, None]:
-    """Each line, using hard line break rules
-
-    This is a generator yielding a line at a time.  The end of line
-    yielded will not include the hard line break characters.
-    """
-    lt = len(text)
-    while offset < lt:
-        end = _unicode.line_next_hard_break(text, offset)
-        for hard in range(-1, offset - end - 1, -1):
-            if ord(text[end + hard]) not in _unicode.hard_breaks:
-                yield text[offset : end + hard + 1]
-                break
-        else:
-            # it was entirely hard break chars
-            yield ""
-        offset = end
-
-
-def expand_tabs(text: str, tabsize: int = 8) -> str:
-    """Turns tabs into spaces aligning on tabsize boundaries, similar to :meth:`str.expandtabs`
-
-    This is aware of grapheme clusters and text width.
-    """
-    if "\t" not in text:
-        return text
-
-    res: list[str] = []
-    for line in line_break_iter(text):
-        if "\t" not in line:
-            res.append(line)
-            continue
-        clusters: list[str] = []
-        pos: int = 0
-        for gr in grapheme_iter(line):
-            if gr != "\t":
-                clusters.append(gr)
-                pos += text_width(gr)
-            else:
-                incr = tabsize - (pos % tabsize)
-                clusters.append(" " * incr)
-                pos += incr
-
-        res.append("".join(clusters))
-
-    return "".join(res)
-
-
-def guess_paragraphs(text: str, tabsize: int = 8) -> str:
-    """Given text that contains paragraphs containing newlines, guesses where the paragraphs end
-
-    .. code-block:: output
-
-        If you have text like this, where paragraphs have newlines in
-        them, then each line gets wrapped separately by text_wrap.
-        This function tries to guess where the paragraphs end.
-
-        Blank lines like above are definite.
-          Indented lines that continue preserving the indent
-          are considered the same paragraph, and a change of indent
-          (in or out) is a new paragraph.
-        So this will be a new paragraph.
-
-         * Punctuation/numbers at the start of line
-           followed by indented text are considered the same
-           paragraph
-        2. So this ia new paragraph, while
-           this line is part of the line above
-
-        3. Optional numbers followed by punctuation then space
-        - are considered new paragraphs
-
-    """
-    # regex to match what looks like an (optionally numbered) list
-    # item
-    list_item_re = r"^(?P<indent>\s*[0-9+=,\.*-]+\s+).*"
-
-    # what we turn definite end of paragraph into
-    parasep = "\u2029"
-
-    # Force unicode end of line, form feed, next line to parasep
-    text = text.replace("\u2028", parasep)
-    text = text.replace("\u000d", parasep)
-    text = text.replace("\u0085", parasep)
-
-    # tabify
-    text = expand_tabs(text, tabsize)
-
-    # Fix Windows EOL
-    text = text.replace("\r\n", "\n")
-
-    # Any stray CR become parasep
-    text = text.replace("\r", parasep)
-
-    # Two newlines is definite
-    text = text.replace("\n\n", parasep + parasep)
-
-    paragraphs: list[str] = []
-
-    def append_paragraph(p: list[str]) -> None:
-        # appends the list of strings as a paragraph
-        # but we have to strip any indent from second and
-        # succeeding line
-        not_first = [line.lstrip(" ") for line in p[1:]]
-        paragraphs.append(" ".join([p[0]] + not_first))
-
-    # each segment is one or more paragraphs
-    for segment in text.split(parasep):
-        if "\n" not in segment:
-            paragraphs.append(segment)
-            continue
-        para: list[str] = []
-
-        for line in segment.split("\n"):
-            if not para:
-                # this is definitely a new paragraph
-                para.append(line)
-                continue
-
-            # optional spaces, followed by digits|punctuation followed by space
-            # is considered a new paragraph as a list item.
-            if re.match(list_item_re, line):
-                if para:
-                    append_paragraph(para)
-                para = [line]
-                continue
-
-            # Does indent match previous line
-            if len(line) - len(line.lstrip(" ")) == len(para[-1]) - len(para[-1].lstrip(" ")):
-                para.append(line)
-                continue
-
-            # Does indent match previous line as a list item indent?
-            mo = re.match(list_item_re, para[-1])
-            if mo:
-                if len(mo.group("indent")) == len(line) - len(line.lstrip(" ")):
-                    para.append(line)
-                    continue
-
-            # new paragraph
-            append_paragraph(para)
-            para = [line]
-            continue
-
-        if para:
-            append_paragraph(para)
-
-    # turn back into newline as the expected delimiter
-    return "\n".join(paragraphs) + "\n"
-
-
-def text_wrap(
-    text: str,
-    width: int = 70,
-    *,
-    tabsize: int = 8,
-    hyphen: str = "-",
-    combine_space: bool = True,
-) -> Generator[str, None, None]:
-    """Similar to :func:`textwrap.wrap` but Unicode grapheme cluster and line break aware
-
-    .. note::
-
-       Newlines in the text are treated as end of paragraph.  If your text has paragraphs
-       with newlines in them, then :func:`guess_paragraphs` can help.
-
-    :param text: string to process
-    :param width: width of yielded lines, if rendered using a monospace font such as to a terminal
-    :param tabsize: Tab stop spacing as tabs are expanded
-    :param hyphen: Used to show a segment was broken because it was wider than `width`
-    :param combine_space: Leading space on each (indent) is always preserved.  Other spaces where
-          multiple occur are combined into one space.
-    """
-    hyphen_width = text_width(hyphen)
-    if hyphen_width + 1 >= width:
-        raise ValueError(f"hyphen is too wide { hyphen_width } to allow content for width { width }")
-
-    text = expand_tabs(text, tabsize)
-
-    for line in split_lines(text):
-        accumulated: list[str] = []
-        line_width = 0
-        indent = None
-        space = False
-        for segment in line_break_iter(line):
-            if indent is None:
-                indent = " " * (len(segment) - len(segment.lstrip(" "))) if segment[0] == " " else ""
-                if len(indent) >= width - hyphen_width:
-                    # make space for double width char if indent wider than width
-                    indent = indent[: max(0, width - hyphen_width - 2)]
-                accumulated = [indent]
-                line_width = len(indent)
-                if line_width:
-                    if len(indent) != len(segment):  # there was spaces and text
-                        segment = segment[line_width:]
-                    else:
-                        continue
-
-            if combine_space:
-                new_segment = segment.rstrip(" ")
-                new_space = new_segment != segment
-                # we want to prepend a space if the previous segment
-                # ended in space
-                segment = (" " if space else "") + new_segment
-                space = new_space
-
-            seg_width = text_width(segment)
-            while line_width + seg_width > width:
-                if len(accumulated) == 1:  # only indent present
-                    if combine_space and segment[0] == " ":
-                        # we added a space, but don't need it on new line
-                        segment = segment[1:]
-                    # hyphenate too long
-                    desired = width - hyphen_width - line_width
-                    seg_width, substr = text_width_substr(segment, 0, desired)
-                    if seg_width == 0:
-                        # the first grapheme cluster is wider than desired which is
-                        # 1 or 2 depending on indent
-                        assert desired in {1, 2}
-                        # we will display '*' instead for that first grapheme cluster
-                        segment = grapheme_substr(segment, 1)
-                        substr = "*" * desired
-                    else:
-                        segment = segment[len(substr) :]
-                        if desired - seg_width:  # did we get less than asked for?
-                            substr += " " * (desired - seg_width)
-                    yield indent + substr + hyphen
-                    accumulated = [indent]
-                    line_width = len(indent)
-                    seg_width = text_width(segment)
-                    continue
-                yield "".join(accumulated) + " " * (width - line_width)
-                if combine_space and segment[0] == " ":
-                    # we added a space, but don't need it on new line
-                    segment = segment[1:]
-                    seg_width -= 1
-                accumulated = [indent]
-                line_width = len(indent)
-                continue
-            accumulated.append(segment)
-            line_width += seg_width
-        if len(accumulated) == 1:
-            # only indent
-            yield " " * width
-        else:
-            yield "".join(accumulated) + " " * (width - line_width)
-
-
-def casefold(text: str) -> str:
-    """Returns the text for equality comparison without case distinction
-
-    Case folding maps text to a canonical form where case differences
-    are removed allowing case insensitive comparison.  Unlike upper,
-    lower, and title case, the result is not intended to be displayed
-    to people.
-    """
-    return _unicode.casefold(text)
-
-def strip(text: str) -> str:
-    """Returns the text for less exact comparison with accents, punctuation, marks etc removed
-
-    It will strip diacritics leaving the underlying characters so ``áççéñțś`` becomes ``accents``,
-    punctuation so ``e.g.`` becomes ``eg`` and ``don't`` becomes ``dont``,  marks so ``देवनागरी``
-    becomes ``दवनगर``, as well as all spacing, formatting, `variation selectors
-    <https://en.wikipedia.org/wiki/Variation_Selectors_%28Unicode_block%29>`__ and similar codepoints.
-
-    Codepoints are also converted to their compatibility representation.  For example
-    the single codepoint Roman numeral ``Ⅲ`` becomes ``III`` (three separate regular upper case `I`),
-    and ``🄷🄴🄻🄻🄾`` becomes ``HELLO``.
-
-    The resulting text should not be shown to people, and is intended for doing relaxed equality
-    comparisons, at the expense of false positives when the accents, marks, punctuation etc were
-    intended.
-
-    You should do :func:`case folding <casefold>` after this.
-
-    Emoji are preserved but variation selectors, `fitzpatrick <https://en.wikipedia.org/wiki/Emoji#Skin_color>`__
-    and `joiners <https://en.wikipedia.org/wiki/Zero-width_joiner>`__ are stripped.
-
-    `Regional indicators <https://en.wikipedia.org/wiki/Regional_indicator_symbol>`__ are preserved.
-    """
-    return _unicode.strip(text)
 
 if __name__ == "__main__":
     import argparse
