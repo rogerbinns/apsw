@@ -346,6 +346,82 @@ def grapheme_substr(text: str, start: int | None = None, stop: int | None = None
     return _unicode.grapheme_substr(text, start, stop)
 
 
+def grapheme_endswith(text: str, substring: str) -> bool:
+    "Returns True if `text` ends with `substring` being aware of grapheme clusters"
+    # match str.endswith
+    if len(substring) == 0:
+        return True
+
+    if text.endswith(substring):
+        # it must end with the same codepoints, but also has to start at
+        # a grapheme cluster boundary
+        expected = len(text) - len(substring)
+        boundary = 0
+        while boundary < expected:
+            boundary = _unicode.grapheme_next_break(text, boundary)
+        return boundary == expected
+
+    return False
+
+
+def grapheme_startswith(text: str, substring: str) -> bool:
+    "Returns True if `text` starts with `substring` being aware of grapheme clusters"
+    # match str.startswith
+    if len(substring) == 0:
+        return True
+
+    if text.startswith(substring):
+        # it must start with the same codepoints, but also has to end at
+        # a grapheme cluster boundary
+        expected = len(substring)
+        boundary = 0
+        while boundary < expected:
+            boundary = _unicode.grapheme_next_break(text, boundary)
+        return boundary == expected
+
+    return False
+
+
+def grapheme_find(text: str, substring: str, start: int = 0, end: int | None = None) -> int:
+    """Returns the offset in text where substring can be found, being aware of grapheme clusters
+
+    :param start: Where in text to start the search (default beginning)
+    :param end: Where to stop the search exclusive (default remaining text)
+    :returns: offset into text, or -1 if not found or substring is zero length
+    """
+    # ::TODO:: convert to C
+
+    # Adjust for negative indices
+    offset = start if start >= 0 else len(text) - start
+    if end is None:
+        end = len(text)
+    else:
+        end = end if end >= 0 else len(text) - end
+
+    end = min(end, len(text) - len(substring) + 1)
+
+    while offset < end:
+        # Do the codepoints match?
+        if text[offset] == substring[0]:
+            # expressed this way for easy conversion into C
+            matched = True
+            for i in range(len(substring)):
+                if text[offset + i] != substring[i]:
+                    matched = False
+                    break
+            if matched:
+                # where we expect the grapheme break
+                expected = offset + len(substring)
+                boundary = offset
+                while boundary < expected:
+                    boundary = _unicode.grapheme_next_break(text, boundary)
+                if boundary == expected:
+                    return offset
+        offset = _unicode.grapheme_next_break(text, offset)
+
+    return -1
+
+
 def text_width(text: str, offset: int = 0) -> int:
     """Returns how wide the text would be if displayed in a terminal
 
