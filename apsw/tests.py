@@ -4,6 +4,7 @@
 
 # This testing code deliberately does nasty stuff so mypy isn't helpful
 # mypy: ignore-errors
+# type: ignore
 
 import array
 import collections
