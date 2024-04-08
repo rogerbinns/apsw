@@ -20,6 +20,7 @@ import apsw.ext
 import apsw.fts
 import apsw.unicode
 
+
 class FTS(unittest.TestCase):
     def setUp(self):
         self.db = apsw.Connection("")
@@ -1083,6 +1084,108 @@ class Unicode(unittest.TestCase):
                         res = tuple(meth_iter(test, **kwargs))
                         expected = tuple(w[k] for i, k in enumerate(w) if combo[i])
                         self.assertEqual(res, expected)
+
+    cat_examples = {
+        # this features the lowest and highest codepoint for each category
+        "Cc": (0x0000, 0x000D, 0x0019, 0x0084, 0x0090, 0x009C, 0x009F),
+        "Cf": (0x00AD, 0x206B, 0x1D175, 0xE003A, 0xE005B, 0xE007C, 0xE007F),
+        "Cn": (0x0378, 0x4ED75, 0x771C4, 0x9F613, 0xC7A62, 0x10FFFE, 0x10FFFF),
+        "Co": (0xE000, 0xF5266, 0xFBDCB, 0x102932, 0x109497, 0x10FFFC, 0x10FFFD),
+        "Cs": (0xD800, 0xD99A, 0xDB33, 0xDCCC, 0xDE65, 0xDFFE, 0xDFFF),
+        "Ll": (0x0061, 0x048B, 0x1F52, 0xAB7C, 0x1D4F8, 0x1E942, 0x1E943),
+        "Lm": (0x02B0, 0x1D3D, 0x1DBB, 0x10782, 0x1AFF5, 0x1E94B),
+        "Lo": (0x00AA, 0x8C70, 0x17011, 0x24543, 0x2ACB1, 0x323AD, 0x323AF),
+        "Lt": (0x01C5, 0x1F8A, 0x1F8F, 0x1F9C, 0x1FA9, 0x1FAE, 0x1FFC),
+        "Lu": (0x0041, 0x04B0, 0x1EBE, 0xA7C9, 0x1D4DC, 0x1E91D, 0x1E921),
+        "Mc": (0x0903, 0x0DD8, 0x1B40, 0x11182, 0x119E4, 0x1D172),
+        "Me": (0x0488, 0x20DD, 0x20DF, 0x20E2, 0x20E4, 0xA671, 0xA672),
+        "Mn": (0x0300, 0x0A51, 0x1CE6, 0x112EA, 0x1DA24, 0xE01EC, 0xE01EF),
+        "Nd": (0x0030, 0x0DEC, 0x1C41, 0x110F6, 0x11F51, 0x1FBF6, 0x1FBF9),
+        "Nl": (0x16EE, 0x3025, 0x1015C, 0x1240E, 0x1243C, 0x1246A, 0x1246E),
+        "No": (0x00B2, 0x24EE, 0x102EF, 0x10E72, 0x1D2E7, 0x1F109, 0x1F10C),
+        "Pc": (0x005F, 0x2040, 0x2054, 0xFE33, 0xFE34, 0xFE4D, 0xFE4E, 0xFE4F, 0xFF3F),
+        "Pd": (0x002D, 0x2010, 0x2014, 0x2E3A, 0x301C, 0xFE32, 0x10EAD),
+        "Pe": (0x0029, 0x2771, 0x2990, 0x2E5C, 0xFE38, 0xFF63),
+        "Pf": (0x00BB, 0x201D, 0x203A, 0x2E03, 0x2E05, 0x2E0A, 0x2E0D, 0x2E1D, 0x2E21),
+        "Pi": (0x00AB, 0x201C, 0x2039, 0x2E04, 0x2E0C, 0x2E20),
+        "Po": (0x0021, 0x1363, 0x2CFC, 0xFE46, 0x114C6, 0x1E95E, 0x1E95F),
+        "Ps": (0x0028, 0x276C, 0x298B, 0x2E55, 0xFE17, 0xFF5B, 0xFF62),
+        "Sc": (0x0024, 0x0BF9, 0x20A9, 0x20B5, 0xA838, 0x1E2FF, 0x1ECB0),
+        "Sk": (0x005E, 0x02E6, 0x0375, 0xA703, 0xAB5B, 0x1F3FC, 0x1F3FF),
+        "Sm": (0x002B, 0x2286, 0x27D8, 0x29B5, 0x2A78, 0x1EEF0, 0x1EEF1),
+        "So": (0x00A6, 0x285C, 0xA49A, 0x1D99C, 0x1F5D4, 0x1FBC8, 0x1FBCA),
+        "Zl": (0x2028,),
+        "Zp": (0x2029,),
+        "Zs": (0x0020, 0x2001, 0x2004, 0x2007, 0x200A, 0x3000),
+    }
+
+    def testCategory(self):
+        "Category lookup"
+        meth = apsw.unicode.category
+        self.assertRaises(TypeError, meth, b"aaa")
+        self.assertRaises(TypeError, meth)
+        self.assertRaises(TypeError, meth, "one", 2)
+        self.assertRaises(OverflowError, meth, -1)
+        self.assertRaises(ValueError, meth, sys.maxsize)
+        self.assertRaises(ValueError, meth, sys.maxunicode + 1)
+        self.assertRaises(TypeError, meth, "avbc")
+
+        # check we cover 0 and sys.maxunicode
+        self.assertEqual("Cc", meth(0))
+        self.assertEqual("Cn", meth(sys.maxunicode))
+
+        for cat, codepoints in self.cat_examples.items():
+            for codepoint in codepoints:
+                self.assertEqual(cat, meth(codepoint))
+                self.assertEqual(cat, meth(chr(codepoint)))
+
+        self.assertRaises(TypeError, apsw.unicode.is_extended_pictographic, b"ddd")
+        self.assertRaises(TypeError, apsw.unicode.is_extended_pictographic, (3,))
+        self.assertFalse(apsw.unicode.is_extended_pictographic(""))
+        self.assertFalse(apsw.unicode.is_extended_pictographic("abc"))
+        self.assertTrue(apsw.unicode.is_extended_pictographic("a🤦🏼‍♂️bc"))
+        self.assertFalse(apsw.unicode.is_extended_pictographic("a🇬🇧bc"))
+
+        self.assertRaises(TypeError, apsw.unicode.is_regional_indicator, b"ddd")
+        self.assertRaises(TypeError, apsw.unicode.is_regional_indicator, (3,))
+        self.assertFalse(apsw.unicode.is_regional_indicator(""))
+        self.assertFalse(apsw.unicode.is_regional_indicator("abc"))
+        self.assertFalse(apsw.unicode.is_regional_indicator("a🤦🏼‍♂️bc"))
+        self.assertTrue(apsw.unicode.is_regional_indicator("a🇬🇧bc"))
+
+    def testStrip(self):
+        "Stripping accents, marks, punctuation etc"
+        meth = apsw.unicode.strip
+
+        self.assertRaises(TypeError, meth, 3)
+        self.assertRaises(TypeError, meth, None)
+        self.assertRaises(TypeError, meth, b"abc")
+
+        # which categories are ok
+        ok = {"Lu", "Ll", "Lo", "Nd", "Nl", "No", "Sc", "Sm", "So"}
+
+        text = ""
+        for vals in self.cat_examples.values():
+            text += "a".join(chr(v) for v in vals)
+
+        self.assertIn("a", meth(text))
+        for c in meth(text):
+            cat = apsw.unicode.category(c)
+            self.assertIn(cat, ok)
+
+        for source, expect in (
+            # from the doc
+            ("áççéñțś", "accents"),
+            ("e.g.", "eg"),
+            ("don't", "dont"),
+            ("देवनागरी", "दवनगर"),
+            ("Ⅲ", "III"),
+            ("🄷🄴🄻🄻🄾", "HELLO"),
+        ):
+            a = meth(source)
+            self.assertEqual(a, expect)
+            self.assertEqual(expect, meth(expect))
+
 
 # ::TODO:: make main test suite run this one
 # eg https://docs.python.org/3/library/unittest.html#load-tests-protocol
