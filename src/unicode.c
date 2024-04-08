@@ -1331,7 +1331,6 @@ strip(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nar
 #define BITS21_MASK ((1 << 21) - 1)
 #define CP0(x) ((x) & BITS21_MASK)
 #define CP1(x) (((x) >> 21) & BITS21_MASK)
-#define CP2(x) (((x) >> 42) & BITS21_MASK)
 
   /* Pass 1:
       * Figure out if there is any change
@@ -1340,10 +1339,11 @@ strip(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nar
   */
   /* would the result be any different */
   int is_changed = 0;
-  /* does the result need a different MAX_CHAR_VALUE  */
-  int bump_max = 0;
+  /* new MAX_CHAR_VALUE  */
+  unsigned long long maxchar_flags = 0;
   /* number of codepoints in result */
   Py_ssize_t result_length = 0;
+
 
   Py_ssize_t source_pos;
   for (source_pos = 0; source_pos < source_length; source_pos++)
@@ -1359,8 +1359,8 @@ strip(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nar
     if (conv == 0)
       continue;
 
-    bump_max = bump_max || (conv & STRIP_MAXCHAR_INCREASE);
-    conv &= ~STRIP_MAXCHAR_INCREASE;
+    maxchar_flags |= conv & STRIP_MAXCHAR_MASK;
+    conv &= ~STRIP_MAXCHAR_MASK;
 
     if (conv < 30)
     {
@@ -1369,11 +1369,7 @@ strip(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nar
     }
     result_length += 1;
     if (CP1(conv))
-    {
       result_length += 1;
-      if (CP2(conv))
-        result_length += 1;
-    }
   }
 
   if (!is_changed)
@@ -1386,7 +1382,17 @@ strip(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nar
   /* Pass 2:
     Create and populate result string
   */
-  PyObject *dest = PyUnicode_New(result_length, bump_max ? 1114111 : PyUnicode_MAX_CHAR_VALUE(text));
+  Py_UCS4 maxchar = 0;
+  if(maxchar_flags & STRIP_MAXCHAR_1114111)
+    maxchar = 1114111;
+  else if (maxchar_flags & STRIP_MAXCHAR_65535)
+    maxchar = 65535;
+  else if (maxchar_flags & STRIP_MAXCHAR_255)
+    maxchar = 255;
+  else if (maxchar_flags & STRIP_MAXCHAR_127)
+    maxchar = 127;
+
+  PyObject *dest = PyUnicode_New(result_length, maxchar);
   if (!dest)
     return NULL;
 
@@ -1399,7 +1405,7 @@ strip(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nar
   {
     /* WRITE_DEST comes from casefold above */
     Py_UCS4 source_char = PyUnicode_READ(source_kind, source_data, source_pos);
-    unsigned long long conv = strip_category(source_char) & ~STRIP_MAXCHAR_INCREASE;
+    unsigned long long conv = strip_category(source_char) & ~STRIP_MAXCHAR_MASK;
     if(conv==0)
       continue;
     if(conv==1)
@@ -1413,12 +1419,7 @@ strip(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nar
       WRITE_DEST(c);
       c = CP1(conv);
       if(c)
-      {
         WRITE_DEST(c);
-        c = CP2(conv);
-        if(c)
-          WRITE_DEST(c);
-      }
       continue;
     }
     switch(source_char)

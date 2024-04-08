@@ -65,31 +65,25 @@ def fmt_cat(enum_name: str, cat: str | tuple[str, ...]):
     return " | ".join(f"{ enum_name }.{ c }" for c in cat)
 
 
-EXPANDS_RANGE = object()
-
-
 def fmt_cat_c(enum_name: str, cat: str | tuple[str, ...]):
     if enum_name != "strip":
         if isinstance(cat, str):
             return f"{ enum_name }_{ cat }"
         return "(" + " | ".join(f"{ enum_name }_{ c }" for c in cat) + ")"
-    if isinstance(cat, int):
-        cat = [cat]
-    if not isinstance(cat, int) and cat[0] is EXPANDS_RANGE:
-        prefix = "STRIP_MAXCHAR_INCREASE | "
-        cat = cat[1:]
-    else:
-        prefix = ""
+
+    if cat == 0:
+        return "0"
+
+    cat = list(cat)
+
+    prefix = f"STRIP_MAXCHAR_{ cat.pop(0) } | "
 
     if len(cat) == 1:
         if 0 <= cat[0] <= 30:
             return f"{prefix}{cat[0]}"
         return f"{prefix}0x{cat[0]:04X}"
-    if len(cat) == 2:
-        return f"({prefix}0x{cat[0]:04X} | (0x{cat[1]:04X}ull << 21))"
-    assert len(cat) == 3
-    return f"({prefix}0x{cat[0]:04X} | (0x{cat[1]:04X}ull << 21) | (0x{cat[2]:04X}ull << 42))"
-
+    assert len(cat) == 2
+    return f"({prefix}0x{cat[0]:04X} | (0x{cat[1]:04X}ull << 21))"
 
 def bsearch(enum_name: str, indent: int, items: list, n: int):
     # n is if tests at same level.  2 means binary search, 3 is trinary etc
@@ -202,12 +196,12 @@ def generate_strip_special_handling():
         l = l + " " * (119 - len(l)) + "\\"
         res.append(l)
 
-    res.append(f"/* The {len(strip_special_handling)} codepoints that expand to 4+ codepoints */")
+    res.append(f"/* The {len(strip_special_handling)} codepoints that expand to 3+ codepoints */")
     res.append("")
 
     add_line("#define STRIP_WRITE")
     for codepoint, expansion in sorted(strip_special_handling.items()):
-        assert len(expansion) >= 4
+        assert len(expansion) >= 3
         add_line(f"case 0x{codepoint:04X}:")
         for c in expansion:
             add_line(f"    WRITE_DEST(0x{c:04X});")
@@ -355,8 +349,12 @@ def generate_c_table(name, enum_name, ranges):
     yield ""
     yield ""
     if name == "strip":
-        yield "/* increases the max char value - bit above 3 packed 21 bit values */"
-        yield "#define STRIP_MAXCHAR_INCREASE (1ull << (21 * 3))"
+        yield "/* increases the max char value - bits 50+ above 2 packed 21 bit values */"
+        yield "#define STRIP_MAXCHAR_127 (1ull << 50)"
+        yield "#define STRIP_MAXCHAR_255 (1ull << 51)"
+        yield "#define STRIP_MAXCHAR_65535 (1ull << 52)"
+        yield "#define STRIP_MAXCHAR_1114111 (1ull << 53)"
+        yield "#define STRIP_MAXCHAR_MASK (STRIP_MAXCHAR_127 | STRIP_MAXCHAR_255 | STRIP_MAXCHAR_65535 | STRIP_MAXCHAR_1114111)"
         yield ""
 
     # make a copy because we modify it
@@ -397,11 +395,13 @@ def generate_c_table(name, enum_name, ranges):
     else:
         yield "  /* Returns value corresponding to codepoint "
         yield ""
-        yield "     We pack 3 replacement codepoints as 21 bit values (lowest first)"
-        yield "     The next bit up indicates that the max char value also increases"
         yield "     A value of zero means skip/omit the codepoint"
         yield "     One means it stays unchanged"
-        yield "     4 through 30 means it turns into that many codepoints (about 80, handled separately)"
+        yield "     We pack 2 replacement codepoints as 21 bit values (lowest first)"
+        yield "     3 through 30 means it turns into that many codepoints (about 300, handled separately)"
+        yield ""
+        yield "     We also have to get track of the maxchar bucket because CPython compiled with assertions"
+        yield "     fails if a larger value than was need was used.  This is STRIP_MAXCHAR_*"
         yield "  */"
     yield ""
     if options.table_limit:
@@ -616,11 +616,13 @@ strip_categories = {
     "Me",  # Mark enclosing
     "Pc",  # Punctuation connector
     "Pd",  # Punctuation dash
+    "Pe",  # Punctuation close
     "Po",  # Punctuation open
     "Pc",  # Punctuation close
     "Pi",  # Punctuation initial quote
     "Pf",  # Punctuation final quote
     "Po",  # Punctuation other
+    "Ps",  # Punctuation open
     "Sk",  # Symbol modifier
     "Zs",  # Separator space
     "Zl",  # Separator line
@@ -632,8 +634,9 @@ strip_categories = {
     "Cn",  # Other not assigned
 }
 
-# track which coddepoints increase the maxval passed to PyUnicode constructor
-strip_expands_range: list[int] = []
+
+# we have to know the maxchar value
+strip_maxchar: dict[int, int] = {}
 
 
 def next_pyuni_maxval(val: int) -> int:
@@ -677,10 +680,6 @@ def extract_strip(source: str, dest):
         if len(decomp) == 0:
             dest[0].append(codepoint)
             continue
-
-        # expands max char value detection
-        if any(d > next_pyuni_maxval(codepoint) for d in decomp):
-            strip_expands_range.append(codepoint)
 
         if len(decomp) == 1:
             if decomp[0] == codepoint:
@@ -962,24 +961,26 @@ strip_special_handling = {}
 
 
 def strip_tailor(codepoint, cat):
-    if cat in {0, 1}:
-        strip_stats[("(stripped)", "self")[cat]] += 1
+    if cat == 0:
+        strip_stats["(stripped)"] += 1
         return cat
+
+    if cat == 1:
+        strip_stats["self"] += 1
+        return  (next_pyuni_maxval(codepoint), 1)
 
     cat = [cat] if isinstance(cat, int) else list(cat)
 
     strip_stats[f"length {len(cat)}"] += 1
 
-    if len(cat) > 3:
+    maxval = max(next_pyuni_maxval(c) for c in cat)
+
+    if len(cat) >= 3:
         strip_special_handling[codepoint] = cat
-        strip_stats["Special handling because 4+ codepoints"] += 1
-        cat = [len(cat)]
+        strip_stats["Special handling because 3+ codepoints"] += 1
+        return (maxval, len(cat))
 
-    if codepoint in strip_expands_range:
-        cat = [EXPANDS_RANGE] + cat
-        strip_stats["Expands maxchar"] += 1
-
-    return tuple(cat)
+    return tuple([maxval] + cat)
 
 
 def replace_if_different(filename: str, contents: str) -> None:
