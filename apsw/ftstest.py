@@ -1015,6 +1015,21 @@ class Unicode(unittest.TestCase):
         for kind in "grapheme", "word", "sentence", "line_break":
             meth = getattr(the_module, f"{kind}_next_break")
             meth_next = getattr(the_module, f"{kind}_next")
+            meth_iter_with_offsets = getattr(the_module, f"{kind}_iter_with_offsets")
+            meth_iter = getattr(the_module, f"{kind}_iter")
+
+            # type and range checking
+            self.assertRaises(TypeError, meth)
+            self.assertRaises(TypeError, meth, 3)
+            self.assertRaises(TypeError, meth, b"abc")
+            self.assertRaises(TypeError, meth, "some text", "hello")
+            self.assertRaises(ValueError, meth, "some text", -1)
+            self.assertRaises(ValueError, meth, "some text", 1000)
+            self.assertRaises(ValueError, meth, "some text", sys.maxsize)
+            # we can reference index at len
+            self.assertEqual((4, 4), meth_next("some", 4))
+            self.assertEqual(tuple(), tuple(meth_iter("some", 4)))
+            self.assertEqual(tuple(), tuple(meth_iter_with_offsets("some", 4)))
 
             for text in self.break_tests[kind]:
                 test = ""
@@ -1037,6 +1052,7 @@ class Unicode(unittest.TestCase):
                 offset = 0
                 count = 0
                 break_pairs = list(itertools.pairwise([0] + breaks))
+                seen = []
                 if kind == "word":
                     # for when no word is present
                     break_pairs.append((breaks[-1], breaks[-1]))
@@ -1044,6 +1060,8 @@ class Unicode(unittest.TestCase):
                     start, end = meth_next(test, offset)
                     self.assertGreaterEqual(start, offset)
                     self.assertIn((start, end), break_pairs)
+                    if start < len(test):
+                        seen.append((start, end, test[start:end]))
                     count += 1
                     offset = end
 
@@ -1052,6 +1070,25 @@ class Unicode(unittest.TestCase):
                 else:
                     self.assertLessEqual(count, len(breaks))
 
+                self.assertEqual(list(meth_iter(test)), list(s[2] for s in seen))
+                self.assertEqual(list(meth_iter_with_offsets(test)), seen)
+
+                # extra stuff for word making sure all the flags work
+                if kind == "word":
+                    # note this block depends on dict ordering
+                    w = {"letter": "abc", "number": "1", "emoji": "🤦🏼‍♂️", "regional_indicator": "🇬🇧"}
+                    test = "".join(f"({w[k]})" for k in w)
+
+                    for combo in set(itertools.permutations([False, True] * len(w), len(w))):
+                        kwargs = {k: combo[i] for i, k in enumerate(w)}
+                        res = tuple(meth_iter(test, **kwargs))
+                        expected = tuple(w[k] for i, k in enumerate(w) if combo[i])
+                        self.assertEqual(res, expected)
+
+# ::TODO:: make main test suite run this one
+# eg https://docs.python.org/3/library/unittest.html#load-tests-protocol
+# in main could add the TestCases from this module first so they
+# get run before forkchecker
 
 if __name__ == "__main__":
     unittest.main()
