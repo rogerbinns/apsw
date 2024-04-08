@@ -18,7 +18,7 @@ import collections
 import apsw
 import apsw.ext
 import apsw.fts
-
+import apsw.unicode
 
 class FTS(unittest.TestCase):
     def setUp(self):
@@ -1009,14 +1009,13 @@ class Unicode(unittest.TestCase):
 
     def testBreaks(self):
         "Verifies breaktest locations"
-        from . import unicode as the_module
 
         marker = "÷"
         for kind in "grapheme", "word", "sentence", "line_break":
-            meth = getattr(the_module, f"{kind}_next_break")
-            meth_next = getattr(the_module, f"{kind}_next")
-            meth_iter_with_offsets = getattr(the_module, f"{kind}_iter_with_offsets")
-            meth_iter = getattr(the_module, f"{kind}_iter")
+            meth = getattr(apsw.unicode, f"{kind}_next_break")
+            meth_next = getattr(apsw.unicode, f"{kind}_next")
+            meth_iter_with_offsets = getattr(apsw.unicode, f"{kind}_iter_with_offsets")
+            meth_iter = getattr(apsw.unicode, f"{kind}_iter")
 
             # type and range checking
             self.assertRaises(TypeError, meth)
