@@ -8,12 +8,16 @@
 # database access, so it is kept im this separate file.   The main test
 # suite does however load this and run it.
 
-import unittest
-import tempfile
-import sys
-import unicodedata
-import itertools
 import collections
+import itertools
+import os
+import pathlib
+import subprocess
+import sys
+import tempfile
+import unicodedata
+import unittest
+import zipfile
 
 import apsw
 import apsw.ext
@@ -1085,6 +1089,87 @@ class Unicode(unittest.TestCase):
                         expected = tuple(w[k] for i, k in enumerate(w) if combo[i])
                         self.assertEqual(res, expected)
 
+    def testBreaksFull(self):
+        "Tests full official break tests (if available)"
+        # You need to download https://www.unicode.org/Public/UCD/latest/ucd/UCD.zip
+        # and have the file in one of the following directories
+        testzip = None
+        for location in (".", "..", "../ucd"):
+            check = pathlib.Path(location, "UCD.zip")
+            if check.is_file():
+                testzip = check
+                break
+        if not testzip:
+            return
+
+        with zipfile.ZipFile(testzip) as zip:
+            for kind, base in (
+                ("grapheme", "Grapheme"),
+                ("word", "Word"),
+                ("sentence", "Sentence"),
+                ("line_break", "Line"),
+            ):
+                with tempfile.NamedTemporaryFile("wb", prefix=f"ftstestbreaks-{ kind }", suffix=".txt") as tmpf:
+                    with zip.open(f"auxiliary/{base}BreakTest.txt") as src:
+                        tmpf.write(src.read())
+                    tmpf.flush()
+
+                    proc = self.exec("breaktest", kind, tmpf.name)
+                    self.assertEqual(proc.returncode, 0, f"Failed {proc=}")
+
+    def exec(self, *args):
+        cov_params = (
+            [] if os.environ.get("COVERAGE_RUN", "") != "true" else ["-m", "coverage", "run", "--source", "apsw", "-p"]
+        )
+        return subprocess.run(
+            [sys.executable] + cov_params + ["-m", "apsw.unicode"] + list(args),
+            capture_output=True,
+        )
+
+    def testCoverage(self):
+        "Exhaustive codepoints for coverage"
+        # this takes a while to run, so only do so if env variable set
+        if not os.environ.get("COVERAGE_RUN"):
+            return
+
+        for codepoint in range(0, sys.maxunicode + 1):
+            c = chr(codepoint)
+            c10 = c * 10
+            self.assertIsNotNone(apsw.unicode.strip(c))
+            for n in "grapheme", "word", "sentence", "line_break":
+                tuple(getattr(apsw.unicode, f"{n}_iter")(c10))
+
+    def testCLI(self):
+        "Exercise command line interface"
+        text = ""
+        for codepoints in self.cat_examples.values():
+            # surrogates not allowed
+            if 0xD800 in codepoints:
+                continue
+            # we skip null because it can't be used as a cli parameter
+            text += "".join(chr(c) for c in codepoints if c)
+
+        with tempfile.NamedTemporaryFile("wt") as tmpf:
+            tmpf.write(text)
+            tmpf.flush()
+
+            for kind in "grapheme", "word", "sentence", "line_break":
+                proc = self.exec("show", "--text-file", tmpf.name, kind)
+                self.assertEqual(proc.returncode, 0, f"Failed {proc=}")
+
+            proc = self.exec("textwrap", "--guess-paragraphs", tmpf.name)
+            self.assertEqual(proc.returncode, 0, f"Failed {proc=}")
+
+            proc = self.exec("textwrap", "--use-stdlib", tmpf.name)
+            self.assertEqual(proc.returncode, 0, f"Failed {proc=}")
+
+            proc = self.exec("codepoint", text)
+            self.assertEqual(proc.returncode, 0, f"Failed {proc=}")
+
+            if os.environ.get("COVERAGE_RUN"):
+                proc = self.exec("benchmark", "--size", "0.1", "--others", "all", tmpf.name)
+                self.assertEqual(proc.returncode, 0, f"Failed {proc=}")
+
     cat_examples = {
         # this features the lowest and highest codepoint for each category
         "Cc": (0x0000, 0x000D, 0x0019, 0x0084, 0x0090, 0x009C, 0x009F),
@@ -1181,7 +1266,7 @@ class Unicode(unittest.TestCase):
             ("देवनागरी", "दवनगर"),
             ("Ⅲ", "III"),
             ("🄷🄴🄻🄻🄾", "HELLO"),
-            ("", "")
+            ("", ""),
         ):
             res = meth(source)
             self.assertEqual(res, expect)
