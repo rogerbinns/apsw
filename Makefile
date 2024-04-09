@@ -112,7 +112,7 @@ build_ext_debug: src/apswversion.h src/faultinject.h ## Fetches SQLite and build
 coverage:  src/faultinject.h ## Coverage of the C code
 	env $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all && tools/coverage.sh
 
-PYCOVERAGEOPTS=--source apsw --append
+PYCOVERAGEOPTS=--source apsw -p
 
 pycoverage:  ## Coverage of the Python code
 	-rm -rf .coverage htmlcov dbfile
@@ -125,8 +125,9 @@ pycoverage:  ## Coverage of the Python code
 	$(PYTHON) -m webbrowser -t htmlcov/index.html
 
 ftscoverage: ## Temporary rule to test fts coverage
-	-rm -rf .coverage htmlcov
+	-rm -rf .coverage.* .coverage htmlcov
 	$(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw.ftstest
+	$(PYTHON) -m coverage combine
 	$(PYTHON) -m coverage report -m
 	$(PYTHON) -m coverage html --title "APSW python coverage"
 
