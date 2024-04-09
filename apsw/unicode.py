@@ -1007,7 +1007,7 @@ if __name__ == "__main__":
     p.set_defaults(function="benchmark")
     p.add_argument(
         "--size",
-        type=int,
+        type=float,
         default=50,
         help="How many million characters (codepoints) of text to use [%(default)s]",
     )
@@ -1405,10 +1405,10 @@ if __name__ == "__main__":
                 else:
                     sys.exit(f"Unknown third party package to benchmark '{package}'")
 
-        print(f"Expanding text to { options.size:,d} million chars ...", end="", flush=True)
+        print(f"Expanding text to { options.size } million chars ...", end="", flush=True)
         while len(text) < options.size * 1_000_000:
             text += "".join(random.sample(base_text, len(base_text)))
-        text = text[: options.size * 1_000_000]
+        text = text[: int(options.size * 1_000_000)]
 
         print("\nResults in codepoints per second processed, returning each segment.  Higher is faster.")
 
