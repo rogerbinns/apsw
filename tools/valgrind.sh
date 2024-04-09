@@ -46,4 +46,6 @@ set -ex
 
 $CC $CFLAGS $MOREFLAGS $opt $cflags $DEFS -Isqlite3/ -I$INCLUDEDIR -Isrc -I. -c src/apsw.c
 $LINKER -g $opt apsw.o -o apsw/__init__$SOSUFFIX
+$CC $CFLAGS $MOREFLAGS $opt $cflags $DEFS -I$INCLUDEDIR -Isrc -c src/unicode.c
+$LINKER -g $opt unicode.o -o apsw/_unicode$SOSUFFIX
 time env $apswopt valgrind $options $PYTHON $args
