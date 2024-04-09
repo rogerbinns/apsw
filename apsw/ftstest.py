@@ -1128,8 +1128,9 @@ class Unicode(unittest.TestCase):
 
     def testCoverage(self):
         "Exhaustive codepoints for coverage"
-        # this takes a while to run, so only do so if env variable set
-        if not os.environ.get("COVERAGE_RUN"):
+        # this takes a while to run, so only do so if env variable set or debug
+        # interpreter
+        if 'd' not in sys.abiflags and not os.environ.get("COVERAGE_RUN"):
             return
 
         for codepoint in range(0, sys.maxunicode + 1):
@@ -1138,6 +1139,10 @@ class Unicode(unittest.TestCase):
             self.assertIsNotNone(apsw.unicode.strip(c))
             for n in "grapheme", "word", "sentence", "line_break":
                 tuple(getattr(apsw.unicode, f"{n}_iter")(c10))
+            # this catches the maxchar calulation being wrong and will give a C level assertion failure like
+            # Objects/unicodeobject.c:621: _PyUnicode_CheckConsistency: Assertion failed: maxchar >= 128
+            apsw.unicode.strip(c10) * 2
+            apsw.unicode.casefold(c10) * 2
 
     def testCLI(self):
         "Exercise command line interface"
