@@ -475,7 +475,7 @@ class FTS(unittest.TestCase):
             returns = []
             for suffix in "wrapped", "param", "arg":
                 param_name = {"transform": "transform", "stopwords": "test", "synonym": "get"}[name]
-                args_with = [param_name, f"apsw.ftstest.APSW.{ name }_test_function", "source"]
+                args_with = [param_name, f"apsw.ftstest.FTS.{ name }_test_function", "source"]
                 args_without = ["source"]
                 tokname = f"{ name }_{ suffix }"
 
@@ -500,7 +500,7 @@ class FTS(unittest.TestCase):
             self.assertEqual(returns[0], returns[1])
             self.assertEqual(returns[1], returns[2])
 
-            apsw.fts.convert_string_to_python(f"apsw.ftstest.APSW.{ name }_test_function_check")(self, returns[0])
+            apsw.fts.convert_string_to_python(f"apsw.ftstest.FTS.{ name }_test_function_check")(self, returns[0])
 
         # synonym reason
         test_text = "one two three"
@@ -675,7 +675,7 @@ class FTS(unittest.TestCase):
 
     @staticmethod
     def synonym_test_function(s):
-        syn = APSW.transform_test_function(s)
+        syn = FTS.transform_test_function(s)
         return syn if syn != s else None
 
     def synonym_test_function_check(self, s):
