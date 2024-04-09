@@ -1181,9 +1181,15 @@ class Unicode(unittest.TestCase):
             ("देवनागरी", "दवनगर"),
             ("Ⅲ", "III"),
             ("🄷🄴🄻🄻🄾", "HELLO"),
+            ("", "")
         ):
-            a = meth(source)
-            self.assertEqual(a, expect)
+            res = meth(source)
+            self.assertEqual(res, expect)
+            for c in res:
+                cat = apsw.unicode.category(c)
+                self.assertIn(cat, ok)
+
+            # should not change when given output as input
             self.assertEqual(expect, meth(expect))
 
 
