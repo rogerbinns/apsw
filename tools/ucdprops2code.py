@@ -85,6 +85,7 @@ def fmt_cat_c(enum_name: str, cat: str | tuple[str, ...]):
     assert len(cat) == 2
     return f"({prefix}0x{cat[0]:04X} | (0x{cat[1]:04X}ull << 21))"
 
+
 def bsearch(enum_name: str, indent: int, items: list, n: int):
     # n is if tests at same level.  2 means binary search, 3 is trinary etc
     indent_ = "  " * indent
@@ -156,32 +157,48 @@ def generate_casefold_expansion(src) -> list[str]:
         l = l + " " * (119 - len(l)) + "\\"
         res.append(l)
 
+    res.append(f"/* {len(src):,} codepoints have casefold")
+    res.append("")
+
+    # group by maxchar, expansion =  codepoints
+    groups = {}
+    for codepoint, repl in src.items():
+        key = (max(next_pyuni_maxval(r) for r in repl), len(repl))
+        try:
+            groups[key].append(codepoint)
+        except KeyError:
+            groups[key] = [codepoint]
+
+    res.append("    count  maxchar  expansion")
+    for (maxchar, expansion), codepoints in sorted(groups.items()):
+        res.append(f"   {len(codepoints): 6,} {maxchar: 8}      {expansion}")
+
+    res.append("")
+    res.append("*/")
+    res.append("")
+
     add_line("#define CASEFOLD_EXPANSION")
-
     indent = "  "
-
-    for key in sorted(src.keys()):
-        for codepoint, _ in src[key]:
+    for (maxchar, expansion), codepoints in sorted(groups.items()):
+        for codepoint in codepoints:
             if codepoint > ord("Z"):
                 add_line(f"{indent}case 0x{ codepoint:04X}:")
         add_line(f"{indent*2}changed = 1;")
-
-        if key > 1:
-            add_line(f"{indent*2}expansion += { key -1 };")
+        if expansion > 1:
+            add_line(f"{indent*2}expansion += { expansion -1 };")
+        add_line(f"{indent*2}maxchar |= CASEFOLD_MAXCHAR_{ maxchar};")
         add_line(f"{indent*2}break;")
-
     res[-1] = res[-1].rstrip("\\").rstrip()
     res.append("")
 
     add_line("#define CASEFOLD_WRITE")
-    for key in sorted(src.keys()):
-        for codepoint, replacement in src[key]:
-            if codepoint > ord("Z"):
-                add_line(f"{indent}case 0x{ codepoint:04X}:")
-                for r in replacement[:-1]:
-                    add_line(f"{indent*2}WRITE_DEST(0x{r:04X});")
-                add_line(f"{indent*2}dest_char = 0x{replacement[-1]:04X};")
-                add_line(f"{indent*2}break;")
+    for codepoint, replacement in sorted(src.items()):
+        if codepoint > ord("Z"):
+            add_line(f"{indent}case 0x{ codepoint:04X}:")
+            for r in replacement[:-1]:
+                add_line(f"{indent*2}WRITE_DEST(0x{r:04X});")
+            add_line(f"{indent*2}dest_char = 0x{replacement[-1]:04X};")
+            add_line(f"{indent*2}break;")
 
     res[-1] = res[-1].rstrip("\\").rstrip()
     res.append("")
@@ -565,9 +582,6 @@ def extract_width(source: str):
 
 
 def extract_casefold(source: str, dest: dict[int, list]):
-    dest[1] = []
-    dest[2] = []
-    dest[3] = []
     for line in source.splitlines():
         if not line.strip() or line.startswith("#"):
             continue
@@ -578,34 +592,11 @@ def extract_casefold(source: str, dest: dict[int, list]):
             continue
         repl = tuple(int(r, 16) for r in repl.split())
         codepoint = int(codepoint, 16)
-        dest[len(repl)].append((codepoint, repl))
-
-    for i in dest:
-        dest[i].sort()
-
-    # check our assumptions about codepoints <=127
-    # no two or three char replacements
-    assert not any(codepoint <= 127 for codepoint, _ in dest[2])
-    assert not any(codepoint <= 127 for codepoint, _ in dest[3])
-
-    # verify the only values for <=127 are ascii 'A' - 'Z'
-    l127 = set()
-    for i in range(ord("A"), ord("Z") + 1):
-        l127.add(i)
-    for codepoint, (repl,) in dest[1]:
+        dest[codepoint] = repl
         if codepoint <= 127:
-            l127.remove(codepoint)
-            assert repl - codepoint == 32
-
-    # verify replacements are the same maxchar or less than codepoint
-    # with the exception of U+00B5 MICRO SIGN which expands to U+03BC
-    # GREEK SMALL LETTER MU
-    for val in 127, 255, 65535, 1114111:
-        for codepoint, repl in dest[1] + dest[2] + dest[3]:
-            if codepoint == 0xB5:
-                assert repl == (0x3BC,)
-            elif codepoint <= val:
-                assert all(r <= val for r in repl), f"{repl=} not <={val} for {codepoint=}"
+            assert len(repl) == 1
+            assert "A" <= chr(codepoint) <= "Z"
+            assert repl[0] == codepoint + 32
 
 
 # codepoints in these categories are removed
@@ -967,7 +958,7 @@ def strip_tailor(codepoint, cat):
 
     if cat == 1:
         strip_stats["self"] += 1
-        return  (next_pyuni_maxval(codepoint), 1)
+        return (next_pyuni_maxval(codepoint), 1)
 
     cat = [cat] if isinstance(cat, int) else list(cat)
 

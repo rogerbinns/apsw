@@ -1239,17 +1239,22 @@ casefold(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_
   /* We do two phases - the first looking for how much the result string
      is expanded because some codepoints expand to more than one folded
      codepoint.  During this phase we also detect if any changes would be
-     made.  If not the original string can be returned.
+     made.  If not the original string can be returned.  We also need to
+     work out what the resulting maxchar value will be because debug
+     Python builds assertion fail if too generous.
 
      The second phase then does the folding.
-
-     The only codepoint that could change the max char value is U+00B5
-     MICRO SIGN which expands to U+03BC GREEK SMALL LETTER MU which is
-     verified in ucdprops2code.py
 */
   int changed = 0;
-  int UB5_seen = 0;
   Py_ssize_t expansion = 0;
+
+/* these are bitfield, and 127 is a miniumum so it needs no value */
+#define CASEFOLD_MAXCHAR_127 0
+#define CASEFOLD_MAXCHAR_255 1
+#define CASEFOLD_MAXCHAR_65535 2
+#define CASEFOLD_MAXCHAR_1114111 4
+
+  int maxchar = CASEFOLD_MAXCHAR_127;
 
   Py_ssize_t source_pos;
   for (source_pos = 0; source_pos < source_length; source_pos++)
@@ -1261,21 +1266,35 @@ casefold(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_
       changed = 1;
       continue;
     }
-    if (source_char == 0xB5)
-      UB5_seen = 1;
+    if(source_char<=127)
+      continue;
     switch (source_char)
     {
       /* generated, present in _unicodedb.c */
       CASEFOLD_EXPANSION
+    default:
+      /* unchanged codepoint */
+      if (source_char >= 128 && source_char <= 255)
+        maxchar |= CASEFOLD_MAXCHAR_255;
+      else if (source_char >= 256 && source_char <= 65535)
+        maxchar |= CASEFOLD_MAXCHAR_65535;
+      else
+        maxchar |= CASEFOLD_MAXCHAR_1114111;
     }
   }
 
   if (!changed)
     return Py_NewRef(text);
 
-  Py_UCS4 dest_max = Py_MAX(PyUnicode_MAX_CHAR_VALUE(text), UB5_seen ? 65535 : 0);
+  Py_UCS4 max_char_value = 127;
+  if (maxchar & CASEFOLD_MAXCHAR_1114111)
+    max_char_value = 1114111;
+  else if (maxchar & CASEFOLD_MAXCHAR_65535)
+    max_char_value = 65535;
+  else if (maxchar & CASEFOLD_MAXCHAR_255)
+    max_char_value = 255;
 
-  PyObject *dest = PyUnicode_New(source_length + expansion, dest_max);
+  PyObject *dest = PyUnicode_New(source_length + expansion, max_char_value);
   if (!dest)
     return NULL;
 
@@ -1344,7 +1363,6 @@ strip(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nar
   /* number of codepoints in result */
   Py_ssize_t result_length = 0;
 
-
   Py_ssize_t source_pos;
   for (source_pos = 0; source_pos < source_length; source_pos++)
   {
@@ -1383,7 +1401,7 @@ strip(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nar
     Create and populate result string
   */
   Py_UCS4 maxchar = 0;
-  if(maxchar_flags & STRIP_MAXCHAR_1114111)
+  if (maxchar_flags & STRIP_MAXCHAR_1114111)
     maxchar = 1114111;
   else if (maxchar_flags & STRIP_MAXCHAR_65535)
     maxchar = 65535;
@@ -1406,29 +1424,29 @@ strip(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nar
     /* WRITE_DEST comes from casefold above */
     Py_UCS4 source_char = PyUnicode_READ(source_kind, source_data, source_pos);
     unsigned long long conv = strip_category(source_char) & ~STRIP_MAXCHAR_MASK;
-    if(conv==0)
+    if (conv == 0)
       continue;
-    if(conv==1)
+    if (conv == 1)
     {
       WRITE_DEST(source_char);
       continue;
     }
-    if(conv>=30)
+    if (conv >= 30)
     {
       Py_UCS4 c = CP0(conv);
       WRITE_DEST(c);
       c = CP1(conv);
-      if(c)
+      if (c)
         WRITE_DEST(c);
       continue;
     }
-    switch(source_char)
+    switch (source_char)
     {
       /* generated, present in _unicodedb.c */
       STRIP_WRITE
-      default:
-        Py_UNREACHABLE();
-      }
+    default:
+      Py_UNREACHABLE();
+    }
   }
 
   assert(dest_pos == result_length);
