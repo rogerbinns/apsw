@@ -250,13 +250,6 @@ hide all this.
    During the handling of the above, another occurred:
        `x exception`
    */
-/* Python 3.12 documented an API change to _PyErr_ChainExceptions1 and
-  Python 3.13 headers are changing only include it in internal/pycode_pyerrors.h
-  which isn't available to us.
-*/
-#if PY_VERSION_HEX >= 0x030d0000
-void _PyErr_ChainExceptions1(PyObject *);
-#endif
 #if PY_VERSION_HEX < 0x030c0000
 #define _chainexcapi(name) _PyErr_ChainExceptions(name##type, name, name##traceback)
 #else
