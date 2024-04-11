@@ -274,7 +274,7 @@ def category_enum(language: str, name="Category"):
         cats_members[v[0]].append(v[1])
     cat_vals = {}
     if language == "python":
-        yield f"class {name}(enum.IntFlag):"
+        yield f"class {name}:"
     yield from comment(
         language, ("    " if language == "python" else "") + "Major category values - mutually exclusive"
     )

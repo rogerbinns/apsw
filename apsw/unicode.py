@@ -105,7 +105,6 @@ from __future__ import annotations
 
 from typing import Generator
 
-import enum
 import re
 
 ### BEGIN UNICODE UPDATE SECTION ###
@@ -114,7 +113,7 @@ unicode_version = "15.1"
 that the rules and data tables implement"""
 
 
-class _Category(enum.IntFlag):
+class _Category:
     # Major category values - mutually exclusive
     Letter = 2**0
     Mark = 2**1
