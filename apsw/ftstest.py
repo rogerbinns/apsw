@@ -1282,6 +1282,36 @@ class Unicode(unittest.TestCase):
             # should not change when given output as input
             self.assertEqual(expect, meth(expect))
 
+    def testCaseFold(self):
+        self.assertRaises(TypeError, apsw.unicode.casefold)
+        self.assertRaises(TypeError, apsw.unicode.casefold, 3)
+        self.assertRaises(TypeError, apsw.unicode.casefold, b"abd")
+
+        self.assertEqual("", apsw.unicode.casefold(""))
+        # check ascii
+        text = "HelLLiol JKH093'';\n\098123Ulkdaf"
+        # for <127 (ascii) casefold is same as lower
+        self.assertEqual(apsw.unicode.casefold(text), text.lower())
+
+        # some interesting codepoints that all change and potentially expand
+        for text in (
+            "212A 006B",
+            "017F 0073",
+            "00DB 00FB",
+            "FF36 FF56",
+            "00DF 0073 0073",
+            "1E9E 0073 0073",
+            "FB06 0073 0074",
+            "012C 012D",
+            "014E 014F",
+            "FB16 057E 0576",
+            "FB04 0066 0066 006C",
+            "104D2 104FA",
+            "1E921 1E943",
+        ):
+            conv = "".join(chr(int(c,16)) for c in text.split())
+            self.assertEqual(apsw.unicode.casefold(conv[0]), conv[1:])
+
 
 # ::TODO:: make main test suite run this one
 # eg https://docs.python.org/3/library/unittest.html#load-tests-protocol
