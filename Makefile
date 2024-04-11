@@ -221,7 +221,7 @@ release: ## Signs built source file(s)
 	cd dist ; zip -m $(VERDIR)-sigs.zip *.asc
 
 # building a python debug interpreter
-PYDEBUG_VER=3.12.2
+PYDEBUG_VER=3.12.3
 PYDEBUG_DIR=/space/pydebug
 PYVALGRIND_VER=$(PYDEBUG_VER)
 PYVALGRIND_DIR=/space/pyvalgrind
@@ -233,8 +233,8 @@ pydebug: ## Build a debug python including address sanitizer.  Extensions it bui
 	curl https://www.python.org/ftp/python/`echo $(PYDEBUG_VER) | sed 's/[abr].*//'`/Python-$(PYDEBUG_VER).tar.xz | tar xfJ - && \
 	cd Python-$(PYDEBUG_VER) && \
 	./configure --with-address-sanitizer --with-undefined-behavior-sanitizer --without-pymalloc --with-pydebug --prefix="$(PYDEBUG_DIR)" \
-	CPPFLAGS="-DPyDict_MAXFREELIST=0 -DPyFloat_MAXFREELIST=0 -DPyTuple_MAXFREELIST=0 -DPyList_MAXFREELIST=0" && \
-	env PATH="/usr/lib/ccache:$$PATH" ASAN_OPTIONS=detect_leaks=false $(MAKE) -j install
+	--without-freelists --with-assertions && \
+	env ASAN_OPTIONS=detect_leaks=false $(MAKE) -j install
 	$(MAKE) dev-depends PYTHON=$(PYDEBUG_DIR)/bin/python3
 
 pyvalgrind: ## Build a debug python with valgrind integration
@@ -242,8 +242,8 @@ pyvalgrind: ## Build a debug python with valgrind integration
 	curl https://www.python.org/ftp/python/`echo $(PYVALGRIND_VER) | sed 's/[abr].*//'`/Python-$(PYVALGRIND_VER).tar.xz | tar xfJ - && \
 	cd Python-$(PYVALGRIND_VER) && \
 	./configure --with-valgrind --without-pymalloc  --with-pydebug --prefix="$(PYVALGRIND_DIR)" \
-	CPPFLAGS="-DPyDict_MAXFREELIST=0 -DPyFloat_MAXFREELIST=0 -DPyTuple_MAXFREELIST=0 -DPyList_MAXFREELIST=0" && \
-	env PATH="/usr/lib/ccache:$$PATH" $(MAKE) -j install
+	--without-freelists --with-assertions && \
+	$(MAKE) -j install
 	$(MAKE) dev-depends PYTHON=$(PYVALGRIND_DIR)/bin/python3
 
 
