@@ -40,6 +40,7 @@ MANIFEST.in.tmp
 megatestresults/
 testdb
 /.coverage
+/.coverage.*
 /htmlcov/
 apsw.egg-info
 /.ropeproject/
