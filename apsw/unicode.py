@@ -462,23 +462,25 @@ def text_width(text: str, offset: int = 0) -> int:
     # 0.14  The Python converted to C
     return _unicode.text_width(text, offset)
 
+
 def text_width_substr(text: str, offset: int, width: int) -> tuple[int, str]:
     """Extracts substring width or less wide being aware of grapheme cluster boundaries
 
     :returns: A tuple of how wide the substring is, and the substring"""
-    # ::TODO:: convert to C
-    substr = []
     width_so_far = 0
-    for grapheme in grapheme_iter(text, offset):
+    accepted = offset
+    for _, end, grapheme in grapheme_iter_with_offsets(text, offset):
         seg_width = text_width(grapheme)
+        if seg_width < 0:
+            raise ValueError(f"text contains invalid codepoints {grapheme=}")
         if width_so_far + seg_width <= width:
             width_so_far += seg_width
-            substr.append(grapheme)
+            accepted = end
         else:
             break
         if width_so_far == width:
             break
-    return width_so_far, "".join(substr)
+    return width_so_far, text[offset:accepted]
 
 
 def guess_paragraphs(text: str, tabsize: int = 8) -> str:
