@@ -948,7 +948,6 @@ if __name__ == "__main__":
     import sys
     import atexit
     import apsw.fts
-    import apsw.ext
 
     width = 80
     if sys.stdout.isatty():
@@ -1197,6 +1196,7 @@ use the C library function wcswidth, or use the wcwidth Python package wcswidth 
                 tabsize=options.tabsize,
                 hyphen=options.hyphen,
                 combine_space=options.combine_space,
+                invalid=options.invalid,
             ):
                 print(f"{options.start}{line}{options.end}")
 
@@ -1244,11 +1244,7 @@ use the C library function wcswidth, or use the wcwidth Python package wcswidth 
             seen: list[int] = []
             lf = len(fails)
             while offset < len(text):
-                try:
-                    span = next_break_func(text, offset)
-                except:
-                    apsw.ext.print_augmented_traceback(*sys.exc_info())
-                    raise
+                span = next_break_func(text, offset)
                 if span not in breaks:
                     fails.append(
                         f"Line { line_num } got unexpected break at { span } - expected are { breaks }.  Seen { seen }"
