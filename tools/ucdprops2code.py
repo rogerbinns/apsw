@@ -844,13 +844,26 @@ def category_width(codepoint: int, cat: str | tuple[str]):
         # so we treat them as width 1
         return cat
 
+    # can't be represented so minus one gets returned
+    if codepoint_to_category[codepoint] in {
+        "Cc",  # Other control
+        "Cs",  # Other surrogates
+    }:
+        # wcswidth (C and Python version) also treat Cn (not assigned)
+        # as invalid.  but the terminals happily display a 1 width
+        # placeholder so we'll do the same
+        # wcswidth (Python) gives 1 for surrogates, but Python refuses to
+        # output UTF8 text containing them, so we also treat them as
+        # invalid just as wcswidth (C) does
+        add_cat("WIDTH_INVALID")
+        return cat
+
     # Always zero no matter what the wide codepoints say
     if codepoint_to_category[codepoint] in {
         "Mn",  # Mark NonSpacing
         "Me",  # Mark enclosing
         "Mc",  # Mark spacing combining
         "Cf",  # Other format
-        "Cc",  # Other control
     }:
         add_cat("WIDTH_ZERO")
         return cat

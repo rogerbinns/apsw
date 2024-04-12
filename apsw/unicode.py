@@ -158,8 +158,9 @@ class _Category:
     # Remaining non-category convenience flags
     Extended_Pictographic = 2**14
     Regional_Indicator = 2**15
-    WIDTH_TWO = 2**16
-    WIDTH_ZERO = 2**17
+    WIDTH_INVALID = 2**16
+    WIDTH_TWO = 2**17
+    WIDTH_ZERO = 2**18
 
 
 ### END UNICODE UPDATE SECTION ###
@@ -438,14 +439,17 @@ def grapheme_find(text: str, substring: str, start: int = 0, end: int | None = N
 
 
 def text_width(text: str, offset: int = 0) -> int:
-    """Returns how wide the text would be if displayed in a terminal
+    """Returns how many columns the text would be if displayed in a terminal
 
     You should :func:`split_lines` first and then operate on each line
     separately.
 
+    If the `text` contains new lines, control characters, and similar
+    unrepresentable codepoints then minus 1 is returned.
+
     Terminals aren't entirely consistent with each other, and Unicode
-    has many kinds of codepoints.  Consequently this is right the vast
-    majority of the time, but not always.
+    has many kinds of codepoints, and combinations.  Consequently this
+    is right the vast majority of the time, but not always.
 
     Note that web browsers do variable widths even in monospaced
     sections like <pre> so they won't always agree with the terminal
@@ -457,6 +461,8 @@ def text_width(text: str, offset: int = 0) -> int:
     for i in range(offset, len(text)):
         cp = ord(text[i])
         cat = _unicode_category(cp)
+        if cat & _Category.WIDTH_INVALID:
+            return -1
         if last_was_zwj and cat & _Category.Extended_Pictographic:
             # ZWJ followed by Extended Pictographic is zero
             # even though the Extended Pictographic will be marked
