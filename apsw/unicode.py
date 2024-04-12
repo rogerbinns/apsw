@@ -608,6 +608,7 @@ def text_wrap(
     tabsize: int = 8,
     hyphen: str = "-",
     combine_space: bool = True,
+    invalid: str = "?",
 ) -> Generator[str, None, None]:
     """Similar to :func:`textwrap.wrap` but Unicode grapheme cluster and line break aware
 
@@ -622,6 +623,8 @@ def text_wrap(
     :param hyphen: Used to show a segment was broken because it was wider than `width`
     :param combine_space: Leading space on each (indent) is always preserved.  Other spaces where
           multiple occur are combined into one space.
+    :param invalid: If invalid codepoints are encountered such as control characters and surrogates
+          then they are replaced with this.
     """
     hyphen_width = text_width(hyphen)
     if hyphen_width + 1 >= width:
@@ -657,6 +660,11 @@ def text_wrap(
                 space = new_space
 
             seg_width = text_width(segment)
+            if seg_width < 0:
+                # There was something invalid in there
+                segment = "".join((c if text_width(c) >= 0 else invalid) for c in segment)
+                seg_width = text_width(segment)
+
             while line_width + seg_width > width:
                 if len(accumulated) == 1:  # only indent present
                     if combine_space and segment[0] == " ":
@@ -1038,14 +1046,28 @@ if __name__ == "__main__":
 
     p = subparsers.add_parser(
         "textwrap",
-        help="Measure how long segmentation takes to iterate each segment",
+        help="""Wrap text to fit the specified number of columns.  Each line output
+will be padded with spaces to the width.""",
     )
     p.set_defaults(function="textwrap")
+    p.add_argument(
+        "--measurement",
+        default="apsw.unicode",
+        choices=["wcswidth-c", "wcswidth-py"],
+        help="""Instead of using the builtin function for measuring how wide text is
+use the C library function wcswidth, or use the wcwidth Python package wcswidth function""",
+    )
+    p.add_argument(
+        "--invalid",
+        default="?",
+        help="Replacement for invalid codepoints such as control characters and surrogates [%(default)s]",
+    )
+
     p.add_argument(
         "--width",
         type=int,
         default=width,
-        help="How wide to wrap to [%(default)s]",
+        help="How many columns to wrap to [%(default)s]",
     )
     p.add_argument("--tabsize", type=int, default=8, help="Tabstop size [%(default)s]")
     p.add_argument("--hyphen", default="-", help="Text to use when a segment is longer that width [%(default)s]")
@@ -1075,7 +1097,8 @@ if __name__ == "__main__":
     p.add_argument(
         "text_file",
         type=argparse.FileType("rt", encoding="utf8"),
-        help="""Text source to use encoded in UTF8. Newlines are considered to delimit each paragraph, so consider --guess-paragraphs""",
+        help="""Text source to use encoded in UTF8. Newlines are considered to delimit each paragraph, so consider --guess-paragraphs.
+        Use a name of a single dash to read from standard input.""",
     )
 
     p = subparsers.add_parser(
@@ -1141,6 +1164,26 @@ if __name__ == "__main__":
     elif options.function == "textwrap":
         # stop debug interpreter whining about file not being closed
         atexit.register(lambda: options.text_file.close())
+        if options.measurement == "wcswidth-c":
+            import ctypes
+            import ctypes.util
+
+            libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library("c"))  # C library on Unix/Linux platforms
+            if not hasattr(libc, "wcswidth"):
+                sys.exit("C library does not have wcswidth function")
+
+            libc.wcswidth.argtypes = [ctypes.c_wchar_p, ctypes.c_size_t]
+            libc.wcswidth.restype = ctypes.c_int
+
+            def text_width(text, offset=0):
+                return libc.wcswidth(text[offset:], len(text) * 10)
+
+        elif options.measurement == "wcswidth-py":
+            import wcwidth
+
+            def text_width(text, offset=0):
+                return wcwidth.wcswidth(text[offset:])
+
         width = options.width
         width = width - text_width(options.start) - text_width(options.end)
 
