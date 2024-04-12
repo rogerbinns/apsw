@@ -455,29 +455,12 @@ def text_width(text: str, offset: int = 0) -> int:
     sections like <pre> so they won't always agree with the terminal
     either.
     """
-    # ::TODO:: convert to C
-    width = 0
-    last_was_zwj = False
-    for i in range(offset, len(text)):
-        cp = ord(text[i])
-        cat = _unicode_category(cp)
-        if cat & _Category.WIDTH_INVALID:
-            return -1
-        if last_was_zwj and cat & _Category.Extended_Pictographic:
-            # ZWJ followed by Extended Pictographic is zero
-            # even though the Extended Pictographic will be marked
-            # as two wide
-            pass
-        elif cat & _Category.WIDTH_TWO:
-            width += 2
-        elif cat & _Category.WIDTH_ZERO:
-            pass
-        else:
-            width += 1
-        last_was_zwj = cp == 0x200D
-
-    return width
-
+    # Some benchmarks in seconds running on 45MB of the UNDR
+    # 8.34  wcwidth Python module
+    # 8.14  The implementation of this in Python
+    # 0.20  Calling libc wcswidth via ctypes
+    # 0.14  The Python converted to C
+    return _unicode.text_width(text, offset)
 
 def text_width_substr(text: str, offset: int, width: int) -> tuple[int, str]:
     """Extracts substring width or less wide being aware of grapheme cluster boundaries

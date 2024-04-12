@@ -1266,7 +1266,7 @@ casefold(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_
       changed = 1;
       continue;
     }
-    if(source_char<=127)
+    if (source_char <= 127)
       continue;
     switch (source_char)
     {
@@ -1455,6 +1455,57 @@ strip(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nar
 }
 
 static PyObject *
+text_width(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  PyObject *text = NULL;
+  Py_ssize_t offset;
+  ARG_PROLOG(2, break_KWNAMES);
+  ARG_MANDATORY ARG_PyUnicode(text);
+  ARG_MANDATORY ARG_PyUnicode_offset(offset, text);
+  ARG_EPILOG(NULL, "text_width(text: str, offset: int)", );
+
+  void *text_data = PyUnicode_DATA(text);
+  int text_kind = PyUnicode_KIND(text);
+  Py_ssize_t text_end = PyUnicode_GET_LENGTH(text);
+
+  Py_ssize_t width = 0;
+
+  int last_was_zwj = 0;
+
+  for (; offset < text_end; offset++)
+  {
+    Py_UCS4 codepoint = PyUnicode_READ(text_kind, text_data, offset);
+    unsigned cat = category_category(codepoint);
+    if (cat & Category_WIDTH_INVALID)
+    {
+      width = -1;
+      break;
+    }
+    if (last_was_zwj && (cat & Category_Extended_Pictographic))
+    {
+      /* ZWJ followed by Extended Pictographic is zero even though the
+         Extended Pictographic will be marked as two wide */
+      ; /* do nothing */
+    }
+    else if (cat & Category_WIDTH_TWO)
+    {
+      width += 2;
+    }
+    else if (cat & Category_WIDTH_ZERO)
+    {
+      ; /* do nothing */
+    }
+    else
+    {
+      width += 1;
+    }
+    last_was_zwj = (codepoint == 0x200D);
+  }
+
+  return PyLong_FromSsize_t(width);
+}
+
+static PyObject *
 grapheme_length(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   PyObject *text = NULL;
@@ -1619,7 +1670,8 @@ static PyMethodDef methods[] = {
     "Returns new string omitting accents, punctuation etc" },
   { "grapheme_length", (PyCFunction)grapheme_length, METH_FASTCALL | METH_KEYWORDS,
     "Length of string in grapheme clusters" },
-  { "grapheme_substr", (PyCFunction)grapheme_substr, METH_FASTCALL | METH_KEYWORDS, "Substring in grapheme clusterss" },
+  { "grapheme_substr", (PyCFunction)grapheme_substr, METH_FASTCALL | METH_KEYWORDS, "Substring in grapheme clusters" },
+  { "text_width", (PyCFunction)text_width, METH_FASTCALL | METH_KEYWORDS, "Columns width of text" },
   { NULL, NULL, 0, NULL },
 };
 
