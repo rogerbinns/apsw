@@ -1533,19 +1533,23 @@ grapheme_find(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t 
   if (start < 0)
     start = Py_MAX(0, text_end + start);
   if (end < 0)
-    end = Py_MAX(0, text_end + end);
-  end = Py_MIN(end, text_end - substring_end);
+    end = text_end + end;
+  end = Py_MIN(end, text_end) - substring_end + 1;
 
+  /* zero length is always found if start is 0 even if end is before start! */
+  if (substring_end == 0 && start == 0)
+    return PyLong_FromLong(0);
   /* early out */
-  if (substring_end == 0 || substring_end > text_end || start >= end)
+  if (substring_end > text_end || start >= end)
     goto notfound;
 
-  end = Py_MIN(end, text_end - substring_end);
   Py_ssize_t offset = start;
 
   while (offset < end)
   {
-    if (PyUnicode_READ(text_kind, text_data, offset) == PyUnicode_READ(substring_kind, substring_data, 0))
+    /* we only allow the empty substring to be found at grapheme boundaries */
+    if (substring_end == 0
+        || PyUnicode_READ(text_kind, text_data, offset) == PyUnicode_READ(substring_kind, substring_data, 0))
     {
       int matched = 1;
       for (Py_ssize_t check = 1; check < substring_end; check++)

@@ -1312,6 +1312,35 @@ class Unicode(unittest.TestCase):
         ):
             conv = "".join(chr(int(c,16)) for c in text.split())
             self.assertEqual(apsw.unicode.casefold(conv[0]), conv[1:])
+    def testFinding(self):
+        "grapheme aware startswith/endswith/find"
+        zwj = "\u200d"
+
+        sw = apsw.unicode.grapheme_startswith
+        ew = apsw.unicode.grapheme_endswith
+        fi = apsw.unicode.grapheme_find
+
+        # for simple strings check we get same answers as regular Python
+        for haystack, needle in (
+            # other combos
+            ("abca", "a"),
+            ("abca", "ab"),
+            ("abca", "ca"),
+            ("123456", "123456"),
+            ("123456", "1234567"),
+            # all strings start and end with empty string
+            ("", ""),
+            ("abc", ""),
+        ):
+            self.assertEqual(haystack.startswith(needle), sw(haystack, needle))
+            self.assertEqual(haystack.endswith(needle), ew(haystack, needle))
+            for start in range(-20, 20):
+                for end in range(-20, 20):
+                    self.assertEqual(
+                        haystack.find(needle, start, end),
+                        fi(haystack, needle, start, end),
+                        f"{haystack=} {needle=} {start=} {end=}",
+                    )
 
 
 # ::TODO:: make main test suite run this one
