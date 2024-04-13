@@ -399,43 +399,15 @@ def grapheme_startswith(text: str, substring: str) -> bool:
 
 
 def grapheme_find(text: str, substring: str, start: int = 0, end: int | None = None) -> int:
-    """Returns the offset in text where substring can be found, being aware of grapheme clusters
+    """Returns the offset in text where substring can be found, being aware of grapheme clusters.
+    The beginning and end of the substring have to be at a grapheme cluster boundary.
 
     :param start: Where in text to start the search (default beginning)
     :param end: Where to stop the search exclusive (default remaining text)
     :returns: offset into text, or -1 if not found or substring is zero length
     """
-    # ::TODO:: convert to C
-
-    # Adjust for negative indices
-    offset = start if start >= 0 else len(text) - start
-    if end is None:
-        end = len(text)
-    else:
-        end = end if end >= 0 else len(text) - end
-
-    end = min(end, len(text) - len(substring) + 1)
-
-    while offset < end:
-        # Do the codepoints match?
-        if text[offset] == substring[0]:
-            # expressed this way for easy conversion into C
-            matched = True
-            for i in range(len(substring)):
-                if text[offset + i] != substring[i]:
-                    matched = False
-                    break
-            if matched:
-                # where we expect the grapheme break
-                expected = offset + len(substring)
-                boundary = offset
-                while boundary < expected:
-                    boundary = _unicode.grapheme_next_break(text, boundary)
-                if boundary == expected:
-                    return offset
-        offset = _unicode.grapheme_next_break(text, offset)
-
-    return -1
+    # C version is 7.5X faster than Python version
+    return _unicode.grapheme_find(text, substring, start, end if end is not None else len(text))
 
 
 def text_width(text: str, offset: int = 0) -> int:

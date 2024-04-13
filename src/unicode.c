@@ -1506,6 +1506,80 @@ text_width(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fas
 }
 
 static PyObject *
+grapheme_find(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+#define grapheme_find_KWNAMES "text", "substring", "start", "end"
+
+  PyObject *text;
+  PyObject *substring;
+  Py_ssize_t start, end;
+
+  ARG_PROLOG(4, grapheme_find_KWNAMES);
+  ARG_MANDATORY ARG_PyUnicode(text);
+  ARG_MANDATORY ARG_PyUnicode(substring);
+  ARG_MANDATORY ARG_Py_ssize_t(start);
+  ARG_MANDATORY ARG_Py_ssize_t(end);
+  ARG_EPILOG(NULL, "grapheme_find(text: str, substring: str, start: int, end: int)", );
+
+  void *text_data = PyUnicode_DATA(text);
+  int text_kind = PyUnicode_KIND(text);
+  Py_ssize_t text_end = PyUnicode_GET_LENGTH(text);
+
+  void *substring_data = PyUnicode_DATA(substring);
+  int substring_kind = PyUnicode_KIND(substring);
+  Py_ssize_t substring_end = PyUnicode_GET_LENGTH(substring);
+
+  /* fixup offsets */
+  if (start < 0)
+    start = Py_MAX(0, text_end + start);
+  if (end < 0)
+    end = Py_MAX(0, text_end + end);
+  end = Py_MIN(end, text_end - substring_end);
+
+  /* early out */
+  if (substring_end == 0 || substring_end > text_end || start >= end)
+    goto notfound;
+
+  end = Py_MIN(end, text_end - substring_end);
+  Py_ssize_t offset = start;
+
+  while (offset < end)
+  {
+    if (PyUnicode_READ(text_kind, text_data, offset) == PyUnicode_READ(substring_kind, substring_data, 0))
+    {
+      int matched = 1;
+      for (Py_ssize_t check = 1; check < substring_end; check++)
+      {
+        if (PyUnicode_READ(text_kind, text_data, offset + check)
+            != PyUnicode_READ(substring_kind, substring_data, check))
+        {
+          matched = 0;
+          break;
+        }
+      }
+      if (matched)
+      {
+
+        Py_ssize_t expected = offset + substring_end;
+        Py_ssize_t boundary = offset;
+        while (boundary < expected)
+        {
+          boundary = grapheme_next_break(text, boundary);
+        }
+        if (boundary == expected)
+        {
+          return PyLong_FromSsize_t(offset);
+        }
+      }
+    }
+    offset = grapheme_next_break(text, offset);
+  }
+
+notfound:
+  return PyLong_FromSsize_t(-1);
+}
+
+static PyObject *
 grapheme_length(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   PyObject *text = NULL;
@@ -1672,6 +1746,7 @@ static PyMethodDef methods[] = {
     "Length of string in grapheme clusters" },
   { "grapheme_substr", (PyCFunction)grapheme_substr, METH_FASTCALL | METH_KEYWORDS, "Substring in grapheme clusters" },
   { "text_width", (PyCFunction)text_width, METH_FASTCALL | METH_KEYWORDS, "Columns width of text" },
+  { "grapheme_find", (PyCFunction)grapheme_find, METH_FASTCALL | METH_KEYWORDS, "Find substring in text" },
   { NULL, NULL, 0, NULL },
 };
 
