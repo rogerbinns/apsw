@@ -363,7 +363,7 @@ def grapheme_substr(text: str, start: int | None = None, stop: int | None = None
 
 
 def grapheme_endswith(text: str, substring: str) -> bool:
-    "Returns True if `text` ends with `substring` being aware of grapheme clusters"
+    "Returns True if `text` ends with `substring` being aware of grapheme cluster boundaries"
     # match str.endswith
     if len(substring) == 0:
         return True
@@ -381,7 +381,7 @@ def grapheme_endswith(text: str, substring: str) -> bool:
 
 
 def grapheme_startswith(text: str, substring: str) -> bool:
-    "Returns True if `text` starts with `substring` being aware of grapheme clusters"
+    "Returns True if `text` starts with `substring` being aware of grapheme cluster boundaries"
     # match str.startswith
     if len(substring) == 0:
         return True

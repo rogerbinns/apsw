@@ -1284,6 +1284,7 @@ class Unicode(unittest.TestCase):
             self.assertEqual(expect, meth(expect))
 
     def testCaseFold(self):
+        "Case folding"
         self.assertRaises(TypeError, apsw.unicode.casefold)
         self.assertRaises(TypeError, apsw.unicode.casefold, 3)
         self.assertRaises(TypeError, apsw.unicode.casefold, b"abd")
@@ -1310,8 +1311,11 @@ class Unicode(unittest.TestCase):
             "104D2 104FA",
             "1E921 1E943",
         ):
-            conv = "".join(chr(int(c,16)) for c in text.split())
+            conv = "".join(chr(int(c, 16)) for c in text.split())
             self.assertEqual(apsw.unicode.casefold(conv[0]), conv[1:])
+        # ::TODO:: check same id on str if unchanged
+        # ::TODO:: add text from fts_test_strings Strasse etc
+
     def testFinding(self):
         "grapheme aware startswith/endswith/find"
         zwj = "\u200d"
