@@ -1319,6 +1319,9 @@ class Unicode(unittest.TestCase):
     def testFinding(self):
         "grapheme aware startswith/endswith/find"
         zwj = "\u200d"
+        bird = chr(0x1f426)
+        fire= chr(0x1f525)
+        ctilde = chr(0x303)
 
         sw = apsw.unicode.grapheme_startswith
         ew = apsw.unicode.grapheme_endswith
@@ -1331,20 +1334,38 @@ class Unicode(unittest.TestCase):
             ("abca", "ab"),
             ("abca", "ca"),
             ("123456", "123456"),
+            ("123456", "12345"),
             ("123456", "1234567"),
+            ("aaaaa", "a"),
+            ("aaaaa", "aa"),
+            ("aaaaa", "aaa"),
+            ("aaaaa", "aaaa"),
+            ("aaaaa", "aaaaa"),
+            ("aaaaa", "aab"),
             # all strings start and end with empty string
             ("", ""),
             ("abc", ""),
         ):
             self.assertEqual(haystack.startswith(needle), sw(haystack, needle))
             self.assertEqual(haystack.endswith(needle), ew(haystack, needle))
-            for start in range(-20, 20):
-                for end in range(-20, 20):
+            for start in range(-10, 10):
+                for end in range(-10, 10):
                     self.assertEqual(
                         haystack.find(needle, start, end),
                         fi(haystack, needle, start, end),
                         f"{haystack=} {needle=} {start=} {end=}",
                     )
+
+        # now make multi-codepoint grapheme clusters
+        self.assertFalse(sw(f"abc{zwj}", "abc"))
+        self.assertFalse(sw(f"{bird}{zwj}{fire}{bird}", f"{bird}"))
+        self.assertFalse(ew(f"abc{bird}{zwj}{fire}", f"{fire}"))
+        self.assertFalse(sw(f"a{ctilde}b", "a"))
+        self.assertFalse(sw(f"a{ctilde}b", "a"))
+        self.assertFalse(sw(f"aa{ctilde}b", "aa"))
+        self.assertTrue(ew(f"a{ctilde}b", "b"))
+        self.assertTrue(ew(f"a{ctilde}bc", "bc"))
+        self.assertEqual(3, fi(f"{bird}{zwj}{fire}{fire}", f"{fire}"))
 
 
 # ::TODO:: make main test suite run this one
