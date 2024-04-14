@@ -230,6 +230,9 @@ def StringTokenizer(func: apsw.FTS5TokenizerFactory):
 
         @functools.wraps(inner_tokenizer)
         def outer_tokenizer(utf8: bytes, flags: int):
+            # ::TODO:: write a C implmeneted class that handles the mapping
+            # of character offset back to byte offset, but just iterating the
+            # utf8 bytes without all this re-encoding etc
             text = utf8.decode("utf8", errors="replace")
             last_pos_bytes: int = 0
             last_pos_str: int = 0
