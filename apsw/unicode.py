@@ -1114,7 +1114,9 @@ use the C library function wcswidth, or use the wcwidth Python package wcswidth 
         "width-check",
         help="""Check how this terminal differs from width database.
         Any differences are reported to stdout in csv format so you should redirect output to a file.
-        Cursor positioning ANSI sequences are used.  Do not type in the terminal while it is running.""",
+        Cursor positioning ANSI sequences are used.  Do not type in the terminal while it is running.
+        It takes about a minute to run with most terminals, 1 hour for kitty, and 11+ hours for gnome
+        terminals.""",
     )
     p.set_defaults(function="widthcheck")
 
@@ -1600,7 +1602,7 @@ use the C library function wcswidth, or use the wcwidth Python package wcswidth 
             print(f"{cp:06X} -> ", flush=True, end="", file=tty_out)
             set_pos(out_pos)
             text = "a" + chr(cp) + "b"
-            if cp == 0 or (text_width(text) < 0 and libc.wcswidth(text, 1000) < 0):
+            if cp == 0 or (text_width(text) < 0 and libc.wcswidth(text, 1000) < 0 and wcwidth.wcswidth(text) < 0):
                 continue
             print(text, end="", flush=True, file=tty_out)
             new_pos = get_pos()
