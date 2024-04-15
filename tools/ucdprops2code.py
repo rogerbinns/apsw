@@ -387,7 +387,7 @@ def generate_c_table(name, enum_name, ranges):
     ranges = ranges[:]
     # first codepoint NOT in table
     table_limit = options.table_limit
-    if enum_name == "age": # not worth fast lookup
+    if enum_name == "age":  # not worth fast lookup
         table_limit = 0
 
     if table_limit:
@@ -850,6 +850,33 @@ def grapheme_prop(codepoint: int) -> str:
     return grapheme_prop_by_codepoint.get(codepoint, "Other")
 
 
+# these were found by running python -m apsw.unicode width-check
+# against many terminals and finding out how they differed from
+# what this returned without the overrides, also looking at
+# what the C and Python wcswidths gave.
+#
+# Tested terminals were alacritty, kitty, konsole, tmux,
+# gnome-terminal, gnome-console, st
+width_overrides = {
+    # They all agree on these
+
+    # HALFWIDTH KATAKANA VOICED SOUND MARK
+    0xFF9E: 1,
+    # HALFWIDTH KATAKANA SEMI-VOICED SOUND MARK
+    0xFF9F: 1,
+}
+
+# The terminals get widths wrong for codepoints added in 15.1
+# but we won't fix that
+#    2FFC - 2FFF
+#    31EF
+
+# Hangul JUNGSEONG where all except ~3 are rendered as
+# width 1 or 2 depending on terminal and have zero width
+# accordiung this library, and Py/C wcswidth.  When part
+# of other Hangul they are indeed zero.
+#   D780 - D7FB
+
 def category_width(codepoint: int, cat: str | tuple[str]):
     def add_cat(c: str):
         nonlocal cat
@@ -857,6 +884,22 @@ def category_width(codepoint: int, cat: str | tuple[str]):
             cat = tuple(list(cat) + [c])
         else:
             cat = (cat, c)
+
+    if codepoint in width_overrides:
+        w = width_overrides[codepoint]
+        if w == -1:
+            add_cat("WIDTH_INVALID")
+        elif w == 0:
+            add_cat("WIDTH_ZERO")
+        elif w == 1:
+            pass
+        elif w == 2:
+            add_cat("WIDTH_TWO")
+        else:
+            raise Exception(f"unexpected width { codepoint=} {w=}")
+
+        return cat
+
 
     GC = grapheme_prop(codepoint)
 
@@ -871,9 +914,6 @@ def category_width(codepoint: int, cat: str | tuple[str]):
         "Cc",  # Other control
         "Cs",  # Other surrogates
     }:
-        # wcswidth (C and Python version) also treat Cn (not assigned)
-        # as invalid.  but the terminals happily display a 1 width
-        # placeholder so we'll do the same
         # wcswidth (Python) gives 1 for surrogates, but Python refuses to
         # output UTF8 text containing them, so we also treat them as
         # invalid just as wcswidth (C) does
@@ -898,10 +938,23 @@ def category_width(codepoint: int, cat: str | tuple[str]):
         add_cat("WIDTH_ZERO")
         return cat
 
-    # Not Assigned are 2 in wcwidth but 1 in every terminal emulator I tried
+    # Not Assigned are 2 in terminals, -1 in C wcswidth, 2 in py wcswidth
     if codepoint_to_category[codepoint] in {
         "Cn",  # Other Not Assigned
     }:
+        # There are blocks named CJK Ideograph Extension B, First and
+        # a corresponding Last, with Extensions like B, C, ... H, I.
+        # Codepoints 20000 - 2EE5D  that have Cn Not Assigned as their
+        # category but technically are letter other.  East Asian Widths
+        # have most as W.  Example doc for one of the blocks
+        # https://en.wikipedia.org/wiki/CJK_Unified_Ideographs_Extension_C
+        # Terminals are 2 wide, C wcswidth is -1 and py wcswidth is 2.
+        # We'll treat them no different than other not assigned to get
+        # consistent wrapping.
+
+        # we mark as invalid because they really are unknown and text_wrap
+        # will replace with a placeholder which is a sure thing width
+        add_cat("WIDTH_INVALID")
         return cat
 
     # now use wide codepoints
