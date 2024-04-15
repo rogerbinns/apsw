@@ -663,6 +663,46 @@ def text_wrap(
             yield "".join(accumulated) + " " * (width - line_width)
 
 
+def version_added(codepoint: int | str) -> str | None:
+    "Returns the unicode version the codepoint was added"
+    return _unicode.version_added(codepoint)
+
+
+version_dates = {
+    # Extracted from https://www.unicode.org/history/publicationdates.html
+    "15.1": (2023, 9, 12),
+    "15.0": (2022, 9, 13),
+    "14.0": (2021, 9, 14),
+    "13.0": (2020, 3, 10),
+    "12.1": (2019, 5, 7),
+    "12.0": (2019, 3, 5),
+    "11.0": (2018, 6, 5),
+    "10.0": (2017, 6, 20),
+    "9.0": (2016, 6, 21),
+    "8.0": (2015, 6, 17),
+    "7.0": (2014, 6, 16),
+    "6.3": (2013, 9, 30),
+    "6.2": (2012, 9, 26),
+    "6.1": (2012, 1, 31),
+    "6.0": (2010, 10, 11),
+    "5.2": (2009, 10, 1),
+    "5.1": (2008, 4, 4),
+    "5.0": (2006, 7, 14),
+    "4.1": (2005, 3, 31),
+    # These releases have no day, so we use the first of the month
+    "4.0": (2003, 4, 1),
+    "3.2": (2002, 3, 1),
+    "3.1": (2001, 3, 1),
+    "3.0": (1999, 9, 1),
+    "2.1": (1998, 5, 1),
+    "2.0": (1996, 7, 1),
+    "1.1": (1993, 6, 1),
+    "1.0": (1991, 10, 1),
+}
+"""Release date (year, month, day) for each unicode version
+intended for use with :meth:`version_added`"""
+
+
 def grapheme_next_break(text: str, offset: int = 0) -> int:
     """Returns end of Grapheme cluster /  User Perceived Character
 

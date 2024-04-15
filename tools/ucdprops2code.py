@@ -66,6 +66,11 @@ def fmt_cat(enum_name: str, cat: str | tuple[str, ...]):
 
 
 def fmt_cat_c(enum_name: str, cat: str | tuple[str, ...]):
+    if enum_name == "age":
+        if cat == "NULL":
+            return "NULL"
+        return f'"{cat}"'
+
     if enum_name != "strip":
         if isinstance(cat, str):
             return f"{ enum_name }_{ cat }"
@@ -145,6 +150,8 @@ def generate_c() -> str:
     out.extend(generate_c_table("strip", "strip", strip_ranges))
     out.append("")
     out.extend(generate_strip_special_handling())
+    out.append("")
+    out.extend(generate_c_table("age", "age", age_ranges))
     out.append("")
 
     return "\n".join(out) + "\n"
@@ -327,13 +334,15 @@ def generate_c_table(name, enum_name, ranges):
     # we can use 32 bit values for all tables except line/LB
     ret_type = "unsigned int" if enum_name not in {"LB", "strip"} else "unsigned long long"
     int_suffix = "u" if enum_name not in {"LB", "strip"} else "ull"
+    if enum_name == "age":
+        ret_type = "const char *"
 
     yield f"/* { name } */"
     yield ""
     if name == "category":
         assert ranges is category_ranges
         yield from category_enum("c")
-    elif name == "strip":
+    elif name in {"strip", "age"}:
         pass
     else:
         all_cats = set()
@@ -378,6 +387,8 @@ def generate_c_table(name, enum_name, ranges):
     ranges = ranges[:]
     # first codepoint NOT in table
     table_limit = options.table_limit
+    if enum_name == "age": # not worth fast lookup
+        table_limit = 0
 
     if table_limit:
         yield f"static {ret_type} { name}_fast_lookup[] = {{"
@@ -421,7 +432,7 @@ def generate_c_table(name, enum_name, ranges):
         yield "     fails if a larger value than was need was used.  This is STRIP_MAXCHAR_*"
         yield "  */"
     yield ""
-    if options.table_limit:
+    if table_limit:
         yield f"  if (c < 0x{ table_limit:04X})"
         yield f"    return { name}_fast_lookup[c];"
         yield ""
@@ -439,6 +450,7 @@ props = {
     "category": {},
     "casefold": {},
     "strip": {},
+    "age": {},
 }
 
 ucd_version = None
@@ -739,6 +751,9 @@ def read_props(data_dir: str):
     # it has no version
     extract_strip(source, props["strip"])
 
+    source = get_source("https://www.unicode.org/Public/UCD/latest/ucd/DerivedAge.txt")
+    populate(source, props["age"])
+
     for top in "Grapheme", "Word", "Sentence":
         source = get_source(f"https://www.unicode.org/Public/UCD/latest/ucd/auxiliary/{ top }BreakProperty.txt")
         extract_version(f"{ top }BreakProperty.txt", source)
@@ -789,6 +804,13 @@ def generate_ranges(name, source, dest, other_name="Other", tailor=None):
         else:
             dest[-1][1] = cp
         last = cat
+
+
+age_ranges = []
+
+
+def generate_age_ranges():
+    generate_ranges("Age", props["age"], age_ranges, other_name="NULL")
 
 
 def generate_grapheme_ranges():
@@ -1044,6 +1066,7 @@ if __name__ == "__main__":
     generate_category_ranges()
     generate_line_ranges()
     generate_strip_ranges()
+    generate_age_ranges()
 
     assert options.out_file.name.endswith(".c")
     c_code = generate_c()

@@ -1693,6 +1693,21 @@ error:
   return NULL;
 }
 
+static PyObject *
+version_added(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  Py_UCS4 codepoint;
+
+  ARG_PROLOG(1, "codepoint");
+  ARG_MANDATORY ARG_codepoint(codepoint);
+  ARG_EPILOG(NULL, "version_added(codepoint: int)", );
+
+  const char *age = age_category(codepoint);
+  if (!age)
+    Py_RETURN_NONE;
+  return PyUnicode_FromString(age);
+}
+
 static int
 unicode_exec(PyObject *module)
 {
@@ -1751,6 +1766,8 @@ static PyMethodDef methods[] = {
   { "grapheme_substr", (PyCFunction)grapheme_substr, METH_FASTCALL | METH_KEYWORDS, "Substring in grapheme clusters" },
   { "text_width", (PyCFunction)text_width, METH_FASTCALL | METH_KEYWORDS, "Columns width of text" },
   { "grapheme_find", (PyCFunction)grapheme_find, METH_FASTCALL | METH_KEYWORDS, "Find substring in text" },
+  { "version_added", (PyCFunction)version_added, METH_FASTCALL | METH_KEYWORDS,
+    "Version of unicode a codepoint was added" },
   { NULL, NULL, 0, NULL },
 };
 
