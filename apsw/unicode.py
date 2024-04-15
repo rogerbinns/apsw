@@ -333,7 +333,8 @@ def expand_tabs(text: str, tabsize: int = 8) -> str:
                 clusters.append(gr)
                 pos += text_width(gr)
             else:
-                incr = tabsize - (pos % tabsize)
+                # str.expandtabs allows zero and negative numbers
+                incr = tabsize - (pos % tabsize) if tabsize > 0 else 0
                 clusters.append(" " * incr)
                 pos += incr
 
@@ -439,6 +440,8 @@ def text_width_substr(text: str, offset: int, width: int) -> tuple[int, str]:
     """Extracts substring width or less wide being aware of grapheme cluster boundaries
 
     :returns: A tuple of how wide the substring is, and the substring"""
+    if not isinstance(width, int) or width < 1:
+        raise ValueError("width must be an int at least 1")
     width_so_far = 0
     accepted = offset
     for _, end, grapheme in grapheme_iter_with_offsets(text, offset):
@@ -482,7 +485,7 @@ def guess_paragraphs(text: str, tabsize: int = 8) -> str:
     """
     # regex to match what looks like an (optionally numbered) list
     # item
-    list_item_re = r"^(?P<indent>\s*[0-9+=,\.*-]+\s+).*"
+    list_item_re = r"^(?P<indent>\s*[0-9+=,\.*:-]+\s+).*"
 
     # what we turn definite end of paragraph into
     parasep = "\u2029"
