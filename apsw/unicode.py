@@ -1110,6 +1110,14 @@ use the C library function wcswidth, or use the wcwidth Python package wcswidth 
     p.add_argument("sentence", type=argparse.FileType("rt", encoding="utf8"), help="Sentence break test file")
     p.add_argument("line_break", type=argparse.FileType("rt", encoding="utf8"), help="Line break test file")
 
+    p = subparsers.add_parser(
+        "width-check",
+        help="""Check how this terminal differs from width database.
+        Any differences are reported to stdout in csv format so you should redirect output to a file.
+        Cursor positioning ANSI sequences are used.  Do not type in the terminal while it is running.""",
+    )
+    p.set_defaults(function="widthcheck")
+
     options = parser.parse_args()
 
     def codepoint_details(kind, c: str, counter=None) -> str:
@@ -1174,14 +1182,19 @@ use the C library function wcswidth, or use the wcwidth Python package wcswidth 
             libc.wcswidth.argtypes = [ctypes.c_wchar_p, ctypes.c_size_t]
             libc.wcswidth.restype = ctypes.c_int
 
-            def text_width(text, offset=0):
+            def _text_width(text, offset=0):
                 return libc.wcswidth(text[offset:], len(text) * 10)
+
+            # shenanigans so sphinx doesn't try to document these
+            setattr(sys.modules[__name__], "text_width", _text_width)
 
         elif options.measurement == "wcswidth-py":
             import wcwidth
 
-            def text_width(text, offset=0):
+            def _text_width(text, offset=0):
                 return wcwidth.wcswidth(text[offset:])
+
+            setattr(sys.modules[__name__], "text_width", _text_width)
 
         width = options.width
         width = width - text_width(options.start) - text_width(options.end)
@@ -1304,7 +1317,9 @@ use the C library function wcswidth, or use the wcwidth Python package wcswidth 
 
         for i, cp in enumerate(codepoints):
             print(f"#{ i } U+{ cp:04X} - { chr(cp) }")
-            print(f"Name: { deets(cp) }")
+            added = version_added(cp)
+            year = f"({version_dates[added][0]})" if added is not None else ""
+            print(f"Name: { deets(cp) }   Version: { added } { year }")
 
             mangled = []
             for mangle in casefold(chr(cp)), strip(chr(cp)):
@@ -1530,3 +1545,101 @@ use the C library function wcswidth, or use the wcwidth Python package wcswidth 
             for offset in range(len(lines) // 20, len(lines), len(lines) // 20):
                 print(fmt(lines[offset]), ",")
             print("),")
+
+    elif options.function == "widthcheck":
+        import atexit
+
+        import ctypes, ctypes.util
+
+        libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library("c"))
+        libc.wcswidth.argtypes = [ctypes.c_wchar_p, ctypes.c_size_t]
+        libc.wcswidth.restype = ctypes.c_int
+
+        import wcwidth
+
+        tty_in = open("/dev/tty", "r")
+        tty_out = open("/dev/tty", "w")
+        import tty
+        import termios
+
+        term_mode = termios.tcgetattr(tty_in)
+
+        def finish():
+            termios.tcsetattr(tty_in, termios.TCSAFLUSH, term_mode)
+            print("", flush=True, file=tty_out)
+
+        atexit.register(finish)
+
+        tty.setraw(tty_in)
+
+        def get_pos():
+            print("\x1b[6n", flush=True, file=tty_out, end="")
+            x = tty_in.read(2)
+            assert x == "\x1b["  # something else was typed
+            r = ""
+            while True:
+                c = tty_in.read(1)
+                if c == "R":
+                    break
+                r += c
+            return list(int(part) for part in r.split(";"))
+
+        def set_pos(pos):
+            print(f"\x1b[{pos[0]};{pos[1]}H", flush=True, file=tty_out, end="")
+
+        print("\r\n", flush=True, file=tty_out)
+
+        errors = []
+
+        start_pos = get_pos()
+        print(f"{0:06X} -> ", flush=True, end="", file=tty_out)
+        out_pos = get_pos()
+
+        for cp in range(0, sys.maxunicode + 1):
+            set_pos(start_pos)
+            print(f"{cp:06X} -> ", flush=True, end="", file=tty_out)
+            set_pos(out_pos)
+            text = "a" + chr(cp) + "b"
+            if cp == 0 or (text_width(text) < 0 and libc.wcswidth(text, 1000) < 0):
+                continue
+            print(text, end="", flush=True, file=tty_out)
+            new_pos = get_pos()
+            width = new_pos[1] - out_pos[1] - 2 if new_pos[0] == out_pos[0] else -1
+
+            if width != text_width(chr(cp)):
+                errors.append([cp, width])
+
+        finish()
+        if errors:
+            import csv
+
+            w = csv.writer(sys.stdout)
+            w.writerow(
+                [
+                    "codepoint",
+                    "hex",
+                    "width",
+                    "text_width",
+                    "wcswidth_c",
+                    "wcswidth_py",
+                    "name",
+                    "version_added",
+                    "category",
+                ]
+            )
+
+            for row in errors:
+                cp = row[0]
+                w.writerow(
+                    [
+                        cp,
+                        f"{cp:04X}",
+                        row[1],
+                        text_width(chr(cp)),
+                        libc.wcswidth(chr(cp), 1000),
+                        wcwidth.wcswidth(chr(cp)),
+                        unicodedata.name(chr(cp), "<NO NAME>"),
+                        version_added(cp),
+                        category(cp),
+                    ]
+                )
