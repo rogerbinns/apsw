@@ -1146,7 +1146,7 @@ class Unicode(unittest.TestCase):
             apsw.unicode.casefold(c10) * 2
             age = apsw.unicode.version_added(codepoint)
             if age is not None:
-                self.assertIn(apsw.unicode.version_dates, age)
+                self.assertIn(age, apsw.unicode.version_dates)
 
     def testCLI(self):
         "Exercise command line interface"
@@ -1459,6 +1459,14 @@ class Unicode(unittest.TestCase):
             (f"\u1100{ctilde}", 2),
         ):
             self.assertEqual(expected, tw(text), repr(text))
+
+        tws = apsw.unicode.text_width_substr
+        self.assertRaises(ValueError, tws, "", 0, 0)
+        text = f"{bird}{zwj}{fire}a{ctilde}"
+        self.assertEqual((0, ""), tws(text, 1))
+        self.assertEqual((2, f"{bird}{zwj}{fire}"), tws(text, 2))
+        self.assertEqual((3, text), tws(text, 3))
+        self.assertEqual((3, text), tws(text, 300))
 
     # !p! marks that as a paragraph - there shuld be exactly
     # one per guessed paragraph
