@@ -1144,6 +1144,9 @@ class Unicode(unittest.TestCase):
             # it also reads the codepoints so will catch uninitialized memory
             apsw.unicode.strip(c10) * 2
             apsw.unicode.casefold(c10) * 2
+            age = apsw.unicode.version_added(codepoint)
+            if age is not None:
+                self.assertIn(apsw.unicode.version_dates, age)
 
     def testCLI(self):
         "Exercise command line interface"
@@ -1319,13 +1322,26 @@ class Unicode(unittest.TestCase):
     def testFinding(self):
         "grapheme aware startswith/endswith/find"
         zwj = "\u200d"
-        bird = chr(0x1f426)
-        fire= chr(0x1f525)
+        bird = chr(0x1F426)
+        fire = chr(0x1F525)
         ctilde = chr(0x303)
 
         sw = apsw.unicode.grapheme_startswith
         ew = apsw.unicode.grapheme_endswith
         fi = apsw.unicode.grapheme_find
+
+        self.assertRaises(TypeError, sw, None, 3)
+        self.assertRaises(TypeError, sw, "", 3)
+        self.assertRaises(TypeError, sw, "", b"a")
+        self.assertRaises(TypeError, ew, None, 3)
+        self.assertRaises(TypeError, ew, "", 3)
+        self.assertRaises(TypeError, ew, "", b"a")
+        self.assertRaises(TypeError, fi, None, None, 3.2, 4.5)
+        self.assertRaises(TypeError, fi, "", None, 3.2, 4.5)
+        self.assertRaises(TypeError, fi, "", "", 3.2, 4.5)
+        self.assertRaises(TypeError, fi, b"", None, 3.2, 4.5)
+        self.assertRaises(TypeError, fi, "", b"", 3, 4)
+        self.assertRaises(TypeError, fi, "", "", 1, 2, 3)
 
         # for simple strings check we get same answers as regular Python
         for haystack, needle in (
@@ -1366,6 +1382,150 @@ class Unicode(unittest.TestCase):
         self.assertTrue(ew(f"a{ctilde}b", "b"))
         self.assertTrue(ew(f"a{ctilde}bc", "bc"))
         self.assertEqual(3, fi(f"{bird}{zwj}{fire}{fire}", f"{fire}"))
+
+    def testSubstr(self):
+        "grapheme aware substr"
+        su = apsw.unicode.grapheme_substr
+
+        self.assertRaises(TypeError, su, b"")
+        self.assertRaises(TypeError, su, 3)
+        self.assertRaises(TypeError, su, "", 3.2)
+
+        # normal text should give the same answers
+        for text in ("", "0", "012345"):
+            for start in range(-10, 10):
+                for end in range(-10, 10):
+                    self.assertEqual(text[start:end], su(text, start, end))
+
+        zwj = "\u200d"
+        bird = chr(0x1F426)
+        fire = chr(0x1F525)
+        ctilde = chr(0x303)
+
+        for text, start, end, expected in (
+            (f"{bird}{zwj}{fire}c{ctilde}", 1, 2, f"c{ctilde}"),
+            (f"{bird}{zwj}{fire}c{ctilde}", -10, 20, f"{bird}{zwj}{fire}c{ctilde}"),
+            (f"{bird}{zwj}{fire}c{ctilde}", -1, None, f"c{ctilde}"),
+        ):
+            self.assertEqual(expected, su(text, start, end))
+
+    def testLength(self):
+        "grapheme aware length"
+        l = apsw.unicode.grapheme_length
+        self.assertRaises(TypeError, l)
+        self.assertRaises(TypeError, l, b"a")
+        self.assertRaises(TypeError, l, "", 3.1)
+        self.assertRaises(ValueError, l, "", -2)
+        self.assertRaises(ValueError, l, " ", 7)
+
+        zwj = "\u200d"
+        bird = chr(0x1F426)
+        fire = chr(0x1F525)
+        ctilde = chr(0x303)
+
+        for text, offset, expected in (
+            ("", 0, 0),
+            ("abc", 0, 3),
+            ("abc", 1, 2),
+            ("abc", 2, 1),
+            ("abc", 3, 0),
+            (f"a{ctilde}{bird}", 0, 2),
+            (f"a{ctilde}{bird}{zwj}{fire}", 0, 2),
+        ):
+            self.assertEqual(l(text, offset), expected)
+
+    def testWidths(self):
+        "terminal column widths"
+        zwj = "\u200d"
+        bird = chr(0x1F426)
+        fire = chr(0x1F525)
+        ctilde = chr(0x303)
+        fitz = chr(0x1F3FB)
+        tw = apsw.unicode.text_width
+        self.assertRaises(TypeError, tw)
+        self.assertRaises(TypeError, tw, b"aa")
+        for text, expected in (
+            ("a", 1),
+            ("", 0),
+            (f"a{ctilde}", 1),
+            (f"aa{ctilde}", 2),
+            (f"{bird}a{ctilde}", 3),
+            (f"{bird}{zwj}{fire}a{ctilde}", 3),
+            (f"{bird}{zwj}{bird}{zwj}{bird}", 2),
+            (f"{bird}{fitz}", 2),
+            ("abc\taa", -1),
+            ("abd\rsss", -1),
+            ("\u1100", 2),
+            (f"\u1100{ctilde}", 2),
+        ):
+            self.assertEqual(expected, tw(text), repr(text))
+
+    # !p! marks that as a paragraph - there shuld be exactly
+    # one per guessed paragraph
+    paragraph_test = """
+one two three !p! fhddsf hsd jksdh fsdhj fsd
+lkjsdhjf jsdhjkf hsdf jksdhf kjhsdkjfh sdk
+sjkldhfjk sdhkfjhs sdfjlksdj
+  dsfhsdjk !p! dhsfhsd sdhjfh
+  ldsfjlksdj sdklfjsdf lksdjf
+fkldsjf jsdfjsdkljf !p! fkldjfklsdjflds
+sadas
+
+abc!p!d\u2029!p!abc\u0085!p!def
+
+        tabs !p!
+\tcontinue of last
+3. abdc !p!
+   more
+-  not !p!
+.3- another !p!
+*** more !p!
+"""
+
+    def testWrapping(self):
+        "wrapping and related functionality"
+        ctilde = chr(0x303)
+
+        # line hard breaks
+        breaks = ("\r\n", "\r", "\n", "\x0c", "\x0d", "\x85", chr(0x02028), chr(0x2029))
+
+        text = "".join("%s%s" % z for z in zip((str(i) for i in range(20)), breaks))
+
+        lines = list(apsw.unicode.split_lines(text))
+        self.assertEqual(len(lines), len(breaks))
+
+        # check the line break chars are not included
+        for line in lines:
+            self.assertEqual(len(line), 1)
+            for break_ in breaks:
+                self.assertNotIn(break_, line)
+
+        # paragraph guessing
+        for para in apsw.unicode.guess_paragraphs(self.paragraph_test).split("\n"):
+            if not para.strip():
+                continue
+            self.assertIn("!p!", para)
+            # should only be one
+            self.assertEqual(2, len(para.split("!p!")))
+
+        # tab expanding
+        for text in (
+            "",
+            "\t",
+            "aaa\tbbbb",
+            "\ta",
+            "b\t",
+            "\t\t\t\t\t",
+            "a\t\tv\t\tb\t",
+        ):
+            for n in range(0, 5):
+                self.assertEqual(apsw.unicode.expand_tabs(text, n), text.expandtabs(n))
+
+        for text, expected in (
+            (f"a{ctilde}\tb", f"a{ctilde}       b"),
+            (f"a{ctilde}a{ctilde}\tb", f"a{ctilde}a{ctilde}      b"),
+        ):
+            self.assertEqual(apsw.unicode.expand_tabs(text), expected)
 
 
 # ::TODO:: make main test suite run this one
