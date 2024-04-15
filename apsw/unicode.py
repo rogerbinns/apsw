@@ -436,7 +436,7 @@ def text_width(text: str, offset: int = 0) -> int:
     return _unicode.text_width(text, offset)
 
 
-def text_width_substr(text: str, offset: int, width: int) -> tuple[int, str]:
+def text_width_substr(text: str, width: int, offset: int = 0) -> tuple[int, str]:
     """Extracts substring width or less wide being aware of grapheme cluster boundaries
 
     :returns: A tuple of how wide the substring is, and the substring"""
@@ -632,7 +632,7 @@ def text_wrap(
                         segment = segment[1:]
                     # hyphenate too long
                     desired = width - hyphen_width - line_width
-                    seg_width, substr = text_width_substr(segment, 0, desired)
+                    seg_width, substr = text_width_substr(segment, desired)
                     if seg_width == 0:
                         # the first grapheme cluster is wider than desired which is
                         # 1 or 2 depending on indent
