@@ -63,10 +63,10 @@ Checking APSW and SQLite versions
 
 .. code-block:: output
 
-          Using APSW file /space/apsw/apsw/__init__.cpython-311-x86_64-linux-gnu.so
-             APSW version 3.45.2.0
-    SQLite header version 3045002
-       SQLite lib version 3.45.2
+          Using APSW file /space/apsw/apsw/__init__.cpython-312-x86_64-linux-gnu.so
+             APSW version 3.45.3.0
+    SQLite header version 3045003
+       SQLite lib version 3.45.3
        Using amalgamation True
 
 
@@ -1206,7 +1206,7 @@ feedback and allows cancelling.
     progress handler called
     progress handler called
     progress handler called
-    (9909188373,)
+    (9950865484,)
 
 
 .. index:: File Control (example code)
@@ -1480,7 +1480,7 @@ useful instead.
     │ count(*) │ category │
     │ 65       │ Cc       │
     │ 43       │ Cf       │
-    │ 1456     │ Cn       │
+    │ 1454     │ Cn       │
     │ 6400     │ Co       │
     │ 2048     │ Cs       │
     │ 1445     │ Ll       │
@@ -1546,17 +1546,17 @@ useful instead.
 
 .. code-block:: output
 
-    ┌─────────┬────────────────────────────────────────────────┬───────────────────┐
-    │ st_size │                   directory                    │       name        │
-    ├─────────┼────────────────────────────────────────────────┼───────────────────┤
-    │ 1645145 │ /space/apsw/tools/.mypy_cache/3.11             │ builtins.data.jso │
-    │         │                                                │ n                 │
-    ├─────────┼────────────────────────────────────────────────┼───────────────────┤
-    │ 757129  │ /usr/lib/python3.11/pydoc_data                 │ topics.py         │
-    ├─────────┼────────────────────────────────────────────────┼───────────────────┤
-    │ 717967  │ /space/apsw/tools/.mypy_cache/3.11/collections │ __init__.data.jso │
-    │         │                                                │ n                 │
-    └─────────┴────────────────────────────────────────────────┴───────────────────┘
+    ┌─────────┬──────────────────────────────────────────┬─────────────────────────┐
+    │ st_size │                directory                 │          name           │
+    ├─────────┼──────────────────────────────────────────┼─────────────────────────┤
+    │ 805508  │ /usr/lib/python3.12/pydoc_data           │ topics.py               │
+    ├─────────┼──────────────────────────────────────────┼─────────────────────────┤
+    │ 502306  │ /usr/lib/python3.12/pydoc_data/__pycache │ topics.cpython-312.pyc  │
+    │         │ __                                       │                         │
+    ├─────────┼──────────────────────────────────────────┼─────────────────────────┤
+    │ 245231  │ /usr/lib/python3.12/tkinter/__pycache__  │ __init__.cpython-       │
+    │         │                                          │ 312.pyc                 │
+    └─────────┴──────────────────────────────────────────┴─────────────────────────┘
     
 
 
@@ -1576,9 +1576,9 @@ useful instead.
 
     ┌────────────┬────────────────────────────────┬───────────────┐
     │    date    │           directory            │     name      │
-    │ 2023-10-10 │ /usr/lib/python3.11/pydoc_data │ topics.py     │
-    │ 2023-10-10 │ /usr/lib/python3.11            │ _pydecimal.py │
-    │ 2023-10-06 │ /usr/lib/python3.11/tkinter    │ __init__.py   │
+    │ 2024-04-16 │ /usr/lib/python3.12/pydoc_data │ topics.py     │
+    │ 2024-04-16 │ /usr/lib/python3.12            │ _pydecimal.py │
+    │ 2024-04-16 │ /usr/lib/python3.12/tkinter    │ __init__.py   │
     └────────────┴────────────────────────────────┴───────────────┘
     
 
@@ -1598,29 +1598,29 @@ useful instead.
 
     ┌────────────┬────────────┐
     │ extension  │ total_size │
-    │            │ 384164     │
-    │ .TAG       │ 190        │
-    │ .a         │ 113404210  │
+    │            │ 432392     │
+    │ .a         │ 96832334   │
     │ .allowlist │ 56         │
-    │ .bootstrap │ 1756       │
-    │ .c         │ 11116      │
+    │ .bootstrap │ 1804       │
+    │ .c         │ 10948      │
     │ .cfg       │ 341        │
-    │ .csh       │ 935        │
+    │ .csh       │ 936        │
     │ .css       │ 1325       │
     │ .fish      │ 2215       │
     │ .in        │ 3504       │
-    │ .json      │ 7834037    │
-    │ .local     │ 1534       │
-    │ .o         │ 20696      │
+    │ .ini       │ 997        │
+    │ .json      │ 2162       │
+    │ .local     │ 2136       │
+    │ .o         │ 9328       │
     │ .ps1       │ 9033       │
-    │ .py        │ 11816118   │
-    │ .pyc       │ 13288659   │
+    │ .py        │ 11136833   │
+    │ .pyc       │ 11406320   │
     │ .rst       │ 9561       │
     │ .sh        │ 3941       │
-    │ .so        │ 27575368   │
-    │ .stdlib    │ 10752      │
+    │ .so        │ 25379792   │
+    │ .stdlib    │ 12536      │
     │ .supp      │ 70         │
-    │ .txt       │ 23425      │
+    │ .txt       │ 13936      │
     └────────────┴────────────┘
     
 
@@ -1883,9 +1883,9 @@ Python.
     
     Dump output
     
-    -- SQLite dump (by APSW 3.45.2.0)
-    -- SQLite version 3.45.2
-    -- Date: Tue Mar 12 10:29:12 2024
+    -- SQLite dump (by APSW 3.45.3.0)
+    -- SQLite version 3.45.3
+    -- Date: Tue Apr 16 11:40:25 2024
     -- Tables like: csvtest%
     -- Database: /space/apsw/dbfile
     -- User: rogerb @ clamps
@@ -2003,7 +2003,7 @@ This shows using :meth:`Connection.trace_v2`
     
     code is  SQLITE_TRACE_PROFILE
     {'code': 2,
-     'nanoseconds': 19000000,
+     'nanoseconds': 18000000,
      'stmt_status': {'SQLITE_STMTSTATUS_AUTOINDEX': 0,
                      'SQLITE_STMTSTATUS_FILTER_HIT': 0,
                      'SQLITE_STMTSTATUS_FILTER_MISS': 0,

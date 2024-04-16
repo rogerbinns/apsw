@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Example/Tour &mdash; APSW 3.45.2.0 documentation</title>
+  <title>Example/Tour &mdash; APSW 3.45.3.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -17,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=42bc0a0b"></script>
+        <script src="_static/documentation_options.js?v=33694052"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -42,7 +42,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.45.2.0
+                3.45.3.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -188,10 +188,10 @@ and attribute documentation.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   Using amalgamation&quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">using_amalgamation</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">      Using APSW file /space/apsw/apsw/__init__.cpython-311-x86_64-linux-gnu.so</span>
-<span class="go">         APSW version 3.45.2.0</span>
-<span class="go">SQLite header version 3045002</span>
-<span class="go">   SQLite lib version 3.45.2</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">      Using APSW file /space/apsw/apsw/__init__.cpython-312-x86_64-linux-gnu.so</span>
+<span class="go">         APSW version 3.45.3.0</span>
+<span class="go">SQLite header version 3045003</span>
+<span class="go">   SQLite lib version 3.45.3</span>
 <span class="go">   Using amalgamation True</span>
 </pre></div>
 </div>
@@ -1114,7 +1114,7 @@ feedback and allows cancelling.</p>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
-<span class="go">(9909188373,)</span>
+<span class="go">(9950865484,)</span>
 </pre></div>
 </div>
 </section>
@@ -1330,7 +1330,7 @@ useful instead.</p>
 <span class="go">│ count(*) │ category │</span>
 <span class="go">│ 65       │ Cc       │</span>
 <span class="go">│ 43       │ Cf       │</span>
-<span class="go">│ 1456     │ Cn       │</span>
+<span class="go">│ 1454     │ Cn       │</span>
 <span class="go">│ 6400     │ Co       │</span>
 <span class="go">│ 2048     │ Cs       │</span>
 <span class="go">│ 1445     │ Ll       │</span>
@@ -1389,17 +1389,17 @@ useful instead.</p>
 <span class="nb">print</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">format_query_table</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">bindings</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">┌─────────┬────────────────────────────────────────────────┬───────────────────┐</span>
-<span class="go">│ st_size │                   directory                    │       name        │</span>
-<span class="go">├─────────┼────────────────────────────────────────────────┼───────────────────┤</span>
-<span class="go">│ 1645145 │ /space/apsw/tools/.mypy_cache/3.11             │ builtins.data.jso │</span>
-<span class="go">│         │                                                │ n                 │</span>
-<span class="go">├─────────┼────────────────────────────────────────────────┼───────────────────┤</span>
-<span class="go">│ 757129  │ /usr/lib/python3.11/pydoc_data                 │ topics.py         │</span>
-<span class="go">├─────────┼────────────────────────────────────────────────┼───────────────────┤</span>
-<span class="go">│ 717967  │ /space/apsw/tools/.mypy_cache/3.11/collections │ __init__.data.jso │</span>
-<span class="go">│         │                                                │ n                 │</span>
-<span class="go">└─────────┴────────────────────────────────────────────────┴───────────────────┘</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">┌─────────┬──────────────────────────────────────────┬─────────────────────────┐</span>
+<span class="go">│ st_size │                directory                 │          name           │</span>
+<span class="go">├─────────┼──────────────────────────────────────────┼─────────────────────────┤</span>
+<span class="go">│ 805508  │ /usr/lib/python3.12/pydoc_data           │ topics.py               │</span>
+<span class="go">├─────────┼──────────────────────────────────────────┼─────────────────────────┤</span>
+<span class="go">│ 502306  │ /usr/lib/python3.12/pydoc_data/__pycache │ topics.cpython-312.pyc  │</span>
+<span class="go">│         │ __                                       │                         │</span>
+<span class="go">├─────────┼──────────────────────────────────────────┼─────────────────────────┤</span>
+<span class="go">│ 245231  │ /usr/lib/python3.12/tkinter/__pycache__  │ __init__.cpython-       │</span>
+<span class="go">│         │                                          │ 312.pyc                 │</span>
+<span class="go">└─────────┴──────────────────────────────────────────┴─────────────────────────┘</span>
 </pre></div>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Find the 3 oldest Python files</span>
@@ -1413,9 +1413,9 @@ useful instead.</p>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">┌────────────┬────────────────────────────────┬───────────────┐</span>
 <span class="go">│    date    │           directory            │     name      │</span>
-<span class="go">│ 2023-10-10 │ /usr/lib/python3.11/pydoc_data │ topics.py     │</span>
-<span class="go">│ 2023-10-10 │ /usr/lib/python3.11            │ _pydecimal.py │</span>
-<span class="go">│ 2023-10-06 │ /usr/lib/python3.11/tkinter    │ __init__.py   │</span>
+<span class="go">│ 2024-04-16 │ /usr/lib/python3.12/pydoc_data │ topics.py     │</span>
+<span class="go">│ 2024-04-16 │ /usr/lib/python3.12            │ _pydecimal.py │</span>
+<span class="go">│ 2024-04-16 │ /usr/lib/python3.12/tkinter    │ __init__.py   │</span>
 <span class="go">└────────────┴────────────────────────────────┴───────────────┘</span>
 </pre></div>
 </div>
@@ -1429,29 +1429,29 @@ useful instead.</p>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">┌────────────┬────────────┐</span>
 <span class="go">│ extension  │ total_size │</span>
-<span class="go">│            │ 384164     │</span>
-<span class="go">│ .TAG       │ 190        │</span>
-<span class="go">│ .a         │ 113404210  │</span>
+<span class="go">│            │ 432392     │</span>
+<span class="go">│ .a         │ 96832334   │</span>
 <span class="go">│ .allowlist │ 56         │</span>
-<span class="go">│ .bootstrap │ 1756       │</span>
-<span class="go">│ .c         │ 11116      │</span>
+<span class="go">│ .bootstrap │ 1804       │</span>
+<span class="go">│ .c         │ 10948      │</span>
 <span class="go">│ .cfg       │ 341        │</span>
-<span class="go">│ .csh       │ 935        │</span>
+<span class="go">│ .csh       │ 936        │</span>
 <span class="go">│ .css       │ 1325       │</span>
 <span class="go">│ .fish      │ 2215       │</span>
 <span class="go">│ .in        │ 3504       │</span>
-<span class="go">│ .json      │ 7834037    │</span>
-<span class="go">│ .local     │ 1534       │</span>
-<span class="go">│ .o         │ 20696      │</span>
+<span class="go">│ .ini       │ 997        │</span>
+<span class="go">│ .json      │ 2162       │</span>
+<span class="go">│ .local     │ 2136       │</span>
+<span class="go">│ .o         │ 9328       │</span>
 <span class="go">│ .ps1       │ 9033       │</span>
-<span class="go">│ .py        │ 11816118   │</span>
-<span class="go">│ .pyc       │ 13288659   │</span>
+<span class="go">│ .py        │ 11136833   │</span>
+<span class="go">│ .pyc       │ 11406320   │</span>
 <span class="go">│ .rst       │ 9561       │</span>
 <span class="go">│ .sh        │ 3941       │</span>
-<span class="go">│ .so        │ 27575368   │</span>
-<span class="go">│ .stdlib    │ 10752      │</span>
+<span class="go">│ .so        │ 25379792   │</span>
+<span class="go">│ .stdlib    │ 12536      │</span>
 <span class="go">│ .supp      │ 70         │</span>
-<span class="go">│ .txt       │ 23425      │</span>
+<span class="go">│ .txt       │ 13936      │</span>
 <span class="go">└────────────┴────────────┘</span>
 </pre></div>
 </div>
@@ -1678,9 +1678,9 @@ Python.</p>
 
 <span class="go">Dump output</span>
 
-<span class="go">-- SQLite dump (by APSW 3.45.2.0)</span>
-<span class="go">-- SQLite version 3.45.2</span>
-<span class="go">-- Date: Tue Mar 12 10:29:12 2024</span>
+<span class="go">-- SQLite dump (by APSW 3.45.3.0)</span>
+<span class="go">-- SQLite version 3.45.3</span>
+<span class="go">-- Date: Tue Apr 16 11:40:25 2024</span>
 <span class="go">-- Tables like: csvtest%</span>
 <span class="go">-- Database: /space/apsw/dbfile</span>
 <span class="go">-- User: rogerb @ clamps</span>
@@ -1777,7 +1777,7 @@ for per connection statistics.</p>
 
 <span class="go">code is  SQLITE_TRACE_PROFILE</span>
 <span class="go">{&#39;code&#39;: 2,</span>
-<span class="go"> &#39;nanoseconds&#39;: 19000000,</span>
+<span class="go"> &#39;nanoseconds&#39;: 18000000,</span>
 <span class="go"> &#39;stmt_status&#39;: {&#39;SQLITE_STMTSTATUS_AUTOINDEX&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FILTER_HIT&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FILTER_MISS&#39;: 0,</span>
@@ -1915,7 +1915,7 @@ rollback the incomplete transaction.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Mar 12, 2024.
+      <span class="lastupdated">Last updated on Apr 16, 2024.
       </span></p>
   </div>
 
