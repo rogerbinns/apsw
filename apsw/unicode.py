@@ -1318,7 +1318,11 @@ use the C library function wcswidth, or use the wcwidth Python package wcswidth 
             return f"{ uniname(cp) } { cat }: { apsw.fts.unicode_categories[cat] }"
 
         for i, cp in enumerate(codepoints):
-            print(f"#{ i } U+{ cp:04X} - { chr(cp) }")
+            print(f"#{ i } U+{ cp:04X} - ", end="")
+            try:
+                print(chr(cp))
+            except UnicodeEncodeError:
+                print()
             added = version_added(cp)
             year = f"({version_dates[added][0]})" if added is not None else ""
             print(f"Name: { deets(cp) }   Version: { added } { year }")
@@ -1598,6 +1602,9 @@ use the C library function wcswidth, or use the wcwidth Python package wcswidth 
         out_pos = get_pos()
 
         for cp in range(0, sys.maxunicode + 1):
+            # surrogates can't be output
+            if 0xd800 <= cp <= 0xdfff:
+                continue
             set_pos(start_pos)
             print(f"{cp:06X} -> ", flush=True, end="", file=tty_out)
             set_pos(out_pos)
