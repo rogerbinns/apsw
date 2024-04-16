@@ -1115,7 +1115,7 @@ use the C library function wcswidth, or use the wcwidth Python package wcswidth 
         help="""Check how this terminal differs from width database.
         Any differences are reported to stdout in csv format so you should redirect output to a file.
         Cursor positioning ANSI sequences are used.  Do not type in the terminal while it is running.
-        It takes about a minute to run with most terminals, 1 hour for kitty, and 11+ hours for gnome
+        It takes about a minute to run with most terminals, 1 hour for kitty, and 21+ hours for gnome
         terminals.""",
     )
     p.set_defaults(function="widthcheck")
