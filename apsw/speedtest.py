@@ -48,8 +48,6 @@ def doit():
         import sqlite3
 
         print("Testing with sqlite3 file ", sqlite3.__file__)
-        if sqlite3.version != "2.6.0":  # stdlib version never changed this
-            print("          sqlite3 version ", sqlite3.version)
         print("           SQLite version ", sqlite3.sqlite_version, end="\n\n")
 
         def sqlite3_setup(dbfile):
