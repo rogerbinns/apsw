@@ -139,7 +139,7 @@ def doit():
         for i in range(1, scale * 10000 + 1):
             r = random.randint(0, 500000)
             if bindings:
-                yield ("INSERT INTO t1 VALUES(:1, :2, number_name(:2))", (i, r))
+                yield ("INSERT INTO t1 VALUES(?, ?, number_name(?))", (i, r, r))
             else:
                 yield ("INSERT INTO t1 VALUES(%d, %d, '%s')" % (i, r, number_name(r)), )
         yield ("COMMIT", )
@@ -152,7 +152,7 @@ def doit():
             x = number_name(r)
             t1c_list.append(x)
             if bindings:
-                yield ("INSERT INTO t2 VALUES(:1, :2, number_name(:2))", (i, r))
+                yield ("INSERT INTO t2 VALUES(?, ?, number_name(?))", (i, r, r))
             else:
                 yield ("INSERT INTO t2 VALUES(%d, %d, '%s')" % (i, r, x), )
         yield ("COMMIT", )
