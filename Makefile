@@ -201,6 +201,7 @@ compile-win-one:  ## Does one Windows build - set PYTHON variable
 	-del /q setup.apsw *.whl
 
 source_nocheck: src/apswversion.h
+	test "`git branch --show-current`" = master
 	env APSW_NO_GA=t $(MAKE) doc
 	$(PYTHON) setup.py sdist --formats zip --add-doc
 
