@@ -32,10 +32,11 @@ def generate(options):
 
     out = []
     for f in glob.glob("src/*.c"):
+        main_file = "src/unicode.c" if "unicode" in f else "src/apsw.c"
         out.append({
             "directory": os.getcwd(),
             "file": f,
-            "arguments": cmd+["-c", "src/apsw.c"]
+            "arguments": cmd+["-c", main_file]
         })
 
     print(json.dumps(out, indent=2))
