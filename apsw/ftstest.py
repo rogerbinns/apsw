@@ -12,6 +12,7 @@ import collections
 import itertools
 import os
 import pathlib
+import random
 import subprocess
 import sys
 import tempfile
@@ -1213,6 +1214,16 @@ class Unicode(unittest.TestCase):
         "Zs": (0x0020, 0x2001, 0x2004, 0x2007, 0x200A, 0x3000),
     }
 
+    def all_text(self, seed=None):
+        text = ""
+        for values in self.break_tests.values():
+            text += "".join(values)
+        for codepoints in self.cat_examples.values():
+            text += "".join(chr(cp) for cp in codepoints)
+        if seed is not None:
+            return "".join(random.Random(seed).sample(text, len(text)))
+        return text
+
     def testCategory(self):
         "Category lookup"
         meth = apsw.unicode.category
@@ -1406,6 +1417,8 @@ class Unicode(unittest.TestCase):
             (f"{bird}{zwj}{fire}c{ctilde}", 1, 2, f"c{ctilde}"),
             (f"{bird}{zwj}{fire}c{ctilde}", -10, 20, f"{bird}{zwj}{fire}c{ctilde}"),
             (f"{bird}{zwj}{fire}c{ctilde}", -1, None, f"c{ctilde}"),
+            ("\r\n", 1, None, ""),
+            ("\r\n", 2, None, ""),
         ):
             self.assertEqual(expected, su(text, start, end))
 
@@ -1462,6 +1475,7 @@ class Unicode(unittest.TestCase):
 
         tws = apsw.unicode.text_width_substr
         self.assertRaises(ValueError, tws, "", 0, 0)
+        self.assertRaises(ValueError, tws, "ab\rc", 4)
         text = f"{bird}{zwj}{fire}a{ctilde}"
         self.assertEqual((0, ""), tws(text, 1))
         self.assertEqual((2, f"{bird}{zwj}{fire}"), tws(text, 2))
@@ -1471,12 +1485,12 @@ class Unicode(unittest.TestCase):
     # !p! marks that as a paragraph - there shuld be exactly
     # one per guessed paragraph
     paragraph_test = """
-one two three !p! fhddsf hsd jksdh fsdhj fsd
-lkjsdhjf jsdhjkf hsdf jksdhf kjhsdkjfh sdk
-sjkldhfjk sdhkfjhs sdfjlksdj
+one two         three !p! fhddsf hsd jksdh fsdhj fsd
+lkjsdhjf jsdhjkf    hsdf jksdhf kjhsdkjfh sdk
+sjkldhfjk sdhkfjhs     sdfjlksdj
   dsfhsdjk !p! dhsfhsd sdhjfh
-  ldsfjlksdj sdklfjsdf lksdjf
-fkldsjf jsdfjsdkljf !p! fkldjfklsdjflds
+  ldsfjlksdj       sdklfjsdf lksdjf
+fkldsjf     jsdfjsdkljf !p! fkldjfklsdjflds
 sadas
 
 abc!p!d\u2029!p!abc\u0085!p!def
@@ -1488,6 +1502,7 @@ abc!p!d\u2029!p!abc\u0085!p!def
 -  not !p!
 .3- another !p!
 *** more !p!
+:4: again !p! yup
 """
 
     def testWrapping(self):
@@ -1514,7 +1529,7 @@ abc!p!d\u2029!p!abc\u0085!p!def
                 continue
             self.assertIn("!p!", para)
             # should only be one
-            self.assertEqual(2, len(para.split("!p!")))
+            self.assertEqual(2, len(para.split("!p!")), f"{para=}")
 
         # tab expanding
         for text in (
@@ -1534,6 +1549,34 @@ abc!p!d\u2029!p!abc\u0085!p!def
             (f"a{ctilde}a{ctilde}\tb", f"a{ctilde}a{ctilde}      b"),
         ):
             self.assertEqual(apsw.unicode.expand_tabs(text), expected)
+
+        # text_wrap is a generator, so it doesn't get run unless you
+        # iterate it.  we made it immediate
+        def tw(*args, **kwargs):
+            return "".join(apsw.unicode.text_wrap(*args, **kwargs))
+
+        self.assertRaises(ValueError, tw, "", 2, hyphen="abncd")
+
+        # Japanese text from https://sqlite.org/forum/forumpost/6e234df298bde5b6da613866e4ba4d79a453bd9a32a608828f5a2e07ba5215f4
+        text = (
+            self.paragraph_test
+            + self.all_text()
+            + self.all_text(0)
+            + self.all_text(1)
+            + """
+夜明~朝ごはんの歌朝の通学路馬鹿騒ぎ追憶
+"""
+        )
+        text = apsw.unicode.guess_paragraphs(text)
+
+        for width in (3, 5, 9, 17, 37, 49, 87, 247, 1024):
+            for line in apsw.unicode.text_wrap(text, width):
+                self.assertEqual(apsw.unicode.text_width(line), width)
+            for line in apsw.unicode.text_wrap(text, width, combine_space=False):
+                self.assertEqual(apsw.unicode.text_width(line), width)
+            if width > 3:
+                for line in apsw.unicode.text_wrap(text, width, combine_space=False, hyphen="--"):
+                    self.assertEqual(apsw.unicode.text_width(line), width)
 
 
 # ::TODO:: make main test suite run this one
