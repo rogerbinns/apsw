@@ -1563,9 +1563,7 @@ abc!p!d\u2029!p!abc\u0085!p!def
             + self.all_text()
             + self.all_text(0)
             + self.all_text(1)
-            + """
-夜明~朝ごはんの歌朝の通学路馬鹿騒ぎ追憶
-"""
+            + """夜明~朝ごはんの歌朝の通学路馬鹿騒ぎ追憶\n\t"""
         )
         text = apsw.unicode.guess_paragraphs(text)
 
