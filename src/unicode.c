@@ -1368,6 +1368,10 @@ strip(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nar
   {
     Py_UCS4 source_char = PyUnicode_READ(source_kind, source_data, source_pos);
     unsigned long long conv = strip_category(source_char);
+    /* it doesn't matter if we have the other bits */
+    maxchar_flags |= conv;
+
+    conv &= ~STRIP_MAXCHAR_MASK;
     if (conv == 1)
     {
       result_length += 1;
@@ -1376,9 +1380,6 @@ strip(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nar
     is_changed = 1;
     if (conv == 0)
       continue;
-
-    maxchar_flags |= conv & STRIP_MAXCHAR_MASK;
-    conv &= ~STRIP_MAXCHAR_MASK;
 
     if (conv < 30)
     {

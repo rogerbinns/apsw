@@ -1266,12 +1266,14 @@ class Unicode(unittest.TestCase):
         self.assertRaises(TypeError, meth, None)
         self.assertRaises(TypeError, meth, b"abc")
 
+        for text in "jkdfshfkjdsh 234324jh32 jkhjkhAkdsk".split():
+            self.assertEqual(text, meth(text))
+            self.assertEqual(id(text), id(meth(text)))
+
         # which categories are ok
         ok = {"Lu", "Ll", "Lo", "Nd", "Nl", "No", "Sc", "Sm", "So"}
 
-        text = ""
-        for vals in self.cat_examples.values():
-            text += "a".join(chr(v) for v in vals)
+        text = self.all_text()
 
         self.assertIn("a", meth(text))
         for c in meth(text):
@@ -1309,6 +1311,23 @@ class Unicode(unittest.TestCase):
         # for <127 (ascii) casefold is same as lower
         self.assertEqual(apsw.unicode.casefold(text), text.lower())
 
+        # unchanged text should have same id
+        for text in "abcd ds fsd 3424 23sdvxc".split():
+            self.assertEqual(id(text), id(apsw.unicode.casefold(text)))
+
+        # examples from fts_test_strings
+        for text, expected in (
+            ("İstanbul", "i̇stanbul"),
+            ("i̇stanbul", "i̇stanbul"),
+            ("straße", "strasse"),
+            ("STRASSE", "strasse"),
+            ("ΣΧΟΛΗ", "σχολη"),
+            ("σχολη", "σχολη"),
+            ("İnci", "i̇nci"),
+            ("ıncı", "ıncı"),
+        ):
+            self.assertEqual(expected, apsw.unicode.casefold(text))
+
         # some interesting codepoints that all change and potentially expand
         for text in (
             "212A 006B",
@@ -1327,8 +1346,6 @@ class Unicode(unittest.TestCase):
         ):
             conv = "".join(chr(int(c, 16)) for c in text.split())
             self.assertEqual(apsw.unicode.casefold(conv[0]), conv[1:])
-        # ::TODO:: check same id on str if unchanged
-        # ::TODO:: add text from fts_test_strings Strasse etc
 
     def testFinding(self):
         "grapheme aware startswith/endswith/find"
