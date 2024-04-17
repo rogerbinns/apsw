@@ -634,9 +634,7 @@ def text_wrap(
                     desired = width - hyphen_width - line_width
                     seg_width, substr = text_width_substr(segment, desired)
                     if seg_width == 0:
-                        # the first grapheme cluster is wider than desired which is
-                        # 1 or 2 depending on indent
-                        assert desired in {1, 2}
+                        # the first grapheme cluster is wider than desired so
                         # we will display '*' instead for that first grapheme cluster
                         segment = grapheme_substr(segment, 1)
                         substr = "*" * desired
