@@ -1671,6 +1671,8 @@ grapheme_substr(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
 
   if (!offsets)
   {
+    if (stop_offset == start_offset)
+      return PyUnicode_New(0, 0);
     assert(stop_offset > start_offset);
     return PyUnicode_Substring(text, start_offset, stop_offset);
   }
