@@ -408,7 +408,7 @@ word_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     /* WB4 */
     if (it.lookahead & (WC_Extend | WC_ZWJ | WC_Format))
     {
-      Py_UCS4 saved_char = it.curchar;
+      unsigned long long saved_char = it.curchar;
       while (it.lookahead & (WC_Extend | WC_ZWJ | WC_Format))
       {
         if (it.lookahead & WC_ZWJ)
