@@ -283,12 +283,7 @@ class fetch(Command):
             if os.path.exists("sqlite3/sqlite3config.h"):
                 sqlite3config_h = read_whole_file("sqlite3/sqlite3config.h", "rt")
             if os.path.exists('sqlite3'):
-                for dirpath, dirnames, filenames in os.walk('sqlite3', topdown=False):
-                    for file in filenames:
-                        os.remove(os.path.join(dirpath, file))
-                    for dir in dirnames:
-                        os.rmdir(os.path.join(dirpath, dir))
-                os.rmdir('sqlite3')
+                shutil.rmtree("sqlite3")
             # if you get an exception here it is likely that you don't have the python zlib module
             import zlib
             tar = tarfile.open("nonexistentname to keep old python happy", 'r', data)
