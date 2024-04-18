@@ -9,6 +9,7 @@
 # suite does however load this and run it.
 
 import collections
+import contextlib
 import itertools
 import os
 import pathlib
@@ -25,6 +26,33 @@ import apsw.ext
 import apsw.fts
 import apsw.unicode
 
+class BecauseWindowsTempfile:
+    "Work around Windows preventing concurrent access to a file opened for writing"
+    def __init__(self, mode, encoding=None):
+        self.kwargs={"mode": mode, "encoding": encoding}
+        f = tempfile.NamedTemporaryFile(delete=False)
+        self.name = f.name
+        f.close()
+
+    def write_whole_file(self, contents):
+        with open(self.name, **self.kwargs) as f:
+            f.write(contents)
+
+    def __del__(self):
+        try:
+            os.remove(self.name)
+        except OSError:
+            pass
+
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, *args):
+        try:
+            os.remove(self.name)
+        except OSError:
+            pass
+        
 
 class FTS(unittest.TestCase):
     def setUp(self):
@@ -328,22 +356,21 @@ class FTS(unittest.TestCase):
             verify_test_string_item(item)
         self.assertGreater(count, 16)
 
-        with tempfile.NamedTemporaryFile("wb") as tf:
+        with BecauseWindowsTempfile("wb") as tf:
             some_text = "hello Aragonés 你好世界"
             items = apsw.fts.tokenizer_test_strings(tf.name)
             self.assertEqual(len(items), 1)
             verify_test_string_item(items[0])
-            tf.write(some_text.encode("utf8"))
-            tf.flush()
+            tf.write_whole_file(some_text.encode("utf8"))
             items = apsw.fts.tokenizer_test_strings(tf.name)
             self.assertEqual(len(items), 1)
             verify_test_string_item(items[0])
             self.assertEqual(items[0][0], some_text.encode("utf8"))
-            tf.seek(0)
+            data = b""
             for i in range(10):
-                tf.write(f"# { i }\t\r\n## ignored\n".encode("utf8"))
-                tf.write((some_text + f"{ i }  \n").encode("utf8"))
-            tf.flush()
+                data += f"# { i }\t\r\n## ignored\n".encode("utf8")
+                data += (some_text + f"{ i }  \n").encode("utf8")
+            tf.write_whole_file(data)
             items = apsw.fts.tokenizer_test_strings(tf.name)
             self.assertEqual(10, len(items))
             for i, (value, comment) in enumerate(items):
@@ -1159,9 +1186,8 @@ class Unicode(unittest.TestCase):
             # we skip null because it can't be used as a cli parameter
             text += "".join(chr(c) for c in codepoints if c)
 
-        with tempfile.NamedTemporaryFile("wt", encoding="utf8") as tmpf:
-            tmpf.write(text)
-            tmpf.flush()
+        with BecauseWindowsTempfile("wt", encoding="utf8") as tmpf:
+            tmpf.write_whole_file(text)
 
             for kind in "grapheme", "word", "sentence", "line_break":
                 proc = self.exec("show", "--text-file", tmpf.name, kind)

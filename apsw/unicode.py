@@ -962,6 +962,9 @@ if __name__ == "__main__":
     import atexit
     import apsw.fts
 
+    # We output text non unicode compatible can't handle
+    sys.stdout.reconfigure(errors="replace")
+
     width = 80
     if sys.stdout.isatty():
         width = os.get_terminal_size(sys.stdout.fileno()).columns
