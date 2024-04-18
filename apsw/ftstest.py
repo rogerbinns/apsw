@@ -1131,7 +1131,7 @@ class Unicode(unittest.TestCase):
         "Exhaustive codepoints for coverage"
         # this takes a while to run, so only do so if env variable set or debug
         # interpreter
-        if "d" not in sys.abiflags and not os.environ.get("COVERAGE_RUN"):
+        if "d" not in getattr(sys, "abiflags", "") and not os.environ.get("COVERAGE_RUN"):
             return
 
         for codepoint in range(0, sys.maxunicode + 1):
@@ -1159,7 +1159,7 @@ class Unicode(unittest.TestCase):
             # we skip null because it can't be used as a cli parameter
             text += "".join(chr(c) for c in codepoints if c)
 
-        with tempfile.NamedTemporaryFile("wt") as tmpf:
+        with tempfile.NamedTemporaryFile("wt", encoding="utf8") as tmpf:
             tmpf.write(text)
             tmpf.flush()
 
@@ -1231,7 +1231,7 @@ class Unicode(unittest.TestCase):
         self.assertRaises(TypeError, meth)
         self.assertRaises(TypeError, meth, "one", 2)
         self.assertRaises(OverflowError, meth, -1)
-        self.assertRaises(ValueError, meth, sys.maxsize)
+        self.assertRaises((ValueError, OverflowError), meth, sys.maxsize)
         self.assertRaises(ValueError, meth, sys.maxunicode + 1)
         self.assertRaises(TypeError, meth, "avbc")
 
