@@ -864,7 +864,7 @@ if __name__ == '__main__':
                         undef_macros = [ "NDEBUG" ] if os.environ.get("UNICODE_DEBUG") else []),
               ],
           packages=["apsw"],
-          package_data={"apsw": ["__init__.pyi", "py.typed"]},
+          package_data={"apsw": ["__init__.pyi", "py.typed", "fts_test_strings"]},
           cmdclass={
               'test': run_tests,
               'build_test_extension': build_test_extension,
