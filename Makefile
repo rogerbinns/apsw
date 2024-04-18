@@ -31,6 +31,7 @@ help: ## Show this help
 all: src/apswversion.h src/apsw.docstrings apsw/__init__.pyi src/constants.c src/stringconstants.c  test docs ## Update generated files, build, test, make doc
 
 tagpush: ## Tag with version and push
+	test "`git branch --show-current`" = master
 	git tag -af $(SQLITEVERSION)$(APSWSUFFIX)
 	git push --tags
 
@@ -235,6 +236,7 @@ source: source_nocheck # Make the source and then check it builds and tests corr
 	cd work/$(VERDIR) ; $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --enable-all-extensions build_test_extension test
 
 release: ## Signs built source file(s)
+	test "`git branch --show-current`" = master
 	test -f dist/$(VERDIR).zip
 	-rm -f dist/$(VERDIR)-sigs.zip dist/*.asc
 	for f in dist/* ; do gpg --use-agent --armor --detach-sig "$$f" ; done
