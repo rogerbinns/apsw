@@ -1250,7 +1250,7 @@ with apsw.ext.ShowResourceUsage(
     # some SQLite work
     rows = connection.execute(query).get
     # and some non-SQLite work - the imports cause filesystem access
-    import statistics, tokenize, uuid, fractions, dist, pydoc, decimal
+    import statistics, tokenize, uuid, fractions, pydoc, decimal
 
     # and take some wall clock time
     time.sleep(1.3)
