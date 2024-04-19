@@ -1279,12 +1279,11 @@ print(apsw.ext.format_query_table(connection, query))
 kwargs = {"use_unicode": False, "string_sanitize": 2}
 print(apsw.ext.format_query_table(connection, query, **kwargs))
 
-# lets have unicode boxes and make things narrow with no word wrap
+# lets have unicode boxes and make things narrow
 kwargs = {
     "use_unicode": True,
     "string_sanitize": 0,
     "text_width": 30,
-    "word_wrap": False,
 }
 print(apsw.ext.format_query_table(connection, query, **kwargs))
 

@@ -22,6 +22,7 @@ import re
 import string
 import textwrap
 import apsw
+import apsw.unicode
 import sys
 
 try:
@@ -720,8 +721,7 @@ def format_query_table(db: apsw.Connection,
                        truncate: int = 4096,
                        truncate_val: str = " ...",
                        text_width: int = 80,
-                       use_unicode: bool = True,
-                       word_wrap: bool = True) -> str:
+                       use_unicode: bool = True) -> str:
     r"""Produces query output in an attractive text table
 
     See :ref:`the example <example_format_query>`.
@@ -763,7 +763,6 @@ def format_query_table(db: apsw.Connection,
     :param text_width: Maximum output width to generate
     :param use_unicode: If True then unicode line drawing characters are used.  If False then +---+ and | are
         used.
-    :param word_wrap: If True then :mod:`textwrap` is used to break wide text to fit column width
     """
     # args we pass on to format_table
     kwargs = {
@@ -776,7 +775,6 @@ def format_query_table(db: apsw.Connection,
         "truncate_val": truncate_val,
         "text_width": text_width,
         "use_unicode": use_unicode,
-        "word_wrap": word_wrap
     }
 
     res: list[str] = []
@@ -813,7 +811,7 @@ def _format_table(colnames: list[str], rows: list[apsw.SQLiteValues], colour: bo
                   string_sanitize: Union[Callable[[str], str],
                                          Union[Literal[0], Literal[1],
                                                Literal[2]]], binary: Callable[[bytes], str], null: str, truncate: int,
-                  truncate_val: str, text_width: int, use_unicode: bool, word_wrap: bool) -> str:
+                  truncate_val: str, text_width: int, use_unicode: bool) -> str:
     "Internal table formatter"
     if colour:
         c: Callable[[int], str] = lambda v: f"\x1b[{ v }m"
@@ -907,13 +905,18 @@ def _format_table(colnames: list[str], rows: list[apsw.SQLiteValues], colour: bo
                     val = null
             assert isinstance(val, str), f"expected str not { val!r}"
 
-            val = val.replace("\r\n", "\n")
+            # cleanup lines
+            lines = []
+            for line in apsw.unicode.split_lines(val):
+                if apsw.unicode.text_width(line) < 0:
+                    line = "".join((c if apsw.unicode.text_width(c) >= 0 else '?') for c in line)
+                lines.append(line)
+            val = "\n".join(lines)
 
-            if truncate > 0 and len(val) > truncate:
-                val = val[:truncate] + truncate_val
+            if truncate > 0 and apsw.unicode.grapheme_length(val) > truncate:
+                val = apsw.unicode.grapheme_substr(val, 0, truncate) + truncate_val
             row[i] = (val, type(cell))  # type: ignore[index]
-            # ::TODO:: use unicode grapheme_width
-            colwidths[i] = max(colwidths[i], max(len(v) for v in val.splitlines()) if val else 0)
+            colwidths[i] = max(colwidths[i], max(apsw.unicode.text_width(line) for line in apsw.unicode.split_lines(val)) if val else 0)
 
     ## work out widths
     # we need a space each side of a cell plus a cell separator hence 3
@@ -957,27 +960,8 @@ def _format_table(colnames: list[str], rows: list[apsw.SQLiteValues], colour: bo
         raise ValueError("Results can't be fitted in text width even with 1 char wide columns")
 
     # break headers and cells into lines
-    # ::TODO:: use unicode grapheme cluster widths, offsets, and textwrap.wrap equiv
-    if word_wrap:
-
-        def wrap(text: str, width: int) -> list[str]:
-            res: list[str] = []
-            for para in text.splitlines():
-                if para:
-                    res.extend(textwrap.wrap(para, width=width, drop_whitespace=False))
-                else:
-                    res.append("")
-            return res
-    else:
-
-        def wrap(text: str, width: int) -> list[str]:
-            res: list[str] = []
-            for para in text.splitlines():
-                if len(para) < width:
-                    res.append(para)
-                else:
-                    res.extend([para[s:s + width] for s in range(0, len(para), width)])
-            return res
+    def wrap(text: str, width: int) -> list[str]:
+        return list(apsw.unicode.text_wrap(text, width))
 
     colnames = [wrap(colnames[i], colwidths[i]) for i in range(len(colwidths))]  # type: ignore
     for row in rows:
@@ -1005,12 +989,8 @@ def _format_table(colnames: list[str], rows: list[apsw.SQLiteValues], colour: bo
             line = sep
             for i, (cell, t) in enumerate(row):
                 text = cell[n] if n < len(cell) else ""
-                text = " " + text + " "
-                lt = len(text)
-                # fudge things a little with this heuristic which
-                # works when there is extra space - the earlier textwrap
-                # doesn't know about different char widths
-                lt += sum(1 if unicodedata.east_asian_width(c) == "W" else 0 for c in text)
+                text = " " + text.rstrip() + " "
+                lt = apsw.unicode.text_width(text)
                 extra = " " * max(colwidths[i] + 2 - lt, 0)
                 if centre:
                     lpad = extra[:len(extra) // 2]

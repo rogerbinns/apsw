@@ -18,6 +18,18 @@ auxiliary functions.  The :mod:`apsw.fts` module provides additional classes and
 methods for working with FTS5.  The shell gets a :ref:`ftsq <shell-cmd-ftsq>` command
 for issuing queries.
 
+Added :mod:`apsw.unicode` which implements Unicode algorithms for
+determining codepoint groups making up a user perceived character,
+word and sentence splitting, and where line breaks can be made.  These
+are used to make provided FTS5 tokenizers and auxiliary functions
+fully Unicode aware.  There are many additional methods such as
+getting categories, stripping diacritics, case folding, width when
+output to a terminal, text wrapping, and more.
+
+:func:`apsw.ext.format_query_table` uses :mod:`apsw.unicode` to get
+widths and line breaks more accurate.  As a side effect it loses the
+`word_wrap` parameter.
+
 Added :attr:`Connection.data_version` for getting a change counter.
 `pragma data_version
 <https://sqlite.org/pragma.html#pragma_data_version>`__ doesn't update when

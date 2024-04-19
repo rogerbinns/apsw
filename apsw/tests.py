@@ -10199,8 +10199,7 @@ shell.write(shell.stdout, "hello world\\n")
                                         string_sanitize=ns(),
                                         truncate=3 if nb() else 35,
                                         text_width=30 if nb() else 130,
-                                        use_unicode=nb(),
-                                        word_wrap=nb())
+                                        use_unicode=nb())
 
         for width in range(200, 1, -17):
             try:
@@ -10212,8 +10211,7 @@ shell.write(shell.stdout, "hello world\\n")
                                             string_sanitize=ns(),
                                             truncate=3 if nb() else 35,
                                             text_width=width,
-                                            use_unicode=nb(),
-                                            word_wrap=nb())
+                                            use_unicode=nb())
             except ValueError as e:
                 self.assertIn("Results can't be fitted in text width", str(e))
 
