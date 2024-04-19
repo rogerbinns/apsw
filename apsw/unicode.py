@@ -313,7 +313,7 @@ def split_lines(text: str, offset: int = 0) -> Generator[str, None, None]:
         offset = end
 
 
-def expand_tabs(text: str, tabsize: int = 8) -> str:
+def expand_tabs(text: str, tabsize: int = 8, invalid: str = ".") -> str:
     """Turns tabs into spaces aligning on tabsize boundaries, similar to :meth:`str.expandtabs`
 
     This is aware of grapheme clusters and text width.
@@ -330,8 +330,12 @@ def expand_tabs(text: str, tabsize: int = 8) -> str:
         pos: int = 0
         for gr in grapheme_iter(line):
             if gr != "\t":
+                w = text_width(gr)
+                if w < 0:
+                    gr = invalid
+                    w = text_width(gr)
+                pos += w
                 clusters.append(gr)
-                pos += text_width(gr)
             else:
                 # str.expandtabs allows zero and negative numbers
                 incr = tabsize - (pos % tabsize) if tabsize > 0 else 0
@@ -587,10 +591,8 @@ def text_wrap(
           then they are replaced with this.
     """
     hyphen_width = text_width(hyphen)
-    if hyphen_width + 1 >= width:
-        raise ValueError(f"hyphen is too wide { hyphen_width } to allow content for width { width }")
 
-    text = expand_tabs(text, tabsize)
+    text = expand_tabs(text, tabsize, invalid)
 
     for line in split_lines(text):
         accumulated: list[str] = []
@@ -620,10 +622,7 @@ def text_wrap(
                 space = new_space
 
             seg_width = text_width(segment)
-            if seg_width < 0:
-                # There was something invalid in there
-                segment = "".join((c if text_width(c) >= 0 else invalid) for c in segment)
-                seg_width = text_width(segment)
+            assert seg_width >= 0
 
             while line_width + seg_width > width:
                 if len(accumulated) == 1:  # only indent present
@@ -631,7 +630,11 @@ def text_wrap(
                         # we added a space, but don't need it on new line
                         segment = segment[1:]
                     # hyphenate too long
+                    hyphen_out = hyphen
                     desired = width - hyphen_width - line_width
+                    if desired < 1:
+                        hyphen_out = ''
+                        desired = width - line_width
                     seg_width, substr = text_width_substr(segment, desired)
                     if seg_width == 0:
                         # the first grapheme cluster is wider than desired so
@@ -642,7 +645,7 @@ def text_wrap(
                         segment = segment[len(substr) :]
                         if desired - seg_width:  # did we get less than asked for?
                             substr += " " * (desired - seg_width)
-                    yield indent + substr + hyphen
+                    yield indent + substr + hyphen_out
                     accumulated = [indent]
                     line_width = len(indent)
                     seg_width = text_width(segment)
@@ -1604,7 +1607,7 @@ use the C library function wcswidth, or use the wcwidth Python package wcswidth 
 
         for cp in range(0, sys.maxunicode + 1):
             # surrogates can't be output
-            if 0xd800 <= cp <= 0xdfff:
+            if 0xD800 <= cp <= 0xDFFF:
                 continue
             set_pos(start_pos)
             print(f"{cp:06X} -> ", flush=True, end="", file=tty_out)
