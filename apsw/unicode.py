@@ -957,6 +957,66 @@ def line_break_iter_with_offsets(text: str, offset: int = 0) -> Generator[tuple[
         offset = end
 
 
+# temporarily here during development before conversion to C
+class utf8_position_mapper:
+    def __init__(self, data: bytes, strict: bool = False):
+        self.as_str = data.decode("utf-8", errors="strict" if strict else "replace")
+        self.bytes = data
+        self.bytes_len = len(data)
+        self.str_offset = 0
+        self.bytes_offset = 0
+
+    def utf8_pos(self, str_pos: int):
+        if str_pos < self.str_offset:
+            # went backwards so we restart
+            self.str_offset = self.bytes_offset = 0
+        self._advance(str_pos)
+        return self.bytes_offset
+
+    def _advance(self, pos: int):
+        # our error detection needs to match what python does with errors=replace
+        while self.str_offset < pos:
+            if self.bytes_offset == self.bytes_len:
+                raise IndexError(f"{pos=} beyond end { self.str_offset }")
+            b = self.bytes[self.bytes_offset]
+            if b & 0b1000_0000 == 0:
+                self.str_offset += 1
+                self.bytes_offset += 1
+                continue
+            # how many more after this byte
+            continuation_bytes = 0
+            # first value - if zero then too wide encoding was used
+            value = 0
+            if b & 0b1111_1000 == 0b1111_0000:
+                value = b & 0b0000_0111
+                continuation_bytes = 3
+            elif b & 0b1111_0000 == 0b1110_0000:
+                value = b & 0b0000_1111
+                continuation_bytes = 2
+            elif b & 0b1110_0000 == 0b1100_0000:
+                value = b & 0b0001_1111
+                continuation_bytes = 1
+            if continuation_bytes == 0:
+                # invalid first byte
+                self.str_offset += 1
+                self.bytes_offset += 1
+                continue
+            self.bytes_offset += 1
+            while continuation_bytes:
+                b = self.bytes[self.bytes_offset]
+                self.bytes_offset += 1
+                if b & 0b1100_0000 != 0b1000_0000:
+                    # invalid continuation
+                    break
+                value = (value << 6) | (b & 0b1000_0000)
+                if continuation_bytes <=2 and value == 0:
+                    # used too wide an encoding
+                    self.str_offset += 1
+                    self.bytes_offset += 1
+                    continue
+                continuation_bytes -= 1
+            self.str_offset += 1
+
 if __name__ == "__main__":
     import argparse
     import unicodedata
