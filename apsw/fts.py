@@ -181,6 +181,21 @@ def convert_number_ranges(numbers: str) -> set[int]:
     return res
 
 
+def convert_boolean(value: str) -> bool:
+    """Converts to boolean
+
+    Accepts ``0``, ``1``, ``false``, and ``true``"""
+    try:
+        return {
+            "0": False,
+            "false": False,
+            "1": True,
+            "true": True,
+        }[value.lower()]
+    except KeyError:
+        raise ValueError(f"Expected a boolean value from (0, 1, false, true) not '{ value }'")
+
+
 def tokenizer_test_strings(filename: str | pathlib.Path | None = None) -> tuple[tuple[bytes, str], ...]:
     """Provides utf-8 bytes sequences for interesting test strings
 
