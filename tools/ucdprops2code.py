@@ -261,7 +261,7 @@ def comment(language, text):
 
 
 def category_enum(language: str, name="Category"):
-    assert language in {"c", "python"}
+    assert language == "python"
 
     all_cats = set()
     for _, _, cat in category_ranges:
@@ -270,79 +270,21 @@ def category_enum(language: str, name="Category"):
         else:
             all_cats.update(cat)
 
-    cats = set()
-    cats_members = {}
-    for cat in unicode_categories.values():
-        v = cat.split()
-        v[1] = f"{v[0]}_{v[1]}"
-        cats.add(v[0])
-        if v[0] not in cats_members:
-            cats_members[v[0]] = []
-        cats_members[v[0]].append(v[1])
-    cat_vals = {}
-    if language == "python":
-        yield f"class {name}:"
-    yield from comment(
-        language, ("    " if language == "python" else "") + "Major category values - mutually exclusive"
-    )
-    for i, cat in enumerate(sorted(cats)):
-        if language == "python":
-            yield f"    { cat } = 2**{ i }"
-        else:
-            yield f"#define Category_{ cat } (1u << { i })"
-        cat_vals[cat] = i
-
-    max_used = len(cats)
-
-    py_comment = """\
-    Minor category values - note: their values overlap so tests must include equals")
-    To test for a minor, you must do like:"
-        if codepoint & Letter_Upper == Letter_Upper ..."
-"""
-
-    c_comment = """\
-   Minor category values - note: their values overlap so tests must include equals")
-   To test for a minor, you must do like:"
-       if ( (codepoint & Category_Letter_Upper) == Category_Letter_Upper) ..."
-"""
-
-    yield from comment(language, py_comment if language == "python" else c_comment)
-
-    for cat, members in sorted(cats_members.items()):
-        for i, member in enumerate(sorted(members), len(cats)):
-            if language == "python":
-                yield f"    { member } = 2**{ i } | 2**{ cat_vals[cat] }"
-            else:
-                yield f"#define Category_{ member } ( (1u << { i }) | (1u << { cat_vals[cat] }))"
-        max_used = max(max_used, i)
-
-    # the rest
-    ignore = cats.copy()
-    for minors in cats_members.values():
-        ignore.update(minors)
-    yield from comment(language, "    Remaining non-category convenience flags")
-    for cat in sorted(all_cats):
-        if cat not in ignore:
-            max_used += 1
-            if language == "python":
-                yield f"    { cat } = 2**{ max_used}"
-            else:
-                yield f"#define Category_{ cat } (1u << { max_used})"
+    yield f"class {name}:"
+    for i, cat in enumerate(sorted(all_cats)):
+        yield f"    { cat } = 2**{ i }"
 
 
 def generate_c_table(name, enum_name, ranges):
     # we can use 32 bit values for all tables except line/LB
-    ret_type = "unsigned int" if enum_name not in {"LB", "strip"} else "unsigned long long"
-    int_suffix = "u" if enum_name not in {"LB", "strip"} else "ull"
+    ret_type = "unsigned int" if enum_name not in {"LB", "strip", "Category"} else "unsigned long long"
+    int_suffix = "u" if enum_name not in {"LB", "strip", "Category"} else "ull"
     if enum_name == "age":
         ret_type = "const char *"
 
     yield f"/* { name } */"
     yield ""
-    if name == "category":
-        assert ranges is category_ranges
-        yield from category_enum("c")
-    elif name in {"strip", "age"}:
+    if name in {"strip", "age"}:
         pass
     else:
         all_cats = set()
@@ -554,23 +496,15 @@ unicode_categories = {
 
 def extract_categories(source: str, dest: dict[str, Any]):
     global codepoint_to_category  # we also fill this out
-    for v in unicode_categories.values():
-        v = v.split()
-        assert len(v) == 2
-        v[1] = f"{v[0]}_{v[1]}"
-        dest[v[0]] = []
-        dest[v[1]] = []
+    for v in unicode_categories.keys():
+        dest[v] = []
 
     for start, end, cat in parse_source_lines(source):
-        v = unicode_categories[cat].split()
-        v[1] = f"{v[0]}_{v[1]}"
         if end is None:
-            dest[v[0]].append(start)
-            dest[v[1]].append(start)
+            dest[cat].append(start)
             codepoint_to_category[start] = cat
         else:
-            dest[v[0]].append((start, end))
-            dest[v[1]].append((start, end))
+            dest[cat].append((start, end))
             for i in range(start, end + 1):
                 codepoint_to_category[i] = cat
 
