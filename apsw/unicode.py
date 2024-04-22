@@ -108,7 +108,7 @@ Performance
 
 from __future__ import annotations
 
-from typing import Generator
+from typing import Generator, Iterable
 
 import re
 
@@ -119,53 +119,41 @@ that the rules and data tables implement"""
 
 
 class _Category:
-    # Major category values - mutually exclusive
-    Letter = 2**0
-    Mark = 2**1
-    Number = 2**2
-    Other = 2**3
-    Punctuation = 2**4
-    Separator = 2**5
-    Symbol = 2**6
-    # Minor category values - note: their values overlap so tests must include equals")
-    # To test for a minor, you must do like:"
-    #     if codepoint & Letter_Upper == Letter_Upper ..."
-    Letter_Lowercase = 2**7 | 2**0
-    Letter_Modifier = 2**8 | 2**0
-    Letter_Other = 2**9 | 2**0
-    Letter_Titlecase = 2**10 | 2**0
-    Letter_Uppercase = 2**11 | 2**0
-    Mark_Enclosing = 2**7 | 2**1
-    Mark_NonSpacing = 2**8 | 2**1
-    Mark_SpacingCombining = 2**9 | 2**1
-    Number_DecimalDigit = 2**7 | 2**2
-    Number_Letter = 2**8 | 2**2
-    Number_Other = 2**9 | 2**2
-    Other_Control = 2**7 | 2**3
-    Other_Format = 2**8 | 2**3
-    Other_NotAssigned = 2**9 | 2**3
-    Other_PrivateUse = 2**10 | 2**3
-    Other_Surrogate = 2**11 | 2**3
-    Punctuation_Close = 2**7 | 2**4
-    Punctuation_Connector = 2**8 | 2**4
-    Punctuation_Dash = 2**9 | 2**4
-    Punctuation_FinalQuote = 2**10 | 2**4
-    Punctuation_InitialQuote = 2**11 | 2**4
-    Punctuation_Open = 2**12 | 2**4
-    Punctuation_Other = 2**13 | 2**4
-    Separator_Line = 2**7 | 2**5
-    Separator_Paragraph = 2**8 | 2**5
-    Separator_Space = 2**9 | 2**5
-    Symbol_Currency = 2**7 | 2**6
-    Symbol_Math = 2**8 | 2**6
-    Symbol_Modifier = 2**9 | 2**6
-    Symbol_Other = 2**10 | 2**6
-    # Remaining non-category convenience flags
-    Extended_Pictographic = 2**14
-    Regional_Indicator = 2**15
-    WIDTH_INVALID = 2**16
-    WIDTH_TWO = 2**17
-    WIDTH_ZERO = 2**18
+    Cc = 2**0
+    Cf = 2**1
+    Cn = 2**2
+    Co = 2**3
+    Cs = 2**4
+    Extended_Pictographic = 2**5
+    Ll = 2**6
+    Lm = 2**7
+    Lo = 2**8
+    Lt = 2**9
+    Lu = 2**10
+    Mc = 2**11
+    Me = 2**12
+    Mn = 2**13
+    Nd = 2**14
+    Nl = 2**15
+    No = 2**16
+    Pc = 2**17
+    Pd = 2**18
+    Pe = 2**19
+    Pf = 2**20
+    Pi = 2**21
+    Po = 2**22
+    Ps = 2**23
+    Regional_Indicator = 2**24
+    Sc = 2**25
+    Sk = 2**26
+    Sm = 2**27
+    So = 2**28
+    WIDTH_INVALID = 2**29
+    WIDTH_TWO = 2**30
+    WIDTH_ZERO = 2**31
+    Zl = 2**32
+    Zp = 2**33
+    Zs = 2**34
 
 
 ### END UNICODE UPDATE SECTION ###
@@ -181,75 +169,69 @@ def category(codepoint: int | str) -> str:
 
     See :data:`apsw.fts.unicode_categories` for descriptions mapping"""
     cat = _unicode_category(codepoint)
-    if cat & _Category.Letter:
-        if cat & _Category.Letter_Lowercase == _Category.Letter_Lowercase:
-            return "Ll"
-        if cat & _Category.Letter_Modifier == _Category.Letter_Modifier:
-            return "Lm"
-        if cat & _Category.Letter_Other == _Category.Letter_Other:
-            return "Lo"
-        if cat & _Category.Letter_Titlecase == _Category.Letter_Titlecase:
-            return "Lt"
-        if cat & _Category.Letter_Uppercase == _Category.Letter_Uppercase:
-            return "Lu"
-    if cat & _Category.Mark:
-        if cat & _Category.Mark_Enclosing == _Category.Mark_Enclosing:
-            return "Me"
-        if cat & _Category.Mark_NonSpacing == _Category.Mark_NonSpacing:
-            return "Mn"
-        if cat & _Category.Mark_SpacingCombining == _Category.Mark_SpacingCombining:
-            return "Mc"
-    if cat & _Category.Number:
-        if cat & _Category.Number_DecimalDigit == _Category.Number_DecimalDigit:
-            return "Nd"
-        if cat & _Category.Number_Letter == _Category.Number_Letter:
-            return "Nl"
-        if cat & _Category.Number_Other == _Category.Number_Other:
-            return "No"
-    if cat & _Category.Other:
-        if cat & _Category.Other_Control == _Category.Other_Control:
-            return "Cc"
-        if cat & _Category.Other_Format == _Category.Other_Format:
-            return "Cf"
-        if cat & _Category.Other_NotAssigned == _Category.Other_NotAssigned:
-            return "Cn"
-        if cat & _Category.Other_PrivateUse == _Category.Other_PrivateUse:
-            return "Co"
-        if cat & _Category.Other_Surrogate == _Category.Other_Surrogate:
-            return "Cs"
-    if cat & _Category.Punctuation:
-        if cat & _Category.Punctuation_Close == _Category.Punctuation_Close:
-            return "Pe"
-        if cat & _Category.Punctuation_Connector == _Category.Punctuation_Connector:
-            return "Pc"
-        if cat & _Category.Punctuation_Dash == _Category.Punctuation_Dash:
-            return "Pd"
-        if cat & _Category.Punctuation_FinalQuote == _Category.Punctuation_FinalQuote:
-            return "Pf"
-        if cat & _Category.Punctuation_InitialQuote == _Category.Punctuation_InitialQuote:
-            return "Pi"
-        if cat & _Category.Punctuation_Open == _Category.Punctuation_Open:
-            return "Ps"
-        if cat & _Category.Punctuation_Other == _Category.Punctuation_Other:
-            return "Po"
-    if cat & _Category.Separator:
-        if cat & _Category.Separator_Line == _Category.Separator_Line:
-            return "Zl"
-        if cat & _Category.Separator_Paragraph == _Category.Separator_Paragraph:
-            return "Zp"
-        if cat & _Category.Separator_Space == _Category.Separator_Space:
-            return "Zs"
-    if cat & _Category.Symbol:
-        if cat & _Category.Symbol_Currency == _Category.Symbol_Currency:
-            return "Sc"
-        if cat & _Category.Symbol_Math == _Category.Symbol_Math:
-            return "Sm"
-        if cat & _Category.Symbol_Modifier == _Category.Symbol_Modifier:
-            return "Sk"
-        if cat & _Category.Symbol_Other == _Category.Symbol_Other:
-            return "So"
+    if cat & _Category.Lu:
+        return "Lu"  # Letter Uppercase
+    elif cat & _Category.Ll:
+        return "Ll"  # Letter Lowercase
+    elif cat & _Category.Lt:
+        return "Lt"  # Letter Titlecase
+    elif cat & _Category.Lm:
+        return "Lm"  # Letter Modifier
+    elif cat & _Category.Lo:
+        return "Lo"  # Letter Other
+    elif cat & _Category.Mn:
+        return "Mn"  # Mark NonSpacing
+    elif cat & _Category.Mc:
+        return "Mc"  # Mark SpacingCombining
+    elif cat & _Category.Me:
+        return "Me"  # Mark Enclosing
+    elif cat & _Category.Nd:
+        return "Nd"  # Number DecimalDigit
+    elif cat & _Category.Nl:
+        return "Nl"  # Number Letter
+    elif cat & _Category.No:
+        return "No"  # Number Other
+    elif cat & _Category.Pc:
+        return "Pc"  # Punctuation Connector
+    elif cat & _Category.Pd:
+        return "Pd"  # Punctuation Dash
+    elif cat & _Category.Ps:
+        return "Ps"  # Punctuation Open
+    elif cat & _Category.Pe:
+        return "Pe"  # Punctuation Close
+    elif cat & _Category.Pi:
+        return "Pi"  # Punctuation InitialQuote
+    elif cat & _Category.Pf:
+        return "Pf"  # Punctuation FinalQuote
+    elif cat & _Category.Po:
+        return "Po"  # Punctuation Other
+    elif cat & _Category.Sm:
+        return "Sm"  # Symbol Math
+    elif cat & _Category.Sc:
+        return "Sc"  # Symbol Currency
+    elif cat & _Category.Sk:
+        return "Sk"  # Symbol Modifier
+    elif cat & _Category.So:
+        return "So"  # Symbol Other
+    elif cat & _Category.Zs:
+        return "Zs"  # Separator Space
+    elif cat & _Category.Zl:
+        return "Zl"  # Separator Line
+    elif cat & _Category.Zp:
+        return "Zp"  # Separator Paragraph
+    elif cat & _Category.Cc:
+        return "Cc"  # Other Control
+    elif cat & _Category.Cf:
+        return "Cf"  # Other Format
+    elif cat & _Category.Cs:
+        return "Cs"  # Other Surrogate
+    elif cat & _Category.Co:
+        return "Co"  # Other PrivateUse
+    elif cat & _Category.Cn:
+        return "Cn"  # Other NotAssigned
 
     raise Exception("Unreachable")
+
 
 def is_extended_pictographic(text: str) -> bool:
     "Returns True if any of the text has the extended pictographic property (Emoji and similar)"
@@ -774,12 +756,44 @@ def word_next_break(text: str, offset: int = 0) -> int:
     return _unicode.word_next_break(text, offset)
 
 
-def _word_cats_to_mask(letter, number, emoji, regional_indicator):
+_cats_to_mask_mapping = {
+    "Lu": _Category.Lu,
+    "Ll": _Category.Ll,
+    "Lt": _Category.Lt,
+    "Lm": _Category.Lm,
+    "Lo": _Category.Lo,
+    "Mn": _Category.Mn,
+    "Mc": _Category.Mc,
+    "Me": _Category.Me,
+    "Nd": _Category.Nd,
+    "Nl": _Category.Nl,
+    "No": _Category.No,
+    "Pc": _Category.Pc,
+    "Pd": _Category.Pd,
+    "Ps": _Category.Ps,
+    "Pe": _Category.Pe,
+    "Pi": _Category.Pi,
+    "Pf": _Category.Pf,
+    "Po": _Category.Po,
+    "Sm": _Category.Sm,
+    "Sc": _Category.Sc,
+    "Sk": _Category.Sk,
+    "So": _Category.So,
+    "Zs": _Category.Zs,
+    "Zl": _Category.Zl,
+    "Zp": _Category.Zp,
+    "Cc": _Category.Cc,
+    "Cf": _Category.Cf,
+    "Cs": _Category.Cs,
+    "Co": _Category.Co,
+    "Cn": _Category.Cn,
+}
+
+
+def _word_cats_to_mask(categories: Iterable[str], emoji: bool, regional_indicator: bool) -> int:
     mask = 0
-    if letter:
-        mask |= _Category.Letter
-    if number:
-        mask |= _Category.Number
+    for cat in categories:
+        mask |= _cats_to_mask_mapping[cat]
     if emoji:
         mask |= _Category.Extended_Pictographic
     if regional_indicator:
@@ -791,23 +805,20 @@ def word_next(
     text: str,
     offset: int = 0,
     *,
-    letter: bool = True,
-    number: bool = True,
+    categories: Iterable[str],
     emoji: bool = False,
     regional_indicator: bool = False,
 ) -> tuple[int, int]:
     """Returns span of next word
 
-    A segment is considered a word based on the codepoints it contains and their category.
-    Use the keyword arguments to include or exclude as needed:
+    A segment is considered a word if it contains at least one codepoint corresponding
+    to any of the `categories`, plus:
 
-    * letter
-    * number
     * emoji (Extended_Pictographic in Unicode specs)
     * regional indicator - two character sequence for flags like 🇧🇷🇨🇦
     """
 
-    mask = _word_cats_to_mask(letter, number, emoji, regional_indicator)
+    mask = _word_cats_to_mask(categories, emoji, regional_indicator)
     lt = len(text)
     meth = _unicode.word_next_break
     catcheck = _unicode.has_category
@@ -824,14 +835,13 @@ def word_iter(
     text: str,
     offset: int = 0,
     *,
-    letter: bool = True,
-    number: bool = True,
+    categories: Iterable[str],
     emoji: bool = False,
     regional_indicator: bool = False,
 ) -> Generator[str, None, None]:
     "Generator providing text of each word"
 
-    mask = _word_cats_to_mask(letter, number, emoji, regional_indicator)
+    mask = _word_cats_to_mask(categories, emoji, regional_indicator)
     lt = len(text)
     meth = _unicode.word_next_break
     catcheck = _unicode.has_category
@@ -847,14 +857,13 @@ def word_iter_with_offsets(
     text: str,
     offset: int = 0,
     *,
-    letter: bool = True,
-    number: bool = True,
+    categories: Iterable[str],
     emoji: bool = False,
     regional_indicator: bool = False,
 ) -> Generator[str, None, None]:
     "Generator providing start, end, text of each word"
 
-    mask = _word_cats_to_mask(letter, number, emoji, regional_indicator)
+    mask = _word_cats_to_mask(categories, emoji, regional_indicator)
     lt = len(text)
     meth = _unicode.word_next_break
     catcheck = _unicode.has_category
