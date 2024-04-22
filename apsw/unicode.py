@@ -960,13 +960,13 @@ def line_break_iter_with_offsets(text: str, offset: int = 0) -> Generator[tuple[
 # temporarily here during development before conversion to C
 class utf8_position_mapper:
     def __init__(self, data: bytes):
-        self.as_str = data.decode("utf-8", errors="strict")
+        self.str = data.decode("utf-8", errors="strict")
         self.bytes = data
         self.bytes_len = len(data)
         self.str_offset = 0
         self.bytes_offset = 0
 
-    def utf8_pos(self, str_pos: int):
+    def __call__(self, str_pos: int):
         if str_pos < self.str_offset:
             # went backwards so we restart
             self.str_offset = self.bytes_offset = 0

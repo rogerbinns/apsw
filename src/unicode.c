@@ -20,6 +20,8 @@ It is ugly, but it works.
 
 */
 
+#include <stddef.h>
+
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
@@ -30,6 +32,15 @@ It is ugly, but it works.
    static definitions that aren't used, so we do these instead */
 #define PyErr_AddExceptionNoteV(...)
 #define Py_TypeName(o) (Py_TYPE(o)->tp_name)
+
+/* msvc doesn't support vla, so do it the hard way */
+#if defined(_MSC_VER) || defined(__STDC_NO_VLA__)
+#define VLA(name, size, type) type *name = alloca(sizeof(type) * (size))
+#else
+#define VLA(name, size, type) type name[size]
+#endif
+
+#define VLA_PYO(name, size) VLA(name, size, PyObject *)
 
 #include "argparse.c"
 
@@ -1711,11 +1722,133 @@ version_added(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t 
   return PyUnicode_FromString(age);
 }
 
+typedef struct
+{
+  PyObject_HEAD
+  vectorcallfunc vectorcall;
+  Py_ssize_t bytes_len;
+  Py_ssize_t str_offset;
+  Py_ssize_t bytes_offset;
+  Py_buffer buffer;
+  PyObject *str;
+} Utf8PositionMapper;
+
+static void
+Utf8PositionMapper_finalize(Utf8PositionMapper *self)
+{
+  /* this is intentionally implemented to be safe to call multiple times */
+  if (self->buffer.obj)
+  {
+
+    PyBuffer_Release(&self->buffer);
+    self->buffer.obj = NULL;
+  }
+  Py_CLEAR(self->str);
+}
+
+static PyObject *
+Utf8PositionMapper_call(Utf8PositionMapper *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                        PyObject *fast_kwnames)
+{
+  Py_ssize_t pos;
+  ARG_PROLOG(1, "pos");
+  ARG_MANDATORY ARG_Py_ssize_t(pos);
+  ARG_EPILOG(NULL, "utf8_position_mapper.__call__(pos: int)", );
+
+  if (pos < 0)
+    return PyErr_Format(PyExc_ValueError, "position needs to be zero or positive");
+
+  if (pos < self->str_offset)
+  {
+    /* went backwards so we restart */
+    self->str_offset = self->bytes_offset = 0;
+  }
+  while (self->str_offset < pos)
+  {
+    if (self->bytes_offset == self->buffer.len)
+      return PyErr_Format(PyExc_IndexError, "position is beyond end of string");
+
+    unsigned b = ((unsigned char *)self->buffer.buf)[self->bytes_offset];
+
+    if ((b & 0x80 /* 0b1000_0000 */) == 0)
+      self->bytes_offset += 1;
+    else if ((b & 0xf8 /* 0b1111_1000 */) == 0xf0 /* 0b1111_0000 */)
+      self->bytes_offset += 4;
+    else if ((b & 0xf0 /* 0b1111_0000 */) == 0xe0 /* 0b1110_0000 */)
+      self->bytes_offset += 3;
+    else
+    {
+      assert((b & 0xe0 /* 0b1110_0000 */) == 0xc0 /* 0b1100_0000 */);
+      self->bytes_offset += 2;
+    }
+    self->str_offset++;
+  }
+  return PyLong_FromSsize_t(self->bytes_offset);
+}
+
+static int
+Utf8PositionMapper_init(Utf8PositionMapper *self, PyObject *args, PyObject *kwargs)
+{
+
+  ARG_CONVERT_VARARGS_TO_FASTCALL
+
+  PyObject *utf8 = NULL;
+  ARG_PROLOG(1, "utf8");
+  ARG_MANDATORY ARG_py_buffer(utf8);
+  ARG_EPILOG(-1, "utf8_position_mapper.__init__(utf8: bytes)", );
+
+  int res = PyObject_GetBuffer(utf8, &self->buffer, PyBUF_SIMPLE);
+  if (res != 0)
+    return -1;
+
+  self->str = PyUnicode_DecodeUTF8(self->buffer.buf, self->buffer.len, "strict");
+  if (!self->str)
+  {
+    Utf8PositionMapper_finalize(self);
+    return -1;
+  }
+
+  self->vectorcall = (vectorcallfunc)Utf8PositionMapper_call;
+  return 0;
+}
+
+static PyMemberDef Utf8PositionMapper_memberdef[] = {
+  { "__vectorcalloffset__", Py_T_PYSSIZET, offsetof(Utf8PositionMapper, vectorcall), Py_READONLY },
+  { "str", Py_T_OBJECT_EX, offsetof(Utf8PositionMapper, str), Py_READONLY },
+  { NULL },
+};
+
+static PyType_Slot Utf8PositionMapper_slots[] = {
+  { Py_tp_finalize, Utf8PositionMapper_finalize },
+  { Py_tp_init, Utf8PositionMapper_init },
+  { Py_tp_call, PyVectorcall_Call },
+  { Py_tp_members, Utf8PositionMapper_memberdef },
+  { 0, NULL },
+};
+
+/* this object is not publicly documented or exposed so we are light
+   on details */
+static PyType_Spec Utf8PositionMapper_spec = {
+  .name = "apsw._unicode.utf8_position_mapper",
+  .basicsize = sizeof(Utf8PositionMapper),
+  .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_IMMUTABLETYPE | Py_TPFLAGS_HAVE_VECTORCALL,
+  .slots = Utf8PositionMapper_slots,
+};
+
 static int
 unicode_exec(PyObject *module)
 {
   int rc;
-  PyObject *hard_breaks = NULL, *tmp = NULL;
+  PyObject *hard_breaks = NULL, *tmp = NULL, *upm = NULL;
+
+  upm = PyType_FromModuleAndSpec(module, &Utf8PositionMapper_spec, NULL);
+  if (!upm)
+    goto error;
+  rc = PyModule_AddObject(module, "utf8_position_mapper", upm);
+  if (rc != 0)
+    goto error;
+  upm = NULL; /* ref was stolen in addobject */
+
   rc = PyModule_AddStringConstant(module, "unicode_version", unicode_version);
   if (rc != 0)
     goto error;
@@ -1743,6 +1876,7 @@ unicode_exec(PyObject *module)
 error:
   Py_XDECREF(tmp);
   Py_XDECREF(hard_breaks);
+  Py_XDECREF(upm);
   return -1;
 }
 
