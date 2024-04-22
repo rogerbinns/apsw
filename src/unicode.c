@@ -1730,6 +1730,9 @@ typedef struct
   Py_ssize_t str_offset;
   Py_ssize_t bytes_offset;
   Py_buffer buffer;
+  /* we often go backwards as spans are iterated so remember previous */
+  Py_ssize_t last_str_offset;
+  Py_ssize_t last_bytes_offset;
   PyObject *str;
 } Utf8PositionMapper;
 
@@ -1760,9 +1763,23 @@ Utf8PositionMapper_call(Utf8PositionMapper *self, PyObject *const *fast_args, Py
 
   if (pos < self->str_offset)
   {
-    /* went backwards so we restart */
-    self->str_offset = self->bytes_offset = 0;
+    /* went backwards */
+    if (pos >= self->last_str_offset)
+    {
+      self->str_offset = self->last_str_offset;
+      self->bytes_offset = self->last_bytes_offset;
+    }
+    else
+    { /* restart */
+      self->str_offset = self->bytes_offset = 0;
+    }
   }
+  else
+  {
+    self->last_bytes_offset = self->bytes_offset;
+    self->last_str_offset = self->str_offset;
+  }
+
   while (self->str_offset < pos)
   {
     if (self->bytes_offset == self->buffer.len)
