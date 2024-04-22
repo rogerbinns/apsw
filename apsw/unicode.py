@@ -251,7 +251,6 @@ def category(codepoint: int | str) -> str:
 
     raise Exception("Unreachable")
 
-
 def is_extended_pictographic(text: str) -> bool:
     "Returns True if any of the text has the extended pictographic property (Emoji and similar)"
     return _unicode.has_category(text, 0, len(text), _Category.Extended_Pictographic)

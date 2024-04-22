@@ -26,6 +26,8 @@ from typing import Callable, Sequence, Any, Literal
 
 import apsw
 import apsw.ext
+import apsw.unicode
+import apsw._unicode
 
 unicode_categories = {
     "Lu": "Letter Uppercase",
@@ -63,9 +65,29 @@ unicode_categories = {
 
 # Stashed here for future use - 23 codepoints
 _grapheme_Prepend_members = {
-    0x0600, 0x0601, 0x0602, 0x0603, 0x0604, 0x06DD, 0x070F, 0x0890, 0x08E2, 0x0D4E,
-    0x110BD, 0x110CD, 0x111C2, 0x1193F, 0x11941, 0x11A3A, 0x11A84, 0x11A85, 0x11A86, 0x11A87,
-    0x11A88, 0x11D46, 0x11F02,
+    0x0600,
+    0x0601,
+    0x0602,
+    0x0603,
+    0x0604,
+    0x06DD,
+    0x070F,
+    0x0890,
+    0x08E2,
+    0x0D4E,
+    0x110BD,
+    0x110CD,
+    0x111C2,
+    0x1193F,
+    0x11941,
+    0x11A3A,
+    0x11A84,
+    0x11A85,
+    0x11A86,
+    0x11A87,
+    0x11A88,
+    0x11D46,
+    0x11F02,
 }
 
 
@@ -165,7 +187,7 @@ def convert_number_ranges(numbers: str) -> set[int]:
     Takes input like ``2,3-5,17`` and converts to
     ``{2, 3, 4, 5, 17}``
     """
-    res = set()
+    res: set[int] = set()
     for part in numbers.split(","):
         try:
             res.add(int(part))
@@ -1379,7 +1401,7 @@ if __name__ == "__main__":
 
         def ud(c: str) -> str:
             r = ""
-            gc = unicodedata.category(c)
+            gc = apsw.unicode.category(c)
             explain = unicode_categories
             r += f"{ gc } { explain[gc] }"
             for meth in (
@@ -1502,10 +1524,10 @@ if __name__ == "__main__":
     <p>Text that <i>looks</i> the same can be represented by different sequences of codepoints, for historical and
     compatibility reasons.  Those different sequences then encode to different sequences of bytes
     and will be considered different tokens, not matching in queries.</p>
-    <dt>NFD</dt><dd>Canonical Decomposition breaking codepoints into multiples, so \u212B {ANGSTROM SIGN}
+    <dt>NFD</dt><dd>Canonical Decomposition breaking codepoints into multiples, so \u212b {ANGSTROM SIGN}
     becomes A {LATIN CAPITAL LETTER A} and {COMBINING RING ABOVE}</dd>
     <dt>NFC</dt><dd>Canonical Composition combining multiple codepoints into one, so \u0043 {LATIN CAPITAL
-    LETTER C} and \u0327 {COMBINING CEDILLA} become \u00C7 {LATIN CAPITAL LETTER C WITH CEDILLA}.</dd>
+    LETTER C} and \u0327 {COMBINING CEDILLA} become \u00c7 {LATIN CAPITAL LETTER C WITH CEDILLA}.</dd>
     <dt>NFKD</dt><dd>Compatibility decomposition like NFD but codepoints become compatibility equivalents,
     so 2\u2075 become 2 5, and \u2160 {ROMAN NUMERAL ONE} becomes I (LATIN CAPITAL LETTER I).</dd>
     <dt>NFKC</dt><dd>Compatibility composition like NFC but codepoints become compatibility equivalents.</dd>
@@ -1666,7 +1688,7 @@ if __name__ == "__main__":
         description="""Runs FTS5 tokenizer against test text producing a HTML report for manual inspection.
 
         The FTS5 builtin tokenizers are ascii, trigram, unicode61, and porter. apsw.fts tokenizers are
-        registered as pyunicode, simplify, html, synonyms, regex, stopwords,
+        registered as unicodewords, simplify, html, synonyms, regex, stopwords,
         transform, ngramtoken, and ngram""",
     )
     parser.add_argument(
