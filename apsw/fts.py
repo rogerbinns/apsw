@@ -221,7 +221,7 @@ def StringTokenizer(func: apsw.FTS5TokenizerFactory):
 
     FTS5 tokenizers operate on :ref:`UTF8 bytes for the text and offsets <byte_offsets>`.
     This decorator provides your tokenizer with text and expects text offsets
-    back, performing the conversions for UTF8.
+    back, performing the conversions back to UTF8 byte offsets.
     """
 
     @functools.wraps(func)

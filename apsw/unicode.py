@@ -7,7 +7,7 @@ This module helps with :doc:`textsearch` and general Unicode,
 addressing the following:
 
 * The standand library :mod:`unicodedata` has limited information
-  available (eg if a character is an emoji), and is only updated to
+  available (eg no information about emoji), and is only updated to
   new `Unicode versions
   <https://www.unicode.org/versions/enumeratedversions.html>`__ on a
   new Python version.
@@ -19,14 +19,43 @@ addressing the following:
   :class:`str` safely without potentially breaking them.
 
 * The standard library provides no help in splitting text into
-  grapheme clusters, words, and sentences.
+  grapheme clusters, words, and sentences, or into breaking text into
+  multiple lines.
 
 * Text processing is performance sensitive - FTS5 easily handles
   hundreds of megabytes to gigabytes of text, and so should this
   module.  It also affects the latency of each query as that is
   tokenized, and results can highlight words and sentences.
 
+This module is independent of the main apsw module, and loading it
+does not load any database functionality.  The majority of the
+functionality is implemented in C for size and performance reasons.
+
 See :data:`unicode_version` for the implemented version.
+
+Grapheme cluster, word, and sentence splitting
+
+    `Unicode Technical Report #29
+    <https://www.unicode.org/reports/tr29/>`__ rules for finding
+    grapheme clusters, words, and sentences are implemented.  Tr29
+    specifies break points which can be found via
+    :func:`grapheme_next_break`, :func:`word_next_break`, and
+    :func:`sentence_next_break`.
+
+    Building on those are iterators providing optional offsets and the
+    text.  This is used for tokenization (getting character and word
+    boundaries correct), and for result highlighting (showing
+    words/sentences before and after match).
+
+Line break splitting
+
+    `Unicode Technical Report #14
+    <https://www.unicode.org/reports/tr14/>`__ rules for finding where
+    text cam be broken and resumed on the next line.  Tr14 specifies
+    break points which can be found via :func:`line_break_next_break`.
+
+    Building on those are iterators providing optional offsets and the
+    text.  This is used for :func:`text_wrap`.
 
 Unicode lookups
 
@@ -60,36 +89,12 @@ how wide the text is when displayed on most terminals.
       breaking, and text width
     * :func:`guess_paragraphs` to establish paragraph boundaries
 
-Grapheme cluster, word, and sentence splitting
-
-    `Unicode Technical Report #29
-    <https://www.unicode.org/reports/tr29/>`__ rules for finding
-    grapheme clusters, words, and sentences are implemented.  Tr29
-    specifies break points which can be found via
-    :func:`grapheme_next_break`, :func:`word_next_break`, and
-    :func:`sentence_next_break`.
-
-    Building on those are iterators providing optional offsets and the
-    text.  This is used for tokenization (getting character and word
-    boundaries correct), and for result highlighting (showing
-    words/sentences before and after match).
-
-Line break splitting
-
-    `Unicode Technical Report #14
-    <https://www.unicode.org/reports/tr14/>`__ rules for finding where
-    text cam be broken and resumed on the next line.  Tr14 specifies
-    break points which can be found via :func:`line_break_next_break`.
-
-    Building on those are iterators providing optional offsets and the
-    text.  This is used for :func:`text_wrap`.
-
 Size
 
     Using the `ICU <https://icu.unicode.org/>`__ `extension
     <https://pypi.org/project/PyICU/>`__ is 5MB of code that then
     links to shared libraries containing another 5MB of code, and 30MB
-    of data.  This module is under 500KB, 5 to 50% faster, and has no
+    of data.  This module is 0.5MB, 5 to 50% faster, and has no
     dependencies.  (ICU includes numerous extra customisations,
     formatting, locale helpers etc.)
 
@@ -633,7 +638,7 @@ def text_wrap(
                     hyphen_out = hyphen
                     desired = width - hyphen_width - line_width
                     if desired < 1:
-                        hyphen_out = ''
+                        hyphen_out = ""
                         desired = width - line_width
                     seg_width, substr = text_width_substr(segment, desired)
                     if seg_width == 0:

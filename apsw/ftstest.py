@@ -26,10 +26,12 @@ import apsw.ext
 import apsw.fts
 import apsw.unicode
 
+
 class BecauseWindowsTempfile:
     "Work around Windows preventing concurrent access to a file opened for writing"
+
     def __init__(self, mode, encoding=None):
-        self.kwargs={"mode": mode, "encoding": encoding}
+        self.kwargs = {"mode": mode, "encoding": encoding}
         f = tempfile.NamedTemporaryFile(delete=False)
         self.name = f.name
         f.close()
@@ -46,13 +48,13 @@ class BecauseWindowsTempfile:
 
     def __enter__(self):
         return self
-    
+
     def __exit__(self, *args):
         try:
             os.remove(self.name)
         except OSError:
             pass
-        
+
 
 class FTS(unittest.TestCase):
     def setUp(self):
