@@ -256,85 +256,43 @@ def StringTokenizer(func: apsw.FTS5TokenizerFactory):
 
 
 @StringTokenizer
-def PyUnicodeTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
-    """Like the `unicode61 tokenizer <https://www.sqlite.org/fts5.html#unicode61_tokenizer>`__ but uses Python's Unicode database
+def UnicodeWordsTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
+    """Uses `Unicode segmentation <https://www.unicode.org/reports/tr29/>`__ to extract words
 
-    The SQLite unicode61 tokenizer uses a `Unicode character database
-    <https://www.unicode.org/reports/tr44/>`__ from 2012, providing
-    stable compatible behaviour, knowing about `250,000 codepoints
-    <https://www.unicode.org/versions/stats/charcountv6_1.html>`__.
+    The following tokenizer parameters are accepted.  A text segment is considered
+    a word if any are present.
 
-    This uses the :data:`version <unicodedata.unidata_version>` included
-    in Python, which is updated on each release.  Python 3.12 released in
-    2023 has version 15.0 of the Unicode database covering an
-    additional `37,000 codepoints
-    <https://www.unicode.org/versions/stats/charcountv15_0.html>`__.
+    letter
+        ``0`` or ``1`` (default) if letters are included.
 
-    The following tokenizer arguments are accepted with the same semantics
-    and defaults as `unicode61`.
+    number
+        ``0`` or ``1`` (default) if numbers are included.
 
-    categories
-        Space separated Unicode categories to consider part of tokens allowing wildcards.
-        Default is ``L* N* Mc Mn`` to get all letters, numbers, and combining marks
-    tokenchars
-        String of characters always considered part of tokens, no matter the category.
-        For example ``@.`` wouldn't break apart email addresses.
-    separators
-        String of characters always considered not part of tokens, no matter the category.
-    single_token_categories
-        (Not in unicode61) Any codepoint in this list of wildcard categories becomes a token by itself.
-        For example ``So`` (Symbols other) includes emoji, which you probably want as individual
-        tokens.
+    emoji
+        ``0`` or ``1`` (default) if emoji are included.  They will be a word
+        by themselves.
 
-    Use the :func:`SimplifyTokenizer` to convert case, remove diacritics, combining marks, and
-    use compatibility code points.
+    regional_indicator
+        ``0`` or ``1`` (default) if `regional indicators
+        <https://en.wikipedia.org/wiki/Regional_indicator_symbol>`__ like 🇬🇧 🇵🇭
+        are included.  They will be a word  by themselves.
 
-    See the :ref:`example <example_fts_apsw_pyunicode>`
+    Use the :func:`SimplifyTokenizer` to make case insensitive, remove diacritics,
+    combining marks, and use compatibility code points.
+
+    See the :ref:`example <example_fts_apsw_unicodewords>`
     """
     spec = {
-        "categories": TokenizerArgument(
-            default="L* N* Mc Mn", convertor=convert_unicode_categories, convert_default=True
-        ),
-        "tokenchars": "",
-        "separators": "",
-        "single_token_categories": TokenizerArgument(default="", convertor=convert_unicode_categories),
+        "letter": TokenizerArgument(default=True, convertor=convert_boolean),
+        "number": TokenizerArgument(default=True, convertor=convert_boolean),
+        "emoji": TokenizerArgument(default=True, convertor=convert_boolean),
+        "regional_indicator": TokenizerArgument(default=True, convertor=convert_boolean),
     }
 
     options = parse_tokenizer_args(spec, con, args)
 
-    categories = options["categories"]
-    tokenchars = set(options["tokenchars"])
-    separators = set(options["separators"])
-    single_token_categories = set(options["single_token_categories"])
-
-    if tokenchars & separators:
-        raise ValueError(f"Codepoints are in both tokens and separators { tokenchars & separators }")
-
     def tokenize(text: str, flags: int):
-        start = None
-        token = ""
-        i = 0
-
-        for i, codepoint in enumerate(text):
-            cat = unicodedata.category(codepoint)
-            if codepoint not in separators and cat in single_token_categories:
-                if token:
-                    yield start, i, token
-                yield i, i + 1, codepoint
-                token = ""
-                start = None
-                continue
-            if (codepoint in tokenchars or cat in categories) and codepoint not in separators:
-                if not token:
-                    start = i
-                token += codepoint
-                continue
-            if token:
-                yield start, i, token
-                token = ""
-                start = None
-        if token:
-            yield start, i + 1, token
+        yield from apsw.unicode.word_iter_with_offsets(text, 0, **options)
 
     return tokenize
 
@@ -344,7 +302,7 @@ def SimplifyTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
 
     Put this before another tokenizer to simplify its output.  For example:
 
-       simplify case upper pyunicode
+       simplify case upper unicodewords
 
     The following tokenizer arguments are accepted, and are applied to each
     token in this order.  If you do not specify an argument then it does nothing
@@ -1751,7 +1709,7 @@ if __name__ == "__main__":
     )
 
     # registrations built in
-    con.register_fts5_tokenizer("pyunicode", PyUnicodeTokenizer)
+    con.register_fts5_tokenizer("unicodewords", UnicodeWordsTokenizer)
     con.register_fts5_tokenizer("simplify", SimplifyTokenizer)
     con.register_fts5_tokenizer("html", HTMLTokenizer)
     con.register_fts5_tokenizer("ngramtoken", NGramTokenTokenizer)
