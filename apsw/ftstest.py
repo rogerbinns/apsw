@@ -1619,6 +1619,66 @@ abc!p!d\u2029!p!abc\u0085!p!def
                 for line in apsw.unicode.text_wrap(text, width, combine_space=False, hyphen="--"):
                     self.assertEqual(apsw.unicode.text_width(line), width)
 
+    def testUPM(self):
+        "UTF8 Position Mapper"
+        # it is not publicly documented or exposed
+        import apsw._unicode
+
+        cls = apsw._unicode.utf8_position_mapper
+
+        # basic arg parsing
+        self.assertRaises(TypeError, cls)
+        self.assertRaises(TypeError, cls, "abc")
+        self.assertRaises(TypeError, cls, b"abc", 3)
+        test = cls(b"abc")
+        self.assertRaises(TypeError, test)
+        self.assertRaises(TypeError, test, 3.2)
+        self.assertRaises(TypeError, test, 3, 4)
+        self.assertRaises(ValueError, test, -1)
+
+        # empty bytes
+        test = cls(b"")
+        self.assertEqual(test(0), 0)
+        self.assertEqual(test.str, "")
+        self.assertRaises(IndexError, test, 1)
+
+        # one byte
+        test = cls(b"a")
+        self.assertEqual(test(0), 0)
+        self.assertEqual(test(1), 1)
+        self.assertEqual(test.str, "a")
+        self.assertRaises(IndexError, test, 2)
+
+        # some random testing
+        def xchr(howmany):
+            while howmany:
+                c = random.randint(0, sys.maxunicode)
+                if 0xD800 <= c <= 0xDFFF:
+                    # surrogates not allowed
+                    continue
+                yield chr(c).encode("utf8")
+                howmany -= 1
+
+        for seed in range(10):
+            random.seed(seed)
+            offsets = {}
+            utf8 = b""
+
+            for i, b in enumerate(xchr(random.randint(0, 10_000))):
+                offsets[i] = len(utf8)
+                utf8 += b
+            # check end indexing
+            offsets[len(offsets)] = len(utf8)
+
+            offsets = list(offsets.items())
+            random.shuffle(offsets)
+
+            test = cls(utf8)
+            self.assertEqual(utf8.decode("utf8"), test.str)
+
+            for pos, expected in offsets:
+                self.assertEqual(test(pos), expected)
+
 
 # ::TODO:: make main test suite run this one
 # eg https://docs.python.org/3/library/unittest.html#load-tests-protocol
