@@ -957,53 +957,6 @@ def line_break_iter_with_offsets(text: str, offset: int = 0) -> Generator[tuple[
         offset = end
 
 
-# temporarily here during development before conversion to C
-class utf8_position_mapper:
-    def __init__(self, data: bytes):
-        self.str = data.decode("utf-8", errors="strict")
-        self.bytes = data
-        self.bytes_len = len(data)
-        self.str_offset = 0
-        self.bytes_offset = 0
-
-    def __call__(self, str_pos: int):
-        if str_pos < self.str_offset:
-            # went backwards so we restart
-            self.str_offset = self.bytes_offset = 0
-        self._advance(str_pos)
-        return self.bytes_offset
-
-    def _advance(self, pos: int):
-        # I originally tried to match the error behaviour of CPython
-        # when it contains invalid sequences. It turned out to be too
-        # complex because the number of bytes consumed by an invalid
-        # sequence is non-trivial to copy.   See Objects/stringlib/codecs.h
-        # in the Python source.
-        while self.str_offset < pos:
-            if self.bytes_offset == self.bytes_len:
-                raise IndexError(f"{pos=} beyond end { self.str_offset }")
-            b = self.bytes[self.bytes_offset]
-            if b & 0b1000_0000 == 0:
-                self.str_offset += 1
-                self.bytes_offset += 1
-                continue
-
-            # how many more after this byte
-            continuation_bytes = 0
-
-            if b & 0b1111_1000 == 0b1111_0000:
-                continuation_bytes = 3
-            elif b & 0b1111_0000 == 0b1110_0000:
-                continuation_bytes = 2
-            elif b & 0b1110_0000 == 0b1100_0000:
-                continuation_bytes = 1
-            else:
-                raise Impossible()
-
-            self.bytes_offset += 1 + continuation_bytes
-            self.str_offset += 1
-
-
 if __name__ == "__main__":
     import argparse
     import unicodedata
