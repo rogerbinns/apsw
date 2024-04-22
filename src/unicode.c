@@ -1140,10 +1140,15 @@ category_name(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t 
     unsigned long long val = line_category(codepoint);
     ALL_LB_VALUES;
   }
+  else if (0 == strcmp(which, "category"))
+  {
+    unsigned long long val = category_category(codepoint);
+    ALL_CATEGORY_VALUES;
+  }
   else
   {
     PyErr_Format(PyExc_ValueError,
-                 "Unknown which parameter \"%s\" - should be one of grapheme, word, sentence, line_break", which);
+                 "Unknown which parameter \"%s\" - should be one of grapheme, word, sentence, line_break, category", which);
     Py_CLEAR(res);
   }
 
