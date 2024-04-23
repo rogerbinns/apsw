@@ -281,14 +281,12 @@ def StringTokenizer(func: apsw.FTS5TokenizerFactory):
 def UnicodeWordsTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     """Uses `Unicode segmentation <https://www.unicode.org/reports/tr29/>`__ to extract words
 
-    The following tokenizer parameters are accepted.  A text segment is considered
-    a word if any are present.
+    The following tokenizer parameters are accepted.  A segment is considered a word
+    if a codepoint matching any of the categories, emoji, or regional indicator is
+    present.
 
-    letter
-        ``0`` or ``1`` (default) if letters are included.
-
-    number
-        ``0`` or ``1`` (default) if numbers are included.
+    categories
+        Default ``L* N* Sm`` to include letters, numbers, and maths symbols.
 
     emoji
         ``0`` or ``1`` (default) if emoji are included.  They will be a word
@@ -305,8 +303,7 @@ def UnicodeWordsTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokeniz
     See the :ref:`example <example_fts_apsw_unicodewords>`
     """
     spec = {
-        "letter": TokenizerArgument(default=True, convertor=convert_boolean),
-        "number": TokenizerArgument(default=True, convertor=convert_boolean),
+        "categories": TokenizerArgument(default="L* N* Sm", convertor=convert_unicode_categories, convert_default=True),
         "emoji": TokenizerArgument(default=True, convertor=convert_boolean),
         "regional_indicator": TokenizerArgument(default=True, convertor=convert_boolean),
     }
