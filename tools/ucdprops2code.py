@@ -370,7 +370,7 @@ def generate_c_table(name, enum_name, ranges):
         yield "     We pack 2 replacement codepoints as 21 bit values (lowest first)"
         yield "     3 through 30 means it turns into that many codepoints (about 300, handled separately)"
         yield ""
-        yield "     We also have to get track of the maxchar bucket because CPython compiled with assertions"
+        yield "     We also have to keep track of the maxchar bucket because CPython compiled with assertions"
         yield "     fails if a larger value than was need was used.  This is STRIP_MAXCHAR_*"
         yield "  */"
     yield ""
@@ -590,48 +590,59 @@ def extract_strip(source: str, dest):
     # takes this output to do that
     dest[0] = []
     dest[1] = []
+    start_seq = None
     for line in source.splitlines():
         codepoint, name, category, combining_class, bidi, decomp, *_ = line.split(";")
         codepoint = int(codepoint, 16)
 
-        # double check the data matches
-        assert category == codepoint_to_category[codepoint]
-
-        if category in strip_categories:
-            dest[0].append(codepoint)
+        if name.endswith(", First>"):
+            start_seq = codepoint
             continue
-
-        if not decomp:
-            dest[1].append(codepoint)
-            continue
-
-        decomp = decomp.split()
-        if decomp[0][0] == "<":
-            decomp = decomp[1:]
-
-        # unhexify
-        decomp = [int(d, 16) for d in decomp]
-
-        # filter
-        decomp = [d for d in decomp if codepoint_to_category[d] not in strip_categories]
-        if len(decomp) == 0:
-            dest[0].append(codepoint)
-            continue
-
-        if len(decomp) == 1:
-            if decomp[0] == codepoint:
-                # this shouldn't happen - decomposing to include self
-                raise Exception("this can't happen")
-            if decomp[0] not in dest:
-                dest[decomp[0]] = []
-            dest[decomp[0]].append(codepoint)
-            continue
-
-        decomp = tuple(decomp)
-        if decomp in dest:
-            dest[decomp].append(codepoint)
+        elif name.endswith(", Last>"):
+            seq = (start_seq, codepoint)
+            start_seq = None
         else:
-            dest[decomp] = [codepoint]
+            seq = (codepoint, codepoint)
+
+        for codepoint in range(seq[0], 1+seq[1]):
+            # double check the data matches
+            assert category == codepoint_to_category[codepoint]
+
+            if category in strip_categories:
+                dest[0].append(codepoint)
+                continue
+
+            if not decomp:
+                dest[1].append(codepoint)
+                continue
+
+            decomp = decomp.split()
+            if decomp[0][0] == "<":
+                decomp = decomp[1:]
+
+            # unhexify
+            decomp = [int(d, 16) for d in decomp]
+
+            # filter
+            decomp = [d for d in decomp if codepoint_to_category[d] not in strip_categories]
+            if len(decomp) == 0:
+                dest[0].append(codepoint)
+                continue
+
+            if len(decomp) == 1:
+                if decomp[0] == codepoint:
+                    # this shouldn't happen - decomposing to include self
+                    raise Exception("this can't happen")
+                if decomp[0] not in dest:
+                    dest[decomp[0]] = []
+                dest[decomp[0]].append(codepoint)
+                continue
+
+            decomp = tuple(decomp)
+            if decomp in dest:
+                dest[decomp].append(codepoint)
+            else:
+                dest[decomp] = [codepoint]
 
 
 def read_props(data_dir: str):
