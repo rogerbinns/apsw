@@ -1336,11 +1336,10 @@ if __name__ == "__main__":
             for meth in (
                 unicodedata.bidirectional,
                 unicodedata.combining,
-                unicodedata.east_asian_width,
                 unicodedata.mirrored,
             ):
                 v = meth(c)
-                if v and v != "Na":  # Na is east asian width non-applicable
+                if v:
                     r += f" { meth.__name__ }={ v }"
             return r
 
