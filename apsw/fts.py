@@ -258,7 +258,9 @@ def UnicodeWordsTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokeniz
     present.
 
     categories
-        Default ``L* N* Sm`` to include letters, numbers, and maths symbols.
+        Default ``L* N*`` to include letters, and numbers.  You should  consider ``Pd``
+        for punctuation dash if you want words separated with dashes to be considered one word.
+        ``Sm`` for maths symbols and ``Sc`` for currency symbols may also be relevant,
 
     emoji
         ``0`` or ``1`` (default) if emoji are included.  They will be a word
@@ -268,6 +270,17 @@ def UnicodeWordsTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokeniz
         ``0`` or ``1`` (default) if `regional indicators
         <https://en.wikipedia.org/wiki/Regional_indicator_symbol>`__ like 🇬🇧 🇵🇭
         are included.  They will be a word  by themselves.
+
+    This does a lot better than the `unicode61` tokenizer builtin to FTS5.  It
+    understands user perceived characters (made of many codepoints), and punctuation
+    within words (eg ``don't`` is considered two words ``don`` and ``t`` by `unicode61`),
+    as well as how various languages work.
+
+    For languages where there is no spacing or similar between words, only a dictionary
+    can determine actual word boundaries.  Examples include Japanese, Chinese, and Khmer.
+    In this case the algorithm returns the user perceived characters individually making
+    it similar to :meth:`NGramTokenizer` which will provide good search experience at
+    the cost of a slightly larger index.
 
     Use the :func:`SimplifyTokenizer` to make case insensitive, remove diacritics,
     combining marks, and use compatibility code points.
@@ -289,66 +302,46 @@ def UnicodeWordsTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokeniz
 
 
 def SimplifyTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
-    """Tokenizer wrapper that simplifies tokens by case conversion, canonicalization, and codepoint removal
+    """Tokenizer wrapper that simplifies tokens by neutralizing case conversion, canonicalization, and diacritic/mark removal
 
     Put this before another tokenizer to simplify its output.  For example:
 
-       simplify case upper unicodewords
+       simplify casefold true unicodewords
 
     The following tokenizer arguments are accepted, and are applied to each
-    token in this order.  If you do not specify an argument then it does nothing
-    for that phase.
+    token in this order.  If you do not specify an argument then it is off.
 
-    normalize_pre
-        Perform Unicode :func:`normalization <unicodedata.normalize>` - ``NFD`` ``NFC`` ``NFKD`` ``NFKC``.
-        NFKD is recommended to decompose codepoints (eg expanding diacritics
-        into base codepoint and combining codepoint) and to use compatibility
-        codepoints.
-    case
-        ``upper``, ``lower``, or ``casefold`` to convert case.  :meth:`casefold <str.casefold>`
-        is recommended
-    remove_categories
-        Which codepoint categories to remove.  ``M* *m Sk`` is recommended
-        to remove all marks, combining codepoints, and modifiers.
-    normalize_post
-        Perform a final round of normalization after processing.  ``NFC`` is
-        recommended to recombine any remaining codepoints that can be combined.
+    strip
+        Codepoints become their compatibility representation - for example
+        the Roman numeral Ⅲ becomes III.  Diacritics, marks, and similar
+        are removed.  See :func:`apsw.unicode.strip`.
+
+    casefold
+        Neutralizes case distinction.  See :func:`apsw.unicode.casefold`.
 
     See the :ref:`example <example_fts_apsw_simplify>`.
     """
-    ta = TokenizerArgument
     spec = {
-        "normalize_pre": ta(choices=("NFD", "NFC", "NFKD", "NFKC")),
-        "case": ta(choices=("upper", "lower", "casefold")),
-        "remove_categories": ta(convertor=convert_unicode_categories),
-        "normalize_post": ta(choices=("NFD", "NFC", "NFKD", "NFKC")),
+        "strip": TokenizerArgument(default=False, convertor=convert_boolean),
+        "casefold": TokenizerArgument(default=False, convertor=convert_boolean),
         "+": None,
     }
     options = parse_tokenizer_args(spec, con, args)
 
-    def identity(s: str):
-        return s
-
-    normalize_pre = (
-        functools.partial(unicodedata.normalize, options["normalize_pre"]) if options["normalize_pre"] else identity
-    )
-    case = getattr(str, options["case"]) if options["case"] else identity
-    remove_categories = options["remove_categories"]
-    remove = (
-        (lambda s: "".join(c for c in s if unicodedata.category(c) not in remove_categories))
-        if remove_categories
-        else identity
-    )
-    normalize_post = (
-        functools.partial(unicodedata.normalize, options["normalize_post"]) if options["normalize_post"] else identity
-    )
+    # only 4 choices
+    conv = {
+        (False, False): lambda t: t,
+        (True, False): lambda t: apsw.unicode.strip(t),
+        (False, True): lambda t: apsw.unicode.casefold(t),
+        (True, True): lambda t: apsw.unicode.casefold(apsw.unicode.strip(t)),
+    }[options["strip"], options["casefold"]]
 
     def tokenize(utf8: bytes, flags: int):
         tok = options["+"]
         for start, end, *tokens in tok(utf8, flags):
             new_tokens = []
             for token in tokens:
-                new = normalize_post(remove(case(normalize_pre(token))))
+                new = conv(token)
                 if new and new not in new_tokens:
                     new_tokens.append(new)
             if new_tokens:
