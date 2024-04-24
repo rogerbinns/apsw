@@ -63,34 +63,6 @@ unicode_categories = {
 }
 "Unicode categories and descriptions for reference"
 
-# Stashed here for future use - 23 codepoints
-_grapheme_Prepend_members = {
-    0x0600,
-    0x0601,
-    0x0602,
-    0x0603,
-    0x0604,
-    0x06DD,
-    0x070F,
-    0x0890,
-    0x08E2,
-    0x0D4E,
-    0x110BD,
-    0x110CD,
-    0x111C2,
-    0x1193F,
-    0x11941,
-    0x11A3A,
-    0x11A84,
-    0x11A85,
-    0x11A86,
-    0x11A87,
-    0x11A88,
-    0x11D46,
-    0x11F02,
-}
-
-
 tokenize_reasons: dict[str, int] = {
     "DOCUMENT": apsw.FTS5_TOKENIZE_DOCUMENT,
     "QUERY": apsw.FTS5_TOKENIZE_QUERY,
