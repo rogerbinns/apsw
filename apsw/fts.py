@@ -359,10 +359,13 @@ def SimplifyTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
 
 @StringTokenizer
 def NGramTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
-    """Generates ngrams from the text, useful for completion as you type
+    """Generates ngrams from the text, useful for completion as you type.
 
     For example if doing 3 (trigram) then ``a big dog`` would result in
     ``'a b', ' bi', 'big', 'ig ', 'g d', ' do`, 'dog'``
+
+    This tokenizer works on units of user perceived characters (grapheme clusters)
+    where more than one codepoint makes up what seems to be one character.
 
     The following tokenizer arguments are accepted
 
@@ -372,112 +375,76 @@ def NGramTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
         values will result in quicker searches as the input grows.
         Default is 3.  You can specify :func:`multiple values <convert_number_ranges>`.
 
-    include_categories
+    categories
         Which Unicode categories to include, by default all.  You could
         include everything except punctuation and separators with
-        ``* !P* !Z*``
+        ``* !P* !Z*``.
 
-    .. seealso::
+    emoji
+        ``0`` or ``1`` (default) if emoji are included, even if `categories`
+        would exclude them.
 
-       :func:`NGramTokenTokenizer` for generating ngrams from another token source.
+    regional_indicator
+        ``0`` or ``1`` (default) if regional indicators  are included, even if `categories`
+        would exclude them.
+
     """
 
     spec = {
         "ngrams": TokenizerArgument(default="3", convertor=convert_number_ranges, convert_default=True),
-        "include_categories": TokenizerArgument(
-            default="*", convertor=convert_unicode_categories, convert_default=True
-        ),
+        "categories": TokenizerArgument(default="*", convertor=convert_unicode_categories, convert_default=True),
+        "emoji": TokenizerArgument(default=True, convertor=convert_boolean),
+        "regional_indicator": TokenizerArgument(default=True, convertor=convert_boolean),
     }
 
     options = parse_tokenizer_args(spec, con, args)
 
     def tokenize(text: str, flags: int):
         ntokens = 0
-        for start in range(len(text)):
-            tokens: list[tuple[int, int, str]] = []
-            seen = options["ngrams"].copy()
-            end = start
-            token = ""
-            while seen and end < len(text):
-                c = text[end]
-                end += 1
-                if unicodedata.category(c) not in options["include_categories"]:
-                    if not token:
-                        break
-                    continue
-                token += c
-                if len(token) in seen:
-                    tokens.append((start, end, token))
-                    seen.remove(len(token))
-            if not tokens:
-                continue
-            # if doing a query, only produce largest possible
-            if flags & apsw.FTS5_TOKENIZE_QUERY:
-                yield tokens[-1][0], tokens[-1][1], tokens[-1][2]
-                ntokens += 1
-            else:
-                # in theory these are colocated but with different end
-                # bytes, but the APSW underlying implementation doesn't
-                # allow for that scenario
-                for start, end, token in tokens:
-                    yield start, end, token
+
+        token_stream: list[tuple[int, int, str]] = []
+        keep = max(options["ngrams"])
+
+        # if doing a query, only produce largest possible
+        if flags & apsw.FTS5_TOKENIZE_QUERY:
+            produce = [max(options["ngrams"])]
+        else:
+            produce = sorted(options["ngrams"])
+
+        for token in apsw.unicode.grapheme_iter_with_offsets_filtered(
+            text,
+            categories=options["categories"],
+            emoji=options["emoji"],
+            regional_indicator=options["regional_indicator"],
+        ):
+            token_stream.append(token)
+            for ntoken in produce:
+                if len(token_stream) >= ntoken:
+                    yield (
+                        token_stream[-ntoken][0],
+                        token_stream[-1][1],
+                        "".join(token_stream[i][2] for i in range(-ntoken, 0)),
+                    )
                     ntokens += 1
+            if len(token_stream) > keep:
+                token_stream.pop(0)
+
+        # if doing a query and we didn't hit the produce then find longest we can
+        if flags & apsw.FTS5_TOKENIZE_QUERY and ntokens == 0:
+            largest = -1
+            for i in sorted(options["ngrams"]):
+                if i <= len(token_stream):
+                    largest = i
+            for i in range(0, len(token_stream) - largest):
+                yield (
+                    token_stream[i][0],
+                    token_stream[i + largest][1],
+                    "".join(token_stream[j][2] for j in range(i, i + largest)),
+                )
+
         # text didn't match any of our lengths, so return as is
-        if ntokens == 0:
-            token = "".join(c for c in text if unicodedata.category(c) in options["include_categories"])
-            if token:
-                yield 0, len(text), token
-
-    return tokenize
-
-
-def NGramTokenTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
-    """Turns a token stream into ngrams, useful for completion as you type
-
-    For example if doing 3 (trigram) then ``('a', 'deep', 'example')`` would result in
-    ``('a', 'dee', 'eep', 'exa', 'xam', 'amp', 'mpl', 'ple')`` - ie ngrams are done
-    of each token separately.
-
-    The following tokenizer arguments are accepted
-
-    ngrams
-        Numeric ranges to generate.  Smaller values allow showing
-        completions with less input but a larger index, while larger
-        values will result in quicker searches as the input grows.
-        Default is 3.  You can specify :func:`multiple values <convert_number_ranges>`.
-
-    .. seealso::
-
-       :func:`NGramTokenizer` for generating ngrams from the source text
-    """
-
-    spec = {
-        "+": None,
-        "ngrams": TokenizerArgument(default="3", convertor=convert_number_ranges, convert_default=True),
-    }
-
-    options = parse_tokenizer_args(spec, con, args)
-
-    def tokenize(utf8: bytes, flags: int):
-        for start, end, *tokens in options["+"](utf8, flags):
-            new_tokens: list[str] = []
-            for token in tokens:
-                added = 0
-                for size in options["ngrams"]:
-                    for s in shingle(token, size):
-                        if s not in new_tokens and s != token:
-                            new_tokens.append(s)
-                            added += 1
-                # shingling got us nothing
-                if added == 0 and token not in new_tokens:
-                    new_tokens.append(token)
-
-            # if doing a query, only produce largest possible
-            if flags & apsw.FTS5_TOKENIZE_QUERY:
-                biggest = max(len(token) for token in new_tokens)
-                new_tokens = [token for token in new_tokens if len(token) == biggest]
-
-            yield start, end, *new_tokens
+        if ntokens == 0 and token_stream:
+            yield token_stream[0][0], token_stream[-1][1], "".join(token_stream[i][2] for i in range(len(token_stream)))
 
     return tokenize
 
@@ -1658,7 +1625,7 @@ if __name__ == "__main__":
 
         The FTS5 builtin tokenizers are ascii, trigram, unicode61, and porter. apsw.fts tokenizers are
         registered as unicodewords, simplify, html, synonyms, regex, stopwords,
-        transform, ngramtoken, and ngram""",
+        transform, and ngram""",
     )
     parser.add_argument(
         "--text-file",
@@ -1703,7 +1670,6 @@ if __name__ == "__main__":
     con.register_fts5_tokenizer("unicodewords", UnicodeWordsTokenizer)
     con.register_fts5_tokenizer("simplify", SimplifyTokenizer)
     con.register_fts5_tokenizer("html", HTMLTokenizer)
-    con.register_fts5_tokenizer("ngramtoken", NGramTokenTokenizer)
     con.register_fts5_tokenizer("ngram", NGramTokenizer)
     # ::TODO check these work
     con.register_fts5_tokenizer("synonyms", SynonymTokenizer)

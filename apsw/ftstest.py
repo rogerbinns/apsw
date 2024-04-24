@@ -627,47 +627,6 @@ class FTS(unittest.TestCase):
                     )
                 )
 
-        ## NGramTokenTokenizer
-        self.db.register_fts5_tokenizer("ngramtoken", apsw.fts.NGramTokenTokenizer)
-        test_text = "a deep example make sure normalization is not changed "
-        for reason in (apsw.FTS5_TOKENIZE_QUERY, apsw.FTS5_TOKENIZE_DOCUMENT):
-            res = []
-            for start, end, *tokens in self.db.fts5_tokenizer("ngramtoken", ["ngrams", "3,5,7", "pyunicode"])(
-                test_text.encode("utf8"), reason
-            ):
-                res.append(f"{start}:{end}:{':'.join(tokens)}")
-            # the correct values were derived by inspection
-            if reason == apsw.FTS5_TOKENIZE_QUERY:
-                self.assertEqual(
-                    res,
-                    [
-                        "0:1:a",
-                        "2:6:dee:eep",
-                        "7:14:examp:xampl:ample",
-                        "15:19:mak:ake",
-                        "20:24:sur:ure",
-                        "25:38:normali:ormaliz:rmaliza:malizat:alizati:lizatio:ization",
-                        "39:41:is",
-                        "42:45:not",
-                        "46:53:chang:hange:anged",
-                    ],
-                )
-            else:
-                self.assertEqual(
-                    res,
-                    [
-                        "0:1:a",
-                        "2:6:dee:eep",
-                        "7:14:exa:xam:amp:mpl:ple:examp:xampl:ample",
-                        "15:19:mak:ake",
-                        "20:24:sur:ure",
-                        "25:38:nor:orm:rma:mal:ali:liz:iza:zat:ati:tio:ion:norma:ormal:rmali:maliz:aliza:lizat:izati:zatio:ation:normali:ormaliz:rmaliza:malizat:alizati:lizatio:ization",
-                        "39:41:is",
-                        "42:45:not",
-                        "46:53:cha:han:ang:nge:ged:chang:hange:anged",
-                    ],
-                )
-
         ## HTMLTokenizer
         test_html = "<t>text</b><fooo/>mor<b>e</b> stuff&amp;things<yes yes>yes<>/no>a&#1234;b"
         self.db.register_fts5_tokenizer("html", apsw.fts.HTMLTokenizer)
