@@ -352,19 +352,25 @@ def SimplifyTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
 
 @StringTokenizer
 def NGramTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
-    """Generates ngrams from the text, useful for completion as you type.
+    """Generates ngrams from the text
 
     For example if doing 3 (trigram) then ``a big dog`` would result in
     ``'a b', ' bi', 'big', 'ig ', 'g d', ' do`, 'dog'``
 
+    This is useful for queries where less than an entire word has been
+    provided such as doing completions, substring, or suffix matches.  For
+    example a query of ``ing`` would find all occurrences even at the end
+    of words with ngrams, but not with the :func:`UnicodeWordsTokenizer`
+    which requires the query to provide complete words.
+
     This tokenizer works on units of user perceived characters (grapheme clusters)
-    where more than one codepoint makes up what seems to be one character.
+    where more than one codepoint can make up what seems to be one character.
 
     The following tokenizer arguments are accepted
 
     ngrams
         Numeric ranges to generate.  Smaller values allow showing
-        completions with less input but a larger index, while larger
+        results with less input but a larger index, while larger
         values will result in quicker searches as the input grows.
         Default is 3.  You can specify :func:`multiple values <convert_number_ranges>`.
 

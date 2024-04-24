@@ -52,7 +52,7 @@ print("FTS5 available:", "ENABLE_FTS5" in apsw.compile_options)
 ### fts_standard: Standard FTS5 usage
 # See the SQLite `FTS5 documentation <https://www.sqlite.org/fts5.html>`__
 
-# Create a virtual table
+# Create a virtual table using default tokenizer
 connection.execute(
     """CREATE VIRTUAL TABLE fts_table USING fts5(ingredients,
                    instructions, serving)"""
@@ -132,7 +132,7 @@ def match_info(api: apsw.FTS5ExtensionApi, *args):
 
 
 # This is used as the calback from query_phrase above.  Note that the
-# api in this call is different than the above functiom.
+# api instance in this call is different than the above functiom.
 def phrase_count(api: apsw.FTS5ExtensionApi, closure):
     print(f"phrase_count called {api.rowid=} {api.phrases=}")
     phrase, counts = closure
@@ -167,7 +167,7 @@ connection.execute(
 #
 # Tokenizers and their arguments are specified as the 'tokenize'
 # option when creating a FTS5 table.  You can also call them directly
-# from a connection.  APSW provides :ref:`several tokenizes
+# from a connection.  APSW provides :ref:`several tokenizers
 # <all_tokenizers>` but lets look at `unicode61
 # <https://sqlite.org/fts5.html#unicode61_tokenizer>`__ - the default
 # SQLite tokenizer
@@ -175,7 +175,8 @@ connection.execute(
 tokenizer = connection.fts5_tokenizer("unicode61")
 
 test_text = (
-    "😂🔥 v1.2 Grey ColOUR! Straße Déjà vu Résumé SQLITE_ERROR"
+    """🤦🏼‍♂️ v1.2 Grey Ⅲ ColOUR! Don't jump -  🇫🇮你好世界 Straße
+    हैलो वर्ल्ड Déjà vu Résumé SQLITE_ERROR"""
 )
 
 # Call the tokenizer to do a tokenization, supplying the reason
@@ -220,45 +221,28 @@ show_tokens(
     ["unicode61"],
 )
 
-### fts_apsw_pyunicode: apsw.fts.PyUnicodeTokenizer
-# :func:`apsw.fts.PyUnicodeTokenizer` is provides a newer
-# :mod:`Unicode database <unicodedata>` and easy way of making
-# emoji and other special characters their own tokens.
+### fts_apsw_unicodewords: apsw.fts.UnicodeWordsTokenizer
+# :func:`apsw.fts.UnicodeWordsTokenizer` does words
+# across languages and understands when punctuation etc
+# is part of words, as well as emoji and regional indicators
 
 connection.register_fts5_tokenizer(
-    "pyunicode", apsw.fts.PyUnicodeTokenizer
+    "unicodewords", apsw.fts.UnicodeWordsTokenizer
 )
 
-show_tokens(test_text, "pyunicode")
+# unicode61 doesn't understand grapheme clusters or
+# punctuation in words, or other languages
+show_tokens(test_text, "unicode61")
 
-# Like unicode61 we can inc;ude . _
-show_tokens(test_text, "pyunicode", ["tokenchars", "_."])
-
-# The emoji are missing
-pprint(apsw.fts.unicode_categories)
-
-# They are So - symbol other, so add to end of default categories
-show_tokens(
-    test_text,
-    "pyunicode",
-    ["tokenchars", "_.", "categories", "L* N* Mc Mn So"],
-)
-
-# Except now the two emoji have become one token, but we want to
-# search for them separately
-show_tokens(
-    test_text,
-    "pyunicode",
-    ["tokenchars", "_.", "single_token_categories", "So"],
-)
+# unicodewords has you covered
+show_tokens(test_text, "unicodewords")
 
 ### fts_apsw_simplify: apsw.fts.SimplifyTokenizer
 # You may have noticed that there are accents (diacritics) and
-# upper/lower case in the tokens in the examples above.  It is
+# mixed case in the tokens in the example above.  It is
 # convenient to remove those.  The :func:`apsw.fts.SimplifyTokenizer`
-# does that (and :func:`Unicode normalization
-# <unicodedata.normalize>`) so you can use it to filter your own or
-# other tokenizers.
+# can neutralize case and remove accents and marks, so you can use it
+# to filter your own or other tokenizers.
 
 connection.register_fts5_tokenizer(
     "simplify", apsw.fts.SimplifyTokenizer
@@ -268,21 +252,16 @@ show_tokens(
     test_text,
     "simplify",
     [
-        # casefold is better for comparisons than pure upper or lower
-        "case",
+        # casefold is for case insensitive comparisons
         "casefold",
-        # decompose accented chars into the char and separate accent
-        "normalize_pre",
-        "NFKD",
-        # these are the various accent and marks
-        "remove_categories",
-        "M* *m Sk",
-        # we get the tokens from pyunicode as before
-        "pyunicode",
-        "tokenchars",
-        "_.",
-        "single_token_categories",
-        "So",
+        "1",
+        # strip decomposes codepoints to remove accents
+        # and marks, and uses compatibility codepoints,
+        # an example is Roman numeral Ⅲ becomes III,
+        "strip",
+        "1",
+        # Use unicodewords to get the tokens to simplify
+        "unicodewords"
     ],
 )
 
@@ -303,17 +282,11 @@ def my_tokenizer(
     return con.fts5_tokenizer(
         "simplify",
         [
-            "case",
             "casefold",
-            "normalize_pre",
-            "NFKD",
-            "remove_categories",
-            "M* *m Sk",
-            "pyunicode",
-            "tokenchars",
-            "_.",
-            "single_token_categories",
-            "So",
+            "1",
+            "strip",
+            "1",
+            "unicodewords"
         ],
     )
 
@@ -353,6 +326,7 @@ def atokenizer(
     pprint(options)
 
     def tokenize(text: str, reason: int):
+        # See apsw.fts.tokenize_reasons for mapping from text to number
         print(f"{reason=}")
         # break string in groups of 'block' characters
         for start in range(0, len(text), options["block"]):

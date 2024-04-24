@@ -157,9 +157,8 @@ All tokenizers
       turns the entire text into trigrams (token generator).  Note it
       does not turn tokens into trigrams, but the entire text including
       all spaces and punctuation.
-  * - :func:`PyUnicodeTokenizer`
-    - Uses Python's more recent :mod:`Unicode database <unicodedata>`
-      to generate tokens
+  * - :func:`UnicodeWordsTokenizer`
+    - Use Unicode algorithm for determining word segments.
   * - :func:`RegexTokenizer`
     - Use :mod:`regular expressions <re>` to generate tokens
   * - :func:`NGramTokenizer`
@@ -169,8 +168,8 @@ All tokenizers
     - Wrapper that converts HTML to plan text for a further tokenizer to generate
       tokens
   * - :func:`SimplifyTokenizer`
-    - Wrapper that transforms the token stream such as converting case, removing
-      diacritics, and Unicode normalization.
+    - Wrapper that transforms the token stream by neutralizing case, and removing
+      diacritics and similar marks
   * - :func:`SynonymTokenizer`
     - Wrapper that provides additional tokens for existing ones such as ``first``
       for ``1st``
@@ -179,9 +178,6 @@ All tokenizers
       ``the`` in English text
   * - :func:`TransformTokenizer`
     - Wrapper to transform tokens, such as when stemming.
-  * - :func:`NGramTokenTokenizer`
-    - Wrapper that Generates ngrams from the token stream, where you can specify the sizes and
-      unicode categories.  Useful for doing autocomplete as you type.
   * - :func:`StringTokenizer`
     - A decorator for your own tokenizers so that they operate on strings, performing the
       mapping to UTF8 bytes for you.
@@ -212,39 +208,39 @@ Recommendations
 ===============
 
 Tokenizer sequence
-  For general text, use the following as one string, broken out
-  into multiple lines here for clarity::
+  For general text, use the following:
 
-    simplify
-      normalize_pre NFKD
-      case casefold
-      remove_categories 'M* *m Sk'
-      normalize_post NFC
-    pyunicode
-      single_token_categories 'So Lo'``
+    simplify strip true casefold true pyunicode
 
   :class:`simplify <SimplifyTokenizer>`:
 
-    * :meth:`Case folds <str.casefold>` the tokens
     * Uses compatibility codepoints
     * Removes marks and diacritics
+    * Neutralizes case distinctions
 
-  :class:`pyunicode <PyUnicodeTokenizer>`:
+  :class:`unicodewords <UnicodeWordsTokenizer>`:
 
-    * Makes emoji (So symbols other) be individually searchable
-    * Makes codepoints (Lo letters other) individually searchable
-      which is useful if you have some content in languages that do
-      not use spaces to separate words (often from Asia).
+    * Finds words using the Unicode algorithm
+    * Makes emoji be individually searchable
+    * Makes regional indicators be individually searchable
 
-      Those codepoints can correspond to letters, syllables, or words,
-      and will result in a large index if you have a lot of such
-      content, while functions like `snippet
-      <https://www.sqlite.org/fts5.html#the_snippet_function>`__ won't
-      work well. Correctly determining those  words `requires
-      additional code and tables
-      <https://www.unicode.org/reports/tr29/>`__ not included with
-      Python.
+  If you want to allow searches while typing, or for portions
+  or ends of words then use the following:
 
+    simplify strip true casefold true ngram ngrams 3
+
+  :class:`simplify <SimplifyTokenizer>`:
+
+    * Uses compatibility codepoints
+    * Removes marks and diacritics
+    * Neutralizes case distinctions
+
+  :class:`ngramn <NGramTokenizer>`:
+
+    * Produces substrings of the text for matching
+    * The ``ngrams`` parameter affects how much text must
+      be in the query before a match can be made.  Smaller
+      values result in larger indexes.
 
 Use external content table
   Means can have many FTS tables referencing it, subset of fields,
