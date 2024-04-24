@@ -740,6 +740,23 @@ def grapheme_iter_with_offsets(text: str, offset: int = 0) -> Generator[tuple[in
         start = offset
 
 
+def grapheme_iter_with_offsets_filtered(
+    text: str, offset: int = 0, *, categories: Iterable[str], emoji: bool = False, regional_indicator: bool = False
+) -> Generator[tuple[int, int, str], None, None]:
+    "Generator providing start, end, text of each grapheme cluster, providing it includes codepoints from categories, emoji, or regional indicator"
+
+    mask = _cats_to_mask(categories, emoji, regional_indicator)
+    lt = len(text)
+    meth = _unicode.grapheme_next_break
+    catcheck = _unicode.has_category
+
+    while offset < lt:
+        end = meth(text, offset)
+        if catcheck(text, offset, end, mask):
+            yield (offset, end, text[offset:end])
+        offset = end
+
+
 def word_next_break(text: str, offset: int = 0) -> int:
     """Returns end of next word or non-word
 
@@ -790,7 +807,7 @@ _cats_to_mask_mapping = {
 }
 
 
-def _word_cats_to_mask(categories: Iterable[str], emoji: bool, regional_indicator: bool) -> int:
+def _cats_to_mask(categories: Iterable[str], emoji: bool, regional_indicator: bool) -> int:
     mask = 0
     for cat in categories:
         mask |= _cats_to_mask_mapping[cat]
@@ -818,7 +835,7 @@ def word_next(
     * regional indicator - two character sequence for flags like 🇧🇷🇨🇦
     """
 
-    mask = _word_cats_to_mask(categories, emoji, regional_indicator)
+    mask = _cats_to_mask(categories, emoji, regional_indicator)
     lt = len(text)
     meth = _unicode.word_next_break
     catcheck = _unicode.has_category
@@ -841,7 +858,7 @@ def word_iter(
 ) -> Generator[str, None, None]:
     "Generator providing text of each word"
 
-    mask = _word_cats_to_mask(categories, emoji, regional_indicator)
+    mask = _cats_to_mask(categories, emoji, regional_indicator)
     lt = len(text)
     meth = _unicode.word_next_break
     catcheck = _unicode.has_category
@@ -863,7 +880,7 @@ def word_iter_with_offsets(
 ) -> Generator[str, None, None]:
     "Generator providing start, end, text of each word"
 
-    mask = _word_cats_to_mask(categories, emoji, regional_indicator)
+    mask = _cats_to_mask(categories, emoji, regional_indicator)
     lt = len(text)
     meth = _unicode.word_next_break
     catcheck = _unicode.has_category
