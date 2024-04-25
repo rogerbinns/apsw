@@ -818,11 +818,15 @@ def _cats_to_mask(categories: Iterable[str], emoji: bool, regional_indicator: bo
     return mask
 
 
+word_default_categories = {"Lu", "Ll", "Lt", "Lm", "Lo", "Nd", "Nl", "No"}
+"Default categories for selecting word segments - letters and numbers"
+
+
 def word_next(
     text: str,
     offset: int = 0,
     *,
-    categories: Iterable[str],
+    categories: Iterable[str] = word_default_categories,
     emoji: bool = False,
     regional_indicator: bool = False,
 ) -> tuple[int, int]:
@@ -852,7 +856,7 @@ def word_iter(
     text: str,
     offset: int = 0,
     *,
-    categories: Iterable[str],
+    categories: Iterable[str] = word_default_categories,
     emoji: bool = False,
     regional_indicator: bool = False,
 ) -> Generator[str, None, None]:
@@ -874,7 +878,7 @@ def word_iter_with_offsets(
     text: str,
     offset: int = 0,
     *,
-    categories: Iterable[str],
+    categories: Iterable[str] = word_default_categories,
     emoji: bool = False,
     regional_indicator: bool = False,
 ) -> Generator[str, None, None]:
@@ -1037,8 +1041,20 @@ if __name__ == "__main__":
     p.add_argument("--width", default=width, help="Output width [%(default)s]", type=int)
     p.add_argument(
         "--categories",
-        default="letter,number",
-        help="For word, which segments are included comma separated.  Choose from letter, number, emoji, regional_indicator. [%(default)s]",
+        default="L* N*",
+        help="For word, which segments are included.  You can use wildcards and ! for negation [%(default)s]",
+    )
+    p.add_argument(
+        "--emoji",
+        default=False,
+        action="store_true",
+        help="For word, if emoji segments are included [%(default)s]",
+    )
+    p.add_argument(
+        "--regional-indicator",
+        default=False,
+        action="store_true",
+        help="For word, if regional indicator segments are included [%(default)s]",
     )
     p.add_argument("text", nargs="*", help="Text to segment unless --text-file used")
 
@@ -1170,12 +1186,11 @@ use the C library function wcswidth, or use the wcwidth Python package wcswidth 
         if not options.text_file and not options.text:
             p.error("You must specify at least --text-file or text arguments")
 
-        params = {"letter": False, "number": False, "emoji": False, "regional_indicator": False}
-        for c in options.categories.split(","):
-            c = c.strip()
-            if c not in params:
-                p.error(f"Unknown word category '{c}'")
-            params[c] = True
+        params = {
+            "categories": apsw.fts.convert_unicode_categories(options.categories),
+            "emoji": options.emoji,
+            "regional_indicator": options.regional_indicator,
+        }
 
         if options.show != "word":
             params = {}
