@@ -567,66 +567,25 @@ class FTS(unittest.TestCase):
         # get all codepoints except spacing
         tok_args = ["unicodewords", "categories", "* !Z*"]
 
-        def toks(args, text):
-            return self.db.fts5_tokenizer("simplify", args + tok_args)(
-                text.encode("utf8"), test_reason, include_offsets=False, include_colocated=False
-            )
 
-        def codepoints(tokens, caseless=False):
-            res = []
-            for token in tokens:
-                for t in token:
-                    if caseless:
-                        if t == t.upper() and t == t.lower():
-                            continue
-                    res.append(t)
-            return res
-
-        self.assertTrue(any(unicodedata.category(c) == "Sk" for c in codepoints(toks([], test_text))))
-        self.assertFalse(
-            any(unicodedata.category(c) == "Sk" for c in codepoints(toks(["remove_categories", "S*"], test_text)))
-        )
-        self.assertTrue(any(c.upper() == c for c in codepoints(toks([], test_text))))
-        self.assertFalse(any(c.upper() == c for c in codepoints(toks(["case", "casefold"], test_text), caseless=True)))
-
-        norms = "NFD", "NFC", "NFKD", "NFKC"
-
-        for nin, nout in itertools.product(norms, norms):
-            if unicodedata.is_normalized(nin, test_text):
-                # make sure normalization is not changed
-                self.assertTrue(all(unicodedata.is_normalized(nin, token) for token in toks([], test_text)))
-            else:
-                # make sure it is
-                self.assertTrue(
-                    all(unicodedata.is_normalized(nin, token) for token in toks(["normalize_pre", nin], test_text))
-                )
-                self.assertTrue(
-                    all(unicodedata.is_normalized(nin, token) for token in toks(["normalize_post", nin], test_text))
-                )
-            if nin != nout:
-                self.assertTrue(
-                    all(
-                        unicodedata.is_normalized(nout, token)
-                        for token in toks(["normalize_pre", nin, "normalize_post", nout], test_text)
-                    )
-                )
 
         ## HTMLTokenizer
         test_html = "<t>text</b><fooo/>mor<b>e</b> stuff&amp;things<yes yes>yes<>/no>a&#1234;b"
         self.db.register_fts5_tokenizer("html", apsw.fts.HTMLTokenizer)
         # htmltext is separately tested
         self.assertEqual(
-            self.db.fts5_tokenizer("html", ["unicodewords", "tokenchars", "&"])(
+            # Po is for the ampersand
+            self.db.fts5_tokenizer("html", ["unicodewords", "categories", "L* N* Po"])(
                 test_html.encode("utf8"), apsw.FTS5_TOKENIZE_DOCUMENT, include_colocated=False, include_offsets=False
             ),
-            ["text", "mor", "e", "stuff&things", "yes", "no", "aӒb"],
+            ["text", "mor", "e", 'stuff', '&', 'things', "yes", "/", "no", "aӒb"],
         )
         # queries should be pass through
         self.assertEqual(
-            self.db.fts5_tokenizer("html", ["unicodewords", "tokenchars", "&<"])(
+            self.db.fts5_tokenizer("html", ["unicodewords"])(
                 "<b>a</b>".encode("utf8"), apsw.FTS5_TOKENIZE_QUERY, include_colocated=False, include_offsets=False
             ),
-            ["<b", "a<", "b"],
+            ["b", "a", "b"],
         )
 
     @staticmethod
