@@ -302,16 +302,16 @@ def split_lines(text: str, offset: int = 0) -> Generator[str, None, None]:
 def expand_tabs(text: str, tabsize: int = 8, invalid: str = ".") -> str:
     """Turns tabs into spaces aligning on tabsize boundaries, similar to :meth:`str.expandtabs`
 
-    This is aware of grapheme clusters and text width.
+    This is aware of grapheme clusters and text width.  Codepoints that have an invalid width
+    are also replace by `invalid` and line breaks are replaced with newline
     """
-    if "\t" not in text:
-        return text
-
     res: list[str] = []
-    for line in line_break_iter(text):
-        if "\t" not in line:
+    for line in split_lines(text):
+        # short cut
+        if "\t" not in line and text_width(line) >= 0:
             res.append(line)
             continue
+        # work on it cluster by cluster
         clusters: list[str] = []
         pos: int = 0
         for gr in grapheme_iter(line):
@@ -330,7 +330,7 @@ def expand_tabs(text: str, tabsize: int = 8, invalid: str = ".") -> str:
 
         res.append("".join(clusters))
 
-    return "".join(res)
+    return "\n".join(res) + ("\n" if len(res) > 1 else "")
 
 
 def grapheme_length(text: str, offset: int = 0) -> int:
