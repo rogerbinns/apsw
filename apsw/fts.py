@@ -258,7 +258,7 @@ def UnicodeWordsTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokeniz
     present.
 
     categories
-        Default ``L* N*`` to include letters, and numbers.  You should  consider ``Pd``
+        Default ``L* N*`` to include letters, and numbers.  You should consider ``Pd``
         for punctuation dash if you want words separated with dashes to be considered one word.
         ``Sm`` for maths symbols and ``Sc`` for currency symbols may also be relevant,
 
@@ -288,7 +288,7 @@ def UnicodeWordsTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokeniz
     See the :ref:`example <example_fts_apsw_unicodewords>`
     """
     spec = {
-        "categories": TokenizerArgument(default="L* N* Sm", convertor=convert_unicode_categories, convert_default=True),
+        "categories": TokenizerArgument(default="L* N*", convertor=convert_unicode_categories, convert_default=True),
         "emoji": TokenizerArgument(default=True, convertor=convert_boolean),
         "regional_indicator": TokenizerArgument(default=True, convertor=convert_boolean),
     }
