@@ -644,7 +644,8 @@ def text_wrap(
                 accumulated = [indent]
                 line_width = len(indent)
                 continue
-            accumulated.append(segment)
+            if segment:
+                accumulated.append(segment)
             line_width += seg_width
         if len(accumulated) == 1:
             # only indent
