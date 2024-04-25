@@ -1476,7 +1476,7 @@ sjkldhfjk sdhkfjhs     sdfjlksdj
 fkldsjf     jsdfjsdkljf !p! fkldjfklsdjflds
 sadas
 
-abc!p!d\u2029!p!abc\u0085!p!def
+abc!p!d\u2029 !p!abc\u0085!p!def
 
         tabs !p!
 \tcontinue of last
@@ -1530,6 +1530,7 @@ abc!p!d\u2029!p!abc\u0085!p!def
         for text, expected in (
             (f"a{ctilde}\tb", f"a{ctilde}       b"),
             (f"a{ctilde}a{ctilde}\tb", f"a{ctilde}a{ctilde}      b"),
+            ('÷🇦\x01÷ൎ\u0600̈ਃᅠ÷ᄀ각÷ ः÷각क÷각̀÷\u0378\u200d÷', "÷🇦.÷ൎ؀̈ਃᅠ÷ᄀ각÷ ः÷각क÷각̀÷.÷"),
         ):
             self.assertEqual(apsw.unicode.expand_tabs(text), expected)
 
@@ -1548,8 +1549,6 @@ abc!p!d\u2029!p!abc\u0085!p!def
         )
         text = apsw.unicode.guess_paragraphs(text)
 
-        ftext ="".join(c for c in self.all_text() if ord(c)<0xd800 or ord(c) > 0xdfff)
-        open("/tmp/t", "w").write(ftext)
         for width in (3, 5, 9, 17, 37, 49, 87, 247, 1024):
             for line in apsw.unicode.text_wrap(text, width):
                 self.assertEqual(apsw.unicode.text_width(line), width)
