@@ -215,65 +215,47 @@ class FTS(unittest.TestCase):
         if not self.has_fts5():
             return
 
-        test_text = """ 😂❤️ 𐌼𐌰𐌲 العالم!
+        test_text = """ 🤦🏼‍♂️❤️ 🇧🇧𐌼𐌰𐌲 العالم!
             Olá, mundo! 8975984
             नमस्ते, दुनिया!"""
 
         test_utf8 = test_text.encode("utf8")
 
         ## PyUnicodeTokenizer
-        self.db.register_fts5_tokenizer("pyunicode", apsw.fts.PyUnicodeTokenizer)
+        self.db.register_fts5_tokenizer("unicodewords", apsw.fts.UnicodeWordsTokenizer)
 
-        self.assertRaises(ValueError, self.db.fts5_tokenizer, "pyunicode", ["tokenchars", "%$#*", "separators", "$"])
+        self.assertRaises(ValueError, self.db.fts5_tokenizer, "unicodewords", ["zebra"])
 
-        self.assertEqual(self.db.fts5_tokenizer("pyunicode", [])(b"", apsw.FTS5_TOKENIZE_DOCUMENT), [])
-        self.assertEqual(self.db.fts5_tokenizer("pyunicode", [])(b"a", apsw.FTS5_TOKENIZE_DOCUMENT), [(0, 1, "a")])
+        self.assertEqual(self.db.fts5_tokenizer("unicodewords", [])(b"", apsw.FTS5_TOKENIZE_DOCUMENT), [])
+        self.assertEqual(self.db.fts5_tokenizer("unicodewords", [])(b"a", apsw.FTS5_TOKENIZE_DOCUMENT), [(0, 1, "a")])
 
         correct = (
-            ("N*:::", "8975984"),
-            ("L* !Lu:::", "𐌼𐌰𐌲:العالم:lá:mundo:नमस:त:द:न:य"),
-            ("N*:::C* L* So", "😂:❤:𐌼:𐌰:𐌲:ا:ل:ع:ا:ل:م:\n:O:l:á:m:u:n:d:o:8975984:\n:न:म:स:त:द:न:य"),
-            ("N*::ud:", "8975984"),
-            ("N*::ud:C* L* So", "😂:❤:𐌼:𐌰:𐌲:ا:ل:ع:ا:ل:م:\n:O:l:á:m:n:o:8975984:\n:न:म:स:त:द:न:य"),
-            ("L* !Lu:::C* L* So", "😂:❤:𐌼:𐌰:𐌲:ا:ل:ع:ا:ل:م:\n:O:l:á:m:u:n:d:o:\n:न:म:स:त:द:न:य"),
-            ("N*:﹘❴⸡ᡃ｣\u2005ᾞᴧٙ꭛::", "8975984"),
-            ("N*:﹘❴⸡ᡃ｣\u2005ᾞᴧٙ꭛::C* L* So", "😂:❤:𐌼:𐌰:𐌲:ا:ل:ع:ا:ل:م:\n:O:l:á:m:u:n:d:o:8975984:\n:न:म:स:त:द:न:य"),
-            ("N*:﹘❴⸡ᡃ｣\u2005ᾞᴧٙ꭛:ud:", "8975984"),
-            ("L* !Lu::ud:", "𐌼𐌰𐌲:العالم:lá:m:n:o:नमस:त:द:न:य"),
-            ("N*:﹘❴⸡ᡃ｣\u2005ᾞᴧٙ꭛:ud:C* L* So", "😂:❤:𐌼:𐌰:𐌲:ا:ل:ع:ا:ل:م:\n:O:l:á:m:n:o:8975984:\n:न:म:स:त:द:न:य"),
-            ("L* !Lu::ud:C* L* So", "😂:❤:𐌼:𐌰:𐌲:ا:ل:ع:ا:ل:م:\n:O:l:á:m:n:o:\n:न:म:स:त:द:न:य"),
-            ("L* !Lu:﹘❴⸡ᡃ｣\u2005ᾞᴧٙ꭛::", "𐌼𐌰𐌲:العالم:lá:mundo:नमस:त:द:न:य"),
-            ("L* !Lu:﹘❴⸡ᡃ｣\u2005ᾞᴧٙ꭛::C* L* So", "😂:❤:𐌼:𐌰:𐌲:ا:ل:ع:ا:ل:م:\n:O:l:á:m:u:n:d:o:\n:न:म:स:त:द:न:य"),
-            ("L* !Lu:﹘❴⸡ᡃ｣\u2005ᾞᴧٙ꭛:ud:", "𐌼𐌰𐌲:العالم:lá:m:n:o:नमस:त:द:न:य"),
-            ("L* !Lu:﹘❴⸡ᡃ｣\u2005ᾞᴧٙ꭛:ud:C* L* So", "😂:❤:𐌼:𐌰:𐌲:ا:ل:ع:ا:ل:م:\n:O:l:á:m:n:o:\n:न:म:स:त:द:न:य"),
+            ("L* !Lu:0:0", "𐌼𐌰𐌲:العالم:Olá:mundo:नमस्ते:दुनिया"),
+            ("L* !Lu:0:1", "🇧🇧:𐌼𐌰𐌲:العالم:Olá:mundo:नमस्ते:दुनिया"),
+            ("L* !Lu:1:0", "🤦🏼‍♂️:❤️:𐌼𐌰𐌲:العالم:Olá:mundo:नमस्ते:दुनिया"),
+            ("L* !Lu:1:1", "🤦🏼‍♂️:❤️:🇧🇧:𐌼𐌰𐌲:العالم:Olá:mundo:नमस्ते:दुनिया"),
+            ("N*:0:0", "8975984"),
+            ("N*:0:1", "🇧🇧:8975984"),
+            ("N*:1:0", "🤦🏼‍♂️:❤️:8975984"),
+            ("N*:1:1", "🤦🏼‍♂️:❤️:🇧🇧:8975984"),
         )
         for categories in {"N*", "L* !Lu"}:
-            for tokenchars in {"", "﹘❴⸡ᡃ｣ ᾞᴧٙ꭛"}:
-                for separators in {"", "ud"}:
-                    for single_token_categories in {"", "C* L* So"}:
-                        key = ":".join((categories, tokenchars, separators, single_token_categories))
-                        args = [
-                            "categories",
-                            categories,
-                            "tokenchars",
-                            tokenchars,
-                            "separators",
-                            separators,
-                            "single_token_categories",
-                            single_token_categories,
-                        ]
-                        result = []
-                        for start, end, token in self.db.fts5_tokenizer("pyunicode", args)(
-                            test_utf8, apsw.FTS5_TOKENIZE_DOCUMENT
-                        ):
-                            self.assertEqual(test_utf8[start:end].decode("utf8"), token)
-                            result.append(token)
-                        result = ":".join(result)
+            for emoji in (0, 1):
+                for ri in (0, 1):
+                    result = []
+                    key = f"{categories}:{emoji}:{ri}"
+                    args = ["categories", categories, "emoji", str(emoji), "regional_indicator", str(ri)]
+                    for start, end, token in self.db.fts5_tokenizer("unicodewords", args)(
+                        test_utf8, apsw.FTS5_TOKENIZE_DOCUMENT
+                    ):
+                        self.assertEqual(test_utf8[start:end].decode("utf8"), token)
+                        result.append(token)
+                    result = ":".join(result)
 
-                        self.assertIn((key, result), correct)
+                    self.assertIn((key, result), correct)
 
         ## NGramTokenizer
-        test_utf8 = ("中文(繁體) Fr1AnçAiS češt2ina  🤦🏼‍♂️ straße" * 4).encode("utf8")
+        test_utf8 = ("中文(繁體) Fr1AnçAiS češt2ina 🤦🏼‍♂️straße" * 4).encode("utf8")
         self.db.register_fts5_tokenizer("ngram", apsw.fts.NGramTokenizer)
 
         for include_categories in ("Ll N*", None):
@@ -285,14 +267,14 @@ class FTS(unittest.TestCase):
                 by_start_len = [None] * len(test_utf8)
                 args = ["ngrams", "3,7,9-12"]
                 if include_categories:
-                    args += ["include_categories", include_categories]
+                    args += ["categories", categories]
                 for start, end, *tokens in self.db.fts5_tokenizer("ngram", args)(test_utf8, reason):
                     self.assertEqual(1, len(tokens))
                     if reason == apsw.FTS5_TOKENIZE_QUERY:
                         self.assertIsNone(by_start_len[start])
-                        by_start_len[start] = len(tokens[0])
-                    self.assertIn(len(tokens[0]), {3, 7, 9, 10, 11, 12})
-                    sizes[len(tokens[0])] += 1
+                        by_start_len[start] = apsw.unicode.grapheme_length(tokens[0])
+                    self.assertIn(apsw.unicode.grapheme_length(tokens[0]), {3, 7, 9, 10, 11, 12})
+                    sizes[apsw.unicode.grapheme_length(tokens[0])] += 1
                     token_bytes = tokens[0].encode("utf8")
                     if include_categories is None:
                         self.assertEqual(len(token_bytes), end - start)
@@ -303,9 +285,11 @@ class FTS(unittest.TestCase):
                         for offset, byte in zip(range(start, start + end), token_bytes):
                             self.assertTrue(got[offset] is None or got[offset] == byte)
                             got[offset] = byte
-                    if include_categories:
+                    else:
                         cats = apsw.fts.convert_unicode_categories(include_categories)
-                        self.assertTrue(all(unicodedata.category(t) in cats for t in tokens[0]))
+                        self.assertTrue(
+                            any(apsw.unicode.category(t) in cats for t in tokens[0]), f"{tokens[0]!r} {cats=}"
+                        )
                 self.assertTrue(all(got[i] is not None) for i in range(len(got)))
 
                 # size seen should be increasing, decreasing count for DOCUMENT,
@@ -543,12 +527,12 @@ class FTS(unittest.TestCase):
         def func(n):
             1 / 0
 
-        self.db.register_fts5_tokenizer("pyunicode", apsw.fts.PyUnicodeTokenizer)
+        self.db.register_fts5_tokenizer("unicodewords", apsw.fts.UnicodeWordsTokenizer)
         self.db.register_fts5_tokenizer("synonym-reason", func)
 
         self.assertEqual(
-            self.db.fts5_tokenizer("pyunicode")(test_text.encode("utf8"), apsw.FTS5_TOKENIZE_QUERY),
-            self.db.fts5_tokenizer("synonym-reason", ["pyunicode"])(test_text.encode("utf8"), apsw.FTS5_TOKENIZE_QUERY),
+            self.db.fts5_tokenizer("unicodewords")(test_text.encode("utf8"), apsw.FTS5_TOKENIZE_QUERY),
+            self.db.fts5_tokenizer("synonym-reason", ["unicodewords"])(test_text.encode("utf8"), apsw.FTS5_TOKENIZE_QUERY),
         )
 
         # stopwords reason
@@ -559,8 +543,8 @@ class FTS(unittest.TestCase):
         self.db.register_fts5_tokenizer("stopwords-reason", func)
 
         self.assertEqual(
-            self.db.fts5_tokenizer("pyunicode")(test_text.encode("utf8"), apsw.FTS5_TOKENIZE_QUERY),
-            self.db.fts5_tokenizer("stopwords-reason", ["pyunicode"])(
+            self.db.fts5_tokenizer("unicodewords")(test_text.encode("utf8"), apsw.FTS5_TOKENIZE_QUERY),
+            self.db.fts5_tokenizer("stopwords-reason", ["unicodewords"])(
                 test_text.encode("utf8"), apsw.FTS5_TOKENIZE_QUERY | apsw.FTS5_TOKENIZE_PREFIX
             ),
         )
@@ -573,15 +557,15 @@ class FTS(unittest.TestCase):
         self.db.register_fts5_tokenizer("simplify", apsw.fts.SimplifyTokenizer)
 
         # no args should have no effect
-        baseline = self.db.fts5_tokenizer("pyunicode")(test_utf8, test_reason)
-        nowt = self.db.fts5_tokenizer("simplify", ["pyunicode"])(test_utf8, test_reason)
+        baseline = self.db.fts5_tokenizer("unicodewords")(test_utf8, test_reason)
+        nowt = self.db.fts5_tokenizer("simplify", ["unicodewords"])(test_utf8, test_reason)
         self.assertEqual(baseline, nowt)
 
         # require tokenizer
         self.assertRaises(ValueError, self.db.fts5_tokenizer, "simplify")
 
         # get all codepoints except spacing
-        tok_args = ["pyunicode", "categories", "* !Z*"]
+        tok_args = ["unicodewords", "categories", "* !Z*"]
 
         def toks(args, text):
             return self.db.fts5_tokenizer("simplify", args + tok_args)(
@@ -632,14 +616,14 @@ class FTS(unittest.TestCase):
         self.db.register_fts5_tokenizer("html", apsw.fts.HTMLTokenizer)
         # htmltext is separately tested
         self.assertEqual(
-            self.db.fts5_tokenizer("html", ["pyunicode", "tokenchars", "&"])(
+            self.db.fts5_tokenizer("html", ["unicodewords", "tokenchars", "&"])(
                 test_html.encode("utf8"), apsw.FTS5_TOKENIZE_DOCUMENT, include_colocated=False, include_offsets=False
             ),
             ["text", "mor", "e", "stuff&things", "yes", "no", "aӒb"],
         )
         # queries should be pass through
         self.assertEqual(
-            self.db.fts5_tokenizer("html", ["pyunicode", "tokenchars", "&<"])(
+            self.db.fts5_tokenizer("html", ["unicodewords", "tokenchars", "&<"])(
                 "<b>a</b>".encode("utf8"), apsw.FTS5_TOKENIZE_QUERY, include_colocated=False, include_offsets=False
             ),
             ["<b", "a<", "b"],
@@ -1066,18 +1050,6 @@ class Unicode(unittest.TestCase):
                 self.assertEqual(list(meth_iter(test)), list(s[2] for s in seen))
                 self.assertEqual(list(meth_iter_with_offsets(test)), seen)
 
-                # extra stuff for word making sure all the flags work
-                if kind == "word":
-                    # note this block depends on dict ordering
-                    w = {"letter": "abc", "number": "1", "emoji": "🤦🏼‍♂️", "regional_indicator": "🇬🇧"}
-                    test = "".join(f"({w[k]})" for k in w)
-
-                    for combo in set(itertools.permutations([False, True] * len(w), len(w))):
-                        kwargs = {k: combo[i] for i, k in enumerate(w)}
-                        res = tuple(meth_iter(test, **kwargs))
-                        expected = tuple(w[k] for i, k in enumerate(w) if combo[i])
-                        self.assertEqual(res, expected)
-
     def testBreaksFull(self):
         "Tests full official break tests (if available)"
         # You need to download https://www.unicode.org/Public/UCD/latest/ucd/UCD.zip
@@ -1131,8 +1103,8 @@ class Unicode(unittest.TestCase):
             # this catches the maxchar calulation being wrong and will give a C level assertion failure like
             # Objects/unicodeobject.c:621: _PyUnicode_CheckConsistency: Assertion failed: maxchar >= 128
             # it also reads the codepoints so will catch uninitialized memory
-            apsw.unicode.strip(c10) * 2
-            apsw.unicode.casefold(c10) * 2
+            sum(ord(c) for c in apsw.unicode.strip(c10) * 2)
+            sum(ord(c) for c in apsw.unicode.casefold(c10) * 2)
             age = apsw.unicode.version_added(codepoint)
             if age is not None:
                 self.assertIn(age, apsw.unicode.version_dates)
@@ -1226,10 +1198,17 @@ class Unicode(unittest.TestCase):
         self.assertEqual("Cc", meth(0))
         self.assertEqual("Cn", meth(sys.maxunicode))
 
+        catcheck = apsw._unicode.has_category
+        makemask = apsw.unicode._cats_to_mask
+
         for cat, codepoints in self.cat_examples.items():
             for codepoint in codepoints:
                 self.assertEqual(cat, meth(codepoint))
                 self.assertEqual(cat, meth(chr(codepoint)))
+                for testcat in self.cat_examples:
+                    text = chr(codepoint)
+                    mask = makemask([testcat], False, False)
+                    self.assertEqual(testcat == cat, catcheck(text, 0, 1, mask))
 
         self.assertRaises(TypeError, apsw.unicode.is_extended_pictographic, b"ddd")
         self.assertRaises(TypeError, apsw.unicode.is_extended_pictographic, (3,))
@@ -1559,8 +1538,6 @@ abc!p!d\u2029!p!abc\u0085!p!def
         def tw(*args, **kwargs):
             return "".join(apsw.unicode.text_wrap(*args, **kwargs))
 
-        self.assertRaises(ValueError, tw, "", 2, hyphen="abncd")
-
         # Japanese text from https://sqlite.org/forum/forumpost/6e234df298bde5b6da613866e4ba4d79a453bd9a32a608828f5a2e07ba5215f4
         text = (
             self.paragraph_test
@@ -1571,6 +1548,8 @@ abc!p!d\u2029!p!abc\u0085!p!def
         )
         text = apsw.unicode.guess_paragraphs(text)
 
+        ftext ="".join(c for c in self.all_text() if ord(c)<0xd800 or ord(c) > 0xdfff)
+        open("/tmp/t", "w").write(ftext)
         for width in (3, 5, 9, 17, 37, 49, 87, 247, 1024):
             for line in apsw.unicode.text_wrap(text, width):
                 self.assertEqual(apsw.unicode.text_width(line), width)
