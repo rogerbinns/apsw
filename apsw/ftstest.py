@@ -9,7 +9,6 @@
 # suite does however load this and run it.
 
 import collections
-import contextlib
 import itertools
 import os
 import pathlib
@@ -17,7 +16,6 @@ import random
 import subprocess
 import sys
 import tempfile
-import unicodedata
 import unittest
 import zipfile
 
@@ -267,7 +265,7 @@ class FTS(unittest.TestCase):
                 by_start_len = [None] * len(test_utf8)
                 args = ["ngrams", "3,7,9-12"]
                 if include_categories:
-                    args += ["categories", categories]
+                    args += ["categories", include_categories]
                 for start, end, *tokens in self.db.fts5_tokenizer("ngram", args)(test_utf8, reason):
                     self.assertEqual(1, len(tokens))
                     if reason == apsw.FTS5_TOKENIZE_QUERY:
@@ -532,7 +530,9 @@ class FTS(unittest.TestCase):
 
         self.assertEqual(
             self.db.fts5_tokenizer("unicodewords")(test_text.encode("utf8"), apsw.FTS5_TOKENIZE_QUERY),
-            self.db.fts5_tokenizer("synonym-reason", ["unicodewords"])(test_text.encode("utf8"), apsw.FTS5_TOKENIZE_QUERY),
+            self.db.fts5_tokenizer("synonym-reason", ["unicodewords"])(
+                test_text.encode("utf8"), apsw.FTS5_TOKENIZE_QUERY
+            ),
         )
 
         # stopwords reason
@@ -551,7 +551,7 @@ class FTS(unittest.TestCase):
         self.db.register_fts5_tokenizer("stopwords-reason", func)
 
         ## SimplifyTokenizer
-        test_text = "中文(繁體) Fr1AnçAiS češt2ina  🤦🏼‍♂️ straße"
+        test_text = "中文(繁體) Fr1AnçAiSⅦčešt2ina  🤦🏼‍♂️ straße"
         test_utf8 = test_text.encode("utf8")
 
         self.db.register_fts5_tokenizer("simplify", apsw.fts.SimplifyTokenizer)
@@ -561,13 +561,27 @@ class FTS(unittest.TestCase):
         nowt = self.db.fts5_tokenizer("simplify", ["unicodewords"])(test_utf8, test_reason)
         self.assertEqual(baseline, nowt)
 
-        # require tokenizer
+        # require tokenizer arg
         self.assertRaises(ValueError, self.db.fts5_tokenizer, "simplify")
 
-        # get all codepoints except spacing
-        tok_args = ["unicodewords", "categories", "* !Z*"]
-
-
+        for strip, casefold, expected in (
+            (
+                False,
+                False,
+                [("中",), ("文",), ("繁",), ("體",), ("Fr1AnçAiSⅦčešt2ina",), ("🤦🏼\u200d♂️",), ("straße",)],
+            ),
+            (
+                False,
+                True,
+                [("中",), ("文",), ("繁",), ("體",), ("fr1ançaisⅶčešt2ina",), ("🤦🏼\u200d♂️",), ("strasse",)],
+            ),
+            (True, False, [("中",), ("文",), ("繁",), ("體",), ("Fr1AncAiSVIIcest2ina",), ("🤦♂",), ("straße",)]),
+            (True, True, [("中",), ("文",), ("繁",), ("體",), ("fr1ancaisviicest2ina",), ("🤦♂",), ("strasse",)]),
+        ):
+            res = self.db.fts5_tokenizer("simplify", ["casefold", str(casefold), "strip", str(strip), "unicodewords"])(
+                test_utf8, test_reason, include_offsets=False
+            )
+            self.assertEqual(res, expected)
 
         ## HTMLTokenizer
         test_html = "<t>text</b><fooo/>mor<b>e</b> stuff&amp;things<yes yes>yes<>/no>a&#1234;b"
@@ -578,7 +592,7 @@ class FTS(unittest.TestCase):
             self.db.fts5_tokenizer("html", ["unicodewords", "categories", "L* N* Po"])(
                 test_html.encode("utf8"), apsw.FTS5_TOKENIZE_DOCUMENT, include_colocated=False, include_offsets=False
             ),
-            ["text", "mor", "e", 'stuff', '&', 'things', "yes", "/", "no", "aӒb"],
+            ["text", "mor", "e", "stuff", "&", "things", "yes", "/", "no", "aӒb"],
         )
         # queries should be pass through
         self.assertEqual(
@@ -1489,7 +1503,7 @@ abc!p!d\u2029 !p!abc\u0085!p!def
         for text, expected in (
             (f"a{ctilde}\tb", f"a{ctilde}       b"),
             (f"a{ctilde}a{ctilde}\tb", f"a{ctilde}a{ctilde}      b"),
-            ('÷🇦\x01÷ൎ\u0600̈ਃᅠ÷ᄀ각÷ ः÷각क÷각̀÷\u0378\u200d÷', "÷🇦.÷ൎ؀̈ਃᅠ÷ᄀ각÷ ः÷각क÷각̀÷.÷"),
+            ("÷🇦\x01÷ൎ\u0600̈ਃᅠ÷ᄀ각÷ ः÷각क÷각̀÷\u0378\u200d÷", "÷🇦.÷ൎ؀̈ਃᅠ÷ᄀ각÷ ः÷각क÷각̀÷.÷"),
         ):
             self.assertEqual(apsw.unicode.expand_tabs(text), expected)
 
