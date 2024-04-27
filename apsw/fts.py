@@ -401,7 +401,7 @@ def NGramTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     def tokenize(text: str, flags: int):
         ntokens = 0
 
-        token_stream: list[tuple[int, int, str]] = []
+        grapheme_cluster_stream: list[tuple[int, int, str]] = []
         keep = max(options["ngrams"])
 
         # if doing a query, only produce largest possible
@@ -416,34 +416,39 @@ def NGramTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
             emoji=options["emoji"],
             regional_indicator=options["regional_indicator"],
         ):
-            token_stream.append(token)
+            grapheme_cluster_stream.append(token)
             for ntoken in produce:
-                if len(token_stream) >= ntoken:
+                if len(grapheme_cluster_stream) >= ntoken:
                     yield (
-                        token_stream[-ntoken][0],
-                        token_stream[-1][1],
-                        "".join(token_stream[i][2] for i in range(-ntoken, 0)),
+                        grapheme_cluster_stream[-ntoken][0],
+                        grapheme_cluster_stream[-1][1],
+                        "".join(grapheme_cluster_stream[i][2] for i in range(-ntoken, 0)),
                     )
                     ntokens += 1
-            if len(token_stream) > keep:
-                token_stream.pop(0)
+            if len(grapheme_cluster_stream) > keep:
+                grapheme_cluster_stream.pop(0)
 
         # if doing a query and we didn't hit the produce then find longest we can
-        if flags & apsw.FTS5_TOKENIZE_QUERY and ntokens == 0:
+        if flags & apsw.FTS5_TOKENIZE_QUERY and ntokens == 0 and grapheme_cluster_stream:
             largest = -1
             for i in sorted(options["ngrams"]):
-                if i <= len(token_stream):
+                if i <= len(grapheme_cluster_stream):
                     largest = i
-            for i in range(0, len(token_stream) - largest):
+            for i in range(0, len(grapheme_cluster_stream) - largest):
+                ntokens += 1
                 yield (
-                    token_stream[i][0],
-                    token_stream[i + largest][1],
-                    "".join(token_stream[j][2] for j in range(i, i + largest)),
+                    grapheme_cluster_stream[i][0],
+                    grapheme_cluster_stream[i + largest - 1][1],
+                    "".join(grapheme_cluster_stream[j][2] for j in range(i, i + largest)),
                 )
 
         # text didn't match any of our lengths, so return as is
-        if ntokens == 0 and token_stream:
-            yield token_stream[0][0], token_stream[-1][1], "".join(token_stream[i][2] for i in range(len(token_stream)))
+        if ntokens == 0 and grapheme_cluster_stream:
+            yield (
+                grapheme_cluster_stream[0][0],
+                grapheme_cluster_stream[-1][1],
+                "".join(grapheme_cluster_stream[i][2] for i in range(len(grapheme_cluster_stream))),
+            )
 
     return tokenize
 
