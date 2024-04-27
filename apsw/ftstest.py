@@ -256,14 +256,23 @@ class FTS(unittest.TestCase):
         test_utf8 = ("中文(繁體) Fr1AnçAiS češt2ina 🤦🏼‍♂️straße" * 4).encode("utf8")
         self.db.register_fts5_tokenizer("ngram", apsw.fts.NGramTokenizer)
 
-        for include_categories in ("Ll N*", None):
-            for reason in (apsw.FTS5_TOKENIZE_DOCUMENT, apsw.FTS5_TOKENIZE_QUERY):
+        self.assertEqual(self.db.fts5_tokenizer("ngram")(b"", apsw.FTS5_TOKENIZE_QUERY), [])
+
+        for include_categories in (
+            None,
+            "Ll N*",
+            "P* N*",
+        ):
+            for reason in (
+                apsw.FTS5_TOKENIZE_QUERY,
+                apsw.FTS5_TOKENIZE_DOCUMENT,
+            ):
                 sizes = collections.Counter()
                 # verify all bytes are covered
                 got = [None] * len(test_utf8)
                 # verify QUERY mode only has one length per offset
                 by_start_len = [None] * len(test_utf8)
-                args = ["ngrams", "3,7,9-12"]
+                args = ["ngrams", "3,7,9-12" + (",193" if reason == apsw.FTS5_TOKENIZE_QUERY else "")]
                 if include_categories:
                     args += ["categories", include_categories]
                 for start, end, *tokens in self.db.fts5_tokenizer("ngram", args)(test_utf8, reason):
@@ -379,6 +388,14 @@ class FTS(unittest.TestCase):
             ("6-2", set()),
         ):
             self.assertEqual(apsw.fts.convert_number_ranges(t), expected)
+
+        ## convert_boolean
+        self.assertRaises(ValueError, apsw.fts.convert_boolean, "yes")
+        self.assertRaises(ValueError, apsw.fts.convert_boolean, "-1")
+        self.assertEqual(False, apsw.fts.convert_boolean("0"))
+        self.assertEqual(False, apsw.fts.convert_boolean("FALSE"))
+        self.assertEqual(True, apsw.fts.convert_boolean("1"))
+        self.assertEqual(True, apsw.fts.convert_boolean("true"))
 
         ## extract_html_text
         some_html = (
@@ -1522,7 +1539,7 @@ abc!p!d\u2029 !p!abc\u0085!p!def
         )
         text = apsw.unicode.guess_paragraphs(text)
 
-        for width in (3, 5, 9, 17, 37, 49, 87, 247, 1024):
+        for width in (1, 3, 5, 9, 17, 37, 49, 87, 247, 1024):
             for line in apsw.unicode.text_wrap(text, width):
                 self.assertEqual(apsw.unicode.text_width(line), width)
             for line in apsw.unicode.text_wrap(text, width, combine_space=False):
