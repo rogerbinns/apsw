@@ -227,10 +227,8 @@ def category(codepoint: int | str) -> str:
         return "Cs"  # Other Surrogate
     elif cat & _Category.Co:
         return "Co"  # Other PrivateUse
-    elif cat & _Category.Cn:
-        return "Cn"  # Other NotAssigned
-
-    raise Exception("Unreachable")
+    assert cat & _Category.Cn
+    return "Cn"  # Other NotAssigned
 
 
 def is_extended_pictographic(text: str) -> bool:
