@@ -1454,18 +1454,12 @@ if __name__ == "__main__":
     show_tokenization_footer = """</tbody></table><details class=infobox><summary>Tips</summary>
     <ul><li>Hover over column headers to get descriptions<li>Hover over codepoints to get category and other information
     <li>You can resize columns from the bottom right of each header cell
-    </ul><h3><a href="https://www.unicode.org/reports/tr15/">Normal forms</a></h3><dl>
-    <p>Text that <i>looks</i> the same can be represented by different sequences of codepoints, for historical and
-    compatibility reasons.  Those different sequences then encode to different sequences of bytes
-    and will be considered different tokens, not matching in queries.</p>
-    <dt>NFD</dt><dd>Canonical Decomposition breaking codepoints into multiples, so \u212b {ANGSTROM SIGN}
-    becomes A {LATIN CAPITAL LETTER A} and {COMBINING RING ABOVE}</dd>
-    <dt>NFC</dt><dd>Canonical Composition combining multiple codepoints into one, so \u0043 {LATIN CAPITAL
-    LETTER C} and \u0327 {COMBINING CEDILLA} become \u00c7 {LATIN CAPITAL LETTER C WITH CEDILLA}.</dd>
-    <dt>NFKD</dt><dd>Compatibility decomposition like NFD but codepoints become compatibility equivalents,
-    so 2\u2075 become 2 5, and \u2160 {ROMAN NUMERAL ONE} becomes I (LATIN CAPITAL LETTER I).</dd>
-    <dt>NFKC</dt><dd>Compatibility composition like NFC but codepoints become compatibility equivalents.</dd>
-    </dl></details>"""
+    <li>You are shown what <a href="https://www.unicode.org/reports/tr15/#Introduction">nornal forms</a> each block
+        conforms to
+    <li>In the original text test file, lines beginning with ## are ignored and lines beginning with # become
+        each test block
+    <li>Make sure you test the different tokenize reasons!
+    </details>"""
     show_tokenization_css = """
     <style>
 
