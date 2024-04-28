@@ -239,7 +239,7 @@ def StringTokenizer(func: apsw.FTS5TokenizerFactory):
 
         @functools.wraps(inner_tokenizer)
         def outer_tokenizer(utf8: bytes, flags: int):
-            upm = apsw._unicode.utf8_position_mapper(utf8)
+            upm = apsw._unicode.to_utf8_position_mapper(utf8)
 
             for start, end, *tokens in inner_tokenizer(upm.str, flags):
                 yield upm(start), upm(end), *tokens

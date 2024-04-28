@@ -219,7 +219,7 @@ class FTS(unittest.TestCase):
 
         test_utf8 = test_text.encode("utf8")
 
-        ## PyUnicodeTokenizer
+        ## UnicodeWordsTokenizer
         self.db.register_fts5_tokenizer("unicodewords", apsw.fts.UnicodeWordsTokenizer)
 
         self.assertRaises(ValueError, self.db.fts5_tokenizer, "unicodewords", ["zebra"])
@@ -1553,7 +1553,7 @@ abc!p!d\u2029 !p!abc\u0085!p!def
         # it is not publicly documented or exposed
         import apsw._unicode
 
-        cls = apsw._unicode.utf8_position_mapper
+        cls = apsw._unicode.to_utf8_position_mapper
 
         # basic arg parsing
         self.assertRaises(TypeError, cls)
