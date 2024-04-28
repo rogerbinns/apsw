@@ -1578,6 +1578,42 @@ abc!p!d\u2029 !p!abc\u0085!p!def
         self.assertEqual(test.str, "a")
         self.assertRaises(IndexError, test, 2)
 
+        cls = apsw._unicode.from_utf8_position_mapper
+
+        # basic arg parsing
+        self.assertRaises(TypeError, cls)
+        self.assertRaises(TypeError, cls, b"abc")
+        self.assertRaises(TypeError, cls, "abc", 3)
+        test = cls("abc")
+        self.assertRaises(TypeError, test)
+        self.assertRaises(TypeError, test, 3.2)
+        self.assertRaises(TypeError, test, 3, 4)
+        self.assertRaises(ValueError, test, -1)
+
+        # empty string
+        test = cls("")
+        self.assertEqual(test(0), 0)
+        self.assertEqual(test.bytes, b"")
+        self.assertRaises(IndexError, test, 1)
+
+        # one char
+        test = cls("a")
+        self.assertEqual(test(0), 0)
+        self.assertEqual(test(1), 1)
+        self.assertEqual(test.bytes, b"a")
+        self.assertRaises(IndexError, test, 2)
+
+        # invalid offsets - only 4 plus at end are ok
+        test = cls(chr(0x7F) + chr(0x7FF) + chr(0xFFFF) + chr(0x10FFFF))
+        ok = 0
+        for offset in range(0, len(test.bytes) + 1):
+            try:
+                test(offset)
+                ok += 1
+            except ValueError:
+                pass
+        self.assertEqual(ok, 5)
+
         # some random testing
         def xchr(howmany):
             while howmany:
@@ -1585,29 +1621,34 @@ abc!p!d\u2029 !p!abc\u0085!p!def
                 if 0xD800 <= c <= 0xDFFF:
                     # surrogates not allowed
                     continue
-                yield chr(c).encode("utf8")
+                yield chr(c)
                 howmany -= 1
 
         for seed in range(10):
             random.seed(seed)
-            offsets = {}
+            # str offset to utf8 offset
+            offsets: list[tuple[int,int]] = []
             utf8 = b""
+            string = ""
 
-            for i, b in enumerate(xchr(random.randint(0, 10_000))):
-                offsets[i] = len(utf8)
-                utf8 += b
+            for i, c in enumerate(xchr(random.randint(0, 10_000))):
+                offsets.append((i, len(utf8)))
+                utf8 += c.encode("utf8")
+                string += c
+
             # check end indexing
-            offsets[len(offsets)] = len(utf8)
-
-            offsets = list(offsets.items())
+            offsets.append((len(offsets), len(utf8)))
             random.shuffle(offsets)
 
-            test = cls(utf8)
-            self.assertEqual(utf8.decode("utf8"), test.str)
+            from_utf8 = apsw._unicode.from_utf8_position_mapper(string)
+            to_utf8 = apsw._unicode.to_utf8_position_mapper(utf8)
 
-            for pos, expected in offsets:
-                self.assertEqual(test(pos), expected)
+            self.assertEqual(from_utf8.bytes.decode("utf8"), to_utf8.str)
+            self.assertEqual(from_utf8.bytes, to_utf8.str.encode("utf8"))
 
+            for str_offset, utf8_offset in offsets:
+                self.assertEqual(from_utf8(utf8_offset), str_offset)
+                self.assertEqual(to_utf8(str_offset), utf8_offset)
 
 # ::TODO:: make main test suite run this one
 # eg https://docs.python.org/3/library/unittest.html#load-tests-protocol

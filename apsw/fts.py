@@ -780,25 +780,13 @@ def string_tokenize(tokenizer: apsw.FTS5Tokenizer, text: str, flags: int):
     Calls the tokenizer doing the conversion of `text` to UTF8, and converting the received
     UTF8 offsets back to `text` offsets.
     """
-    utf8 = text.encode("utf8")
-    last_pos_str = 0
-    for start, end, *tokens in tokenizer(utf8, flags):
-        if start < last_pos_str:  # went backwards
-            last_pos_str = 0
-        if end < start:
-            raise ValueError(f"{end=} is before {start=}")
-
-        # ::TODO:: optimise this like string_tokenizer
-        bytes_start, bytes_end = (
-            len(utf8[:start].decode("utf8", errors="replace")),
-            len(utf8[:end].decode("utf8", errors="replace")),
-        )
+    upm = apsw._unicode.from_utf8_position_mapper(text)
+    for bytes_start, bytes_end, *tokens in tokenizer(upm.bytes, flags):
         yield (
-            bytes_start,
-            bytes_end,
+            upm(bytes_start),
+            upm(bytes_end),
             *tokens,
         )
-        last_pos_str = start
 
 
 @StringTokenizer
