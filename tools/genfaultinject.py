@@ -83,7 +83,7 @@ returns = {
             PyIter_Next PyList_GetItem PyList_SetItem PyLong_FromVoidPtr PyMapping_GetItemString PyNumber_Float
             PyNumber_Long PySequence_Fast PySequence_List PySequence_Tuple PySequence_SetItem
             PyFrame_New PyStructSequence_NewType PyStructSequence_New
-            PyMem_Realloc PyUnicode_FromFormat PyTuple_Pack
+            PyMem_Realloc PyUnicode_FromFormat PyTuple_Pack PyUnicode_AsUTF8String
             PyObject_VectorcallMethod PyObject_Vectorcall PyWeakref_GetObject PyUnicode_DecodeUTF8
             Connection_fts5_api get_token_value fts5extensionapi_acquire
             """.split(),
