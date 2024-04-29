@@ -584,6 +584,24 @@ def next_pyuni_maxval(val: int) -> int:
     raise Exception("Can't get here")
 
 
+unified_ideograph: dict[int, int] = {}
+
+
+def extract_unified_ideograph(source: str):
+    for line in source.splitlines():
+        if not line.strip() or line.startswith("#"):
+            continue
+        codepoints, equiv = [l.strip() for l in line.split("#")[0].split(";")]
+        equiv = int(equiv, 16)
+        if ".." in codepoints:
+            low, high = codepoints.split("..")
+            codepoints = list(range(int(low, 16), 1 + int(high, 16)))
+        else:
+            codepoints = [int(codepoints, 16)]
+        for codepoint in codepoints:
+            unified_ideograph[codepoint] = equiv
+
+
 def extract_strip(source: str, dest):
     # see the comment generated in generate_c_table which explains
     # how the information is represented.  generate_strip_ranges
@@ -604,13 +622,17 @@ def extract_strip(source: str, dest):
         else:
             seq = (codepoint, codepoint)
 
-        for codepoint in range(seq[0], 1+seq[1]):
+        for codepoint in range(seq[0], 1 + seq[1]):
             # double check the data matches
             assert category == codepoint_to_category[codepoint]
 
             if category in strip_categories:
                 dest[0].append(codepoint)
                 continue
+
+            if not decomp:
+                if codepoint in unified_ideograph:
+                    decomp = f"{unified_ideograph[codepoint]:X}"
 
             if not decomp:
                 dest[1].append(codepoint)
@@ -691,6 +713,10 @@ def read_props(data_dir: str):
     extract_prop(source, props["grapheme"], "InCB; Linker", "InCB_Linker")
     extract_prop(source, props["grapheme"], "InCB; Consonant", "InCB_Consonant")
     extract_prop(source, props["grapheme"], "InCB; Extend", "InCB_Extend")
+
+    source = get_source("https://www.unicode.org/Public/UCD/latest/EquivalentUnifiedIdeograph.txt")
+    extract_version("EquivalentUnifiedIdeograph.txt", source)
+    extract_unified_ideograph(source)
 
     source = get_source("https://www.unicode.org/Public/UCD/latest/ucd/UnicodeData.txt")
     # it has no version
@@ -804,7 +830,6 @@ def grapheme_prop(codepoint: int) -> str:
 # gnome-terminal, gnome-console, st
 width_overrides = {
     # They all agree on these
-
     # HALFWIDTH KATAKANA VOICED SOUND MARK
     0xFF9E: 1,
     # HALFWIDTH KATAKANA SEMI-VOICED SOUND MARK
@@ -821,6 +846,7 @@ width_overrides = {
 # accordiung this library, and Py/C wcswidth.  When part
 # of other Hangul they are indeed zero.
 #   D780 - D7FB
+
 
 def category_width(codepoint: int, cat: str | tuple[str]):
     def add_cat(c: str):
@@ -844,7 +870,6 @@ def category_width(codepoint: int, cat: str | tuple[str]):
             raise Exception(f"unexpected width { codepoint=} {w=}")
 
         return cat
-
 
     GC = grapheme_prop(codepoint)
 
