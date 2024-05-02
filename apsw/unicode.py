@@ -1149,6 +1149,20 @@ use the C library function wcswidth, or use the wcwidth Python package wcswidth 
         Use a name of a single dash to read from standard input.""",
     )
 
+    p = subparsers.add_parser("casefold", help="Does casefolding on text")
+    p.set_defaults(function="casefold")
+    p.add_argument("input", default=sys.stdin, type=argparse.FileType("rt", encoding="utf8"), help="Input text [stdin]")
+    p.add_argument(
+        "output", default=sys.stdout, type=argparse.FileType("wt", encoding="utf8"), help="Output text [stdout]"
+    )
+
+    p = subparsers.add_parser("strip", help="Strips accents, uses compatibility codepoints etc")
+    p.set_defaults(function="strip")
+    p.add_argument("input", default=sys.stdin, type=argparse.FileType("rt", encoding="utf8"), help="Input text [stdin]")
+    p.add_argument(
+        "output", default=sys.stdout, type=argparse.FileType("wt", encoding="utf8"), help="Output text [stdout]"
+    )
+
     p = subparsers.add_parser(
         "breaktestgen",
         help="""Extracts data strings to be added to test suite""",
@@ -1545,6 +1559,12 @@ use the C library function wcswidth, or use the wcwidth Python package wcswidth 
                 else:
                     seconds = (end - start) / 1e9
                     print(f"codepoints per second: { int(len(text)/seconds): 12,d}    segments: {count: 11,d}")
+
+    elif options.function == "casefold":
+        options.output.write(casefold(options.input.read()))
+
+    elif options.function == "strip":
+        options.output.write(strip(options.input.read()))
 
     elif options.function == "breaktestgen":
         # char used to mark ok and not in the files
