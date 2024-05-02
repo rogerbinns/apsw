@@ -167,6 +167,9 @@ All tokenizers
   * - :func:`HTMLTokenizer`
     - Wrapper that converts HTML to plan text for a further tokenizer to generate
       tokens
+  * - :func:`JSONTokenizer`
+    - Wrapper that converts JSON to plain text for a further tokenizer to generate
+      tokens
   * - :func:`SimplifyTokenizer`
     - Wrapper that transforms the token stream by neutralizing case, and removing
       diacritics and similar marks
@@ -210,7 +213,7 @@ Recommendations
 Tokenizer sequence
   For general text, use the following:
 
-    simplify strip true casefold true pyunicode
+    simplify casefold true strip true unicodewords
 
   :class:`simplify <SimplifyTokenizer>`:
 
