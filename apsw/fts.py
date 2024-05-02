@@ -774,6 +774,45 @@ def HTMLTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     return tokenize
 
 
+# written for easy conversion to C
+class OffsetMapper:
+    def __init__(self):
+        self.accumulate: list[str] = []
+        self.length = 0
+        self.offsets: list[tuple[int, int]] = [(0, 0)]
+        self.separator = "\n"
+        self.last_is_separator = False
+        # in C also keep track of Py_MAX(maxchar of each string added)
+
+    def _finalize(self):
+        self._text = "".join(self.accumulate)
+        self.accumulate = None
+        return self._text
+
+    text = property(_finalize)
+
+    def add(self, text: str, source_start: int, source_end: int):
+        self.offsets.append((self.length, source_start))
+        self.accumulate.append(text)
+        self.length += len(text)
+        self.offsets.append((self.length, source_end))
+        self.last_is_separator = False
+
+    def separate(self):
+        if not self.last_is_separator:
+            self.accumulate.append(self.separator)
+            self.length += len(self.separator)
+            self.last_is_separator = True
+
+    def __call__(self, location: int) -> int:
+        for i in range(len(self.offsets) - 1):
+            if location >= self.offsets[i][0] and location < self.offsets[i + 1][0]:
+                return self.offsets[i][1] + (location - self.offsets[i][0])
+        if location == self.offsets[-1][0]:
+            return self.offsets[-1][1]
+        raise IndexError(f"out of range {location=}")
+
+
 def string_tokenize(tokenizer: apsw.FTS5Tokenizer, text: str, flags: int):
     """Tokenizer caller to get string offsets back
 
