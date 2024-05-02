@@ -813,6 +813,107 @@ class OffsetMapper:
         raise IndexError(f"out of range {location=}")
 
 
+# matches all quoted strings in JSON including if there are
+# backslashes inside
+_json_strings = re.compile(r'"([^"\\]*(?:\\.[^"\\]*)*)"', re.DOTALL)
+
+# we want to reject keys - string followed by whitespace and colon
+_json_key = re.compile(r"\s*:")
+
+# what backslashes map to
+_json_backslash_mapping = {
+    "\\": "\\",
+    '"': '"',
+    "b": "\b",
+    "f": "\f",
+    "n": "\n",
+    "r": "\r",
+    "t": "\t",
+}
+
+
+def extract_json(text: str, include_keys: bool) -> tuple[str, OffsetMapper]:
+    """Extracts text values from JSON text
+
+    Returns the extracted text and an :class:`OffsetMapper` to convert locations
+    in the extracted text back to the source text.
+
+    :param include_keys: ``False`` to only extract values, ``True`` to also extract
+       keys.
+    """
+    om = OffsetMapper()
+
+    for match in _json_strings.finditer(text):
+        if not include_keys:
+            if _json_key.match(text, match.span(0)[1]):
+                continue
+        s, e = match.span(1)
+        if s == e:  # empty string test
+            continue
+        span = match.group(1)
+        om.separate()
+        if "\\" not in span:
+            om.add(span, s, e)
+            continue
+        offset = s
+        while span:
+            loc = span.find("\\")
+            if loc < 0:
+                om.add(span, offset, offset + len(span))
+                break
+            om.add(span[:loc], offset, offset + loc)
+            offset += loc
+            if span[loc + 1] == "u":
+                code = int(span[loc + 2 : loc + 6], 16)
+                if 0xD800 <= code <= 0xDFFF:
+                    # Surrogate pair.  You get this with json.dumps as
+                    # ensure_ascii parameter defaults to True
+                    assert span[loc + 6 : loc + 8] == "\\u"
+                    code2 = int(span[loc + 8 : loc + 12], 16)
+                    c = chr(0x10000 + (code - 0xD800) * 0x400 + (code2 - 0xDC00))
+                    length = 12
+                else:
+                    c = chr(code)
+                    length = 6
+            else:
+                c = _json_backslash_mapping[span[loc + 1]]
+                length = 2
+            om.add(c, offset, offset + length)
+            offset += length
+            span = span[loc + length :]
+
+    return om.text, om
+
+
+@StringTokenizer
+def JSONTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
+    """Extracts text from JSON suitable for passing to a tokenizer
+
+    The following tokenizer arguments are accepted:
+
+    include_keys
+      ``9`` (default) or ``1`` if keys are extracted in addition to
+      values
+    """
+    spec = {
+        "include_keys": TokenizerArgument(default=False, convertor=convert_boolean),
+        "+": None,
+    }
+    options = parse_tokenizer_args(spec, con, args)
+
+    def tokenize(json: str, flags: int):
+        # We only process json for the document/aux, not queries
+        if flags & apsw.FTS5_TOKENIZE_QUERY:
+            yield from string_tokenize(options["+"], json, flags)
+            return
+
+        text, mapper = extract_json(json, options["include_keys"])
+        for start, end, *tokens in string_tokenize(options["+"], text, flags):
+            yield mapper(start), mapper(end), *tokens
+
+    return tokenize
+
+
 def string_tokenize(tokenizer: apsw.FTS5Tokenizer, text: str, flags: int):
     """Tokenizer caller to get string offsets back
 
@@ -1648,7 +1749,7 @@ if __name__ == "__main__":
         description="""Runs FTS5 tokenizer against test text producing a HTML report for manual inspection.
 
         The FTS5 builtin tokenizers are ascii, trigram, unicode61, and porter. apsw.fts tokenizers are
-        registered as unicodewords, simplify, html, synonyms, regex, stopwords,
+        registered as unicodewords, simplify, json, html, synonyms, regex, stopwords,
         transform, and ngram""",
     )
     parser.add_argument(
@@ -1695,6 +1796,7 @@ if __name__ == "__main__":
     con.register_fts5_tokenizer("simplify", SimplifyTokenizer)
     con.register_fts5_tokenizer("html", HTMLTokenizer)
     con.register_fts5_tokenizer("ngram", NGramTokenizer)
+    con.register_fts5_tokenizer("json", JSONTokenizer)
     # ::TODO check these work
     con.register_fts5_tokenizer("synonyms", SynonymTokenizer)
     con.register_fts5_tokenizer("regex", RegexTokenizer)
