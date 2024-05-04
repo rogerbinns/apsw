@@ -710,8 +710,8 @@ def extract_html_text(html: str) -> HTMLText:
             if self.svg_nesting_level:
                 return
             self.can_ws_compress = False
-            self.append_result_text(html_module.unescape("&" + name))
             self.can_ws_compress = False
+            self.append_result_text(html_module.unescape(f"&{name};"))
 
         def handle_charref(self, name: str) -> None:
             self.handle_entityref("#" + name)
