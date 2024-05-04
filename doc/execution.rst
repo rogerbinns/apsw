@@ -163,11 +163,14 @@ two arguments.
 Whatever you return from the tracer is what is actually returned to
 the caller of :meth:`~Cursor.execute`. If you return None then the
 whole row is skipped. See the :ref:`example <example_rowtrace>`.
+They are useful for logging and testing.
 
 Row tracers can be installed on a specific cursor by setting
 :attr:`Cursor.row_trace` or for all cursors by setting
 :attr:`Connection.row_trace`, with the cursor tracer taking
 priority.
+
+If you want to convert types then see :ref:`typeconversion`.
 
 .. _apswtrace:
 

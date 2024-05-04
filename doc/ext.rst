@@ -42,6 +42,7 @@ Use :class:`apsw.ext.DataClassRowFactory` as a
 :attr:`apsw.Connection.row_trace` for an entire connection, or
 :attr:`apsw.Cursor.row_trace` for a specific cursor.
 
+.. _typeconversion:
 
 Converting types into and out of SQLite
 ---------------------------------------
