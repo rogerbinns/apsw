@@ -617,34 +617,10 @@ def TransformTokenizer(transform: Callable[[str], str | Sequence[str]] | None = 
     return tokenizer
 
 
-@dataclass
-class HTMLText:
-    """Result of :func:`extract_html_text`"""
-
-    html: str
-    "Original HTML"
-    text: str
-    "Text extracted from the HTML"
-    offsets: list[tuple[int, int]]
-    "Maps offsets from extracted text back to corresponding offset in the original HTML"
-
-    def text_offset_to_html_offset(self, offset: int) -> int:
-        """Returns the html offset corresponding to the provided text offset
-
-        You can ask for the offset one beyond the end of the text
-        because that is needed for tokenizer end offsets.
-        """
-        if offset < 0 or offset > len(self.text):
-            raise ValueError(f"offset { offset } is must be 0 to { len(self.text) } inclusive")
-        index = bisect.bisect(self.offsets, (offset, -1))
-        if self.offsets[index][0] == offset:
-            return self.offsets[index][1]
-        text, html = self.offsets[index - 1]
-        return offset - text + html
-
-
-def extract_html_text(html: str) -> HTMLText:
+def extract_html_text(html: str) -> tuple[str, OffsetMapper]:
     """Extracts text from HTML using :class:`html.parser.HTMLParser` under the hood"""
+
+    non_spacing_tags = {"i", "b", "span"}
 
     class _HTMLTextExtractor(html_parser_module.HTMLParser):
         # Extracts text from HTML maintaining a table mapping the offsets
@@ -654,63 +630,59 @@ def extract_html_text(html: str) -> HTMLText:
             # we handle charrefs because they are multiple codepoints in
             # the HTML but only one in text - eg "&amp;" is "&"
             super().__init__(convert_charrefs=False)
+            # offset mapping
+            self.om = OffsetMapper()
+            # We don't know the end offset so have to wait till next item's
+            # start to use as previous end.  this keep track of the item and
+            # its offset
+            self.last = None
             # A stack is semantically correct but we (and browsers) don't
             # require correctly balanced tags, and a stack doesn't improve
             # correctness
             self.current_tag: str | None = None
-            # each item in result_offsets is
-            # - position in result text
-            # - position in original text
-            self.result_offsets: list[tuple[int, int]] = []
-            self.result_text = ""
-            # tracking position in source HTML
-            self.original_pos = 0
             # svg content is ignored.
             self.svg_nesting_level = 0
-            # we omit repeated whitespace because HTML contains a lot
-            # of it that isn't part of the visible text.  however we
-            # can't do that around entities because they are longer in
-            # the html than the text (eg &#97; vs a) and mess up the
-            # offsets which rely on one to one.  we have to emit an
-            # offset for the entity and what comes next to bound the
-            # entity correctly.
-            self.can_ws_compress = False
+            # offset in parent class sometimes goes backwards or to zero so
+            # we have to track ourselves
+            self.real_offset = 0
             # All the work is done in the constructor
             self.feed(html)
             self.close()
-            # make sure we have have ending offset to terminate forward offset scanning
-            self.result_offsets.append((len(self.result_text) + 1, len(html) + 1))
+            if self.last:
+                self.om.add(self.last[0], self.last[1], self.real_offset)
 
-        def append_result_text(self, s: str):
-            if self.can_ws_compress and s.strip() == "" and self.result_text and self.result_text[-1].isspace():
-                return
-            self.result_offsets.append((len(self.result_text), self.original_pos))
-            self.result_text += s
-            self.can_ws_compress = True
+        def append_result_text(self, text: str):
+            if self.last:
+                self.om.add(self.last[0], self.last[1], self.real_offset)
+            self.last = (text, self.real_offset)
+
+        def separate(self, space: bool = True):
+            if self.last:
+                self.om.add(self.last[0], self.last[1], self.real_offset)
+                self.last = None
+            if space:
+                self.om.separate()
 
         def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
             self.current_tag = tag.lower()
             if tag.lower() == "svg":
                 self.svg_nesting_level += 1
-            self.append_result_text(" ")
+            self.separate(tag.lower() not in non_spacing_tags)
 
         def handle_endtag(self, tag: str) -> None:
             self.current_tag = None
             if tag.lower() == "svg":
                 self.svg_nesting_level -= 1
-            self.append_result_text(" ")
+            self.separate(tag.lower() not in non_spacing_tags)
 
         def handle_data(self, data: str) -> None:
             if self.svg_nesting_level or self.current_tag in {"script", "style"}:
                 return
-
             self.append_result_text(data)
 
         def handle_entityref(self, name: str):
             if self.svg_nesting_level:
                 return
-            self.can_ws_compress = False
-            self.can_ws_compress = False
             self.append_result_text(html_module.unescape(f"&{name};"))
 
         def handle_charref(self, name: str) -> None:
@@ -720,18 +692,21 @@ def extract_html_text(html: str) -> HTMLText:
         def ws(self, *args: Any):
             if self.svg_nesting_level:
                 return
-            self.append_result_text(" ")
+            self.separate()
 
         handle_comment = handle_decl = handle_pi = unknown_decl = ws
 
         def updatepos(self, i: int, j: int) -> int:
-            # sometimes it goes to zero or backwards for no reason!
-            self.original_pos = max(self.original_pos, j)
-            return super().updatepos(i, j)
+            # the parent version does a lot of work trying to keep
+            # track of line numbers which is pointless for us
+            self.real_offset = j
+            return j
+
+
 
     h = _HTMLTextExtractor(html)
 
-    return HTMLText(html=html, text=h.result_text, offsets=h.result_offsets)
+    return h.om.text, h.om
 
 
 @StringTokenizer
@@ -746,30 +721,16 @@ def HTMLTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     options = parse_tokenizer_args(spec, con, args)
 
     def tokenize(html: str, flags: int):
-        # We only process html for the document/aux, not queries
-        if flags & apsw.FTS5_TOKENIZE_QUERY:
+        # ::TODO:: check if starts with white space <
+        # and if not
+        if False:
             yield from string_tokenize(options["+"], html, flags)
             return
 
-        h = extract_html_text(html)
+        text, om = extract_html_text(html)
 
-        offset_map_position = 0
-        last_start = 0
-        for start, end, *tokens in string_tokenize(options["+"], h.text, flags):
-            if start < last_start:  # handle going backwards
-                offset_map_position = 0
-            # advance start and get offset
-            while start >= h.offsets[offset_map_position + 1][0]:
-                offset_map_position += 1
-            html_start: int = start - h.offsets[offset_map_position][0] + h.offsets[offset_map_position][1]
-
-            # advance end and get offset
-            while end >= h.offsets[offset_map_position + 1][0]:
-                offset_map_position += 1
-            html_end: int = end - h.offsets[offset_map_position][0] + h.offsets[offset_map_position][1]
-
-            yield html_start, html_end, *tokens
-            last_start = start
+        for start, end, *tokens in string_tokenize(options["+"], text, flags):
+            yield om(start), om(end), *tokens
 
     return tokenize
 
@@ -810,7 +771,7 @@ class OffsetMapper:
                 return self.offsets[i][1] + (location - self.offsets[i][0])
         if location == self.offsets[-1][0]:
             return self.offsets[-1][1]
-        raise IndexError(f"out of range {location=}")
+        raise IndexError(f"out of range {location=} - last is { self.offsets[-1][0] }")
 
 
 # matches all quoted strings in JSON including if there are
