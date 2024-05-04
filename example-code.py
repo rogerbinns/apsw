@@ -438,7 +438,6 @@ connection.cursor_factory = registrar
 # A type we define - deriving from SQLiteTypeAdapter automatically registers conversion
 # to a SQLite value
 class Point(apsw.ext.SQLiteTypeAdapter):
-
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -459,38 +458,54 @@ class Point(apsw.ext.SQLiteTypeAdapter):
         return cls(*(float(part) for part in value.split(";")))
 
 
-# An existing type
+# Existing types
 def complex_to_sqlite_value(c: complex) -> str:
     return f"{ c.real }+{ c.imag }"
 
 
-# ... requires manual registration
+def datetime_to_sqlite_value(dt: datetime.datetime) -> float:
+    # Represent as floating point UTC value no matter
+    # what timezone is used. Also consider other
+    # formats like ISO8601.
+    return dt.timestamp()
+
+
+# ... require manual registration
 registrar.register_adapter(complex, complex_to_sqlite_value)
+registrar.register_adapter(datetime.datetime, datetime_to_sqlite_value)
 
 # conversion from a SQLite value requires registration
 registrar.register_converter("POINT", Point.convert_from_sqlite)
 
 
-# ... and for complex
+# ... and for stdlib types
 def sqlite_to_complex(v: str) -> complex:
     return complex(*(float(part) for part in v.split("+")))
 
 
+def sqlite_to_datetime(v: float) -> datetime.datetime:
+    # Keep the UTC values coming back from the database
+    # as UTC
+    return datetime.datetime.fromtimestamp(v, datetime.timezone.utc)
+
+
 registrar.register_converter("COMPLEX", sqlite_to_complex)
+registrar.register_converter("TIMESTAMP", sqlite_to_datetime)
 
 # note that the type names are case sensitive and must match the
 # registration
-connection.execute("create table conversion(p POINT, c COMPLEX)")
+connection.execute("create table conversion(p POINT, c COMPLEX, t TIMESTAMP)")
 
 # convert going into database
-test_data = (Point(5.2, 7.6), 3 + 4j)
-connection.execute("insert into conversion values(?, ?)", test_data)
+test_data = (Point(5.2, 7.6), 3 + 4j, datetime.datetime.now())
+connection.execute("insert into conversion values(?, ?, ?)", test_data)
 print("inserted", test_data)
 
 # and coming back out
+print("querying data")
 for row in connection.execute("select * from conversion"):
-    print("back out", row)
-    print("equal", row == test_data)
+    for i, value in enumerate(row):
+        print(f"column {i} = { value !r}")
 
 # clear registrar
 connection.cursor_factory = apsw.Cursor
