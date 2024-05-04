@@ -2265,4 +2265,6 @@ corrected with the compliant names being documented and used in
 examples.  The old names are still available maintaining
 :ref:`backwards compatibility <backcompat>`.
 
+The change happened in version 3.43.2.0.
+
 .. include:: ../doc/renames.rstgen

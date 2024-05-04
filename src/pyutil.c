@@ -93,6 +93,7 @@ static void Py_DECREF_ARRAY(PyObject *array[], int argc)
     Py_DECREF(array[i]);
 }
 
+/* ::TODO:: PyBUF_SIMPLE is C contiguous so this is not necessary */
 /* get buffer and check it is contiguous */
 #undef PyObject_GetBufferContiguous
 static int PyObject_GetBufferContiguous(PyObject *source, Py_buffer *buffer, int flags)

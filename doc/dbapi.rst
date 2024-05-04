@@ -103,6 +103,9 @@ point number).
 
 Use the standard bytes type for blobs.
 
+:doc:`ext` provides functionality to convert and adapt types to those
+supported by SQLite.
+
 Optional DB API Extensions
 ==========================
 
