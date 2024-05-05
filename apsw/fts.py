@@ -724,9 +724,10 @@ def HTMLTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     options = parse_tokenizer_args(spec, con, args)
 
     def tokenize(html: str, flags: int):
-        # ::TODO:: check if starts with white space <
-        # and if not
-        if False:
+        # we only tokenize what looks like html.  Human typed queries
+        # are unlikely to be html.  We allow for ampersand to catch
+        # entity searches.
+        if not re.match(r"\s*[<&]", html):
             yield from string_tokenize(options["+"], html, flags)
             return
 
