@@ -618,7 +618,10 @@ def TransformTokenizer(transform: Callable[[str], str | Sequence[str]] | None = 
 
 
 def extract_html_text(html: str) -> tuple[str, OffsetMapper]:
-    """Extracts text from HTML using :class:`html.parser.HTMLParser` under the hood"""
+    """Extracts text from HTML using :class:`html.parser.HTMLParser` under the hood
+
+    :meta private:
+    """
 
     non_spacing_tags = {"i", "b", "span"}
 
@@ -801,6 +804,8 @@ def extract_json(text: str, include_keys: bool) -> tuple[str, OffsetMapper]:
 
     :param include_keys: ``False`` to only extract values, ``True`` to also extract
        keys.
+
+    :meta private:
     """
     om = OffsetMapper()
 
