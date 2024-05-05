@@ -651,8 +651,11 @@ def extract_html_text(html: str) -> tuple[str, OffsetMapper]:
             # All the work is done in the constructor
             self.feed(html)
             self.close()
+
             if self.last:
                 self.om.add(self.last[0], self.last[1], self.real_offset)
+            # ensure there is a terminator
+            self.om.add("", self.real_offset, self.real_offset)
 
         def append_result_text(self, text: str):
             if self.last:
@@ -704,8 +707,6 @@ def extract_html_text(html: str) -> tuple[str, OffsetMapper]:
             # track of line numbers which is pointless for us
             self.real_offset = j
             return j
-
-
 
     h = _HTMLTextExtractor(html)
 
