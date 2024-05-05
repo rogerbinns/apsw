@@ -232,9 +232,6 @@ cursor.execute(
         """,
     (3,),
 )
-        """,
-    (3,),
-)
 
 # if set on a connection then all cursors are traced
 connection.exec_trace = my_tracer
@@ -950,7 +947,7 @@ def get_files_info(
                         "directory": root,
                         "name": entry.name,
                         "extension": os.path.splitext(entry.name)[1],
-                        **{k: getattr(s, k) for k in get_files_info.stat_columns},,
+                        **{k: getattr(s, k) for k in get_files_info.stat_columns},
                     }
 
 
