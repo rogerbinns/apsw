@@ -402,14 +402,12 @@ class FTS(unittest.TestCase):
             """<!decl><!--comment-->&copy;&#62;<?pi><hello/><script>script</script><svg>ddd<svg>ffff"""
             """</svg>ggg&lt;<?pi2></svg><hello>bye</hello>"""
         )
-        h = apsw.fts.extract_html_text(some_html)
-        self.assertEqual(h.html, some_html)
-        self.assertEqual(h.text.strip(), "©> bye")
-        self.assertEqual(h.offsets, [(0, 0), (1, 21), (2, 27), (3, 32), (4, 117), (7, 120), (9, 129)])
-        self.assertRaises(ValueError, h.text_offset_to_html_offset, -1)
-        self.assertRaises(ValueError, h.text_offset_to_html_offset, len(h.text) + 1)
-        offsets = [h.text_offset_to_html_offset(i) for i in range(len(h.text) + 1)]
-        self.assertEqual(offsets, [0, 21, 27, 32, 117, 118, 119, 120, 121])
+        text, om = apsw.fts.extract_html_text(some_html)
+        self.assertEqual(text.strip(), "©>\nbye")
+        offsets = [om(i) for i in range(len(text)+1)]
+        self.assertEqual(offsets, [0, 21, 27, 32, 117, 118, 119, 120, 128])
+        self.assertRaises(IndexError, om, -1)
+        self.assertRaises(IndexError, om, len(text) + 1)
 
         ## shingle
         self.assertRaises(ValueError, apsw.fts.shingle, "", 3)
@@ -609,14 +607,14 @@ class FTS(unittest.TestCase):
             self.db.fts5_tokenizer("html", ["unicodewords", "categories", "L* N* Po"])(
                 test_html.encode("utf8"), apsw.FTS5_TOKENIZE_DOCUMENT, include_colocated=False, include_offsets=False
             ),
-            ["text", "mor", "e", "stuff", "&", "things", "yes", "/", "no", "aӒb"],
+            ["text", "more", "stuff", "&", "things", "yes", "/", "no", "aӒb"],
         )
-        # queries should be pass through
+        # non html should be pass through
         self.assertEqual(
-            self.db.fts5_tokenizer("html", ["unicodewords"])(
-                "<b>a</b>".encode("utf8"), apsw.FTS5_TOKENIZE_QUERY, include_colocated=False, include_offsets=False
+            self.db.fts5_tokenizer("html", ["unicodewords", "categories", "*"])(
+                "hello<world>".encode("utf8"), apsw.FTS5_TOKENIZE_QUERY, include_colocated=False, include_offsets=False
             ),
-            ["b", "a", "b"],
+            ['hello', '<', 'world', '>'],
         )
 
     @staticmethod
