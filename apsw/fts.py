@@ -749,6 +749,8 @@ class OffsetMapper:
         self.separator = "\n"
         self.last_is_separator = False
         # in C also keep track of Py_MAX(maxchar of each string added)
+        self.last_location = 0
+        self.last_offset = 0
 
     def _finalize(self):
         self._text = "".join(self.accumulate)
@@ -771,8 +773,14 @@ class OffsetMapper:
             self.last_is_separator = True
 
     def __call__(self, location: int) -> int:
-        for i in range(len(self.offsets) - 1):
+        if location >= self.last_location:
+            seek = range(self.last_offset, len(self.offsets)-1)
+        else:
+            seek = range(len(self.offsets) - 1)
+        for i in seek:
             if location >= self.offsets[i][0] and location < self.offsets[i + 1][0]:
+                self.last_location = location
+                self.last_offset = i
                 return self.offsets[i][1] + (location - self.offsets[i][0])
         if location == self.offsets[-1][0]:
             return self.offsets[-1][1]
