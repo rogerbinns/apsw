@@ -1881,7 +1881,8 @@ static void
 FromUtf8PositionMapper_finalize(FromUtf8PositionMapper *self)
 {
   /* this is intentionally implemented to be safe to call multiple times */
-  Py_CLEAR(self->bytes);
+  Py_CLEAR(self->bytes_object);
+  self->bytes = NULL;
 }
 
 static PyObject *
