@@ -9,10 +9,13 @@
 # suite does however load this and run it.
 
 import collections
+import functools
 import itertools
+import json
 import os
 import pathlib
 import random
+import re
 import subprocess
 import sys
 import tempfile
@@ -317,6 +320,32 @@ class FTS(unittest.TestCase):
         # zero len
         self.assertEqual([], self.db.fts5_tokenizer("ngram")(b"", apsw.FTS5_TOKENIZE_DOCUMENT))
 
+        ## Regex
+        pattern = r"\d+"  # digits
+        flags = re.ASCII  # only ascii recognised
+        tokenizer = functools.partial(apsw.fts.RegexTokenizer, pattern=pattern, flags=flags)
+        self.db.register_fts5_tokenizer("my_regex", tokenizer)
+
+        # ASCII/Arabic and non-ascii digits
+        text = "text2abc 3.14 tamil ௦௧௨௩௪ bengali ০১২৩৪ arabic01234"
+        self.assertEqual(
+            self.db.fts5_tokenizer("my_regex")(text.encode("utf8"), apsw.FTS5_TOKENIZE_DOCUMENT),
+            [(4, 5, "2"), (9, 10, "3"), (11, 13, "14"), (66, 71, "01234")],
+        )
+
+    def testCLI(self):
+        "Test command line interface"
+        cov_params = (
+            [] if os.environ.get("COVERAGE_RUN", "") != "true" else ["-m", "coverage", "run", "--source", "apsw", "-p"]
+        )
+        proc = subprocess.run(
+            [sys.executable] + cov_params + ["-m", "apsw.fts", "unicodewords"],
+            capture_output=True,
+        )
+        self.assertEqual(0, proc.returncode)
+        self.assertIn(b"Tips", proc.stdout)
+
+
     def testFTSHelpers(self):
         "Test various FTS helper functions"
         if not self.has_fts5():
@@ -404,8 +433,26 @@ class FTS(unittest.TestCase):
         )
         text, om = apsw.fts.extract_html_text(some_html)
         self.assertEqual(text.strip(), "©>\nbye")
-        offsets = [om(i) for i in range(len(text)+1)]
+        offsets = [om(i) for i in range(len(text) + 1)]
         self.assertEqual(offsets, [0, 21, 27, 32, 117, 118, 119, 120, 128])
+        self.assertRaises(IndexError, om, -1)
+        self.assertRaises(IndexError, om, len(text) + 1)
+
+        ## extract_json_text
+        some_json = r"""["one", "", {"two": "three"}, "four:", "a\"b", "'\ud83c\udf82\\ሴ\u1234ስ"]"""
+        text, om = apsw.fts.extract_json(some_json, include_keys=False)
+        self.assertEqual(text, "\none\nthree\nfour:\na\"b\n'🎂\\ሴሴስ")
+        offsets = [om(i) for i in range(0, len(text) + 1, 3)]
+        self.assertEqual(offsets, [0, 4, 22, 25, 32, 35, 41, 48, 63, 71])
+        self.assertEqual(om(len(text)), 71)
+        self.assertRaises(IndexError, om, -1)
+        self.assertRaises(IndexError, om, len(text) + 1)
+
+        text, om = apsw.fts.extract_json(some_json, include_keys=True)
+        self.assertEqual(text, "\none\ntwo\nthree\nfour:\na\"b\n'🎂\\ሴሴስ")
+        offsets = [om(i) for i in range(0, len(text) + 1, 3)]
+        self.assertEqual(offsets, [0, 4, 15, 21, 24, 31, 34, 40, 44, 61, 70])
+        self.assertEqual(om(len(text)), 71)
         self.assertRaises(IndexError, om, -1)
         self.assertRaises(IndexError, om, len(text) + 1)
 
@@ -601,7 +648,7 @@ class FTS(unittest.TestCase):
         ## HTMLTokenizer
         test_html = "<t>text</b><fooo/>mor<b>e</b> stuff&amp;things<yes yes>yes<>/no>a&#1234;b"
         self.db.register_fts5_tokenizer("html", apsw.fts.HTMLTokenizer)
-        # htmltext is separately tested
+        # html text is separately tested
         self.assertEqual(
             # Po is for the ampersand
             self.db.fts5_tokenizer("html", ["unicodewords", "categories", "L* N* Po"])(
@@ -614,7 +661,32 @@ class FTS(unittest.TestCase):
             self.db.fts5_tokenizer("html", ["unicodewords", "categories", "*"])(
                 "hello<world>".encode("utf8"), apsw.FTS5_TOKENIZE_QUERY, include_colocated=False, include_offsets=False
             ),
-            ['hello', '<', 'world', '>'],
+            ["hello", "<", "world", ">"],
+        )
+
+        ## JSONTokenizer
+        test_json = json.dumps({"key": "value", "k\u1234": ["'", '"']})
+        self.db.register_fts5_tokenizer("json", apsw.fts.JSONTokenizer)
+        # json text is separately tested
+        self.assertEqual(
+            # Po is for the quotes
+            self.db.fts5_tokenizer("json", ["unicodewords", "categories", "L* N* Po"])(
+                test_json.encode("utf8"), apsw.FTS5_TOKENIZE_DOCUMENT, include_colocated=False, include_offsets=False
+            ),
+            ["value", "'", '"'],
+        )
+        self.assertEqual(
+            self.db.fts5_tokenizer("json", ["include_keys", "1", "unicodewords", "categories", "L* N* Po"])(
+                test_json.encode("utf8"), apsw.FTS5_TOKENIZE_DOCUMENT, include_colocated=False, include_offsets=False
+            ),
+            ["key", "value", "kሴ", "'", '"'],
+        )
+        # non json should be pass through
+        self.assertEqual(
+            self.db.fts5_tokenizer("json", ["unicodewords", "categories", "*"])(
+                "hello<world>".encode("utf8"), apsw.FTS5_TOKENIZE_QUERY, include_colocated=False, include_offsets=False
+            ),
+            ["hello", "<", "world", ">"],
         )
 
     @staticmethod
@@ -1625,7 +1697,7 @@ abc!p!d\u2029 !p!abc\u0085!p!def
         for seed in range(10):
             random.seed(seed)
             # str offset to utf8 offset
-            offsets: list[tuple[int,int]] = []
+            offsets: list[tuple[int, int]] = []
             utf8 = b""
             string = ""
 
@@ -1647,6 +1719,7 @@ abc!p!d\u2029 !p!abc\u0085!p!def
             for str_offset, utf8_offset in offsets:
                 self.assertEqual(from_utf8(utf8_offset), str_offset)
                 self.assertEqual(to_utf8(str_offset), utf8_offset)
+
 
 # ::TODO:: make main test suite run this one
 # eg https://docs.python.org/3/library/unittest.html#load-tests-protocol
