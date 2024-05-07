@@ -44,6 +44,12 @@ It is ugly, but it works.
 
 #include "argparse.c"
 
+typedef struct
+{
+  /* used in ObjectMapper separate */
+  PyObject *separator;
+} module_state;
+
 /* the break routines take the same 2 arguments */
 #define break_KWNAMES "text", "offset"
 
@@ -1998,11 +2004,246 @@ static PyType_Spec FromUtf8PositionMapper_spec = {
   .slots = FromUtf8PositionMapper_slots,
 };
 
+/* maps between str offsets and str offsets
+
+  Used by HTML and JSON tokenizers as they need to map the resulting
+  text pffsets back to the original source offsets
+*/
+
+struct MapperEntry
+{
+  Py_ssize_t location;
+  Py_ssize_t offset;
+};
+
+typedef struct
+{
+  PyObject_HEAD
+  vectorcallfunc vectorcall;
+  PyObject *accumulate;
+  PyObject *text;
+  struct MapperEntry *offset_map;
+  Py_ssize_t num_offsets;
+  Py_ssize_t last_location;
+  Py_ssize_t last_offset;
+  /* size of accumulated segments so far */
+  Py_ssize_t length;
+  /* used when we materialize the text */
+  Py_UCS4 max_char_value;
+  /* track if last addition was a separator because we don't add
+     multiple separators in a row */
+  int last_is_separator;
+} OffsetMapper;
+
+static PyObject *
+OffsetMapper_add(OffsetMapper *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  if (!self->accumulate)
+    return PyErr_Format(PyExc_Exception, "Text has been materialized - you cannot add more segments");
+
+  PyObject *text;
+  Py_ssize_t source_start, source_end;
+
+#define OffsetMapper_add_KWNAMES "text", "source_start", "source_end"
+  ARG_PROLOG(3, OffsetMapper_add_KWNAMES);
+  ARG_MANDATORY ARG_PyUnicode(text);
+  ARG_MANDATORY ARG_Py_ssize_t(source_start);
+  ARG_MANDATORY ARG_Py_ssize_t(source_end);
+  ARG_EPILOG(NULL, "OffsetMapper.add()text: str, source_start: int, source_end: int", );
+
+  struct MapperEntry *oldmap = self->offset_map;
+  PyMem_Resize(self->offset_map, struct MapperEntry, self->num_offsets + 2);
+  if (!self->offset_map)
+  {
+    self->offset_map = oldmap;
+    return NULL;
+  }
+
+  if (0 != PyList_Append(self->accumulate, text))
+    return NULL;
+
+  self->offset_map[self->num_offsets].location = self->length;
+  self->offset_map[self->num_offsets].offset = source_start;
+  self->length += PyUnicode_GET_LENGTH(text);
+  self->max_char_value = Py_MAX(self->max_char_value, PyUnicode_MAX_CHAR_VALUE(text));
+  self->offset_map[self->num_offsets + 1].location = self->length;
+  self->offset_map[self->num_offsets + 1].offset = source_end;
+
+  self->num_offsets += 2;
+  self->last_is_separator = 0;
+
+  Py_RETURN_NONE;
+}
+
+static PyObject *
+OffsetMapper_separate(OffsetMapper *self, PyTypeObject *defining_class, PyObject *const *args, Py_ssize_t nargs,
+                      PyObject *kwnames)
+{
+  if (nargs || kwnames)
+    return PyErr_Format(PyExc_TypeError, "OffsetMapper.separate takes no arguments");
+  if (!self->accumulate)
+    return PyErr_Format(PyExc_Exception, "Text has been materialized - you cannot add more segments");
+  if (self->last_is_separator)
+    Py_RETURN_NONE;
+  module_state *state = PyType_GetModuleState(defining_class);
+
+  if (0 != PyList_Append(self->accumulate, state->separator))
+    return NULL;
+  self->length += PyUnicode_GET_LENGTH(state->separator);
+  self->last_is_separator = 1;
+  Py_RETURN_NONE;
+}
+
+static PyObject *
+OffsetMapper_text(OffsetMapper *self, void *Py_UNUSED(closure))
+{
+  if (self->text)
+    return Py_NewRef(self->text);
+
+  self->text = PyUnicode_New(self->length, self->max_char_value);
+  if (!self->text)
+    return NULL;
+
+  Py_ssize_t offset = 0;
+  for (Py_ssize_t i = 0; i < PyList_GET_SIZE(self->accumulate); i++)
+  {
+    PyObject *segment = PyList_GET_ITEM(self->accumulate, i);
+    PyUnicode_CopyCharacters(self->text, offset, segment, 0, PyUnicode_GET_LENGTH(segment));
+    offset += PyUnicode_GET_LENGTH(segment);
+  }
+
+  Py_CLEAR(self->accumulate);
+  return Py_NewRef(self->text);
+}
+
+static PyObject *
+OffsetMapper_call(OffsetMapper *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  if (!self->text)
+    return PyErr_Format(PyExc_Exception, "Text has not been materialized - you cannot get offsets until getting text");
+
+  Py_ssize_t location;
+
+  ARG_PROLOG(1, "location");
+  ARG_MANDATORY ARG_Py_ssize_t(location);
+  ARG_EPILOG(NULL, "OffsetMapper.__call__(offset: int", );
+
+  if (location < self->last_location)
+  {
+    self->last_location = self->last_offset = 0;
+  }
+  for (Py_ssize_t i = self->last_offset; i < self->num_offsets - 1; i++)
+  {
+    if (location >= self->offset_map[i].location && location < self->offset_map[i + 1].location)
+    {
+      self->last_location = self->offset_map[i].location;
+      self->last_offset = i;
+      return PyLong_FromSsize_t(self->offset_map[i].offset + (location - self->last_location));
+    }
+  }
+  if (location == self->offset_map[self->num_offsets - 1].location)
+    return PyLong_FromSsize_t(self->offset_map[self->num_offsets - 1].offset);
+
+  return PyErr_Format(PyExc_IndexError, "location is out of range");
+}
+
+static void
+OffsetMapper_finalize(OffsetMapper *self)
+{
+  Py_CLEAR(self->accumulate);
+  Py_CLEAR(self->text);
+  PyMem_Free(self->offset_map);
+  self->offset_map = 0;
+}
+
+static int
+OffsetMapper_init(OffsetMapper *self, PyObject *args, PyObject *kwargs)
+{
+  if (PyTuple_GET_SIZE(args) || kwargs)
+  {
+    PyErr_Format(PyExc_TypeError, "OffsetMapper.__init__ takes no arguments");
+    return -1;
+  }
+  self->vectorcall = (vectorcallfunc)OffsetMapper_call;
+  /* cleanup in case init is called multiple times */
+  OffsetMapper_finalize(self);
+  self->accumulate = PyList_New(0);
+  self->offset_map = PyMem_Calloc(1, sizeof(struct MapperEntry));
+  self->num_offsets = 1;
+  self->last_location = 0;
+  self->last_offset = 0;
+  self->max_char_value = 0;
+  self->last_is_separator = 0;
+  if (!self->accumulate || !self->offset_map)
+  {
+    OffsetMapper_finalize(self);
+    return -1;
+  }
+  return 0;
+}
+
+static PyMemberDef OffsetMapper_memberdef[] = {
+  { "__vectorcalloffset__", Py_T_PYSSIZET, offsetof(OffsetMapper, vectorcall), Py_READONLY },
+  { NULL },
+};
+
+static PyMethodDef OffsetMapper_methods[] = {
+  { "add", (PyCFunction)OffsetMapper_add, METH_FASTCALL | METH_KEYWORDS },
+  { "separate", (PyCFunction)OffsetMapper_separate, METH_METHOD | METH_FASTCALL | METH_KEYWORDS },
+  { NULL },
+};
+
+static PyGetSetDef OffsetMapper_getset[] = {
+  { "text", (getter)OffsetMapper_text, NULL, "resulting text" },
+  { NULL },
+};
+
+static PyType_Slot OffsetMapper_slots[] = {
+  { Py_tp_finalize, OffsetMapper_finalize },
+  { Py_tp_init, OffsetMapper_init },
+  { Py_tp_call, PyVectorcall_Call },
+  { Py_tp_members, OffsetMapper_memberdef },
+  { Py_tp_methods, OffsetMapper_methods },
+  { Py_tp_getset, OffsetMapper_getset },
+  { 0, NULL },
+};
+
+/* this object is not publicly documented or exposed so we are light
+   on details */
+static PyType_Spec OffsetMapper_spec = {
+  .name = "apsw._unicode.OffsetMapper",
+  .basicsize = sizeof(OffsetMapper),
+  .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_IMMUTABLETYPE | Py_TPFLAGS_HAVE_VECTORCALL,
+  .slots = OffsetMapper_slots,
+};
+
+static int
+unicode_traverse(PyObject *module, visitproc visit, void *arg)
+{
+  module_state *state = PyModule_GetState(module);
+  Py_VISIT(state->separator);
+  return 0;
+}
+
+static int
+unicode_clear(PyObject *module)
+{
+  module_state *state = PyModule_GetState(module);
+  Py_CLEAR(state->separator);
+  return 0;
+}
+
 static int
 unicode_exec(PyObject *module)
 {
   int rc;
   PyObject *hard_breaks = NULL, *tmp = NULL, *upm = NULL;
+
+  module_state *state = PyModule_GetState(module);
+  state->separator = PyUnicode_FromStringAndSize("\n", 1);
+
+  if (!state->separator)
+    goto error;
 
   upm = PyType_FromModuleAndSpec(module, &ToUtf8PositionMapper_spec, NULL);
   if (!upm)
@@ -2016,6 +2257,14 @@ unicode_exec(PyObject *module)
   if (!upm)
     goto error;
   rc = PyModule_AddObject(module, "from_utf8_position_mapper", upm);
+  if (rc != 0)
+    goto error;
+  upm = NULL; /* ref was stolen in addobject */
+
+  upm = PyType_FromModuleAndSpec(module, &OffsetMapper_spec, NULL);
+  if (!upm)
+    goto error;
+  rc = PyModule_AddObject(module, "OffsetMapper", upm);
   if (rc != 0)
     goto error;
   upm = NULL; /* ref was stolen in addobject */
@@ -2048,6 +2297,7 @@ error:
   Py_XDECREF(tmp);
   Py_XDECREF(hard_breaks);
   Py_XDECREF(upm);
+  unicode_clear(module);
   return -1;
 }
 
@@ -2092,8 +2342,10 @@ static PyModuleDef module_def = {
   .m_name = "apsw._unicode",
   .m_doc = "C implementation of Unicode methods and lookups",
   .m_methods = methods,
-  .m_size = 0,
+  .m_size = sizeof(module_state),
   .m_slots = module_slots,
+  .m_traverse = unicode_traverse,
+  .m_clear = unicode_clear,
 };
 
 PyObject *
