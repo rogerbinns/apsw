@@ -19,7 +19,6 @@ import multiprocessing.pool
 # avoid clashing with html as a parameter name
 import html as html_module
 import html.parser as html_parser_module
-import bisect
 from dataclasses import dataclass
 
 from typing import Callable, Sequence, Any, Literal
@@ -617,7 +616,7 @@ def TransformTokenizer(transform: Callable[[str], str | Sequence[str]] | None = 
     return tokenizer
 
 
-def extract_html_text(html: str) -> tuple[str, OffsetMapper]:
+def extract_html_text(html: str) -> tuple[str, apsw._unicode.OffsetMapper]:
     """Extracts text from HTML using :class:`html.parser.HTMLParser` under the hood
 
     :meta private:
@@ -634,7 +633,7 @@ def extract_html_text(html: str) -> tuple[str, OffsetMapper]:
             # the HTML but only one in text - eg "&amp;" is "&"
             super().__init__(convert_charrefs=False)
             # offset mapping
-            self.om = OffsetMapper()
+            self.om = apsw._unicode.OffsetMapper()
             # We don't know the end offset so have to wait till next item's
             # start to use as previous end.  this keep track of the item and
             # its offset
@@ -740,53 +739,6 @@ def HTMLTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     return tokenize
 
 
-# written for easy conversion to C
-class OffsetMapper:
-    def __init__(self):
-        self.accumulate: list[str] = []
-        self.length = 0
-        self.offsets: list[tuple[int, int]] = [(0, 0)]
-        self.separator = "\n"
-        self.last_is_separator = False
-        # in C also keep track of Py_MAX(maxchar of each string added)
-        self.last_location = 0
-        self.last_offset = 0
-
-    def _finalize(self):
-        self._text = "".join(self.accumulate)
-        self.accumulate = None
-        return self._text
-
-    text = property(_finalize)
-
-    def add(self, text: str, source_start: int, source_end: int):
-        self.offsets.append((self.length, source_start))
-        self.accumulate.append(text)
-        self.length += len(text)
-        self.offsets.append((self.length, source_end))
-        self.last_is_separator = False
-
-    def separate(self):
-        if not self.last_is_separator:
-            self.accumulate.append(self.separator)
-            self.length += len(self.separator)
-            self.last_is_separator = True
-
-    def __call__(self, location: int) -> int:
-        if location >= self.last_location:
-            seek = range(self.last_offset, len(self.offsets)-1)
-        else:
-            seek = range(len(self.offsets) - 1)
-        for i in seek:
-            if location >= self.offsets[i][0] and location < self.offsets[i + 1][0]:
-                self.last_location = location
-                self.last_offset = i
-                return self.offsets[i][1] + (location - self.offsets[i][0])
-        if location == self.offsets[-1][0]:
-            return self.offsets[-1][1]
-        raise IndexError(f"out of range {location=} - last is { self.offsets[-1][0] }")
-
-
 # matches all quoted strings in JSON including if there are
 # backslashes inside
 _json_strings = re.compile(r'"([^"\\]*(?:\\.[^"\\]*)*)"', re.DOTALL)
@@ -806,10 +758,10 @@ _json_backslash_mapping = {
 }
 
 
-def extract_json(text: str, include_keys: bool) -> tuple[str, OffsetMapper]:
+def extract_json(text: str, include_keys: bool) -> tuple[str, apsw._unicode.OffsetMapper]:
     """Extracts text values from JSON text
 
-    Returns the extracted text and an :class:`OffsetMapper` to convert locations
+    Returns the extracted text and an :class:`apsw._unicode.OffsetMapper` to convert locations
     in the extracted text back to the source text.
 
     :param include_keys: ``False`` to only extract values, ``True`` to also extract
@@ -817,7 +769,7 @@ def extract_json(text: str, include_keys: bool) -> tuple[str, OffsetMapper]:
 
     :meta private:
     """
-    om = OffsetMapper()
+    om = apsw._unicode.OffsetMapper()
 
     for match in _json_strings.finditer(text):
         if not include_keys:
