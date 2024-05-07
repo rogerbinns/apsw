@@ -716,9 +716,14 @@ def extract_html_text(html: str) -> tuple[str, apsw._unicode.OffsetMapper]:
 def HTMLTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     """Extracts text from HTML suitable for passing on to other tokenizers
 
-    This should be the first tokenizer in the tokenizer list.  Behind the scenes
+    This should be before the actual tokenizer in the tokenizer list.  Behind the scenes
     it extracts text from the HTML, and manages the offset mapping between the
-    HTML and the text passed on to other tokenizers.
+    HTML and the text passed on to other tokenizers.  It also expands
+    entities and charrefs.
+
+    If the html doesn't start with whitespace then < or &, it is not
+    considered HTML and will be passed on unprocessed.  This would
+    typically be the case for queries.
     """
     spec = {"+": None}
     options = parse_tokenizer_args(spec, con, args)
@@ -822,6 +827,10 @@ def JSONTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     include_keys
       ``9`` (default) or ``1`` if keys are extracted in addition to
       values
+
+    If the jsom doesn't start with whitespace then { or [, it is not
+    considered JSON and will be passed on unprocessed.  This would
+    typically be the case for queries.
     """
     spec = {
         "include_keys": TokenizerArgument(default=False, convertor=convert_boolean),
@@ -830,8 +839,9 @@ def JSONTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     options = parse_tokenizer_args(spec, con, args)
 
     def tokenize(json: str, flags: int):
-        # We only process json for the document/aux, not queries
-        if flags & apsw.FTS5_TOKENIZE_QUERY:
+        # we only tokenize what looks like json.  Human typed queries
+        # are unlikely to be json.
+        if not re.match(r"\s*[{\[]", json):
             yield from string_tokenize(options["+"], json, flags)
             return
 
@@ -876,7 +886,7 @@ def RegexTokenizer(
 
     spec = {}
 
-    options = parse_tokenizer_args(spec, con, args)
+    parse_tokenizer_args(spec, con, args)
 
     def tokenize(text: str, flags: int):
         for match in re.finditer(pattern, text):
