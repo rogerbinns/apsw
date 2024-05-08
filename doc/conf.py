@@ -120,7 +120,7 @@ latex_logo = html_logo
 
 
 def skip_Shell_members(app, what, name, obj, skip, options):
-    if name.startswith("command_") or name.startswith("output_"):
+    if (name.startswith("command_") or name.startswith("output_")) and "Shell." in str(obj):
         return True
     return skip
 
