@@ -647,7 +647,7 @@ class ShowResourceUsage:
         times = time.process_time(), time.monotonic()
         if times[0] - self._times[0] >= 0.001:
             vals.append((self._descriptions["process_time"], times[0] - self._times[0]))
-        if times[1] - self._times[1] >= 0.0001:
+        if times[1] - self._times[1] >= 0.001:
             vals.append((self._descriptions["monotonic"], times[1] - self._times[1]))
 
         if self.scope:
@@ -669,7 +669,8 @@ class ShowResourceUsage:
                         vals.append((self._descriptions[k], v))
 
         if not vals:
-            print("(No resource changes)", file=self.file)
+            # there was no meaningful change, so output nothing
+            pass
         else:
             max_width = max(len(k) for k in self._descriptions.values())
             for k, v in vals:
