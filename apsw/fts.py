@@ -22,7 +22,7 @@ import html as html_module
 import html.parser as html_parser_module
 from dataclasses import dataclass
 
-from typing import Callable, Sequence, Any, Literal
+from typing import Callable, Sequence, Any, Literal, Iterable
 from types import ModuleType
 
 import apsw
@@ -1340,37 +1340,105 @@ class FTS5Table:
         cls,
         db: apsw.Connection,
         name: str,
-        columns: list[str] | None,
+        columns: Iterable[str] | None,
         *,
         schema: str = "main",
-        tokenizer: list[str] | None = None,
-        prefix: str | None = None,
+        unindexed: Iterable[str] | None = None,
+        tokenize: Iterable[str] | None = None,
+        prefix: Iterable[int] | int | None = None,
         content: str | None = None,
-        contentless_delete: int | None = None,
+        contentless_delete: bool = False,
         content_rowid: str | None = None,
         generate_triggers: bool = False,
-        normalize: None | Literal["NFC"] | Literal["NFKC"] | Literal["NFD"] | Literal["NFKD"] = None,
     ) -> FTS5Table:
         """Creates the table
 
-        Various kwargs same as `FTS5 options <https://www.sqlite.org/fts5.html#fts5_table_creation_and_initialization>`__
+        You can use :meth:`apsw.Connection.table_exists` to check if a
+        table already exists.
 
-        :param generate_triggers: As in https://www.sqlite.org/fts5.html#external_content_tables
+        :param db: connection to create the table on
+        :param name: name of table
+        :param columns: A sequence of column names.  If you are using
+           an external content table (recommended) you can supply
+           `None` and the column names will be from the table named by
+           the `content` parameter
+        :param schema: Which attached database the table is being
+            created in
+        :param tokenize: The `tokenize option
+            <https://sqlite.org/fts5.html#tokenizers>`__.  Supply as a
+            sequence of strings which will be correctly quoted
+            together.
+        :param prefix: The `prefix option
+            <https://sqlite.org/fts5.html#prefix_indexes>`__.  Supply
+            an int, or a sequence of int.
+        :param content: Name of the external content table
+        :param content_rowid: Name of the `content rowid column
+            <https://sqlite.org/fts5.html#external_content_tables>`__
+            if not using the default when using an external content
+            table
+        :param generate_triggers: If using an external content table
+            and this is `True`, then `triggers are created
+            <https://sqlite.org/fts5.html#external_content_tables>`__
+            to keep this table updated with changes to the external
+            content table.
+        :param contentless_delete: Set the `contentless delete option
+            <https://sqlite.org/fts5.html#contentless_delete_tables>`__
+            for contentless tables.
 
-        :param normalize: All text added via :meth:`insert` will be normalized to this
-
-        External content table
-        ----------------------
-
-        Run :meth:`command_rebuild` and :meth:`command_optimize` after this create (::TODO:: automatic?)
-
-        Columns can be `None` in which case they will come from external table.
+        If you create an external content table, then
+        :meth:`command_rebuild` and :meth:`command_optimize` will be
+        run to populate the contents.
         """
-        # ... make table, having fun quoting tokenizer etc
-        # for content tables, figure out columns automatically
-        inst = cls(db, name, schema)
-        # assert inst.columns == columns
-        # assert tokenizer == get_args(tokenizer)
+        qschema = quote_name(schema)
+        qname = quote_name(name)
+
+        if columns is None:
+            if not content:
+                raise ValueError("You need to supply columns, or specify an external content table name")
+            columns = db.execute(f"select name from { qschema}.pragma_table_info(?)", (content,)).get
+        else:
+            columns = tuple(columns)
+
+        if tokenize is not None:
+            # using outside double quote and inside single quote out
+            # of all the combinations available
+            tokenize = quote_name(" ".join(quote_name(arg, "'") for arg in tokenize), '"')
+
+        if prefix is not None:
+            if isinstance(prefix, int):
+                prefix : str = str(prefix)
+            else:
+                prefix = quote_name(" ".join(str(p) for p in prefix), "'")
+
+        content_rowid = quote_name(content_rowid) if content and content_rowid is not None  else None
+        contentless_delete : str | None = str(int(contentless_delete)) if content =="" else None
+
+        if content is not None:
+            content = quote_name(content)
+
+        sql = [f"create virtual table { qschema }.{ qname} using fts5("]
+        sql.append(", ".join(quote_name(column) for column in columns))
+        for option, value in (
+            ("prefix", prefix),
+            ("tokenize", tokenize),
+            ("content", content),
+            ("content_rowid", content_rowid),
+            ("contentless_delete", contentless_delete),
+        ):
+            if value is not None:
+                sql.append(f", { option } = { value}")
+        sql = "".join(sql) + ")"
+
+        with db:
+            db.execute(sql)
+            inst = cls(db, name, schema)
+            if content:
+                if generate_triggers:
+                    pass
+                inst.command_rebuild()
+                inst.command_optimize()
+            assert inst.columns == columns
+
         return inst
 
 
@@ -1434,13 +1502,13 @@ def token_closeness(
     return result
 
 
-def quote_name(name: str) -> str:
+def quote_name(name: str, quote: str = '"') -> str:
     """Quotes name to ensure it is parsed as a name
 
     :meta private:
     """
-    name = name.replace('"', '""')
-    return f'"{ name }"'
+    name = name.replace(quote, quote * 2)
+    return quote + name + quote
 
 
 # To get options set in the create virtual table statement there can be lots of quoting
