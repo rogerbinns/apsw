@@ -15,6 +15,7 @@ import difflib
 import importlib
 import multiprocessing
 import multiprocessing.pool
+import threading
 
 # avoid clashing with html as a parameter name
 import html as html_module
@@ -1012,9 +1013,24 @@ class FTS5Table:
     """
 
     @dataclass
-    class _token_cache:
-        token_cache_cookie: int = -1
-        tokens: set[str] = None
+    class token_cache_class:
+        """Data structure representing token cache
+
+        :meta private:
+        """
+
+        token_cache_cookie: int
+        "change cookie at time this information was cached"
+        tokens: frozenset[str]
+        "the tokens"
+        doc_frequency: dict[str, float]
+        "for each token the proportion of docs containing the token"
+        token_frequency: dict[str, float]
+        "for each token the proportion of all tokens this token makes up"
+        num_docs: int
+        "total number of documents"
+        num_tokens: int
+        "total number of terms"
 
     def __init__(self, db: apsw.Connection, name: str, schema: str = "main"):
         if not db.table_exists(schema, name):
@@ -1025,7 +1041,7 @@ class FTS5Table:
         self.schema = schema
         self.qname = quote_name(name)
         self.qschema = quote_name(schema)
-        self._token_cache: FTS5Table._token_cache = FTS5Table._token_cache()
+        self._token_cache: FTS5Table.token_cache_class | None = None
 
     def _get_change_cookie(self) -> int:
         """An int that changes if the content of the table has changed.
@@ -1196,12 +1212,35 @@ class FTS5Table:
         # and then run
         pass
 
-    def _tokens(self) -> set[str]:
+    def _tokens(self) -> frozenset[str]:
         "All tokens in fts index"
-        if self._token_cache.token_cache_cookie != self.change_cookie:
-            n = self.fts5vocab_name("row")
-            self._token_cache.tokens = set(term[0] for term in self.db.execute(f"select term from {n}"))
-            self._token_cache.token_cache_cookie = self.change_cookie
+        while self._token_cache is None or self._token_cache.token_cache_cookie != self.change_cookie:
+            with threading.Lock():
+                # check if another thread did the work
+                cookie = self.change_cookie
+                if self._token_cache is not None and self._token_cache.token_cache_cookie == cookie:
+                    break
+                n = self.fts5vocab_name("row")
+                num_docs = self.db.execute(f"select count(*) from {self.qschema}.{self.qname}").get
+                num_tokens = 0
+                doc_frequency: dict[str, float] = {}
+                token_frequency: dict[str, float] = {}
+                for term, doc, cnt in self.db.execute(f"select term, doc, cnt from { n }"):
+                    doc_frequency[term] = doc / num_docs
+                    token_frequency[term] = cnt
+                    num_tokens += cnt
+                tokens = frozenset(doc_frequency.keys())
+                for token in tokens:
+                    token_frequency[token] = token_frequency[token] / num_tokens
+
+                self._token_cache = FTS5Table.token_cache_class(
+                    token_cache_cookie=cookie,
+                    tokens=tokens,
+                    doc_frequency=doc_frequency,
+                    token_frequency=token_frequency,
+                    num_docs=num_docs,
+                    num_tokens=num_tokens,
+                )
         return self._token_cache.tokens
 
     tokens = property(_tokens)
@@ -1209,7 +1248,7 @@ class FTS5Table:
     def is_token(self, token: str) -> bool:
         """Returns True if it is a known token
 
-        If testing lots of tokens, get :meth:`tokens`
+        If testing lots of tokens, check against :attr:`tokens`
         """
         n = self.fts5vocab_name("row")
         return bool(self.db.execute(f"select term from { n } where term = ?", (token,)).get)
