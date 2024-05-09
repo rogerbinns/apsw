@@ -22,6 +22,7 @@ import html.parser as html_parser_module
 from dataclasses import dataclass
 
 from typing import Callable, Sequence, Any, Literal
+from types import ModuleType
 
 import apsw
 import apsw.ext
@@ -141,7 +142,7 @@ def convert_string_to_python(expr: str) -> Any:
     * shutil.rmtree("a/directory/location")  **COULD DELETE ALL FILES**
     """
     parts = expr.split(".")
-    imports = {}
+    imports: dict[str, ModuleType] = {}
     for i in range(1, len(parts)):
         try:
             name = ".".join(parts[:i])
@@ -1011,8 +1012,8 @@ class FTS5Table:
     """
 
     @dataclass
-    class _cache:
-        token_data_version: int = -1
+    class _token_cache:
+        token_cache_cookie: int = -1
         tokens: set[str] = None
 
     def __init__(self, db: apsw.Connection, name: str, schema: str = "main"):
@@ -1022,14 +1023,28 @@ class FTS5Table:
         self.db = db
         self.name = name
         self.schema = schema
-        # ::TODO:: figure out if name and schema need quoting and generate
-        # self.qname self.qschema
-        self._cache: FTS5Table._cache = FTS5Table._cache()
+        self.qname = quote_name(name)
+        self.qschema = quote_name(schema)
+        self._token_cache: FTS5Table._token_cache = FTS5Table._token_cache()
+
+    def _get_change_cookie(self) -> int:
+        """An int that changes if the content of the table has changed.
+
+        This is useful if information is being cached.
+
+        It is possible through very carefully crafted content to outwit this.
+        """
+        # See https://sqlite.org/forum/forumpost/2a726411b6974502
+        return hash(
+            self.db.execute(f"select block from { self.qschema }.{ quote_name(self.name + '_data')} where id=10").get
+        )
+
+    change_cookie = property(_get_change_cookie)
 
     @functools.cached_property
     def columns(self) -> tuple[str]:
         "Columns of this table"
-        return self.db.execute("select name from { self.schema }.table_info(?)", (self.name,)).get
+        return self.db.execute(f"select name from { self.qschema }.pragma_table_info(?)", (self.name,)).get
 
     def query(self, query: str) -> apsw.Cursor:
         "Returns a cursor making the query - rowid first"
@@ -1046,61 +1061,150 @@ class FTS5Table:
         # :TODO: parse query and turn all implicit and explicit AND into
         # OR.  Then add ranking function that takes into account missing
         # tokens in scoring
-        return self.db.execute("select rowid, * from { self.schema }.{ self.name }(?) order by rank", (query,))
+        return self.db.execute("select rowid, * from { self.qschema }.{ self.qname }(?) order by rank", (query,))
 
     def insert(self, *args: str, **kwargs: str) -> None:
         """Does insert with columns by positional or named via kwargs
 
         * empty string for missing columns?
-        * Uses normalize option on all values
-        * auto-stringize each value too?
+        * Uses normalize option on all values?
+        * auto-stringize each value too?  fts5 doesn't care what
+          types you insert
         """
         ...
 
     # some method helpers pattern, not including all of them yet
 
-    def command_delete(self, *args):
-        "Does https://www.sqlite.org/fts5.html#the_delete_command"
-        pass
+    def command_delete(self, rowid: int, *column_values: str):
+        """Does `delete <https://www.sqlite.org/fts5.html#the_delete_command>`__"""
+        if len(column_values) != len(self.columns):
+            raise ValueError(
+                f"You need to provide values for every column ({ len(self.columns)}) - got { len(column_values)}"
+            )
 
-    def command_delete_all(self, *args):
-        "Does https://www.sqlite.org/fts5.html#the_delete_all_command"
-        pass
+        values = "('delete',?," + ",".join("?" for _ in range(len(column_values))) + ")"
+        cols = f"({ self.qname }, rowid," + ",".join(quote_name(col) for col in self.columns) + ")"
+        self.db.execute(
+            f"insert into { self.qschema }.{ self.qname }{ cols } values { values }", (rowid, *column_values)
+        )
 
-    def command_optimize(self):
-        "Does https://www.sqlite.org/fts5.html#the_optimize_command"
-        pass
+    def command_delete_all(self) -> None:
+        "Does `delete all <https://www.sqlite.org/fts5.html#the_delete_all_command>`__"
+        self.db.execute(f"insert into { self.qschema}.{ self.qname }({ self.qname}) VALUES('delete-all')")
 
-    def config_pgsz(self, val: int):
-        "Does https://www.sqlite.org/fts5.html#the_pgsz_configuration_option"
-        pass
+    def command_integrity_check(self, external_content: bool = True) -> None:
+        """Does `integrity check <https://www.sqlite.org/fts5.html#the_integrity_check_command>`__
+
+        If `external_content` is True, then the FTS index is compared to the external content.
+        """
+        self.db.execute(
+            f"insert into { self.qschema}.{ self.qname }({ self.qname}, rank) VALUES('integrity-check', ?)",
+            (int(external_content),),
+        )
+
+    def command_merge(self, n: int) -> int:
+        """Does `merge <https://www.sqlite.org/fts5.html#the_merge_command>`__
+
+        See the documentation for what positive and negative values of `n` mean.
+
+        :returns:  The difference between `sqlite3_total_changes() <https://sqlite.org/c3ref/total_changes.html>`__
+                   before and after running the command.
+        """
+        before = self.db.total_changes()
+        self.db.execute(f"insert into { self.qschema}.{ self.qname }({ self.qname}, rank) VALUES('merge', ?)", (n,))
+        return self.db.total_changes() - before
+
+    def command_optimize(self) -> None:
+        "Does `optimize <https://www.sqlite.org/fts5.html#the_optimize_command>`__"
+        self.db.execute(f"insert into { self.qschema}.{ self.qname }({ self.qname}) VALUES('optimize')")
 
     def command_rebuild(self):
-        "Does https://www.sqlite.org/fts5.html#the_rebuild_command"
-        pass
+        "Does `rebuild <https://www.sqlite.org/fts5.html#the_rebuild_command>`__"
+        self.db.execute(f"insert into { self.qschema}.{ self.qname }({ self.qname}) VALUES('rebuild')")
 
-    def config(self, name, value=None):
-        "Does https://www.sqlite.org/fts5.html#configuration_options_config_table_"
-        # check on forum
-        # can we store our own stuff here, eg unicodedata version
-        # so if it differs then can run rebuild
-        # normalize val so insert normalizes all strings
-        # perhaps x-apsw prefix?
-        pass
+    # These are the defaults.  The _config table is not updated unless they are changed
+    #
+    # define FTS5_DEFAULT_PAGE_SIZE   4050
+    # define FTS5_DEFAULT_AUTOMERGE      4
+    # define FTS5_DEFAULT_USERMERGE      4
+    # define FTS5_DEFAULT_CRISISMERGE   16
+    # define FTS5_DEFAULT_HASHSIZE    (1024*1024)
+    # define FTS5_DEFAULT_DELETE_AUTOMERGE 10
+    # #define FTS5_DEFAULT_RANK     "bm25"
+
+    def config_automerge(self, val: int | None = None) -> int:
+        """Optionally sets, and returns `automerge <https://www.sqlite.org/fts5.html#the_automerge_configuration_option>`__"""
+        return self._config_internal("automerge", val, 4)  # type: ignore
+
+    def config_crisismerge(self, val: int | None = None) -> int:
+        """Optionally sets, and returns `crisismerge <https://www.sqlite.org/fts5.html#the_crisismerge_configuration_option>`__"""
+        return self._config_internal("crisismerge", val, 16)  # type: ignore
+
+    def config_deletemerge(self, val: int | None = None) -> int:
+        """Optionally sets, and returns `deletemerge <https://www.sqlite.org/fts5.html#the_deletemerge_configuration_option>`__"""
+        return self._config_internal("deletemerge", val, 16)  # type: ignore
+
+    def config_pgsz(self, val: int | None = None) -> int:
+        """Optionally sets, and returns `page size <https://www.sqlite.org/fts5.html#the_pgsz_configuration_option>`__"""
+        return self._config_internal("pgsz", val, 4050)  # type: ignore
+
+    def config_rank(self, val: str | None = None) -> str:
+        """Optionally sets, and returns `rank <https://www.sqlite.org/fts5.html#the_rank_configuration_option>`__"""
+        return self._config_internal("rank", val, "bm25")  # type: ignore
+
+    def config_securedelete(self, val: bool | None = None) -> bool:
+        """Optionally sets, and returns `secure-delete <https://www.sqlite.org/fts5.html#the_secure-delete_configuration_option>`__"""
+        return bool(self._config_internal("secure-delete", val, False))  # type: ignore
+
+    def config_usermerge(self, val: int | None = None) -> int:
+        """Optionally sets, and returns `usermerge <https://www.sqlite.org/fts5.html#the_usermerge_configuration_option>`__"""
+        return self._config_internal("usermerge", val, 4)  # type: ignore
+
+    def _config_internal(self, name: str, val: apsw.SQLiteValue, default: apsw.SQLiteValue) -> apsw.SQLiteValue:
+        "Internal config implementation"
+        if val is not None:
+            self.db.execute(
+                f"insert into { self.qschema}.{ self.qname }({ self.qname}, rank) VALUES('{name}', ?)", (val,)
+            )
+        v = self.config(name, prefix="")
+        return v if v is not None else default
+
+    def config(self, name: str, value: apsw.SQLiteValue = None, *, prefix: str = "x-apsw-") -> apsw.SQLiteValue:
+        """Optionally sets, and gets a `config value <https://www.sqlite.org/fts5.html#configuration_options_config_table_>`__
+
+        If the value is not None, then it is changed.  It is not recommended to change SQLite's own values.
+
+        The `prefix` is to ensure your own config names don't clash with those used by SQLite.  For
+        example you could remember the Unicode version used by your tokenizer, and rebuild if the
+        version is updated.
+
+        The advantage of using this is that the names/values will survive the fts5 table being renamed.
+        """
+        key = prefix + name
+        if value is not None:
+            self.db.execute(
+                f"INSERT OR REPLACE into { self.qschema }.{ quote_name(self.name + '_config') }(k,v) values(?,?)",
+                (key, value),
+            )
+        return self.db.execute(
+            f"SELECT v from { self.qschema }.{ quote_name(self.name + '_config') } where k=?", (key,)
+        ).get
 
     def tokenize(self, utf8: bytes, reason: int, include_offsets=True, include_colocated=True):
         "Tokenize supplied utf8"
-        # need to parse config tokenizer into argv
+        # need to parse config tokenizer into argvu
         # and then run
         pass
 
-    def tokens(self) -> set[str]:
-        "Return all tokens"
-        if self._cache.token_data_version != self.db.data_version(self.schema):
+    def _tokens(self) -> set[str]:
+        "All tokens in fts index"
+        if self._token_cache.token_cache_cookie != self.change_cookie:
             n = self.fts5vocab_name("row")
-            self._cache.tokens = set(term[0] for term in self.db.execute(f"select term from {n}"))
-            self._cache.token_data_version = self.db.data_version(self.schema)
-        return self._cache.tokens
+            self._token_cache.tokens = set(term[0] for term in self.db.execute(f"select term from {n}"))
+            self._token_cache.token_cache_cookie = self.change_cookie
+        return self._token_cache.tokens
+
+    tokens = property(_tokens)
 
     def is_token(self, token: str) -> bool:
         """Returns True if it is a known token
@@ -1147,7 +1251,7 @@ class FTS5Table:
 
         ?? Sort by token frequency
         """
-        return [t for t in self.tokens() if token in t]
+        return [t for t in self.tokens if token in t]
 
     def token_frequency(self, count: int = 10) -> list[tuple[str, int]]:
         "Most frequent tokens, useful for building a stop words list"
@@ -1158,7 +1262,7 @@ class FTS5Table:
         """Returns closest known tokens to ``token`` with score for each
 
         Calls :func:`token_closeness` with the parameters having the same meaning."""
-        return token_closeness(token, self.tokens(), n, cutoff)
+        return token_closeness(token, self.tokens, n, cutoff)
 
     def get_closest_tokens_mp(
         self, pool: multiprocessing.pool.Pool, batch_size: int, token: str, n: int = 25, cutoff: float = 0.6
@@ -1171,7 +1275,7 @@ class FTS5Table:
         """
         results: list[tuple[float, str]] = []
         for res in pool.imap_unordered(
-            functools.partial(token_closeness, token, n=n, cutoff=cutoff), batched(self.tokens(), batch_size)
+            functools.partial(token_closeness, token, n=n, cutoff=cutoff), batched(self.tokens, batch_size)
         ):
             results.extend(res)
         results.sort(reverse=True)
@@ -1182,12 +1286,13 @@ class FTS5Table:
         """
         Creates fts5vocab table in temp and returns name
         """
-        name = f"temp.[fts5vocab_{ self.schema }_{ self.name }_{ type }]"
+        base = f"fts5vocab_{ self.schema }_{ self.name }_{ type }".replace('"', '""')
+
+        name = f'temp."{base}"'
 
         self.db.execute(
-            f"""create virtual table if not exists { name } using fts5vocab("""
-            + ",".join(apsw.format_sql_value(v) for v in (self.schema, self.name, type))
-            + ")"
+            f"""create virtual table if not exists { name } using fts5vocab(
+                    {self.qschema}, {self.qname}, "{ type }")"""
         )
         return name
 
@@ -1288,6 +1393,15 @@ def token_closeness(
                 cutoff = result[-1][0]
     result.sort(reverse=True)
     return result
+
+
+def quote_name(name: str) -> str:
+    """Quotes name to ensure it is parsed as a name
+
+    :meta private:
+    """
+    name = name.replace('"', '""')
+    return f'"{ name }"'
 
 
 # To get options set in the create virtual table statement there can be lots of quoting
