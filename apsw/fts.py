@@ -1036,6 +1036,7 @@ class FTS5Table:
         if not db.table_exists(schema, name):
             raise ValueError(f"{ schema }.{ name } doesn't exist")
         # ::TODO:: figure out if it is fts5 table
+        # ::TODO:: figure out if content table, and get content table name for insert method
         self.db = db
         self.name = name
         self.schema = schema
@@ -1058,9 +1059,9 @@ class FTS5Table:
     change_cookie = property(_get_change_cookie)
 
     @functools.cached_property
-    def columns(self) -> tuple[str]:
+    def columns(self) -> tuple[str, ...]:
         "Columns of this table"
-        return self.db.execute(f"select name from { self.qschema }.pragma_table_info(?)", (self.name,)).get
+        return tuple(name for (name,) in self.db.execute(f"select name from { self.qschema }.pragma_table_info(?)", (self.name,)))
 
     def query(self, query: str) -> apsw.Cursor:
         "Returns a cursor making the query - rowid first"
@@ -1079,7 +1080,7 @@ class FTS5Table:
         # tokens in scoring
         return self.db.execute("select rowid, * from { self.qschema }.{ self.qname }(?) order by rank", (query,))
 
-    def insert(self, *args: str, **kwargs: str) -> None:
+    def insert(self, *args: apsw.SQLiteValue, **kwargs: apsw.SQLiteValue) -> None:
         """Does insert with columns by positional or named via kwargs
 
         * empty string for missing columns?
@@ -1349,9 +1350,12 @@ class FTS5Table:
         content: str | None = None,
         contentless_delete: bool = False,
         content_rowid: str | None = None,
-        generate_triggers: bool = False,
+        columnsize: bool = True,
+        detail: Literal["full"] | Literal["column"] | Literal["none"] = "full",
+        generate_triggers: bool = True,
+        drop_if_exists: bool = False,
     ) -> FTS5Table:
-        """Creates the table
+        """Creates the table returning a :class:`FTS5Table` on success
 
         You can use :meth:`apsw.Connection.table_exists` to check if a
         table already exists.
@@ -1381,6 +1385,12 @@ class FTS5Table:
             <https://sqlite.org/fts5.html#external_content_tables>`__
             to keep this table updated with changes to the external
             content table.
+        :param columnsize: Indicate if the `column size tracking
+            <https://sqlite.org/fts5.html#the_columnsize_option>`__
+            should be disabled to save space
+        :param detail: Indicate if `detail
+            <https://sqlite.org/fts5.html#the_detail_option>`__ should
+            be reduced to save space
         :param contentless_delete: Set the `contentless delete option
             <https://sqlite.org/fts5.html#contentless_delete_tables>`__
             for contentless tables.
@@ -1395,9 +1405,19 @@ class FTS5Table:
         if columns is None:
             if not content:
                 raise ValueError("You need to supply columns, or specify an external content table name")
-            columns = db.execute(f"select name from { qschema}.pragma_table_info(?)", (content,)).get
+            columns: tuple[str, ...] = db.execute(f"select name from { qschema}.pragma_table_info(?)", (content,)).get
         else:
-            columns = tuple(columns)
+            columns: tuple[str, ...] = tuple(columns)
+
+        if unindexed is not None:
+            unindexed: set[str] = set(unindexed)
+            for c in unindexed:
+                if c not in columns:
+                    raise ValueError(
+                        f"column \"{ c }\" is in unindexed, but not in columns: { ', '.join(quote_name(column) for column in columns ) }"
+                    )
+        else:
+            unindexed: set[str] = set()
 
         if tokenize is not None:
             # using outside double quote and inside single quote out
@@ -1406,37 +1426,74 @@ class FTS5Table:
 
         if prefix is not None:
             if isinstance(prefix, int):
-                prefix : str = str(prefix)
+                prefix: str = str(prefix)
             else:
                 prefix = quote_name(" ".join(str(p) for p in prefix), "'")
 
-        content_rowid = quote_name(content_rowid) if content and content_rowid is not None  else None
-        contentless_delete : str | None = str(int(contentless_delete)) if content =="" else None
+        qcontent_rowid = quote_name(content_rowid) if content and content_rowid is not None else None
+        contentless_delete: str | None = str(int(contentless_delete)) if content == "" else None
 
-        if content is not None:
-            content = quote_name(content)
+        qcontent = quote_name(content) if content is not None else None
 
-        sql = [f"create virtual table { qschema }.{ qname} using fts5("]
-        sql.append(", ".join(quote_name(column) for column in columns))
+        sql: list[str] = []
+        if drop_if_exists:
+            sql.append(f"drop table if exists { qschema }.{ qname };")
+        sql.append(f"create virtual table { qschema }.{ qname} using fts5(")
+        sql.append(
+            ", ".join(f"{ quote_name(column) + (' UNINDEXED' if column in unindexed else '') }" for column in columns)
+        )
         for option, value in (
             ("prefix", prefix),
             ("tokenize", tokenize),
-            ("content", content),
-            ("content_rowid", content_rowid),
+            ("content", qcontent),
+            ("content_rowid", qcontent_rowid),
             ("contentless_delete", contentless_delete),
+            # for these we omit them for default value
+            ("columnsize", "0" if not columnsize else None),
+            ("detail", detail if detail != "full" else None),
         ):
             if value is not None:
                 sql.append(f", { option } = { value}")
-        sql = "".join(sql) + ")"
+        sql.append(")")
 
         with db:
-            db.execute(sql)
+            db.execute("".join(sql))
             inst = cls(db, name, schema)
             if content:
                 if generate_triggers:
-                    pass
+                    qrowid = quote_name(content_rowid if content_rowid is not None else "_rowid_")
+                    cols = ", ".join(quote_name(column) for column in columns)
+                    old_cols = ", ".join(f"old.{quote_name(column)}" for column in columns)
+                    new_cols = ", ".join(f"new.{quote_name(column)}" for column in columns)
+                    trigger_names = tuple(
+                        quote_name(f"fts5sync_{ content }_to_{ name }_{ reason }")
+                        for reason in (
+                            "insert",
+                            "delete",
+                            "update",
+                        )
+                    )
+                    db.execute(f"""
+drop trigger if exists { qschema }.{ trigger_names[0] };
+drop trigger if exists { qschema }.{ trigger_names[1] };
+drop trigger if exists { qschema }.{ trigger_names[2] };
+create trigger { qschema }.{ trigger_names[0] } after insert on { qcontent }
+begin
+    insert into { qname }(rowid, { cols }) values (new.{ qrowid }, { new_cols });
+end;
+create trigger { qschema }.{ trigger_names[1] } after delete on { qcontent }
+begin
+    insert into { qname }({ qname }, rowid, { cols }) values('delete', old.{ qrowid }, { old_cols });
+end;
+create trigger { qschema }.{ trigger_names[2] } after update on { qcontent }
+begin
+    insert into { qname }({ qname }, rowid, { cols }) values('delete', old.{ qrowid }, { old_cols });
+    insert into { qname }(rowid, { cols }) values (new.{ qrowid }, { new_cols });
+end;
+                               """)
                 inst.command_rebuild()
                 inst.command_optimize()
+            print(f"{inst.columns=} {columns=}")
             assert inst.columns == columns
 
         return inst
