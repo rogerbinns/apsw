@@ -1405,7 +1405,7 @@ class FTS5Table:
         if columns is None:
             if not content:
                 raise ValueError("You need to supply columns, or specify an external content table name")
-            columns: tuple[str, ...] = db.execute(f"select name from { qschema}.pragma_table_info(?)", (content,)).get
+            columns: tuple[str, ...] = tuple(name for (name,) in db.execute(f"select name from { qschema}.pragma_table_info(?)", (content,)))
         else:
             columns: tuple[str, ...] = tuple(columns)
 
@@ -1493,7 +1493,6 @@ end;
                                """)
                 inst.command_rebuild()
                 inst.command_optimize()
-            print(f"{inst.columns=} {columns=}")
             assert inst.columns == columns
 
         return inst
