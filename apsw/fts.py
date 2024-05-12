@@ -1099,13 +1099,11 @@ class FTS5Table:
         return self.db.execute("select rowid, * from { self.qschema }.{ self.qname }(?) order by rank", (query,))
 
     def insert(self, *args: apsw.SQLiteValue, **kwargs: apsw.SQLiteValue) -> None:
-        """Does insert with columns by positional or named via kwargs
+        """Does insert with columns by positional and/or named via kwargs
 
-        * empty string for missing columns?
-        * Uses normalize option on all values?
-        * auto-stringize each value too?  fts5 doesn't care what
-          types you insert
+        * insert into content table if using that
         """
+        # ::TODO:: implement
         ...
 
     # some method helpers pattern, not including all of them yet
@@ -1229,6 +1227,7 @@ class FTS5Table:
         "Tokenize supplied utf8"
         # need to parse config tokenizer into argvu
         # and then run
+        # ::TODO:: implement
         pass
 
     def _tokens(self) -> frozenset[str]:
@@ -1330,6 +1329,14 @@ class FTS5Table:
         Does the same as :meth:`get_closest_tokens` but uses the
         multiprocessing pool with ``batch_size`` tokens processed at
         once in each work unit.
+
+        This is useful when there are a large number of tokens in the index,
+        as the parameter token has to be scored against every one.
+
+        An example is using the half million enron email archive which has
+        600,000 tokens.  On a fast workstation :meth:`get_closest_tokens`
+        took 2 seconds while this method with a `batch_size` of 10,000 took
+        0.2 seconds.
         """
         results: list[tuple[float, str]] = []
         for res in pool.imap_unordered(
