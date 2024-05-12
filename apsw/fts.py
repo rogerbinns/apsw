@@ -4,31 +4,31 @@
 
 from __future__ import annotations
 
-import sys
-import unicodedata
-import pathlib
-import re
+import difflib
 import fnmatch
 import functools
-import itertools
-import difflib
-import importlib
-import multiprocessing
-import multiprocessing.pool
-import threading
 
 # avoid clashing with html as a parameter name
 import html as html_module
 import html.parser as html_parser_module
-from dataclasses import dataclass
+import importlib
+import itertools
+import multiprocessing
+import multiprocessing.pool
+import pathlib
+import re
+import sys
+import threading
+import unicodedata
 
-from typing import Callable, Sequence, Any, Literal, Iterable
+from dataclasses import dataclass
 from types import ModuleType
+from typing import Any, Callable, Iterable, Literal, Sequence
 
 import apsw
+import apsw._unicode
 import apsw.ext
 import apsw.unicode
-import apsw._unicode
 
 unicode_categories = {
     "Lu": "Letter Uppercase",
@@ -1034,15 +1034,16 @@ class FTS5Table:
 
     def __init__(self, db: apsw.Connection, name: str, schema: str = "main"):
         if not db.table_exists(schema, name):
-            raise ValueError(f"{ schema }.{ name } doesn't exist")
-        # ::TODO:: figure out if it is fts5 table
-        # ::TODO:: figure out if content table, and get content table name for insert method
+            raise ValueError(f"Table { schema }.{ name } doesn't exist")
         self.db = db
         self.name = name
         self.schema = schema
         self.qname = quote_name(name)
         self.qschema = quote_name(schema)
         self._token_cache: FTS5Table.token_cache_class | None = None
+
+        # Do some sanity checking
+        assert self.columns == self.structure.columns
 
     def _get_change_cookie(self) -> int:
         """An int that changes if the content of the table has changed.
@@ -1061,7 +1062,24 @@ class FTS5Table:
     @functools.cached_property
     def columns(self) -> tuple[str, ...]:
         "Columns of this table"
-        return tuple(name for (name,) in self.db.execute(f"select name from { self.qschema }.pragma_table_info(?)", (self.name,)))
+        return tuple(
+            name for (name,) in self.db.execute(f"select name from { self.qschema }.pragma_table_info(?)", (self.name,))
+        )
+
+    @functools.cached_property
+    def structure(self) -> FTS5TableStructure:
+        "Structure of the table from the declared SQL"
+        found = list(
+            sql
+            for (sql,) in self.db.execute(
+                f"select sql from { self.qschema }.sqlite_schema where type='table' and lower(tbl_name) = lower(?)",
+                (self.name,),
+            )
+        )
+        if len(found) == 0:
+            raise ValueError(f"'{self.name}' is not a table on '{ self.schema}'")
+        assert len(found) == 1
+        return _fts5_vtable_parse(found[0])
 
     def query(self, query: str) -> apsw.Cursor:
         "Returns a cursor making the query - rowid first"
@@ -1352,6 +1370,7 @@ class FTS5Table:
         content_rowid: str | None = None,
         columnsize: bool = True,
         detail: Literal["full"] | Literal["column"] | Literal["none"] = "full",
+        tokendata: bool = False,
         generate_triggers: bool = True,
         drop_if_exists: bool = False,
     ) -> FTS5Table:
@@ -1391,6 +1410,9 @@ class FTS5Table:
         :param detail: Indicate if `detail
             <https://sqlite.org/fts5.html#the_detail_option>`__ should
             be reduced to save space
+        :param tokendata: Indicate if `tokens have separate data after
+            a null char
+            <https://sqlite.org/fts5.html#the_tokendata_option>`__
         :param contentless_delete: Set the `contentless delete option
             <https://sqlite.org/fts5.html#contentless_delete_tables>`__
             for contentless tables.
@@ -1405,7 +1427,9 @@ class FTS5Table:
         if columns is None:
             if not content:
                 raise ValueError("You need to supply columns, or specify an external content table name")
-            columns: tuple[str, ...] = tuple(name for (name,) in db.execute(f"select name from { qschema}.pragma_table_info(?)", (content,)))
+            columns: tuple[str, ...] = tuple(
+                name for (name,) in db.execute(f"select name from { qschema}.pragma_table_info(?)", (content,))
+            )
         else:
             columns: tuple[str, ...] = tuple(columns)
 
@@ -1420,9 +1444,12 @@ class FTS5Table:
             unindexed: set[str] = set()
 
         if tokenize is not None:
+            tokenize = tuple(tokenize)
             # using outside double quote and inside single quote out
             # of all the combinations available
-            tokenize = quote_name(" ".join(quote_name(arg, "'") for arg in tokenize), '"')
+            qtokenize = quote_name(" ".join(quote_name(arg, "'") for arg in tokenize), '"')
+        else:
+            qtokenize = None
 
         if prefix is not None:
             if isinstance(prefix, int):
@@ -1432,6 +1459,7 @@ class FTS5Table:
 
         qcontent_rowid = quote_name(content_rowid) if content and content_rowid is not None else None
         contentless_delete: str | None = str(int(contentless_delete)) if content == "" else None
+        tokendata: str = str(int(tokendata))
 
         qcontent = quote_name(content) if content is not None else None
 
@@ -1444,13 +1472,14 @@ class FTS5Table:
         )
         for option, value in (
             ("prefix", prefix),
-            ("tokenize", tokenize),
+            ("tokenize", qtokenize),
             ("content", qcontent),
             ("content_rowid", qcontent_rowid),
             ("contentless_delete", contentless_delete),
             # for these we omit them for default value
             ("columnsize", "0" if not columnsize else None),
             ("detail", detail if detail != "full" else None),
+            ("tokendata", tokendata if tokendata != "0" else None),
         ):
             if value is not None:
                 sql.append(f", { option } = { value}")
@@ -1461,7 +1490,7 @@ class FTS5Table:
             inst = cls(db, name, schema)
             if content:
                 if generate_triggers:
-                    qrowid = quote_name(content_rowid if content_rowid is not None else "_rowid_")
+                    qrowid = quote_name(content_rowid if content_rowid is not None else "_ROWID_")
                     cols = ", ".join(quote_name(column) for column in columns)
                     old_cols = ", ".join(f"old.{quote_name(column)}" for column in columns)
                     new_cols = ", ".join(f"new.{quote_name(column)}" for column in columns)
@@ -1493,9 +1522,200 @@ end;
                                """)
                 inst.command_rebuild()
                 inst.command_optimize()
-            assert inst.columns == columns
+
+            # check everything is consistent
+            assert columns == inst.columns
+            assert columnsize == inst.structure.columnsize
+            assert content == inst.structure.content
+            if content:
+                assert content_rowid is None or content_rowid == inst.structure.content_rowid
+            else:
+                assert inst.structure.content_rowid is None
+            if content == "":
+                assert contentless_delete == inst.structure.contentless_delete
+            else:
+                assert inst.structure.contentless_delete is None
+            assert detail == inst.structure.detail
+            assert name == inst.structure.name
+            if prefix is None:
+                assert set() == inst.structure.prefix
+            else:
+                assert set(int(v) for v in prefix.split()) == inst.structure.prefix
+            assert bool(int(tokendata)) == inst.structure.tokendata
+            if tokenize is None:
+                assert ("unicode61",) == inst.structure.tokenize
+            else:
+                assert tokenize == inst.structure.tokenize
+            assert unindexed == inst.structure.unindexed
 
         return inst
+
+
+@dataclass(frozen=True)
+class FTS5TableStructure:
+    "Table structure from SQL declaration available from :attr:`FTS5Table.structure`"
+
+    name: str
+    "Table nane"
+    columns: tuple[str]
+    "Columns"
+    unindexed: set[str]
+    "Which columns are `unindexed <https://www.sqlite.org/fts5.html#the_unindexed_column_option>`__"
+    tokenize: tuple[str]
+    "`Tokenize <https://www.sqlite.org/fts5.html#tokenizers>`__ split into arguments"
+    prefix: set[int]
+    "`Prefix <https://www.sqlite.org/fts5.html#prefix_indexes>`__ values"
+    content: str | None
+    "`External content/content less <https://www.sqlite.org/fts5.html#external_content_and_contentless_tables>`__ or `None` for regular"
+    content_rowid: str | None
+    "`Rowid <https://www.sqlite.org/fts5.html#external_content_tables>`__ if external content table else `None`"
+    contentless_delete: bool | None
+    "`Contentless delete option <https://www.sqlite.org/fts5.html#contentless_delete_tables>`__ if contentless table else `None`"
+    columnsize: bool
+    "`Columnsize option <https://www.sqlite.org/fts5.html#the_columnsize_option>`__"
+    tokendata: bool
+    "`Tokendata option <https://www.sqlite.org/fts5.html#the_tokendata_option>`__"
+    detail: Literal["full"] | Literal["column"] | Literal["none"]
+    "`Detail option <https://www.sqlite.org/fts5.html#the_detail_option>`__"
+
+
+def _fts5_vtable_tokens(sql: str) -> list[str]:
+    """Parse a SQL statement from sqlite_main create table using quoting rules"""
+    # See tokenize.c in SQLIte source for reference of how various
+    # codepoints are treated
+
+    def skip_spacing():
+        "Return true if we skipped any spaces or comments"
+        nonlocal pos
+        original_pos = pos
+        while sql[pos] in "\x09\x0a\x0c\x0d\x20":
+            pos += 1
+            if pos == len(sql):
+                return True
+
+        # comments
+        if sql[pos : pos + 2] == "--":
+            pos += 2
+            while sql[pos] != "\n":
+                pos += 1
+        elif sql[pos : pos + 2] == "/*":
+            pos = 2 + sql.index("*/", pos + 2)
+
+        return pos != original_pos
+
+    def absorb_quoted():
+        nonlocal pos
+        if sql[pos] not in "\"`'[":
+            return False
+        # doubled quote escapes it, except square brackets
+        start = pos + 1
+        end = sql[pos] if sql[pos] != "[" else "]"
+        while True:
+            pos = sql.index(end, pos + 1)
+            if sql[pos : pos + 2] == end + end and end != "]":
+                pos += 1
+                continue
+            break
+        res.append(sql[start:pos].replace(end + end, end))
+        pos += 1
+        return True
+
+    def absorb_word():
+        # identifier-ish.  fts5 allows integers as column names!
+        nonlocal pos
+
+        start = pos
+
+        while pos < len(sql):
+            # all non-ascii chars are part of words
+            if sql[pos] in "0123456789_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" or ord(sql[pos]) >= 0x80:
+                pos += 1
+            else:
+                break
+        if pos != start:
+            res.append(sql[start:pos])
+            return True
+        return False
+
+    res: list[str] = []
+    pos = 0
+    while pos < len(sql):
+        if skip_spacing():
+            continue
+        if absorb_quoted():
+            continue
+        # punctuation
+        if sql[pos] in "=,.;()":
+            res.append(sql[pos])
+            pos += 1
+            continue
+        if absorb_word():
+            continue
+        raise ValueError(f"Don't know how to handle '{sql[pos]}' in '{sql} at {pos=}")
+
+    return res
+
+
+def _fts5_vtable_parse(sql: str) -> FTS5TableStructure:
+    """Turn sql into structure"""
+    tokens = _fts5_vtable_tokens(sql)
+    # SQLite uppercases these
+    if tokens[:3] != ["CREATE", "VIRTUAL", "TABLE"]:
+        raise ValueError(f"Not a virtual table in {sql=}")
+    vals: dict[str, Any] = {
+        "unindexed": set(),
+        "tokenize": ("unicode61",),
+        "prefix": set(),
+        "content": None,
+        "content_rowid": "_ROWID_",
+        "columnsize": True,
+        "detail": "full",
+        "contentless_delete": False,
+        "tokendata": False,
+    }
+    vals["name"] = tokens[3]
+    if tokens[4].upper() != "USING":
+        raise ValueError(f"Expected USING in {sql=}")
+    if tokens[5].upper() != "FTS5":
+        raise ValueError(f"Not using FTS5 in {sql=}")
+    assert tokens[6] == "("
+    vals["columns"] = []
+    pos = 7
+    while tokens[pos] not in {")", ";"}:
+        vals["columns"].append(tokens[pos])
+        pos += 1
+        if tokens[pos].upper() == "UNINDEXED":
+            vals["unindexed"].add(vals["columns"][-1])
+            pos += 1
+        if tokens[pos] in {",", ")"}:
+            pos += tokens[pos] == ","
+            continue
+        assert tokens[pos] == "="
+        key = vals["columns"].pop()
+        value = tokens[pos + 1]
+        if key == "tokenize":
+            vals[key] = tuple(_fts5_vtable_tokens(value))
+        elif key == "prefix":
+            if value.isdigit():
+                vals[key].add(int(value))
+            else:
+                vals[key].update(int(v) for v in value.split())
+        elif key in {"content", "content_rowid", "detail"}:
+            vals[key] = value
+        elif key in {"contentless_delete", "columnsize", "tokendata"}:
+            vals[key] = bool(int(value))
+        else:
+            raise ValueError(f"Unknown option '{key}' in {sql=}")
+        pos += 2
+        if tokens[pos] == ",":
+            pos += 1
+
+    if vals["content"] != "":
+        vals["contentless_delete"] = None
+    if not vals["content"]:
+        vals["content_rowid"] = None
+    vals["columns"] = tuple(vals["columns"])
+    return FTS5TableStructure(**vals)
 
 
 if hasattr(itertools, "batched"):
@@ -1567,75 +1787,9 @@ def quote_name(name: str, quote: str = '"') -> str:
     return quote + name + quote
 
 
-# To get options set in the create virtual table statement there can be lots of quoting
-# of quoting, especially the tokenizer strings.  You can create columns with names
-# including single and double quoting, backslashes etc.  So we use a dummy virtual module
-# that always throws an exception with the args as received from sqlite.
-# This is an early test that SQLite/FTS5 accepts:
-#
-# CREATE VIRTUAL TABLE ft UsInG fts5(a, [',], [\"=], "prefix=2", 'pr"ef"ix=3  ' , tokenize = '''porter'' ''ascii'''    )
-#
-# fts5_config.c contains the source that parses these.  Also working is
-#  tokenize = [porter 'as de' foo ascii]
-
-
-class _sqlite_parsed_args(Exception):
-    def __init__(self, args):
-        self.sqlite_args = args
-
-
-class _sqlite_parsed_args_vtmodule:
-    def Connect(_con, _mod, _db, _table, *args):
-        raise _sqlite_parsed_args(args)
-
-    Create = Connect
-
-
-def get_args(db: apsw.Connection, table_name: str, schema: str = "main"):
-    """Returns the declared parameters for the table
-
-    ``CREATE VIRTUAL TABLE ft UsInG fts5(a, [',], [\"=], "prefix=2", prefix   =   2, 'pr"ef"ix=3  ' , tokenize = '''porter'' a ''ascii''')``
-
-    would return:
-
-    ``("prefix", "2"), ("tokenize", ("porter", "a", "ascii")))``
-
-    It understands SQLite and FTS5 quoting rules and gets the information out.  Any
-    ``tokenize`` parameter has its value broken out into the individual items.
-
-    """
-    sql: str | None = db.execute(f"select sql from [{ schema }].sqlite_schema where name=?", (table_name,)).get
-    if sql is None:
-        raise ValueError(f"no such table { schema }.{ table_name}")
-    modname = _sqlite_parsed_args_vtmodule.__name__
-    db.create_module(modname, _sqlite_parsed_args_vtmodule)
-    idx = sql.upper().index("USING")
-    paren = sql.index("(", idx)
-    sqlite_args = None
-    try:
-        # this will show up in sqlite log so use a descriptive name
-        db.execute(
-            f"create virtual table [apsw_fts_get_args_{ id(db) }_{ table_name }] using { modname }" + sql[paren:]
-        )
-        raise RuntimeError("Execution should not have reached here")
-    except _sqlite_parsed_args as e:
-        sqlite_args = e.sqlite_args
-    assert sqlite_args is not None
-    # column names and options can be interspersed
-    # figure out fts5 decides what is an option
-
-    # options are bareword = value
-    # value is one bareword or dequote
-    # dequote is [ ' " `" ``  till corresponding close
-    # if end quote char is doubled treat it as single and continue
-    # can have comments like
-    # tokenize='html stoken unicode61 tokenchars _' -- Tokenizer definition
-    return sqlite_args
-
-
 if __name__ == "__main__":
-    import html
     import argparse
+    import html
     import json
 
     import apsw.bestpractice
