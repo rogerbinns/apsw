@@ -73,6 +73,8 @@ typedef struct
 static int
 xTokenizer_Callback(void *pCtx, int iflags, const char *pToken, int nToken, int iStart, int iEnd)
 {
+  /* ::TODO:: there should be GIL ensure for this because it could be called from a
+     third party tokenizer that has gil released */
   assert(!PyErr_Occurred());
   TokenizingContext *our_context = pCtx;
 
