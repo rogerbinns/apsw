@@ -1184,14 +1184,14 @@ has_category(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t f
 {
   PyObject *text;
   Py_ssize_t start, end;
-  unsigned long mask;
+  unsigned long long mask;
 
 #define has_category_KWARGS "text", "start", "end", "mask"
   ARG_PROLOG(4, has_category_KWARGS);
   ARG_MANDATORY ARG_PyUnicode(text);
   ARG_MANDATORY ARG_PyUnicode_offset(start, text);
   ARG_MANDATORY ARG_PyUnicode_offset(end, text);
-  ARG_MANDATORY ARG_unsigned_long(mask);
+  ARG_MANDATORY ARG_unsigned_long_long(mask);
   ARG_EPILOG(NULL, "has_category(text: str, start:int, end: int, mask: int)", );
 
   int kind = PyUnicode_KIND(text);
