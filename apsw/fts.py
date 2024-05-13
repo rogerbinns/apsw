@@ -1013,7 +1013,7 @@ class FTS5Table:
     """
 
     @dataclass
-    class token_cache_class:
+    class _token_cache_class:
         """Data structure representing token cache
 
         :meta private:
@@ -1023,14 +1023,8 @@ class FTS5Table:
         "change cookie at time this information was cached"
         tokens: frozenset[str]
         "the tokens"
-        doc_frequency: dict[str, float]
-        "for each token the proportion of docs containing the token"
-        token_frequency: dict[str, float]
-        "for each token the proportion of all tokens this token makes up"
-        num_docs: int
-        "total number of documents"
-        num_tokens: int
-        "total number of terms"
+        tokens_by_pop: tuple[str]
+        "sorted most popular by document first"
 
     def __init__(self, db: apsw.Connection, name: str, schema: str = "main"):
         if not db.table_exists(schema, name):
@@ -1040,7 +1034,7 @@ class FTS5Table:
         self.schema = schema
         self.qname = quote_name(name)
         self.qschema = quote_name(schema)
-        self._token_cache: FTS5Table.token_cache_class | None = None
+        self._token_cache: FTS5Table._token_cache_class | None = None
 
         # Do some sanity checking
         assert self.columns == self.structure.columns
@@ -1232,8 +1226,8 @@ class FTS5Table:
         "Tokenize supplied utf8"
         return self.tokenizer(utf8, reason, include_offsets=include_offsets, include_colocated=include_colocated)
 
-    def _tokens(self) -> frozenset[str]:
-        "All tokens in fts index"
+    def _tokens_check(self):
+        "Check token information is up to date"
         while self._token_cache is None or self._token_cache.token_cache_cookie != self.change_cookie:
             with threading.Lock():
                 # check if another thread did the work
@@ -1241,29 +1235,30 @@ class FTS5Table:
                 if self._token_cache is not None and self._token_cache.token_cache_cookie == cookie:
                     break
                 n = self.fts5vocab_name("row")
-                num_docs = self.db.execute(f"select count(*) from {self.qschema}.{self.qname}").get
-                num_tokens = 0
-                doc_frequency: dict[str, float] = {}
-                token_frequency: dict[str, float] = {}
-                for term, doc, cnt in self.db.execute(f"select term, doc, cnt from { n }"):
-                    doc_frequency[term] = doc / num_docs
-                    token_frequency[term] = cnt
-                    num_tokens += cnt
-                tokens = frozenset(doc_frequency.keys())
-                for token in tokens:
-                    token_frequency[token] = token_frequency[token] / num_tokens
-
-                self._token_cache = FTS5Table.token_cache_class(
+                # This will fail for less than two tokens,  Not worrying.
+                tokens = self.db.execute(f"select term from { n } order by doc desc").get
+                self._token_cache = FTS5Table._token_cache_class(
                     token_cache_cookie=cookie,
-                    tokens=tokens,
-                    doc_frequency=doc_frequency,
-                    token_frequency=token_frequency,
-                    num_docs=num_docs,
-                    num_tokens=num_tokens,
+                    tokens=frozenset(tokens),
+                    tokens_by_pop=tokens,
                 )
+
+    def _tokens(self) -> frozenset[str]:
+        "All the tokens as a set"
+        self._tokens_check()
         return self._token_cache.tokens
 
     tokens = property(_tokens)
+
+    def _tokens_pop(self) -> tuple[str]:
+        """All the tokens, most popular first
+
+        Popularity is counted by how many documents they occur in.
+        """
+        self._tokens_check()
+        return self._token_cache.tokens_by_pop
+
+    tokens_pop = property(_tokens_pop)
 
     def is_token(self, token: str) -> bool:
         """Returns True if it is a known token
