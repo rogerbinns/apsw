@@ -1324,9 +1324,33 @@ class FTS5Table:
         return [t for t in self.tokens if token in t]
 
     def token_frequency(self, count: int = 10) -> list[tuple[str, int]]:
-        "Most frequent tokens, useful for building a stop words list"
+        """Most frequent tokens, useful for building a stop words list
+
+        This counts the total occurrences of the token, so appearing
+        1,000 times in 1 document counts the same as once each in
+        1,000 documents.
+
+        .. seealso::
+
+            :meth:`token_doc_frequency`
+        """
         n = self.fts5vocab_name("row")
-        return self.db.execute(f"select term, cnt from { n } order by cnt desc limit { count }").get
+        return self.db.execute(f"select term, cnt from { n } order by cnt desc limit ?", (count,)).get
+
+    def token_doc_frequency(self, count: int = 10) -> list[tuple[str, int]]:
+        """Most frequent occuring tokens, useful for building a stop words list
+
+        This counts the total number of documents containing the
+        token, so appearing 1,000 times in 1 document counts as 1,
+        while once each in 1,000 documents counts as 1,000.
+
+        .. seealso::
+
+            :meth:`token_frequency`
+        """
+        n = self.fts5vocab_name("row")
+        return self.db.execute(f"select term, doc from { n } order by doc desc limit ?", (count,)).get
+
     def text_for_token(self, token: str, time_limit: float = 5.0) -> tuple[str]:
         """Provides the original text used to produce `token`
 
