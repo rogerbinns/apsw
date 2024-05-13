@@ -1326,6 +1326,26 @@ class FTS5Table:
         n = self.fts5vocab_name("row")
         return self.db.execute(f"select term, cnt from { n } order by cnt desc limit { count }").get
 
+    def doc_by_id(
+        self, id: apsw.SQLiteValue, column: str | Sequence[str]
+    ) -> apsw.SQLiteValue | tuple[apsw.SQLiteValue]:
+        """Returns the contents of the document `id`
+
+        You can request one column, or several columns.
+
+        :exc:`KeyError` is raised if the `id` does not exist.
+        """
+        if isinstance(column, str):
+            for (row,) in self.db.execute(
+                f"select { quote_name(column)} from { self.quoted_table_name } where rowid=?", (id,)
+            ):
+                return row
+        else:
+            cols = ",".join(quote_name(c) for c in column)
+            for row in self.db.execute(f"select {cols} from { self.quoted_table_name } where rowud=?", (id,)):
+                return row
+        raise KeyError(f"document {id=} not found")
+
     def get_closest_tokens(self, token: str, n: int = 25, cutoff: float = 0.6) -> list[tuple[float, str]]:
         """Returns closest known tokens to ``token`` with score for each
 
