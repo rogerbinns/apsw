@@ -1238,7 +1238,9 @@ class FTS5Table:
         "Tokenizer as used by this table"
         return self.db.fts5_tokenizer(self.structure.tokenize[0], list(self.structure.tokenize[1:]))
 
-    def tokenize(self, utf8: bytes, reason: int = apsw.FTS5_TOKENIZE_DOCUMENT, include_offsets=True, include_colocated=True):
+    def tokenize(
+        self, utf8: bytes, reason: int = apsw.FTS5_TOKENIZE_DOCUMENT, include_offsets=True, include_colocated=True
+    ):
         "Tokenize supplied utf8"
         return self.tokenizer(utf8, reason, include_offsets=include_offsets, include_colocated=include_colocated)
 
