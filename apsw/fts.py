@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import collections
 import difflib
 import fnmatch
 import functools
@@ -19,6 +20,7 @@ import pathlib
 import re
 import sys
 import threading
+import time
 import unicodedata
 
 from dataclasses import dataclass
@@ -1325,6 +1327,51 @@ class FTS5Table:
         "Most frequent tokens, useful for building a stop words list"
         n = self.fts5vocab_name("row")
         return self.db.execute(f"select term, cnt from { n } order by cnt desc limit { count }").get
+    def text_for_token(self, token: str, time_limit: float = 5.0) -> tuple[str]:
+        """Provides the original text used to produce `token`
+
+        This requires iterating through each document containing the
+        token, re-tokenizing the document to get the offsets, and
+        extracting the text between the offsets.  It could take a lot
+        of time for a token appearing in many large documents.  The most
+        recent documents (highest rowids) are examined first.
+
+        :param token: The token to find
+        :param time_limit: Returns results so far after this many
+            seconds have elapsed
+        :returns: The text found that mapped to the provided token,
+            most popular first
+        """
+        c = collections.Counter()
+
+        deadline: float = time.monotonic() + time_limit
+        last = None, None
+        tokens: list[tuple[int, int, str]] = []
+
+        # The docid, colname come out in random orders.  This resulted
+        # in tokenizing the same documents over and over again.
+        # Ordering by docid and colnane solves that problem.  SQLite
+        # has to use a temp btree to do the ordering, but testing with
+        # the enron corpus had it taking 2 milliseconds. docid is
+        # descending here so newer documents are preferred since they
+        # are 'fresher'.
+
+        sql = f"""select doc, col, offset
+                from { self.fts5vocab_name('instance') }
+                where term=?
+                order by doc desc, col"""
+
+        for docid, col, offset in self.db.execute(sql, (token,)):
+            if (docid, col) != last:
+                # We only check on hitting new doc + column
+                if time.monotonic() >= deadline:
+                    break
+                doc = self.doc_by_id(docid, col).encode("utf8")
+                tokens = self.tokenize(doc, include_colocated=False)
+                last = docid, col
+            c[doc[tokens[offset][0] : tokens[offset][1]]] += 1
+
+        return tuple(text.decode("utf8") for (text, _) in c.most_common())
 
     def doc_by_id(
         self, id: apsw.SQLiteValue, column: str | Sequence[str]
