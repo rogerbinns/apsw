@@ -1075,6 +1075,20 @@ class FTS5Table:
         assert len(found) == 1
         return _fts5_vtable_parse(found[0])
 
+    @functools.cached_property
+    def quoted_table_name(self) -> str:
+        '''Provides the full table name for composing your own queries
+
+        You can't use bindings for table names in queries, so use this
+        when constructing a query string::
+
+           search = apsw.fts.FTS5Table(con, 'my_index')
+
+           sql = f"""SELECT highlight(summary) from { search.quoted_table_name }
+                        WHERE ...."""
+        '''
+        return f"{self.qschema}.{self.qname}"
+
     def query(self, query: str) -> apsw.Cursor:
         "Returns a cursor making the query - rowid first"
         # ::TODO:: it appears you need to do some processing of the results
