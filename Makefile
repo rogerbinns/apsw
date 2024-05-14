@@ -164,11 +164,13 @@ stubtest: build_ext  ## Verifies type annotations with mypy
 	$(PYTHON) -m mypy --allow-redefinition example-code.py
 	$(PYTHON) -m mypy --allow-redefinition --strict example-code.py
 
+# set this to a commit id to grab that instead
+FOSSIL_URL="https://www.sqlite.org/src/tarball/sqlite.tar.gz"
 fossil: ## Grabs latest trunk from SQLite source control, extracts and builds in sqlite3 directory
 	-mv sqlite3/sqlite3config.h .
 	-rm -rf sqlite3
 	mkdir sqlite3
-	set -e ; cd sqlite3 ; curl --output - https://www.sqlite.org/src/tarball/sqlite.tar.gz | tar xfz - --strip-components=1
+	set -e ; cd sqlite3 ; curl --output - $(FOSSIL_URL) | tar xfz - --strip-components=1
 	set -e ; cd sqlite3 ; ./configure --quiet --enable-all ; $(MAKE) sqlite3.c sqlite3
 	-mv sqlite3config.h sqlite3/
 
