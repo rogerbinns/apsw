@@ -14,8 +14,6 @@ import html as html_module
 import html.parser as html_parser_module
 import importlib
 import itertools
-import multiprocessing
-import multiprocessing.pool
 import pathlib
 import re
 import sys
@@ -1419,36 +1417,54 @@ class FTS5Table:
                 return row
         raise KeyError(f"document {id=} not found")
 
-    def get_closest_tokens(self, token: str, n: int = 25, cutoff: float = 0.6) -> list[tuple[float, str]]:
-        """Returns closest known tokens to ``token`` with score for each
-
-        Calls :func:`token_closeness` with the parameters having the same meaning."""
-        return token_closeness(token, self.tokens, n, cutoff)
-
-    def get_closest_tokens_mp(
-        self, pool: multiprocessing.pool.Pool, batch_size: int, token: str, n: int = 25, cutoff: float = 0.6
+    def closest_tokens(
+        self,
+        token: str,
+        n: int = 25,
+        cutoff: float = 0.6,
+        time_limit: float = 5.0,
+        transform: Callable[[str], Any] | None = None,
     ) -> list[tuple[float, str]]:
         """Returns closest known tokens to ``token`` with score for each
 
-        Does the same as :meth:`get_closest_tokens` but uses the
-        multiprocessing pool with ``batch_size`` tokens processed at
-        once in each work unit.
+        Uses :func:`difflib.get_close_matches` algorithm to find close
+        matches.
 
-        This is useful when there are a large number of tokens in the index,
-        as the parameter token has to be scored against every one.
+        Note that this is a statistical operation, and has no
+        understanding of the tokens and their meaning.  If the
+        ``transform`` parameter is `None` then the comparisons are
+        letter by letter, otherwise whatever ``transform`` returns is
+        used.  For the Roman alphabet (English and similar languages)
+        you may find :func:`shingle` useful.
 
-        An example is using the half million enron email archive which has
-        600,000 tokens.  On a fast workstation :meth:`get_closest_tokens`
-        took 2 seconds while this method with a `batch_size` of 10,000 took
-        0.2 seconds.
+        Tokens are examined most popular first.  If the `time_limit`
+        is hit, then the results so far are returned.
         """
-        results: list[tuple[float, str]] = []
-        for res in pool.imap_unordered(
-            functools.partial(token_closeness, token, n=n, cutoff=cutoff), batched(self.tokens, batch_size)
-        ):
-            results.extend(res)
-        results.sort(reverse=True)
-        return results[:n]
+        assert n > 0
+        assert 0.0 <= cutoff <= 1.0
+
+        deadline = time.monotonic() + time_limit
+
+        result: list[tuple[float, str]] = []
+
+        sm = difflib.SequenceMatcher()
+        sm.set_seq2(transform(token) if transform else token)
+        tokens_pop = self.tokens_pop
+        for i in range(len(tokens_pop)):
+            t = tokens_pop[i]
+            if t == token:
+                continue
+            sm.set_seq1(transform(t) if transform else t)
+            if sm.real_quick_ratio() >= cutoff and sm.quick_ratio() >= cutoff and (ratio := sm.ratio()) >= cutoff:
+                result.append((ratio, t))
+                if len(result) > n:
+                    result.sort(reverse=True)
+                    result.pop()
+                    cutoff = result[-1][0]
+            if i % 1000 == 0 and time.monotonic() >= deadline:
+                break
+        result.sort(reverse=True)
+        return result
 
     @functools.cache
     def fts5vocab_name(self, type: Literal["row"] | Literal["col"] | Literal["instance"]) -> str:
@@ -1858,35 +1874,6 @@ def shingle(token: str, size: int = 3) -> tuple[str, ...]:
     if len(token) <= size:
         return (token,)
     return tuple(token[n : n + size] for n in range(0, len(token) - size + 1))
-
-
-def token_closeness(
-    token: str, tokens: set[str], n: int, cutoff: float, transform: Callable[[str], Any] | None = shingle
-) -> list[tuple[float, str]]:
-    """
-    Uses :func:`difflib.get_close_matches` algorithm to find close matches.
-
-    Note that this is a statistical operation, and has no understanding
-    of the tokens and their meaning.  If the ``transform`` parameter is
-    None then the comparisons are letter by letter.
-    """
-    assert n > 0
-    assert 0.0 <= cutoff <= 1.0
-    result: list[tuple[float, str]] = []
-    sm = difflib.SequenceMatcher()
-    sm.set_seq2(transform(token) if transform else token)
-    for t in tokens:
-        if t == token:
-            continue
-        sm.set_seq1(transform(t) if transform else t)
-        if sm.real_quick_ratio() >= cutoff and sm.quick_ratio() >= cutoff and (ratio := sm.ratio()) >= cutoff:
-            result.append((ratio, t))
-            if len(result) > n:
-                result.sort(reverse=True)
-                result.pop()
-                cutoff = result[-1][0]
-    result.sort(reverse=True)
-    return result
 
 
 def quote_name(name: str, quote: str = '"') -> str:
