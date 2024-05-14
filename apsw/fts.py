@@ -1253,6 +1253,7 @@ class FTS5Table:
                     break
                 n = self.fts5vocab_name("row")
                 # This query is very slow - eg 3 seconds on the enron corpus
+                # See https://sqlite.org/forum/forumpost/6e5c6bd84a
                 sql = f"select term from { n } order by doc desc"
                 # get will produce wrong shape for less than two tokens,  Not worrying.
                 tokens = self.db.execute(sql).get
