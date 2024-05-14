@@ -1219,7 +1219,8 @@ class FTS5Table:
         example you could remember the Unicode version used by your tokenizer, and rebuild if the
         version is updated.
 
-        The advantage of using this is that the names/values will survive the fts5 table being renamed.
+        The advantage of using this is that the names/values will survive the fts5 table being renamed,
+        backed up, restored etc.
         """
         key = prefix + name
         if value is not None:
@@ -1251,8 +1252,10 @@ class FTS5Table:
                 if self._token_cache is not None and self._token_cache.token_cache_cookie == cookie:
                     break
                 n = self.fts5vocab_name("row")
-                # This will fail for less than two tokens,  Not worrying.
-                tokens = self.db.execute(f"select term from { n } order by doc desc").get
+                # This query is very slow - eg 3 seconds on the enron corpus
+                sql = f"select term from { n } order by doc desc"
+                # get will produce wrong shape for less than two tokens,  Not worrying.
+                tokens = self.db.execute(sql).get
                 self._token_cache = FTS5Table._token_cache_class(
                     token_cache_cookie=cookie,
                     tokens=frozenset(tokens),
@@ -1294,7 +1297,7 @@ class FTS5Table:
         do all have to be present?
 
         ``["one", "two", "three"]`` ->
-           ["onetwothree", "twothree", "onetwo"]
+           ``["onetwothree", "twothree", "onetwo"]``
 
         ?? Sort by token frequency
         """
@@ -1469,7 +1472,8 @@ class FTS5Table:
     @functools.cache
     def fts5vocab_name(self, type: Literal["row"] | Literal["col"] | Literal["instance"]) -> str:
         """
-        Creates fts5vocab table in temp and returns name
+        Creates a `fts5vocab table <https://www.sqlite.org/fts5.html#the_fts5vocab_virtual_table_module>`__
+        in temp and returns fully quoted name
         """
         base = f"fts5vocab_{ self.schema }_{ self.name }_{ type }".replace('"', '""')
 
@@ -1501,7 +1505,7 @@ class FTS5Table:
         generate_triggers: bool = True,
         drop_if_exists: bool = False,
     ) -> FTS5Table:
-        """Creates the table returning a :class:`FTS5Table` on success
+        """Creates the table, returning a :class:`FTS5Table` on success
 
         You can use :meth:`apsw.Connection.table_exists` to check if a
         table already exists.
@@ -1685,7 +1689,7 @@ class FTS5TableStructure:
     name: str
     "Table nane"
     columns: tuple[str]
-    "Columns"
+    "Column names"
     unindexed: set[str]
     "Which columns are `unindexed <https://www.sqlite.org/fts5.html#the_unindexed_column_option>`__"
     tokenize: tuple[str]
