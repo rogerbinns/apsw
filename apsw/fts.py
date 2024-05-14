@@ -1783,7 +1783,7 @@ def _fts5_vtable_tokens(sql: str) -> list[str]:
             continue
         if absorb_word():
             continue
-        raise ValueError(f"Don't know how to handle '{sql[pos]}' in '{sql} at {pos=}")
+        raise ValueError(f"Don't know how to handle '{sql[pos]}' in '{sql}' at {pos=}")
 
     return res
 
