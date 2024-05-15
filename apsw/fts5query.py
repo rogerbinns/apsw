@@ -28,6 +28,8 @@ class FTS5(enum.Enum):
     COMMA = 13
     PLUS = 14
     STAR = 15
+    # Add our own
+    NEAR = 16
 
 
 single_char_tokens = {
@@ -48,13 +50,11 @@ special_words = {
     "OR": FTS5.OR,
     "NOT": FTS5.NOT,
     "AND": FTS5.AND,
+    "NEAR": FTS5.NEAR,
 }
 
 
 def get_tokens(query: str) -> list[tuple[FTS5, str | None]]:
-    # FTS5.TERM is generated while parsing a query
-    # There is no separate token for NEAR.
-
     def skip_spacing():
         "Return True if we skipped any spaces"
         nonlocal pos
@@ -122,5 +122,11 @@ def get_tokens(query: str) -> list[tuple[FTS5, str | None]]:
             continue
 
         raise ValueError(f"Invalid query character '{query[pos]}' in '{query}' at {pos=}")
+
+    # fts5 promotes STRING "NEAR" to token NEAR only if followed by "("
+    # we demote to get the same effect
+    for i in range(len(res) - 1):
+        if res[i][0] == FTS5.NEAR and res[i + 1][0] != FTS5.LP:
+            res[i] = (FTS5.STRING, "NEAR")
 
     return res
