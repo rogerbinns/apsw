@@ -1107,12 +1107,77 @@ class FTS5Table:
         return self.db.execute("select rowid, * from { self.qschema }.{ self.qname }(?) order by rank", (query,))
 
     def insert(self, *args: apsw.SQLiteValue, **kwargs: apsw.SQLiteValue) -> None:
-        """Does insert with columns by positional and/or named via kwargs
+        """insert with columns by positional and/or named via kwargs
 
-        * insert into content table if using that
+        You can mix and match positional and keyword arguments:
+
+           f.insert("hello")
+           f.insert("hello", header="world")
+           f.insert(header="world")
+
+        If you are using an external content table:
+        * the insert will be directed to that table
+        * the column positions and names of that table are used
         """
-        # ::TODO:: implement
-        ...
+        stmt, mapping = self._insert_sql(len(args), tuple(kwargs.keys()) if kwargs else None)
+        if mapping is not None:
+            if args:
+                bindings = dict(zip(mapping, args))
+                bindings.update(kwargs)
+            else:
+                bindings = kwargs
+            self.db.execute(stmt, bindings)
+        else:
+            self.db.execute(stmt, args)
+
+    @functools.cache
+    def _insert_sql(self, num_args: int, kwargs: tuple[str] | None) -> tuple[str, tuple[str, ...] | None]:
+        "Figure out SQL and column mapping to do the actual insert"
+        if self.structure.content is not None:
+            columns = tuple(
+                name
+                for (name,) in self.db.execute(
+                    f"select name from { self.qschema }.pragma_table_info(?)", (self.structure.content,)
+                )
+            )
+            target_table = f"{self.qschema}.{quote_name(self.structure.content)}"
+        else:
+            columns = self.columns
+            target_table = self.quoted_table_name
+
+        if num_args > len(columns):
+            raise ValueError(f"Too many values supplied ({num_args}) - max {len(columns)}")
+        if not kwargs:
+            if num_args < 1:
+                raise ValueError("You must supply some values")
+            # simple case
+            sql = f"insert into { target_table } ("
+            sql += ", ".join(quote_name(column) for column in columns[:num_args])
+            sql += ") values ("
+            sql += ",".join("?" for _ in range(num_args))
+            sql += ")"
+            return sql, None
+
+        def check_column_name(name: str):
+            for c in name:
+                if c not in "0123456789_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" and ord(c) < 0x80:
+                    raise ValueError(f"Column '{name}' has character 0x{ord(c):02x} that can't be used in bindings")
+            return name
+
+        mapping = tuple(check_column_name(columns[i]) for i in range(num_args))
+        for k in kwargs:
+            if k not in columns:
+                raise ValueError(f"'{k}' is not a column name - {', '.join(columns)}")
+            if k in mapping:
+                raise ValueError(f"Column '{k} is provided both as positional and keyword")
+            check_column_name(k)
+
+        sql = f"insert into { target_table } ("
+        sql += ", ".join(quote_name(column) for column in mapping + kwargs)
+        sql += ") values ("
+        sql += ",".join(f":{column}" for column in mapping + kwargs)
+        sql += ")"
+        return sql, mapping
 
     # some method helpers pattern, not including all of them yet
 
