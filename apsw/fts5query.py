@@ -72,8 +72,7 @@ def get_tokens(query: str) -> list[tuple[FTS5, str | None]]:
         if query[pos] != '"':
             return False
 
-        # two quotes in a row seems to keep both of them
-        # ::TODO: check in tokenizer what actually gets provided
+        # two quotes in a row keeps one and continues string
         start = pos + 1
         while True:
             pos = query.index('"', pos + 1)
@@ -81,7 +80,7 @@ def get_tokens(query: str) -> list[tuple[FTS5, str | None]]:
                 pos += 1
                 continue
             break
-        res.append((FTS5.STRING, query[start:pos]))
+        res.append((FTS5.STRING, query[start:pos].replace('""', '"')))
         pos += 1
         return True
 
