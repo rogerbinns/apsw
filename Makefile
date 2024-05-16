@@ -250,6 +250,8 @@ src/_unicodedb.c: ## Update generated Unicode database lookups
 # building a python debug interpreter
 PYDEBUG_VER=3.12.3
 PYDEBUG_DIR=/space/pydebug
+PYTHREAD_VER=$(PYDEBUG_VER)
+PYTHREAD_DIR=/space/pythread
 PYVALGRIND_VER=$(PYDEBUG_VER)
 PYVALGRIND_DIR=/space/pyvalgrind
 # This must end in slash
@@ -263,6 +265,14 @@ pydebug: ## Build a debug python including address sanitizer.  Extensions it bui
 	--without-freelists --with-assertions && \
 	env ASAN_OPTIONS=detect_leaks=false $(MAKE) -j install
 	$(MAKE) dev-depends PYTHON=$(PYDEBUG_DIR)/bin/python3
+
+pythread: ## Build a debug python including thread sanitizer.  Extensions it builds are also thread sanitized
+	set -x && cd "$(PYTHREAD_DIR)" && find . -delete && \
+	curl https://www.python.org/ftp/python/`echo $(PYTHREAD_VER) | sed 's/[abr].*//'`/Python-$(PYTHREAD_VER).tar.xz | tar xfJ - && \
+	cd Python-$(PYDEBUG_VER) && \
+	env CFLAGS=-fsanitize=thread LDFLAGS=-fsanitize=thread TSAN_OPTIONS=report_bugs=0 ./configure  --without-pymalloc --with-pydebug --prefix="$(PYTHREAD_DIR)" --without-freelists  && \
+	$(MAKE) -j install
+	$(MAKE) dev-depends PYTHON=$(PYTHREAD_DIR)/bin/python3
 
 pyvalgrind: ## Build a debug python with valgrind integration
 	set -x && cd "$(PYVALGRIND_DIR)" && find . -delete && \
