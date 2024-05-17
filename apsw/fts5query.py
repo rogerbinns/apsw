@@ -6,7 +6,12 @@
 # Tokens https://sqlite.org/src/file?name=ext/fts5/fts5_expr.c
 # fts5ExprGetToken
 
+from __future__ import annotations
+
 import enum
+import dataclasses
+
+from typing import Literal
 
 
 class FTS5(enum.Enum):
@@ -54,7 +59,14 @@ special_words = {
 }
 
 
-def get_tokens(query: str) -> list[tuple[FTS5, str | None]]:
+@dataclasses.dataclass
+class Token:
+    tok: FTS5
+    pos: int
+    value: str | None = None
+
+
+def get_tokens(query: str) -> list[Token]:
     def skip_spacing():
         "Return True if we skipped any spaces"
         nonlocal pos
@@ -80,7 +92,7 @@ def get_tokens(query: str) -> list[tuple[FTS5, str | None]]:
                 pos += 1
                 continue
             break
-        res.append((FTS5.STRING, query[start:pos].replace('""', '"')))
+        res.append(Token(FTS5.STRING, start, query[start:pos].replace('""', '"')))
         pos += 1
         return True
 
@@ -99,11 +111,11 @@ def get_tokens(query: str) -> list[tuple[FTS5, str | None]]:
                 break
         if pos != start:
             s = query[start:pos]
-            res.append((special_words.get(s, FTS5.STRING), s))
+            res.append(Token(special_words.get(s, FTS5.STRING), start, s))
             return True
         return False
 
-    res: list[tuple[FTS5, str | None]] = []
+    res: list[Token] = []
     pos = 0
 
     while pos < len(query):
@@ -111,7 +123,7 @@ def get_tokens(query: str) -> list[tuple[FTS5, str | None]]:
             continue
         tok = single_char_tokens.get(query[pos])
         if tok is not None:
-            res.append((tok, None))
+            res.append(Token(tok, pos))
             pos += 1
             continue
 
@@ -126,7 +138,115 @@ def get_tokens(query: str) -> list[tuple[FTS5, str | None]]:
     # fts5 promotes STRING "NEAR" to token NEAR only if followed by "("
     # we demote to get the same effect
     for i in range(len(res) - 1):
-        if res[i][0] == FTS5.NEAR and res[i + 1][0] != FTS5.LP:
-            res[i] = (FTS5.STRING, "NEAR")
+        if res[i].tok == FTS5.NEAR and res[i + 1].tok != FTS5.LP:
+            res[i].tok = FTS5.STRING
 
+    # two adjacent string are implicitly anded - make that explicit
+    for i in range(len(res) - 2, -1, -1):
+        if res[i].tok == FTS5.STRING and res[i + 1].tok == FTS5.STRING:
+            res.insert(i + 1, Token(FTS5.AND, res[i + 1].pos))
+
+    # add explicit EOF
+    res.append(Token(FTS5.EOF, pos))
     return res
+
+
+class Operation(enum.Enum):
+    "How the phrases are treated"
+
+    AND = enum.auto()
+    "All must occur, in any order"
+    OR = enum.auto()
+    "At least one must occur"
+    NOT = enum.auto()
+    "None must be present"
+    NEAR = enum.auto()
+    "Must be near each other"
+    SEQUENCE = enum.auto()
+    "All must occur in order"
+
+
+@dataclasses.dataclass
+class Query:
+    op: Operation
+    phrases: list[str | Query]
+    columns_included: list[str] | None = None
+    columns_excluded: list[str] | None = None
+    near_distance: int = -1
+
+
+class Parse:
+    class Error(Exception):
+        def __init__(self, message: str, token: Token):
+            Exception.__init__(self, message)
+            self.token = token
+
+    def show_error(self, query: str, exc: Parse.Error):
+        print(query)
+        print(" " * exc.token.pos + "^", exc.args[0])
+        print(exc.token)
+
+    def __init__(self, query):
+        self.tokens = get_tokens(query)
+        self.token_num = -1
+        try:
+            result = self.query()
+            if self.token_num != len(self.tokens):
+                raise Parse.Error("unexpected", self.tokens[self.token_num])
+            print(f"{result=}")
+        except Parse.Error as exc:
+            self.show_error(query, exc)
+            raise
+
+    def take_token(self) -> Token:
+        self.token_num += 1
+        return self.tokens[self.token_num]
+
+    def lookahead(self) -> Token:
+        return self.tokens[self.token_num + 1]
+
+    def prefix(self):
+        "Handle token as prefix (nud)"
+        token = self.take_token()
+        if token.tok == FTS5.STRING:
+            return Query("AND", [token.value])
+        if token.tok == FTS5.NEAR:
+            # tokenizer takes care of open paren
+            assert self.lookahead().tok == FTS5.LP
+            self.take_token()
+            # FTS5 parser has special grammar for nearset and nearphrase
+            # to reject OR / NOT
+            phrases = self.query(0)
+            1 / 0
+
+        raise self.Error("unexpected", token)
+
+    def infix(self, left: Query) -> Query:
+        "Handle token as infix (led)"
+        token = self.take_token()
+        if token.tok == FTS5.AND:
+            right = self.query(self.lbp[token.tok])
+            1 / 0
+        elif token.tok == FTS5.PLUS:
+            right = self.query(self.lbp[token.tok])
+            1 / 0
+        raise self.Error("unimplemented", token)
+
+    # Any tokens implementing an infix operation (think having a
+    # left and right hand side) must have a non-zero value
+    lbp = {
+        FTS5.OR: 30,
+        FTS5.AND: 40,
+        FTS5.PLUS: 50,
+        FTS5.NOT: 60,
+        FTS5.COLON: 70,
+    }
+    "left binding power"
+
+    def query(self, rbp: int = 0):
+        res = self.prefix()
+
+        while rbp < self.lbp.get(self.lookahead().tok, 0):
+            res = self.infix(res)
+
+        return res
