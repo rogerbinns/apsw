@@ -170,9 +170,14 @@ class Operation(enum.Enum):
 class Query:
     op: Operation
     phrases: list[str | Query]
-    columns_included: list[str] | None = None
-    columns_excluded: list[str] | None = None
+    columns: ColumnSpec | None = None
     near_distance: int = -1
+
+
+@dataclasses.dataclass
+class ColumnSpec:
+    columns: list[str]
+    include: bool = True
 
 
 class Parse:
@@ -191,12 +196,26 @@ class Parse:
         self.token_num = -1
         try:
             result = self.query()
-            if self.token_num != len(self.tokens):
+            if self.lookahead().tok != FTS5.EOF:
                 raise Parse.Error("unexpected", self.tokens[self.token_num])
-            print(f"{result=}")
+            if isinstance(result, str):
+                result = Query(Operation.AND, [result])
+            print("\nParse results")
+            self.print_query(result)
         except Parse.Error as exc:
             self.show_error(query, exc)
             raise
+
+    def print_query(self, query: Query, indent: int = 0):
+        i = "    " * indent
+        print(f"{i}{query.op} {'' if query.near_distance==-1 else query.near_distance}")
+        if query.columns:
+            print(f"{i}{query.columns}")
+        for phrase in query.phrases:
+            if isinstance(phrase, str):
+                print(f'{i}"{phrase}"')
+            else:
+                self.print_query(phrase, indent + 1)
 
     def take_token(self) -> Token:
         self.token_num += 1
@@ -205,18 +224,25 @@ class Parse:
     def lookahead(self) -> Token:
         return self.tokens[self.token_num + 1]
 
-    def prefix(self):
+    def prefix(self) -> Query | str:
         "Handle token as prefix (nud)"
         token = self.take_token()
         if token.tok == FTS5.STRING:
-            return Query("AND", [token.value])
-        if token.tok == FTS5.NEAR:
-            # tokenizer takes care of open paren
-            assert self.lookahead().tok == FTS5.LP
+            return token.value
+        if token.tok == FTS5.LP:
+            query = self.query(0)
+            if self.lookahead().tok != FTS5.RP:
+                raise self.Error("Did not find matching )", token)
             self.take_token()
-            # FTS5 parser has special grammar for nearset and nearphrase
-            # to reject OR / NOT
-            phrases = self.query(0)
+            return query
+        if token.tok == FTS5.NEAR:
+            self.expect(FTS5.LP)
+            # we should take PHRASE
+            #   PHRASE is STRING and +
+            #   AND / OR / NOT not allowed
+            # then optional COMMA
+            #   then STRING that is number
+            # then RP
             1 / 0
 
         raise self.Error("unexpected", token)
@@ -226,11 +252,34 @@ class Parse:
         token = self.take_token()
         if token.tok == FTS5.AND:
             right = self.query(self.lbp[token.tok])
-            1 / 0
+            return self.flatten_query(Query(Operation.AND, [left, right]))
+        elif token.tok == FTS5.OR:
+            right = self.query(self.lbp[token.tok])
+            return self.flatten_query(Query(Operation.OR, [left, right]))
         elif token.tok == FTS5.PLUS:
             right = self.query(self.lbp[token.tok])
-            1 / 0
+            return self.flatten_query(Query(Operation.SEQUENCE, [left, right]))
         raise self.Error("unimplemented", token)
+
+    def flatten_query(self, query: Query) -> Query:
+        "Simplify if possible"
+        # we want to promote child phrases into parent
+
+        def check_phrase(p: str | Query):
+            # does str require query.op == AND?
+            if isinstance(p, str):
+                return True
+            return p.op == query.op and p.columns == query.columns and p.near_distance == query.near_distance
+
+        if all(check_phrase(child) for child in query.phrases):
+            new_phrases = []
+            for phrase in query.phrases:
+                if isinstance(phrase, str):
+                    new_phrases.append(phrase)
+                else:
+                    new_phrases.extend(phrase.phrases)
+            query.phrases = new_phrases
+        return query
 
     # Any tokens implementing an infix operation (think having a
     # left and right hand side) must have a non-zero value
@@ -243,7 +292,7 @@ class Parse:
     }
     "left binding power"
 
-    def query(self, rbp: int = 0):
+    def query(self, rbp: int = 0) -> Query | str:
         res = self.prefix()
 
         while rbp < self.lbp.get(self.lookahead().tok, 0):
