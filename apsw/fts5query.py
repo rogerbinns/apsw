@@ -11,7 +11,7 @@ from __future__ import annotations
 import enum
 import dataclasses
 
-from typing import Literal
+from typing import Literal, Any
 
 
 class FTS5(enum.Enum):
@@ -141,161 +141,283 @@ def get_tokens(query: str) -> list[Token]:
         if res[i].tok == FTS5.NEAR and res[i + 1].tok != FTS5.LP:
             res[i].tok = FTS5.STRING
 
-    # two adjacent string are implicitly anded - make that explicit
-    for i in range(len(res) - 2, -1, -1):
-        if res[i].tok == FTS5.STRING and res[i + 1].tok == FTS5.STRING:
-            res.insert(i + 1, Token(FTS5.AND, res[i + 1].pos))
-
     # add explicit EOF
     res.append(Token(FTS5.EOF, pos))
     return res
 
 
-class Operation(enum.Enum):
-    "How the phrases are treated"
+@dataclasses.dataclass
+class PHRASES:
+    "phrases"
 
-    AND = enum.auto()
-    "All must occur, in any order"
-    OR = enum.auto()
-    "At least one must occur"
-    NOT = enum.auto()
-    "None must be present"
-    NEAR = enum.auto()
-    "Must be near each other"
-    SEQUENCE = enum.auto()
-    "All must occur in order"
+    phrases: list[PHRASE]
+    initial: bool = False
+    "if true then phrase must match first token in column"
 
 
 @dataclasses.dataclass
-class Query:
-    op: Operation
-    phrases: list[str | Query]
-    columns: ColumnSpec | None = None
-    near_distance: int = -1
+class PHRASE:
+    "one phrase"
+
+    phrase: str
+    prefix: bool = False
+    "if True then if it is a prefix search"
+    sequence: bool = False
+    "if True must follow tokens of previous phrase"
 
 
 @dataclasses.dataclass
-class ColumnSpec:
+class NEAR:
+    "near operation"
+
+    phrases: PHRASES
+    distance: int
+
+
+@dataclasses.dataclass
+class COLUMNFILTER:
+    "limit query to columns"
+
     columns: list[str]
-    include: bool = True
+    query: QUERY
+    include: bool
+
+
+@dataclasses.dataclass
+class AND:
+    "all queries must match"
+
+    queries: list[QUERY]
+
+
+@dataclasses.dataclass
+class OR:
+    "any query must match"
+
+    queries: list[QUERY]
+
+
+@dataclasses.dataclass
+class NOT:
+    "left must match but right must not"
+
+    left: QUERY
+    right: QUERY
+
+
+QUERY = COLUMNFILTER | NEAR | AND | OR | NOT | PHRASES
+
+
+def to_dict(q: QUERY | PHRASE) -> dict[str, Any]:
+    if isinstance(q, PHRASES):
+        res = {"op": "phrases"}
+        if q.initial:
+            res["initial"] = q.initial
+        res["phrases"] = [to_dict(phrase) for phrase in q.phrases]
+        return res
+
+    if isinstance(q, PHRASE):
+        res = {"op": "phrase", "phrase": q.phrase}
+        if q.prefix:
+            res["prefix"] = True
+        if q.sequence:
+            res["sequence"] = True
+        return res
+
+    if isinstance(q, AND):
+        return {"op": "and", "queries": [to_dict(query) for query in q.queries]}
+
+    if isinstance(q, OR):
+        return {"op": "or", "queries": [to_dict(query) for query in q.queries]}
+
+    if isinstance(q, NOT):
+        return {"op": "not", "true": q.left, "false": q.right}
+
+    if isinstance(q, NEAR):
+        res = {"op": "near", "phrases": to_dict(q.phrases)}
+        if q.distance != 10:
+            res["distance"] = q.distance
+        return res
+
+    if isinstance(q, COLUMNFILTER):
+        return {"op": "columnfilter", "columns": q.columns, "include": q.include, "query": to_dict(q.query)}
+
+    raise NotImplementedError(f"{q=}")
 
 
 class Parse:
     class Error(Exception):
-        def __init__(self, message: str, token: Token):
-            Exception.__init__(self, message)
+        def __init__(self, message, token):
+            self.message = message
             self.token = token
 
-    def show_error(self, query: str, exc: Parse.Error):
-        print(query)
-        print(" " * exc.token.pos + "^", exc.args[0])
-        print(exc.token)
-
-    def __init__(self, query):
+    def __init__(self, query: str):
         self.tokens = get_tokens(query)
-        self.token_num = -1
+        self.token_pos = -1
+
         try:
-            result = self.query()
-            if self.lookahead().tok != FTS5.EOF:
-                raise Parse.Error("unexpected", self.tokens[self.token_num])
-            if isinstance(result, str):
-                result = Query(Operation.AND, [result])
-            print("\nParse results")
-            self.print_query(result)
+            result = self.parse_query()
+            if self.lookahead.tok != FTS5.EOF:
+                raise Parse.Error("unexpected", self.lookahead)
         except Parse.Error as exc:
-            self.show_error(query, exc)
+            print(query)
+            print(" " * exc.token.pos + "\u2b06 " + exc.message)
             raise
 
-    def print_query(self, query: Query, indent: int = 0):
-        i = "    " * indent
-        print(f"{i}{query.op} {'' if query.near_distance==-1 else query.near_distance}")
-        if query.columns:
-            print(f"{i}{query.columns}")
-        for phrase in query.phrases:
-            if isinstance(phrase, str):
-                print(f'{i}"{phrase}"')
-            else:
-                self.print_query(phrase, indent + 1)
+        import pprint
+
+        pprint.pprint(to_dict(result))
+
+    def _lookahead(self) -> Token:
+        return self.tokens[self.token_pos + 1]
+
+    lookahead = property(_lookahead, doc="Lookahead at next token")
 
     def take_token(self) -> Token:
-        self.token_num += 1
-        return self.tokens[self.token_num]
+        self.token_pos += 1
+        return self.tokens[self.token_pos]
 
-    def lookahead(self) -> Token:
-        return self.tokens[self.token_num + 1]
+    def parse_part(self) -> QUERY:
+        if self.lookahead.tok in {FTS5.MINUS, FTS5.LCP} or (
+            self.lookahead.tok == FTS5.STRING and self.tokens[self.token_pos + 2].tok == FTS5.COLON
+        ):
+            return self.parse_colspec()
 
-    def prefix(self) -> Query | str:
-        "Handle token as prefix (nud)"
-        token = self.take_token()
-        if token.tok == FTS5.STRING:
-            return token.value
-        if token.tok == FTS5.LP:
-            query = self.query(0)
-            if self.lookahead().tok != FTS5.RP:
-                raise self.Error("Did not find matching )", token)
+        if self.lookahead.tok == FTS5.LP:
+            token = self.take_token()
+            query = self.parse_query()
+            if self.lookahead.tok != FTS5.RP:
+                raise Parse.Error("unclosed (", token)
             self.take_token()
             return query
-        if token.tok == FTS5.NEAR:
-            self.expect(FTS5.LP)
-            # we should take PHRASE
-            #   PHRASE is STRING and +
-            #   AND / OR / NOT not allowed
-            # then optional COMMA
-            #   then STRING that is number
-            # then RP
-            1 / 0
 
-        raise self.Error("unexpected", token)
+        if self.lookahead.tok == FTS5.NEAR:
+            return self.parse_near()
 
-    def infix(self, left: Query) -> Query:
-        "Handle token as infix (led)"
-        token = self.take_token()
-        if token.tok == FTS5.AND:
-            right = self.query(self.lbp[token.tok])
-            return self.flatten_query(Query(Operation.AND, [left, right]))
-        elif token.tok == FTS5.OR:
-            right = self.query(self.lbp[token.tok])
-            return self.flatten_query(Query(Operation.OR, [left, right]))
-        elif token.tok == FTS5.PLUS:
-            right = self.query(self.lbp[token.tok])
-            return self.flatten_query(Query(Operation.SEQUENCE, [left, right]))
-        raise self.Error("unimplemented", token)
+        return self.parse_phrases()
 
-    def flatten_query(self, query: Query) -> Query:
-        "Simplify if possible"
-        # we want to promote child phrases into parent
-
-        def check_phrase(p: str | Query):
-            # does str require query.op == AND?
-            if isinstance(p, str):
-                return True
-            return p.op == query.op and p.columns == query.columns and p.near_distance == query.near_distance
-
-        if all(check_phrase(child) for child in query.phrases):
-            new_phrases = []
-            for phrase in query.phrases:
-                if isinstance(phrase, str):
-                    new_phrases.append(phrase)
-                else:
-                    new_phrases.extend(phrase.phrases)
-            query.phrases = new_phrases
-        return query
-
-    # Any tokens implementing an infix operation (think having a
-    # left and right hand side) must have a non-zero value
-    lbp = {
-        FTS5.OR: 30,
-        FTS5.AND: 40,
-        FTS5.PLUS: 50,
-        FTS5.NOT: 60,
-        FTS5.COLON: 70,
+    infix_precedence = {
+        FTS5.OR: 10,
+        FTS5.AND: 20,
+        FTS5.NOT: 30,
     }
-    "left binding power"
 
-    def query(self, rbp: int = 0) -> Query | str:
-        res = self.prefix()
+    def parse_query(self, rbp: int = 0):
+        res = self.parse_part()
 
-        while rbp < self.lbp.get(self.lookahead().tok, 0):
-            res = self.infix(res)
+        while rbp < self.infix_precedence.get(self.lookahead.tok, 0):
+            token = self.take_token()
+            res = self.infix(token.tok, res, self.parse_query(self.infix_precedence[token.tok]))
 
         return res
+
+    def parse_phrase(self) -> PHRASE:
+        token = self.take_token()
+        if token.tok != FTS5.STRING:
+            raise self.Error("Expected a search term", token)
+
+        res = PHRASE(token.value)
+
+        if self.lookahead.tok == FTS5.STAR:
+            self.take_token()
+            res.prefix = True
+
+        return res
+
+    def parse_phrases(self) -> PHRASES:
+        if self.lookahead.tok not in {FTS5.CARET, FTS5.STRING}:
+            raise self.Error("Expected '^' or a search term", self.lookahead)
+
+        if self.lookahead.tok == FTS5.CARET:
+            initial = True
+            self.take_token()
+        else:
+            initial = False
+
+        first = self.parse_phrase()
+
+        res = PHRASES([first], initial)
+
+        while self.lookahead.tok in {FTS5.PLUS, FTS5.STRING}:
+            if self.lookahead.tok == FTS5.PLUS:
+                self.take_token()
+                sequence = True
+            else:
+                sequence = False
+            res.phrases.append(self.parse_phrase())
+            if sequence:
+                res.phrases[-1].sequence = True
+
+        return res
+
+    def parse_near(self):
+        # swallow NEAR
+        self.take_token()
+
+        # open parentheses
+        token = self.take_token()
+        if token.tok != FTS5.LP:
+            raise self.Error("Expected '(", token)
+
+        # phrases
+        phrases = self.parse_phrases()
+
+        # , distance
+        distance = 10  # default
+        if self.lookahead.tok == FTS5.COMMA:
+            # absorb comma
+            self.take_token()
+            # distance
+            number = self.take_token()
+            if number.tok != FTS5.STRING or not number.value.isdigit():
+                raise self.Error("Expected number", number)
+            distance = int(number.value)
+
+        # close parentheses
+        if self.lookahead.tok != FTS5.RP:
+            raise self.Error("Expected )")
+        self.take_token()
+
+        return NEAR(phrases, distance)
+
+    def parse_colspec(self):
+        include = True
+        columns = []
+        if self.lookahead.tok == FTS5.MINUS:
+            include = False
+            self.take_token()
+        # inside curlys?
+        if self.lookahead.tok == FTS5.LCP:
+            self.take_token()
+            while self.lookahead.tok == FTS5.STRING:
+                columns.append(self.take_token().value)
+            if len(columns) == 0:
+                raise self.Error("Expected column name", self.lookahead)
+            if self.lookahead.tok != FTS5.RCP:
+                raise self.Error("Expected }", self.lookahead)
+            self.take_token()
+        else:
+            if self.lookahead.tok != FTS5.STRING:
+                raise self.Error("Expected column name", self.lookahead)
+            columns.append(self.take_token().value)
+        if self.lookahead.tok != FTS5.COLON:
+            raise self.Error("Expected :", self.lookahead)
+        self.take_token()
+
+        if self.lookahead.tok == FTS5.LP:
+            query = self.parse_query()
+        elif self.lookahead.tok == FTS5.NEAR:
+            query = self.parse_part()
+        else:
+            query = self.parse_phrases()
+
+        return COLUMNFILTER(columns, query, include)
+
+    def infix(self, op: FTS5, left: QUERY, right: QUERY) -> QUERY:
+        if op == FTS5.NOT:
+            return NOT(left, right)
+        klass = {FTS5.AND: AND, FTS5.OR: OR}[op]
+        if isinstance(left, klass):
+            left.queries.append(right)
+            return left
+        return klass([left, right])
