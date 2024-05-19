@@ -11,7 +11,7 @@ from __future__ import annotations
 import enum
 import dataclasses
 
-from typing import Literal, Any
+from typing import Any
 
 
 class FTS5(enum.Enum):
@@ -176,11 +176,11 @@ class NEAR:
 
 @dataclasses.dataclass
 class COLUMNFILTER:
-    "limit query to columns"
+    "limit query to columns included/excluded"
 
-    columns: list[str]
+    columns_include: list[str] | None = None
+    columns_exclude: list[str] | None = None
     query: QUERY
-    include: bool
 
 
 @dataclasses.dataclass
@@ -209,6 +209,13 @@ QUERY = COLUMNFILTER | NEAR | AND | OR | NOT | PHRASES
 
 
 def to_dict(q: QUERY | PHRASE) -> dict[str, Any]:
+    """Converts structure to a dict
+
+    This is useful for pretty printing, logging,
+    saving as JSON etc"""
+
+    # ::TODO:: rename "op" to something better
+    # ::TODO:: ponder name used in op value - perhaps exactly that the dataclass
     if isinstance(q, PHRASES):
         res = {"op": "phrases"}
         if q.initial:
@@ -240,9 +247,44 @@ def to_dict(q: QUERY | PHRASE) -> dict[str, Any]:
         return res
 
     if isinstance(q, COLUMNFILTER):
-        return {"op": "columnfilter", "columns": q.columns, "include": q.include, "query": to_dict(q.query)}
+        res = {"op": "columnfilter", "query": to_dict(q.query)}
+        for n in "include", "exclude":
+            name = f"columns_{n}"
+            val = getattr(q, name)
+            if val:
+                res[name] = val
+        return res
 
     raise NotImplementedError(f"{q=}")
+
+
+def to_query_string(q: QUERY | PHRASE) -> str:
+    1 / 0
+
+
+def quote(text: str) -> str:
+    """Quotes text if necessary to keep as one unit
+
+    eg `hello' -> `hello`, `one two` -> `"one two"`,
+    `` -> `""`, `one"two` -> `"one""two"`
+    """
+    # technically this will also apply to None and empty lists etc
+    if not text:
+        return '""'
+    if any(c not in "0123456789_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" and ord(c) < 0x80 for c in text):
+        return '"' + text.replace('"', '""') + '"'
+    return text
+
+
+def extract_with_column_filters(node: QUERY, start: QUERY) -> QUERY:
+    """If you have a query rooted at `start` and want a child `node`, but also
+    want all the :type:`COLUMNFILTER` inbetween applied, then this returns
+    a chain of COLUMNFILTER that apply and the node.
+    """
+    raise NotImplementedError()
+
+
+# ::TODO:: make module stuff private like Parse and Tokenize
 
 
 class Parse:
@@ -382,7 +424,7 @@ class Parse:
 
     def parse_colspec(self):
         include = True
-        columns = []
+        columns: list[str] = []
         if self.lookahead.tok == FTS5.MINUS:
             include = False
             self.take_token()
@@ -411,7 +453,7 @@ class Parse:
         else:
             query = self.parse_phrases()
 
-        return COLUMNFILTER(columns, query, include)
+        return COLUMNFILTER(columns if include else None, columns if not include else None, query)
 
     def infix(self, op: FTS5, left: QUERY, right: QUERY) -> QUERY:
         if op == FTS5.NOT:
