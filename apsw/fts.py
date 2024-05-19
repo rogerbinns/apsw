@@ -1060,6 +1060,17 @@ class FTS5Table:
             name for (name,) in self.db.execute(f"select name from { self.qschema }.pragma_table_info(?)", (self.name,))
         )
 
+    def column_named(self, name: str) -> str | None:
+        """Returns the column matching `name` or `None` if it doesn't exist
+
+        SQLite is ascii case-insensitive, so this tells you the declared name,
+        or if it doesn't exist.
+        """
+        for column in self.columns:
+            if apsw.stricmp(column, name) == 0:
+                return column
+        return None
+
     @functools.cached_property
     def structure(self) -> FTS5TableStructure:
         "Structure of the table from the declared SQL"
@@ -1089,15 +1100,23 @@ class FTS5Table:
         '''
         return f"{self.qschema}.{self.qname}"
 
-    def query(self, query: str) -> apsw.Cursor:
-        "Returns a cursor making the query - rowid first"
+    def search(
+        self, query: str, *, columns: list[str] | None, suffix: str = "order by rank"
+    ) -> Iterator[MatchInfo, apsw.SQLiteValues]:
+        "Returns iterator providing MatchInfo and requested columns for each matched row"
         # ::TODO:: it appears you need to do some processing of the results
         # to avoid duplicate rows or something
         # https://sqlite-utils.datasette.io/en/latest/python-api.html#building-sql-queries-with-table-search-sql
         # https://news.ycombinator.com/item?id=38664366
+        # ::TODO:: better name than suffix - could also include WHERE, GROUP BY etc
+        # ::TODO:: external content tables do join on content table so you can get
+        # their columns too
+        # ::TODO:: figure out iterator value shape for zero or more columns
+        # for mi in t.search(....)
+        # for mi, media in t.search(..., columns=["media"])
         pass
 
-    def fuzzy_query(self, query: str) -> apsw.Cursor:
+    def search_fuzzy(self, query: str) -> apsw.Cursor:
         """Returns a cursor making the query - rowid first
 
         Not all the tokens have to be present in the matched docs"""
