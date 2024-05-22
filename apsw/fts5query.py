@@ -6,12 +6,70 @@
 # Tokens https://sqlite.org/src/file?name=ext/fts5/fts5_expr.c
 # fts5ExprGetToken
 
+"""
+There are 3 representations of a query available:
+
+string
+
+   This the string syntax `accepted by FTS5
+   <https://www.sqlite.org/fts5.html#full_text_query_syntax>`__ where
+   you represent AND, OR, NEAR, column filtering etc inline in the
+   string.
+
+parsed
+
+    This is a hierarchical representation using :mod:`dataclasses`
+    with all fields present.  It uses :class:`PHRASE`, :class:`PHRASES`,
+    :class:`NEAR`, :class:`COLUMNFILTER`, :class:`AND`, :class:`NOT`.
+
+dict
+
+    This is a hierarchical representation using Python
+    :class:`dictionaries <dict>` which is easy for logging, storing as
+    JSON, and manipulating.  Fields containing default values are
+    omitted.  When provided to methods in this module, you do not need
+    to provide intermediate PHRASES and PHRASE and just Python lists
+    and strings directly.  This is the easiest form to
+    programmatically compose and modify queries in.
+
+.. list-table:: Conversion functions
+    :header-rows: 1
+    :widths: auto
+
+    * - From type
+      - To type
+      - Conversion method
+    * - string
+      - parsed
+      - :func:`parse_string`
+    * - parsed
+      - dict
+      - :func:`to_dict`
+    * - dict
+      - parsed
+      - :func:`from_dict`
+    * - parsed
+      - string
+      - :func:`to_query_string`
+
+Other helpful functionality includes:
+
+* :func:`quote` to appropriately double quote strings
+* :func:`extract_with_column_filters` to get a :class:`QUERY` for a node within
+  an existing :class:`QUERY` but keeping the intermediate column filters.
+* :func:`applicable_columns` to work out which columns to part of a
+  :class:`QUERY`
+"""
+
 from __future__ import annotations
+
 
 import enum
 import dataclasses
 
-from typing import Any
+from typing import Any, Sequence, NoReturn, Literal, TypeAlias
+
+# ::TODO:: figure out terminology  of docid versus rowid
 
 
 class FTS5(enum.Enum):
@@ -147,118 +205,225 @@ def get_tokens(query: str) -> list[Token]:
 
 
 @dataclasses.dataclass
-class PHRASES:
-    "phrases"
+class PHRASE:
+    "One `phrase <https://www.sqlite.org/fts5.html#fts5_phrases>`__"
 
-    phrases: list[PHRASE]
+    phrase: str
+    "Text of the phrase"
     initial: bool = False
-    "if true then phrase must match first token in column"
+    "If True then the  phrase must match the beginning of a column"
+    prefix: bool = False
+    "If True then if it is a prefix search on the last token in phrase ('*' was used)"
+    sequence: bool = False
+    """If True then this phrase must follow tokens of previous phrase ('+' was used).
+    initial and sequence can't both be True at the same time"""
 
 
 @dataclasses.dataclass
-class PHRASE:
-    "one phrase"
+class PHRASES:
+    "Sequence of PHRASE"
 
-    phrase: str
-    prefix: bool = False
-    "if True then if it is a prefix search"
-    sequence: bool = False
-    "if True must follow tokens of previous phrase"
+    phrases: Sequence[PHRASE]
 
 
 @dataclasses.dataclass
 class NEAR:
-    "near operation"
+    "`Near query <https://www.sqlite.org/fts5.html#fts5_near_queries>`__"
 
     phrases: PHRASES
-    distance: int
+    "Two or more phrases"
+    distance: int = 10
+    "Maximum distance between the phrases"
 
 
 @dataclasses.dataclass
 class COLUMNFILTER:
-    "limit query to columns included/excluded"
+    """Limit query to `certain columns <https://www.sqlite.org/fts5.html#fts5_column_filters>`__
 
-    columns_include: list[str] | None = None
-    columns_exclude: list[str] | None = None
+    This always reduces the columns that phrase matching will be done
+    against.
+    """
+
+    columns: Sequence[str]
+    "Limit phrase matching by these columns"
+    filter: Literal["include"] | Literal["exclude"]
+    "Including or excluding the columns"
     query: QUERY
+    "query the filter applies to, including all nested queries"
 
 
 @dataclasses.dataclass
 class AND:
-    "all queries must match"
+    "All queries must match"
 
-    queries: list[QUERY]
+    queries: Sequence[QUERY]
 
 
 @dataclasses.dataclass
 class OR:
-    "any query must match"
+    "Any query must match"
 
-    queries: list[QUERY]
+    queries: Sequence[QUERY]
 
 
 @dataclasses.dataclass
 class NOT:
     "left must match but right must not"
 
+    # ::TODO:: pick better names? match? no_match?
     left: QUERY
     right: QUERY
 
 
-QUERY = COLUMNFILTER | NEAR | AND | OR | NOT | PHRASES
+# Sphinx makes this real ugly
+# https://github.com/sphinx-doc/sphinx/issues/10541
+QUERY: TypeAlias = COLUMNFILTER | NEAR | AND | OR | NOT | PHRASES
+"""Type representing all query types."""
 
 
 def to_dict(q: QUERY | PHRASE) -> dict[str, Any]:
     """Converts structure to a dict
 
-    This is useful for pretty printing, logging,
-    saving as JSON etc"""
+    This is useful for pretty printing, logging, saving as JSON,
+    modifying etc.
 
-    # ::TODO:: rename "op" to something better
-    # ::TODO:: ponder name used in op value - perhaps exactly that the dataclass
+    The dict has a key `@` with value corresponding to the dataclass
+    (eg `NEAR`, `PHRASE`, `AND`) and the same field names as the
+    corresponding dataclasses.  Only fields with non-default values
+    are emitted.
+    """
+
+    # @ was picked because it gets printed first if dict keys are sorted, and
+    # won't conflict with any other key names
+
     if isinstance(q, PHRASES):
-        res = {"op": "phrases"}
-        if q.initial:
-            res["initial"] = q.initial
-        res["phrases"] = [to_dict(phrase) for phrase in q.phrases]
-        return res
+        return {"@": "PHRASES", "phrases": [to_dict(phrase) for phrase in q.phrases]}
 
     if isinstance(q, PHRASE):
-        res = {"op": "phrase", "phrase": q.phrase}
+        res = {"@": "PHRASE", "phrase": q.phrase}
         if q.prefix:
             res["prefix"] = True
         if q.sequence:
             res["sequence"] = True
+        if q.initial:
+            res["initial"] = True
         return res
 
     if isinstance(q, AND):
-        return {"op": "and", "queries": [to_dict(query) for query in q.queries]}
+        return {"@": "AND", "queries": [to_dict(query) for query in q.queries]}
 
     if isinstance(q, OR):
-        return {"op": "or", "queries": [to_dict(query) for query in q.queries]}
+        return {"@": "OR", "queries": [to_dict(query) for query in q.queries]}
 
     if isinstance(q, NOT):
-        return {"op": "not", "true": q.left, "false": q.right}
+        return {"@": "NOT", "true": to_dict(q.left), "false": to_dict(q.right)}
 
     if isinstance(q, NEAR):
-        res = {"op": "near", "phrases": to_dict(q.phrases)}
+        res = {"@": "NEAR", "phrases": to_dict(q.phrases)}
         if q.distance != 10:
             res["distance"] = q.distance
         return res
 
     if isinstance(q, COLUMNFILTER):
-        res = {"op": "columnfilter", "query": to_dict(q.query)}
-        for n in "include", "exclude":
-            name = f"columns_{n}"
-            val = getattr(q, name)
-            if val:
-                res[name] = val
-        return res
+        return {"@": "COLUMNFILTER", "query": to_dict(q.query), "columns": q.columns, "filter": q.filter}
 
-    raise NotImplementedError(f"{q=}")
+    raise ValueError(f"Unexpected value {q=}")
+
+
+_dict_name_class = {
+    "PHRASE": PHRASE,
+    "PHRASES": PHRASES,
+    "NEAR": NEAR,
+    "COLUMNFILTER": COLUMNFILTER,
+    "AND": AND,
+    "OR": OR,
+    "NOT": NOT,
+}
+
+
+def from_dict(d: dict[str, Any] | Sequence[str] | str) -> QUERY:
+    """Turns dict back into a :class:`QUERY`
+
+    You can take shortcuts putting `str` or `Sequence[str]` in
+    places where PHRASES, or PHRASE are expected.  For example
+    this is accepted::
+
+        {
+            "@": "AND,
+            "queries": ["hello", "world"]
+        }
+    """
+    if isinstance(d, (str, Sequence)):
+        return _from_dict_as_phrases(d)
+
+    _type_check(d, dict)
+
+    if "@" not in d:
+        raise ValueError(f"Expected key '@' in dict {d!r}")
+
+    klass = _dict_name_class.get(d["@"])
+    if klass is None:
+        raise ValueError(f"\"{d['@']}\" is not a known query type")
+
+    if klass is PHRASE or klass is PHRASES:
+        return _from_dict_as_phrases(d)
+
+    1 / 0
+
+
+def _type_check(v: Any, t: Any) -> Any:
+    if not isinstance(v, t):
+        raise ValueError(f"Expected {v!r} to be type {t}")
+    return v
+
+
+def _from_dict_as_phrase(item: Any, first: bool) -> PHRASE:
+    "Convert anything reasonable into a PHRASE"
+    if isinstance(item, str):
+        return PHRASE(item)
+    if isinstance(item, dict):
+        if item.get("@") != "PHRASE":
+            raise ValueError(f"{item!r} needs to be a dict with '@': 'PHRASE'")
+        phrase = item.get("phrase")
+        if phrase is None:
+            raise ValueError(f"{item!r} must have phrase member")
+        p = PHRASE(
+            _type_check(phrase, str),
+            _type_check(item.get("initial", False)),
+            _type_check(item, get("prefix", False)),
+            _type_check(item.get("sequance", False)),
+        )
+        if p.sequence and first:
+            raise ValueError(f"First phrase {item!r} can't have sequence==True")
+        if p.sequence and p.initial:
+            raise ValueError(f"Can't have both sequence (+) and initial (^) set on same item {item!r}")
+        return p
+    raise ValueError(f"Can't convert { item!r} to a phrase")
+
+
+def _from_dict_as_phrases(item: Any) -> PHRASES:
+    "Convert anything reasonable into PHRASES"
+    if isinstance(item, str):
+        return PHRASES([PHRASE(item)])
+
+    if isinstance(item, Sequence):
+        phrases: list[PHRASE] = []
+        for member in item:
+            phrases.append(_from_dict_as_phrase(member, len(phrases) == 0))
+        if len(phrases) == 0:
+            raise ValueError(f"No phrase found in { member!r}")
+        return PHRASES(phrases)
 
 
 def to_query_string(q: QUERY | PHRASE) -> str:
+    """Returns the corresponding query in text format"""
+    # ::TODO:: implement
+    1 / 0
+
+
+def parse_string(query: str) -> QUERY:
+    "Returns the corresponding :class:`QUERY` for the query string"
+    # ::TODO:: implement
     1 / 0
 
 
@@ -277,38 +442,53 @@ def quote(text: str) -> str:
 
 
 def extract_with_column_filters(node: QUERY, start: QUERY) -> QUERY:
-    """If you have a query rooted at `start` and want a child `node`, but also
-    want all the :type:`COLUMNFILTER` inbetween applied, then this returns
-    a chain of COLUMNFILTER that apply and the node.
+    """Return a new `QUERY` for a query rooted at `start` with child `node`,
+    with intermediate :class:`COLUMNFILTER` in between applied.
+
+    This is useful if you want to execute a node from a top level
+    query ensuring the column filters apply.
     """
+    # ::TODO:: implement
+    raise NotImplementedError()
+
+
+def applicable_columns(node: QUERY, start: QUERY, columns: Sequence[str]) -> set[str]:
+    """Return which columns apply to `node`
+
+    You should use :meth:`apsw.fts.FTS5Table.columns_indexed` to get
+    the column list for a table.
+    """
+    # ::TODO:: implement
     raise NotImplementedError()
 
 
 # ::TODO:: make module stuff private like Parse and Tokenize
 
 
-class Parse:
-    class Error(Exception):
-        def __init__(self, message, token):
-            self.message = message
-            self.token = token
+class ParseError(Exception):
+    def __init__(self, query: str, message: str, position: int):
+        # ::TODO:: fix using caret in message as it makes printing error ugly
+        # and update all the messages to be better
+        self.query = query
+        self.message = message
+        self.position = position
 
+
+class Parser:
     def __init__(self, query: str):
+        self.query = query
         self.tokens = get_tokens(query)
         self.token_pos = -1
 
-        try:
-            result = self.parse_query()
-            if self.lookahead.tok != FTS5.EOF:
-                raise Parse.Error("unexpected", self.lookahead)
-        except Parse.Error as exc:
-            print(query)
-            print(" " * exc.token.pos + "\u2b06 " + exc.message)
-            raise
+        # ::TODO:: check what happens when empty query provided
+        parsed = self.parse_query()
+        if self.lookahead.tok != FTS5.EOF:
+            self.error("Unexpected", self.lookahead)
 
-        import pprint
+        self.parsed = parsed
 
-        pprint.pprint(to_dict(result))
+    def error(self, message: str, token: Token | None) -> NoReturn:
+        raise ParseError(self.query, message, token.pos if token else 0)
 
     def _lookahead(self) -> Token:
         return self.tokens[self.token_pos + 1]
@@ -329,7 +509,10 @@ class Parse:
             token = self.take_token()
             query = self.parse_query()
             if self.lookahead.tok != FTS5.RP:
-                raise Parse.Error("unclosed (", token)
+                if self.lookahead.tok == FTS5.EOF:
+                    self.error("unclosed (", token)
+                else:
+                    self.error(f"Expected ) to close ( at position { token.pos}", self.lookahead)
             self.take_token()
             return query
 
@@ -353,12 +536,21 @@ class Parse:
 
         return res
 
-    def parse_phrase(self) -> PHRASE:
+    def parse_phrase(self, first: bool) -> PHRASE:
+        initial = False
+        sequence = False
+        if self.lookahead.tok == FTS5.CARET:
+            initial = True
+            self.take_token()
+        if not first and not initial and self.lookahead.tok == FTS5.PLUS:
+            sequence = True
+            self.take_token()
+
         token = self.take_token()
         if token.tok != FTS5.STRING:
-            raise self.Error("Expected a search term", token)
+            self.error("Expected a search term", token)
 
-        res = PHRASE(token.value)
+        res = PHRASE(token.value, initial, False, sequence)
 
         if self.lookahead.tok == FTS5.STAR:
             self.take_token()
@@ -367,30 +559,14 @@ class Parse:
         return res
 
     def parse_phrases(self) -> PHRASES:
-        if self.lookahead.tok not in {FTS5.CARET, FTS5.STRING}:
-            raise self.Error("Expected '^' or a search term", self.lookahead)
+        phrases: list[PHRASE] = []
 
-        if self.lookahead.tok == FTS5.CARET:
-            initial = True
-            self.take_token()
-        else:
-            initial = False
+        phrases.append(self.parse_phrase(True))
 
-        first = self.parse_phrase()
+        while self.lookahead.tok in {FTS5.PLUS, FTS5.STRING, FTS5.CARET}:
+            phrases.append(self.parse_phrase(False))
 
-        res = PHRASES([first], initial)
-
-        while self.lookahead.tok in {FTS5.PLUS, FTS5.STRING}:
-            if self.lookahead.tok == FTS5.PLUS:
-                self.take_token()
-                sequence = True
-            else:
-                sequence = False
-            res.phrases.append(self.parse_phrase())
-            if sequence:
-                res.phrases[-1].sequence = True
-
-        return res
+        return PHRASES(phrases)
 
     def parse_near(self):
         # swallow NEAR
@@ -399,10 +575,13 @@ class Parse:
         # open parentheses
         token = self.take_token()
         if token.tok != FTS5.LP:
-            raise self.Error("Expected '(", token)
+            self.error("Expected '(", token)
 
         # phrases
         phrases = self.parse_phrases()
+
+        if len(phrases.phrases) < 2:
+            self.error("At least two phrases must be present for NEAR", self.lookahead)
 
         # , distance
         distance = 10  # default
@@ -412,12 +591,12 @@ class Parse:
             # distance
             number = self.take_token()
             if number.tok != FTS5.STRING or not number.value.isdigit():
-                raise self.Error("Expected number", number)
+                self.error("Expected number", number)
             distance = int(number.value)
 
         # close parentheses
         if self.lookahead.tok != FTS5.RP:
-            raise self.Error("Expected )")
+            self.error("Expected )", self.lookahead)
         self.take_token()
 
         return NEAR(phrases, distance)
@@ -425,25 +604,28 @@ class Parse:
     def parse_colspec(self):
         include = True
         columns: list[str] = []
+
         if self.lookahead.tok == FTS5.MINUS:
             include = False
             self.take_token()
+
         # inside curlys?
         if self.lookahead.tok == FTS5.LCP:
             self.take_token()
             while self.lookahead.tok == FTS5.STRING:
                 columns.append(self.take_token().value)
             if len(columns) == 0:
-                raise self.Error("Expected column name", self.lookahead)
+                self.error("Expected column name", self.lookahead)
             if self.lookahead.tok != FTS5.RCP:
-                raise self.Error("Expected }", self.lookahead)
+                self.error("Expected }", self.lookahead)
             self.take_token()
         else:
             if self.lookahead.tok != FTS5.STRING:
-                raise self.Error("Expected column name", self.lookahead)
+                self.error("Expected column name", self.lookahead)
             columns.append(self.take_token().value)
+
         if self.lookahead.tok != FTS5.COLON:
-            raise self.Error("Expected :", self.lookahead)
+            self.error("Expected :", self.lookahead)
         self.take_token()
 
         if self.lookahead.tok == FTS5.LP:
@@ -453,7 +635,7 @@ class Parse:
         else:
             query = self.parse_phrases()
 
-        return COLUMNFILTER(columns if include else None, columns if not include else None, query)
+        return COLUMNFILTER(columns, "include" if include else "exclude", query)
 
     def infix(self, op: FTS5, left: QUERY, right: QUERY) -> QUERY:
         if op == FTS5.NOT:
