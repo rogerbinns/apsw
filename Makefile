@@ -61,7 +61,7 @@ doc/example.rst: examples/main.py tools/example2rst.py src/apswversion.h
 	env PYTHONPATH=. $(PYTHON) -sS tools/example2rst.py examples/main.py doc/example.rst
 	rm -f dbfile
 
-doc/example-fts.rst: examples/fts.py tools/example2rst.py src/apswversion.h apsw/fts.py
+doc/example-fts.rst: examples/fts.py tools/example2rst.py src/apswversion.h
 	rm -f dbfile
 	env PYTHONPATH=. $(PYTHON) -sS tools/example2rst.py examples/fts.py doc/example-fts.rst
 	rm -f dbfile
