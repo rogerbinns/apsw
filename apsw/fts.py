@@ -1005,6 +1005,36 @@ def parse_tokenizer_args(
     return options
 
 
+@dataclass
+class MatchInfo:
+    # basically all useful row specific fields from  FTS5ExtensionApi
+    query_info: QueryInfo
+    rowid: int
+    rank: apsw.SQLiteValue
+
+    # inst_count
+    # phrase_columns
+    # phrase token numbers
+
+    # ::TODO:: use column names not numbers
+
+    columns: dict[str, apsw.SQLiteValue]
+    "Columns requested in :meth:`FTS5Table.search`"
+
+
+@dataclass
+class QueryInfo:
+    # all global values (non-row specific) from  FTS5ExtensionApi
+    query: str
+    row_count: int
+    column_count: int
+    phrases: list[str]
+    # ::TODO:: should be able to use text from query rather than tokenized
+    # column_size
+    # column_total_size
+    #
+
+
 class FTS5Table:
     """A helpful wrapper around a FTS5 table  !!! Current experiment & thinking
 
@@ -1055,9 +1085,18 @@ class FTS5Table:
 
     @functools.cached_property
     def columns(self) -> tuple[str, ...]:
-        "Columns of this table"
+        "All columns of this table, including unindexed ones.  Unindexed columns are ignored in queries."
         return tuple(
             name for (name,) in self.db.execute(f"select name from { self.qschema }.pragma_table_info(?)", (self.name,))
+        )
+
+    @functools.cached_property
+    def columns_indexed(self) -> tuple[str, ...]:
+        "All columns of this table, excluding unindexed ones"
+        return tuple(
+            name
+            for (name,) in self.db.execute(f"select name from { self.qschema }.pragma_table_info(?)", (self.name,))
+            if name not in self.structure.unindexed
         )
 
     def column_named(self, name: str) -> str | None:
@@ -1111,9 +1150,8 @@ class FTS5Table:
         # ::TODO:: better name than suffix - could also include WHERE, GROUP BY etc
         # ::TODO:: external content tables do join on content table so you can get
         # their columns too
-        # ::TODO:: figure out iterator value shape for zero or more columns
-        # for mi in t.search(....)
-        # for mi, media in t.search(..., columns=["media"])
+        # ::TODO:: order by rank should be this tablename.rank in case external content
+        # table has rank columns
         pass
 
     def search_fuzzy(self, query: str) -> apsw.Cursor:
@@ -1137,6 +1175,8 @@ class FTS5Table:
         If you are using an external content table:
         * the insert will be directed to that table
         * the column positions and names of that table are used
+
+        # ::TODO:: allow rowid name
         """
         stmt, mapping = self._insert_sql(len(args), tuple(kwargs.keys()) if kwargs else None)
         if mapping is not None:
@@ -1718,6 +1758,8 @@ class FTS5Table:
                             "update",
                         )
                     )
+                    # ::TODO:: figure out what to do about content table and fts5 table
+                    # being on different attached databases
                     db.execute(f"""
 drop trigger if exists { qschema }.{ trigger_names[0] };
 drop trigger if exists { qschema }.{ trigger_names[1] };
