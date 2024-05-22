@@ -322,6 +322,17 @@ Provided by the :mod:`apsw.fts` module.
     :members:
     :undoc-members:
 
+FTS5 Query module
+=================
+
+Provided by the :mod:`apsw.fts5query` module, you can parse queries,
+and create new queries using Python data structures.
+
+.. automodule:: apsw.fts5query
+    :synopsis: Helpers for working with `FTS5 queries <https://www.sqlite.org/fts5.html#full_text_query_syntax>`__
+    :members:
+    :undoc-members:
+
 Unicode Text Handling
 =====================
 
