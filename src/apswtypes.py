@@ -5,14 +5,14 @@ from collections.abc import Mapping
 import array
 import types
 
-SQLiteValue: TypeAlias = None | int | float | bytes | str
+SQLiteValue = None | int | float | bytes | str
 """SQLite supports 5 types - None (NULL), 64 bit signed int, 64 bit
 float, bytes, and str (unicode text)"""
 
-SQLiteValues: TypeAlias = tuple[()] | tuple[SQLiteValue, ...]
+SQLiteValues = tuple[()] | tuple[SQLiteValue, ...]
 "A sequence of zero or more SQLiteValue"
 
-Bindings: TypeAlias = Sequence[SQLiteValue | zeroblob] | Mapping[str, SQLiteValue | zeroblob]
+Bindings = Sequence[SQLiteValue | zeroblob] | Mapping[str, SQLiteValue | zeroblob]
 """Query bindings are either a sequence of SQLiteValue, or a dict mapping names
 to SQLiteValues.  You can also provide zeroblob in Bindings. You can use
 dict subclasses or any type registered with :class:`collections.abc.Mapping`
@@ -32,10 +32,10 @@ class AggregateClass(Protocol):
 
 
 # Neither TypeVar nor ParamSpec work, when either should
-AggregateT: TypeAlias = Any
+AggregateT = Any
 "An object provided as first parameter of step and final aggregate functions"
 
-AggregateStep: TypeAlias = (
+AggregateStep = (
     Callable[[AggregateT], None]
     | Callable[[AggregateT, SQLiteValue], None]
     | Callable[[AggregateT, SQLiteValue, SQLiteValue], None]
@@ -47,14 +47,14 @@ AggregateStep: TypeAlias = (
 
 "AggregateStep is called on each matching row with the relevant number of SQLiteValue"
 
-AggregateFinal: TypeAlias = Callable[[AggregateT], SQLiteValue]
+AggregateFinal = Callable[[AggregateT], SQLiteValue]
 "Final is called after all matching rows have been processed by step, and returns a SQLiteValue"
 
-AggregateFactory: TypeAlias = Callable[[], AggregateClass | tuple[AggregateT, AggregateStep, AggregateFinal]]
+AggregateFactory = Callable[[], AggregateClass | tuple[AggregateT, AggregateStep, AggregateFinal]]
 """Called each time for the start of a new calculation using an aggregate function,
 returning an object, a step function and a final function"""
 
-ScalarProtocol: TypeAlias = (
+ScalarProtocol = (
     Callable[[], SQLiteValue]
     | Callable[[SQLiteValue], SQLiteValue]
     | Callable[[SQLiteValue, SQLiteValue], SQLiteValue]
@@ -88,10 +88,10 @@ class WindowClass(Protocol):
         ...
 
 
-WindowT: TypeAlias = Any
+WindowT = Any
 "An object provided as first parameter of the 4 window functions, if not using class based callbacks"
 
-WindowStep: TypeAlias = (
+WindowStep = (
     Callable[[WindowT], None]
     | Callable[[WindowT, SQLiteValue], None]
     | Callable[[WindowT, SQLiteValue, SQLiteValue], None]
@@ -100,7 +100,7 @@ WindowStep: TypeAlias = (
 )
 """Window function step takes zero or more SQLiteValues"""
 
-WindowFinal: TypeAlias = (
+WindowFinal = (
     Callable[[WindowT], SQLiteValue]
     | Callable[[WindowT, SQLiteValue], SQLiteValue]
     | Callable[[WindowT, SQLiteValue, SQLiteValue], SQLiteValue]
@@ -109,10 +109,10 @@ WindowFinal: TypeAlias = (
 )
 """Window function final takes zero or more SQLiteValues, and returns a SQLiteValue"""
 
-WindowValue: TypeAlias = Callable[[WindowT], SQLiteValue]
+WindowValue = Callable[[WindowT], SQLiteValue]
 """Window function value returns the current  SQLiteValue"""
 
-WindowInverse: TypeAlias = (
+WindowInverse = (
     Callable[[WindowT], None]
     | Callable[[WindowT, SQLiteValue], None]
     | Callable[[WindowT, SQLiteValue, SQLiteValue], None]
@@ -121,25 +121,23 @@ WindowInverse: TypeAlias = (
 )
 """Window function inverse takes zero or more SQLiteValues"""
 
-WindowFactory: TypeAlias = Callable[
-    [], WindowClass | tuple[WindowT, WindowStep, WindowFinal, WindowValue, WindowInverse]
-]
+WindowFactory = Callable[[], WindowClass | tuple[WindowT, WindowStep, WindowFinal, WindowValue, WindowInverse]]
 """Called each time at the start of a new window function execution.  It should return either an object
 with relevant methods or an object used as the first parameter and the 4 methods"""
 
-RowTracer: TypeAlias = Callable[[Cursor, SQLiteValues], Any]
+RowTracer = Callable[[Cursor, SQLiteValues], Any]
 """Row tracers are called with the Cursor, and the row that would
 be returned.  If you return None, then no row is returned, otherwise
 whatever is returned is returned as a result row for the query"""
 
-ExecTracer: TypeAlias = Callable[[Cursor, str, Optional[Bindings]], bool]
+ExecTracer = Callable[[Cursor, str, Optional[Bindings]], bool]
 """Execution tracers are called with the cursor, sql query text, and the bindings
 used.  Return False/None to abort execution, or True to continue"""
 
-Authorizer: TypeAlias = Callable[[int, Optional[str], Optional[str], Optional[str], Optional[str]], int]
+Authorizer = Callable[[int, Optional[str], Optional[str], Optional[str], Optional[str]], int]
 """Authorizers are called with an operation code and 4 strings (which could be None) depending
 on the operatation.  Return SQLITE_OK, SQLITE_DENY, or SQLITE_IGNORE"""
 
-CommitHook: TypeAlias = Callable[[], bool]
+CommitHook = Callable[[], bool]
 """Commit hook is called with no arguments and should return True to abort the commit and False
 to let it continue"""
