@@ -324,7 +324,7 @@ def print_augmented_traceback(exc_type: type[BaseException],
     :param exc_traceback: Traceback for the exception
     :param file: (default ``sys.stderr``) Where the print goes
 
-    .. code::
+    .. code-block::
 
         try:
             ....
@@ -951,7 +951,7 @@ def get_column_names(row: Any) -> tuple[Sequence[str], VTColumnAccess]:
 
     Example usage:
 
-    .. code::
+    .. code-block::
 
         def method(arg1, arg2):
             yield {"fruit": "orange", "price": 17, "quantity": 2}
