@@ -443,7 +443,7 @@ def _from_dict_as_phrase(item: Any, first: bool) -> PHRASE:
             _type_check(phrase, str),
             _type_check(item.get("initial", False), bool),
             _type_check(item.get("prefix", False), bool),
-            _type_check(item.get("sequance", False), bool),
+            _type_check(item.get("sequence", False), bool),
         )
         if p.sequence and first:
             raise ValueError(f"First phrase {item!r} can't have sequence==True")
@@ -485,14 +485,39 @@ def _from_dict_as_phrases(item: Any) -> PHRASES:
 
 def to_query_string(q: QUERY | PHRASE) -> str:
     """Returns the corresponding query in text format"""
-    # ::TODO:: implement
+    if isinstance(q, PHRASE):
+        r = ""
+        if q.initial:
+            r += "^"
+        if q.sequence:
+            r += "+"
+        r += quote(q.phrase)
+        if q.prefix:
+            r += "*"
+        return r
+
+    if isinstance(q, PHRASES):
+        # They are implicitly high priority AND together
+        return " ".join(to_query_string(phrase) for phrase in q.phrases)
+
+    if isinstance(q, AND):
+        return "(" + ") AND (".join(to_query_string(query) for query in q.queries) + ")"
+
+    if isinstance(q, OR):
+        return "(" + ") OR (".join(to_query_string(query) for query in q.queries) + ")"
+
+    if isinstance(q, NOT):
+        return "(" + to_query_string(q.match) + ") NOT (" + to_query_string(q.no_match) + ")"
+
+    # NEAR
+    # COLUMNFILTER
     1 / 0
 
 
 def parse_query_string(query: str) -> QUERY:
     "Returns the corresponding :class:`QUERY` for the query string"
-    # ::TODO:: implement
-    1 / 0
+    # ::TODO:: rename Parser and fix this
+    return Parser(query).parsed
 
 
 def quote(text: str) -> str:
