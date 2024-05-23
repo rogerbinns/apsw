@@ -18,6 +18,12 @@ Adjusted `levels
 :func:`apsw.ext.log_sqlite` to be lower for some SQLite messages like
 `SQLITE_SCHEMA` and `SQLITE_NOTICE_RECOVER_WAL` (:issue:`518`)
 
+Previous source releases were signed with `PGP
+<https://en.wikipedia.org/wiki/Pretty_Good_Privacy>`__.  Starting with
+this release `Sigstore's <https://www.sigstore.dev/>`__ `cosign tool
+<https://docs.sigstore.dev/signing/quickstart/>`__ is used
+(:ref:`instructions <verifydownload>`). (:issue:`512`)
+
 3.45.3.0
 ========
 
