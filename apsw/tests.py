@@ -3666,7 +3666,7 @@ class APSW(unittest.TestCase):
         Source.Create = Source.CreateBadSchemaType
         self.assertRaises(TypeError, cur.execute, 'create virtual table xyzzz using testmod1(2, "two")')
         Source.Create = Source.CreateBadSchema
-        self.assertRaises(apsw.MisuseError, cur.execute, 'create virtual table xyzzz2 using testmod1(2, "two")')
+        self.assertRaises(apsw.SQLError, cur.execute, 'create virtual table xyzzz2 using testmod1(2, "two")')
         Source.Create = Source.CreateWrongNumReturns
         self.assertRaises(TypeError, cur.execute, 'create virtual table xyzzz2 using testmod1(2, "two")')
         Source.Create = Source.CreateBadSequence

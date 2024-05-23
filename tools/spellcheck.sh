@@ -7,6 +7,9 @@ WRONG="$WRONG|noone|commiting|statment|statments|simulataneous|exection|wierd|va
 WRONG="$WRONG|exeception|implemtation|multple|exeception|implment|implmentation|commited|unintentially|explicity|ouput|overal|unraiseable"
 WRONG="$WRONG|reumable|bestpractise|exlcudes"
 
+# code-block should be used not code in rst
+WRONG="$WRONG|code::"
+
 git grep --color -Eniw "($WRONG)" | grep -v tools/spellcheck.sh
 
 n=`git grep --color -Eniw "($WRONG)" | grep -v tools/spellcheck.sh | wc -l`
