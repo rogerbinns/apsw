@@ -16,3 +16,4 @@ insert into toc values
     ;
 
 delete from toc where name='SQLITE_TRACE' and title='SQL Trace Event Codes';
+delete from toc where name='SQLITE_CONFIG_ROWID_IN_VIEW';
