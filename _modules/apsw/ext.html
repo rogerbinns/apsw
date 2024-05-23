@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>apsw.ext &mdash; APSW 3.45.3.0 documentation</title>
+  <title>apsw.ext &mdash; APSW 3.46.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=72bcf2f2" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/apsw.css?v=3c7e2631" />
@@ -16,8 +16,8 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=33694052"></script>
-        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/documentation_options.js?v=7df7d932"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="../../about.html" />
@@ -39,7 +39,7 @@
               <img src="../../_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.45.3.0
+                3.46.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -454,7 +454,7 @@
 <span class="k">def</span> <span class="nf">log_sqlite</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Send SQLite `log messages &lt;https://www.sqlite.org/errlog.html&gt;`__ to :mod:`logging`</span>
 
-<span class="sd">    :param level: level to log at</span>
+<span class="sd">    :param level: highest `level &lt;https://docs.python.org/3/library/logging.html#levels&gt;`__ to log at</span>
 <span class="sd">    :param logger: Use the specific logger</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -462,8 +462,20 @@
         <span class="k">nonlocal</span> <span class="n">level</span>
         <span class="n">err_str</span> <span class="o">=</span> <span class="n">result_string</span><span class="p">(</span><span class="n">errcode</span><span class="p">)</span>
         <span class="n">extra</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;sqlite_code&quot;</span><span class="p">:</span> <span class="n">errcode</span><span class="p">,</span> <span class="s2">&quot;sqlite_code_name&quot;</span><span class="p">:</span> <span class="n">err_str</span><span class="p">,</span> <span class="s2">&quot;sqlite_message&quot;</span><span class="p">:</span> <span class="n">message</span><span class="p">}</span>
+        <span class="c1"># Level defaults to ERROR but some messages aren&#39;t as important</span>
         <span class="k">if</span> <span class="n">errcode</span> <span class="o">&amp;</span> <span class="mh">0xff</span> <span class="o">==</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_WARNING</span><span class="p">:</span>
             <span class="n">level</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">errcode</span> <span class="o">&amp;</span> <span class="mh">0xff</span> <span class="o">==</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_NOTICE</span><span class="p">:</span>
+            <span class="c1"># these are really half way between INFO and WARNING and</span>
+            <span class="c1"># current instances are recovering journals/WAL etc which</span>
+            <span class="c1"># happens if the previous process exited abruptly.</span>
+            <span class="n">level</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">errcode</span> <span class="o">==</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_SCHEMA</span><span class="p">:</span>
+            <span class="c1"># these happen automatically without developer control,</span>
+            <span class="c1"># especially when using FTS5.  DEBUG is almost more</span>
+            <span class="c1"># appropriate!</span>
+            <span class="n">level</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
         <span class="p">(</span><span class="n">logger</span> <span class="ow">or</span> <span class="n">logging</span><span class="p">)</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">level</span><span class="p">,</span>
                     <span class="s2">&quot;SQLITE_LOG: </span><span class="si">%s</span><span class="s2"> (</span><span class="si">%d</span><span class="s2">) </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
                     <span class="n">message</span><span class="p">,</span>
@@ -490,7 +502,7 @@
 <span class="sd">    :param exc_traceback: Traceback for the exception</span>
 <span class="sd">    :param file: (default ``sys.stderr``) Where the print goes</span>
 
-<span class="sd">    .. code::</span>
+<span class="sd">    .. code-block::</span>
 
 <span class="sd">        try:</span>
 <span class="sd">            ....</span>
@@ -1132,7 +1144,7 @@
 
 <span class="sd">    Example usage:</span>
 
-<span class="sd">    .. code::</span>
+<span class="sd">    .. code-block::</span>
 
 <span class="sd">        def method(arg1, arg2):</span>
 <span class="sd">            yield {&quot;fruit&quot;: &quot;orange&quot;, &quot;price&quot;: 17, &quot;quantity&quot;: 2}</span>
@@ -1892,7 +1904,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Apr 16, 2024.
+      <span class="lastupdated">Last updated on May 23, 2024.
       </span></p>
   </div>
 

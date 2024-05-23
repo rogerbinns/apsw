@@ -74,13 +74,13 @@ edit the :file:`setup.apsw` file inside.
 
 .. downloads-begin
 
-* `apsw-3.45.3.0.zip
-  <https://github.com/rogerbinns/apsw/releases/download/3.45.3.0/apsw-3.45.3.0.zip>`__
+* `apsw-3.46.0.0.zip
+  <https://github.com/rogerbinns/apsw/releases/download/3.46.0.0/apsw-3.46.0.0.zip>`__
   (Source, includes this HTML Help)
 
-* `apsw-3.45.3.0-sigs.zip 
-  <https://github.com/rogerbinns/apsw/releases/download/3.45.3.0/apsw-3.45.3.0-sigs.zip>`__
-  GPG signatures for all files
+* `apsw-3.46.0.0.cosign-bundle 
+  <https://github.com/rogerbinns/apsw/releases/download/3.46.0.0/apsw-3.46.0.0.cosign-bundle>`__
+  cosign signature
 
 .. downloads-end
 
@@ -91,48 +91,38 @@ Verifying your download
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 Github `source releases <https://github.com/rogerbinns/apsw/releases>`__ are
-digitally signed so you can verify they have not been tampered with.
-Download and extract the corresponding zip file of signatures.  These
-instructions are for `GNU Privacy Guard <https://www.gnupg.org/>`__.
-(GPG is installed as standard on most Unix/Linux platforms and can be
-downloaded for Windows.)
+digitally signed so you can verify they have not been tampered with,
+and were produced by the project maintainer.
+
+`Sigstore <https://www.sigstore.dev/>`__ is used via the `cosign tool
+<https://docs.sigstore.dev/signing/quickstart/>`__.  Download the
+corresponding cosign bundle which contains the signature.
 
 Verify
 
-  To verify a file use --verify specifying the corresponding
-  ``.asc`` filename.  This example verifies the source:
+  `Install cosign
+  <https://docs.sigstore.dev/system_config/installation/>`__ if you
+  don't have it already.  It is `available for a wide variety of
+  platforms <https://github.com/sigstore/cosign/releases/>`__
+  including Linux, MacOS, and Windows.
+
+  Checking the signature needs to provide the source release, the
+  cosign bundle, the maintainer id, and issuer.  The command is all
+  one line shown here across multiple lines for clarity.
+
+  .. verify-begin
 
   .. code-block:: console
 
-      $ gpg --verify apsw-3.45.3.0.zip.asc
-      gpg: Signature made ... date ... using DSA key ID 0DFBD904
-      gpg: Good signature from "Roger Binns <rogerb@rogerbinns.com>"
+    $ cosign verify-blob apsw-3.46.0.0.zip                           \
+        --bundle apsw-3.46.0.0.cosign-bundle                         \
+        --certificate-identity=rogerb@rogerbinns.com                 \
+        --certificate-oidc-issuer=https://github.com/login/oauth
+    Verified OK
 
-  If you get a "good signature" then the file has not been tampered with
-  and you are good to go.
+  .. verify-end
 
-Getting the signing key
-
-  You may not have the signing key available in which case the last
-  line will be something like this:
-
-  .. code-block:: output
-
-     gpg: Can't check signature: public key not found
-
-  You can get a copy of the key using this command:
-
-  .. code-block:: console
-
-    $ gpg --keyserver hkp://keyserver.ubuntu.com --recv-keys 0DFBD904
-    gpg: requesting key 0DFBD904 from hkp server keyserver.ubuntu.com
-    gpg: /home/username/.gnupg/trustdb.gpg: trustdb created
-    gpg: key 0DFBD904: public key "Roger Binns <rogerb@rogerbinns.com>" imported
-    gpg: Total number processed: 1
-    gpg:               imported: 1
-
-  Repeat the verify step.
-
+  Check for a success exit code, and verified message.
 
 .. _build:
 

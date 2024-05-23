@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>sqlite3 module differences &mdash; APSW 3.45.3.0 documentation</title>
+  <title>sqlite3 module differences &mdash; APSW 3.46.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -17,8 +17,8 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=33694052"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/documentation_options.js?v=7df7d932"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
@@ -42,7 +42,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.45.3.0
+                3.46.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -155,7 +155,7 @@ SQLite without disruptions.</p></li>
 <li><p>If you don’t use PyPI, APSW <a class="reference external" href="https://docs.python.org/3/extending/building.html#building" title="(in Python v3.12)"><span class="xref std std-ref">build instructions</span></a>
 include extensive customisation options for SQLite.</p></li>
 <li><p><strong>Nothing</strong> happens behind your back. By default sqlite3 tries to
-manage transactions (for DBAPI compliance) by parsing your SQL for
+manage transactions (for DBAPI compliance) by processing your SQL for
 you, but you can turn it off. This can result in very unexpected
 behaviour with sqlite3.</p></li>
 <li><p>When using a <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> as a <a class="reference internal" href="connection.html#apsw.Connection.__enter__" title="apsw.Connection.__enter__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">context</span> <span class="pre">manager</span></code></a> APSW uses SQLite’s ability to have <a class="reference external" href="https://sqlite.org/lang_savepoint.html">nested
@@ -188,6 +188,10 @@ work fine in APSW but is not allowed in sqlite3:</p>
 data such as selects, and you can have multiple statements.
 sqlite3’s <em>executescript</em> method doesn’t allow any form of
 data being returned (it silently ignores any returned data).</p></li>
+<li><p>APSW has better <a class="reference internal" href="execution.html#tracing"><span class="std std-ref">execution and row tracing</span></a>.
+<a class="reference internal" href="ext.html"><span class="doc">Various interesting and useful bits of functionality</span></a> provides accessing rows by column name, adapting and
+converting types going into and coming out of SQLite, getting query
+details etc.</p></li>
 <li><p>sqlite3 swallows exceptions in your callbacks making it far harder
 to debug problems. That also prevents you from raising exceptions in
 your callbacks to be handled in your code that called SQLite.
@@ -239,9 +243,6 @@ Traceback (most recent call last):
 <li><p>APSW has significantly enhanced debuggability. More details are
 available than just what is printed out when exceptions happen like
 above. See <a class="reference internal" href="exceptions.html#augmentedstacktraces"><span class="std std-ref">augmented stack traces</span></a></p></li>
-<li><p>APSW has better <a class="reference internal" href="execution.html#tracing"><span class="std std-ref">execution and row tracing</span></a>.
-<a class="reference internal" href="ext.html"><span class="doc">Various interesting and useful bits of functionality</span></a> provides accessing rows by column name, type conversion,
-getting query details etc.</p></li>
 <li><p>APSW has an <a class="reference internal" href="execution.html#apswtrace"><span class="std std-ref">trace</span></a> utility script that traces
 execution and results in your code without having to modify it in
 any way.  It also outputs summary reports making it easy to see what
@@ -284,7 +285,7 @@ libraries that abstract away the database layer</p></li>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Apr 16, 2024.
+      <span class="lastupdated">Last updated on May 23, 2024.
       </span></p>
   </div>
 

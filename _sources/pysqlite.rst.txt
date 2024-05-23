@@ -61,7 +61,7 @@ module:
   include extensive customisation options for SQLite.
 
 * **Nothing** happens behind your back. By default sqlite3 tries to
-  manage transactions (for DBAPI compliance) by parsing your SQL for
+  manage transactions (for DBAPI compliance) by processing your SQL for
   you, but you can turn it off. This can result in very unexpected
   behaviour with sqlite3.
 
@@ -96,6 +96,11 @@ module:
   data such as selects, and you can have multiple statements.
   sqlite3's *executescript* method doesn't allow any form of
   data being returned (it silently ignores any returned data).
+
+* APSW has better :ref:`execution and row tracing <tracing>`.
+  :doc:`ext` provides accessing rows by column name, adapting and
+  converting types going into and coming out of SQLite, getting query
+  details etc.
 
 * sqlite3 swallows exceptions in your callbacks making it far harder
   to debug problems. That also prevents you from raising exceptions in
@@ -150,10 +155,6 @@ module:
 * APSW has significantly enhanced debuggability. More details are
   available than just what is printed out when exceptions happen like
   above. See :ref:`augmented stack traces <augmentedstacktraces>`
-
-* APSW has better :ref:`execution and row tracing <tracing>`.
-  :doc:`ext` provides accessing rows by column name, type conversion,
-  getting query details etc.
 
 * APSW has an :ref:`trace <apswtrace>` utility script that traces
   execution and results in your code without having to modify it in

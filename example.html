@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Example/Tour &mdash; APSW 3.45.3.0 documentation</title>
+  <title>Example/Tour &mdash; APSW 3.46.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -17,8 +17,8 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=33694052"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/documentation_options.js?v=7df7d932"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
@@ -42,7 +42,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.45.3.0
+                3.46.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -162,6 +162,7 @@ and attribute documentation.</p>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
 <span class="kn">import</span> <span class="nn">apsw</span>
 <span class="kn">import</span> <span class="nn">apsw.ext</span>
 <span class="kn">import</span> <span class="nn">random</span>
@@ -189,9 +190,9 @@ and attribute documentation.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">      Using APSW file /space/apsw/apsw/__init__.cpython-312-x86_64-linux-gnu.so</span>
-<span class="go">         APSW version 3.45.3.0</span>
-<span class="go">SQLite header version 3045003</span>
-<span class="go">   SQLite lib version 3.45.3</span>
+<span class="go">         APSW version 3.46.0.0</span>
+<span class="go">SQLite header version 3046000</span>
+<span class="go">   SQLite lib version 3.46.0</span>
 <span class="go">   Using amalgamation True</span>
 </pre></div>
 </div>
@@ -406,7 +407,9 @@ tracing</span></a>.</p>
 <span class="sd">        drop table if exists bar;</span>
 <span class="sd">        create table bar(x,y,z);</span>
 <span class="sd">        select * from point where x=?;</span>
-<span class="sd">        &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="p">))</span>
+<span class="sd">        &quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="p">(</span><span class="mi">3</span><span class="p">,),</span>
+<span class="p">)</span>
 
 <span class="c1"># if set on a connection then all cursors are traced</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">exec_trace</span> <span class="o">=</span> <span class="n">my_tracer</span>
@@ -517,7 +520,6 @@ compare to the row.  They are registered by calling
 <p>This is the Python equivalent to the C based example in the <a class="reference external" href="https://www.sqlite.org/windowfunctions.html#user_defined_aggregate_window_functions">SQLite
 documentation</a></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SumInt</span><span class="p">:</span>
-
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">=</span> <span class="mi">0</span>
 
@@ -586,13 +588,16 @@ register a collation by calling <a class="reference internal" href="connection.h
 <span class="c1"># number and ensures the number portion gets sorted correctly</span>
 
 <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table names(name)&quot;</span><span class="p">)</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s2">&quot;insert into names values(?)&quot;</span><span class="p">,</span> <span class="p">(</span>
-    <span class="p">(</span><span class="s2">&quot;file1&quot;</span><span class="p">,</span> <span class="p">),</span>
-    <span class="p">(</span><span class="s2">&quot;file7&quot;</span><span class="p">,</span> <span class="p">),</span>
-    <span class="p">(</span><span class="s2">&quot;file17&quot;</span><span class="p">,</span> <span class="p">),</span>
-    <span class="p">(</span><span class="s2">&quot;file20&quot;</span><span class="p">,</span> <span class="p">),</span>
-    <span class="p">(</span><span class="s2">&quot;file3&quot;</span><span class="p">,</span> <span class="p">),</span>
-<span class="p">))</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span>
+    <span class="s2">&quot;insert into names values(?)&quot;</span><span class="p">,</span>
+    <span class="p">(</span>
+        <span class="p">(</span><span class="s2">&quot;file1&quot;</span><span class="p">,),</span>
+        <span class="p">(</span><span class="s2">&quot;file7&quot;</span><span class="p">,),</span>
+        <span class="p">(</span><span class="s2">&quot;file17&quot;</span><span class="p">,),</span>
+        <span class="p">(</span><span class="s2">&quot;file20&quot;</span><span class="p">,),</span>
+        <span class="p">(</span><span class="s2">&quot;file3&quot;</span><span class="p">,),</span>
+    <span class="p">),</span>
+<span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Standard sorting&quot;</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from names order by name&quot;</span><span class="p">):</span>
@@ -604,8 +609,7 @@ register a collation by calling <a class="reference internal" href="connection.h
 
     <span class="k">def</span> <span class="nf">parts</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
         <span class="s2">&quot;Converts str into list of alternating str and int parts&quot;</span>
-        <span class="k">return</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="k">else</span> <span class="n">v</span>
-                  <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(\d+)&quot;</span><span class="p">,</span> <span class="n">s</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="k">else</span> <span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(\d+)&quot;</span><span class="p">,</span> <span class="n">s</span><span class="p">)]</span>
 
     <span class="n">ps1</span> <span class="o">=</span> <span class="n">parts</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">s1</span><span class="p">))</span>
     <span class="n">ps2</span> <span class="o">=</span> <span class="n">parts</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">s2</span><span class="p">))</span>
@@ -654,7 +658,7 @@ APSW provides <a class="reference internal" href="ext.html#apsw.ext.DataClassRow
 <span class="s2">    &quot;&quot;&quot;</span><span class="p">)</span>
 
 <span class="c1"># Normally you use column numbers</span>
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select title, id, year from books where author=?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;Oscar Wilde&quot;</span><span class="p">,</span> <span class="p">)):</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select title, id, year from books where author=?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;Oscar Wilde&quot;</span><span class="p">,)):</span>
     <span class="c1"># this is very fragile</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
@@ -667,10 +671,12 @@ APSW provides <a class="reference internal" href="ext.html#apsw.ext.DataClassRow
 
 <span class="c1"># Same query - note using AS to set column name</span>
 <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;SELECT title,</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;SELECT title,</span>
 <span class="sd">           id AS book_id,</span>
 <span class="sd">           year AS book_year</span>
-<span class="sd">           FROM books WHERE author = ?&quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;Oscar Wilde&quot;</span><span class="p">,</span> <span class="p">)):</span>
+<span class="sd">           FROM books WHERE author = ?&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="p">(</span><span class="s2">&quot;Oscar Wilde&quot;</span><span class="p">,),</span>
+<span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="n">row</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">row</span><span class="o">.</span><span class="n">book_id</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;year&quot;</span><span class="p">,</span> <span class="n">row</span><span class="o">.</span><span class="n">book_year</span><span class="p">)</span>
@@ -704,7 +710,6 @@ conversion, both for types you define and for other types.</p>
 <span class="c1"># A type we define - deriving from SQLiteTypeAdapter automatically registers conversion</span>
 <span class="c1"># to a SQLite value</span>
 <span class="k">class</span> <span class="nc">Point</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">SQLiteTypeAdapter</span><span class="p">):</span>
-
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">y</span>
@@ -725,46 +730,64 @@ conversion, both for types you define and for other types.</p>
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">part</span><span class="p">)</span> <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;;&quot;</span><span class="p">)))</span>
 
 
-<span class="c1"># An existing type</span>
+<span class="c1"># Existing types</span>
 <span class="k">def</span> <span class="nf">complex_to_sqlite_value</span><span class="p">(</span><span class="n">c</span><span class="p">:</span> <span class="nb">complex</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="w"> </span><span class="n">c</span><span class="o">.</span><span class="n">real</span><span class="w"> </span><span class="si">}</span><span class="s2">+</span><span class="si">{</span><span class="w"> </span><span class="n">c</span><span class="o">.</span><span class="n">imag</span><span class="w"> </span><span class="si">}</span><span class="s2">&quot;</span>
 
 
-<span class="c1"># ... requires manual registration</span>
+<span class="k">def</span> <span class="nf">datetime_to_sqlite_value</span><span class="p">(</span><span class="n">dt</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="c1"># Represent as floating point UTC value no matter</span>
+    <span class="c1"># what timezone is used. Also consider other</span>
+    <span class="c1"># formats like ISO8601.</span>
+    <span class="k">return</span> <span class="n">dt</span><span class="o">.</span><span class="n">timestamp</span><span class="p">()</span>
+
+
+<span class="c1"># ... require manual registration</span>
 <span class="n">registrar</span><span class="o">.</span><span class="n">register_adapter</span><span class="p">(</span><span class="nb">complex</span><span class="p">,</span> <span class="n">complex_to_sqlite_value</span><span class="p">)</span>
+<span class="n">registrar</span><span class="o">.</span><span class="n">register_adapter</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span> <span class="n">datetime_to_sqlite_value</span><span class="p">)</span>
 
 <span class="c1"># conversion from a SQLite value requires registration</span>
 <span class="n">registrar</span><span class="o">.</span><span class="n">register_converter</span><span class="p">(</span><span class="s2">&quot;POINT&quot;</span><span class="p">,</span> <span class="n">Point</span><span class="o">.</span><span class="n">convert_from_sqlite</span><span class="p">)</span>
 
 
-<span class="c1"># ... and for complex</span>
+<span class="c1"># ... and for stdlib types</span>
 <span class="k">def</span> <span class="nf">sqlite_to_complex</span><span class="p">(</span><span class="n">v</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">complex</span><span class="p">:</span>
     <span class="k">return</span> <span class="nb">complex</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">part</span><span class="p">)</span> <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;+&quot;</span><span class="p">)))</span>
 
 
+<span class="k">def</span> <span class="nf">sqlite_to_datetime</span><span class="p">(</span><span class="n">v</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">:</span>
+    <span class="c1"># Keep the UTC values coming back from the database</span>
+    <span class="c1"># as UTC</span>
+    <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span>
+
+
 <span class="n">registrar</span><span class="o">.</span><span class="n">register_converter</span><span class="p">(</span><span class="s2">&quot;COMPLEX&quot;</span><span class="p">,</span> <span class="n">sqlite_to_complex</span><span class="p">)</span>
+<span class="n">registrar</span><span class="o">.</span><span class="n">register_converter</span><span class="p">(</span><span class="s2">&quot;TIMESTAMP&quot;</span><span class="p">,</span> <span class="n">sqlite_to_datetime</span><span class="p">)</span>
 
 <span class="c1"># note that the type names are case sensitive and must match the</span>
 <span class="c1"># registration</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table conversion(p POINT, c COMPLEX)&quot;</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table conversion(p POINT, c COMPLEX, t TIMESTAMP)&quot;</span><span class="p">)</span>
 
 <span class="c1"># convert going into database</span>
-<span class="n">test_data</span> <span class="o">=</span> <span class="p">(</span><span class="n">Point</span><span class="p">(</span><span class="mf">5.2</span><span class="p">,</span> <span class="mf">7.6</span><span class="p">),</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">4</span><span class="n">j</span><span class="p">)</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into conversion values(?, ?)&quot;</span><span class="p">,</span> <span class="n">test_data</span><span class="p">)</span>
+<span class="n">test_data</span> <span class="o">=</span> <span class="p">(</span><span class="n">Point</span><span class="p">(</span><span class="mf">5.2</span><span class="p">,</span> <span class="mf">7.6</span><span class="p">),</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">4</span><span class="n">j</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">())</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into conversion values(?, ?, ?)&quot;</span><span class="p">,</span> <span class="n">test_data</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;inserted&quot;</span><span class="p">,</span> <span class="n">test_data</span><span class="p">)</span>
 
 <span class="c1"># and coming back out</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;querying data&quot;</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from conversion&quot;</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;back out&quot;</span><span class="p">,</span> <span class="n">row</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;equal&quot;</span><span class="p">,</span> <span class="n">row</span> <span class="o">==</span> <span class="n">test_data</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;column </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 <span class="c1"># clear registrar</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">cursor_factory</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">inserted (Point(5.2, 7.6), (3+4j))</span>
-<span class="go">back out (Point(5.2, 7.6), (3+4j))</span>
-<span class="go">equal True</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2024, 5, 23, 11, 20, 28, 937572))</span>
+<span class="go">querying data</span>
+<span class="go">column 0 = Point(5.2, 7.6)</span>
+<span class="go">column 1 = (3+4j)</span>
+<span class="go">column 2 = datetime.datetime(2024, 5, 23, 18, 20, 28, 937572, tzinfo=datetime.timezone.utc)</span>
 </pre></div>
 </div>
 </section>
@@ -792,7 +815,7 @@ query (without running it)</p>
 <span class="s2">    JOIN customers ON orders.customer_id=customers.id</span>
 <span class="s2">    WHERE address = ?;</span>
 <span class="s2">    SELECT 7;&quot;&quot;&quot;</span>
-<span class="n">bindings</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;123 Main Street&quot;</span><span class="p">,</span> <span class="p">)</span>
+<span class="n">bindings</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;123 Main Street&quot;</span><span class="p">,)</span>
 
 <span class="c1"># ask for all information available</span>
 <span class="n">qd</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">query_info</span><span class="p">(</span>
@@ -999,7 +1022,7 @@ to a file, without having the entire blob in memory.  Use
 <span class="c1"># Add a blob we will fill in later</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into blobby values(1, zeroblob(10000))&quot;</span><span class="p">)</span>
 <span class="c1"># Or as a binding</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into blobby values(2, ?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">zeroblob</span><span class="p">(</span><span class="mi">20000</span><span class="p">),</span> <span class="p">))</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into blobby values(2, ?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">zeroblob</span><span class="p">(</span><span class="mi">20000</span><span class="p">),))</span>
 <span class="c1"># Open a blob for writing.  We need to know the rowid</span>
 <span class="n">rowid</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select ROWID from blobby where x=1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span>
 <span class="n">blob</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">blob_open</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="s2">&quot;blobby&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">rowid</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
@@ -1042,8 +1065,9 @@ database.</p>
 <span id="example-authorizer"></span><span id="index-22"></span><h2>Authorizer (control what SQL can do)<a class="headerlink" href="#authorizer-control-what-sql-can-do" title="Link to this heading"></a></h2>
 <p>You can allow, deny, or ignore what SQL does.  Use
 <a class="reference internal" href="connection.html#apsw.Connection.authorizer" title="apsw.Connection.authorizer"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Connection.authorizer</span></code></a> to set an authorizer.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">auth</span><span class="p">(</span><span class="n">operation</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">p1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">p2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">db_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-         <span class="n">trigger_or_view</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">auth</span><span class="p">(</span>
+    <span class="n">operation</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">p1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">p2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">db_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">trigger_or_view</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Called when each operation is prepared.  We can return SQLITE_OK, SQLITE_DENY or</span>
 <span class="sd">    SQLITE_IGNORE&quot;&quot;&quot;</span>
     <span class="c1"># find the operation name</span>
@@ -1085,9 +1109,7 @@ feedback and allows cancelling.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># create a table with random numbers</span>
 <span class="k">with</span> <span class="n">connection</span><span class="p">:</span>
     <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table numbers(x)&quot;</span><span class="p">)</span>
-    <span class="n">connection</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s2">&quot;insert into numbers values(?)&quot;</span><span class="p">,</span>
-                            <span class="p">((</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">9999999999</span><span class="p">),</span> <span class="p">)</span>
-                                <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)))</span>
+    <span class="n">connection</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s2">&quot;insert into numbers values(?)&quot;</span><span class="p">,</span> <span class="p">((</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">9999999999</span><span class="p">),)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)))</span>
 
 
 <span class="k">def</span> <span class="nf">progress_handler</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -1114,7 +1136,7 @@ feedback and allows cancelling.</p>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
-<span class="go">(9950865484,)</span>
+<span class="go">(9997444378,)</span>
 </pre></div>
 </div>
 </section>
@@ -1135,28 +1157,27 @@ doesn’t change for commits on the same connection.</p>
     <span class="n">ok</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">file_control</span><span class="p">(</span>
         <span class="s2">&quot;main&quot;</span><span class="p">,</span>  <span class="c1"># or an attached database name</span>
         <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_FCNTL_DATA_VERSION</span><span class="p">,</span>  <span class="c1"># code</span>
-        <span class="n">ctypes</span><span class="o">.</span><span class="n">addressof</span><span class="p">(</span><span class="n">data_version</span><span class="p">))</span>  <span class="c1"># pass C level pointer</span>
+        <span class="n">ctypes</span><span class="o">.</span><span class="n">addressof</span><span class="p">(</span><span class="n">data_version</span><span class="p">),</span>
+    <span class="p">)</span>  <span class="c1"># pass C level pointer</span>
     <span class="k">assert</span> <span class="n">ok</span><span class="p">,</span> <span class="s2">&quot;SQLITE_FCNTL_DATA_VERSION was not understood!&quot;</span>
     <span class="k">return</span> <span class="n">data_version</span><span class="o">.</span><span class="n">value</span>
 
 
 <span class="c1"># Show starting values</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;fcntl&quot;</span><span class="p">,</span> <span class="n">get_data_version</span><span class="p">(</span><span class="n">connection</span><span class="p">),</span>
-      <span class="s2">&quot;pragma&quot;</span><span class="p">,</span> <span class="n">connection</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;data_version&quot;</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;fcntl&quot;</span><span class="p">,</span> <span class="n">get_data_version</span><span class="p">(</span><span class="n">connection</span><span class="p">),</span> <span class="s2">&quot;pragma&quot;</span><span class="p">,</span> <span class="n">connection</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;data_version&quot;</span><span class="p">))</span>
 
 <span class="c1"># See the fcntl value versus pragma value</span>
 <span class="k">for</span> <span class="n">sql</span> <span class="ow">in</span> <span class="p">(</span>
-        <span class="s2">&quot;create table fcntl_example(x)&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;begin ; insert into fcntl_example values(3)&quot;</span><span class="p">,</span>
-        <span class="c1"># we can see the version doesn&#39;t change inside a transaction</span>
-        <span class="s2">&quot;insert into fcntl_example values(4)&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;commit&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pragma user_version=1234&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;create table fcntl_example(x)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;begin ; insert into fcntl_example values(3)&quot;</span><span class="p">,</span>
+    <span class="c1"># we can see the version doesn&#39;t change inside a transaction</span>
+    <span class="s2">&quot;insert into fcntl_example values(4)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;commit&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pragma user_version=1234&quot;</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
     <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;fcntl&quot;</span><span class="p">,</span> <span class="n">get_data_version</span><span class="p">(</span><span class="n">connection</span><span class="p">),</span>
-          <span class="s2">&quot;pragma&quot;</span><span class="p">,</span> <span class="n">connection</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;data_version&quot;</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;fcntl&quot;</span><span class="p">,</span> <span class="n">get_data_version</span><span class="p">(</span><span class="n">connection</span><span class="p">),</span> <span class="s2">&quot;pragma&quot;</span><span class="p">,</span> <span class="n">connection</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;data_version&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">fcntl 40 pragma 2</span>
@@ -1215,9 +1236,9 @@ information.  Register a hook using
 
 
 <span class="n">connection</span><span class="o">.</span><span class="n">set_update_hook</span><span class="p">(</span><span class="n">my_update_hook</span><span class="p">)</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into names values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;file93&quot;</span><span class="p">,</span> <span class="p">))</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into names values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;file93&quot;</span><span class="p">,))</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;update names set name=? where name=?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;file94&quot;</span><span class="p">,</span> <span class="s2">&quot;file93&quot;</span><span class="p">))</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;delete from names where name=?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;file94&quot;</span><span class="p">,</span> <span class="p">))</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;delete from names where name=?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;file94&quot;</span><span class="p">,))</span>
 
 <span class="c1"># Clear the hook</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">set_update_hook</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
@@ -1243,10 +1264,11 @@ useful instead.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Yield a row at a time</span>
 <span class="k">def</span> <span class="nf">table_range</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
-        <span class="k">yield</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="p">)</span>
+        <span class="k">yield</span> <span class="p">(</span><span class="n">i</span><span class="p">,)</span>
+
 
 <span class="c1"># set column names</span>
-<span class="n">table_range</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="p">)</span>
+<span class="n">table_range</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">,)</span>
 <span class="c1"># set how to access what table_range returns</span>
 <span class="n">table_range</span><span class="o">.</span><span class="n">column_access</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">VTColumnAccess</span><span class="o">.</span><span class="n">By_Index</span>
 
@@ -1291,13 +1313,23 @@ useful instead.</p>
 <span class="c1"># A more complex example exporting unicodedata module</span>
 
 <span class="c1"># The methods we will call on each codepoint</span>
-<span class="n">unicode_methods</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;decimal&quot;</span><span class="p">,</span> <span class="s2">&quot;digit&quot;</span><span class="p">,</span> <span class="s2">&quot;numeric&quot;</span><span class="p">,</span> <span class="s2">&quot;category&quot;</span><span class="p">,</span> <span class="s2">&quot;combining&quot;</span><span class="p">,</span>
-                   <span class="s2">&quot;bidirectional&quot;</span><span class="p">,</span> <span class="s2">&quot;east_asian_width&quot;</span><span class="p">,</span> <span class="s2">&quot;mirrored&quot;</span><span class="p">,</span> <span class="s2">&quot;decomposition&quot;</span><span class="p">)</span>
+<span class="n">unicode_methods</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;decimal&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;digit&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;numeric&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;category&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;combining&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;bidirectional&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;east_asian_width&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mirrored&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;decomposition&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
 
 <span class="c1"># the function we will turn into a virtual table returning</span>
 <span class="c1"># each row as a dict</span>
 <span class="k">def</span> <span class="nf">unicode_data</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">maxunicode</span><span class="p">):</span>
-
     <span class="c1"># some methods raise ValueError on some codepoints</span>
     <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="n">meth</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
@@ -1343,10 +1375,9 @@ useful instead.</p>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># A more complex example - given a list of directories return information</span>
 <span class="c1"># about the files within them recursively</span>
-<span class="k">def</span> <span class="nf">get_files_info</span><span class="p">(</span><span class="n">directories</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                   <span class="n">sep</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="p">,</span>
-                   <span class="o">*</span><span class="p">,</span>
-                   <span class="n">ignore_symlinks</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="k">def</span> <span class="nf">get_files_info</span><span class="p">(</span>
+    <span class="n">directories</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sep</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">ignore_symlinks</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
     <span class="k">for</span> <span class="n">root</span> <span class="ow">in</span> <span class="n">directories</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">):</span>
         <span class="k">with</span> <span class="n">os</span><span class="o">.</span><span class="n">scandir</span><span class="p">(</span><span class="n">root</span><span class="p">)</span> <span class="k">as</span> <span class="n">sd</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">sd</span><span class="p">:</span>
@@ -1360,25 +1391,27 @@ useful instead.</p>
                         <span class="s2">&quot;directory&quot;</span><span class="p">:</span> <span class="n">root</span><span class="p">,</span>
                         <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                         <span class="s2">&quot;extension&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">name</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span>
-                        <span class="o">**</span><span class="p">{</span>
-                            <span class="n">k</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
-                            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">get_files_info</span><span class="o">.</span><span class="n">stat_columns</span>
-                        <span class="p">}</span>
+                        <span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">get_files_info</span><span class="o">.</span><span class="n">stat_columns</span><span class="p">},</span>
                     <span class="p">}</span>
 
 
 <span class="c1"># which stat columns do we want?</span>
 <span class="n">get_files_info</span><span class="o">.</span><span class="n">stat_columns</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">))</span> <span class="k">if</span> <span class="n">n</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;st_&quot;</span><span class="p">))</span>
 <span class="c1"># setup columns and access by providing an example of the first entry returned</span>
-<span class="n">get_files_info</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">get_files_info</span><span class="o">.</span><span class="n">column_access</span> <span class="o">=</span> \
-    <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">get_column_names</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">get_files_info</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)))</span>
+<span class="n">get_files_info</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">get_files_info</span><span class="o">.</span><span class="n">column_access</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">get_column_names</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">get_files_info</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)))</span>
 
 <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">make_virtual_module</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="s2">&quot;files_info&quot;</span><span class="p">,</span> <span class="n">get_files_info</span><span class="p">)</span>
 
 <span class="c1"># all the sys.path directories</span>
-<span class="n">bindings</span> <span class="o">=</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
-            <span class="c1">#  except our current one</span>
-            <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">samefile</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="p">)),</span> <span class="p">)</span>
+<span class="n">bindings</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="n">p</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="c1">#  except our current one</span>
+        <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">samefile</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="p">)</span>
+    <span class="p">),</span>
+<span class="p">)</span>
 
 <span class="c1"># Find the 3 biggest files that aren&#39;t libraries</span>
 <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;SELECT st_size, directory, name</span>
@@ -1444,10 +1477,10 @@ useful instead.</p>
 <span class="go">│ .local     │ 2136       │</span>
 <span class="go">│ .o         │ 9328       │</span>
 <span class="go">│ .ps1       │ 9033       │</span>
-<span class="go">│ .py        │ 11136833   │</span>
-<span class="go">│ .pyc       │ 11406320   │</span>
+<span class="go">│ .py        │ 11137818   │</span>
+<span class="go">│ .pyc       │ 11416693   │</span>
 <span class="go">│ .rst       │ 9561       │</span>
-<span class="go">│ .sh        │ 3941       │</span>
+<span class="go">│ .sh        │ 4008       │</span>
 <span class="go">│ .so        │ 25379792   │</span>
 <span class="go">│ .stdlib    │ 12536      │</span>
 <span class="go">│ .supp      │ 70         │</span>
@@ -1471,13 +1504,13 @@ for receiving parameters once a database is open.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># This example VFS obfuscates the database file contents by xor all</span>
 <span class="c1"># bytes with 0xa5.</span>
 
+
 <span class="k">def</span> <span class="nf">obfuscate</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">):</span>
-    <span class="k">return</span> <span class="nb">bytes</span><span class="p">([</span><span class="n">x</span> <span class="o">^</span> <span class="mh">0xa5</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data</span><span class="p">])</span>
+    <span class="k">return</span> <span class="nb">bytes</span><span class="p">([</span><span class="n">x</span> <span class="o">^</span> <span class="mh">0xA5</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data</span><span class="p">])</span>
 
 
 <span class="c1"># Inheriting from a base of &quot;&quot; means the default vfs</span>
 <span class="k">class</span> <span class="nc">ObfuscatedVFS</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">VFS</span><span class="p">):</span>
-
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vfsname</span><span class="o">=</span><span class="s2">&quot;obfuscated&quot;</span><span class="p">,</span> <span class="n">basevfs</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">vfs_name</span> <span class="o">=</span> <span class="n">vfsname</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">base_vfs</span> <span class="o">=</span> <span class="n">basevfs</span>
@@ -1509,7 +1542,6 @@ for receiving parameters once a database is open.</p>
 <span class="c1"># The file implementation where we override xRead and xWrite to call our</span>
 <span class="c1"># encryption routine</span>
 <span class="k">class</span> <span class="nc">ObfuscatedVFSFile</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">VFSFile</span><span class="p">):</span>
-
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inheritfromvfsname</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">flags</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">inheritfromvfsname</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">flags</span><span class="p">)</span>
 
@@ -1532,6 +1564,7 @@ for receiving parameters once a database is open.</p>
         <span class="c1"># We did not understand</span>
         <span class="k">return</span> <span class="kc">False</span>
 
+
 <span class="c1"># To register the VFS we just instantiate it</span>
 <span class="n">obfuvfs</span> <span class="o">=</span> <span class="n">ObfuscatedVFS</span><span class="p">()</span>
 
@@ -1545,9 +1578,9 @@ for receiving parameters once a database is open.</p>
 <span class="n">open_flags</span> <span class="o">|=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_URI</span>
 
 <span class="c1"># uri parameters are after the ? separated by &amp;</span>
-<span class="n">obfudb</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;file:myobfudb?fast=speed&amp;level=7&amp;warp=on&amp;another=true&quot;</span><span class="p">,</span>
-                         <span class="n">flags</span><span class="o">=</span><span class="n">open_flags</span><span class="p">,</span>
-                         <span class="n">vfs</span><span class="o">=</span><span class="n">obfuvfs</span><span class="o">.</span><span class="n">vfs_name</span><span class="p">)</span>
+<span class="n">obfudb</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span>
+    <span class="s2">&quot;file:myobfudb?fast=speed&amp;level=7&amp;warp=on&amp;another=true&quot;</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">open_flags</span><span class="p">,</span> <span class="n">vfs</span><span class="o">=</span><span class="n">obfuvfs</span><span class="o">.</span><span class="n">vfs_name</span>
+<span class="p">)</span>
 
 <span class="c1"># Check it works</span>
 <span class="n">obfudb</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table foo(x,y); insert into foo values(1,2)&quot;</span><span class="p">)</span>
@@ -1580,7 +1613,6 @@ for receiving parameters once a database is open.</p>
 <span class="go">pragma received foreign_keys = ON</span>
 <span class="go">xOpen flags SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_WAL</span>
 <span class="go">   filename /space/apsw/myobfudb-wal</span>
-<span class="go">pragma received integrity_check = foo</span>
 <span class="go">What is on disk b&#39;\xf6\xf4\xe9\xcc\xd1\xc0\x85\xc3\xca\xd7\xc8\xc4\xd1\x85\x96\xa5\xb5\xa5\xa7\xa7&#39;</span>
 <span class="go">Unobfuscated disk b&#39;SQLite format 3\x00\x10\x00\x02\x02&#39;</span>
 <span class="go">pragma received my_custom_pragma = my value</span>
@@ -1599,22 +1631,22 @@ for receiving parameters once a database is open.</p>
     <span class="n">orig</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">apsw</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">orig</span><span class="p">)</span>
     <span class="c1"># To get the maximum, set to 0x7fffffff and then read value back</span>
-    <span class="n">connection</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">apsw</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span> <span class="mh">0x7fffffff</span><span class="p">)</span>
+    <span class="n">connection</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">apsw</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span> <span class="mh">0x7FFFFFFF</span><span class="p">)</span>
     <span class="nb">max</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">apsw</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">max_name</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="nb">max</span><span class="p">)</span>
 
 <span class="c1"># Set limit for size of a string</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table testlimit(s)&quot;</span><span class="p">)</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into testlimit values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;x&quot;</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">,</span> <span class="p">))</span>  <span class="c1"># 1024 char string</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into testlimit values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;x&quot;</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">,))</span>  <span class="c1"># 1024 char string</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_LIMIT_LENGTH</span><span class="p">,</span> <span class="mi">1023</span><span class="p">)</span>  <span class="c1"># limit is now 1023</span>
 <span class="k">try</span><span class="p">:</span>
-    <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into testlimit values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;y&quot;</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">,</span> <span class="p">))</span>
+    <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into testlimit values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;y&quot;</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">,))</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;string exceeding limit was inserted&quot;</span><span class="p">)</span>
 <span class="k">except</span> <span class="n">apsw</span><span class="o">.</span><span class="n">TooBigError</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Caught toobig exception&quot;</span><span class="p">)</span>
 
 <span class="c1"># reset back to largest value</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_LIMIT_LENGTH</span><span class="p">,</span> <span class="mh">0x7fffffff</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_LIMIT_LENGTH</span><span class="p">,</span> <span class="mh">0x7FFFFFFF</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLITE_LIMIT_LENGTH 1000000000</span>
@@ -1678,9 +1710,9 @@ Python.</p>
 
 <span class="go">Dump output</span>
 
-<span class="go">-- SQLite dump (by APSW 3.45.3.0)</span>
-<span class="go">-- SQLite version 3.45.3</span>
-<span class="go">-- Date: Tue Apr 16 11:40:25 2024</span>
+<span class="go">-- SQLite dump (by APSW 3.46.0.0)</span>
+<span class="go">-- SQLite version 3.46.0</span>
+<span class="go">-- Date: Thu May 23 11:20:29 2024</span>
 <span class="go">-- Tables like: csvtest%</span>
 <span class="go">-- Database: /space/apsw/dbfile</span>
 <span class="go">-- User: rogerb @ clamps</span>
@@ -1718,8 +1750,8 @@ for per connection statistics.</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="w"> </span><span class="n">schema_used</span><span class="w"> </span><span class="si">}</span><span class="s2"> bytes used to store schema for this connection&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite memory usage 520456 max 2497232</span>
-<span class="go">4936 bytes used to store schema for this connection</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite memory usage 520440 max 2497360</span>
+<span class="go">4968 bytes used to store schema for this connection</span>
 </pre></div>
 </div>
 </section>
@@ -1756,10 +1788,7 @@ for per connection statistics.</p>
     <span class="nb">print</span><span class="p">(</span><span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">trace</span><span class="p">),</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
 
-<span class="n">connection</span><span class="o">.</span><span class="n">trace_v2</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_TRACE_STMT</span>
-                     <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_TRACE_PROFILE</span>
-                     <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_TRACE_ROW</span><span class="p">,</span>
-                    <span class="n">trace_hook</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">trace_v2</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_TRACE_STMT</span> <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_TRACE_PROFILE</span> <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_TRACE_ROW</span><span class="p">,</span> <span class="n">trace_hook</span><span class="p">)</span>
 
 <span class="c1"># We will get one each of the trace events</span>
 <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>
@@ -1802,7 +1831,9 @@ truncation etc.</p>
 <span class="sd">    INSERT INTO dummy VALUES(3, &#39;some regular text to make this row interesting&#39;, x&#39;030709&#39;);</span>
 <span class="sd">    INSERT INTO dummy VALUES(3.14, &#39;Tiếng Việt&#39;, null);</span>
 <span class="sd">    INSERT INTO dummy VALUES(&#39;&#39;, ?, &#39; &#39;);</span>
-<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;special </span><span class="se">\t\n\f\0</span><span class="s1"> cha</span><span class="se">\\</span><span class="s1">rs&#39;</span><span class="p">,</span> <span class="p">))</span>
+<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="p">(</span><span class="s2">&quot;special </span><span class="se">\t\n\f\0</span><span class="s2"> cha</span><span class="se">\\</span><span class="s2">rs&quot;</span><span class="p">,),</span>
+<span class="p">)</span>
 
 <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;SELECT * FROM dummy&quot;</span>
 <span class="c1"># default</span>
@@ -1915,7 +1946,7 @@ rollback the incomplete transaction.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Apr 16, 2024.
+      <span class="lastupdated">Last updated on May 23, 2024.
       </span></p>
   </div>
 

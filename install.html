@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Installation and customization &mdash; APSW 3.45.3.0 documentation</title>
+  <title>Installation and customization &mdash; APSW 3.46.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -17,8 +17,8 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=33694052"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/documentation_options.js?v=7df7d932"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
@@ -42,7 +42,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.45.3.0
+                3.46.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -191,48 +191,35 @@ are currently on.</p>
 source from <a class="reference external" href="https://pypi.org/project/apsw/">PyPi</a> then ensure you
 edit the <code class="file docutils literal notranslate"><span class="pre">setup.apsw</span></code> file inside.</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.45.3.0/apsw-3.45.3.0.zip">apsw-3.45.3.0.zip</a>
+<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.46.0.0/apsw-3.46.0.0.zip">apsw-3.46.0.0.zip</a>
 (Source, includes this HTML Help)</p></li>
-<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.45.3.0/apsw-3.45.3.0-sigs.zip">apsw-3.45.3.0-sigs.zip</a>
-GPG signatures for all files</p></li>
+<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.46.0.0/apsw-3.46.0.0.cosign-bundle">apsw-3.46.0.0.cosign-bundle</a>
+cosign signature</p></li>
 </ul>
 <section id="verifying-your-download">
 <span id="verifydownload"></span><h3>Verifying your download<a class="headerlink" href="#verifying-your-download" title="Link to this heading"></a></h3>
 <p>Github <a class="reference external" href="https://github.com/rogerbinns/apsw/releases">source releases</a> are
-digitally signed so you can verify they have not been tampered with.
-Download and extract the corresponding zip file of signatures.  These
-instructions are for <a class="reference external" href="https://www.gnupg.org/">GNU Privacy Guard</a>.
-(GPG is installed as standard on most Unix/Linux platforms and can be
-downloaded for Windows.)</p>
+digitally signed so you can verify they have not been tampered with,
+and were produced by the project maintainer.</p>
+<p><a class="reference external" href="https://www.sigstore.dev/">Sigstore</a> is used via the <a class="reference external" href="https://docs.sigstore.dev/signing/quickstart/">cosign tool</a>.  Download the
+corresponding cosign bundle which contains the signature.</p>
 <p>Verify</p>
 <blockquote>
-<div><p>To verify a file use –verify specifying the corresponding
-<code class="docutils literal notranslate"><span class="pre">.asc</span></code> filename.  This example verifies the source:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gpg<span class="w"> </span>--verify<span class="w"> </span>apsw-3.45.3.0.zip.asc
-<span class="go">gpg: Signature made ... date ... using DSA key ID 0DFBD904</span>
-<span class="go">gpg: Good signature from &quot;Roger Binns &lt;rogerb@rogerbinns.com&gt;&quot;</span>
+<div><p><a class="reference external" href="https://docs.sigstore.dev/system_config/installation/">Install cosign</a> if you
+don’t have it already.  It is <a class="reference external" href="https://github.com/sigstore/cosign/releases/">available for a wide variety of
+platforms</a>
+including Linux, MacOS, and Windows.</p>
+<p>Checking the signature needs to provide the source release, the
+cosign bundle, the maintainer id, and issuer.  The command is all
+one line shown here across multiple lines for clarity.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>cosign<span class="w"> </span>verify-blob<span class="w"> </span>apsw-3.46.0.0.zip<span class="w">                           </span><span class="se">\</span>
+<span class="w">    </span>--bundle<span class="w"> </span>apsw-3.46.0.0.cosign-bundle<span class="w">                         </span><span class="se">\</span>
+<span class="w">    </span>--certificate-identity<span class="o">=</span>rogerb@rogerbinns.com<span class="w">                 </span><span class="se">\</span>
+<span class="w">    </span>--certificate-oidc-issuer<span class="o">=</span>https://github.com/login/oauth
+<span class="go">Verified OK</span>
 </pre></div>
 </div>
-<p>If you get a “good signature” then the file has not been tampered with
-and you are good to go.</p>
-</div></blockquote>
-<p>Getting the signing key</p>
-<blockquote>
-<div><p>You may not have the signing key available in which case the last
-line will be something like this:</p>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">gpg: Can&#39;t check signature: public key not found</span>
-</pre></div>
-</div>
-<p>You can get a copy of the key using this command:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gpg<span class="w"> </span>--keyserver<span class="w"> </span>hkp://keyserver.ubuntu.com<span class="w"> </span>--recv-keys<span class="w"> </span>0DFBD904
-<span class="go">gpg: requesting key 0DFBD904 from hkp server keyserver.ubuntu.com</span>
-<span class="go">gpg: /home/username/.gnupg/trustdb.gpg: trustdb created</span>
-<span class="go">gpg: key 0DFBD904: public key &quot;Roger Binns &lt;rogerb@rogerbinns.com&gt;&quot; imported</span>
-<span class="go">gpg: Total number processed: 1</span>
-<span class="go">gpg:               imported: 1</span>
-</pre></div>
-</div>
-<p>Repeat the verify step.</p>
+<p>Check for a success exit code, and verified message.</p>
 </div></blockquote>
 </section>
 </section>
@@ -450,7 +437,7 @@ supported versions running the tests.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Apr 16, 2024.
+      <span class="lastupdated">Last updated on May 23, 2024.
       </span></p>
   </div>
 

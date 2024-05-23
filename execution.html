@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Execution and tracing &mdash; APSW 3.45.3.0 documentation</title>
+  <title>Execution and tracing &mdash; APSW 3.46.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -17,8 +17,8 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=33694052"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/documentation_options.js?v=7df7d932"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
@@ -42,7 +42,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.45.3.0
+                3.46.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -253,11 +253,13 @@ two arguments.</p>
 </div></blockquote>
 <p>Whatever you return from the tracer is what is actually returned to
 the caller of <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">execute()</span></code></a>. If you return None then the
-whole row is skipped. See the <a class="reference internal" href="example.html#example-rowtrace"><span class="std std-ref">example</span></a>.</p>
+whole row is skipped. See the <a class="reference internal" href="example.html#example-rowtrace"><span class="std std-ref">example</span></a>.
+They are useful for logging and testing.</p>
 <p>Row tracers can be installed on a specific cursor by setting
 <a class="reference internal" href="cursor.html#apsw.Cursor.row_trace" title="apsw.Cursor.row_trace"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Cursor.row_trace</span></code></a> or for all cursors by setting
 <a class="reference internal" href="connection.html#apsw.Connection.row_trace" title="apsw.Connection.row_trace"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Connection.row_trace</span></code></a>, with the cursor tracer taking
 priority.</p>
+<p>If you want to convert types then see <a class="reference internal" href="ext.html#typeconversion"><span class="std std-ref">Converting types into and out of SQLite</span></a>.</p>
 </section>
 </section>
 <section id="apsw-trace">
@@ -455,7 +457,7 @@ illustrates how time spent busy waiting is included.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Apr 16, 2024.
+      <span class="lastupdated">Last updated on May 23, 2024.
       </span></p>
   </div>
 
