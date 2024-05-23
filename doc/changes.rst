@@ -10,6 +10,14 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+3.46.0.0
+========
+
+Adjusted `levels
+<https://docs.python.org/3/library/logging.html#levels>`__ in
+:func:`apsw.ext.log_sqlite` to be lower for some SQLite messages like
+`SQLITE_SCHEMA` and `SQLITE_NOTICE_RECOVER_WAL` (:issue:`518`)
+
 3.45.3.0
 ========
 
