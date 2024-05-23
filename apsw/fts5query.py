@@ -19,8 +19,9 @@ string
 parsed
 
     This is a hierarchical representation using :mod:`dataclasses`
-    with all fields present.  It uses :class:`PHRASE`, :class:`PHRASES`,
-    :class:`NEAR`, :class:`COLUMNFILTER`, :class:`AND`, :class:`NOT`.
+    with all fields present.  Represented as :class:`QUERY`, it uses
+    :class:`PHRASE`, :class:`PHRASES`, :class:`NEAR`,
+    :class:`COLUMNFILTER`, :class:`AND`, :class:`NOT`.
 
 dict
 
@@ -41,7 +42,7 @@ dict
       - Conversion method
     * - string
       - parsed
-      - :func:`parse_string`
+      - :func:`parse_query_string`
     * - parsed
       - dict
       - :func:`to_dict`
@@ -57,7 +58,7 @@ Other helpful functionality includes:
 * :func:`quote` to appropriately double quote strings
 * :func:`extract_with_column_filters` to get a :class:`QUERY` for a node within
   an existing :class:`QUERY` but keeping the intermediate column filters.
-* :func:`applicable_columns` to work out which columns to part of a
+* :func:`applicable_columns` to work out which columns apply to part of a
   :class:`QUERY`
 """
 
@@ -254,25 +255,24 @@ class COLUMNFILTER:
 
 @dataclasses.dataclass
 class AND:
-    "All queries must match"
+    "All queries `must match <https://www.sqlite.org/fts5.html#fts5_boolean_operators>`__"
 
     queries: Sequence[QUERY]
 
 
 @dataclasses.dataclass
 class OR:
-    "Any query must match"
+    "Any query `must match <https://www.sqlite.org/fts5.html#fts5_boolean_operators>`__"
 
     queries: Sequence[QUERY]
 
 
 @dataclasses.dataclass
 class NOT:
-    "left must match but right must not"
+    "match `must match <https://www.sqlite.org/fts5.html#fts5_boolean_operators>`__, but no_match `must not <https://www.sqlite.org/fts5.html#fts5_boolean_operators>`__"
 
-    # ::TODO:: pick better names? match? no_match?
-    left: QUERY
-    right: QUERY
+    match: QUERY
+    no_match: QUERY
 
 
 # Sphinx makes this real ugly
@@ -316,7 +316,7 @@ def to_dict(q: QUERY | PHRASE) -> dict[str, Any]:
         return {"@": "OR", "queries": [to_dict(query) for query in q.queries]}
 
     if isinstance(q, NOT):
-        return {"@": "NOT", "true": to_dict(q.left), "false": to_dict(q.right)}
+        return {"@": "NOT", "match": to_dict(q.match), "no_match": to_dict(q.no_match)}
 
     if isinstance(q, NEAR):
         res = {"@": "NEAR", "phrases": to_dict(q.phrases)}
@@ -368,7 +368,59 @@ def from_dict(d: dict[str, Any] | Sequence[str] | str) -> QUERY:
     if klass is PHRASE or klass is PHRASES:
         return _from_dict_as_phrases(d)
 
-    1 / 0
+    if klass is OR or klass is AND:
+        queries = d.get("queries")
+
+        if not isinstance(queries, Sequence) or len(queries) < 1:
+            raise ValueError(f"{d!r} 'queries' must be sequence of at least 1 items")
+
+        as_queries = [from_dict(query) for query in queries]
+        if len(as_queries) == 1:
+            return as_queries[0]
+
+        return klass(as_queries)
+
+    if klass is NEAR:
+        phrases = d.get("phrases")
+
+        as_phrases = _from_dict_as_phrases(phrases)
+        if len(as_phrases.phrases) < 2:
+            raise ValueError(f"NEAR requires at least 2 phrases in {phrases!r}")
+
+        res = klass(as_phrases, _type_check(d.get("distance", 10), int))
+        if res.distance < 1:
+            raise ValueError(f"NEAR distance must be at least one in {d!r}")
+        return res
+
+    if klass is NOT:
+        match, no_match = d.get("match"), d.get("no_match")
+        if match is None or no_match is None:
+            raise ValueError(f"{d!r} must have a 'match' and a 'no_match' key")
+
+        return klass(from_dict(match), from_dict(no_match))
+
+    assert klass is COLUMNFILTER
+
+    columns = d.get("columns")
+
+    if (
+        columns is None
+        or not isinstance(columns, Sequence)
+        or len(columns) < 1
+        or not all(isinstance(column, str) for column in columns)
+    ):
+        raise ValueError(f"{d!r} must have 'columns' key with at least one member sequence, all of str")
+
+    filter = d.get("filter")
+
+    if filter != "include" and filter != "exclude":
+        raise ValueError(f"{d!r} must have 'filter' key with value of 'include' or 'exclude'")
+
+    query = d.get("query")
+    if query is None:
+        raise ValueError(f"{d!r} must have 'query' value")
+
+    return klass(columns, filter, from_dict(query))
 
 
 def _type_check(v: Any, t: Any) -> Any:
@@ -389,9 +441,9 @@ def _from_dict_as_phrase(item: Any, first: bool) -> PHRASE:
             raise ValueError(f"{item!r} must have phrase member")
         p = PHRASE(
             _type_check(phrase, str),
-            _type_check(item.get("initial", False)),
-            _type_check(item, get("prefix", False)),
-            _type_check(item.get("sequance", False)),
+            _type_check(item.get("initial", False), bool),
+            _type_check(item.get("prefix", False), bool),
+            _type_check(item.get("sequance", False), bool),
         )
         if p.sequence and first:
             raise ValueError(f"First phrase {item!r} can't have sequence==True")
@@ -414,6 +466,22 @@ def _from_dict_as_phrases(item: Any) -> PHRASES:
             raise ValueError(f"No phrase found in { member!r}")
         return PHRASES(phrases)
 
+    if not isinstance(item, dict):
+        raise ValueError(f"Can't turn {item!r} into phrases")
+
+    kind = item.get("@")
+    if kind not in {"PHRASE", "PHRASES"}:
+        raise ValueError(f"Expected {item!r} '@' key with value of PHRASE or PHRASES")
+
+    if kind == "PHRASE":
+        return PHRASES([_from_dict_as_phrase(item, True)])
+
+    phrases = item.get("phrases")
+    if phrases is None or not isinstance(phrases, Sequence):
+        raise ValueError(f"Expected 'phrases' value to be a sequence of {item!r}")
+
+    return PHRASES([_from_dict_as_phrase(phrase, i == 0) for i, phrase in enumerate(phrases)])
+
 
 def to_query_string(q: QUERY | PHRASE) -> str:
     """Returns the corresponding query in text format"""
@@ -421,7 +489,7 @@ def to_query_string(q: QUERY | PHRASE) -> str:
     1 / 0
 
 
-def parse_string(query: str) -> QUERY:
+def parse_query_string(query: str) -> QUERY:
     "Returns the corresponding :class:`QUERY` for the query string"
     # ::TODO:: implement
     1 / 0
@@ -517,6 +585,8 @@ class Parser:
             return query
 
         if self.lookahead.tok == FTS5.NEAR:
+            # ::TODO:: Phrases and NEAR groups may also be connected by implicit AND operators
+            # Implicit AND operators group more tightly than all other operators, including NOT
             return self.parse_near()
 
         return self.parse_phrases()
