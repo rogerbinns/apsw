@@ -18,29 +18,55 @@ version_no_r = version.split("-r")[0]
 download = open("doc/install.rst", "rt").read()
 
 op = []
-incomment = False
+indownload = inverify = False
 for line in open("doc/install.rst", "rt"):
     line = line.rstrip()
     if line == ".. downloads-begin":
         op.append(line)
-        incomment = True
+        indownload = True
         op.append("")
-        op.append("* `apsw-%s.zip" % (version, ))
+        op.append("* `apsw-%s.zip" % (version,))
         op.append(url % ("apsw-%s.zip" % version))
         op.append("  (Source, includes this HTML Help)")
         op.append("")
-        op.append("* `apsw-%s-sigs.zip " % (version, ))
-        op.append(url % ("apsw-%s-sigs.zip" % version))
-        op.append("  GPG signatures for all files")
+        op.append("* `apsw-%s.cosign-bundle " % (version,))
+        op.append(url % ("apsw-%s.cosign-bundle" % version))
+        op.append("  cosign signature")
         op.append("")
         continue
+    if line == "  .. verify-begin":
+        op.append(line)
+        inverify = True
+        op.append("")
+        op.append("  .. code-block:: console")
+        op.append("")
+
+        def back(s):
+            return s + " " * (65 - len(s)) + "\\"
+
+        op.append("    " + back(f"$ cosign verify-blob apsw-{version}.zip"))
+        op.append("    " + back(f"    --bundle apsw-{version}.cosign-bundle"))
+        op.append("    " + back("    --certificate-identity=rogerb@rogerbinns.com"))
+        op.append("    " + "    --certificate-oidc-issuer=https://github.com/login/oauth")
+        op.append("    " + "Verified OK")
+        op.append("")
     if line == ".. downloads-end":
-        incomment = False
-    if incomment:
+        indownload = False
+    if line == "  .. verify-end":
+        inverify = False
+    if indownload or inverify:
         continue
-    if line.lstrip().startswith("$ gpg --verify apsw"):
-        line = line[:line.index("$")] + "$ gpg --verify apsw-%s.zip.asc" % (version, )
     op.append(line)
+
+"""
+      $ cosign verify-blob apsw.3.46.0.0.zip                 \
+            --bundle apsw.3.46.0.0-cosign.bundle             \
+            --certificate-identity=rogerb@rogerbinns.com     \
+            --certificate-oidc-issuer=https://github.com/login/oauth
+      Verified OK
+
+"""
+
 
 op = "\n".join(op)
 if op != download:
@@ -110,7 +136,7 @@ for line in open("doc/shell.rst", "rt"):
             s = s.group(0)
             if s in {"SQL", "APSW", "TCL", "C", "HTML", "JSON", "CSV", "TSV", "US", "VFS"}:
                 return s
-            if s == "'3'": # example in command_parameter
+            if s == "'3'":  # example in command_parameter
                 return "``'3'``"
             if s.startswith("'") and s.endswith("'"):
                 s = s.strip("'")

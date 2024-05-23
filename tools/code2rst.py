@@ -83,7 +83,7 @@ def do_mappings():
         lookfor = set(consts[desc]["vars"])
 
         for v in lookfor:
-            if v not in mappings[map]:
+            if v not in mappings[map] and v not in {"SQLITE_TRACE", "SQLITE_CONFIG_ROWID_IN_VIEW"}:
                 print("Mapping", map, "is missing", v)
                 shouldexit = True
         if shouldexit:

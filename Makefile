@@ -1,8 +1,8 @@
 
-SQLITEVERSION=3.45.3
+SQLITEVERSION=3.46.0
 APSWSUFFIX=.0
 
-RELEASEDATE="17 April 2024"
+RELEASEDATE="24 May 2024"
 
 VERSION=$(SQLITEVERSION)$(APSWSUFFIX)
 VERDIR=apsw-$(VERSION)
@@ -240,9 +240,8 @@ source: source_nocheck # Make the source and then check it builds and tests corr
 release: ## Signs built source file(s)
 	test "`git branch --show-current`" = master
 	test -f dist/$(VERDIR).zip
-	-rm -f dist/$(VERDIR)-sigs.zip dist/*.asc
-	for f in dist/* ; do gpg --use-agent --armor --detach-sig "$$f" ; done
-	cd dist ; zip -m $(VERDIR)-sigs.zip *.asc
+	-rm -f dist/$(VERDIR).cosign-bundle
+	cosign sign-blob --yes --bundle dist/$(VERDIR).cosign-bundle dist/$(VERDIR).zip
 
 src/_unicodedb.c: ## Update generated Unicode database lookups
 	$(PYTHON) tools/ucdprops2code.py $@

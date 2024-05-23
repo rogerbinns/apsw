@@ -54,6 +54,9 @@ title_to_mapping = {
     "FTS5 Tokenize Reason": "fts5_tokenize_reason",
 }
 
+extras = {"Authorizer Return Codes": ["SQLITE_OK"], "Conflict resolution modes": ["SQLITE_IGNORE", "SQLITE_ABORT"]}
+remove = {"SQL Trace Event Codes": ["SQLITE_TRACE"], "Configuration Options": ["SQLITE_CONFIG_ROWID_IN_VIEW"]}
+
 base_sqlite_url = "https://sqlite.org/"
 with tempfile.NamedTemporaryFile() as f:
     f.write(urllib.request.urlopen(base_sqlite_url + "toc.db").read())

@@ -293,7 +293,7 @@ class TypesConverterCursorFactory:
 def log_sqlite(*, level: int = logging.ERROR, logger: logging.Logger | None = None) -> None:
     """Send SQLite `log messages <https://www.sqlite.org/errlog.html>`__ to :mod:`logging`
 
-    :param level: level to log at
+    :param level: highest `level <https://docs.python.org/3/library/logging.html#levels>`__ to log at
     :param logger: Use the specific logger
     """
 
@@ -301,8 +301,20 @@ def log_sqlite(*, level: int = logging.ERROR, logger: logging.Logger | None = No
         nonlocal level
         err_str = result_string(errcode)
         extra = {"sqlite_code": errcode, "sqlite_code_name": err_str, "sqlite_message": message}
+        # Level defaults to ERROR but some messages aren't as important
         if errcode & 0xff == apsw.SQLITE_WARNING:
             level = min(level, logging.WARNING)
+        elif errcode & 0xff == apsw.SQLITE_NOTICE:
+            # these are really half way between INFO and WARNING and
+            # current instances are recovering journals/WAL etc which
+            # happens if the previous process exited abruptly.
+            level = min(level, logging.WARNING)
+        elif errcode == apsw.SQLITE_SCHEMA:
+            # these happen automatically without developer control,
+            # especially when using FTS5.  DEBUG is almost more
+            # appropriate!
+            level = min(level, logging.INFO)
+
         (logger or logging).log(level,
                     "SQLITE_LOG: %s (%d) %s",
                     message,
