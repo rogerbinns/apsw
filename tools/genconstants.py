@@ -52,7 +52,7 @@ title_to_mapping = {
 }
 
 extras = {"Authorizer Return Codes": ["SQLITE_OK"], "Conflict resolution modes": ["SQLITE_IGNORE", "SQLITE_ABORT"]}
-remove = {"SQL Trace Event Codes": ["SQLITE_TRACE"]}
+remove = {"SQL Trace Event Codes": ["SQLITE_TRACE"], "Configuration Options": ["SQLITE_CONFIG_ROWID_IN_VIEW"]}
 
 base_sqlite_url = "https://sqlite.org/"
 with tempfile.NamedTemporaryFile() as f:
