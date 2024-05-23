@@ -509,9 +509,31 @@ def to_query_string(q: QUERY | PHRASE) -> str:
     if isinstance(q, NOT):
         return "(" + to_query_string(q.match) + ") NOT (" + to_query_string(q.no_match) + ")"
 
-    # NEAR
-    # COLUMNFILTER
-    1 / 0
+    if isinstance(q, NEAR):
+        r = "NEAR(" + to_query_string(q.phrases)
+        if q.distance != 10:
+            r += f", {q.distance}"
+        r += ")"
+        return r
+
+    if isinstance(q, COLUMNFILTER):
+        r = ""
+        if q.filter == "exclude":
+            r += "-"
+        if len(q.columns) > 1:
+            r += "{"
+        for i, column in enumerate(q.columns):
+            if i:
+                r += " "
+            r += quote(column)
+        if len(q.columns) > 1:
+            r += "}"
+        r += ":"
+
+        r += "(" + to_query_string(q.query) + ")"
+        return r
+
+    raise ValueError(f"Unexpected query item {q!r}")
 
 
 def parse_query_string(query: str) -> QUERY:
