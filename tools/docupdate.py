@@ -29,8 +29,8 @@ for line in open("doc/install.rst", "rt"):
         op.append(url % ("apsw-%s.zip" % version))
         op.append("  (Source, includes this HTML Help)")
         op.append("")
-        op.append("* `apsw-%s-cosign.bundle " % (version,))
-        op.append(url % ("apsw-%s-cosign.bundle" % version))
+        op.append("* `apsw-%s.cosign-bundle " % (version,))
+        op.append(url % ("apsw-%s.cosign-bundle" % version))
         op.append("  cosign signature")
         op.append("")
         continue
