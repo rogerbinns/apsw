@@ -923,7 +923,7 @@ def parse_tokenizer_args(
 
     For example to parse  ``["arg1", "3", "big", "ship", "unicode61", "yes", "two"]``
 
-    .. code:: python
+    .. code-block:: python
 
         # spec on input
         {
