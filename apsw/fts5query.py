@@ -483,6 +483,24 @@ def _from_dict_as_phrases(item: Any) -> PHRASES:
     return PHRASES([_from_dict_as_phrase(phrase, i == 0) for i, phrase in enumerate(phrases)])
 
 
+# parentheses are not needed if the contained item has a lower
+# priority than the container
+_to_query_string_priority = {
+    OR: 10,
+    AND: 20,
+    NOT: 30,
+    # these are really all the same
+    COLUMNFILTER: 50,
+    NEAR: 60,
+    PHRASES: 70,
+    PHRASE: 80,
+}
+
+
+def _to_query_string_needs_parens(node: QUERY | PHRASE, child: QUERY | PHRASE) -> bool:
+    return _to_query_string_priority[type(child)] < _to_query_string_priority[type(node)]
+
+
 def to_query_string(q: QUERY | PHRASE) -> str:
     """Returns the corresponding query in text format"""
     if isinstance(q, PHRASE):
@@ -500,14 +518,37 @@ def to_query_string(q: QUERY | PHRASE) -> str:
         # They are implicitly high priority AND together
         return " ".join(to_query_string(phrase) for phrase in q.phrases)
 
-    if isinstance(q, AND):
-        return "(" + ") AND (".join(to_query_string(query) for query in q.queries) + ")"
+    if isinstance(q, (AND, OR)):
+        r = ""
+        for i, query in enumerate(q.queries):
+            if i:
+                r += " AND " if isinstance(q, AND) else " OR "
+            if _to_query_string_needs_parens(q, query):
+                r += "("
+            r += to_query_string(query)
+            if _to_query_string_needs_parens(q, query):
+                r += ")"
 
-    if isinstance(q, OR):
-        return "(" + ") OR (".join(to_query_string(query) for query in q.queries) + ")"
+        return r
 
     if isinstance(q, NOT):
-        return "(" + to_query_string(q.match) + ") NOT (" + to_query_string(q.no_match) + ")"
+        r = ""
+
+        if _to_query_string_needs_parens(q, q.match):
+            r += "("
+        r += to_query_string(q.match)
+        if _to_query_string_needs_parens(q, q.match):
+            r += ")"
+
+        r += " NOT "
+
+        if _to_query_string_needs_parens(q, q.no_match):
+            r += "("
+        r += to_query_string(q.no_match)
+        if _to_query_string_needs_parens(q, q.no_match):
+            r += ")"
+
+        return r
 
     if isinstance(q, NEAR):
         r = "NEAR(" + to_query_string(q.phrases)
@@ -529,8 +570,10 @@ def to_query_string(q: QUERY | PHRASE) -> str:
         if len(q.columns) > 1:
             r += "}"
         r += ":"
-
-        r += "(" + to_query_string(q.query) + ")"
+        if isinstance(q.query, (PHRASES, NEAR)):
+            r += to_query_string(q.query)
+        else:
+            r += "(" + to_query_string(q.query) + ")"
         return r
 
     raise ValueError(f"Unexpected query item {q!r}")
