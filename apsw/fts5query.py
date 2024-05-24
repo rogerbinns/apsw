@@ -9,19 +9,30 @@
 """
 There are 3 representations of a query available:
 
-string
+query string
 
    This the string syntax `accepted by FTS5
    <https://www.sqlite.org/fts5.html#full_text_query_syntax>`__ where
    you represent AND, OR, NEAR, column filtering etc inline in the
-   string.
+   string.  An example is::
+
+     love AND (title:^"big world" NOT summary:"sunset cruise")
 
 parsed
 
     This is a hierarchical representation using :mod:`dataclasses`
     with all fields present.  Represented as :class:`QUERY`, it uses
     :class:`PHRASE`, :class:`PHRASES`, :class:`NEAR`,
-    :class:`COLUMNFILTER`, :class:`AND`, :class:`NOT`.
+    :class:`COLUMNFILTER`, :class:`AND`, :class:`NOT`.  The string
+    example truncated to a few lines omitting defaults is::
+
+      AND(queries=[PHRASES(phrases=[PHRASE(phrase='love')]),
+             NOT(match=COLUMNFILTER(columns=['title'],
+                                    filter='include',
+                                    query=PHRASES(phrases=[PHRASE(phrase='big '
+                                                                         'world',
+                                                                  initial=True,
+
 
 dict
 
@@ -31,7 +42,23 @@ dict
     omitted.  When provided to methods in this module, you do not need
     to provide intermediate PHRASES and PHRASE and just Python lists
     and strings directly.  This is the easiest form to
-    programmatically compose and modify queries in.
+    programmatically compose and modify queries in. The string example
+    truncated to a few lines is::
+
+      {'@': 'AND', 'queries': [
+            "love",
+            {'@': 'NOT',
+              'match': {'@': 'COLUMNFILTER',
+                        'columns': ['title'],
+                        'filter': 'include',
+                        'query': {'@': 'PHRASES',
+                                  'phrases': [{'@': 'PHRASE',
+                                               'initial': True,
+                                               'phrase': 'big world'}]}},
+
+    This form also allows omitting more of the structure like PHRASES in
+    favour of a list of str.
+
 
 .. list-table:: Conversion functions
     :header-rows: 1
@@ -40,7 +67,7 @@ dict
     * - From type
       - To type
       - Conversion method
-    * - string
+    * - query string
       - parsed
       - :func:`parse_query_string`
     * - parsed
@@ -50,14 +77,14 @@ dict
       - parsed
       - :func:`from_dict`
     * - parsed
-      - string
+      - query string
       - :func:`to_query_string`
 
 Other helpful functionality includes:
 
 * :func:`quote` to appropriately double quote strings
 * :func:`extract_with_column_filters` to get a :class:`QUERY` for a node within
-  an existing :class:`QUERY` but keeping the intermediate column filters.
+  an existing :class:`QUERY` but applying the intermediate column filters.
 * :func:`applicable_columns` to work out which columns apply to part of a
   :class:`QUERY`
 """
