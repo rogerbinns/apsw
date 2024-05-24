@@ -59,8 +59,14 @@ def genfile(symbols):
     res.append("\n#else\n")
     for s in sorted(symbols):
         if s in call_map:
+            res.append("#if PY_VERSION_HEX < 0x030d0000")
             res.append(f"#undef {s}")
-        res.append(f"#define {s}(...) \\\n{ get_definition( s, call_map.get(s, s)) }")
+            res.append(f"#define {s}(...) \\\n{ get_definition( s, call_map.get(s, s)) }")
+            res.append("#else")
+            res.append(f"#define {s}(...) \\\n{ get_definition( s, s) }")
+            res.append("#endif")
+        else:
+            res.append(f"#define {s}(...) \\\n{ get_definition( s, s) }")
     res.append("#endif")
     res.append("#endif")
     return "\n".join(res)

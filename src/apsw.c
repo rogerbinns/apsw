@@ -2105,7 +2105,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
     if (!whined && !Py_IsNone(callable))
     {
       whined++;
-      err_details = "Missing sys.apsw_fault_inject_control";
+      err_details = "APSW debug build: missing sys.apsw_fault_inject_control";
     }
     suppress = 1;
     goto errorexit;
@@ -2211,7 +2211,7 @@ APSW_Should_Fault(const char *name)
     if (!whined)
     {
       whined++;
-      fprintf(stderr, "Missing sys.apsw_should_fault\n");
+      fprintf(stderr, "APSW debug build: missing sys.apsw_should_fault\n");
     }
     goto end;
   }
