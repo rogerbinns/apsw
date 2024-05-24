@@ -488,12 +488,12 @@ def to_query_string(q: QUERY | PHRASE) -> str:
     if isinstance(q, PHRASE):
         r = ""
         if q.initial:
-            r += "^"
+            r += "^ "
         if q.sequence:
-            r += "+"
+            r += "+ "
         r += quote(q.phrase)
         if q.prefix:
-            r += "*"
+            r += " *"
         return r
 
     if isinstance(q, PHRASES):
