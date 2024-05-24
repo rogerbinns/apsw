@@ -194,14 +194,15 @@ def get_tokens(query: str) -> list[Token]:
 
         raise ValueError(f"Invalid query character '{query[pos]}' in '{query}' at {pos=}")
 
+    # add explicit EOF
+    res.append(Token(FTS5.EOF, pos))
+
     # fts5 promotes STRING "NEAR" to token NEAR only if followed by "("
     # we demote to get the same effect
     for i in range(len(res) - 1):
         if res[i].tok == FTS5.NEAR and res[i + 1].tok != FTS5.LP:
             res[i].tok = FTS5.STRING
 
-    # add explicit EOF
-    res.append(Token(FTS5.EOF, pos))
     return res
 
 
@@ -522,6 +523,8 @@ def to_query_string(q: QUERY | PHRASE) -> str:
         r = ""
         for i, query in enumerate(q.queries):
             if i:
+                # technically NEAR AND NEAR can leave the AND out but
+                # we make it explicit
                 r += " AND " if isinstance(q, AND) else " OR "
             if _to_query_string_needs_parens(q, query):
                 r += "("
@@ -569,7 +572,7 @@ def to_query_string(q: QUERY | PHRASE) -> str:
             r += quote(column)
         if len(q.columns) > 1:
             r += "}"
-        r += ":"
+        r += ": "
         if isinstance(q.query, (PHRASES, NEAR)):
             r += to_query_string(q.query)
         else:
@@ -675,9 +678,18 @@ class Parser:
             return query
 
         if self.lookahead.tok == FTS5.NEAR:
-            # ::TODO:: Phrases and NEAR groups may also be connected by implicit AND operators
-            # Implicit AND operators group more tightly than all other operators, including NOT
-            return self.parse_near()
+            nears: list[NEAR] = []
+            # NEAR groups may also be connected by implicit AND
+            # operators.  Implicit AND operators group more tightly
+            # than all other operators, including NOT
+            while self.lookahead.tok == FTS5.NEAR:
+                nears.append(self.parse_near())
+
+            if len(nears) == 1:
+                return nears[0]
+
+            # We make the AND explicit
+            return AND(nears)
 
         return self.parse_phrases()
 
