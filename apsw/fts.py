@@ -1525,6 +1525,7 @@ class FTS5Table:
 
         return tuple(text.decode("utf8") for (text, _) in c.most_common())
 
+    # ::TODO:: figure out terminology  of docid versus rowid
     def doc_by_id(
         self, id: apsw.SQLiteValue, column: str | Sequence[str]
     ) -> apsw.SQLiteValue | tuple[apsw.SQLiteValue]:
