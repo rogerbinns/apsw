@@ -1158,6 +1158,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
     }                                                                                                                                                \
     _res_PyWeakref_NewRef;                                                                                                                           \
 })
+#if PY_VERSION_HEX < 0x030d0000
 #undef Py_BuildValue
 #define Py_BuildValue(...) \
 ({                                                                                                                                                        \
@@ -1174,6 +1175,24 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
     }                                                                                                                                                     \
     _res__Py_BuildValue_SizeT;                                                                                                                            \
 })
+#else
+#define Py_BuildValue(...) \
+({                                                                                                                                          \
+    __auto_type _res_Py_BuildValue = 0 ? Py_BuildValue(__VA_ARGS__) : 0;                                                                    \
+                                                                                                                                            \
+    _res_Py_BuildValue = (typeof (_res_Py_BuildValue))APSW_FaultInjectControl("Py_BuildValue", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                            \
+    if ((typeof (_res_Py_BuildValue))0x1FACADE == _res_Py_BuildValue)                                                                       \
+       _res_Py_BuildValue = Py_BuildValue(__VA_ARGS__);                                                                                     \
+    else if ((typeof(_res_Py_BuildValue))0x2FACADE == _res_Py_BuildValue)                                                                   \
+    {                                                                                                                                       \
+        Py_BuildValue(__VA_ARGS__);                                                                                                         \
+        _res_Py_BuildValue = (typeof (_res_Py_BuildValue))18;                                                                               \
+    }                                                                                                                                       \
+    _res_Py_BuildValue;                                                                                                                     \
+})
+#endif
+#if PY_VERSION_HEX < 0x030d0000
 #undef Py_VaBuildValue
 #define Py_VaBuildValue(...) \
 ({                                                                                                                                                              \
@@ -1190,6 +1209,23 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
     }                                                                                                                                                           \
     _res__Py_VaBuildValue_SizeT;                                                                                                                                \
 })
+#else
+#define Py_VaBuildValue(...) \
+({                                                                                                                                                \
+    __auto_type _res_Py_VaBuildValue = 0 ? Py_VaBuildValue(__VA_ARGS__) : 0;                                                                      \
+                                                                                                                                                  \
+    _res_Py_VaBuildValue = (typeof (_res_Py_VaBuildValue))APSW_FaultInjectControl("Py_VaBuildValue", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                  \
+    if ((typeof (_res_Py_VaBuildValue))0x1FACADE == _res_Py_VaBuildValue)                                                                         \
+       _res_Py_VaBuildValue = Py_VaBuildValue(__VA_ARGS__);                                                                                       \
+    else if ((typeof(_res_Py_VaBuildValue))0x2FACADE == _res_Py_VaBuildValue)                                                                     \
+    {                                                                                                                                             \
+        Py_VaBuildValue(__VA_ARGS__);                                                                                                             \
+        _res_Py_VaBuildValue = (typeof (_res_Py_VaBuildValue))18;                                                                                 \
+    }                                                                                                                                             \
+    _res_Py_VaBuildValue;                                                                                                                         \
+})
+#endif
 #define _PyBytes_Resize(...) \
 ({                                                                                                                                                \
     __auto_type _res__PyBytes_Resize = 0 ? _PyBytes_Resize(__VA_ARGS__) : 0;                                                                      \
