@@ -51,7 +51,11 @@ Tokens
   an existing tokenizer, and register your own with
   :meth:`apsw.Connection.register_fts5_tokenizer`.
 
-  :ref:`List of available tokenizers <all_tokenizers>`,
+  :ref:`List of available tokenizers <all_tokenizers>`.
+
+  FTS5 queries use text before tokenization.  You can use
+  :class:`apsw.fts5query.QueryTokens` to compose queries using tokens
+  directly.
 
 Full Text Index
 
@@ -163,13 +167,18 @@ All tokenizers
     - Use :mod:`regular expressions <re>` to generate tokens
   * - :func:`NGramTokenizer`
     - Generates ngrams from the text, where you can specify the sizes and
-      unicode categories.  Useful for doing autocomplete as you type.
+      unicode categories.  Useful for doing autocomplete as you type, and
+      substring searches.
   * - :func:`HTMLTokenizer`
     - Wrapper that converts HTML to plan text for a further tokenizer to generate
       tokens
   * - :func:`JSONTokenizer`
     - Wrapper that converts JSON to plain text for a further tokenizer to generate
       tokens
+  * - :func:`QueryTokensTokenizer`
+    - Wrapper that recognises :class:`apsw.fts5query.QueryTokens` allowing queries
+      using tokens directly.  This is useful if you want to add more popular similar
+      tokens to a query to broaden search results.
   * - :func:`SimplifyTokenizer`
     - Wrapper that transforms the token stream by neutralizing case, and removing
       diacritics and similar marks
@@ -183,7 +192,7 @@ All tokenizers
     - Wrapper to transform tokens, such as when stemming.
   * - :func:`StringTokenizer`
     - A decorator for your own tokenizers so that they operate on strings, performing the
-      mapping to UTF8 bytes for you.
+      mapping to UTF8 byte offsets for you.
 
 .. _byte_offsets:
 
@@ -203,7 +212,7 @@ bytes.
 
 If you do not care about the offsets, or they make no sense for your content,
 then you can return zero for the ``start`` and ``end``.  You can omit the
-offsets in your tokenizer and APSW automatically substitures zero.
+offsets in your tokenizer and APSW automatically substitutes zero.
 
 .. _fts_recommendations:
 
@@ -213,7 +222,12 @@ Recommendations
 Tokenizer sequence
   For general text, use the following:
 
-    simplify casefold true strip true unicodewords
+    querytokens simplify casefold true strip true unicodewords
+
+  :class:`querytokens <QueryTokensTokenizer>`
+
+    * Lets you compose queries using :class:`tokens directly
+      <apsw.fts5query.QueryTokens>`
 
   :class:`simplify <SimplifyTokenizer>`:
 

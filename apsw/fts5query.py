@@ -124,8 +124,9 @@ class QueryTokens:
     :meth:`apsw.fts.FTS5Table.tokens_pop`, with helpers like
     :meth:`apsw.fts.FTS5Table.closest_tokens`.
 
-    The marker format is text starting with :data:`MARKER` with each
-    token being separated by `|`."""
+    The marker format is text starting with
+    :data:`QUERY_TOKENS_MARKER` with each token being separated by
+    `|`."""
 
     tokens: list[str]
     "The tokens"
