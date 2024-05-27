@@ -96,12 +96,59 @@ import dataclasses
 
 from typing import Any, Sequence, NoReturn, Literal, TypeAlias
 
+QUERY_TOKENS_MARKER = "$!Tokens~"
+"Special marker at the start of a string to recognise it as a list of tokens for :class:`QueryTokens`"
+
+
+@dataclasses.dataclass
+class QueryTokens:
+    """`FTS5 `query strings <https://www.sqlite.org/fts5.html#fts5_strings>`__ are
+    passed to `tokenizers
+    <https://www.sqlite.org/fts5.html#tokenizers>`__ which extract
+    tokens, such as by splitting on whitespace, lower casing text, and
+    removing characters like accents.
+
+    If you want to query tokens directly then use this class with the
+    :attr:`tokens` member, using it where :attr:`PHRASE.phrase` goes
+    and use :func:`to_query_string` to compose your query.
+
+    Your FTS5 table must use the
+    :class:`apsw.fts.QueryTokensTokenizer` as the first tokenizer in
+    the list.  If the reason for tokenizing includes
+    `FTS5_TOKENIZE_QUERY` and the text to be tokenized starts with the
+    special marker, then the tokens are returned.  Calling
+    :meth:`apsw.fts.FTS5Table.supports_query_tokens` will tell you if
+    query tokens are handled correctly.
+
+    You can get the tokens from :meth:`apsw.fts.FTS5Table.tokens` and
+    :meth:`apsw.fts.FTS5Table.tokens_pop`, with helpers like
+    :meth:`apsw.fts.FTS5Table.closest_tokens`.
+
+    The marker format is text starting with :data:`MARKER` with each
+    token being separated by `|`."""
+
+    tokens: list[str]
+    "The tokens"
+
+    def encode(self) -> str:
+        "Produces the tokens encoded with the marker and separator"
+        return QUERY_TOKENS_MARKER + "|".join(self.tokens)
+
+    @classmethod
+    def decode(cls, data: str | bytes) -> QueryTokens | None:
+        "If the marker is present then returns the corresponding :class:`QueryTokens`, otherwise `None`."
+        if isinstance(data, bytes) and data.startswith(b"$!Tokens~"):
+            data = data.decode("utf8")
+        if isinstance(data, str) and data.startswith(QUERY_TOKENS_MARKER):
+            return cls(data[len(QUERY_TOKENS_MARKER) :].split("|"))
+        return None
+
 
 @dataclasses.dataclass
 class PHRASE:
     "One `phrase <https://www.sqlite.org/fts5.html#fts5_phrases>`__"
 
-    phrase: str
+    phrase: str | QueryTokens
     "Text of the phrase"
     initial: bool = False
     "If True then the  phrase must match the beginning of a column ('^' was used)"
@@ -233,19 +280,19 @@ _dict_name_class = {
 }
 
 
-def from_dict(d: dict[str, Any] | Sequence[str] | str) -> QUERY:
+def from_dict(d: dict[str, Any] | Sequence[str] | str | QueryTokens) -> QUERY:
     """Turns dict back into a :class:`QUERY`
 
-    You can take shortcuts putting `str` or `Sequence[str]` in
-    places where PHRASES, or PHRASE are expected.  For example
-    this is accepted::
+    You can take shortcuts putting `str`, `Sequence[str]`, or
+    :class:`QueryTokens` in places where PHRASES, or PHRASE are
+    expected.  For example this is accepted::
 
         {
             "@": "AND,
             "queries": ["hello", "world"]
         }
     """
-    if isinstance(d, (str, Sequence)):
+    if isinstance(d, (str, Sequence, QueryTokens)):
         return _from_dict_as_phrases(d)
 
     _type_check(d, dict)
@@ -323,7 +370,7 @@ def _type_check(v: Any, t: Any) -> Any:
 
 def _from_dict_as_phrase(item: Any, first: bool) -> PHRASE:
     "Convert anything reasonable into a PHRASE"
-    if isinstance(item, str):
+    if isinstance(item, (str, QueryTokens)):
         return PHRASE(item)
     if isinstance(item, dict):
         if item.get("@") != "PHRASE":
@@ -332,7 +379,7 @@ def _from_dict_as_phrase(item: Any, first: bool) -> PHRASE:
         if phrase is None:
             raise ValueError(f"{item!r} must have phrase member")
         p = PHRASE(
-            _type_check(phrase, str),
+            _type_check(phrase, (str, QueryTokens)),
             _type_check(item.get("initial", False), bool),
             _type_check(item.get("prefix", False), bool),
             _type_check(item.get("sequence", False), bool),
@@ -347,7 +394,7 @@ def _from_dict_as_phrase(item: Any, first: bool) -> PHRASE:
 
 def _from_dict_as_phrases(item: Any) -> PHRASES:
     "Convert anything reasonable into PHRASES"
-    if isinstance(item, str):
+    if isinstance(item, (str, QueryTokens)):
         return PHRASES([PHRASE(item)])
 
     if isinstance(item, Sequence):
@@ -479,7 +526,7 @@ def parse_query_string(query: str) -> QUERY:
     return _Parser(query).parsed
 
 
-def quote(text: str) -> str:
+def quote(text: str | QueryTokens) -> str:
     """Quotes text if necessary to keep as one unit
 
     eg `hello' -> `hello`, `one two` -> `"one two"`,
@@ -488,6 +535,8 @@ def quote(text: str) -> str:
     # technically this will also apply to None and empty lists etc
     if not text:
         return '""'
+    if isinstance(text, QueryTokens):
+        return quote(text.encode())
     if any(c not in "0123456789_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" and ord(c) < 0x80 for c in text):
         return '"' + text.replace('"', '""') + '"'
     return text

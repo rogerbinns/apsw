@@ -29,6 +29,7 @@ import apsw
 import apsw._unicode
 import apsw.ext
 import apsw.unicode
+import apsw.fts5query
 
 unicode_categories = {
     "Lu": "Letter Uppercase",
@@ -248,6 +249,33 @@ def StringTokenizer(func: apsw.FTS5TokenizerFactory):
         return outer_tokenizer
 
     return string_tokenizer_wrapper
+
+
+def QueryTokensTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
+    """Recognises a special tokens marker and returns those tokens for a query.
+    This is useful for making queries directly using tokens, instead
+    of pre-tokenized text.
+
+    It must be the first tokenizer in the list.  Any text not using
+    the special marker is passed to the following tokenizer.
+
+    See :class:`apsw.fts5query.QueryTokens` for more details on the
+    marker format.
+    """
+    spec = {"+": None}
+
+    options = parse_tokenizer_args(spec, con, args)
+
+    def tokenize(utf8: bytes, flags: int):
+        if flags & apsw.FTS5_TOKENIZE_QUERY:
+            decoded = apsw.fts5query.QueryTokens.decode(utf8)
+            if decoded is not None:
+                for token in decoded.tokens:
+                    yield token
+                return
+        yield from options["+"](utf8, flags)
+
+    return tokenize
 
 
 @StringTokenizer
@@ -1176,7 +1204,7 @@ class FTS5Table:
         * the insert will be directed to that table
         * the column positions and names of that table are used
 
-        # ::TODO:: allow rowid name
+        # ::TODO:: allow rowid names in content tables and rowid in fts5 table
         """
         stmt, mapping = self._insert_sql(len(args), tuple(kwargs.keys()) if kwargs else None)
         if mapping is not None:
@@ -1367,6 +1395,20 @@ class FTS5Table:
         "Tokenize supplied utf8"
         return self.tokenizer(utf8, reason, include_offsets=include_offsets, include_colocated=include_colocated)
 
+    @functools.cached_property
+    def supports_query_tokens(self) -> bool:
+        "`True` if you can use :class:`apsw.fts5query.QueryTokens` with this table"
+        # we run a tokenization with crafted tokens to detect if
+        # QueryTokensTokenizer is present.  hence white space,
+        # accents, punctuation, mixed case etc
+        tokens = ["  .= -", "\t", "\r\n", "HÉ é"]
+        return tokens == self.tokenize(
+            apsw.fts5query.QueryTokens(tokens).encode().encode("utf8"),
+            apsw.FTS5_TOKENIZE_QUERY,
+            include_offsets=False,
+            include_colocated=False,
+        )
+
     def _tokens_check(self):
         "Check token information is up to date"
         while self._token_cache is None or self._token_cache.token_cache_cookie != self.change_cookie:
@@ -1525,7 +1567,7 @@ class FTS5Table:
 
         return tuple(text.decode("utf8") for (text, _) in c.most_common())
 
-    # ::TODO:: figure out terminology  of docid versus rowid
+    # ::TODO:: figure out terminology of docid versus rowid
     def doc_by_id(
         self, id: apsw.SQLiteValue, column: str | Sequence[str]
     ) -> apsw.SQLiteValue | tuple[apsw.SQLiteValue]:
