@@ -809,6 +809,9 @@ error:
 }
 
 /* macros to build the format string and values.  int, string and pointers */
+#undef I
+#undef S
+#undef P
 #define I(n) #n, vfs->n
 #define S(n) #n, vfs->n
 #define P(n) #n, PyLong_FromVoidPtr, vfs->n
