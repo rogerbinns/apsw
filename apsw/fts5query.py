@@ -523,7 +523,6 @@ def to_query_string(q: QUERY | PHRASE) -> str:
 
 def parse_query_string(query: str) -> QUERY:
     "Returns the corresponding :class:`QUERY` for the query string"
-    # ::TODO:: rename Parser and fix this
     return _Parser(query).parsed
 
 
@@ -589,11 +588,22 @@ def extract_with_column_filters(node: QUERY, start: QUERY) -> QUERY:
     """Return a new `QUERY` for a query rooted at `start` with child `node`,
     with intermediate :class:`COLUMNFILTER` in between applied.
 
+    ::TODO:: note about is used, not ==
+
     This is useful if you want to execute a node from a top level
     query ensuring the column filters apply.
+
+    ::TODO:: example showing extract, turn result into a query string
     """
-    # ::TODO:: implement
-    raise NotImplementedError()
+    for parents, child in walk(start):
+        if child is node:
+            res = node
+            for parent in reversed(parents):
+                if isinstance(parent, COLUMNFILTER):
+                    res = COLUMNFILTER(parent.columns, parent.filter, res)
+            return res
+
+    raise ValueError("node is not part of query")
 
 
 def applicable_columns(node: QUERY, start: QUERY, columns: Sequence[str]) -> set[str]:
