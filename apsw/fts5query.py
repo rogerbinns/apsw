@@ -94,7 +94,7 @@ from __future__ import annotations
 
 import dataclasses
 
-from typing import Any, Sequence, NoReturn, Literal, TypeAlias
+from typing import Any, Sequence, NoReturn, Literal, TypeAlias, Generator
 
 QUERY_TOKENS_MARKER = "$!Tokens~"
 "Special marker at the start of a string to recognise it as a list of tokens for :class:`QueryTokens`"
@@ -541,6 +541,48 @@ def quote(text: str | QueryTokens) -> str:
     if any(c not in "0123456789_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" and ord(c) < 0x80 for c in text):
         return '"' + text.replace('"', '""') + '"'
     return text
+
+
+_walk_attrs = {
+    PHRASE: tuple(),
+    PHRASES: ("phrases",),
+    NEAR: ("phrases",),
+    COLUMNFILTER: ("query",),
+    AND: ("queries",),
+    OR: ("queries",),
+    NOT: ("match", "no_match"),
+}
+
+
+def walk(start: QUERY) -> Generator[tuple[tuple[QUERY, ...], QUERY], None, None]:
+    """Yields the parents and each node for a query recursively
+
+    Use it like this::
+
+        for parents, node in walk(my_query):
+            # parents will be a tuple like the AND, OR etc
+            # with the
+            ::TODO:: put in a real example
+    """
+    # top down - container node first
+    yield tuple(), start
+
+    parent = (start,)
+
+    for klass, attrs in _walk_attrs.items():
+        if isinstance(start, klass):
+            for attr in attrs:
+                # the only one where the attribute is not an iterable sequence
+                if klass is COLUMNFILTER:
+                    for parents, node in walk(getattr(start, attr)):
+                        yield parent + parents, node
+                else:
+                    for child in getattr(start, attr):
+                        for parents, node in walk(child):
+                            yield parent + parents, node
+            return
+
+    raise ValueError(f"{start} is not recognised as a QUERY")
 
 
 def extract_with_column_filters(node: QUERY, start: QUERY) -> QUERY:
