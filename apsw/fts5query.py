@@ -512,7 +512,7 @@ def to_query_string(q: QUERY | PHRASE) -> str:
         if len(q.columns) > 1:
             r += "}"
         r += ": "
-        if isinstance(q.query, (PHRASES, NEAR)):
+        if isinstance(q.query, (PHRASES, PHRASE, NEAR, COLUMNFILTER)):
             r += to_query_string(q.query)
         else:
             r += "(" + to_query_string(q.query) + ")"
