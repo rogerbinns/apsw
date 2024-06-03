@@ -5041,8 +5041,13 @@ class APSW(unittest.TestCase):
         con = apsw.Connection(self.db.filename, vfs=tvfs.vfsname)
         # put enough stuff in temp table that it spills to disk
         con.pragma("cache_size", 10)
-        con.execute("create temp table testissue506(x UNIQUE,y UNIQUE, PRIMARY KEY(x,y))")
-        con.executemany("insert into testissue506 values(?,?)", (("a"*i, "b"*i) for i in range(1000)))
+        temp_store = con.pragma("temp_store")
+        try:
+            con.pragma("temp_store", 1)
+            con.execute("create temp table testissue506(x UNIQUE,y UNIQUE, PRIMARY KEY(x,y))")
+            con.executemany("insert into testissue506 values(?,?)", (("a"*i, "b"*i) for i in range(1000)))
+        finally:
+            con.pragma("temp_store", temp_store)
 
         # verify we saw the Nones
         self.assertTrue(vfs_saw_none)
