@@ -11,6 +11,14 @@ import apsw
 
 import names
 
+# check shell knows all pragmas
+import apsw.shell
+
+con = apsw.Connection("")
+for pragma in con.execute("pragma pragma_list").get:
+    assert pragma in apsw.shell.Shell._pragmas, f"pragma { pragma } not in apsw.shell.Shell._pragmas"
+
+
 retval = 0
 
 classes = {}
