@@ -15,8 +15,27 @@ import names
 import apsw.shell
 
 con = apsw.Connection("")
-for pragma in con.execute("pragma pragma_list").get:
-    assert pragma in apsw.shell.Shell._pragmas, f"pragma { pragma } not in apsw.shell.Shell._pragmas"
+all_pragmas = set(con.execute("pragma pragma_list").get)
+deprecated_pragmas = {
+    "count_changes",
+    "empty_result_callbacks",
+    "full_column_names",
+    "legacy_file_format",
+    "short_column_names",
+    "temp_store_directory",
+}
+for pragma in all_pragmas:
+    if pragma in deprecated_pragmas:
+        continue
+    check = (pragma, f"{pragma}=", f"{pragma}(", f"{pragma};")
+    assert any(c in apsw.shell.Shell._pragmas for c in check), f"pragma { pragma } not in apsw.shell.Shell._pragmas"
+
+# check all pragmas are known to sqlite
+for pragma in apsw.shell.Shell._pragmas:
+    for c in "=(;":
+        if pragma.endswith(c):
+            pragma = pragma[:-1]
+    assert pragma in all_pragmas or pragma in deprecated_pragmas, f"{pragma} is in shell but not known to SQLite"
 
 
 retval = 0
