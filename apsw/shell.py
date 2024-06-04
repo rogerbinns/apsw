@@ -3038,6 +3038,7 @@ Enter ".help" for instructions
         "optimize(": None,
         "page_count;": None,
         "page_size=": None,
+        "pragma_list;": None,
         "query_only=": _pragmas_bool,
         "quick_check": None,
         "read_uncommitted=": _pragmas_bool,
