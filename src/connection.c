@@ -4040,8 +4040,9 @@ static int connection_trace_and_exec(Connection *self, int release, int sp, int 
   PYSQLITE_CON_CALL(res = sqlite3_exec(self->db, sql, 0, 0, 0));
   SET_EXC(res, self->db);
   sqlite3_free(sql);
-  assert(res == SQLITE_OK || PyErr_Occurred());
-  return res == SQLITE_OK;
+
+  /* See issue 526 for why we can't trust SQLite success code */
+  return PyErr_Occurred() ? 0 : (res == SQLITE_OK);
 }
 
 static PyObject *

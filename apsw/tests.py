@@ -5053,6 +5053,25 @@ class APSW(unittest.TestCase):
         self.assertTrue(vfs_saw_none)
         self.assertTrue(vfsfile_saw_none)
 
+    def testIssue526(self):
+        "Error in VFS xRandomness"
+        class RandomVFS(apsw.VFS):
+            def __init__(self):
+                apsw.VFS.__init__(self, "issue526", "", 1)
+
+        vfs = RandomVFS()
+
+        self.db.pragma("journal_mode", "WAL")
+        try:
+            with self.db:
+                RandomVFS.xRandomness = lambda *args: 1/0
+                # this resets SQLite randomness so xRandonness of default VFS will be called again
+                apsw.randomness(0)
+                self.db.pragma("user_version", 1)
+            raise Exception("Should not reach here")
+        except ZeroDivisionError:
+            pass
+
     def testCursorGet(self):
         "Cursor.get"
         for query, expected in (("select 3,4", (3, 4)), ("select 3; select 4", [3, 4]), ("select 3,4; select 4,5", [
