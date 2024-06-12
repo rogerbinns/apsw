@@ -534,8 +534,11 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, self.db.vfsname, b"main")
         self.assertRaises(TypeError, self.db.vfsname)
 
-        # our db should be the default
-        self.assertEqual(apsw.vfs_names()[0], self.db.vfsname("main"))
+        # our db should be the default - also handle multipleciphers shim
+        self.assertTrue(
+            self.db.vfsname("main") == apsw.vfs_names()[0]
+            or self.db.vfsname("main").startswith(apsw.vfs_names()[0] + "/")
+        )
         # temp always gives none
         self.assertEqual(None, self.db.vfsname("temp"))
 
