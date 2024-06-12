@@ -5154,6 +5154,12 @@ class APSW(unittest.TestCase):
         self.assertEqual(self.db.pragma("user_version"), 7)
         self.assertRaises(apsw.SQLError, self.db.pragma, "user_version", "abc\0def")
 
+        # check not cached - #525
+        self.db.pragma("should_not_cache", "should_not_cache")
+        self.db.pragma("should_not_cache")
+        for entry in self.db.cache_stats(include_entries=True)["entries"]:
+            self.assertNotIn("should_not_cache", entry["query"])
+
     def testSleep(self):
         "apsw.sleep"
         apsw.sleep(1)

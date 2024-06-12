@@ -21,6 +21,10 @@ Added :meth:`Connection.vfsname` and updated corresponding shell
 command to get the diagnostic names of the vfs stack for the
 connection.  (:issue:`525`)
 
+Do not cache :meth:`Connection.pragma` statements to avoid encryption
+keys, or pragmas that run during prepare from being retained.
+(:issue:`522`)
+
 3.46.0.0
 ========
 

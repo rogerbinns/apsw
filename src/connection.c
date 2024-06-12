@@ -4357,6 +4357,9 @@ Connection_txn_state(Connection *self, PyObject *const *fast_args, Py_ssize_t fa
     returns when the first row is available or all statements have
     completed.  (A cursor is automatically obtained).
 
+    For pragmas you should use :meth:`pragma` which handles quoting and
+    caching correctly.
+
     See :meth:`Cursor.execute` for more details, and the :ref:`example <example_executing_sql>`.
 */
 static PyObject *
@@ -4435,7 +4438,10 @@ static PyObject *formatsqlvalue(PyObject *Py_UNUSED(self), PyObject *value);
   now in effect.
 
   Pragmas do not support bindings, so this method is a convenient
-  alternative to composing SQL text.
+  alternative to composing SQL text.  Pragmas are often executed
+  while being prepared, instead of when run like regular SQL.  They
+  may also contain encryption keys.  This method ensures they are
+  not cached to avoid problems.
 
   * :ref:`Example <example_pragma>`
 */
@@ -4476,9 +4482,12 @@ Connection_pragma(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_
   if (!query)
     goto error;
 
-  PyObject *vargs[] = {NULL, query};
-  cursor = Connection_execute(self, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
-  if (!cursor)
+  PyObject *vargs[] = {NULL, query, Py_False};
+  PyObject *kwnames = PyTuple_Pack(1, apst.can_cache);
+  if(kwnames)
+    cursor = Connection_execute(self, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, kwnames);
+  Py_XDECREF(kwnames);
+  if (!cursor || !kwnames)
     goto error;
 
   res = PyObject_GetAttr(cursor, apst.get);
