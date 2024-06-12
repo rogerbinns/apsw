@@ -2779,6 +2779,53 @@ apswvfsfile_xFileControl(sqlite3_file *file, int op, void *pArg)
   PyObject *pyresult = NULL;
   FILEPREAMBLE;
 
+  /* Special handling of SQLITE_FCNTL_VFSNAME */
+  if (op == SQLITE_FCNTL_VFSNAME)
+  {
+    /* see if there is a base to call first */
+    if (PyObject_TypeCheck(apswfile->file, &APSWVFSFileType))
+    {
+      sqlite3_file *base = ((APSWVFSFile *)apswfile->file)->base;
+      result = base->pMethods->xFileControl(base, op, pArg);
+    }
+    /* Use the classname */
+    const char *name = Py_TYPE(apswfile->file)->tp_name;
+    const char *modname = NULL;
+    PyObject *qualname = NULL;
+
+#if PY_VERSION_HEX >= 0x030b0000
+    qualname = PyType_GetQualName(Py_TYPE(apswfile->file));
+    if (qualname && PyUnicode_Check(qualname))
+      name = PyUnicode_AsUTF8(qualname);
+#endif
+
+    PyObject *module = PyObject_GetAttrString((PyObject *)Py_TYPE(apswfile->file), "__module__");
+    if (module && PyUnicode_Check(module))
+      modname = PyUnicode_AsUTF8(module);
+
+    /* the above calls could have exceptions but they aren't useful,
+       so ignore */
+    PyErr_Clear();
+
+    char *new_val = sqlite3_mprintf("%s%s%s%s%s",
+                                    modname ? modname : "",
+                                    modname ? "." : "",
+                                    name,
+                                    (*(char **)pArg) ? "/" : "",
+                                    (*(char **)pArg) ? *(char **)pArg : "");
+
+    /* done with the strings, so can free now */
+    Py_XDECREF(module);
+    Py_XDECREF(qualname);
+
+    if (*(char **)pArg)
+      sqlite3_free(*(char **)pArg);
+
+    *(char **)pArg = new_val;
+    result = SQLITE_OK;
+    goto end;
+  }
+
   PyObject *vargs[] = {NULL, apswfile->file, PyLong_FromLong(op), PyLong_FromVoidPtr(pArg)};
   if (vargs[2] && vargs[3])
     pyresult = PyObject_VectorcallMethod(apst.xFileControl, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
@@ -2798,6 +2845,7 @@ apswvfsfile_xFileControl(sqlite3_file *file, int op, void *pArg)
   }
 
   Py_XDECREF(pyresult);
+end:
   FILEPOSTAMBLE;
   return result;
 }
@@ -2829,6 +2877,15 @@ apswvfsfile_xFileControl(sqlite3_file *file, int op, void *pArg)
                return super().xFileControl(op, ptr)
           # we understood the op
           return True
+
+  .. note::
+
+    `SQLITE_FCNTL_VFSNAME
+    <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlvfsname>`__
+    is automatically handled for you dealing with the necessary memory allocation
+    and listing all the VFS if you are inheriting.  It includes the fully qualified
+    class name for this object.
+
 */
 static PyObject *
 apswvfsfilepy_xFileControl(APSWVFSFile *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)

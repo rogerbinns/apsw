@@ -2704,10 +2704,10 @@ Enter ".help" for instructions
             self.write(self.stdout, " " * (maxw - len(k)) + f"{ k }  { v}\n")
 
     def command_vfsname(self, cmd):
-        "vfsname: VFS name used to open current database"
-        if cmd:
-            raise self.Error("No parameters taken")
-        self.write(self.stdout, self.db.open_vfs + "\n")
+        "vfsname: VFS name for database, or attached names"
+        dbnames = cmd or ["main"]
+        for name in dbnames:
+            self.write(self.stdout, (self.db.vfsname(name) or "") + "\n")
 
     def _format_vfs(self, vfs):
         w = max(len(k) for k in vfs.keys())

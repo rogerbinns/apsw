@@ -1814,6 +1814,20 @@ class Connection:
         Calls: `sqlite3_txn_state <https://sqlite.org/c3ref/txn_state.html>`__"""
         ...
 
+    def vfsname(self, dbname: str) -> str | None:
+        """Issues the `SQLITE_FCNTL_VFSNAME
+        <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlvfsname>`__
+        file control against the named database (`main`, `temp`, attached
+        name).
+
+        This is useful to see which VFS is in use, and if inheritance is used
+        then ``/`` will separate the names.  If you have a :class:`VFSFile` in
+        use then its fully qualified class name will also be included.
+
+        If ``SQLITE_FCNTL_VFSNAME`` is not implemented, ``dbname`` is not a
+        database name, or an error occurred then ``None`` is returned."""
+        ...
+
     def vtab_config(self, op: int, val: int = 0) -> None:
         """Callable during virtual table :meth:`~VTModule.Connect`/:meth:`~VTModule.Create`.
 
@@ -2343,30 +2357,38 @@ class VFSFile:
 
     def xFileControl(self, op: int, ptr: int) -> bool:
         """Receives `file control
-        <https://sqlite.org/c3ref/file_control.html>`_ request typically
-        issued by :meth:`Connection.file_control`.  See
-        :meth:`Connection.file_control` for an example of how to pass a
-        Python object to this routine.
+         <https://sqlite.org/c3ref/file_control.html>`_ request typically
+         issued by :meth:`Connection.file_control`.  See
+         :meth:`Connection.file_control` for an example of how to pass a
+         Python object to this routine.
 
-        :param op: A numeric code.  Codes below 100 are reserved for SQLite
-          internal use.
-        :param ptr: An integer corresponding to a pointer at the C level.
+         :param op: A numeric code.  Codes below 100 are reserved for SQLite
+           internal use.
+         :param ptr: An integer corresponding to a pointer at the C level.
 
-        :returns: A boolean indicating if the op was understood
+         :returns: A boolean indicating if the op was understood
 
-        Ensure you pass any unrecognised codes through to your super class.
-        For example::
+         Ensure you pass any unrecognised codes through to your super class.
+         For example::
 
-            def xFileControl(self, op: int, ptr: int) -> bool:
-                if op == 1027:
-                    process_quick(ptr)
-                elif op == 1028:
-                    obj=ctypes.py_object.from_address(ptr).value
-                else:
-                    # this ensures superclass implementation is called
-                    return super().xFileControl(op, ptr)
-               # we understood the op
-               return True"""
+             def xFileControl(self, op: int, ptr: int) -> bool:
+                 if op == 1027:
+                     process_quick(ptr)
+                 elif op == 1028:
+                     obj=ctypes.py_object.from_address(ptr).value
+                 else:
+                     # this ensures superclass implementation is called
+                     return super().xFileControl(op, ptr)
+                # we understood the op
+                return True
+
+        .. note::
+
+          `SQLITE_FCNTL_VFSNAME
+          <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlvfsname>`__
+          is automatically handled for you dealing with the necessary memory allocation
+          and listing all the VFS if you are inheriting.  It includes the fully qualified
+          class name for this object."""
         ...
 
     def xFileSize(self) -> int:

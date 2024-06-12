@@ -17,6 +17,10 @@ Address how errors are handled in VFS xRandomness routine, that is
 only called once by SQLite to seed its random number generator.
 (:issue:`526`)
 
+Added :meth:`Connection.vfsname` and updated corresponding shell
+command to get the diagnostic names of the vfs stack for the
+connection.  (:issue:`525`)
+
 3.46.0.0
 ========
 

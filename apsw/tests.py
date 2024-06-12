@@ -528,6 +528,50 @@ class APSW(unittest.TestCase):
         self.assertEqual((True, b'SQLite format 3'), self.db.read("main", 0, 0, 15))
         self.assertTrue(any(b != 0 for b in self.db.read("main", 1, 0, 15)[1]))
 
+    def testConnectionVfsname(self):
+        "Verify vfsname function"
+        self.assertRaises(TypeError, self.db.vfsname, 1, 2)
+        self.assertRaises(TypeError, self.db.vfsname, b"main")
+        self.assertRaises(TypeError, self.db.vfsname)
+
+        # our db should be the default
+        self.assertEqual(apsw.vfs_names()[0], self.db.vfsname("main"))
+        # temp always gives none
+        self.assertEqual(None, self.db.vfsname("temp"))
+
+        # as does nonsense
+        self.assertEqual(None, self.db.vfsname("nonsense"))
+        self.db.pragma("user_version", 3)
+        self.db.execute(f"attach '{self.db.filename}' as nonsense")
+        self.assertEqual(self.db.vfsname("main"), self.db.vfsname("nonsense"))
+
+        class CustomVFS(apsw.VFS):
+            def __init__(self):
+                super().__init__("custom", "")
+
+            def xOpen(self, name, flags):
+                return CorrectHorseBatteryStaple(name, flags)
+
+        class CorrectHorseBatteryStaple(apsw.VFSFile):
+            def __init__(self, name, flags):
+                super().__init__("", name, flags)
+
+        xx = CustomVFS()
+
+        con2 = apsw.Connection(self.db.filename, vfs="custom")
+
+        self.assertIn("CorrectHorseBatteryStaple", con2.vfsname("main"))
+
+        class CustomVFS2(apsw.VFS):
+            def __init__(self):
+                super().__init__("custom2", "")
+
+        xx2 = CustomVFS2()
+
+        con3 = apsw.Connection(self.db.filename, vfs="custom2")
+
+        self.assertTrue(con3.vfsname("main").endswith("/" + self.db.vfsname("main")))
+
     def testConnectionConfig(self):
         "Test Connection.config function"
         self.assertRaises(TypeError, self.db.config)
@@ -9657,7 +9701,11 @@ shell.write(shell.stdout, "hello world\\n")
         reset()
         cmd(".vfsname")
         s.cmdloop()
-        self.assertEqual(name, get(fh[1]).strip())
+        self.assertEqual(s.db.vfsname('main') or "", get(fh[1]).strip())
+        reset()
+        cmd(".vfsname temp")
+        s.cmdloop()
+        self.assertEqual(s.db.vfsname('temp') or "", get(fh[1]).strip())
         reset()
         cmd(".vfsinfo")
         s.cmdloop()
@@ -10621,6 +10669,7 @@ def vfstestdb(filename=TESTFILEPREFIX + "testdb2", vfsname="apswtest", closedb=T
         db.cursor().execute("pragma journal_mode=" + mode)
     db.cursor().execute(
         "create table foo(x,y); insert into foo values(1,2); insert into foo values(date('now'), date('now'))")
+    db.vfsname("main")
     if testtimeout:
         # busy
         db2 = apsw.Connection(filename, vfs=vfsname)
