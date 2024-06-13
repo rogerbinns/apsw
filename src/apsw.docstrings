@@ -1445,6 +1445,9 @@
 "returns when the first row is available or all statements have\n" \
 "completed.  (A cursor is automatically obtained).\n" \
 "\n" \
+"For pragmas you should use :meth:`pragma` which handles quoting and\n" \
+"caching correctly.\n" \
+"\n" \
 "See :meth:`Cursor.execute` for more details, and the :ref:`example <example_executing_sql>`.\n" 
 
 #define  Connection_executemany_DOC "executemany($self,statements,sequenceofbindings,*,can_cache=True,prepare_flags=0,explain=-1)\n--\n\nConnection.executemany(statements: str, sequenceofbindings:Iterable[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor\n\n" \
@@ -1724,7 +1727,7 @@
 #define Connection_overload_function_OLDNAME "overloadfunction"
 #define Connection_overload_function_OLDDOC Connection_overload_function_USAGE "\n(Old less clear name overloadfunction)"
 
-#define  Connection_pragma_DOC "pragma($self,name,value=None)\n--\n\nConnection.pragma(name: str, value: Optional[SQLiteValue] = None) -> Any\n\n" \
+#define  Connection_pragma_DOC "pragma($self,name,value=None,*,schema=None)\n--\n\nConnection.pragma(name: str, value: Optional[SQLiteValue] = None, *, schema: Optional[str] = None) -> Any\n\n" \
 "Issues the pragma (with the value if supplied) and returns the result with\n" \
 ":attr:`the least amount of structure <Cursor.get>`.  For example\n" \
 ":code:`pragma(\"user_version\")` will return just the number, while\n" \
@@ -1732,17 +1735,25 @@
 "now in effect.\n" \
 "\n" \
 "Pragmas do not support bindings, so this method is a convenient\n" \
-"alternative to composing SQL text.\n" \
+"alternative to composing SQL text.  Pragmas are often executed\n" \
+"while being prepared, instead of when run like regular SQL.  They\n" \
+"may also contain encryption keys.  This method ensures they are\n" \
+"not cached to avoid problems.\n" \
+"\n" \
+"Use the `schema` parameter to run the pragma against a different\n" \
+"attached database (eg ``temp``).\n" \
 "\n" \
 "* :ref:`Example <example_pragma>`\n" 
 
-#define Connection_pragma_KWNAMES "name", "value"
-#define Connection_pragma_USAGE "Connection.pragma(name: str, value: Optional[SQLiteValue] = None) -> Any"
+#define Connection_pragma_KWNAMES "name", "value", "schema"
+#define Connection_pragma_USAGE "Connection.pragma(name: str, value: Optional[SQLiteValue] = None, *, schema: Optional[str] = None) -> Any"
 
 #define Connection_pragma_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
   assert(__builtin_types_compatible_p(typeof(value), PyObject *)); \
   assert(value == NULL); \
+  assert(__builtin_types_compatible_p(typeof(schema), const char *)); \
+  assert(schema == 0); \
 } while(0)
 
 

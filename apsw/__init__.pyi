@@ -1249,6 +1249,9 @@ class Connection:
         returns when the first row is available or all statements have
         completed.  (A cursor is automatically obtained).
 
+        For pragmas you should use :meth:`pragma` which handles quoting and
+        caching correctly.
+
         See :meth:`Cursor.execute` for more details, and the :ref:`example <example_executing_sql>`."""
         ...
 
@@ -1462,7 +1465,7 @@ class Connection:
 
     overloadfunction = overload_function ## OLD-NAME
 
-    def pragma(self, name: str, value: Optional[SQLiteValue] = None) -> Any:
+    def pragma(self, name: str, value: Optional[SQLiteValue] = None, *, schema: Optional[str] = None) -> Any:
         """Issues the pragma (with the value if supplied) and returns the result with
         :attr:`the least amount of structure <Cursor.get>`.  For example
         :code:`pragma("user_version")` will return just the number, while
@@ -1470,7 +1473,13 @@ class Connection:
         now in effect.
 
         Pragmas do not support bindings, so this method is a convenient
-        alternative to composing SQL text.
+        alternative to composing SQL text.  Pragmas are often executed
+        while being prepared, instead of when run like regular SQL.  They
+        may also contain encryption keys.  This method ensures they are
+        not cached to avoid problems.
+
+        Use the `schema` parameter to run the pragma against a different
+        attached database (eg ``temp``).
 
         * :ref:`Example <example_pragma>`"""
         ...

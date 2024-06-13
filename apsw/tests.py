@@ -5160,6 +5160,16 @@ class APSW(unittest.TestCase):
         for entry in self.db.cache_stats(include_entries=True)["entries"]:
             self.assertNotIn("should_not_cache", entry["query"])
 
+        # schema - #524
+        self.db.pragma("user_version", 7, schema="temp")
+        self.assertEqual(7, self.db.execute("pragma temp.user_version").get)
+        self.assertRaisesRegex(apsw.SQLError, ".*unknown database.*",  self.db.pragma, "quack", schema='"')
+        self.db.execute(f"""attach '{self.db.filename}' as '"' """)
+        self.db.pragma("quack", schema='"')
+        # check no syntax error because quoting is correct
+        self.db.pragma(r"""qu\'"`ack""", schema='"')
+
+
     def testSleep(self):
         "apsw.sleep"
         apsw.sleep(1)

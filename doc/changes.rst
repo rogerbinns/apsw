@@ -25,6 +25,9 @@ Do not cache :meth:`Connection.pragma` statements to avoid encryption
 keys, or pragmas that run during prepare from being retained.
 (:issue:`522`)
 
+:meth:`Connection.pragma` adds keyword ``schema`` argument to run
+pragma against attached databases.  (:issue:`524`)
+
 3.46.0.0
 ========
 
