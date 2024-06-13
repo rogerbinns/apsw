@@ -107,8 +107,8 @@ version = read_whole_file(os.path.join("src", "apswversion.h"), "rt").split()[2]
 
 
 def sqliteversion(v):
-    assert len(v.split(".")) == 4
-    return v.rsplit(".", 1)[0]
+    assert len(v.split(".")) >= 4
+    return ".".join(v.split(".")[:3])
 
 
 # They keep messing with where files are in URI
