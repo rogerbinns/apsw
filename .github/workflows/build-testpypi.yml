@@ -17,7 +17,6 @@ jobs:
         uses: pypa/cibuildwheel@v2.18
         env:
           CIBW_SKIP: pp*
-          CIBW_ARCHS_MACOS: all
           CIBW_BEFORE_BUILD: python -c "import shutil ; shutil.copyfile('tools/setup-pypi.cfg','setup.apsw')"
           CIBW_TEST_COMMAND: python -m apsw.tests -v
           APSW_HEAVY_DURATION: 2
