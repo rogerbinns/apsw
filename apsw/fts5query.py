@@ -696,8 +696,10 @@ class _Parser:
         self.query = query
         self.tokens = self.get_tokens(query)
         self.token_pos = -1
+        if len(self.tokens) == 1: # only EOF present
+            # SQLite says "syntax error" as the message
+            self.error("No query provided", None)
 
-        # ::TODO:: check what happens when empty query provided
         parsed = self.parse_query()
         if self.lookahead.tok != _Parser.TokenType.EOF:
             self.error("Unexpected", self.lookahead)
