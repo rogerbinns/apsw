@@ -925,6 +925,12 @@ def RegexTokenizer(
     return tokenize
 
 
+# ::TODO:: RegexHybridTokenizer
+# Use regex to find things of interest
+# and different tokenizer for the gaps inbetween
+# useful for log files etc
+# use re.finditer in body and then the other tokenizer for spans inbetween
+
 @dataclass
 class TokenizerArgument:
     "Used as spec values to :func:`parse_tokenizer_args`"
