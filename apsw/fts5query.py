@@ -96,6 +96,8 @@ import dataclasses
 
 from typing import Any, Sequence, NoReturn, Literal, TypeAlias, Generator
 
+import apsw
+
 QUERY_TOKENS_MARKER = "$!Tokens~"
 "Special marker at the start of a string to recognise it as a list of tokens for :class:`QueryTokens`"
 
@@ -569,12 +571,13 @@ _walk_attrs = {
 def walk(start: QUERY) -> Generator[tuple[tuple[QUERY, ...], QUERY], None, None]:
     """Yields the parents and each node for a query recursively
 
-    Use it like this::
+    The query tree is traversed top down.  Use it like this::
 
-        for parents, node in walk(my_query):
-            # parents will be a tuple like the AND, OR etc
-            # with the
-            ::TODO:: put in a real example
+      for parents, node in walk(query):
+         # parents will be a tuple of parent nodes
+         # node will be current node
+         if isinstance(node, PHRASE):
+             print(node.phrase)
     """
     # top down - container node first
     yield tuple(), start
@@ -601,12 +604,8 @@ def extract_with_column_filters(node: QUERY, start: QUERY) -> QUERY:
     """Return a new `QUERY` for a query rooted at `start` with child `node`,
     with intermediate :class:`COLUMNFILTER` in between applied.
 
-    ::TODO:: note about is used, not ==
-
     This is useful if you want to execute a node from a top level
     query ensuring the column filters apply.
-
-    ::TODO:: example showing extract, turn result into a query string
     """
     for parents, child in walk(start):
         if child is node:
@@ -625,8 +624,22 @@ def applicable_columns(node: QUERY, start: QUERY, columns: Sequence[str]) -> set
     You should use :meth:`apsw.fts.FTS5Table.columns_indexed` to get
     the column list for a table.
     """
-    # ::TODO:: implement
-    raise NotImplementedError()
+    query = extract_with_column_filters(node, start)
+    columns: set[str] = set(columns)
+    while query is not node:
+        matches = set()
+        for query_column in query.columns:
+            for column in columns:
+                if 0 == apsw.stricmp(query_column, column):
+                    matches.add(column)
+                    break
+        if query.filter == "include":
+            columns = matches
+        else:
+            columns -= matches
+        query = query.query
+
+    return tuple(columns)
 
 
 class ParseError(Exception):
