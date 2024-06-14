@@ -126,14 +126,23 @@ class QueryTokens:
 
     The marker format is text starting with
     :data:`QUERY_TOKENS_MARKER` with each token being separated by
-    `|`."""
+    ``|``.  If there are colocated tokens then ``>`` is used to separate
+    them.  For example ``$!Tokens~hello|1st>first|two``"""
 
-    tokens: list[str]
+    tokens: list[str | Sequence[str]]
     "The tokens"
 
     def encode(self) -> str:
         "Produces the tokens encoded with the marker and separator"
-        return QUERY_TOKENS_MARKER + "|".join(self.tokens)
+        res = ""
+        for token in self.tokens:
+            if res:
+                res += "|"
+            if isinstance(token, str):
+                res += token
+            else:
+                res += ">".join(token)
+        return QUERY_TOKENS_MARKER + res
 
     @classmethod
     def decode(cls, data: str | bytes) -> QueryTokens | None:
@@ -141,7 +150,11 @@ class QueryTokens:
         if isinstance(data, bytes) and data.startswith(b"$!Tokens~"):
             data = data.decode("utf8")
         if isinstance(data, str) and data.startswith(QUERY_TOKENS_MARKER):
-            return cls(data[len(QUERY_TOKENS_MARKER) :].split("|"))
+            stream: list[str | Sequence[str]] = data[len(QUERY_TOKENS_MARKER) :].split("|")
+            for i, token in enumerate(stream):
+                if "<" in token:
+                    stream[i] = token.split(">")
+            return cls(stream)
         return None
 
 
