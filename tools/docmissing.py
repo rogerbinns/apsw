@@ -131,7 +131,7 @@ for name, obj in (
             # ignore mappings !!!
             if c.startswith("mapping_"):
                 continue
-        if c not in classes[name]:
+        if c not in classes[name] and not c.startswith("_"):
             retval = 1
             print("%s.%s on object but not in documentation" % (name, c))
 
