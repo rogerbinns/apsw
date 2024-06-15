@@ -1367,23 +1367,33 @@ def query_info(db: apsw.Connection,
                explain_query_plan: bool = False) -> QueryDetails:
     """Returns information about the query, without running it.
 
+    `bindings` can be `None` if you want to find out what the bindings
+    for the query are.
+
     Set the various parameters to `True` if you also want the
     actions, expanded_sql, explain, query_plan etc filled in.
     """
     res: dict[str, Any] = {"actions": None, "query_plan": None, "explain": None}
 
+    # what we use in queries
+    query_bindings = bindings if bindings is not None else apsw._null_bindings
+
     def tracer(cursor: apsw.Cursor, first_query: str, bindings: apsw.Bindings | None):
         nonlocal res
-        res.update({
-            "first_query": first_query,
-            "query": query,
-            "bindings": bindings,
-            "is_explain": cursor.is_explain,
-            "is_readonly": cursor.is_readonly,
-            "has_vdbe": cursor.has_vdbe,
-            "description": cursor.get_description(),
-            "description_full": None,
-        })
+        res.update(
+            {
+                "first_query": first_query,
+                "query": query,
+                "bindings": bindings,
+                "bindings_count": cursor.bindings_count,
+                "bindings_names": cursor.bindings_names,
+                "is_explain": cursor.is_explain,
+                "is_readonly": cursor.is_readonly,
+                "has_vdbe": cursor.has_vdbe,
+                "description": cursor.get_description(),
+                "description_full": None,
+            }
+        )
         if hasattr(cursor, "description_full"):
             res["description_full"] = cursor.description_full
 
@@ -1454,7 +1464,12 @@ def query_info(db: apsw.Connection,
         orig_authorizer = db.authorizer
         db.authorizer = auther
     try:
-        cur.execute(query, bindings, can_cache=False, prepare_flags=prepare_flags)
+        cur.execute(
+            query,
+            query_bindings,
+            can_cache=False,
+            prepare_flags=prepare_flags,
+        )
     except apsw.ExecTraceAbort:
         pass
     finally:
@@ -1466,7 +1481,7 @@ def query_info(db: apsw.Connection,
 
     if explain and not res["is_explain"]:
         vdbe: list[VDBEInstruction] = []
-        for row in cur.execute(res["first_query"], bindings, explain=1):
+        for row in cur.execute(res["first_query"], query_bindings, explain=1):
             vdbe.append(
                 VDBEInstruction(**dict((v[0][0], v[1]) for v in zip(cur.get_description(), row) if v[1] is not None)))
         res["explain"] = vdbe
@@ -1475,7 +1490,7 @@ def query_info(db: apsw.Connection,
         subn = "sub"
         byid: Any = {0: {"detail": "QUERY PLAN"}}
 
-        for row in cur.execute(res["first_query"], bindings, explain=2):
+        for row in cur.execute(res["first_query"], query_bindings, explain=2):
             node = dict((v[0][0], v[1]) for v in zip(cur.get_description(), row) if v[0][0] != "notused")
             assert len(node) == 3  # catch changes in returned format
             parent: list[str | dict[str, Any]] = byid[node["parent"]]
@@ -1513,6 +1528,10 @@ class QueryDetails:
     ":attr:`Cursor.is_readonly <apsw.Cursor.is_readonly>`"
     has_vdbe: bool
     ":attr:`Cursor.has_vdbe <apsw.Cursor.has_vdbe>`"
+    bindings_count: int
+    "How many :attr:`bindings <apsw.Cursor.bindings_count>` are in the query"
+    bindings_names: tuple[str | None]
+    "The :attr:`names <apsw.Cursor.bindings_names>`.  The leading marker (``?:@$``) is omitted"
     description: tuple[tuple[str, str], ...]
     ":meth:`Cursor.get_description <apsw.Cursor.get_description>`"
     description_full: tuple[tuple[str, str, str, str, str], ...] | None

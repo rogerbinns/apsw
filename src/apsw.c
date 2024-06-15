@@ -2016,6 +2016,15 @@ PyInit_apsw(void)
   if (PyModule_AddObject(m, "no_change", Py_NewRef((PyObject *)&apsw_no_change_object)))
     goto fail;
 
+  /* undocumented sentinel to do no bindings */
+  apsw_cursor_null_bindings = PyObject_CallObject((PyObject *)&PyBaseObject_Type, NULL);
+  if (!apsw_cursor_null_bindings)
+    goto fail;
+
+  /* give ownership to module intentionally */
+  if (PyModule_AddObject(m, "_null_bindings", apsw_cursor_null_bindings))
+    goto fail;
+
 #ifdef APSW_TESTFIXTURES
   if (PyModule_AddObject(m, "test_fixtures_present", Py_NewRef(Py_True)))
     goto fail;

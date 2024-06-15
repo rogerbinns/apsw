@@ -540,15 +540,12 @@ query = """
     JOIN customers ON orders.customer_id=customers.id
     WHERE address = ?;
     SELECT 7;"""
-bindings = ("123 Main Street",)
 
 # ask for all information available
 qd = apsw.ext.query_info(
     connection,
     query,
-    bindings=bindings,
     actions=True,  # which tables/views etc and how they are accessed
-    expanded_sql=True,  # expands bindings into query string
     explain=True,  # shows low level VDBE
     explain_query_plan=True,  # how SQLite solves the query
 )
@@ -557,7 +554,8 @@ qd = apsw.ext.query_info(
 import pprint
 
 print("query", qd.query)
-print("\nbindings", qd.bindings)
+print("\nbindings_count", qd.bindings_count)
+print("\nbindings_names", qd.bindings_names)
 print("\nexpanded_sql", qd.expanded_sql)
 print("\nfirst_query", qd.first_query)
 print("\nquery_remaining", qd.query_remaining)

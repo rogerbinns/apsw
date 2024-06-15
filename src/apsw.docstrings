@@ -2339,6 +2339,26 @@
 } while(0)
 
 
+#define  Cursor_bindings_count_DOC ":type: int\n" \
+"\n" \
+"How many bindings are in the statement.  The ``?`` form\n" \
+"results in the largest number.  For example you could do\n" \
+"``SELECT ?123``` in which case the count will be ``123``.\n" \
+"\n" \
+"Calls: `sqlite3_bind_parameter_count <https://sqlite.org/c3ref/bind_parameter_count.html>`__\n" 
+
+#define  Cursor_bindings_names_DOC ":type: tuple[str | None]\n" \
+"\n" \
+"A tuple of the name of each bind parameter, or None for no name.  The\n" \
+"leading marker (``?:@$``) is omitted\n" \
+"\n" \
+".. note::\n" \
+"\n" \
+"  SQLite parameter numbering starts at ``1``, while Python\n" \
+"  indexing starts at ``0``.\n" \
+"\n" \
+"Calls: `sqlite3_bind_parameter_name <https://sqlite.org/c3ref/bind_parameter_name.html>`__\n" 
+
 #define  Cursor_class_DOC "\n" 
 
 #define  Cursor_close_DOC "close($self,force=False)\n--\n\nCursor.close(force: bool = False) -> None\n\n" \

@@ -1876,6 +1876,24 @@ class Connection:
 
 class Cursor:
     """"""
+    bindings_count: int
+    """How many bindings are in the statement.  The ``?`` form
+    results in the largest number.  For example you could do
+    ``SELECT ?123``` in which case the count will be ``123``.
+
+    Calls: `sqlite3_bind_parameter_count <https://sqlite.org/c3ref/bind_parameter_count.html>`__"""
+
+    bindings_names: tuple[str | None]
+    """A tuple of the name of each bind parameter, or None for no name.  The
+    leading marker (``?:@$``) is omitted
+
+    .. note::
+
+      SQLite parameter numbering starts at ``1``, while Python
+      indexing starts at ``0``.
+
+    Calls: `sqlite3_bind_parameter_name <https://sqlite.org/c3ref/bind_parameter_name.html>`__"""
+
     def close(self, force: bool = False) -> None:
         """It is very unlikely you will need to call this method.
         Cursors are automatically garbage collected and when there
