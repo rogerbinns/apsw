@@ -5447,6 +5447,7 @@ class APSW(unittest.TestCase):
            # methods will only be called from that same thread so it
            # isn't a problem.
                         'skipcalls': re.compile("^sqlite3_(blob_bytes|column_count|bind_parameter_count|data_count|vfs_.+|changes64|total_changes64"
+                                                "|bind_parameter_name"
                                                 "|get_" "autocommit|last_insert_rowid|complete|interrupt|limit|malloc64|free|threadsafe|value_.+"
                                                 "|libversion|enable_" "shared_cache|initialize|shutdown|config|memory_.+|soft_heap_limit64|hard_heap_limit64"
                                                 "|randomness|db_readonly|db_filename|release_" "memory|status64|result_.+|user_data|mprintf|aggregate_context"

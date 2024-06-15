@@ -565,7 +565,7 @@ APSWCursor_dobindings(APSWCursor *self)
     {
       const char *key;
 
-      PYSQLITE_CUR_CALL(key = sqlite3_bind_parameter_name(self->statement->vdbestatement, arg));
+      key = sqlite3_bind_parameter_name(self->statement->vdbestatement, arg);
 
       if (!key)
       {
