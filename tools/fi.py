@@ -154,6 +154,8 @@ def exercise(example_code, expect_exception):
     cur.execute("select 3").fetchall()
     cur.get
 
+    apsw.ext.query_info(con, "select ?2, $three", actions=True, expanded_sql=True)
+
     con.pragma("user_version")
     con.pragma("user_version", 7)
 

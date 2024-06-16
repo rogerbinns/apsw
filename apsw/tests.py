@@ -10392,6 +10392,11 @@ shell.write(shell.stdout, "hello world\\n")
         self.assertEqual("select 3, 'three'",
                          apsw.ext.query_info(self.db, "select ?, ?", (3, "three"), expanded_sql=True).expanded_sql)
 
+        # bindings count/names
+        qd = apsw.ext.query_info(self.db, "select ?2, :three, ?5, $six")
+        self.assertEqual(qd.bindings_count, 6)
+        self.assertEqual(qd.bindings_names, (None, "2", "three", None, "5", "six"))
+
         # explain / explain query_plan
         # from https://sqlite.org/lang_with.html
         query = """
