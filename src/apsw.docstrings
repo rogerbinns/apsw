@@ -1464,6 +1464,9 @@
 "returns when the first row is available or all statements have\n" \
 "completed.  (A cursor is automatically obtained).\n" \
 "\n" \
+"For pragmas you should use :meth:`pragma` which handles quoting and\n" \
+"caching correctly.\n" \
+"\n" \
 "See :meth:`Cursor.execute` for more details, and the :ref:`example <example_executing_sql>`.\n" 
 
 #define  Connection_executemany_DOC "executemany($self,statements,sequenceofbindings,*,can_cache=True,prepare_flags=0,explain=-1)\n--\n\nConnection.executemany(statements: str, sequenceofbindings:Iterable[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor\n\n" \
@@ -1761,7 +1764,7 @@
 #define Connection_overload_function_OLDNAME "overloadfunction"
 #define Connection_overload_function_OLDDOC Connection_overload_function_USAGE "\n(Old less clear name overloadfunction)"
 
-#define  Connection_pragma_DOC "pragma($self,name,value=None)\n--\n\nConnection.pragma(name: str, value: Optional[SQLiteValue] = None) -> Any\n\n" \
+#define  Connection_pragma_DOC "pragma($self,name,value=None,*,schema=None)\n--\n\nConnection.pragma(name: str, value: Optional[SQLiteValue] = None, *, schema: Optional[str] = None) -> Any\n\n" \
 "Issues the pragma (with the value if supplied) and returns the result with\n" \
 ":attr:`the least amount of structure <Cursor.get>`.  For example\n" \
 ":code:`pragma(\"user_version\")` will return just the number, while\n" \
@@ -1769,17 +1772,25 @@
 "now in effect.\n" \
 "\n" \
 "Pragmas do not support bindings, so this method is a convenient\n" \
-"alternative to composing SQL text.\n" \
+"alternative to composing SQL text.  Pragmas are often executed\n" \
+"while being prepared, instead of when run like regular SQL.  They\n" \
+"may also contain encryption keys.  This method ensures they are\n" \
+"not cached to avoid problems.\n" \
+"\n" \
+"Use the `schema` parameter to run the pragma against a different\n" \
+"attached database (eg ``temp``).\n" \
 "\n" \
 "* :ref:`Example <example_pragma>`\n" 
 
-#define Connection_pragma_KWNAMES "name", "value"
-#define Connection_pragma_USAGE "Connection.pragma(name: str, value: Optional[SQLiteValue] = None) -> Any"
+#define Connection_pragma_KWNAMES "name", "value", "schema"
+#define Connection_pragma_USAGE "Connection.pragma(name: str, value: Optional[SQLiteValue] = None, *, schema: Optional[str] = None) -> Any"
 
 #define Connection_pragma_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
   assert(__builtin_types_compatible_p(typeof(value), PyObject *)); \
   assert(value == NULL); \
+  assert(__builtin_types_compatible_p(typeof(schema), const char *)); \
+  assert(schema == 0); \
 } while(0)
 
 
@@ -2317,6 +2328,27 @@
 } while(0)
 
 
+#define  Connection_vfsname_DOC "vfsname($self,dbname)\n--\n\nConnection.vfsname(dbname: str) -> str | None\n\n" \
+"Issues the `SQLITE_FCNTL_VFSNAME\n" \
+"<https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlvfsname>`__\n" \
+"file control against the named database (`main`, `temp`, attached\n" \
+"name).\n" \
+"\n" \
+"This is useful to see which VFS is in use, and if inheritance is used\n" \
+"then ``/`` will separate the names.  If you have a :class:`VFSFile` in\n" \
+"use then its fully qualified class name will also be included.\n" \
+"\n" \
+"If ``SQLITE_FCNTL_VFSNAME`` is not implemented, ``dbname`` is not a\n" \
+"database name, or an error occurred then ``None`` is returned.\n" 
+
+#define Connection_vfsname_KWNAMES "dbname"
+#define Connection_vfsname_USAGE "Connection.vfsname(dbname: str) -> str | None"
+
+#define Connection_vfsname_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(dbname), const char *)); \
+} while(0)
+
+
 #define  Connection_vtab_config_DOC "vtab_config($self,op,val=0)\n--\n\nConnection.vtab_config(op: int, val: int = 0) -> None\n\n" \
 "Callable during virtual table :meth:`~VTModule.Connect`/:meth:`~VTModule.Create`.\n" \
 "\n" \
@@ -2378,6 +2410,26 @@
   assert(mode == (SQLITE_CHECKPOINT_PASSIVE)); \
 } while(0)
 
+
+#define  Cursor_bindings_count_DOC ":type: int\n" \
+"\n" \
+"How many bindings are in the statement.  The ``?`` form\n" \
+"results in the largest number.  For example you could do\n" \
+"``SELECT ?123``` in which case the count will be ``123``.\n" \
+"\n" \
+"Calls: `sqlite3_bind_parameter_count <https://sqlite.org/c3ref/bind_parameter_count.html>`__\n" 
+
+#define  Cursor_bindings_names_DOC ":type: tuple[str | None]\n" \
+"\n" \
+"A tuple of the name of each bind parameter, or None for no name.  The\n" \
+"leading marker (``?:@$``) is omitted\n" \
+"\n" \
+".. note::\n" \
+"\n" \
+"  SQLite parameter numbering starts at ``1``, while Python\n" \
+"  indexing starts at ``0``.\n" \
+"\n" \
+"Calls: `sqlite3_bind_parameter_name <https://sqlite.org/c3ref/bind_parameter_name.html>`__\n" 
 
 #define  Cursor_class_DOC "\n" 
 
@@ -3312,30 +3364,38 @@
 
 #define  VFSFile_xFileControl_DOC "xFileControl($self,op,ptr)\n--\n\nVFSFile.xFileControl(op: int, ptr: int) -> bool\n\n" \
 "Receives `file control\n" \
-"<https://sqlite.org/c3ref/file_control.html>`_ request typically\n" \
-"issued by :meth:`Connection.file_control`.  See\n" \
-":meth:`Connection.file_control` for an example of how to pass a\n" \
-"Python object to this routine.\n" \
+" <https://sqlite.org/c3ref/file_control.html>`_ request typically\n" \
+" issued by :meth:`Connection.file_control`.  See\n" \
+" :meth:`Connection.file_control` for an example of how to pass a\n" \
+" Python object to this routine.\n" \
 "\n" \
-":param op: A numeric code.  Codes below 100 are reserved for SQLite\n" \
-"  internal use.\n" \
-":param ptr: An integer corresponding to a pointer at the C level.\n" \
+" :param op: A numeric code.  Codes below 100 are reserved for SQLite\n" \
+"   internal use.\n" \
+" :param ptr: An integer corresponding to a pointer at the C level.\n" \
 "\n" \
-":returns: A boolean indicating if the op was understood\n" \
+" :returns: A boolean indicating if the op was understood\n" \
 "\n" \
-"Ensure you pass any unrecognised codes through to your super class.\n" \
-"For example::\n" \
+" Ensure you pass any unrecognised codes through to your super class.\n" \
+" For example::\n" \
 "\n" \
-"    def xFileControl(self, op: int, ptr: int) -> bool:\n" \
-"        if op == 1027:\n" \
-"            process_quick(ptr)\n" \
-"        elif op == 1028:\n" \
-"            obj=ctypes.py_object.from_address(ptr).value\n" \
-"        else:\n" \
-"            # this ensures superclass implementation is called\n" \
-"            return super().xFileControl(op, ptr)\n" \
-"       # we understood the op\n" \
-"       return True\n" 
+"     def xFileControl(self, op: int, ptr: int) -> bool:\n" \
+"         if op == 1027:\n" \
+"             process_quick(ptr)\n" \
+"         elif op == 1028:\n" \
+"             obj=ctypes.py_object.from_address(ptr).value\n" \
+"         else:\n" \
+"             # this ensures superclass implementation is called\n" \
+"             return super().xFileControl(op, ptr)\n" \
+"        # we understood the op\n" \
+"        return True\n" \
+"\n" \
+".. note::\n" \
+"\n" \
+"  `SQLITE_FCNTL_VFSNAME\n" \
+"  <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlvfsname>`__\n" \
+"  is automatically handled for you dealing with the necessary memory allocation\n" \
+"  and listing all the VFS if you are inheriting.  It includes the fully qualified\n" \
+"  class name for this object.\n" 
 
 #define VFSFile_xFileControl_KWNAMES "op", "ptr"
 #define VFSFile_xFileControl_USAGE "VFSFile.xFileControl(op: int, ptr: int) -> bool"

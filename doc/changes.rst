@@ -39,6 +39,27 @@ Added :func:`apsw.ext.ShowResourceUsage` for getting resource and
 SQLite usage in a block, and also use it for the shell :ref:`timer
 <shell-cmd-timer>` command.
 
+3.46.0.1
+========
+
+:func:`apsw.ext.query_info` provides the count and names of bindings
+parameters.  (:issue:`528`)
+
+Address how errors are handled in VFS xRandomness routine, that is
+only called once by SQLite to seed its random number generator.
+(:issue:`526`)
+
+Added :meth:`Connection.vfsname` and updated corresponding shell
+command to get the diagnostic names of the vfs stack for the
+connection.  (:issue:`525`)
+
+Do not cache :meth:`Connection.pragma` statements to avoid encryption
+keys, or pragmas that run during prepare from being retained.
+(:issue:`522`)
+
+:meth:`Connection.pragma` adds keyword ``schema`` argument to run
+pragma against attached databases.  (:issue:`524`)
+
 3.46.0.0
 ========
 

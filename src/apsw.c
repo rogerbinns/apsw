@@ -805,6 +805,9 @@ error:
 }
 
 /* macros to build the format string and values.  int, string and pointers */
+#undef I
+#undef S
+#undef P
 #define I(n) #n, vfs->n
 #define S(n) #n, vfs->n
 #define P(n) #n, PyLong_FromVoidPtr, vfs->n
@@ -2008,6 +2011,15 @@ PyInit_apsw(void)
   */
 
   if (PyModule_AddObject(m, "no_change", Py_NewRef((PyObject *)&apsw_no_change_object)))
+    goto fail;
+
+  /* undocumented sentinel to do no bindings */
+  apsw_cursor_null_bindings = PyObject_CallObject((PyObject *)&PyBaseObject_Type, NULL);
+  if (!apsw_cursor_null_bindings)
+    goto fail;
+
+  /* give ownership to module intentionally */
+  if (PyModule_AddObject(m, "_null_bindings", apsw_cursor_null_bindings))
     goto fail;
 
 #ifdef APSW_TESTFIXTURES

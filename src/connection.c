@@ -3549,6 +3549,51 @@ Connection_file_control(Connection *self, PyObject *const *fast_args, Py_ssize_t
   Py_RETURN_TRUE;
 }
 
+/** .. method:: vfsname(dbname: str) -> str | None
+
+Issues the `SQLITE_FCNTL_VFSNAME
+<https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlvfsname>`__
+file control against the named database (`main`, `temp`, attached
+name).
+
+This is useful to see which VFS is in use, and if inheritance is used
+then ``/`` will separate the names.  If you have a :class:`VFSFile` in
+use then its fully qualified class name will also be included.
+
+If ``SQLITE_FCNTL_VFSNAME`` is not implemented, ``dbname`` is not a
+database name, or an error occurred then ``None`` is returned.
+*/
+static PyObject *
+Connection_vfsname(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+
+  const char *dbname = NULL;
+
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  {
+    Connection_vfsname_CHECK;
+    ARG_PROLOG(1, Connection_vfsname_KWNAMES);
+    ARG_MANDATORY ARG_str(dbname);
+    ARG_EPILOG(NULL, Connection_vfsname_USAGE, );
+  }
+
+  const char *vfsname = NULL;
+
+  /* because it is diagnostic and we can tell from vfsname changing and
+  because SQLite shell itself ignores the return code, we do the same */
+
+  PYSQLITE_VOID_CALL(sqlite3_file_control(self->db, dbname, SQLITE_FCNTL_VFSNAME, &vfsname));
+
+  PyObject *res = convertutf8string(vfsname);
+
+  if (vfsname)
+    sqlite3_free((void *)vfsname);
+
+  return res;
+}
+
 /** .. method:: sqlite3_pointer() -> int
 
 Returns the underlying `sqlite3 *
@@ -4043,8 +4088,9 @@ static int connection_trace_and_exec(Connection *self, int release, int sp, int 
   PYSQLITE_CON_CALL(res = sqlite3_exec(self->db, sql, 0, 0, 0));
   SET_EXC(res, self->db);
   sqlite3_free(sql);
-  assert(res == SQLITE_OK || PyErr_Occurred());
-  return res == SQLITE_OK;
+
+  /* See issue 526 for why we can't trust SQLite success code */
+  return PyErr_Occurred() ? 0 : (res == SQLITE_OK);
 }
 
 static PyObject *
@@ -4314,6 +4360,9 @@ Connection_txn_state(Connection *self, PyObject *const *fast_args, Py_ssize_t fa
     returns when the first row is available or all statements have
     completed.  (A cursor is automatically obtained).
 
+    For pragmas you should use :meth:`pragma` which handles quoting and
+    caching correctly.
+
     See :meth:`Cursor.execute` for more details, and the :ref:`example <example_executing_sql>`.
 */
 static PyObject *
@@ -4383,7 +4432,7 @@ fail:
 }
 
 static PyObject *formatsqlvalue(PyObject *Py_UNUSED(self), PyObject *value);
-/** .. method:: pragma(name: str, value: Optional[SQLiteValue] = None) -> Any
+/** .. method:: pragma(name: str, value: Optional[SQLiteValue] = None, *, schema: Optional[str] = None) -> Any
 
   Issues the pragma (with the value if supplied) and returns the result with
   :attr:`the least amount of structure <Cursor.get>`.  For example
@@ -4392,7 +4441,13 @@ static PyObject *formatsqlvalue(PyObject *Py_UNUSED(self), PyObject *value);
   now in effect.
 
   Pragmas do not support bindings, so this method is a convenient
-  alternative to composing SQL text.
+  alternative to composing SQL text.  Pragmas are often executed
+  while being prepared, instead of when run like regular SQL.  They
+  may also contain encryption keys.  This method ensures they are
+  not cached to avoid problems.
+
+  Use the `schema` parameter to run the pragma against a different
+  attached database (eg ``temp``).
 
   * :ref:`Example <example_pragma>`
 */
@@ -4401,6 +4456,7 @@ Connection_pragma(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_
 {
   const char *name = NULL;
   PyObject *value = NULL;
+  const char *schema = NULL;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
@@ -4410,41 +4466,68 @@ Connection_pragma(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_
     ARG_PROLOG(2, Connection_pragma_KWNAMES);
     ARG_MANDATORY ARG_str(name);
     ARG_OPTIONAL ARG_pyobject(value);
+    ARG_OPTIONAL ARG_optional_str(schema);
     ARG_EPILOG(NULL, Connection_pragma_USAGE, );
   }
 
-  PyObject *query = NULL, *value_str = NULL, *cursor = NULL, *res = NULL;
+  PyObject *value_format = NULL, *res = NULL, *cursor = NULL, *query_py = NULL;
+  const char *value_str = NULL;
+  char *query = NULL;
+
   if (value)
   {
-    value_str = formatsqlvalue(NULL, value);
+    value_format = formatsqlvalue(NULL, value);
+    if (!value_format)
+      goto error;
+    value_str = PyUnicode_AsUTF8(value_format);
     if (!value_str)
       goto error;
-    const char *utf8 = PyUnicode_AsUTF8(value_str);
-    if (!utf8)
-      goto error;
-
-    /* the form name(value) is used not name=value because some
-       pragmas like index_info work the former way while as do all that
-       support = */
-    query = PyUnicode_FromFormat("pragma %s(%s)", name, utf8);
   }
-  else
-    query = PyUnicode_FromFormat("pragma %s", name);
+
+  /* the form name(value) is used not name=value because some
+     pragmas like index_info only work that way, and all
+     support the parenthese method */
+
+  query = sqlite3_mprintf("pragma %s%w%s%s\"%w\"%s%s%s",
+                          /* surround schema with double quotes and follow with dot if set */
+                          schema ? "\"" : "",
+                          schema ? schema : "",
+                          schema ? "\"" : "",
+                          schema ? "." : "",
+                          /* pragma */
+                          name,
+                          /* value surrounded by parens if set */
+                          value_str ? "(" : "",
+                          value_str ? value_str : "",
+                          value_str ? ")" : "");
+
   if (!query)
+  {
+    PyErr_NoMemory();
+    goto error;
+  }
+
+  query_py = PyUnicode_FromString(query);
+  if (!query_py)
     goto error;
 
-  PyObject *vargs[] = {NULL, query};
-  cursor = Connection_execute(self, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
-  if (!cursor)
+  PyObject *vargs[] = {NULL, query_py, Py_False};
+  PyObject *kwnames = PyTuple_Pack(1, apst.can_cache);
+  if (kwnames)
+    cursor = Connection_execute(self, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, kwnames);
+  Py_XDECREF(kwnames);
+  if (!cursor || !kwnames)
     goto error;
 
   res = PyObject_GetAttr(cursor, apst.get);
 
 error:
-  Py_XDECREF(query);
-  Py_XDECREF(value_str);
+  Py_XDECREF(value_format);
   Py_XDECREF(cursor);
+  Py_XDECREF(query_py);
+  sqlite3_free(query);
 
+  assert((res && !PyErr_Occurred()) || (!res && PyErr_Occurred()));
   return res;
 }
 
@@ -5497,6 +5580,8 @@ static PyMethodDef Connection_methods[] = {
      Connection_backup_DOC},
     {"file_control", (PyCFunction)Connection_file_control, METH_FASTCALL | METH_KEYWORDS,
      Connection_file_control_DOC},
+    {"vfsname", (PyCFunction)Connection_vfsname, METH_FASTCALL | METH_KEYWORDS,
+     Connection_vfsname_DOC},
     {"sqlite3_pointer", (PyCFunction)Connection_sqlite3_pointer, METH_NOARGS,
      Connection_sqlite3_pointer_DOC},
     {"set_exec_trace", (PyCFunction)Connection_set_exec_trace, METH_FASTCALL | METH_KEYWORDS,

@@ -157,6 +157,8 @@ def exercise(example_code, expect_exception):
     cur.execute("select 3").fetchall()
     cur.get
 
+    apsw.ext.query_info(con, "select ?2, $three", actions=True, expanded_sql=True)
+
     con.pragma("user_version")
     con.pragma("user_version", 7)
 
@@ -512,8 +514,7 @@ def exercise(example_code, expect_exception):
 
     class myvfsfile(apsw.VFSFile):
         def __init__(self, parent, filename, flags):
-            if not isinstance(filename, str):
-                filename.parameters
+            hasattr(filename, "parameters") and filename.parameters
             super().__init__(parent, filename, flags)
 
     vfsinstance = myvfs()
@@ -804,11 +805,8 @@ class Tester:
         return curline_pretty, 100 * pos / total_lines
 
     def verify_exception(self, tested):
-        if len(tested) == 0 and len(self.exc_happened) >= 0:
-            return
-        ok = any(e[0] in self.expect_exception for e in self.exc_happened) or any(
-            self.FAULTS in str(e[1]) for e in self.exc_happened
-        )
+        ok = any(e[0] in self.expect_exception for e in self.exc_happened) or any(self.FAULTS in str(e[1])
+                                                                                  for e in self.exc_happened)
         # these faults happen in fault handling so can't fault report themselves.
         if tested and list(tested)[0][2] in {
             "apsw_set_errmsg",
@@ -829,6 +827,12 @@ class Tester:
             elif tested[-1][2] in {"MakeSqliteMsgFromPyException", "apsw_write_unraisable", "apswvfs_excepthook"}:
                 # already handling an exception
                 pass
+            elif tested[-1][2] == "apswvfsfile_xFileControl":
+                # we deliberately ignore errors getting VFSNAMES
+                if tested[-1][0] == "PyUnicode_AsUTF8" and tested[-1][4] in {"qualname", "module"}:
+                    ok = True
+                elif tested[-1][0] == "sqlite3_mprintf":
+                    ok = True
             else:
                 ok = False
         if not ok:
@@ -858,7 +862,6 @@ class Tester:
 
         self.last_key = None
         use_runplan = False
-        last = set(), set()
         complete = False
 
         sys.excepthook = sys.unraisablehook = self.exchook

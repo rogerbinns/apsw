@@ -851,13 +851,20 @@ Enter ".help" for instructions
             cur.execute(sql, bindings)
         except apsw.ExecTraceAbort:
             pass
+        except apsw.BindingsError as e:
+            return Shell._qd(None, None, "You must used named bindings (eg $name) and .parameter set", -1, e, explain)
         except apsw.Error as e:
-            return Shell._qd(sql[:len(saved)], sql[len(saved):], str(e), e.error_offset, e, explain)
+            return Shell._qd(sql[: len(saved)], sql[len(saved) :], str(e), getattr(e, "error_offset", -1), e, explain)
         except KeyError as e:
             var = e.args[0]
-            return Shell._qd(None, None,
-                             f"No binding present for '{ var }' - use .parameter set { var } VALUE to provide one", -1,
-                             e, explain)
+            return Shell._qd(
+                None,
+                None,
+                f"No binding present for '{ var }' - use .parameter set { var } VALUE to provide one",
+                -1,
+                e,
+                explain,
+            )
         return Shell._qd(sql[:len(saved)], sql[len(saved):], None, None, None, explain)
 
     def process_sql(self, sql: str, bindings=None, internal=False, summary=None):
@@ -2702,10 +2709,10 @@ Enter ".help" for instructions
             self.write(self.stdout, " " * (maxw - len(k)) + f"{ k }  { v}\n")
 
     def command_vfsname(self, cmd):
-        "vfsname: VFS name used to open current database"
-        if cmd:
-            raise self.Error("No parameters taken")
-        self.write(self.stdout, self.db.open_vfs + "\n")
+        "vfsname: VFS name for database, or attached names"
+        dbnames = cmd or ["main"]
+        for name in dbnames:
+            self.write(self.stdout, (self.db.vfsname(name) or "") + "\n")
 
     def _format_vfs(self, vfs):
         w = max(len(k) for k in vfs.keys())
@@ -3036,6 +3043,7 @@ Enter ".help" for instructions
         "optimize(": None,
         "page_count;": None,
         "page_size=": None,
+        "pragma_list;": None,
         "query_only=": _pragmas_bool,
         "quick_check": None,
         "read_uncommitted=": _pragmas_bool,

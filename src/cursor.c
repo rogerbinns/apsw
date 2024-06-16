@@ -47,6 +47,9 @@ SQLite objects are reused when possible.
 
 */
 
+/* secret backdoor to allow bindings all as null */
+static PyObject *apsw_cursor_null_bindings;
+
 /** .. class:: Cursor
 */
 
@@ -548,6 +551,10 @@ APSWCursor_dobindings(APSWCursor *self)
   assert(!PyErr_Occurred());
   assert(self->bindingsoffset >= 0);
 
+  /* skip for null bindings */
+  if (Py_Is(self->bindings, apsw_cursor_null_bindings))
+    return 0;
+
   nargs = sqlite3_bind_parameter_count(self->statement->vdbestatement);
   if (nargs == 0 && !self->bindings)
     return 0; /* common case, no bindings needed or supplied */
@@ -565,7 +572,7 @@ APSWCursor_dobindings(APSWCursor *self)
     {
       const char *key;
 
-      PYSQLITE_CUR_CALL(key = sqlite3_bind_parameter_name(self->statement->vdbestatement, arg));
+      key = sqlite3_bind_parameter_name(self->statement->vdbestatement, arg);
 
       if (!key)
       {
@@ -669,6 +676,10 @@ APSWCursor_do_exec_trace(APSWCursor *self, Py_ssize_t savedbindingsoffset)
     if (APSWCursor_is_dict_binding(self->bindings))
     {
       bindings = Py_NewRef(self->bindings);
+    }
+    else if (Py_Is(self->bindings, apsw_cursor_null_bindings))
+    {
+      bindings = Py_NewRef(Py_None);
     }
     else
     {
@@ -941,7 +952,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast
 
   if (self->bindings)
   {
-    if (APSWCursor_is_dict_binding(self->bindings))
+    if (APSWCursor_is_dict_binding(self->bindings) || Py_Is(self->bindings, apsw_cursor_null_bindings))
       Py_INCREF(self->bindings);
     else
     {
@@ -1480,6 +1491,65 @@ APSWCursor_get_connection_attr(APSWCursor *self)
   return Py_NewRef((PyObject *)self->connection);
 }
 
+/** .. attribute:: bindings_count
+  :type: int
+
+  How many bindings are in the statement.  The ``?`` form
+  results in the largest number.  For example you could do
+  ``SELECT ?123``` in which case the count will be ``123``.
+
+  -* sqlite3_bind_parameter_count
+*/
+static PyObject *
+APSWCursor_bindings_count(APSWCursor *self)
+{
+  CHECK_USE(NULL);
+  CHECK_CURSOR_CLOSED(NULL);
+
+  return PyLong_FromLong((self->statement) ? sqlite3_bind_parameter_count(self->statement->vdbestatement) : 0);
+}
+
+/** .. attribute:: bindings_names
+  :type: tuple[str | None]
+
+  A tuple of the name of each bind parameter, or None for no name.  The
+  leading marker (``?:@$``) is omitted
+
+  .. note::
+
+    SQLite parameter numbering starts at ``1``, while Python
+    indexing starts at ``0``.
+
+  -* sqlite3_bind_parameter_name
+*/
+static PyObject *
+APSWCursor_bindings_names(APSWCursor *self)
+{
+  CHECK_USE(NULL);
+  CHECK_CURSOR_CLOSED(NULL);
+
+  int count = (self->statement) ? sqlite3_bind_parameter_count(self->statement->vdbestatement) : 0;
+
+  PyObject *res = PyTuple_New(count);
+  if (!res)
+    goto error;
+
+  for (int i = 1; i <= count; i++)
+  {
+    const char *name = sqlite3_bind_parameter_name(self->statement->vdbestatement, i);
+
+    PyObject *val = name ? PyUnicode_FromString(name + 1) : Py_NewRef(Py_None);
+    if (!val)
+      goto error;
+    PyTuple_SET_ITEM(res, i - 1, val);
+  }
+
+  return res;
+error:
+  Py_XDECREF(res);
+  return NULL;
+}
+
 /** .. attribute:: is_explain
   :type: int
 
@@ -1725,6 +1795,8 @@ static PyGetSetDef APSWCursor_getset[] = {
     {"is_explain", (getter)APSWCursor_is_explain, NULL, Cursor_is_explain_DOC, NULL},
     {"is_readonly", (getter)APSWCursor_is_readonly, NULL, Cursor_is_readonly_DOC, NULL},
     {"has_vdbe", (getter)APSWCursor_has_vdbe, NULL, Cursor_has_vdbe_DOC, NULL},
+    {"bindings_count", (getter)APSWCursor_bindings_count, NULL, Cursor_bindings_count_DOC, NULL},
+    {"bindings_names", (getter)APSWCursor_bindings_names, NULL, Cursor_bindings_names_DOC, NULL},
     {"expanded_sql", (getter)APSWCursor_expanded_sql, NULL, Cursor_expanded_sql_DOC, NULL},
     {"exec_trace", (getter)APSWCursor_get_exec_trace_attr, (setter)APSWCursor_set_exec_trace_attr, Cursor_exec_trace_DOC},
     {Cursor_exec_trace_OLDNAME, (getter)APSWCursor_get_exec_trace_attr, (setter)APSWCursor_set_exec_trace_attr, Cursor_exec_trace_OLDDOC},

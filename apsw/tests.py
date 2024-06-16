@@ -529,6 +529,53 @@ class APSW(unittest.TestCase):
         self.assertEqual((True, b'SQLite format 3'), self.db.read("main", 0, 0, 15))
         self.assertTrue(any(b != 0 for b in self.db.read("main", 1, 0, 15)[1]))
 
+    def testConnectionVfsname(self):
+        "Verify vfsname function"
+        self.assertRaises(TypeError, self.db.vfsname, 1, 2)
+        self.assertRaises(TypeError, self.db.vfsname, b"main")
+        self.assertRaises(TypeError, self.db.vfsname)
+
+        # our db should be the default - also handle multipleciphers shim
+        self.assertTrue(
+            self.db.vfsname("main") == apsw.vfs_names()[0]
+            or self.db.vfsname("main").startswith(apsw.vfs_names()[0] + "/")
+        )
+        # temp always gives none
+        self.assertEqual(None, self.db.vfsname("temp"))
+
+        # as does nonsense
+        self.assertEqual(None, self.db.vfsname("nonsense"))
+        self.db.pragma("user_version", 3)
+        self.db.execute(f"attach '{self.db.filename}' as nonsense")
+        self.assertEqual(self.db.vfsname("main"), self.db.vfsname("nonsense"))
+
+        class CustomVFS(apsw.VFS):
+            def __init__(self):
+                super().__init__("custom", "")
+
+            def xOpen(self, name, flags):
+                return CorrectHorseBatteryStaple(name, flags)
+
+        class CorrectHorseBatteryStaple(apsw.VFSFile):
+            def __init__(self, name, flags):
+                super().__init__("", name, flags)
+
+        xx = CustomVFS()
+
+        con2 = apsw.Connection(self.db.filename, vfs="custom")
+
+        self.assertIn("CorrectHorseBatteryStaple", con2.vfsname("main"))
+
+        class CustomVFS2(apsw.VFS):
+            def __init__(self):
+                super().__init__("custom2", "")
+
+        xx2 = CustomVFS2()
+
+        con3 = apsw.Connection(self.db.filename, vfs="custom2")
+
+        self.assertTrue(con3.vfsname("main").endswith("/" + self.db.vfsname("main")))
+
     def testConnectionConfig(self):
         "Test Connection.config function"
         self.assertRaises(TypeError, self.db.config)
@@ -5042,12 +5089,36 @@ class APSW(unittest.TestCase):
         con = apsw.Connection(self.db.filename, vfs=tvfs.vfsname)
         # put enough stuff in temp table that it spills to disk
         con.pragma("cache_size", 10)
-        con.execute("create temp table testissue506(x UNIQUE,y UNIQUE, PRIMARY KEY(x,y))")
-        con.executemany("insert into testissue506 values(?,?)", (("a"*i, "b"*i) for i in range(1000)))
+        temp_store = con.pragma("temp_store")
+        try:
+            con.pragma("temp_store", 1)
+            con.execute("create temp table testissue506(x UNIQUE,y UNIQUE, PRIMARY KEY(x,y))")
+            con.executemany("insert into testissue506 values(?,?)", (("a"*i, "b"*i) for i in range(1000)))
+        finally:
+            con.pragma("temp_store", temp_store)
 
         # verify we saw the Nones
         self.assertTrue(vfs_saw_none)
         self.assertTrue(vfsfile_saw_none)
+
+    def testIssue526(self):
+        "Error in VFS xRandomness"
+        class RandomVFS(apsw.VFS):
+            def __init__(self):
+                apsw.VFS.__init__(self, "issue526", "", 1)
+
+        vfs = RandomVFS()
+
+        self.db.pragma("journal_mode", "WAL")
+        try:
+            with self.db:
+                RandomVFS.xRandomness = lambda *args: 1/0
+                # this resets SQLite randomness so xRandonness of default VFS will be called again
+                apsw.randomness(0)
+                self.db.pragma("user_version", 1)
+            raise Exception("Should not reach here")
+        except ZeroDivisionError:
+            pass
 
     def testCursorGet(self):
         "Cursor.get"
@@ -5083,6 +5154,22 @@ class APSW(unittest.TestCase):
         self.db.pragma("user_version", 7)
         self.assertEqual(self.db.pragma("user_version"), 7)
         self.assertRaises(apsw.SQLError, self.db.pragma, "user_version", "abc\0def")
+
+        # check not cached - #525
+        self.db.pragma("should_not_cache", "should_not_cache")
+        self.db.pragma("should_not_cache")
+        for entry in self.db.cache_stats(include_entries=True)["entries"]:
+            self.assertNotIn("should_not_cache", entry["query"])
+
+        # schema - #524
+        self.db.pragma("user_version", 7, schema="temp")
+        self.assertEqual(7, self.db.execute("pragma temp.user_version").get)
+        self.assertRaisesRegex(apsw.SQLError, ".*unknown database.*",  self.db.pragma, "quack", schema='"')
+        self.db.execute(f"""attach '{self.db.filename}' as '"' """)
+        self.db.pragma("quack", schema='"')
+        # check no syntax error because quoting is correct
+        self.db.pragma(r"""qu\'"`ack""", schema='"')
+
 
     def testSleep(self):
         "apsw.sleep"
@@ -5361,6 +5448,7 @@ class APSW(unittest.TestCase):
            # methods will only be called from that same thread so it
            # isn't a problem.
                         'skipcalls': re.compile("^sqlite3_(blob_bytes|column_count|bind_parameter_count|data_count|vfs_.+|changes64|total_changes64"
+                                                "|bind_parameter_name"
                                                 "|get_" "autocommit|last_insert_rowid|complete|interrupt|limit|malloc64|free|threadsafe|value_.+"
                                                 "|libversion|enable_" "shared_cache|initialize|shutdown|config|memory_.+|soft_heap_limit64|hard_heap_limit64"
                                                 "|randomness|db_readonly|db_filename|release_" "memory|status64|result_.+|user_data|mprintf|aggregate_context"
@@ -9639,7 +9727,11 @@ shell.write(shell.stdout, "hello world\\n")
         reset()
         cmd(".vfsname")
         s.cmdloop()
-        self.assertEqual(name, get(fh[1]).strip())
+        self.assertEqual(s.db.vfsname('main') or "", get(fh[1]).strip())
+        reset()
+        cmd(".vfsname temp")
+        s.cmdloop()
+        self.assertEqual(s.db.vfsname('temp') or "", get(fh[1]).strip())
         reset()
         cmd(".vfsinfo")
         s.cmdloop()
@@ -10304,6 +10396,11 @@ shell.write(shell.stdout, "hello world\\n")
         self.assertEqual("select 3, 'three'",
                          apsw.ext.query_info(self.db, "select ?, ?", (3, "three"), expanded_sql=True).expanded_sql)
 
+        # bindings count/names
+        qd = apsw.ext.query_info(self.db, "select ?2, :three, ?5, $six")
+        self.assertEqual(qd.bindings_count, 6)
+        self.assertEqual(qd.bindings_names, (None, "2", "three", None, "5", "six"))
+
         # explain / explain query_plan
         # from https://sqlite.org/lang_with.html
         query = """
@@ -10598,6 +10695,7 @@ def vfstestdb(filename=TESTFILEPREFIX + "testdb2", vfsname="apswtest", closedb=T
         db.cursor().execute("pragma journal_mode=" + mode)
     db.cursor().execute(
         "create table foo(x,y); insert into foo values(1,2); insert into foo values(date('now'), date('now'))")
+    db.vfsname("main")
     if testtimeout:
         # busy
         db2 = apsw.Connection(filename, vfs=vfsname)

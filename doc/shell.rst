@@ -835,7 +835,7 @@ vfslist
 vfsname
 -------
 
-*VFS name used to open current database*
+*VFS name for database, or attached names*
 
 .. _shell-cmd-width:
 .. index::

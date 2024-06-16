@@ -35,6 +35,7 @@ xSetSystemCall xSleep xSync xTruncate xUnlock xWrite
 names +="""
 close connection_hooks cursor error_offset excepthook execute
 executemany extendedresult get Mapping result add_note
+can_cache
 
 step final value inverse
 
