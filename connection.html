@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Connections to a database &mdash; APSW 3.46.0.0 documentation</title>
+  <title>Connections to a database &mdash; APSW 3.46.0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -17,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=7df7d932"></script>
+        <script src="_static/documentation_options.js?v=d98f5d2b"></script>
         <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -42,7 +42,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.46.0.0
+                3.46.0.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -131,6 +131,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.total_changes"><code class="docutils literal notranslate"><span class="pre">Connection.total_changes()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.trace_v2"><code class="docutils literal notranslate"><span class="pre">Connection.trace_v2()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.txn_state"><code class="docutils literal notranslate"><span class="pre">Connection.txn_state()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.vfsname"><code class="docutils literal notranslate"><span class="pre">Connection.vfsname()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.vtab_config"><code class="docutils literal notranslate"><span class="pre">Connection.vtab_config()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.vtab_on_conflict"><code class="docutils literal notranslate"><span class="pre">Connection.vtab_on_conflict()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.wal_autocheckpoint"><code class="docutils literal notranslate"><span class="pre">Connection.wal_autocheckpoint()</span></code></a></li>
@@ -845,6 +846,8 @@ removed.</p>
 <dd><p>Executes the statements using the supplied bindings.  Execution
 returns when the first row is available or all statements have
 completed.  (A cursor is automatically obtained).</p>
+<p>For pragmas you should use <a class="reference internal" href="#apsw.Connection.pragma" title="apsw.Connection.pragma"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pragma()</span></code></a> which handles quoting and
+caching correctly.</p>
 <p>See <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.execute()</span></code></a> for more details, and the <a class="reference internal" href="example.html#example-executing-sql"><span class="std std-ref">example</span></a>.</p>
 </dd></dl>
 
@@ -1067,14 +1070,19 @@ loaded.  The exception string includes more details.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.Connection.pragma">
-<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">pragma</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.SQLiteValue" title="apsw.SQLiteValue"><span class="pre">SQLiteValue</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#apsw.Connection.pragma" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">pragma</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.SQLiteValue" title="apsw.SQLiteValue"><span class="pre">SQLiteValue</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#apsw.Connection.pragma" title="Link to this definition"></a></dt>
 <dd><p>Issues the pragma (with the value if supplied) and returns the result with
 <a class="reference internal" href="cursor.html#apsw.Cursor.get" title="apsw.Cursor.get"><code class="xref py py-attr docutils literal notranslate"><span class="pre">the</span> <span class="pre">least</span> <span class="pre">amount</span> <span class="pre">of</span> <span class="pre">structure</span></code></a>.  For example
 <code class="code docutils literal notranslate"><span class="pre">pragma(&quot;user_version&quot;)</span></code> will return just the number, while
 <code class="code docutils literal notranslate"><span class="pre">pragma(&quot;journal_mode&quot;,</span> <span class="pre">&quot;WAL&quot;)</span></code> will return the journal mode
 now in effect.</p>
 <p>Pragmas do not support bindings, so this method is a convenient
-alternative to composing SQL text.</p>
+alternative to composing SQL text.  Pragmas are often executed
+while being prepared, instead of when run like regular SQL.  They
+may also contain encryption keys.  This method ensures they are
+not cached to avoid problems.</p>
+<p>Use the <cite>schema</cite> parameter to run the pragma against a different
+attached database (eg <code class="docutils literal notranslate"><span class="pre">temp</span></code>).</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="example.html#example-pragma"><span class="std std-ref">Example</span></a></p></li>
 </ul>
@@ -1452,6 +1460,19 @@ if provided.  <a class="reference internal" href="apsw.html#apsw.mapping_txn_sta
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/txn_state.html">sqlite3_txn_state</a></p>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.Connection.vfsname">
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">vfsname</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dbname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.vfsname" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<p>Issues the <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlvfsname">SQLITE_FCNTL_VFSNAME</a>
+file control against the named database (<cite>main</cite>, <cite>temp</cite>, attached
+name).</p>
+<p>This is useful to see which VFS is in use, and if inheritance is used
+then <code class="docutils literal notranslate"><span class="pre">/</span></code> will separate the names.  If you have a <a class="reference internal" href="vfs.html#apsw.VFSFile" title="apsw.VFSFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">VFSFile</span></code></a> in
+use then its fully qualified class name will also be included.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">SQLITE_FCNTL_VFSNAME</span></code> is not implemented, <code class="docutils literal notranslate"><span class="pre">dbname</span></code> is not a
+database name, or an error occurred then <code class="docutils literal notranslate"><span class="pre">None</span></code> is returned.</p>
 <dl class="py method" id="index-52">
 <dt class="sig sig-object py" id="apsw.Connection.vtab_config">
 <span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">vtab_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">op</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.vtab_config" title="Link to this definition"></a></dt>
@@ -1515,7 +1536,7 @@ number of frames checkpointed as described in the
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on May 23, 2024.
+      <span class="lastupdated">Last updated on Jun 16, 2024.
       </span></p>
   </div>
 

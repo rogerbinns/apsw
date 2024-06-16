@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>apsw.shell &mdash; APSW 3.46.0.0 documentation</title>
+  <title>apsw.shell &mdash; APSW 3.46.0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=72bcf2f2" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/apsw.css?v=3c7e2631" />
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=7df7d932"></script>
+        <script src="../../_static/documentation_options.js?v=d98f5d2b"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
               <img src="../../_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.46.0.0
+                3.46.0.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -975,13 +975,20 @@
             <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">bindings</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ExecTraceAbort</span><span class="p">:</span>
             <span class="k">pass</span>
+        <span class="k">except</span> <span class="n">apsw</span><span class="o">.</span><span class="n">BindingsError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Shell</span><span class="o">.</span><span class="n">_qd</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;You must used named bindings (eg $name) and .parameter set&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">explain</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Error</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">Shell</span><span class="o">.</span><span class="n">_qd</span><span class="p">(</span><span class="n">sql</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">saved</span><span class="p">)],</span> <span class="n">sql</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">saved</span><span class="p">):],</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="n">e</span><span class="o">.</span><span class="n">error_offset</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">explain</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">Shell</span><span class="o">.</span><span class="n">_qd</span><span class="p">(</span><span class="n">sql</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="n">saved</span><span class="p">)],</span> <span class="n">sql</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">saved</span><span class="p">)</span> <span class="p">:],</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="s2">&quot;error_offset&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">e</span><span class="p">,</span> <span class="n">explain</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">var</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="k">return</span> <span class="n">Shell</span><span class="o">.</span><span class="n">_qd</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span>
-                             <span class="sa">f</span><span class="s2">&quot;No binding present for &#39;</span><span class="si">{</span><span class="w"> </span><span class="n">var</span><span class="w"> </span><span class="si">}</span><span class="s2">&#39; - use .parameter set </span><span class="si">{</span><span class="w"> </span><span class="n">var</span><span class="w"> </span><span class="si">}</span><span class="s2"> VALUE to provide one&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
-                             <span class="n">e</span><span class="p">,</span> <span class="n">explain</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">Shell</span><span class="o">.</span><span class="n">_qd</span><span class="p">(</span>
+                <span class="kc">None</span><span class="p">,</span>
+                <span class="kc">None</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;No binding present for &#39;</span><span class="si">{</span><span class="w"> </span><span class="n">var</span><span class="w"> </span><span class="si">}</span><span class="s2">&#39; - use .parameter set </span><span class="si">{</span><span class="w"> </span><span class="n">var</span><span class="w"> </span><span class="si">}</span><span class="s2"> VALUE to provide one&quot;</span><span class="p">,</span>
+                <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">e</span><span class="p">,</span>
+                <span class="n">explain</span><span class="p">,</span>
+            <span class="p">)</span>
         <span class="k">return</span> <span class="n">Shell</span><span class="o">.</span><span class="n">_qd</span><span class="p">(</span><span class="n">sql</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">saved</span><span class="p">)],</span> <span class="n">sql</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">saved</span><span class="p">):],</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">explain</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Shell.process_sql">
@@ -2840,10 +2847,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="p">(</span><span class="n">maxw</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">k</span><span class="p">))</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="w"> </span><span class="n">v</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">command_vfsname</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
-        <span class="s2">&quot;vfsname: VFS name used to open current database&quot;</span>
-        <span class="k">if</span> <span class="n">cmd</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;No parameters taken&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">open_vfs</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="s2">&quot;vfsname: VFS name for database, or attached names&quot;</span>
+        <span class="n">dbnames</span> <span class="o">=</span> <span class="n">cmd</span> <span class="ow">or</span> <span class="p">[</span><span class="s2">&quot;main&quot;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">dbnames</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">vfsname</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_format_vfs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vfs</span><span class="p">):</span>
         <span class="n">w</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">vfs</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
@@ -3213,6 +3220,7 @@
         <span class="s2">&quot;optimize(&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
         <span class="s2">&quot;page_count;&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
         <span class="s2">&quot;page_size=&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;pragma_list;&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
         <span class="s2">&quot;query_only=&quot;</span><span class="p">:</span> <span class="n">_pragmas_bool</span><span class="p">,</span>
         <span class="s2">&quot;quick_check&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
         <span class="s2">&quot;read_uncommitted=&quot;</span><span class="p">:</span> <span class="n">_pragmas_bool</span><span class="p">,</span>
@@ -3700,7 +3708,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on May 23, 2024.
+      <span class="lastupdated">Last updated on Jun 16, 2024.
       </span></p>
   </div>
 

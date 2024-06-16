@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Virtual File System (VFS) &mdash; APSW 3.46.0.0 documentation</title>
+  <title>Virtual File System (VFS) &mdash; APSW 3.46.0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -17,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=7df7d932"></script>
+        <script src="_static/documentation_options.js?v=d98f5d2b"></script>
         <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -42,7 +42,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.46.0.0
+                3.46.0.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -599,20 +599,21 @@ error then 0 (the SQLite default) is returned.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VFSFile.xFileControl">
 <span class="sig-prename descclassname"><span class="pre">VFSFile.</span></span><span class="sig-name descname"><span class="pre">xFileControl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">op</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ptr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#apsw.VFSFile.xFileControl" title="Link to this definition"></a></dt>
-<dd><p>Receives <a class="reference external" href="https://sqlite.org/c3ref/file_control.html">file control</a> request typically
+<dd><blockquote>
+<div><p>Receives <a class="reference external" href="https://sqlite.org/c3ref/file_control.html">file control</a> request typically
 issued by <a class="reference internal" href="connection.html#apsw.Connection.file_control" title="apsw.Connection.file_control"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.file_control()</span></code></a>.  See
 <a class="reference internal" href="connection.html#apsw.Connection.file_control" title="apsw.Connection.file_control"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.file_control()</span></code></a> for an example of how to pass a
 Python object to this routine.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>op</strong> – A numeric code.  Codes below 100 are reserved for SQLite
-internal use.</p></li>
-<li><p><strong>ptr</strong> – An integer corresponding to a pointer at the C level.</p></li>
-</ul>
+<dt class="field-odd">param op<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A numeric code.  Codes below 100 are reserved for SQLite
+internal use.</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A boolean indicating if the op was understood</p>
+<dt class="field-even">param ptr<span class="colon">:</span></dt>
+<dd class="field-even"><p>An integer corresponding to a pointer at the C level.</p>
+</dd>
+<dt class="field-odd">returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A boolean indicating if the op was understood</p>
 </dd>
 </dl>
 <p>Ensure you pass any unrecognised codes through to your super class.
@@ -628,6 +629,14 @@ For example:</p>
    <span class="c1"># we understood the op</span>
    <span class="k">return</span> <span class="kc">True</span>
 </pre></div>
+</div>
+</div></blockquote>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlvfsname">SQLITE_FCNTL_VFSNAME</a>
+is automatically handled for you dealing with the necessary memory allocation
+and listing all the VFS if you are inheriting.  It includes the fully qualified
+class name for this object.</p>
 </div>
 </dd></dl>
 
@@ -782,7 +791,7 @@ present.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on May 23, 2024.
+      <span class="lastupdated">Last updated on Jun 16, 2024.
       </span></p>
   </div>
 

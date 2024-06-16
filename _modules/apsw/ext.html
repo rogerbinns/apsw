@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>apsw.ext &mdash; APSW 3.46.0.0 documentation</title>
+  <title>apsw.ext &mdash; APSW 3.46.0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=72bcf2f2" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/apsw.css?v=3c7e2631" />
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=7df7d932"></script>
+        <script src="../../_static/documentation_options.js?v=d98f5d2b"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
               <img src="../../_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.46.0.0
+                3.46.0.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -1560,23 +1560,33 @@
                <span class="n">explain_query_plan</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QueryDetails</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns information about the query, without running it.</span>
 
+<span class="sd">    `bindings` can be `None` if you want to find out what the bindings</span>
+<span class="sd">    for the query are.</span>
+
 <span class="sd">    Set the various parameters to `True` if you also want the</span>
 <span class="sd">    actions, expanded_sql, explain, query_plan etc filled in.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">res</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;query_plan&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;explain&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
 
+    <span class="c1"># what we use in queries</span>
+    <span class="n">query_bindings</span> <span class="o">=</span> <span class="n">bindings</span> <span class="k">if</span> <span class="n">bindings</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">apsw</span><span class="o">.</span><span class="n">_null_bindings</span>
+
     <span class="k">def</span> <span class="nf">tracer</span><span class="p">(</span><span class="n">cursor</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">,</span> <span class="n">first_query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">bindings</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
         <span class="k">nonlocal</span> <span class="n">res</span>
-        <span class="n">res</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
-            <span class="s2">&quot;first_query&quot;</span><span class="p">:</span> <span class="n">first_query</span><span class="p">,</span>
-            <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">query</span><span class="p">,</span>
-            <span class="s2">&quot;bindings&quot;</span><span class="p">:</span> <span class="n">bindings</span><span class="p">,</span>
-            <span class="s2">&quot;is_explain&quot;</span><span class="p">:</span> <span class="n">cursor</span><span class="o">.</span><span class="n">is_explain</span><span class="p">,</span>
-            <span class="s2">&quot;is_readonly&quot;</span><span class="p">:</span> <span class="n">cursor</span><span class="o">.</span><span class="n">is_readonly</span><span class="p">,</span>
-            <span class="s2">&quot;has_vdbe&quot;</span><span class="p">:</span> <span class="n">cursor</span><span class="o">.</span><span class="n">has_vdbe</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="n">cursor</span><span class="o">.</span><span class="n">get_description</span><span class="p">(),</span>
-            <span class="s2">&quot;description_full&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="p">})</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;first_query&quot;</span><span class="p">:</span> <span class="n">first_query</span><span class="p">,</span>
+                <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">query</span><span class="p">,</span>
+                <span class="s2">&quot;bindings&quot;</span><span class="p">:</span> <span class="n">bindings</span><span class="p">,</span>
+                <span class="s2">&quot;bindings_count&quot;</span><span class="p">:</span> <span class="n">cursor</span><span class="o">.</span><span class="n">bindings_count</span><span class="p">,</span>
+                <span class="s2">&quot;bindings_names&quot;</span><span class="p">:</span> <span class="n">cursor</span><span class="o">.</span><span class="n">bindings_names</span><span class="p">,</span>
+                <span class="s2">&quot;is_explain&quot;</span><span class="p">:</span> <span class="n">cursor</span><span class="o">.</span><span class="n">is_explain</span><span class="p">,</span>
+                <span class="s2">&quot;is_readonly&quot;</span><span class="p">:</span> <span class="n">cursor</span><span class="o">.</span><span class="n">is_readonly</span><span class="p">,</span>
+                <span class="s2">&quot;has_vdbe&quot;</span><span class="p">:</span> <span class="n">cursor</span><span class="o">.</span><span class="n">has_vdbe</span><span class="p">,</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="n">cursor</span><span class="o">.</span><span class="n">get_description</span><span class="p">(),</span>
+                <span class="s2">&quot;description_full&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="s2">&quot;description_full&quot;</span><span class="p">):</span>
             <span class="n">res</span><span class="p">[</span><span class="s2">&quot;description_full&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">description_full</span>
 
@@ -1647,7 +1657,12 @@
         <span class="n">orig_authorizer</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">authorizer</span>
         <span class="n">db</span><span class="o">.</span><span class="n">authorizer</span> <span class="o">=</span> <span class="n">auther</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">bindings</span><span class="p">,</span> <span class="n">can_cache</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">prepare_flags</span><span class="o">=</span><span class="n">prepare_flags</span><span class="p">)</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="n">query</span><span class="p">,</span>
+            <span class="n">query_bindings</span><span class="p">,</span>
+            <span class="n">can_cache</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">prepare_flags</span><span class="o">=</span><span class="n">prepare_flags</span><span class="p">,</span>
+        <span class="p">)</span>
     <span class="k">except</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ExecTraceAbort</span><span class="p">:</span>
         <span class="k">pass</span>
     <span class="k">finally</span><span class="p">:</span>
@@ -1659,7 +1674,7 @@
 
     <span class="k">if</span> <span class="n">explain</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">res</span><span class="p">[</span><span class="s2">&quot;is_explain&quot;</span><span class="p">]:</span>
         <span class="n">vdbe</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">VDBEInstruction</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s2">&quot;first_query&quot;</span><span class="p">],</span> <span class="n">bindings</span><span class="p">,</span> <span class="n">explain</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s2">&quot;first_query&quot;</span><span class="p">],</span> <span class="n">query_bindings</span><span class="p">,</span> <span class="n">explain</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
             <span class="n">vdbe</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                 <span class="n">VDBEInstruction</span><span class="p">(</span><span class="o">**</span><span class="nb">dict</span><span class="p">((</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">cur</span><span class="o">.</span><span class="n">get_description</span><span class="p">(),</span> <span class="n">row</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)))</span>
         <span class="n">res</span><span class="p">[</span><span class="s2">&quot;explain&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">vdbe</span>
@@ -1668,7 +1683,7 @@
         <span class="n">subn</span> <span class="o">=</span> <span class="s2">&quot;sub&quot;</span>
         <span class="n">byid</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;QUERY PLAN&quot;</span><span class="p">}}</span>
 
-        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s2">&quot;first_query&quot;</span><span class="p">],</span> <span class="n">bindings</span><span class="p">,</span> <span class="n">explain</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s2">&quot;first_query&quot;</span><span class="p">],</span> <span class="n">query_bindings</span><span class="p">,</span> <span class="n">explain</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
             <span class="n">node</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">cur</span><span class="o">.</span><span class="n">get_description</span><span class="p">(),</span> <span class="n">row</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;notused&quot;</span><span class="p">)</span>
             <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span>  <span class="c1"># catch changes in returned format</span>
             <span class="n">parent</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="n">byid</span><span class="p">[</span><span class="n">node</span><span class="p">[</span><span class="s2">&quot;parent&quot;</span><span class="p">]]</span>
@@ -1709,6 +1724,10 @@
     <span class="s2">&quot;:attr:`Cursor.is_readonly &lt;apsw.Cursor.is_readonly&gt;`&quot;</span>
     <span class="n">has_vdbe</span><span class="p">:</span> <span class="nb">bool</span>
     <span class="s2">&quot;:attr:`Cursor.has_vdbe &lt;apsw.Cursor.has_vdbe&gt;`&quot;</span>
+    <span class="n">bindings_count</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;How many :attr:`bindings &lt;apsw.Cursor.bindings_count&gt;` are in the query&quot;</span>
+    <span class="n">bindings_names</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="s2">&quot;The :attr:`names &lt;apsw.Cursor.bindings_names&gt;`.  The leading marker (``?:@$``) is omitted&quot;</span>
     <span class="n">description</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span>
     <span class="s2">&quot;:meth:`Cursor.get_description &lt;apsw.Cursor.get_description&gt;`&quot;</span>
     <span class="n">description_full</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
@@ -1904,7 +1923,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on May 23, 2024.
+      <span class="lastupdated">Last updated on Jun 16, 2024.
       </span></p>
   </div>
 

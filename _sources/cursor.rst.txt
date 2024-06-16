@@ -57,6 +57,32 @@ Cursor class
 
     Cursors are iterators
 
+.. index:: sqlite3_bind_parameter_count
+
+.. attribute:: Cursor.bindings_count
+  :type: int
+
+  How many bindings are in the statement.  The ``?`` form
+  results in the largest number.  For example you could do
+  ``SELECT ?123``` in which case the count will be ``123``.
+
+  Calls: `sqlite3_bind_parameter_count <https://sqlite.org/c3ref/bind_parameter_count.html>`__
+
+.. index:: sqlite3_bind_parameter_name
+
+.. attribute:: Cursor.bindings_names
+  :type: tuple[str | None]
+
+  A tuple of the name of each bind parameter, or None for no name.  The
+  leading marker (``?:@$``) is omitted
+
+  .. note::
+
+    SQLite parameter numbering starts at ``1``, while Python
+    indexing starts at ``0``.
+
+  Calls: `sqlite3_bind_parameter_name <https://sqlite.org/c3ref/bind_parameter_name.html>`__
+
 .. method:: Cursor.close(force: bool = False) -> None
 
   It is very unlikely you will need to call this method.

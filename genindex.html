@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; APSW 3.46.0.0 documentation</title>
+  <title>Index &mdash; APSW 3.46.0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -16,7 +16,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=7df7d932"></script>
+        <script src="_static/documentation_options.js?v=d98f5d2b"></script>
         <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.46.0.0
+                3.46.0.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -277,12 +277,24 @@
 </li>
       <li><a href="apsw.html#apsw.Bindings">Bindings (class in apsw)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="example.html#index-7">Bindings (dict) (example code)</a>
 </li>
       <li><a href="example.html#index-6">Bindings (sequence) (example code)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="cursor.html#apsw.Cursor.bindings_count">bindings_count (apsw.Cursor attribute)</a>
+
+      <ul>
+        <li><a href="ext.html#apsw.ext.QueryDetails.bindings_count">(apsw.ext.QueryDetails attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="cursor.html#apsw.Cursor.bindings_names">bindings_names (apsw.Cursor attribute)</a>
+
+      <ul>
+        <li><a href="ext.html#apsw.ext.QueryDetails.bindings_names">(apsw.ext.QueryDetails attribute)</a>
+</li>
+      </ul></li>
       <li><a href="exceptions.html#apsw.BindingsError">BindingsError</a>
 </li>
       <li><a href="blob.html#apsw.Blob">Blob (class in apsw)</a>
@@ -1596,17 +1608,21 @@
 </li>
       <li><a href="backup.html#index-4">sqlite3_backup_step</a>
 </li>
-      <li><a href="cursor.html#index-1">sqlite3_bind_blob64</a>
+      <li><a href="cursor.html#index-3">sqlite3_bind_blob64</a>
 </li>
-      <li><a href="cursor.html#index-1">sqlite3_bind_double</a>
+      <li><a href="cursor.html#index-3">sqlite3_bind_double</a>
 </li>
-      <li><a href="cursor.html#index-1">sqlite3_bind_int64</a>
+      <li><a href="cursor.html#index-3">sqlite3_bind_int64</a>
 </li>
-      <li><a href="cursor.html#index-1">sqlite3_bind_null</a>
+      <li><a href="cursor.html#index-3">sqlite3_bind_null</a>
 </li>
-      <li><a href="cursor.html#index-1">sqlite3_bind_text64</a>
+      <li><a href="cursor.html#index-0">sqlite3_bind_parameter_count</a>
 </li>
-      <li><a href="cursor.html#index-1">sqlite3_bind_zeroblob</a>
+      <li><a href="cursor.html#index-1">sqlite3_bind_parameter_name</a>
+</li>
+      <li><a href="cursor.html#index-3">sqlite3_bind_text64</a>
+</li>
+      <li><a href="cursor.html#index-3">sqlite3_bind_zeroblob</a>
 </li>
       <li><a href="blob.html#index-2">sqlite3_blob_bytes</a>
 </li>
@@ -1630,15 +1646,15 @@
 </li>
       <li><a href="connection.html#index-9">sqlite3_collation_needed</a>
 </li>
-      <li><a href="cursor.html#index-0">sqlite3_column_database_name</a>
+      <li><a href="cursor.html#index-2">sqlite3_column_database_name</a>
 </li>
-      <li><a href="cursor.html#index-0">sqlite3_column_decltype</a>, <a href="cursor.html#index-3">[1]</a>
+      <li><a href="cursor.html#index-2">sqlite3_column_decltype</a>, <a href="cursor.html#index-5">[1]</a>
 </li>
-      <li><a href="cursor.html#index-0">sqlite3_column_name</a>, <a href="cursor.html#index-3">[1]</a>
+      <li><a href="cursor.html#index-2">sqlite3_column_name</a>, <a href="cursor.html#index-5">[1]</a>
 </li>
-      <li><a href="cursor.html#index-0">sqlite3_column_origin_name</a>
+      <li><a href="cursor.html#index-2">sqlite3_column_origin_name</a>
 </li>
-      <li><a href="cursor.html#index-0">sqlite3_column_table_name</a>
+      <li><a href="cursor.html#index-2">sqlite3_column_table_name</a>
 </li>
       <li><a href="connection.html#index-39">sqlite3_commit_hook</a>
 </li>
@@ -1648,10 +1664,10 @@
 </li>
       <li><a href="apsw.html#index-2">sqlite3_config</a>
 </li>
-      <li><a href="connection.html#index-13">sqlite3_create_collation_v2</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="connection.html#index-13">sqlite3_create_collation_v2</a>
+</li>
       <li><a href="connection.html#index-12">sqlite3_create_function_v2</a>, <a href="connection.html#index-15">[1]</a>
 </li>
       <li><a href="connection.html#index-14">sqlite3_create_module_v2</a>
@@ -1678,7 +1694,7 @@
 </li>
       <li><a href="apsw.html#index-3">sqlite3_enable_shared_cache</a>
 </li>
-      <li><a href="cursor.html#index-2">sqlite3_expanded_sql</a>
+      <li><a href="cursor.html#index-4">sqlite3_expanded_sql</a>
 </li>
       <li><a href="connection.html#index-21">sqlite3_file_control</a>, <a href="connection.html#index-33">[1]</a>
 </li>
@@ -1720,7 +1736,7 @@
 </li>
       <li><a href="connection.html#apsw.Connection.sqlite3_pointer">sqlite3_pointer() (apsw.Connection method)</a>
 </li>
-      <li><a href="cursor.html#index-1">sqlite3_prepare_v3</a>
+      <li><a href="cursor.html#index-3">sqlite3_prepare_v3</a>
 </li>
       <li><a href="connection.html#index-42">sqlite3_progress_handler</a>
 </li>
@@ -1748,11 +1764,11 @@
 </li>
       <li><a href="apsw.html#index-18">sqlite3_status64</a>
 </li>
-      <li><a href="cursor.html#index-1">sqlite3_step</a>
+      <li><a href="cursor.html#index-3">sqlite3_step</a>
 </li>
-      <li><a href="cursor.html#index-4">sqlite3_stmt_isexplain</a>
+      <li><a href="cursor.html#index-6">sqlite3_stmt_isexplain</a>
 </li>
-      <li><a href="cursor.html#index-5">sqlite3_stmt_readonly</a>
+      <li><a href="cursor.html#index-7">sqlite3_stmt_readonly</a>
 </li>
       <li><a href="connection.html#index-50">sqlite3_stmt_status</a>
 </li>
@@ -1989,11 +2005,13 @@
 </li>
       <li><a href="shell.html#index-41">vfsinfo (Shell command)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="shell.html#index-42">vfslist (Shell command)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="shell.html#index-43">vfsname (Shell command)</a>
+</li>
+      <li><a href="connection.html#apsw.Connection.vfsname">vfsname() (apsw.Connection method)</a>
 </li>
       <li>
     vfsnames
@@ -2151,7 +2169,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on May 23, 2024.
+      <span class="lastupdated">Last updated on Jun 16, 2024.
       </span></p>
   </div>
 

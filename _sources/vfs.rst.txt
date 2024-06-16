@@ -393,6 +393,14 @@ VFSFile class
           # we understood the op
           return True
 
+  .. note::
+
+    `SQLITE_FCNTL_VFSNAME
+    <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlvfsname>`__
+    is automatically handled for you dealing with the necessary memory allocation
+    and listing all the VFS if you are inheriting.  It includes the fully qualified
+    class name for this object.
+
 .. method:: VFSFile.xFileSize() -> int
 
   Return the size of the file in bytes.
