@@ -10,8 +10,8 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
-next
-====
+3.46.0.1
+========
 
 :func:`apsw.ext.query_info` provides the count and names of bindings
 parameters.  (:issue:`528`)
