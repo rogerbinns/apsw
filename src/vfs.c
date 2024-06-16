@@ -2796,12 +2796,21 @@ apswvfsfile_xFileControl(sqlite3_file *file, int op, void *pArg)
 #if PY_VERSION_HEX >= 0x030b0000
     qualname = PyType_GetQualName(Py_TYPE(apswfile->file));
     if (qualname && PyUnicode_Check(qualname))
-      name = PyUnicode_AsUTF8(qualname);
+    {
+      const char *tmp_name = PyUnicode_AsUTF8(qualname);
+      if (tmp_name)
+        name = tmp_name;
+    }
 #endif
+
+    PyErr_Clear();
 
     PyObject *module = PyObject_GetAttrString((PyObject *)Py_TYPE(apswfile->file), "__module__");
     if (module && PyUnicode_Check(module))
+    {
       modname = PyUnicode_AsUTF8(module);
+      PyErr_Clear();
+    }
 
     /* the above calls could have exceptions but they aren't useful,
        so ignore */
@@ -2818,10 +2827,13 @@ apswvfsfile_xFileControl(sqlite3_file *file, int op, void *pArg)
     Py_XDECREF(module);
     Py_XDECREF(qualname);
 
-    if (*(char **)pArg)
-      sqlite3_free(*(char **)pArg);
+    if (new_val)
+    {
+      if (*(char **)pArg)
+        sqlite3_free(*(char **)pArg);
 
-    *(char **)pArg = new_val;
+      *(char **)pArg = new_val;
+    }
     result = SQLITE_OK;
     goto end;
   }
