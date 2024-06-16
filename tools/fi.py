@@ -710,6 +710,12 @@ class Tester:
             elif tested[-1][2] in {"MakeSqliteMsgFromPyException", "apsw_write_unraisable", "apswvfs_excepthook"}:
                 # already handling an exception
                 pass
+            elif tested[-1][2] == "apswvfsfile_xFileControl":
+                # we deliberately ignore errors getting VFSNAMES
+                if tested[-1][0] == "PyUnicode_AsUTF8" and tested[-1][4] in {"qualname", "module"}:
+                    ok = True
+                elif tested[-1][0] == "sqlite3_mprintf":
+                    ok = True
             else:
                 ok = False
         if not ok:
