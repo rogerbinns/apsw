@@ -2118,12 +2118,13 @@ Enter ".help" for instructions
     def command_mode(self, cmd):
         """mode MODE ?OPTIONS?: Sets output mode to one of"""
         if not cmd:
-            raise self.Error("Specify an output mode")
+            raise self.Error("Specify an output mode - use .help mode for detailed list")
         w = cmd[0]
         if w == "tabs":
             w = "list"
         if not hasattr(self, "output_" + w):
-            raise self.Error("Expected a valid output mode: " + ", ".join(self._output_modes))
+            raise self.Error("Expected a valid output mode: " + ", ".join(self._output_modes) +
+                             "\nUse .help mode for a detailed list")
 
         m = getattr(self, "output_" + w)
 
