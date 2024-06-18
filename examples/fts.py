@@ -174,10 +174,8 @@ connection.execute(
 
 tokenizer = connection.fts5_tokenizer("unicode61")
 
-test_text = (
-    """🤦🏼‍♂️ v1.2 Grey Ⅲ ColOUR! Don't jump -  🇫🇮你好世界 Straße
+test_text = """🤦🏼‍♂️ v1.2 Grey Ⅲ ColOUR! Don't jump -  🇫🇮你好世界 Straße
     हैलो वर्ल्ड Déjà vu Résumé SQLITE_ERROR"""
-)
 
 # Call the tokenizer to do a tokenization, supplying the reason
 pprint(
@@ -261,7 +259,7 @@ show_tokens(
         "strip",
         "1",
         # Use unicodewords to get the tokens to simplify
-        "unicodewords"
+        "unicodewords",
     ],
 )
 
@@ -281,13 +279,7 @@ def my_tokenizer(
     # Same as above, but no longer in our SQL
     return con.fts5_tokenizer(
         "simplify",
-        [
-            "casefold",
-            "1",
-            "strip",
-            "1",
-            "unicodewords"
-        ],
+        ["casefold", "1", "strip", "1", "unicodewords"],
     )
 
 
@@ -346,7 +338,7 @@ pprint(tok(test_text.encode("utf8"), apsw.FTS5_TOKENIZE_AUX))
 
 ### fts_apsw_regex: apsw.fts.RegexTokenizer
 # We can use :mod:`regular expressions <re>`.  Unlike the other
-# tokenizers the patttern is not passed as a SQL level parameter
+# tokenizers the pattern is not passed as a SQL level parameter
 # because there would be a confusing amount of backslashes, square
 # brackets and other quoting going on.
 
@@ -361,6 +353,28 @@ connection.register_fts5_tokenizer("my_regex", tokenizer)
 text = "text2abc 3.14 tamil ௦௧௨௩௪ bengali ০১২৩৪ arabic01234"
 
 show_tokens(text, "my_regex")
+
+### fts_apsw_regexpre: apsw.fts.RegexPreTokenizer
+# Use regular expressions to extract tokens of interest such as
+# identifiers,  and then use a different tokenizer on the text between
+# the regular expression matches.  Contrast to RegexTokenizer above
+# which ignores text not matching the pattern.
+
+# For this example our identifiers are two digits slash two letters
+text = "73/RS is bigger than  65/ST"
+
+# See what unicodewords does
+show_tokens(text, "unicodewords")
+
+# Setup RegexPreTokenizer
+pattern = r"[0-9][0-9]/[A-Z][A-Z]"
+tokenizer = functools.partial(
+    apsw.fts.RegexPreTokenizer, pattern=pattern, flags=re.ASCII
+)
+connection.register_fts5_tokenizer("myids", tokenizer)
+
+# extract myids, leaving the other text to unicodewords
+show_tokens(text, "myids", ["unicodewords"])
 
 ### fts5_end: Close the connection
 # When you close the connection, all the registered tokenizers, and

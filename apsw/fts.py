@@ -903,13 +903,15 @@ def RegexTokenizer(
 ) -> apsw.Tokenizer:
     r"""Finds tokens using a regular expression
 
-    :param pattern: The `regular expression <https://docs.python.org/3/library/re.html#regular-expression-syntax>`__.
-        For example :code:`\w+` is all alphanumeric and underscore characters.
-    :param flags: `Regular expression flags <https://docs.python.org/3/library/re.html#flags>`__.
-       Ignored if `pattern` is an already compiled pattern
+    :param pattern: The `regular expression
+        <https://docs.python.org/3/library/re.html#regular-expression-syntax>`__.
+        For example :code:`\w+` is all alphanumeric and underscore
+        characters.
+    :param flags: `Regular expression flags
+       <https://docs.python.org/3/library/re.html#flags>`__.  Ignored
+       if `pattern` is an already compiled pattern
 
     See the :ref:`example <example_fts_apsw_regex>`
-
     """
     if not isinstance(pattern, re.Pattern):
         pattern = re.compile(pattern, flags)
@@ -925,11 +927,57 @@ def RegexTokenizer(
     return tokenize
 
 
-# ::TODO:: RegexHybridTokenizer
-# Use regex to find things of interest
-# and different tokenizer for the gaps inbetween
-# useful for log files etc
-# use re.finditer in body and then the other tokenizer for spans inbetween
+@StringTokenizer
+def RegexPreTokenizer(
+    con: apsw.Connection, args: list[str], *, pattern: str | re.Pattern, flags: int = re.NOFLAG
+) -> apsw.Tokenizer:
+    r"""Combines regular expressions and another tokenizer
+
+    :func:`RegexTokenizer` only finds tokens matching a regular
+    expression, and ignores all other text.  This tokenizer calls
+    another tokenizer to handle the gaps between the patterns it
+    finds.  This is useful to extract identifiers and other known
+    patterns, while still doing word search on the rest of the text.
+
+    :param pattern: The `regular expression
+        <https://docs.python.org/3/library/re.html#regular-expression-syntax>`__.
+        For example :code:`\w+` is all alphanumeric and underscore
+        characters.
+    :param flags: `Regular expression flags
+       <https://docs.python.org/3/library/re.html#flags>`__.  Ignored
+       if `pattern` is an already compiled pattern
+
+    You must specify an additional tokenizer name and arguments.
+
+    See the :ref:`example <example_fts_apsw_regexpre>`
+    """
+    if not isinstance(pattern, re.Pattern):
+        pattern = re.compile(pattern, flags)
+
+    spec = {
+        "+": None,
+    }
+
+    options = parse_tokenizer_args(spec, con, args)
+
+    def process_other(substring: str, flags: int, offset: int):
+        for start, end, *tokens in string_tokenize(options["+"], substring, flags):
+            yield start + offset, end + offset, *tokens
+
+    def tokenize(text: str, flags: int):
+        last_other = 0
+
+        for match in re.finditer(pattern, text):
+            if match.start() > last_other:
+                yield from process_other(text[last_other : match.start()], flags, last_other)
+            yield *match.span(), match.group()
+            last_other = match.end()
+
+        if last_other < len(text):
+            yield from process_other(text[last_other:], flags, last_other)
+
+    return tokenize
+
 
 @dataclass
 class TokenizerArgument:

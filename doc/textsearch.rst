@@ -130,6 +130,8 @@ Tokenizers
 * colocated
 * generator vs wrapper
 * taking arguments
+* apsw tokenizers are 5 to 15 lines of code, so
+  easy to make your own
 
 .. _all_tokenizers:
 
@@ -159,40 +161,49 @@ All tokenizers
     - `SQLite builtin
       <https://www.sqlite.org/fts5.html#the_trigram_tokenizer>`__ that
       turns the entire text into trigrams (token generator).  Note it
-      does not turn tokens into trigrams, but the entire text including
-      all spaces and punctuation.
+      does not turn tokens into trigrams, but the entire text
+      including all spaces and punctuation.
   * - :func:`UnicodeWordsTokenizer`
     - Use Unicode algorithm for determining word segments.
   * - :func:`RegexTokenizer`
     - Use :mod:`regular expressions <re>` to generate tokens
+  * - :func:`RegexPreTokenizer`
+    - Use :mod:`regular expressions <re>` to find tokens (eg
+      identifiers) and use a different tokenizer for the text between
+      the regular expressions
   * - :func:`NGramTokenizer`
-    - Generates ngrams from the text, where you can specify the sizes and
-      unicode categories.  Useful for doing autocomplete as you type, and
-      substring searches.
+    - Generates ngrams from the text, where you can specify the sizes
+      and unicode categories.  Useful for doing autocomplete as you
+      type, and substring searches.
   * - :func:`HTMLTokenizer`
-    - Wrapper that converts HTML to plan text for a further tokenizer to generate
-      tokens
+    - Wrapper that converts HTML to plan text for a further tokenizer
+      to generate tokens
   * - :func:`JSONTokenizer`
-    - Wrapper that converts JSON to plain text for a further tokenizer to generate
-      tokens
+    - Wrapper that converts JSON to plain text for a further tokenizer
+      to generate tokens
   * - :func:`QueryTokensTokenizer`
-    - Wrapper that recognises :class:`apsw.fts5query.QueryTokens` allowing queries
-      using tokens directly.  This is useful if you want to add more popular similar
-      tokens to a query to broaden search results.
+    - Wrapper that recognises :class:`apsw.fts5query.QueryTokens`
+      allowing queries using tokens directly.  This is useful if you
+      want to add more popular similar tokens to a query to broaden
+      search results.
   * - :func:`SimplifyTokenizer`
-    - Wrapper that transforms the token stream by neutralizing case, and removing
-      diacritics and similar marks
+    - Wrapper that transforms the token stream by neutralizing case,
+      and removing diacritics and similar marks
   * - :func:`SynonymTokenizer`
-    - Wrapper that provides additional tokens for existing ones such as ``first``
-      for ``1st``
+    - Wrapper that provides additional tokens for existing ones such
+      as ``first`` for ``1st``
   * - :func:`StopWordsTokenizer`
-    - Wrapper that removes tokens from the token stream that occur too often to be useful, such as
-      ``the`` in English text
+    - Wrapper that removes tokens from the token stream that occur too
+      often to be useful, such as ``the`` in English text
   * - :func:`TransformTokenizer`
     - Wrapper to transform tokens, such as when stemming.
   * - :func:`StringTokenizer`
-    - A decorator for your own tokenizers so that they operate on strings, performing the
-      mapping to UTF8 byte offsets for you.
+    - A decorator for your own tokenizers so that they operate on
+      strings, with the decorator performing the mapping to UTF8 byte
+      offsets for you.
+
+      If you have a string and want to call another tokenizer, use
+      :func:`string_tokenize`.
 
 .. _byte_offsets:
 
@@ -213,6 +224,9 @@ bytes.
 If you do not care about the offsets, or they make no sense for your content,
 then you can return zero for the ``start`` and ``end``.  You can omit the
 offsets in your tokenizer and APSW automatically substitutes zero.
+
+Use :func:`StringTokenizer` as a decorator to operate on Python str
+indices instead, which handles the UTF8 offset mapping.
 
 .. _fts_recommendations:
 
