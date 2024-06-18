@@ -10,6 +10,15 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+next
+====
+
+The shell :ref:`dump <shell-cmd-dump>` command outputs the
+`application_id
+<https://www.sqlite.org/pragma.html#pragma_application_id>`__ in
+addition to the `user_version
+<https://www.sqlite.org/pragma.html#pragma_user_version>`__.
+
 3.46.0.1
 ========
 

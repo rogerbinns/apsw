@@ -1477,13 +1477,16 @@ Enter ".help" for instructions
                     self.write(self.stdout, "ANALYZE " + self._fmt_sql_identifier(n) + ";\n")
                 blank()
 
-            # user version pragma
-            uv = self.db.pragma("user_version")
-            if uv:
-                comment(
-                    "Your database may need this.  It is sometimes used to keep track of the schema version."
-                )
-                self.write(self.stdout, "pragma user_version=%d;" % (uv, ))
+            # header fields
+            count = 0
+            for name in ("user_version", "application_id"):
+                val = self.db.pragma(name)
+                if val:
+                    if count == 0:
+                        comment("Database header")
+                    self.write(self.stdout, f"pragma {name}={val};\n")
+                    count += 1
+            if count:
                 blank()
 
             # Save it all
