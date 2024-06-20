@@ -361,6 +361,17 @@ and create new queries using Python data structures.
     :members:
     :undoc-members:
 
+FTS5 auxiliary functions module
+===============================
+
+Provided by the :mod:`apsw.fts5aux` module.
+
+.. automodule:: apsw.fts5aux
+    :synopsis: Auxiliary functions for ranking and match extraction
+    :members:
+    :undoc-members:
+
+
 Unicode Text Handling
 =====================
 
