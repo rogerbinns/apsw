@@ -87,13 +87,23 @@ for query in queries:
     )
 
 ### fts5_auxfunc: Auxiliary functions
-# `Auxiliary functions <https://sqlite.org/fts5.html#_auxiliary_functions_>`__
-# are called for each row of matches, providing ranking for determining
-# better matches, or processing the row.  They are called with
-# :class:`FTS5ExtensionApi` as the first parameter.
+# `Auxiliary functions
+# <https://sqlite.org/fts5.html#_auxiliary_functions_>`__ are called
+# for each matching row.  They can be used to provide `ranking
+# (sorting)
+# <https://www.sqlite.org/fts5.html#sorting_by_auxiliary_function_results>`__`
+# for determining better matches, or returning information about the
+# match and row such as `highlights
+# <https://www.sqlite.org/fts5.html#the_highlight_function>`__, and
+# `snippets
+# <https://www.sqlite.org/fts5.html#the_snippet_function>`__.
+#
+# They are called with :class:`FTS5ExtensionApi` as the first
+# parameter, and then any function arguments, and return a value.
+# This example shows all the information available during a query.
 
 
-def match_info(api: apsw.FTS5ExtensionApi, *args):
+def match_info(api: apsw.FTS5ExtensionApi, *args: apsw.SQLiteValue) -> apsw.SQLiteValue:
     print("match_info called with", args)
     # Show what information is available from the api
     print(f"{api.rowid=}")
