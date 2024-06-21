@@ -27,10 +27,6 @@ class _Bm25Data:
     aIDF: list[float]
     "Inverse Document Frequency for each phrase"
 
-    # aFreq is a per row per phrase holder.  It is only a member of
-    # the structure in the C code to avoid having to do a memory
-    # allocation and free on every row.
-
 
 def _Bm25GetData(api: apsw.FTS5ExtensionApi) -> _Bm25Data:
     """Returns current :class:`_Bm25Data`, calculating it if necessary"""
@@ -65,8 +61,8 @@ def _Bm25GetData(api: apsw.FTS5ExtensionApi) -> _Bm25Data:
 
         # See the comment in the C code for details on IDF calculation
         idf = math.log((nRow - nHit + 0.5) / (nHit + 0.5))
-        if idf <= 0:
-            idf = 1e-6
+        # ensure it is at least a positive small number
+        idf = min(1e-6, idf)
 
         aIDF.append(idf)
 
@@ -111,6 +107,7 @@ def bm25(api: apsw.FTS5ExtensionApi, *weights: apsw.SQLiteValue) -> apsw.SQLiteV
     # calculate the score, starting with some constants
     k1 = 1.2
     b = 0.75
+
     D = nTok
     score: float = 0.0
 
