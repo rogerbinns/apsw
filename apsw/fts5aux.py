@@ -26,15 +26,23 @@ class _Bm25Data:
     "Average number of tokens in each row"
     aIDF: list[float]
     "Inverse Document Frequency for each phrase"
+    weights: list[float]
+    "Per column weight - how much each occurrence counts for, defaulting to 1"
 
 
-def _Bm25GetData(api: apsw.FTS5ExtensionApi) -> _Bm25Data:
+def _Bm25GetData(api: apsw.FTS5ExtensionApi, args: apsw.SQLiteValues) -> _Bm25Data:
     """Returns current :class:`_Bm25Data`, calculating it if necessary"""
     # Data is stored as aux_data which starts out as None, so return
     # the value if we previously calculated it for this query.
     data = api.aux_data
     if data is not None:
         return data
+
+    # weights must be at least column_count long defaulting to 1.0.  Extra
+    # values are ignored.
+    weights: list[float] = list(args)
+    if len(weights) < api.column_count:
+        weights.extend([1.0] * (api.column_count - len(weights)))
 
     # number of phrases and rows in table
     nPhrase = len(api.phrases)
@@ -47,7 +55,7 @@ def _Bm25GetData(api: apsw.FTS5ExtensionApi) -> _Bm25Data:
 
     # Calculate the inverse document frequency for each phrase
     aIDF: list[float] = []
-    for i in range(data.nPhrase):
+    for i in range(nPhrase):
         # We need to know how many times the phrase occurs.
         nHit = 0
 
@@ -62,17 +70,17 @@ def _Bm25GetData(api: apsw.FTS5ExtensionApi) -> _Bm25Data:
         # See the comment in the C code for details on IDF calculation
         idf = math.log((nRow - nHit + 0.5) / (nHit + 0.5))
         # ensure it is at least a positive small number
-        idf = min(1e-6, idf)
+        idf = max(1e-6, idf)
 
         aIDF.append(idf)
 
     # Save for next time
-    data = _Bm25Data(nPhrase, avgdl, aIDF)
+    data = _Bm25Data(nPhrase, avgdl, aIDF, weights)
     api.aux_data = data
     return data
 
 
-def bm25(api: apsw.FTS5ExtensionApi, *weights: apsw.SQLiteValue) -> apsw.SQLiteValue:
+def bm25(api: apsw.FTS5ExtensionApi, *args: apsw.SQLiteValue) -> apsw.SQLiteValue:
     """Perform the BM25 calculation for a matching row
 
     The builtin function is `described here
@@ -81,12 +89,7 @@ def bm25(api: apsw.FTS5ExtensionApi, *weights: apsw.SQLiteValue) -> apsw.SQLiteV
     for illustrative purposes.
     """
 
-    # weights must be at column_count long defaulting to 1.0.  Extra
-    # values are ignored.
-    if len(weights) < api.column_count:
-        weights: Sequence[float] = list(weights) + [1.0] * (api.column_count - len(weights))
-
-    data = _Bm25GetData(api)
+    data = _Bm25GetData(api, args)
 
     k1 = 1.2
     b = 0.75
@@ -97,8 +100,8 @@ def bm25(api: apsw.FTS5ExtensionApi, *weights: apsw.SQLiteValue) -> apsw.SQLiteV
 
     for i in range(data.nPhrase):
         freq: float = 0
-        for colnum, offsets in enumerate(api.phrase_locations(i)):
-            freq += weights[colnum] * len(offsets)
+        for column, offsets in enumerate(api.phrase_locations(i)):
+            freq += data.weights[column] * len(offsets)
         aFreq.append(freq)
 
     # total number of tokens in this row
@@ -114,4 +117,8 @@ def bm25(api: apsw.FTS5ExtensionApi, *weights: apsw.SQLiteValue) -> apsw.SQLiteV
     for i in range(data.nPhrase):
         score += data.aIDF[i] * ((aFreq[i] * (k1 + 1.0)) / (aFreq[i] + k1 * (1 - b + b * D / data.avgdl)))
 
-    return score
+    # bm25 scores have smaller numbers (closer to zero) meaning a
+    # better match.  SQLite ordering wants bigger numbers to mean a
+    # better match, so this addressed by returning the negated score.
+
+    return -score
