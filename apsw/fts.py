@@ -14,13 +14,13 @@ import html as html_module
 import html.parser as html_parser_module
 import importlib
 import itertools
+import json
 import pathlib
 import re
 import sys
 import threading
 import time
 import unicodedata
-
 from dataclasses import dataclass
 from types import ModuleType
 from typing import Any, Callable, Iterable, Literal, Sequence
@@ -28,8 +28,8 @@ from typing import Any, Callable, Iterable, Literal, Sequence
 import apsw
 import apsw._unicode
 import apsw.ext
-import apsw.unicode
 import apsw.fts5query
+import apsw.unicode
 
 unicode_categories = {
     "Lu": "Letter Uppercase",
@@ -1125,18 +1125,22 @@ class FTS5Table:
     """
 
     @dataclass
-    class _token_cache_class:
+    class _cache_class:
         """Data structure representing token cache
 
         :meta private:
         """
 
-        token_cache_cookie: int
+        cookie: int
         "change cookie at time this information was cached"
-        tokens: frozenset[str]
-        "the tokens"
-        tokens_by_pop: tuple[str]
-        "sorted most popular by document first"
+        tokens: dict[str, int] | None
+        "the tokens with how many rows they appear in"
+        row_count: int
+        "number of rows in the table"
+        token_count: int
+        "Total number of tokens across all indexed columns in all rows"
+        tokens_per_column: list[int]
+        "Count of tokens in each column, across all rows.  Unindexed columns have a value of zero"
 
     def __init__(self, db: apsw.Connection, name: str, schema: str = "main"):
         if not db.table_exists(schema, name):
@@ -1146,7 +1150,7 @@ class FTS5Table:
         self.schema = schema
         self.qname = quote_name(name)
         self.qschema = quote_name(schema)
-        self._token_cache: FTS5Table._token_cache_class | None = None
+        self._cache: FTS5Table._cache_class | None = None
 
         # Do some sanity checking
         assert self.columns == self.structure.columns
@@ -1168,17 +1172,16 @@ class FTS5Table:
     @functools.cached_property
     def columns(self) -> tuple[str, ...]:
         "All columns of this table, including unindexed ones.  Unindexed columns are ignored in queries."
-        return tuple(
-            name for (name,) in self.db.execute(f"select name from { self.qschema }.pragma_table_info(?)", (self.name,))
-        )
+
+        return tuple(row[1] for row in self.db.execute(f"pragma { self.qschema }.table_info({self.qname})"))
 
     @functools.cached_property
     def columns_indexed(self) -> tuple[str, ...]:
         "All columns of this table, excluding unindexed ones"
         return tuple(
-            name
-            for (name,) in self.db.execute(f"select name from { self.qschema }.pragma_table_info(?)", (self.name,))
-            if name not in self.structure.unindexed
+            row[1]
+            for row in self.db.execute(f"pragma { self.qschema }.table_info({self.qname})")
+            if row[1] not in self.structure.unindexed
         )
 
     def column_named(self, name: str) -> str | None:
@@ -1214,7 +1217,7 @@ class FTS5Table:
         You can't use bindings for table names in queries, so use this
         when constructing a query string::
 
-           search = apsw.fts.FTS5Table(con, 'my_index')
+           search = apsw.fts.FTS5Table(con, 'my_table')
 
            sql = f"""SELECT highlight(summary) from { search.quoted_table_name }
                         WHERE ...."""
@@ -1224,7 +1227,13 @@ class FTS5Table:
     def search(
         self, query: str, *, columns: list[str] | None, suffix: str = "order by rank"
     ) -> Iterator[MatchInfo, apsw.SQLiteValues]:
-        "Returns iterator providing MatchInfo and requested columns for each matched row"
+        """Returns iterator providing MatchInfo and requested columns for each matched row
+
+
+        .. seealso:
+
+            :meth:`more_like`
+        """
         # ::TODO:: it appears you need to do some processing of the results
         # to avoid duplicate rows or something
         # https://sqlite-utils.datasette.io/en/latest/python-api.html#building-sql-queries-with-table-search-sql
@@ -1236,14 +1245,23 @@ class FTS5Table:
         # table has rank columns
         pass
 
-    def search_fuzzy(self, query: str) -> apsw.Cursor:
-        """Returns a cursor making the query - rowid first
+    def more_like(
+        self, ids: Sequence[int], *, columns: list[str] | None, suffix: str = "order by rank"
+    ) -> Iterator[MatchInfo, apsw.SQLiteValues]:
+        """Like :meth:`search` providing results similar to the provided ids.
 
-        Not all the tokens have to be present in the matched docs"""
-        # :TODO: parse query and turn all implicit and explicit AND into
-        # OR.  Then add ranking function that takes into account missing
-        # tokens in scoring
-        return self.db.execute("select rowid, * from { self.qschema }.{ self.qname }(?) order by rank", (query,))
+        This is useful for providing infinite scrolling.  Do a search
+        remembering the ids.  When you get to the end, call this
+        method with those ids.
+
+        .. note::
+
+            This is a purely statistical operation.  Tokens that are relatively
+            rare, but found in these ids are the basis for the search.
+
+        """
+        # ::TODO:: implement
+        pass
 
     def insert(self, *args: apsw.SQLiteValue, **kwargs: apsw.SQLiteValue) -> None:
         """insert with columns by positional and/or named via kwargs
@@ -1377,7 +1395,7 @@ class FTS5Table:
     # define FTS5_DEFAULT_CRISISMERGE   16
     # define FTS5_DEFAULT_HASHSIZE    (1024*1024)
     # define FTS5_DEFAULT_DELETE_AUTOMERGE 10
-    # #define FTS5_DEFAULT_RANK     "bm25"
+    # define FTS5_DEFAULT_RANK     "bm25"
 
     def config_automerge(self, val: int | None = None) -> int:
         """Optionally sets, and returns `automerge <https://www.sqlite.org/fts5.html#the_automerge_configuration_option>`__"""
@@ -1463,89 +1481,101 @@ class FTS5Table:
             include_colocated=False,
         )
 
-    def _tokens_check(self):
-        "Check token information is up to date"
-        while self._token_cache is None or self._token_cache.token_cache_cookie != self.change_cookie:
+    @functools.cached_property
+    def _statistical_function_name(self):
+        # This is done as cached property to ensure the function is registered once
+        name = "_apsw_get_statistical_info"
+        self.db.register_fts5_function(name, _apsw_get_statistical_info)
+        return name
+
+    def _cache_check(self, tokens: bool = False):
+        "Ensure cached information is up to date"
+        while (
+            self._cache is None or self._cache.cookie != self.change_cookie or (tokens and self._cache.tokens is None)
+        ):
             with threading.Lock():
                 # check if another thread did the work
                 cookie = self.change_cookie
-                if self._token_cache is not None and self._token_cache.token_cache_cookie == cookie:
-                    break
-                n = self.fts5vocab_name("row")
-                # This query is very slow - eg 3 seconds on the enron corpus
-                # See https://sqlite.org/forum/forumpost/6e5c6bd84a
-                sql = f"select term from { n } order by doc desc"
-                # get will produce wrong shape for less than two tokens,  Not worrying.
-                tokens = self.db.execute(sql).get
-                self._token_cache = FTS5Table._token_cache_class(
-                    token_cache_cookie=cookie,
-                    tokens=frozenset(tokens),
-                    tokens_by_pop=tokens,
-                )
+                if self._cache is not None and self._cache.cookie == cookie:
+                    if tokens and self._cache.tokens is None:
+                        # we require tokens
+                        pass
+                    else:
+                        break
 
-    def _tokens(self) -> frozenset[str]:
-        "All the tokens as a set"
-        self._tokens_check()
-        return self._token_cache.tokens
+                if tokens:
+                    n = self.fts5vocab_name("row")
+                    all_tokens = dict(self.db.execute(f"select term, doc from { n }"))
+                else:
+                    all_tokens = None
 
-    tokens = property(_tokens)
+                vals = {"row_count": 0, "token_count": 0, "tokens_per_column": [0] * len(self.columns)}
 
-    def _tokens_pop(self) -> tuple[str]:
-        """All the tokens, most popular first
+                update = self.db.execute(
+                    f"select { self._statistical_function_name }({ self.qname }) from { self.quoted_table_name } limit 1"
+                ).get
+                if update is not None:
+                    vals.update(json.loads(update))
 
-        Popularity is counted by how many documents they occur in.
+                self._cache = FTS5Table._cache_class(cookie=cookie, tokens=all_tokens, **vals)
+
+        return self._cache
+
+    def _tokens(self) -> dict[str, int]:
+        """All the tokens as a dict key, with the value being how many rows they are in
+
+        This can take some time on a large corpus - eg 2 seconds on a
+        gigabyte dataset with half a million documents and 650,000
+        tokens.
         """
-        self._tokens_check()
-        return self._token_cache.tokens_by_pop
+        return self._cache_check(tokens=True).tokens
 
-    tokens_pop = property(_tokens_pop)
+    def _row_count(self) -> int:
+        "Number of rows in the table"
+        return self._cache_check().row_count
+
+    def _token_count(self) -> int:
+        "Total number of tokens across all indexed columns in all rows"
+        return self._cache_check().token_count
+
+    def _tokens_per_column(self) -> list[int]:
+        "Count of tokens in each column, across all rows.  Unindexed columns have a value of zero"
+        return self._cache_check().tokens_per_column
+
+    # turn the above into properties
+    tokens = property(_tokens)
+    row_count = property(_row_count)
+    token_count = property(_token_count)
+    tokens_per_column = property(_tokens_per_column)
 
     def is_token(self, token: str) -> bool:
-        """Returns True if it is a known token
+        """Returns True if it is a known token"""
+        return token in self.tokens
 
-        If testing lots of tokens, check against :attr:`tokens`
+    def query_suggest(self, query: str) -> list[str]:
+        """Suggests alternate queries
+
+        This is useful if a query returns no or few matches.  It is
+        purely a statistical operation based on the tokens in the
+        query, and there is no guarantee that there will be matches.
+        The returned order is most similar to the original query
+        first.
+
+        Includes:
+
+        * Replacing tokens with close matches
+        * Combining such as ``some thing`` to ``something``
+        * Splitting such as ``someday`` to ``some day``
+        * Enlarge such as ``ox`` to ``oxen``
+
+        .. seealso:
+
+            :meth:`text_for_token` to get original document text
+            corresponding to a token
+
         """
-        n = self.fts5vocab_name("row")
-        return bool(self.db.execute(f"select term from { n } where term = ?", (token,)).get)
-
-    def combined_tokens(self, tokens: list[str]) -> list[str]:
-        """
-        Figure out if token list can have adjacent tokens combined
-        into other tokens that exist
-
-        ``["play", "station"]`` ->  ``["playstation"]``
-
-        do all have to be present?
-
-        ``["one", "two", "three"]`` ->
-           ``["onetwothree", "twothree", "onetwo"]``
-
-        ?? Sort by token frequency
-        """
-        # ::TODO:: implement
-        return []
-
-    def split_tokens(self, token: str) -> list[list[str]]:
-        """
-        Figure out of token can be split into multiple tokens that exist
-
-        ``"playstation`` -> ``[["play", "station"]]``
-
-        ``"onetwothree"`` -> ``[ ["one", "twothree"], ["onetwo", "three"]]``
-
-        ?? Sort by token frequency
-        """
-        # ::TODO:: implement
-        return []
-
-    def superset_tokens(self, token: str) -> list[str]:
-        """Figure out longer tokens that include this one
-
-        ``one`` -> ``["gone", "phone", "opponent"]``
-
-        ?? Sort by token frequency
-        """
-        return [t for t in self.tokens if token in t]
+        # ::TODO:: implement incorporating methods above
+        pass
 
     def token_frequency(self, count: int = 10) -> list[tuple[str, int]]:
         """Most frequent tokens, useful for building a stop words list
@@ -1572,6 +1602,7 @@ class FTS5Table:
 
             :meth:`token_frequency`
         """
+        # ::TODO:: use tokens object
         n = self.fts5vocab_name("row")
         return self.db.execute(f"select term, doc from { n } order by doc desc limit ?", (count,)).get
 
@@ -1614,18 +1645,17 @@ class FTS5Table:
                 # We only check on hitting new doc + column
                 if time.monotonic() >= deadline:
                     break
-                doc = self.doc_by_id(docid, col).encode("utf8")
+                doc: bytes = self.row_by_id(docid, col).encode("utf8")
                 tokens = self.tokenize(doc, include_colocated=False)
                 last = docid, col
             c[doc[tokens[offset][0] : tokens[offset][1]]] += 1
 
         return tuple(text.decode("utf8") for (text, _) in c.most_common())
 
-    # ::TODO:: figure out terminology of docid versus rowid
-    def doc_by_id(
+    def row_by_id(
         self, id: apsw.SQLiteValue, column: str | Sequence[str]
     ) -> apsw.SQLiteValue | tuple[apsw.SQLiteValue]:
-        """Returns the contents of the document `id`
+        """Returns the contents of the row `id`
 
         You can request one column, or several columns.
 
@@ -1670,13 +1700,13 @@ class FTS5Table:
 
         deadline = time.monotonic() + time_limit
 
+        tokens = sorted(self.tokens.items(), key=lambda x: x[1])
+
         result: list[tuple[float, str]] = []
 
         sm = difflib.SequenceMatcher()
         sm.set_seq2(transform(token) if transform else token)
-        tokens_pop = self.tokens_pop
-        for i in range(len(tokens_pop)):
-            t = tokens_pop[i]
+        for i, (t, _) in enumerate(tokens):
             if t == token:
                 continue
             sm.set_seq1(transform(t) if transform else t)
@@ -1904,6 +1934,17 @@ end;
             assert unindexed == inst.structure.unindexed
 
         return inst
+
+
+def _apsw_get_statistical_info(api: apsw.FTS5ExtensionApi) -> str:
+    "Behind the scenes function used to return stats about the table"
+    return json.dumps(
+        {
+            "row_count": api.row_count,
+            "token_count": api.column_total_size(),
+            "tokens_per_column": [api.column_total_size(c) for c in range(api.column_count)],
+        }
+    )
 
 
 @dataclass(frozen=True)

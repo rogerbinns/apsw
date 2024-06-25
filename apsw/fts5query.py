@@ -122,9 +122,8 @@ class QueryTokens:
     :meth:`apsw.fts.FTS5Table.supports_query_tokens` will tell you if
     query tokens are handled correctly.
 
-    You can get the tokens from :meth:`apsw.fts.FTS5Table.tokens` and
-    :meth:`apsw.fts.FTS5Table.tokens_pop`, with helpers like
-    :meth:`apsw.fts.FTS5Table.closest_tokens`.
+    You can get the tokens from :meth:`apsw.fts.FTS5Table.tokens` with
+    helpers like :meth:`apsw.fts.FTS5Table.closest_tokens`.
 
     The marker format is text starting with
     :data:`QUERY_TOKENS_MARKER` with each token being separated by

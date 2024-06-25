@@ -425,7 +425,7 @@ ftsq TABLE query
 *Issues the query against the named FTS5 table*
 
 The top 20 results are shown.  Text after the table name is used exactly as the
-query - do not shell quote it.
+query - do not extra shell quote it.
 
 .. _shell-cmd-header:
 .. index::
