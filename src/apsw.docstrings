@@ -2849,6 +2849,11 @@
 } while(0)
 
 
+#define  FTS5ExtensionApi_phrase_count_DOC ":type: int\n" \
+"\n" \
+"Returns the `number of phrases in the query\n" \
+"<https://www.sqlite.org/fts5.html#xPhraseCount>`__\n" 
+
 #define  FTS5ExtensionApi_phrase_locations_DOC "phrase_locations($self,phrase)\n--\n\nFTS5ExtensionApi.phrase_locations(phrase: int) -> list[list[int]]\n\n" \
 "Returns `which columns and token offsets  the phrase number occurs in\n" \
 "<https://www.sqlite.org/fts5.html#xPhraseFirst>`__.\n" \

@@ -2251,6 +2251,10 @@ class FTS5ExtensionApi:
         """Returns `which columns the phrase number occurs in <https://www.sqlite.org/fts5.html#xPhraseFirstColumn>`__"""
         ...
 
+    phrase_count: int
+    """Returns the `number of phrases in the query
+    <https://www.sqlite.org/fts5.html#xPhraseCount>`__"""
+
     def phrase_locations(self, phrase: int) -> list[list[int]]:
         """Returns `which columns and token offsets  the phrase number occurs in
         <https://www.sqlite.org/fts5.html#xPhraseFirst>`__.

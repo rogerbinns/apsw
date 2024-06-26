@@ -635,6 +635,22 @@ fts5extensionapi_release(APSWFTS5ExtensionApi *extapi)
     }                                                                                                                  \
   } while (0)
 
+
+
+/** .. attribute:: phrase_count
+  :type: int
+
+  Returns the `number of phrases in the query
+  <https://www.sqlite.org/fts5.html#xPhraseCount>`__
+*/
+static PyObject *
+APSWFTS5ExtensionApi_xPhraseCount(APSWFTS5ExtensionApi *self)
+{
+  FTSEXT_CHECK(NULL);
+  return PyLong_FromLong(self->pApi->xPhraseCount(self->pFts));
+}
+
+
 /** .. attribute:: column_count
   :type: int
 
@@ -1233,6 +1249,7 @@ APSWFTS5ExtensionApi_xQueryPhrase(APSWFTS5ExtensionApi *self, PyObject *const *f
 }
 
 static PyGetSetDef APSWFTS5ExtensionApi_getset[] = {
+  { "phrase_count", (getter)APSWFTS5ExtensionApi_xPhraseCount, NULL, FTS5ExtensionApi_phrase_count_DOC },
   { "column_count", (getter)APSWFTS5ExtensionApi_xColumnCount, NULL, FTS5ExtensionApi_column_count_DOC },
   { "row_count", (getter)APSWFTS5ExtensionApi_xRowCount, NULL, FTS5ExtensionApi_row_count_DOC },
   { "aux_data", (getter)APSWFTS5ExtensionApi_xGetAuxdata, (setter)APSWFTS5ExtensionApi_xSetAuxdata,
