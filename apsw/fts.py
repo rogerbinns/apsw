@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import collections
+from contextvars import ContextVar
 import difflib
 import fnmatch
 import functools
@@ -23,7 +24,7 @@ import time
 import unicodedata
 from dataclasses import dataclass
 from types import ModuleType
-from typing import Any, Callable, Iterable, Literal, Sequence
+from typing import Any, Callable, Iterator, Iterable, Literal, Sequence
 
 import apsw
 import apsw._unicode
@@ -1092,29 +1093,19 @@ class MatchInfo:
     # basically all useful row specific fields from  FTS5ExtensionApi
     query_info: QueryInfo
     rowid: int
-    rank: apsw.SQLiteValue
-
+    rank: float
     # inst_count
     # phrase_columns
     # phrase token numbers
 
     # ::TODO:: use column names not numbers
 
-    columns: dict[str, apsw.SQLiteValue]
-    "Columns requested in :meth:`FTS5Table.search`"
 
 
 @dataclass
 class QueryInfo:
     # all global values (non-row specific) from  FTS5ExtensionApi
-    query: str
-    row_count: int
-    column_count: int
     phrases: list[str]
-    # ::TODO:: should be able to use text from query rather than tokenized
-    # column_size
-    # column_total_size
-    #
 
 
 class FTS5Table:
@@ -1154,6 +1145,12 @@ class FTS5Table:
 
         # Do some sanity checking
         assert self.columns == self.structure.columns
+
+        # functions
+        registered = set(db.execute("select name from pragma_function_list").get)
+        for func in (_apsw_get_statistical_info, _apsw_get_match_info):
+            if func.__name__ not in registered:
+                db.register_fts5_function(func.__name__, func)
 
     def _get_change_cookie(self) -> int:
         """An int that changes if the content of the table has changed.
@@ -1224,9 +1221,7 @@ class FTS5Table:
         '''
         return f"{self.qschema}.{self.qname}"
 
-    def search(
-        self, query: str, *, columns: list[str] | None, suffix: str = "order by rank"
-    ) -> Iterator[MatchInfo, apsw.SQLiteValues]:
+    def search(self, query: str) -> Iterator[MatchInfo]:
         """Returns iterator providing MatchInfo and requested columns for each matched row
 
 
@@ -1243,7 +1238,18 @@ class FTS5Table:
         # their columns too
         # ::TODO:: order by rank should be this tablename.rank in case external content
         # table has rank columns
-        pass
+        token = _search_context.set(None)
+        qi = None
+        try:
+            for row in self.db.execute(
+                f"select _apsw_get_match_info({self.qname}, rank) from { self.quoted_table_name} order by rank"
+            ):
+                if qi is None:
+                    qi = _search_context.get()
+                yield MatchInfo(query_info=qi, **json.loads(row[0]))
+
+        finally:
+            _search_context.reset(token)
 
     def more_like(
         self, ids: Sequence[int], *, columns: list[str] | None, suffix: str = "order by rank"
@@ -1481,13 +1487,6 @@ class FTS5Table:
             include_colocated=False,
         )
 
-    @functools.cached_property
-    def _statistical_function_name(self):
-        # This is done as cached property to ensure the function is registered once
-        name = "_apsw_get_statistical_info"
-        self.db.register_fts5_function(name, _apsw_get_statistical_info)
-        return name
-
     def _cache_check(self, tokens: bool = False):
         "Ensure cached information is up to date"
         while (
@@ -1512,7 +1511,7 @@ class FTS5Table:
                 vals = {"row_count": 0, "token_count": 0, "tokens_per_column": [0] * len(self.columns)}
 
                 update = self.db.execute(
-                    f"select { self._statistical_function_name }({ self.qname }) from { self.quoted_table_name } limit 1"
+                    f"select _apsw_get_statistical_info({ self.qname }) from { self.quoted_table_name } limit 1"
                 ).get
                 if update is not None:
                     vals.update(json.loads(update))
@@ -1804,6 +1803,8 @@ class FTS5Table:
         :meth:`command_rebuild` and :meth:`command_optimize` will be
         run to populate the contents.
         """
+        # ::TODO:: add support_query_tokens parameter
+
         qschema = quote_name(schema)
         qname = quote_name(name)
 
@@ -1943,6 +1944,24 @@ def _apsw_get_statistical_info(api: apsw.FTS5ExtensionApi) -> str:
             "row_count": api.row_count,
             "token_count": api.column_total_size(),
             "tokens_per_column": [api.column_total_size(c) for c in range(api.column_count)],
+        }
+    )
+
+
+_search_context: ContextVar[QueryInfo | None] = ContextVar("search_context")
+
+
+def _do_qoery_info(api):
+    pass
+
+
+def _apsw_get_match_info(api: apsw.FTS5ExtensionApi, rank) -> str:
+    if _search_context.get() is None:
+        _do_query_info(api)
+    return json.dumps(
+        {
+            "rank": rank,
+            "rowid": api.rowid,
         }
     )
 

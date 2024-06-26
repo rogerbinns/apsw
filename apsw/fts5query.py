@@ -104,7 +104,7 @@ QUERY_TOKENS_MARKER = "$!Tokens~"
 
 @dataclasses.dataclass
 class QueryTokens:
-    """`FTS5 `query strings <https://www.sqlite.org/fts5.html#fts5_strings>`__ are
+    """`FTS5 query strings <https://www.sqlite.org/fts5.html#fts5_strings>`__ are
     passed to `tokenizers
     <https://www.sqlite.org/fts5.html#tokenizers>`__ which extract
     tokens, such as by splitting on whitespace, lower casing text, and
@@ -122,7 +122,7 @@ class QueryTokens:
     :meth:`apsw.fts.FTS5Table.supports_query_tokens` will tell you if
     query tokens are handled correctly.
 
-    You can get the tokens from :meth:`apsw.fts.FTS5Table.tokens` with
+    You can get the tokens from :attr:`apsw.fts.FTS5Table.tokens` with
     helpers like :meth:`apsw.fts.FTS5Table.closest_tokens`.
 
     The marker format is text starting with

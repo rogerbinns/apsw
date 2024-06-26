@@ -12,8 +12,9 @@ import apsw
 
 
 # This section is a translation of the bm25 C code from the `SQLite
-# source https://sqlite.org/src/file?name=ext/fts5/fts5_aux.c
-# serving as an example of how to write a ranking function.
+# source https://sqlite.org/src/file?name=ext/fts5/fts5_aux.c serving
+# as an example of how to write a ranking function.  It uses the same
+# naming conventions and code structure.
 
 
 @dataclasses.dataclass
@@ -38,14 +39,15 @@ def _Bm25GetData(api: apsw.FTS5ExtensionApi, args: apsw.SQLiteValues) -> _Bm25Da
     if data is not None:
         return data
 
-    # weights must be at least column_count long defaulting to 1.0.  Extra
-    # values are ignored.
+    # weights must be at least column_count long defaulting to 1.0.
+    # Extra values are ignored.  This is done once here and remembered
+    # while the C code does it on every row.
     weights: list[float] = list(args)
     if len(weights) < api.column_count:
         weights.extend([1.0] * (api.column_count - len(weights)))
 
     # number of phrases and rows in table
-    nPhrase = len(api.phrases)
+    nPhrase = api.phrase_count
     nRow = api.row_count
 
     # average document length (in tokens) for the table is total
@@ -94,8 +96,9 @@ def bm25(api: apsw.FTS5ExtensionApi, *args: apsw.SQLiteValue) -> apsw.SQLiteValu
     k1 = 1.2
     b = 0.75
 
-    # This counts how often each phrase occurs in thr row.  For each hit we
-    # add the weight for the column, which defaults to 1.0
+    # This counts how often each phrase occurs in thr row.  For each
+    # hit we multiply by the weight for the column, which defaults to
+    # 1.0
     aFreq: list[float] = []
 
     for i in range(data.nPhrase):
@@ -122,3 +125,78 @@ def bm25(api: apsw.FTS5ExtensionApi, *args: apsw.SQLiteValue) -> apsw.SQLiteValu
     # better match, so this addressed by returning the negated score.
 
     return -score
+
+
+def inverse_document_frequency(api: apsw.FTS5ExtensionApi) -> list[float]:
+    """Measures how rare each search phrase is in the content
+
+    This helper method is intended for use in your own ranking
+    functions.  The result is the idf for each phrase.
+
+    A phrase occurring in almost every row will have a value close to
+    zero, while less frequent phrases have increasingly large positive
+    numbers.
+
+    The values will always be at least 0.000001 so you don't have to
+    worry about negative numbers or division by zero.
+    """
+
+    # This is ported from the bm25 code above, but using Pythonic
+    # naming
+    idfs: list[float] = []
+    row_count = api.row_count
+
+    for i in range(api.phrase_count):
+        # We need to know how many times the phrase occurs.
+        hits = 0
+
+        def count_callback(_api: apsw.FTS5ExtensionApi, _closure: None):
+            # Callback for each row matched.  The parameters are
+            # unused.
+            nonlocal hits
+            hits += 1
+
+        api.query_phrase(i, count_callback, None)
+
+        # See the comment in the C code for details on IDF calculation
+        idf = math.log((row_count - hits + 0.5) / (hits + 0.5))
+        # ensure it is at least a positive small number
+        idf = max(1e-6, idf)
+
+        idfs.append(idf)
+
+    return idfs
+
+
+def subsequence(api: apsw.FTS5ExtensionApi):
+    """Ranking function requiring tokens in order with any separation
+
+    You can search for A B C and rows where those tokens occur in that
+    order rank better.  They don't have to be next to each other - ie
+    other tokens can separate them.  The tokens must appear in the
+    same column.
+
+    If you use the :func:`~apsw.fts.NGramTokenizer` with ngrams of 1
+    then this will allow searching by letters.
+
+    You can change the ranking function on a `per query basis
+    <https://www.sqlite.org/fts5.html#sorting_by_auxiliary_function_results>`__
+    or via :meth:`~apsw.fts.FTS5Table.config_rank` for all queries.
+    """
+    # degrade to bm25 if not enough phrases
+    if api.phrase_count < 2:
+        return bm25(api)
+
+    # work out which columns apply
+    columns: set[int] = set.intersection(*(set(api.phrase_columns(i)) for i in range(api.phrase_count)))
+
+    if not columns:
+        return math.inf
+
+
+
+
+
+
+
+
