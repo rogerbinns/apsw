@@ -2247,6 +2247,12 @@ class FTS5ExtensionApi:
          None is returned if the call is not supported."""
         ...
 
+    def phrase_column_offsets(self, phrase: int, column: int) -> list[int]:
+        """Returns `token offsets the phrase number occurs in
+        <https://www.sqlite.org/fts5.html#xPhraseFirst>`__  in the specified
+        column."""
+        ...
+
     def phrase_columns(self, phrase: int) -> tuple[int]:
         """Returns `which columns the phrase number occurs in <https://www.sqlite.org/fts5.html#xPhraseFirstColumn>`__"""
         ...

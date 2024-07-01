@@ -2838,6 +2838,20 @@
 } while(0)
 
 
+#define  FTS5ExtensionApi_phrase_column_offsets_DOC "phrase_column_offsets($self,phrase,column)\n--\n\nFTS5ExtensionApi.phrase_column_offsets(phrase: int, column: int) -> list[int]\n\n" \
+"Returns `token offsets the phrase number occurs in\n" \
+"<https://www.sqlite.org/fts5.html#xPhraseFirst>`__  in the specified\n" \
+"column.\n" 
+
+#define FTS5ExtensionApi_phrase_column_offsets_KWNAMES "phrase", "column"
+#define FTS5ExtensionApi_phrase_column_offsets_USAGE "FTS5ExtensionApi.phrase_column_offsets(phrase: int, column: int) -> list[int]"
+
+#define FTS5ExtensionApi_phrase_column_offsets_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(phrase), int)); \
+  assert(__builtin_types_compatible_p(typeof(column), int)); \
+} while(0)
+
+
 #define  FTS5ExtensionApi_phrase_columns_DOC "phrase_columns($self,phrase)\n--\n\nFTS5ExtensionApi.phrase_columns(phrase: int) -> tuple[int]\n\n" \
 "Returns `which columns the phrase number occurs in <https://www.sqlite.org/fts5.html#xPhraseFirstColumn>`__\n" 
 

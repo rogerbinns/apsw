@@ -635,8 +635,6 @@ fts5extensionapi_release(APSWFTS5ExtensionApi *extapi)
     }                                                                                                                  \
   } while (0)
 
-
-
 /** .. attribute:: phrase_count
   :type: int
 
@@ -649,7 +647,6 @@ APSWFTS5ExtensionApi_xPhraseCount(APSWFTS5ExtensionApi *self)
   FTSEXT_CHECK(NULL);
   return PyLong_FromLong(self->pApi->xPhraseCount(self->pFts));
 }
-
 
 /** .. attribute:: column_count
   :type: int
@@ -1003,6 +1000,77 @@ error:
   return NULL;
 }
 
+/** .. method:: phrase_column_offsets(phrase: int, column: int) -> list[int]
+
+ Returns `token offsets the phrase number occurs in
+ <https://www.sqlite.org/fts5.html#xPhraseFirst>`__  in the specified
+ column.
+
+*/
+static PyObject *
+APSWFTS5ExtensionApi_phrase_column_offsets(APSWFTS5ExtensionApi *self, PyObject *const *fast_args,
+                                           Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+
+  FTSEXT_CHECK(NULL);
+
+  int phrase;
+  int column;
+
+  {
+    FTS5ExtensionApi_phrase_column_offsets_CHECK;
+    ARG_PROLOG(2, FTS5ExtensionApi_phrase_column_offsets_KWNAMES);
+    ARG_MANDATORY ARG_int(phrase);
+    ARG_MANDATORY ARG_int(column);
+    ARG_EPILOG(NULL, FTS5ExtensionApi_phrase_column_offsets_USAGE, );
+  }
+
+  Fts5PhraseIter iter;
+  int iCol = -1, iOff = -1;
+
+  /* the loop is done differently than the doc so we can check this return */
+  int rc = self->pApi->xPhraseFirst(self->pFts, phrase, &iter, &iCol, &iOff);
+  if (rc != SQLITE_OK)
+  {
+    SET_EXC(rc, NULL);
+    return NULL;
+  }
+
+  int ncols = self->pApi->xColumnCount(self->pFts);
+  if (column < 0 || column >= ncols)
+  {
+    SET_EXC(SQLITE_RANGE, NULL);
+    return NULL;
+  }
+
+  PyObject *retval = PyList_New(0);
+  if (!retval)
+    return NULL;
+
+  while (iCol >= 0)
+  {
+    if (iCol < column)
+      continue;
+    if (iCol > column)
+      break;
+    PyObject *tmp = PyLong_FromLong(iOff);
+    if (!tmp)
+      goto error;
+    if (0 != PyList_Append(retval, tmp))
+    {
+      Py_DECREF(tmp);
+      goto error;
+    }
+    Py_DECREF(tmp);
+    self->pApi->xPhraseNext(self->pFts, &iter, &iCol, &iOff);
+  }
+
+  return retval;
+error:
+  Py_DECREF(retval);
+  return NULL;
+}
+
 /** .. method:: column_total_size(col: int = -1) -> int
 
   Returns the `total number of tokens in the table
@@ -1273,6 +1341,8 @@ static PyMethodDef APSWFTS5ExtensionApi_methods[] = {
     FTS5ExtensionApi_phrase_columns_DOC },
   { "phrase_locations", (PyCFunction)APSWFTS5ExtensionApi_phrase_locations, METH_FASTCALL | METH_KEYWORDS,
     FTS5ExtensionApi_phrase_locations_DOC },
+  { "phrase_column_offsets", (PyCFunction)APSWFTS5ExtensionApi_phrase_column_offsets, METH_FASTCALL | METH_KEYWORDS,
+    FTS5ExtensionApi_phrase_column_offsets_DOC },
   { "query_phrase", (PyCFunction)APSWFTS5ExtensionApi_xQueryPhrase, METH_FASTCALL | METH_KEYWORDS,
     FTS5ExtensionApi_query_phrase_DOC },
   { "inst_tokens", (PyCFunction)APSWFTS5ExtensionApi_xInstToken, METH_FASTCALL | METH_KEYWORDS,
