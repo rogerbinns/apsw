@@ -82,8 +82,11 @@ def _Bm25GetData(api: apsw.FTS5ExtensionApi, args: apsw.SQLiteValues) -> _Bm25Da
     return data
 
 
-def bm25(api: apsw.FTS5ExtensionApi, *args: apsw.SQLiteValue) -> apsw.SQLiteValue:
+def bm25(api: apsw.FTS5ExtensionApi, *args: apsw.SQLiteValue) -> float:
     """Perform the BM25 calculation for a matching row
+
+    It accepts weights for each column (default 1) which means how much
+    a hit in that column counts for.
 
     The builtin function is `described here
     <https://www.sqlite.org/fts5.html#the_bm25_function>`__.
@@ -120,9 +123,9 @@ def bm25(api: apsw.FTS5ExtensionApi, *args: apsw.SQLiteValue) -> apsw.SQLiteValu
     for i in range(data.nPhrase):
         score += data.aIDF[i] * ((aFreq[i] * (k1 + 1.0)) / (aFreq[i] + k1 * (1 - b + b * D / data.avgdl)))
 
-    # bm25 scores have smaller numbers (closer to zero) meaning a
-    # better match.  SQLite ordering wants bigger numbers to mean a
-    # better match, so this addressed by returning the negated score.
+    # The score has a bigger (positive) number meaning a better match.
+    # FTS5 wants you to do 'ORDER BY rank' giving the better matches
+    # first.  Negating the score achieves that.
 
     return -score
 
@@ -168,35 +171,37 @@ def inverse_document_frequency(api: apsw.FTS5ExtensionApi) -> list[float]:
     return idfs
 
 
-def subsequence(api: apsw.FTS5ExtensionApi):
-    """Ranking function requiring tokens in order with any separation
+def subsequence(api: apsw.FTS5ExtensionApi, *args: apsw.SQLiteValue):
+    """Ranking function boosting tokens in order with any separation
 
     You can search for A B C and rows where those tokens occur in that
     order rank better.  They don't have to be next to each other - ie
     other tokens can separate them.  The tokens must appear in the
-    same column.
-
-    If you use the :func:`~apsw.fts.NGramTokenizer` with ngrams of 1
-    then this will allow searching by letters.
+    same column to get a score boost.
 
     You can change the ranking function on a `per query basis
     <https://www.sqlite.org/fts5.html#sorting_by_auxiliary_function_results>`__
     or via :meth:`~apsw.fts.FTS5Table.config_rank` for all queries.
     """
+    # start with the bm25 base score
+    score = bm25(api, *args)
+
     # degrade to bm25 if not enough phrases
     if api.phrase_count < 2:
-        return bm25(api)
+        return score
+
+    # negate the score so bigger number means better match again
+    score = -score
 
     # work out which columns apply
     columns: set[int] = set.intersection(*(set(api.phrase_columns(i)) for i in range(api.phrase_count)))
 
     if not columns:
-        return math.inf
+        # none of them, so degrade score
+        score = score / api.phrase_count
+        # negate again
+        return -score
 
+    boost = 0
 
-
-
-
-
-
-
+    for column in columns:
