@@ -361,12 +361,12 @@ and create new queries using Python data structures.
     :members:
     :undoc-members:
 
-FTS5 auxiliary functions module
-===============================
+FTS auxiliary functions module
+==============================
 
-Provided by the :mod:`apsw.fts5aux` module.
+Provided by the :mod:`apsw.ftsaux` module.
 
-.. automodule:: apsw.fts5aux
+.. automodule:: apsw.ftsaux
     :synopsis: Auxiliary functions for ranking and match extraction
     :members:
     :undoc-members:

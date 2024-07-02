@@ -1101,7 +1101,6 @@ class MatchInfo:
     # ::TODO:: use column names not numbers
 
 
-
 @dataclass
 class QueryInfo:
     # all global values (non-row specific) from  FTS5ExtensionApi
@@ -1134,6 +1133,9 @@ class FTS5Table:
         "Count of tokens in each column, across all rows.  Unindexed columns have a value of zero"
 
     def __init__(self, db: apsw.Connection, name: str, schema: str = "main"):
+        # ::TODO:: auto_register parameter that registers the tokenizer and rank
+        # methods if needed.  Probably default to True.  Add auto_register_map
+        # attr
         if not db.table_exists(schema, name):
             raise ValueError(f"Table { schema }.{ name } doesn't exist")
         self.db = db
@@ -1746,6 +1748,7 @@ class FTS5Table:
         schema: str = "main",
         unindexed: Iterable[str] | None = None,
         tokenize: Iterable[str] | None = None,
+        rank: str | None = None,
         prefix: Iterable[int] | int | None = None,
         content: str | None = None,
         contentless_delete: bool = False,
@@ -1773,6 +1776,9 @@ class FTS5Table:
             <https://sqlite.org/fts5.html#tokenizers>`__.  Supply as a
             sequence of strings which will be correctly quoted
             together.
+        :param tank: The `rank option
+            <https://www.sqlite.org/fts5.html#the_rank_configuration_option>`__
+            if not using the default.
         :param prefix: The `prefix option
             <https://sqlite.org/fts5.html#prefix_indexes>`__.  Supply
             an int, or a sequence of int.
@@ -1872,6 +1878,9 @@ class FTS5Table:
         with db:
             db.execute("".join(sql))
             inst = cls(db, name, schema)
+            if rank:
+                # ::TODO:: test table fails to be created if rank is invalid
+                inst.config_rank(rank)
             if content:
                 if generate_triggers:
                     qrowid = quote_name(content_rowid if content_rowid is not None else "_ROWID_")
