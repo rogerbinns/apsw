@@ -205,3 +205,4 @@ def subsequence(api: apsw.FTS5ExtensionApi, *args: apsw.SQLiteValue):
     boost = 0
 
     for column in columns:
+        pass
