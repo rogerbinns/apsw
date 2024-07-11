@@ -204,5 +204,52 @@ def subsequence(api: apsw.FTS5ExtensionApi, *args: apsw.SQLiteValue):
 
     boost = 0
 
+    # shortest span possible - number of tokens in each phrase except 1 for last
+    shortest_possible = sum(len(phrase for phrase in api.phrases[:-1])) + 1
+
     for column in columns:
+        boost += sum(shortest_possible / span for span in _column_spans(api, column)) * api.aux_data.weights[column]
+
+    if boost:
+        score += max(math.log(boost), 1e-5)
+
+    return -score
+
+
+def _column_spans(api: apsw.FTS5ExtensionApi, column: int):
+    # Helper for subsequence to get the spans (distance between first
+    # token of first phrase and first token of last phrase
+    offsets = [api.phrase_column_offsets(phrase, column) for phrase in range(api.phrase_count)]
+
+    pos = [-1] * api.phrase_count
+
+    try:
+        while True:
+            pos[0] += 1
+            offset = offsets[0][pos[0]]
+            for i in range(1, api.phrase_count):
+                while True:
+                    pos[i] += 1
+                    if offsets[i][pos[i]] > offset:
+                        offset = offsets[i][pos[i]]
+                        break
+            # advance phrase[0] because it could have occurred
+            # multiple times before phrase[1] - eg A A A B C D where
+            # pos[0] could be indexing the first A, but it needs to be
+            # the last A before B.  This doesn't matter for any of the
+            # other phrases because we only care about the distance
+            # from A to D.
+            offset = offsets[1][pos[1]]
+            while (
+                # Can we advance?
+                pos[0] + 1 < len(offsets[0])
+                # should we advance?
+                and offsets[0][pos[0] + 1] < offset
+            ):
+                pos[0] += 1
+            yield offsets[-1][pos[-1]] - offsets[0][pos[0]]
+
+    except IndexError:
+        # we don't bother constantly checking for overrun above as any
+        # overrun means there are no more matches
         pass
