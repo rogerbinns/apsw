@@ -1107,11 +1107,65 @@ class QueryInfo:
     phrases: list[str]
 
 
+map_tokenizers = {
+    "unicodewords": UnicodeWordsTokenizer,
+    "ngram": NGramTokenizer,
+    "html": HTMLTokenizer,
+    "json": JSONTokenizer,
+    "querytokens": QueryTokensTokenizer,
+    "simplify": SimplifyTokenizer,
+}
+"APSW provided tokenizers for use with :func:`register_tokenizers`"
+
+map_functions = {
+    "subsequence": "apsw.ftsaux.subsequence",
+}
+"APSW provided auxiliary functions for use with :func:`register_functions`"
+
+
+def register_tokenizers(db: apsw.Connection, map: dict[str, str | Callable]):
+    """Registers tokenizers named in map with the connection, if not already registered
+
+    The map contains the tokenizer name, and either the callable or a
+    string which will be automatically :func:`imported
+    <convert_string_to_python>`.
+
+    See :data:`map_tokenizers`
+    """
+    for name, tok in map.items():
+        try:
+            db.fts5_tokenizer(name)
+        except apsw.SQLError as exc:
+            if exc.args[0].startswith("No tokenizer named"):
+                db.register_fts5_tokenizer(name, convert_string_to_python(tok) if isinstance(tok, str) else tok)
+            else:
+                raise
+
+
+def register_functions(db: apsw.Connection, map: dict[str, str | Callable]):
+    """Registers auxiliary functions named in map with the connection, if not already registered
+
+    The map contains the function name, and either the callable or a
+    string which will be automatically :func:`imported
+    <convert_string_to_python>`.
+
+    See :data:`map_functions`
+    """
+    registered_functions = set(db.execute("select name from pragma_function_list").get)
+    for name, func in map.items():
+        if name not in registered_functions:
+            db.register_fts5_function(name, convert_string_to_python(func) if isinstance(func, str) else func)
+
+
 class FTS5Table:
-    """A helpful wrapper around a FTS5 table  !!! Current experiment & thinking
+    """A helpful wrapper around a FTS5 table
 
     The table must already exist.  You can use the class method
     :meth:`create` to create a new FTS5 table.
+
+    :param db: Connection to use
+    :param name: Table name
+    :param schema: Which attached database to use
     """
 
     @dataclass
@@ -1133,9 +1187,6 @@ class FTS5Table:
         "Count of tokens in each column, across all rows.  Unindexed columns have a value of zero"
 
     def __init__(self, db: apsw.Connection, name: str, schema: str = "main"):
-        # ::TODO:: auto_register parameter that registers the tokenizer and rank
-        # methods if needed.  Probably default to True.  Add auto_register_map
-        # attr
         if not db.table_exists(schema, name):
             raise ValueError(f"Table { schema }.{ name } doesn't exist")
         self.db = db
@@ -1148,11 +1199,10 @@ class FTS5Table:
         # Do some sanity checking
         assert self.columns == self.structure.columns
 
-        # functions
-        registered = set(db.execute("select name from pragma_function_list").get)
-        for func in (_apsw_get_statistical_info, _apsw_get_match_info):
-            if func.__name__ not in registered:
-                db.register_fts5_function(func.__name__, func)
+        # our helper functions
+        register_functions(
+            self.db, {func.__name__: func for func in (_apsw_get_statistical_info, _apsw_get_match_info)}
+        )
 
     def _get_change_cookie(self) -> int:
         """An int that changes if the content of the table has changed.
@@ -1748,11 +1798,12 @@ class FTS5Table:
         schema: str = "main",
         unindexed: Iterable[str] | None = None,
         tokenize: Iterable[str] | None = None,
+        support_query_tokens: bool = True,
         rank: str | None = None,
         prefix: Iterable[int] | int | None = None,
         content: str | None = None,
-        contentless_delete: bool = False,
         content_rowid: str | None = None,
+        contentless_delete: bool = False,
         columnsize: bool = True,
         detail: Literal["full"] | Literal["column"] | Literal["none"] = "full",
         tokendata: bool = False,
@@ -1772,11 +1823,16 @@ class FTS5Table:
            the `content` parameter
         :param schema: Which attached database the table is being
             created in
+        :param unindexed: Columns that will be `unindexed
+            <https://www.sqlite.org/fts5.html#the_unindexed_column_option>`__
         :param tokenize: The `tokenize option
             <https://sqlite.org/fts5.html#tokenizers>`__.  Supply as a
             sequence of strings which will be correctly quoted
             together.
-        :param tank: The `rank option
+        :param support_query_tokens: Configure the `tokenize` option
+            to allow :class:`queries using tokens
+            <apsw.fts5query.QueryTokens>`.
+        :param rank: The `rank option
             <https://www.sqlite.org/fts5.html#the_rank_configuration_option>`__
             if not using the default.
         :param prefix: The `prefix option
@@ -1787,11 +1843,9 @@ class FTS5Table:
             <https://sqlite.org/fts5.html#external_content_tables>`__
             if not using the default when using an external content
             table
-        :param generate_triggers: If using an external content table
-            and this is `True`, then `triggers are created
-            <https://sqlite.org/fts5.html#external_content_tables>`__
-            to keep this table updated with changes to the external
-            content table.
+        :param contentless_delete: Set the `contentless delete option
+            <https://sqlite.org/fts5.html#contentless_delete_tables>`__
+            for contentless tables.
         :param columnsize: Indicate if the `column size tracking
             <https://sqlite.org/fts5.html#the_columnsize_option>`__
             should be disabled to save space
@@ -1801,15 +1855,18 @@ class FTS5Table:
         :param tokendata: Indicate if `tokens have separate data after
             a null char
             <https://sqlite.org/fts5.html#the_tokendata_option>`__
-        :param contentless_delete: Set the `contentless delete option
-            <https://sqlite.org/fts5.html#contentless_delete_tables>`__
-            for contentless tables.
+        :param generate_triggers: If using an external content table
+            and this is `True`, then `triggers are created
+            <https://sqlite.org/fts5.html#external_content_tables>`__
+            to keep this table updated with changes to the external
+            content table.
+        :param drop_if_exists: The FTS5 table will be dropped if it
+            already exists, and then created.
 
         If you create an external content table, then
         :meth:`command_rebuild` and :meth:`command_optimize` will be
         run to populate the contents.
         """
-        # ::TODO:: add support_query_tokens parameter
 
         qschema = quote_name(schema)
         qname = quote_name(name)
@@ -1833,8 +1890,13 @@ class FTS5Table:
         else:
             unindexed: set[str] = set()
 
+        if support_query_tokens and tokenize is None:
+            tokenize = ["unicode61"]
+
         if tokenize is not None:
             tokenize = tuple(tokenize)
+            if support_query_tokens and tokenize[0] != "querytokens":
+                tokenize = ("querytokens",) + tokenize
             # using outside double quote and inside single quote out
             # of all the combinations available
             qtokenize = quote_name(" ".join(quote_name(arg, "'") for arg in tokenize), '"')
@@ -1877,7 +1939,7 @@ class FTS5Table:
 
         with db:
             db.execute("".join(sql))
-            inst = cls(db, name, schema)
+            inst = cls(db, name)
             if rank:
                 # ::TODO:: test table fails to be created if rank is invalid
                 inst.config_rank(rank)
