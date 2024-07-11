@@ -286,13 +286,14 @@ Normalize the Unicode
 Third party libraries
 =====================
 
-There are several libraries available on PyPI that can be ``pip`` installed.
+There are several libraries available on PyPI that can be ``pip``
+installed (pip name in parentheses)
 
 NLTK (nltk)
 -----------
 
 `Natural Language Toolkit <https://www.nltk.org/>`__ has several
-useful methods to help with search.  You can use it do do stemming in
+useful methods to help with search.  You can use it do stemming in
 many different languages, and `different algorithms
 <https://www.nltk.org/api/nltk.stem.html>`__::
 
