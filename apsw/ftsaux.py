@@ -179,6 +179,8 @@ def subsequence(api: apsw.FTS5ExtensionApi, *args: apsw.SQLiteValue):
     other tokens can separate them.  The tokens must appear in the
     same column to get a score boost.
 
+    It accepts parameters giving the weights for each column (default 1).
+
     You can change the ranking function on a `per query basis
     <https://www.sqlite.org/fts5.html#sorting_by_auxiliary_function_results>`__
     or via :meth:`~apsw.fts.FTS5Table.config_rank` for all queries.
@@ -193,26 +195,22 @@ def subsequence(api: apsw.FTS5ExtensionApi, *args: apsw.SQLiteValue):
     # negate the score so bigger number means better match again
     score = -score
 
+    boost = 0
+
     # work out which columns apply
     columns: set[int] = set.intersection(*(set(api.phrase_columns(i)) for i in range(api.phrase_count)))
 
-    if not columns:
-        # none of them, so degrade score
-        score = score / api.phrase_count
-        # negate again
-        return -score
+    if columns:
+        # shortest span possible - number of tokens in each phrase except 1 for last
+        shortest_possible = sum(len(phrase) for phrase in api.phrases[:-1]) + 1
 
-    boost = 0
+        for column in columns:
+            if api.aux_data.weights[column]:
+                boost += sum(shortest_possible / span for span in _column_spans(api, column)) * api.aux_data.weights[column]
 
-    # shortest span possible - number of tokens in each phrase except 1 for last
-    shortest_possible = sum(len(phrase for phrase in api.phrases[:-1])) + 1
+    score += boost
 
-    for column in columns:
-        boost += sum(shortest_possible / span for span in _column_spans(api, column)) * api.aux_data.weights[column]
-
-    if boost:
-        score += max(math.log(boost), 1e-5)
-
+    # negate again
     return -score
 
 
