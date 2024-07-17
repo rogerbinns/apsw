@@ -32,19 +32,14 @@ class _Bm25Data:
 
 
 def _Bm25GetData(api: apsw.FTS5ExtensionApi, args: apsw.SQLiteValues) -> _Bm25Data:
-    """Returns current :class:`_Bm25Data`, calculating it if necessary"""
-    # Data is stored as aux_data which starts out as None, so return
-    # the value if we previously calculated it for this query.
-    data = api.aux_data
-    if data is not None:
-        return data
+    """Calculates :class:`_Bm25Data`"""
 
     # weights must be at least column_count long defaulting to 1.0.
     # Extra values are ignored.  This is done once here and remembered
     # while the C code does it on every row.
     weights: list[float] = list(args)
     if len(weights) < api.column_count:
-        weights.extend([1.0] * (api.column_count - len(weights)))
+        weights.extend([1] * (api.column_count - len(weights)))
 
     # number of phrases and rows in table
     nPhrase = api.phrase_count
@@ -94,7 +89,9 @@ def bm25(api: apsw.FTS5ExtensionApi, *args: apsw.SQLiteValue) -> float:
     for illustrative purposes.
     """
 
-    data = _Bm25GetData(api, args)
+    # aux_data is used to store the overall statistical data,
+    # calculated once by _Bm25getData
+    data = api.aux_data or _Bm25GetData(api, args)
 
     k1 = 1.2
     b = 0.75
