@@ -1743,6 +1743,7 @@ Enter ".help" for instructions
                     w = len(self._help_info[command][0])
 
             for command in cmd:
+                command = command.lstrip(".")
                 if command == "headers": command = "header"
                 if command not in self._help_info:
                     raise self.Error("No such command \"%s\"" % (command, ))
