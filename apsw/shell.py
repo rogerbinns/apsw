@@ -25,6 +25,7 @@ from typing import Optional, TextIO
 
 import apsw
 import apsw.ext
+import apsw.fts
 
 
 class Shell:
@@ -156,6 +157,18 @@ class Shell:
         return getattr(self.stdin, "isatty", None) and self.stdin.isatty() and getattr(self.stdout, "isatty",
                                                                                        None) and self.stdout.isatty()
 
+    def _apply_fts(self):
+        # Applies the default apsw fts tokenizers and functions
+        # very useful opening databases from CLI shell
+        try:
+            fts.register_tokenizers(self._db, fts.map_tokenizers)
+            fts.register_functions(self._db, fts.map_functions)
+        except Exception:
+            # It could fail because FTS5 is not enabled or similar reasons
+            # so we silently ignore errors
+            pass
+
+
     def _ensure_db(self):
         "The database isn't opened until first use.  This function ensures it is now open."
         if not self._db:
@@ -164,6 +177,7 @@ class Shell:
             self._db = apsw.Connection(self.dbfilename,
                                        flags=apsw.SQLITE_OPEN_URI | apsw.SQLITE_OPEN_READWRITE
                                        | apsw.SQLITE_OPEN_CREATE)
+            self._apply_fts()
         return self._db
 
     def _set_db(self, newv):
@@ -2307,6 +2321,7 @@ Enter ".help" for instructions
                                    vfs=vfs,
                                    flags=apsw.SQLITE_OPEN_URI | apsw.SQLITE_OPEN_READWRITE
                                    | apsw.SQLITE_OPEN_CREATE)
+        self._apply_fts()
 
     def command_output(self, cmd):
         """output FILENAME: Send output to FILENAME (or stdout)
