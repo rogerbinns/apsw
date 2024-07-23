@@ -189,9 +189,6 @@ def subsequence(api: apsw.FTS5ExtensionApi, *args: apsw.SQLiteValue):
     if api.phrase_count < 2:
         return score
 
-    # negate the score so bigger number means better match again
-    score = -score
-
     boost = 0
 
     # work out which columns apply
@@ -203,12 +200,12 @@ def subsequence(api: apsw.FTS5ExtensionApi, *args: apsw.SQLiteValue):
 
         for column in columns:
             if api.aux_data.weights[column]:
-                boost += sum(shortest_possible / span for span in _column_spans(api, column)) * api.aux_data.weights[column]
+                boost += (
+                    sum(shortest_possible / span for span in _column_spans(api, column)) * api.aux_data.weights[column]
+                )
 
-    score += boost
-
-    # negate again
-    return -score
+    # make it more negative to come earlier
+    return score - boost
 
 
 def _column_spans(api: apsw.FTS5ExtensionApi, column: int):
@@ -216,32 +213,36 @@ def _column_spans(api: apsw.FTS5ExtensionApi, column: int):
     # token of first phrase and first token of last phrase
     offsets = [api.phrase_column_offsets(phrase, column) for phrase in range(api.phrase_count)]
 
-    pos = [-1] * api.phrase_count
+    # these start at -1 because the loop below always advances by one first
+    pos: list[int] = [-1] * api.phrase_count
 
     try:
         while True:
-            pos[0] += 1
-            offset = offsets[0][pos[0]]
-            for i in range(1, api.phrase_count):
+            # This finds a span starting with phrase[0] and all the
+            # intermediate phrases, finishing on finding the last
+            # phrase so we have a complete subsequence
+            offset = -1
+            for column in range(api.phrase_count):
                 while True:
-                    pos[i] += 1
-                    if offsets[i][pos[i]] > offset:
-                        offset = offsets[i][pos[i]]
+                    pos[column] += 1
+                    if offsets[column][pos[column]] > offset:
+                        offset = offsets[column][pos[column]]
                         break
-            # advance phrase[0] because it could have occurred
-            # multiple times before phrase[1] - eg A A A B C D where
-            # pos[0] could be indexing the first A, but it needs to be
-            # the last A before B.  This doesn't matter for any of the
-            # other phrases because we only care about the distance
-            # from A to D.
-            offset = offsets[1][pos[1]]
-            while (
-                # Can we advance?
-                pos[0] + 1 < len(offsets[0])
-                # should we advance?
-                and offsets[0][pos[0] + 1] < offset
-            ):
-                pos[0] += 1
+
+            # If looking for A B C D the above could have stopped on
+            # finding A B C A B C D.  We now start at the penultimate
+            # phrase C and advance it to just before D, going
+            # backwards through the phrases so we end up with the
+            # shortest possible A B C D.
+
+            offset = offsets[-1][pos[-1]]
+            for column in range(api.phrase_count - 2, -1, -1):
+                for test_pos in range(len(offsets[column]) - 1, pos[column], -1):
+                    if offsets[column][test_pos] < offset:
+                        pos[column] = test_pos
+                        break
+                offset = offsets[column][pos[column]]
+
             yield offsets[-1][pos[-1]] - offsets[0][pos[0]]
 
     except IndexError:
