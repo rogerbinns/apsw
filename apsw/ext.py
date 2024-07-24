@@ -644,11 +644,28 @@ class ShowResourceUsage:
         if self.db:
             self.db.trace_v2(apsw.SQLITE_TRACE_PROFILE, self._sqlite_trace)
             self.stmt_status = {}
+            self.db_status = self.db_status_get()
         return self
 
     def _sqlite_trace(self, v):
         for k, val in v["stmt_status"].items():
             self.stmt_status[k] = val + self.stmt_status.get(k, 0)
+
+    def db_status_get(self) -> dict[str, int]:
+        return {
+            "SQLITE_DBSTATUS_LOOKASIDE_USED": self.db.status(apsw.SQLITE_DBSTATUS_LOOKASIDE_USED)[0],
+            "SQLITE_DBSTATUS_LOOKASIDE_HIT": self.db.status(apsw.SQLITE_DBSTATUS_LOOKASIDE_HIT)[1],
+            "SQLITE_DBSTATUS_LOOKASIDE_MISS_SIZE": self.db.status(apsw.SQLITE_DBSTATUS_LOOKASIDE_MISS_SIZE)[1],
+            "SQLITE_DBSTATUS_LOOKASIDE_MISS_FULL": self.db.status(apsw.SQLITE_DBSTATUS_LOOKASIDE_MISS_FULL)[1],
+            "SQLITE_DBSTATUS_CACHE_USED": self.db.status(apsw.SQLITE_DBSTATUS_CACHE_USED)[0],
+            "SQLITE_DBSTATUS_SCHEMA_USED": self.db.status(apsw.SQLITE_DBSTATUS_SCHEMA_USED)[0],
+            "SQLITE_DBSTATUS_STMT_USED": self.db.status(apsw.SQLITE_DBSTATUS_STMT_USED)[0],
+            "SQLITE_DBSTATUS_CACHE_HIT": self.db.status(apsw.SQLITE_DBSTATUS_CACHE_HIT)[0],
+            "SQLITE_DBSTATUS_CACHE_MISS": self.db.status(apsw.SQLITE_DBSTATUS_CACHE_MISS)[0],
+            "SQLITE_DBSTATUS_CACHE_WRITE": self.db.status(apsw.SQLITE_DBSTATUS_CACHE_WRITE)[0],
+            "SQLITE_DBSTATUS_CACHE_SPILL": self.db.status(apsw.SQLITE_DBSTATUS_CACHE_SPILL)[0],
+            "SQLITE_DBSTATUS_DEFERRED_FKS": self.db.status(apsw.SQLITE_DBSTATUS_DEFERRED_FKS)[0],
+        }
 
     def __exit__(self, *_) -> None:
         if not self.file:
@@ -679,6 +696,10 @@ class ShowResourceUsage:
                 for k, v in self.stmt_status.items():
                     if v:
                         vals.append((self._descriptions[k], v))
+                for k, v in self.db_status_get().items():
+                    diff = v - self.db_status[k]
+                    if diff:
+                        vals.append((self._descriptions[k], diff))
 
         if not vals:
             # there was no meaningful change, so output nothing
@@ -703,6 +724,18 @@ class ShowResourceUsage:
         "SQLITE_STMTSTATUS_RUN": "SQLite statements completed",
         "SQLITE_STMTSTATUS_FILTER_HIT": "SQLite bloom filter hit",
         "SQLITE_STMTSTATUS_FILTER_MISS": "SQLite bloom filter miss",
+        "SQLITE_DBSTATUS_LOOKASIDE_USED": "SQLite lookaside slots used",
+        "SQLITE_DBSTATUS_LOOKASIDE_HIT": "SQLite allocations using lookaside",
+        "SQLITE_DBSTATUS_LOOKASIDE_MISS_SIZE": "SQLite allocations too big for lookaside",
+        "SQLITE_DBSTATUS_LOOKASIDE_MISS_FULL": "SQLite allocations lookaside full",
+        "SQLITE_DBSTATUS_CACHE_USED": "SQLite pager memory",
+        "SQLITE_DBSTATUS_SCHEMA_USED": "SQLite schema memory",
+        "SQLITE_DBSTATUS_STMT_USED": "SQLite statement memory",
+        "SQLITE_DBSTATUS_CACHE_HIT": "SQLite pager cache hit",
+        "SQLITE_DBSTATUS_CACHE_MISS": "SQLite pager cache miss",
+        "SQLITE_DBSTATUS_CACHE_WRITE": "SQLite pager cache writes",
+        "SQLITE_DBSTATUS_CACHE_SPILL": "SQLite pager cache writes during transaction",
+        "SQLITE_DBSTATUS_DEFERRED_FKS": "SQLite unresolved foreign keys",
         "ru_utime": "Time in user mode",
         "ru_stime": "Time in system mode",
         "ru_maxrss": "Maximum resident set size",
