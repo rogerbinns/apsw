@@ -160,13 +160,14 @@ class Shell:
     def _apply_fts(self):
         # Applies the default apsw fts tokenizers and functions
         # very useful opening databases from CLI shell
-        try:
-            fts.register_tokenizers(self._db, fts.map_tokenizers)
-            fts.register_functions(self._db, fts.map_functions)
-        except Exception:
-            # It could fail because FTS5 is not enabled or similar reasons
-            # so we silently ignore errors
-            pass
+        if self._db is not None:
+            try:
+                apsw.fts.register_tokenizers(self._db, apsw.fts.map_tokenizers)
+                apsw.fts.register_functions(self._db, apsw.fts.map_functions)
+            except Exception:
+                # It could fail because FTS5 is not enabled or similar reasons
+                # so we silently ignore errors
+                pass
 
 
     def _ensure_db(self):
