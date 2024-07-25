@@ -249,3 +249,27 @@ def _column_spans(api: apsw.FTS5ExtensionApi, column: int):
         # we don't bother constantly checking for overrun above as any
         # overrun means there are no more matches
         pass
+
+
+def position(api: apsw.FTS5ExtensionApi, *args: apsw.SQLiteValue):
+    """Ranking function boosting the earlier in a column phrases are located
+
+    It accepts parameters giving the weights for each column (default 1).
+
+    You can change the ranking function on a `per query basis
+    <https://www.sqlite.org/fts5.html#sorting_by_auxiliary_function_results>`__
+    or via :meth:`~apsw.fts.FTS5Table.config_rank` for all queries.
+    """
+    # start with the bm25 base score
+    score = bm25(api, *args)
+    weights = api.aux_data.weights
+    boost = 0
+
+    for phrase in range(api.phrase_count):
+        for column in range(api.column_count):
+            weight = weights[column]
+            for offset in api.phrase_column_offsets(phrase, column):
+                boost += weight / (1 + offset)
+
+    # make it more negative to come earlier
+    return score - boost
