@@ -188,6 +188,7 @@ class Shell:
             self._db = None
         self._db = db
         self.dbfilename = dbfilename
+        self._apply_fts()
 
     db = property(_ensure_db, _set_db, None, "The current :class:`~apsw.Connection`")
 
