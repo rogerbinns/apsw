@@ -1119,6 +1119,7 @@ map_tokenizers = {
 
 map_functions = {
     "subsequence": "apsw.ftsaux.subsequence",
+    "position": "apsw.ftsaux.position",
 }
 "APSW provided auxiliary functions for use with :func:`register_functions`"
 
