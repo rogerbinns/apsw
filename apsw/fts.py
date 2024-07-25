@@ -1154,7 +1154,12 @@ def register_functions(db: apsw.Connection, map: dict[str, str | Callable]):
     registered_functions = set(db.execute("select name from pragma_function_list").get)
     for name, func in map.items():
         if name not in registered_functions:
-            db.register_fts5_function(name, convert_string_to_python(func) if isinstance(func, str) else func)
+            # function names are case insensitive so check again
+            for reg_name in registered_functions:
+                if 0 == apsw.stricmp(reg_name, name):
+                    break
+            else:
+                db.register_fts5_function(name, convert_string_to_python(func) if isinstance(func, str) else func)
 
 
 class FTS5Table:
