@@ -1090,21 +1090,28 @@ def parse_tokenizer_args(
 
 @dataclass
 class MatchInfo:
-    # basically all useful row specific fields from  FTS5ExtensionApi
-    query_info: QueryInfo
-    rowid: int
-    rank: float
-    # inst_count
-    # phrase_columns
-    # phrase token numbers
+    "Information about a matched row"
 
-    # ::TODO:: use column names not numbers
+    query_info: QueryInfo
+    "Overall query information"
+    rowid: int
+    "Rowid"
+    column_size: tuple[int]
+    "Size of each column in tokens"
+    phrase_columns: tuple[tuple[int], ...]
+    "For each phrase a tuple of which columns it occurs in"
 
 
 @dataclass
 class QueryInfo:
-    # all global values (non-row specific) from  FTS5ExtensionApi
-    phrases: list[str]
+    "Information relevant to the query as a whole"
+
+    phrases: tuple[tuple[str | None, ...], ...]
+    "Phrases making up the query"
+    column_total_size: tuple[int, ...]
+    "The number of tokens in each column across all rows"
+    row_count: int
+    "How many rows are in the table"
 
 
 map_tokenizers = {
@@ -1243,7 +1250,7 @@ class FTS5Table:
         """Returns the column matching `name` or `None` if it doesn't exist
 
         SQLite is ascii case-insensitive, so this tells you the declared name,
-        or if it doesn't exist.
+        or None if it doesn't exist.
         """
         for column in self.columns:
             if apsw.stricmp(column, name) == 0:
@@ -1274,40 +1281,32 @@ class FTS5Table:
 
            search = apsw.fts.FTS5Table(con, 'my_table')
 
-           sql = f"""SELECT highlight(summary) from { search.quoted_table_name }
+           sql = f"""SELECT ... from { search.quoted_table_name }
                         WHERE ...."""
         '''
         return f"{self.qschema}.{self.qname}"
 
     def search(self, query: str) -> Iterator[MatchInfo]:
-        """Returns iterator providing MatchInfo and requested columns for each matched row
+        """Iterates matches, best match first
 
-
-        .. seealso:
-
-            :meth:`more_like`
+        This is useful for simple searches avoiding the need for
+        writing SQL and auxiliary functions.
         """
-        # ::TODO:: it appears you need to do some processing of the results
-        # to avoid duplicate rows or something
-        # https://sqlite-utils.datasette.io/en/latest/python-api.html#building-sql-queries-with-table-search-sql
-        # https://news.ycombinator.com/item?id=38664366
-        # ::TODO:: better name than suffix - could also include WHERE, GROUP BY etc
-        # ::TODO:: external content tables do join on content table so you can get
-        # their columns too
-        # ::TODO:: order by rank should be this tablename.rank in case external content
-        # table has rank columns
         token = _search_context.set(None)
         qi = None
         try:
             for row in self.db.execute(
-                f"select _apsw_get_match_info({self.qname}, rank) from { self.quoted_table_name} order by rank"
+                f"select _apsw_get_match_info({self.qname}) from { self.quoted_table_name}(?) order by rank", (query,)
             ):
                 if qi is None:
                     qi = _search_context.get()
+                    _search_context.reset(token)
+                    token = None
                 yield MatchInfo(query_info=qi, **json.loads(row[0]))
 
         finally:
-            _search_context.reset(token)
+            if token is not None:
+                _search_context.reset(token)
 
     def more_like(
         self, ids: Sequence[int], *, columns: list[str] | None, suffix: str = "order by rank"
@@ -2028,17 +2027,24 @@ def _apsw_get_statistical_info(api: apsw.FTS5ExtensionApi) -> str:
 _search_context: ContextVar[QueryInfo | None] = ContextVar("search_context")
 
 
-def _do_qoery_info(api):
-    pass
+def _do_query_info(api: apsw.FTS5ExtensionApi):
+    _search_context.set(
+        QueryInfo(
+            phrases=api.phrases,
+            column_total_size=tuple(api.column_total_size(c) for c in range(api.column_count)),
+            row_count=api.row_count,
+        )
+    )
 
 
-def _apsw_get_match_info(api: apsw.FTS5ExtensionApi, rank) -> str:
+def _apsw_get_match_info(api: apsw.FTS5ExtensionApi) -> str:
     if _search_context.get() is None:
         _do_query_info(api)
     return json.dumps(
         {
-            "rank": rank,
             "rowid": api.rowid,
+            "column_size": tuple(api.column_size(c) for c in range(api.column_count)),
+            "phrase_columns": tuple(api.phrase_columns(p) for p in range(api.phrase_count)),
         }
     )
 
