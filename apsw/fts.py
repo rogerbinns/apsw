@@ -1631,11 +1631,11 @@ class FTS5Table:
         return self._cache
 
     def _tokens(self) -> dict[str, int]:
-        """All the tokens as a dict key, with the value being how many rows they are in
+        """All the tokens as a dict with token as key, and the value being how many rows they are in
 
         This can take some time on a large corpus - eg 2 seconds on a
         gigabyte dataset with half a million documents and 650,000
-        tokens.
+        tokens.  It is cached until the next content change.
         """
         return self._cache_check(tokens=True).tokens
 
