@@ -1300,21 +1300,82 @@ class FTS5Table:
         finally:
             _search_context.reset(token)
 
-    def more_like(
-        self, ids: Sequence[int], *, columns: list[str] | None, suffix: str = "order by rank"
-    ) -> Iterator[MatchInfo, apsw.SQLiteValues]:
+    def key_terms(
+        self, rowid: int, *, limit: int = 10, columns: Sequence[str] | None = None, as_text: bool = False
+    ) -> Sequence[tuple[float, str], ...]:
+        """Terms that are in this row, but rare in other rows
+
+        This is purely statistical and has no understanding of the
+        terms.  Terms that occur only in this row, or only once in
+        this row are ignored.
+
+        :param limit: Maximum number to return
+        :param columns: If provided then only look at specified
+            columns, else all indexed columns.
+        :param as_text: If True then document text is returned, else
+            tokens.
+        :returns: A sequence of tuples where each is a tuple of term
+           and float value with bigger meaning more unique
+        """
+        # number of tokens in the row
+        row_token_count = 0
+        # how many times each token occurs in this row
+        token_counter: collections.Counter[int] = collections.Counter()
+
+        # locations and utf8 if returning original text
+        locations = collections.defaultdict(list) if as_text else None
+        utf8s: list[bytes] | None = [] if as_text else None
+
+        # iterate over each column
+        for content_num, text in enumerate(self.row_by_id(rowid, columns or self.columns_indexed)):
+            utf8 = text.encode("utf8")
+            if utf8s is not None:
+                utf8s.append(utf8)
+            for start, end, *tokens in self.tokenize(utf8):
+                for token in tokens:
+                    token_counter[token] += 1
+                    if locations is not None:
+                        locations[token].append((content_num, start, end))
+                # not included colacated in this count
+                row_token_count += 1
+
+        # calculate per token score
+        scores: list[tuple[float, str]] = []
+
+        for token, occurrences in token_counter.items():
+            ndocs = self.tokens[token]
+            if ndocs < 2 or occurrences < 2:
+                continue
+
+            score = (occurrences / row_token_count) / ndocs
+
+            scores.append((score, token))
+
+        scored = sorted(scores, reverse=True)[:limit]
+
+        if not as_text:
+            return scored
+
+        result: list[tuple[float, str]] = []
+
+        for score, token in scored:
+            text = collections.Counter()
+            for u, start, end in locations[token]:
+                text[utf8s[u][start:end]] += 1
+            result.append((score, text.most_common(1)[0][0].decode()))
+
+        return result
+
+    def more_like(self, ids: Sequence[int]) -> Iterator[MatchInfo, apsw.SQLiteValues]:
         """Like :meth:`search` providing results similar to the provided ids.
 
         This is useful for providing infinite scrolling.  Do a search
         remembering the ids.  When you get to the end, call this
         method with those ids.
 
-        .. note::
-
-            This is a purely statistical operation.  Tokens that are relatively
-            rare, but found in these ids are the basis for the search.
-
+        :meth:`key_terms` is used to get key terms from rows.
         """
+        assert self.supports_query_tokens
         # ::TODO:: implement
         pass
 
