@@ -1703,9 +1703,7 @@ class FTS5Table:
 
         return tuple(text.decode("utf8") for (text, _) in c.most_common())
 
-    def row_by_id(
-        self, id: apsw.SQLiteValue, column: str | Sequence[str]
-    ) -> apsw.SQLiteValue | tuple[apsw.SQLiteValue]:
+    def row_by_id(self, id: int, column: str | Sequence[str]) -> apsw.SQLiteValue | tuple[apsw.SQLiteValue]:
         """Returns the contents of the row `id`
 
         You can request one column, or several columns.
@@ -1716,10 +1714,10 @@ class FTS5Table:
             for (row,) in self.db.execute(
                 f"select { quote_name(column)} from { self.quoted_table_name } where rowid=?", (id,)
             ):
-                return row
+                return row[0]
         else:
             cols = ",".join(quote_name(c) for c in column)
-            for row in self.db.execute(f"select {cols} from { self.quoted_table_name } where rowud=?", (id,)):
+            for row in self.db.execute(f"select {cols} from { self.quoted_table_name } where rowid=?", (id,)):
                 return row
         raise KeyError(f"document {id=} not found")
 
