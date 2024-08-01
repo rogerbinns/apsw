@@ -1107,11 +1107,6 @@ class QueryInfo:
     "Information relevant to the query as a whole"
 
     phrases: tuple[tuple[str | None, ...], ...]
-    "Phrases making up the query"
-    column_total_size: tuple[int, ...]
-    "The number of tokens in each column across all rows"
-    row_count: int
-    "How many rows are in the table"
 
 
 map_tokenizers = {
@@ -2031,8 +2026,6 @@ def _do_query_info(api: apsw.FTS5ExtensionApi):
     _search_context.set(
         QueryInfo(
             phrases=api.phrases,
-            column_total_size=tuple(api.column_total_size(c) for c in range(api.column_count)),
-            row_count=api.row_count,
         )
     )
 
