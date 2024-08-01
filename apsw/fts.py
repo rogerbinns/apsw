@@ -1295,13 +1295,10 @@ class FTS5Table:
             ):
                 if qi is None:
                     qi = _search_context.get()
-                    _search_context.reset(token)
-                    token = None
                 yield MatchInfo(query_info=qi, **json.loads(row[0]))
 
         finally:
-            if token is not None:
-                _search_context.reset(token)
+            _search_context.reset(token)
 
     def more_like(
         self, ids: Sequence[int], *, columns: list[str] | None, suffix: str = "order by rank"
