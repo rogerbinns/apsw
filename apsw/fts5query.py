@@ -325,7 +325,7 @@ def from_dict(d: dict[str, Any] | Sequence[str] | str | QueryTokens) -> QUERY:
     if klass is OR or klass is AND:
         queries = d.get("queries")
 
-        if not isinstance(queries, Sequence) or len(queries) < 1:
+        if not isinstance(queries, (Sequence, set)) or len(queries) < 1:
             raise ValueError(f"{d!r} 'queries' must be sequence of at least 1 items")
 
         as_queries = [from_dict(query) for query in queries]
