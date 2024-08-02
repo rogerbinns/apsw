@@ -1287,12 +1287,17 @@ class FTS5Table:
         This is useful for simple searches avoiding the need for
         writing SQL and auxiliary functions.
         """
+
+        sql = f"select _apsw_get_match_info({self.qname}) from { self.quoted_table_name}(?) order by rank"
+        bindings = (query,)
+
+        yield from self._search_internal(sql, bindings)
+
+    def _search_internal(self, sql: str, bindings: apsw.SQLiteValues) -> Iterator[MatchInfo]:
         token = _search_context.set(None)
         qi = None
         try:
-            for row in self.db.execute(
-                f"select _apsw_get_match_info({self.qname}) from { self.quoted_table_name}(?) order by rank", (query,)
-            ):
+            for row in self.db.execute(sql, bindings):
                 if qi is None:
                     qi = _search_context.get()
                 yield MatchInfo(query_info=qi, **json.loads(row[0]))
@@ -1366,18 +1371,40 @@ class FTS5Table:
 
         return result
 
-    def more_like(self, ids: Sequence[int]) -> Iterator[MatchInfo, apsw.SQLiteValues]:
+    def more_like(self, ids: Sequence[int], *, term_limit: int = 10) -> Iterator[MatchInfo]:
         """Like :meth:`search` providing results similar to the provided ids.
 
         This is useful for providing infinite scrolling.  Do a search
         remembering the ids.  When you get to the end, call this
         method with those ids.
 
-        :meth:`key_terms` is used to get key terms from rows.
+        :meth:`key_terms` is used to get key terms from rows which is
+        purely statistical and has no understanding of the text.
+
+        :param ids: rowids to consider
+        :param term_limit: How many terms are extracted from each row which
         """
-        assert self.supports_query_tokens
-        # ::TODO:: implement
-        pass
+        all_terms: set[str] = set()
+
+        for rowid in ids:
+            for _, term in self.key_terms(rowid, limit=term_limit, as_text=not self.supports_query_tokens):
+                all_terms.add(term)
+
+        sql_query = (
+            f"select _apsw_get_match_info({self.qname}) from { self.quoted_table_name}(?) where rowid NOT IN ("
+            + ",".join("?" * len(ids))
+            + ") order by rank"
+        )
+
+        if self.supports_query_tokens:
+            phrases = [apsw.fts5query.QueryTokens([term]) for term in all_terms]
+        else:
+            phrases = all_terms
+
+        fts_parsed = apsw.fts5query.from_dict({"@": "OR", "queries": phrases})
+        fts_query = apsw.fts5query.to_query_string(fts_parsed)
+
+        yield from self._search_internal(sql_query, (fts_query,) + tuple(ids))
 
     def insert(self, *args: apsw.SQLiteValue, **kwargs: apsw.SQLiteValue) -> None:
         """insert with columns by positional and/or named via kwargs
