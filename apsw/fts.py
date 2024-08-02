@@ -1371,7 +1371,7 @@ class FTS5Table:
 
         return result
 
-    def more_like(self, ids: Sequence[int], *, term_limit: int = 10) -> Iterator[MatchInfo]:
+    def more_like(self, ids: Sequence[int], *, term_limit: int = 3) -> Iterator[MatchInfo]:
         """Like :meth:`search` providing results similar to the provided ids.
 
         This is useful for providing infinite scrolling.  Do a search
@@ -1382,7 +1382,9 @@ class FTS5Table:
         purely statistical and has no understanding of the text.
 
         :param ids: rowids to consider
-        :param term_limit: How many terms are extracted from each row which
+        :param term_limit: How many terms are extracted from each row.
+            Bigger values result in a broader search, while smaller
+            values narrow it.
         """
         all_terms: set[str] = set()
 
