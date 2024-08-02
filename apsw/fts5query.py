@@ -130,6 +130,9 @@ class QueryTokens:
     ``|``.  If there are colocated tokens then ``>`` is used to separate
     them.  For example ``$!Tokens~hello|1st>first|two``"""
 
+    # ::TODO:: fix doc above to be shorter and clearer showing
+    # how to wrap one token, multiple tokens, colocated etc
+
     tokens: list[str | Sequence[str]]
     "The tokens"
 
@@ -695,7 +698,7 @@ class _Parser:
         self.query = query
         self.tokens = self.get_tokens(query)
         self.token_pos = -1
-        if len(self.tokens) == 1: # only EOF present
+        if len(self.tokens) == 1:  # only EOF present
             # SQLite says "syntax error" as the message
             self.error("No query provided", None)
 
