@@ -1343,7 +1343,7 @@ class FTS5Table:
         scores: list[tuple[float, str]] = []
 
         for token, occurrences in token_counter.items():
-            ndocs = self.tokens[token]
+            ndocs = self.tokens.get(token, 0)
             if ndocs < 2 or occurrences < 2:
                 continue
 
