@@ -1690,14 +1690,29 @@ class FTS5Table:
         """Returns True if it is a known token"""
         return token in self.tokens
 
+    def query_spellfix(self, query:str, cutoff:float = 0.7, doc_limit: int=2) -> list[str]:
+        """Provides a list of alternate queries
+
+        This is a purely statistical operation.  The query is
+        :mod:`parsed <apsw.fts5query>` and each phrase is tokenized.
+        For each token, a more :meth:`popular token <closest_tokens>`
+        is found.  That token is then turned back into :meth:`text
+        <text_for_token>`, and the updated query generated.
+
+        The results are ordered by what is likely most effective
+        first.
+        """
+        pass
+
+
     def query_suggest(self, query: str) -> list[str]:
         """Suggests alternate queries
 
         This is useful if a query returns no or few matches.  It is
         purely a statistical operation based on the tokens in the
-        query, and there is no guarantee that there will be matches.
-        The returned order is most similar to the original query
-        first.
+        query, and there is no guarantee that there will be more
+        matches.  The returned order is most similar to the original
+        query first.
 
         Includes:
 
@@ -1730,7 +1745,7 @@ class FTS5Table:
         return self.db.execute(f"select term, cnt from { n } order by cnt desc limit ?", (count,)).get
 
     def token_doc_frequency(self, count: int = 10) -> list[tuple[str, int]]:
-        """Most frequent occuring tokens, useful for building a stop words list
+        """Most frequent occurring tokens, useful for building a stop words list
 
         This counts the total number of documents containing the
         token, so appearing 1,000 times in 1 document counts as 1,
