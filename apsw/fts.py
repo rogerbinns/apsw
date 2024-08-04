@@ -1744,51 +1744,49 @@ class FTS5Table:
         n = self.fts5vocab_name("row")
         return self.db.execute(f"select term, doc from { n } order by doc desc limit ?", (count,)).get
 
-    def text_for_token(self, token: str, time_limit: float = 5.0) -> tuple[str]:
+    def text_for_token(self, token: str, doc_limit: int) -> collections.Counter[str]:
         """Provides the original text used to produce `token`
 
-        This requires iterating through each document containing the
-        token, re-tokenizing the document to get the offsets, and
-        extracting the text between the offsets.  It could take a lot
-        of time for a token appearing in many large documents.  The most
-        recent documents (highest rowids) are examined first.
+        Different text produces the same token because case can be
+        ignored, accents and punctuation removed, synonyms and other
+        processing.
+
+        This method finds the text that produced a token, by
+        re-tokenizing the documents containing the token.  Highest
+        rowids are examined first so this biases towards the newest
+        content.
 
         :param token: The token to find
-        :param time_limit: Returns results so far after this many
-            seconds have elapsed
-        :returns: The text found that mapped to the provided token,
-            most popular first
+        :param doc_limit: Maximum number of documents to examine
+        :returns: :class:`collections.Counter` of the text.
+            :meth:`collections.Counter.most_common` is useful.
         """
-        c = collections.Counter()
+        text_for_token = collections.Counter()
 
-        deadline: float = time.monotonic() + time_limit
         last = None, None
         tokens: list[tuple[int, int, str]] = []
 
-        # The docid, colname come out in random orders.  This resulted
-        # in tokenizing the same documents over and over again.
-        # Ordering by docid and colnane solves that problem.  SQLite
-        # has to use a temp btree to do the ordering, but testing with
-        # the enron corpus had it taking 2 milliseconds. docid is
-        # descending here so newer documents are preferred since they
-        # are 'fresher'.
+        # The doc, col come out in random orders.  This resulted in
+        # tokenizing the same documents over and over again.  Ordering
+        # by doc then col solves that problem.  SQLite has to use a
+        # temp btree to do the ordering, but testing with the enron
+        # corpus had it taking 2 milliseconds.
 
         sql = f"""select doc, col, offset
                 from { self.fts5vocab_name('instance') }
                 where term=?
-                order by doc desc, col"""
+                order by doc desc, col
+                limit ?"""
 
-        for docid, col, offset in self.db.execute(sql, (token,)):
-            if (docid, col) != last:
+        for rowid, col, offset in self.db.execute(sql, (token, doc_limit)):
+            if (rowid, col) != last:
                 # We only check on hitting new doc + column
-                if time.monotonic() >= deadline:
-                    break
-                doc: bytes = self.row_by_id(docid, col).encode("utf8")
+                doc: bytes = self.row_by_id(rowid, col).encode()
                 tokens = self.tokenize(doc, include_colocated=False)
-                last = docid, col
-            c[doc[tokens[offset][0] : tokens[offset][1]]] += 1
+                last = rowid, col
+            text_for_token[doc[tokens[offset][0] : tokens[offset][1]]] += 1
 
-        return tuple(text.decode("utf8") for (text, _) in c.most_common())
+        return text_for_token
 
     def row_by_id(self, id: int, column: str | Sequence[str]) -> apsw.SQLiteValue | tuple[apsw.SQLiteValue]:
         """Returns the contents of the row `id`
