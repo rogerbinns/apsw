@@ -1308,7 +1308,7 @@ class FTS5Table:
     def key_terms(
         self, rowid: int, *, limit: int = 10, columns: Sequence[str] | None = None, as_text: bool = False
     ) -> Sequence[tuple[float, str], ...]:
-        """Terms that are in this row, but rare in other rows
+        """Finds terms that are in this row, but rare in other rows
 
         This is purely statistical and has no understanding of the
         terms.  Terms that occur only in this row, or only once in
@@ -1327,7 +1327,7 @@ class FTS5Table:
         # how many times each token occurs in this row
         token_counter: collections.Counter[int] = collections.Counter()
 
-        # locations and utf8 if returning original text
+        # locations in utf8 if returning original text
         locations = collections.defaultdict(list) if as_text else None
         utf8s: list[bytes] | None = [] if as_text else None
 
@@ -1347,8 +1347,10 @@ class FTS5Table:
         # calculate per token score
         scores: list[tuple[float, str]] = []
 
+        all_tokens = self.tokens
+
         for token, occurrences in token_counter.items():
-            ndocs = self.tokens.get(token, 0)
+            ndocs = all_tokens.get(token, 0)
             if ndocs < 2 or occurrences < 2:
                 continue
 
