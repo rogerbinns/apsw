@@ -1867,49 +1867,49 @@ class FTS5Table:
     def closest_tokens(
         self,
         token: str,
-        n: int = 25,
+        *,
+        n: int = 10,
         cutoff: float = 0.6,
-        time_limit: float = 5.0,
-        transform: Callable[[str], Any] | None = None,
+        min_docs: int = 1,
     ) -> list[tuple[float, str]]:
         """Returns closest known tokens to ``token`` with score for each
 
-        Uses :func:`difflib.get_close_matches` algorithm to find close
-        matches.
+        This uses :func:`difflib.get_close_matches` algorithm to find
+        close matches.  Note that it is a statistical operation, and
+        has no understanding of the tokens and their meaning.
 
-        Note that this is a statistical operation, and has no
-        understanding of the tokens and their meaning.  If the
-        ``transform`` parameter is `None` then the comparisons are
-        letter by letter, otherwise whatever ``transform`` returns is
-        used.  For the Roman alphabet (English and similar languages)
-        you may find :func:`shingle` useful.
+        :param token: Token to use
+        :param n: Maximum number of tokens to return
+        :param cutoff: Passed to :func:`difflib.get_close_matches`.
+          Larger values require closer matches and decrease
+          computation time.
+        :param min_docs: Only test against other tokens that appear in
+          at least this many documents.  Experience is that about a
+          third of tokens appear only in one row.  Larger values
+          significantly decrease computation time, but reduce the
+          candidates.
 
-        Tokens are examined most popular first.  If the `time_limit`
-        is hit, then the results so far are returned.
         """
-        assert n > 0
-        assert 0.0 <= cutoff <= 1.0
-
-        deadline = time.monotonic() + time_limit
-
-        tokens = sorted(self.tokens.items(), key=lambda x: x[1])
 
         result: list[tuple[float, str]] = []
 
+        # get_close_matches is inlined here to deal with our data
+        # shape.  We also keep track of the current best matches
+        # dynamically increasing the cutoff value to decrease the
+        # total amount of work.
+
         sm = difflib.SequenceMatcher()
-        sm.set_seq2(transform(token) if transform else token)
-        for i, (t, _) in enumerate(tokens):
-            if t == token:
+        sm.set_seq2(token)
+        for t in self.tokens.items():
+            if t[1] < min_docs or t[0] == token:
                 continue
-            sm.set_seq1(transform(t) if transform else t)
+            sm.set_seq1(t[0])
             if sm.real_quick_ratio() >= cutoff and sm.quick_ratio() >= cutoff and (ratio := sm.ratio()) >= cutoff:
-                result.append((ratio, t))
+                result.append((ratio, t[0]))
                 if len(result) > n:
                     result.sort(reverse=True)
                     result.pop()
                     cutoff = result[-1][0]
-            if i % 1000 == 0 and time.monotonic() >= deadline:
-                break
         result.sort(reverse=True)
         return result
 
