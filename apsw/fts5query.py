@@ -87,6 +87,7 @@ Other helpful functionality includes:
   an existing :class:`QUERY` but applying the intermediate column filters.
 * :func:`applicable_columns` to work out which columns apply to part of a
   :class:`QUERY`
+* :func:`walk` to traverse a parsed query
 """
 
 from __future__ import annotations
