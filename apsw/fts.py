@@ -1305,22 +1305,25 @@ class FTS5Table:
         finally:
             _search_context.reset(token)
 
-    def key_terms(
-        self, rowid: int, *, limit: int = 10, columns: Sequence[str] | None = None, as_text: bool = False
-    ) -> Sequence[tuple[float, str], ...]:
-        """Finds terms that are in this row, but rare in other rows
+    def key_tokens(
+        self, rowid: int, *, limit: int = 10, columns: Sequence[str] | None = None
+    ) -> Sequence[tuple[float, str]]:
+        """Finds tokens that are in this row, but rare in other rows
 
         This is purely statistical and has no understanding of the
-        terms.  Terms that occur only in this row, or only once in
+        tokens.  Tokens that occur only in this row, or only once in
         this row are ignored.
 
         :param limit: Maximum number to return
         :param columns: If provided then only look at specified
             columns, else all indexed columns.
-        :param as_text: If True then document text is returned, else
-            tokens.
-        :returns: A sequence of tuples where each is a tuple of term
+        :returns: A sequence of tuples where each is a tuple of token
            and float value with bigger meaning more unique
+
+        .. seealso:
+
+            :meth:`text_for_token` to get original document text
+            corresponding to a token
         """
         # number of tokens in the row
         row_token_count = 0
@@ -1358,41 +1361,28 @@ class FTS5Table:
 
             scores.append((score, token))
 
-        scored = sorted(scores, reverse=True)[:limit]
+        return sorted(scores, reverse=True)[:limit]
 
-        if not as_text:
-            return scored
-
-        result: list[tuple[float, str]] = []
-
-        for score, token in scored:
-            text = collections.Counter()
-            for u, start, end in locations[token]:
-                text[utf8s[u][start:end]] += 1
-            result.append((score, text.most_common(1)[0][0].decode()))
-
-        return result
-
-    def more_like(self, ids: Sequence[int], *, term_limit: int = 3) -> Iterator[MatchInfo]:
+    def more_like(self, ids: Sequence[int], *, token_limit: int = 3) -> Iterator[MatchInfo]:
         """Like :meth:`search` providing results similar to the provided ids.
 
         This is useful for providing infinite scrolling.  Do a search
         remembering the ids.  When you get to the end, call this
         method with those ids.
 
-        :meth:`key_terms` is used to get key terms from rows which is
+        :meth:`key_tokens` is used to get key tokens from rows which is
         purely statistical and has no understanding of the text.
 
         :param ids: rowids to consider
-        :param term_limit: How many terms are extracted from each row.
+        :param token_limit: How many tokens are extracted from each row.
             Bigger values result in a broader search, while smaller
             values narrow it.
         """
-        all_terms: set[str] = set()
+        all_tokens: set[str] = set()
 
         for rowid in ids:
-            for _, term in self.key_terms(rowid, limit=term_limit, as_text=not self.supports_query_tokens):
-                all_terms.add(term)
+            for _, token in self.key_tokens(rowid, limit=token_limit):
+                all_tokens.add(token)
 
         sql_query = (
             f"select _apsw_get_match_info({self.qname}) from { self.quoted_table_name}(?) where rowid NOT IN ("
@@ -1401,9 +1391,9 @@ class FTS5Table:
         )
 
         if self.supports_query_tokens:
-            phrases = [apsw.fts5query.QueryTokens([term]) for term in all_terms]
+            phrases = [apsw.fts5query.QueryTokens([token]) for token in all_tokens]
         else:
-            phrases = all_terms
+            phrases = [self.text_for_token(token, 1).most_common(1)[0][0] for token in all_tokens]
 
         fts_parsed = apsw.fts5query.from_dict({"@": "OR", "queries": phrases})
         fts_query = apsw.fts5query.to_query_string(fts_parsed)
