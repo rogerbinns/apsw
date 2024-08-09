@@ -1861,6 +1861,7 @@ class FTS5Table:
         n: int = 10,
         cutoff: float = 0.6,
         min_docs: int = 1,
+        all_tokens: Sequence[tuple[str, int]] | None = None,
     ) -> list[tuple[float, str]]:
         """Returns closest known tokens to ``token`` with score for each
 
@@ -1874,12 +1875,17 @@ class FTS5Table:
           Larger values require closer matches and decrease
           computation time.
         :param min_docs: Only test against other tokens that appear in
-          at least this many documents.  Experience is that about a
+          at least this many rows.  Experience is that about a
           third of tokens appear only in one row.  Larger values
           significantly decrease computation time, but reduce the
           candidates.
-
+        :param all_tokens:  A sequence of tuples of candidate token
+          and number of rows it occurs in.  If not provided then
+          :attr:`tokens` is used.
         """
+
+        if all_tokens is None:
+            all_tokens = self.tokens.items()
 
         result: list[tuple[float, str]] = []
 
@@ -1890,7 +1896,7 @@ class FTS5Table:
 
         sm = difflib.SequenceMatcher()
         sm.set_seq2(token)
-        for t in self.tokens.items():
+        for t in all_tokens:
             if t[1] < min_docs or t[0] == token:
                 continue
             sm.set_seq1(t[0])
