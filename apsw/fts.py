@@ -1738,30 +1738,162 @@ class FTS5Table:
 
         return None
 
-    def query_suggest(self, query: str) -> list[str]:
-        """Suggests alternate queries
+    def query_suggest(self, query: str, threshold: float = 0.01) -> str | None:
+        """Suggests alternate query
 
         This is useful if a query returns no or few matches.  It is
         purely a statistical operation based on the tokens in the
-        query, and there is no guarantee that there will be more
-        matches.  The returned order is most similar to the original
-        query first.
+        query, and there is no guarantee that there will be more (or
+        any) matches.
 
-        Includes:
-
-        * Replacing tokens with close matches
         * Combining such as ``some thing`` to ``something``
         * Splitting such as ``someday`` to ``some day``
-        * Enlarge such as ``ox`` to ``oxen``
-
-        .. seealso:
-
-            :meth:`text_for_token` to get original document text
-            corresponding to a token
-
+        * Replacing unknown/rare text with more popular close matches
         """
-        # ::TODO:: implement incorporating methods above
-        pass
+        parsed = apsw.fts5query.parse_query_string(query)
+
+        updated = False
+
+        all_tokens = self.tokens
+
+        threshold_rows = int(1 + threshold * self.row_count)
+
+        seen: set[int] = set()
+
+        for _, node in apsw.fts5query.walk(parsed):
+            if (
+                # skip those we processed
+                id(node) in seen
+                # only care about PHRASE(S)
+                or not isinstance(node, (apsw.fts5query.PHRASE, apsw.fts5query.PHRASES))
+            ):
+                continue
+
+            # pretend that PHRASE is PHRASES length 1
+            phrases = node.phrases if isinstance(node, apsw.fts5query.PHRASES) else [node]
+
+            # per phrase data
+            utf8s: list[bytes] = [phrase.phrase.encode() for phrase in phrases]
+            tokenized = [self.tokenize(utf8, apsw.FTS5_TOKENIZE_QUERY) for utf8 in utf8s]
+
+            # track our progress
+            phrase_num = 0
+            token_num = -1
+
+            def get_next_tokens(*, delete=False):
+                # lookahead one token.  if delete then delete it.
+                # usage is to lookahead to coalesce two adjacent
+                # tokens and if that works then delete the lookahead
+
+                # no lookahead if any flags
+                if phrases[phrase_num].initial or phrases[phrase_num].prefix or phrases[phrase_num].sequence:
+                    assert not delete
+                    return None
+
+                # part of same phrase?
+                if token_num + 1 < len(tokenized[phrase_num]):
+                    if delete:
+                        tokenized[phrase_num][token_num + 1] = tokenized[phrase_num][token_num + 1][:2] + (None,)
+                        return None
+                    return tokenized[phrase_num][token_num + 1][2:]
+
+                if (
+                    # last token of this phrase?
+                    token_num + 1 == len(tokenized[phrase_num])
+                    # and there is a next phrase
+                    and phrase_num + 1 < len(tokenized)
+                    # and the next phrase has tokens
+                    and tokenized[phrase_num + 1]
+                    # and no flags
+                    and 0
+                    == phrases[phrase_num + 1].initial
+                    + phrases[phrase_num + 1].prefix
+                    + phrases[phrase_num + 1].sequence
+                ):
+                    if delete:
+                        tokenized[phrase_num + 1][0] = tokenized[phrase_num + 1][0][:2] + (None,)
+                        return None
+                    return tokenized[phrase_num + 1][0][2:]
+
+                assert not delete
+                return None
+
+            while True:
+                token_num += 1
+                # reached the end of phrases?
+                if phrase_num >= len(phrases):
+                    break
+
+                # end of this phrase?
+                if token_num >= len(tokenized[phrase_num]):
+                    token_num = -1
+                    phrase_num += 1
+                    continue
+
+                # current token
+                tokens = tokenized[phrase_num][token_num][2:]
+                if tokens == (None,):
+                    continue
+                next_tokens = get_next_tokens()
+
+                # can we coalesce with next token?
+                if next_tokens is not None:
+                    if len(next_tokens) == 1 and len(tokens) == 1:
+                        combined: str = tokens[0] + next_tokens[0]
+                        if combined in all_tokens:
+                            if (
+                                min(all_tokens.get(tokens[0], 0), all_tokens.get(next_tokens[0], 0)) < threshold_rows
+                                and all_tokens[combined] > threshold_rows
+                            ):
+                                tokenized[phrase_num][token_num] = tokenized[phrase_num][token_num][:2] + (combined,)
+                                get_next_tokens(delete=True)
+                                updated = True
+                                continue
+
+                # split apart?
+                if len(tokens) == 1 and all_tokens.get(tokens[0], 0) < threshold_rows:
+                    token = tokens[0]
+                    suffix = None
+                    for prefix in all_tokens:
+                        if token.startswith(prefix) and token[len(prefix) :] in all_tokens:
+                            suffix = token[len(prefix) :]
+                            break
+                    if suffix is not None:
+                        rows = min(all_tokens[prefix], all_tokens[suffix])
+                        if rows >= threshold_rows:
+                            tokenized[phrase_num][token_num] = tokenized[phrase_num][token_num][:2] + ((prefix, suffix))
+                            updated = True
+                            continue
+
+                # replace with more popular token?
+                rows = max(all_tokens.get(token, 0) for token in tokens)
+                if rows < threshold_rows:
+                    # if the token doesn't exist at all then we take
+                    # any replacement, otherwise we do have cutoff /
+                    # min_docs
+                    replacement = self.closest_tokens(
+                        tokens[0],
+                        n=1,
+                        cutoff=0.7 if rows else 0,
+                        min_docs=threshold_rows if rows else 1,
+                        all_tokens=all_tokens.items(),
+                    )
+                    if replacement:
+                        tokenized[phrase_num][token_num] = tokenized[phrase_num][token_num][:2] + (replacement[0][1],)
+                        updated = True
+                        continue
+
+                # nothing found
+                continue
+
+        if not updated:
+            return None
+
+        import pprint
+
+        pprint.pprint(tokenized)
+
+        return apsw.fts5query.to_query_string(parsed)
 
     def token_frequency(self, count: int = 10) -> list[tuple[str, int]]:
         """Most frequent tokens, useful for building a stop words list
