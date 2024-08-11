@@ -1682,62 +1682,6 @@ class FTS5Table:
         """Returns True if it is a known token"""
         return token in self.tokens
 
-    def query_spellfix(self, query: str, *, min_docs: int = 1) -> str | None:
-        """Provides a fixed query if tokens are not found
-
-        This is a purely statistical operation.  The query is
-        :mod:`parsed <apsw.fts5query>` and each phrase is tokenized.
-        If any token is not found, then a :meth:`close token
-        <closest_tokens>` alternate is found.  That token is then
-        turned back into :meth:`text <text_for_token>`.  Finally the
-        updated query is regenerated.  This retains the structure of
-        the query (eg column filters, phrases, AND, NOT, parentheses).
-
-        :param min_docs: Replacement tokens must occur in at least
-            this many rows finding more popular tokens.  Larger values
-            make finding replacement tokens quicker, but reduces the
-            candidates.
-        :returns: The updated query, or None if no changes were made
-        """
-        parsed = apsw.fts5query.parse_query_string(query)
-
-        updated = False
-
-        all_tokens = self.tokens
-
-        for _, node in apsw.fts5query.walk(parsed):
-            if (
-                not isinstance(node, apsw.fts5query.PHRASE)
-                # ignore prefix queries because we can't meaningfully fix them
-                or node.prefix
-            ):
-                continue
-            # we have to be careful to copy across the content between
-            # tokens because we don't know what the token separators
-            # are - it is usually white space but could be anything
-            last_token_end = 0
-            new_phrase = ""
-            utf8 = node.phrase.encode()
-            for start, end, *tokens in self.tokenize(utf8, apsw.FTS5_TOKENIZE_QUERY):
-                if any(token in all_tokens for token in tokens):
-                    replacement = None
-                else:
-                    replacement = self.closest_tokens(tokens[0], n=1, cutoff=0, min_docs=min_docs)
-                if not replacement:
-                    new_phrase += utf8[last_token_end:end].decode()
-                    last_token_end = end
-                    continue
-                new_phrase += utf8[last_token_end:start].decode() + replacement[0][1]
-                last_token_end = end
-                updated = True
-            if updated:
-                node.phrase = new_phrase
-
-        if updated:
-            return apsw.fts5query.to_query_string(parsed)
-
-        return None
-
     def query_suggest(self, query: str, threshold: float = 0.02) -> str | None:
         """Suggests alternate query
 
