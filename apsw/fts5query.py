@@ -153,7 +153,7 @@ class QueryTokens:
     def decode(cls, data: str | bytes) -> QueryTokens | None:
         "If the marker is present then returns the corresponding :class:`QueryTokens`, otherwise `None`."
         if isinstance(data, bytes) and data.startswith(b"$!Tokens~"):
-            data = data.decode("utf8")
+            data = data.decode()
         if isinstance(data, str) and data.startswith(QUERY_TOKENS_MARKER):
             stream: list[str | Sequence[str]] = data[len(QUERY_TOKENS_MARKER) :].split("|")
             for i, token in enumerate(stream):

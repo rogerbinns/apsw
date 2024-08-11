@@ -219,7 +219,7 @@ def tokenizer_test_strings(filename: str | pathlib.Path | None = None) -> tuple[
         test_strings: list[tuple[bytes, str]] = []
         lines = [line for line in data.splitlines() if not line.startswith(b"##")]
         while lines:
-            comment = lines.pop(0)[1:].decode("utf8", errors="replace").strip()
+            comment = lines.pop(0)[1:].decode(errors="replace").strip()
             text: list[bytes] = []
             while lines and not lines[0].startswith(b"#"):
                 text.append(lines.pop(0))
@@ -1336,7 +1336,7 @@ class FTS5Table:
 
         # iterate over each column
         for content_num, text in enumerate(self.row_by_id(rowid, columns or self.columns_indexed)):
-            utf8 = text.encode("utf8")
+            utf8 = text.encode()
             if utf8s is not None:
                 utf8s.append(utf8)
             for start, end, *tokens in self.tokenize(utf8):
@@ -1612,7 +1612,7 @@ class FTS5Table:
         # accents, punctuation, mixed case etc
         tokens = ["  .= -", "\t", "\r\n", "HÉ é"]
         return tokens == self.tokenize(
-            apsw.fts5query.QueryTokens(tokens).encode().encode("utf8"),
+            apsw.fts5query.QueryTokens(tokens).encode().encode(),
             apsw.FTS5_TOKENIZE_QUERY,
             include_offsets=False,
             include_colocated=False,
@@ -2622,7 +2622,7 @@ if __name__ == "__main__":
 
         def byte_codepoints(b: bytes | str, open="{", close="}") -> str:
             if isinstance(b, bytes):
-                b = b.decode("utf8", errors="replace")
+                b = b.decode(errors="replace")
             return "<wbr>".join(
                 f"<span class=codepoint title='{ html.escape(ud(c), True) }'>"
                 f"{ open}{ html.escape(unicodedata.name(c, f'U+{ord(c):04x}')) }{ close }"
@@ -2647,7 +2647,7 @@ if __name__ == "__main__":
                 # bytes
                 out += f"<td>{ hex_utf8_bytes(row.utf8) }</td>"
                 # bytes val
-                out += f"<td>{ html.escape(row.utf8.decode('utf8', errors='replace')) }</td>"
+                out += f"<td>{ html.escape(row.utf8.decode(errors='replace')) }</td>"
                 # token
                 out += "<td></td>"
                 # bytes codepoints - already escaped
@@ -2667,7 +2667,7 @@ if __name__ == "__main__":
             # bytes
             out += f"<td>{ hex_utf8_bytes(row.utf8) }</td>"
             # bytes val
-            out += f"<td>{ html.escape(row.utf8.decode('utf8', errors='replace')) }</td>"
+            out += f"<td>{ html.escape(row.utf8.decode(errors='replace')) }</td>"
             # token
             out += f"<td>{ html.escape(row.token) }</td>"
             # bytes codepoints - already escaped
@@ -2988,11 +2988,11 @@ if __name__ == "__main__":
     results = []
     for utf8, comment in tokenizer_test_strings(filename=options.text_file):
         if options.normalize:
-            utf8 = unicodedata.normalize(options.normalize, utf8.decode("utf8", errors="replace")).encode("utf8")
+            utf8 = unicodedata.normalize(options.normalize, utf8.decode(errors="replace")).encode()
         h, tokens = show_tokenization(options, tok, utf8, tokenize_reasons[options.reason])
         results.append((comment, utf8, h, options.reason, tokens))
 
-    w = lambda s: options.output.write(s.encode("utf8") + b"\n")
+    w = lambda s: options.output.write(s.encode() + b"\n")
 
     w('<html><head><meta charset="utf-8"></head><body>')
     w(show_tokenization_css)
@@ -3004,7 +3004,7 @@ if __name__ == "__main__":
         normalized = [
             f
             for f in ("NFC", "NFKC", "NFD", "NFKD")
-            if unicodedata.is_normalized(f, utf8.decode("utf8", errors="replace"))
+            if unicodedata.is_normalized(f, utf8.decode(errors="replace"))
         ]
         if normalized:
             forms = ": forms " + " ".join(normalized)
@@ -3022,7 +3022,7 @@ if __name__ == "__main__":
                 f"{ comment } : { reason } { forms }",
                 kind="result",
                 id=counter,
-                compare=(utf8.decode("utf8", errors="replace"), tokens),
+                compare=(utf8.decode(errors="replace"), tokens),
             )
         )
         if not h:
