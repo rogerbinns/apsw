@@ -1682,17 +1682,35 @@ class FTS5Table:
         """Returns True if it is a known token"""
         return token in self.tokens
 
-    def query_suggest(self, query: str, threshold: float = 0.02) -> str | None:
+    def query_suggest(self, query: str, threshold: float = 0.01) -> str | None:
         """Suggests alternate query
 
         This is useful if a query returns no or few matches.  It is
         purely a statistical operation based on the tokens in the
-        query, and there is no guarantee that there will be more (or
-        any) matches.
+        query and index. There is no guarantee that there will be more
+        (or any) matches.  The query structure (AND, OR, column filters etc)
+        is maintained.
+
+        Transformations include:
 
         * Combining such as ``some thing`` to ``something``
-        * Splitting such as ``someday`` to ``some day``
-        * Replacing unknown/rare text with more popular close matches
+        * Splitting such as ``noone`` to ``no one``
+        * Replacing unknown/rare text with more popular :meth:`close
+          matches <difflib.get_close_matches>`.
+
+        The query is parsed, tokenized, replacement tokens
+        established, and original text or :meth:`text_for_token` used
+        to reconstitute the query.
+
+        :param query: A valid query string
+        :param threshold: Fraction of rows between ``0.0`` and
+          ``1.00`` to be rare - eg ``0.01`` means a token occurring in
+          less than 1% of rows is considered for replacement.  Larger
+          fractions increases the likelihood of replacements, while
+          smaller reduces it.  A value of ``0`` will only replace
+          tokens that are not in the index at all.
+        :returns: ``None`` if no suitable changes were found, or a replacement
+          query.
         """
         parsed = apsw.fts5query.parse_query_string(query)
 
@@ -1700,7 +1718,7 @@ class FTS5Table:
 
         updated = False
 
-        threshold_rows = int(1 + threshold * self.row_count)
+        threshold_rows = int(threshold * self.row_count)
 
         seen: set[int] = set()
 
@@ -1734,7 +1752,7 @@ class FTS5Table:
             phrase_num = 0
             token_num = -1
 
-            def get_next_tokens(*, delete=False) -> tuple[str] | None:
+            def get_next_tokens(*, delete: bool = False) -> tuple[str, ...] | None:
                 # lookahead one token.  if delete then delete it.
                 # usage is to lookahead to coalesce two adjacent
                 # tokens and if that works then delete the lookahead
@@ -1772,12 +1790,8 @@ class FTS5Table:
                 assert not delete
                 return None
 
-            while True:
+            while phrase_num < len(tokenized):
                 token_num += 1
-
-                # reached the end of phrases?
-                if phrase_num >= len(tokenized):
-                    break
 
                 # end of this phrase?
                 if token_num >= len(tokenized[phrase_num]):
@@ -1789,26 +1803,30 @@ class FTS5Table:
                 if modified[phrase_num][token_num] is not False:
                     continue
 
-                # current token
-                tokens: tuple[str] = tokenized[phrase_num][token_num][2:]
-                next_tokens = get_next_tokens()
+                # current and lookahead
+                tokens: tuple[str, ...] = tokenized[phrase_num][token_num][2:]
+
+                votes: list[tuple[int, Literal["coalesce"] | Literal["split"] | Literal["replace"], str]] = []
+
+                rows = max(all_tokens.get(token, 0) for token in tokens)
 
                 # can we coalesce with next token?
-                if next_tokens is not None:
-                    if len(next_tokens) == 1 and len(tokens) == 1:
-                        combined: str = tokens[0] + next_tokens[0]
-                        if combined in all_tokens:
-                            if (
-                                min(all_tokens.get(tokens[0], 0), all_tokens.get(next_tokens[0], 0))
-                                / all_tokens[combined]
-                                < threshold
-                            ):
-                                modified[phrase_num][token_num] = combined
-                                get_next_tokens(delete=True)
-                                continue
+                if rows < threshold_rows and len(tokens) == 1:
+                    next_tokens = get_next_tokens()
+                    if next_tokens is not None:
+                        if len(next_tokens) == 1:
+                            combined: str = tokens[0] + next_tokens[0]
+                            if combined in all_tokens:
+                                if (
+                                    min(all_tokens.get(tokens[0], 0), all_tokens.get(next_tokens[0], 0))
+                                    / all_tokens[combined]
+                                    < threshold
+                                ):
+                                    votes.append((all_tokens[combined], "coalesce", combined))
+                                    modified[phrase_num][token_num] = combined
 
                 # split apart?
-                if len(tokens) == 1 and all_tokens.get(tokens[0], 0) < threshold_rows:
+                if len(tokens) == 1 and rows < threshold_rows:
                     token = tokens[0]
                     suffix = None
                     for prefix in all_tokens:
@@ -1816,13 +1834,11 @@ class FTS5Table:
                             suffix = token[len(prefix) :]
                             break
                     if suffix is not None:
-                        rows = min(all_tokens[prefix], all_tokens[suffix])
-                        if rows >= threshold_rows:
-                            modified[phrase_num][token_num] = (prefix, suffix)
-                            continue
+                        split_rows = min(all_tokens[prefix], all_tokens[suffix])
+                        if split_rows >= threshold_rows:
+                            votes.append((split_rows, "split", (prefix, suffix)))
 
                 # replace with more popular token?
-                rows = max(all_tokens.get(token, 0) for token in tokens)
                 if rows < threshold_rows:
                     # if the token doesn't exist at all then we take
                     # any replacement, otherwise we do have cutoff /
@@ -1830,23 +1846,31 @@ class FTS5Table:
                     replacement = self.closest_tokens(
                         tokens[0],
                         n=10,
-                        cutoff=0.7 if rows else 0,
+                        cutoff=0.6 if rows else 0,
                         min_docs=rows + 1,
                         all_tokens=all_tokens.items(),
                     )
+
                     if replacement:
                         # rebalance how different the tokens are
                         # against how many rows they are in
                         for i, (score, token) in enumerate(replacement):
                             replacement[i] = (score * math.log(all_tokens[token]), token)
+
                         replacement.sort(reverse=True)
+                        if replacement[0][0] > math.log(all_tokens.get(tokens[0], 1)):
+                            replacement = replacement[0][1]
+                            votes.append((all_tokens[replacement], "replace", replacement))
 
-                        if replacement[0][0] > math.log(
-                            modified[phrase_num][token_num] = replacement[0][1]
-                        continue
-
-                # nothing found
-                continue
+                if votes:
+                    # if the popularity is identical then this also
+                    # prioritises split over replace (alphabetical)
+                    _, action, new = sorted(votes, reverse=True)[0]
+                    modified[phrase_num][token_num] = new
+                    if action == "coalesce":
+                        get_next_tokens(delete=True)
+                    else:
+                        assert action in ("split", "replace")
 
             # updates?
             if any(item is not False for item in itertools.chain.from_iterable(modified)):
