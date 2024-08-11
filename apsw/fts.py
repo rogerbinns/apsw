@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 import collections
-from contextvars import ContextVar
 import difflib
 import fnmatch
 import functools
@@ -16,15 +15,16 @@ import html.parser as html_parser_module
 import importlib
 import itertools
 import json
+import math
 import pathlib
 import re
 import sys
 import threading
-import time
 import unicodedata
+from contextvars import ContextVar
 from dataclasses import dataclass
 from types import ModuleType
-from typing import Any, Callable, Iterator, Iterable, Literal, Sequence
+from typing import Any, Callable, Iterable, Iterator, Literal, Sequence
 
 import apsw
 import apsw._unicode
@@ -1673,10 +1673,10 @@ class FTS5Table:
         return self._cache_check().tokens_per_column
 
     # turn the above into properties
-    tokens = property(_tokens)
-    row_count = property(_row_count)
-    token_count = property(_token_count)
-    tokens_per_column = property(_tokens_per_column)
+    tokens: dict[str, int] = property(_tokens)
+    row_count: int = property(_row_count)
+    token_count: int = property(_token_count)
+    tokens_per_column: list[int] = property(_tokens_per_column)
 
     def is_token(self, token: str) -> bool:
         """Returns True if it is a known token"""
