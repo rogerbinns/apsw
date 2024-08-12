@@ -1944,7 +1944,6 @@ class FTS5Table:
 
             :meth:`token_frequency`
         """
-        # ::TODO:: use tokens object
         n = self.fts5vocab_name("row")
         return self.db.execute(f"select term, doc from { n } order by doc desc limit ?", (count,)).get
 
