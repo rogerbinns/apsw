@@ -2130,7 +2130,9 @@ class FTS5Table:
         :param prefix: The `prefix option
             <https://sqlite.org/fts5.html#prefix_indexes>`__.  Supply
             an int, or a sequence of int.
-        :param content: Name of the external content table
+        :param content: Name of the external content table.  The
+            external content table must be in the same database as the
+            FTS5 table.
         :param content_rowid: Name of the `content rowid column
             <https://sqlite.org/fts5.html#external_content_tables>`__
             if not using the default when using an external content
@@ -2249,8 +2251,6 @@ class FTS5Table:
                             "update",
                         )
                     )
-                    # ::TODO:: figure out what to do about content table and fts5 table
-                    # being on different attached databases
                     db.execute(f"""
 drop trigger if exists { qschema }.{ trigger_names[0] };
 drop trigger if exists { qschema }.{ trigger_names[1] };
