@@ -13,6 +13,7 @@ import functools
 import html as html_module
 import html.parser as html_parser_module
 import importlib
+import importlib.resources
 import itertools
 import json
 import math
@@ -205,25 +206,31 @@ def tokenizer_test_strings(filename: str | pathlib.Path | None = None) -> tuple[
     If it starts with a # then it is considered to be multiple text sections
     where a # line contains a description of the section.  Any lines beginning
     ## are ignored."""
-    # ::TODO:: importlib.resources should be used, but has deprecation galore, and
-    # bad python version compatibility
-    filename = filename or pathlib.Path(__file__).with_name("fts_test_strings")
 
-    with open(filename, "rb") as f:
-        data: bytes = f.read()
-        if not data:
-            return ((b"", "No data"),)
-        if not data.startswith(b"#"):
-            return ((data, pathlib.Path(filename).name),)
+    if filename is None:
+        filename = "fts_test_strings"
+        if sys.version_info >= (3, 9):
+            data = importlib.resources.files().joinpath(filename).read_bytes()
+        else:
+            with pathlib.Path(__file__).with_name(filename).open("rb") as f:
+                data = f.read()
+    else:
+        with open(filename, "rb") as f:
+            data = f.read()
 
-        test_strings: list[tuple[bytes, str]] = []
-        lines = [line for line in data.splitlines() if not line.startswith(b"##")]
-        while lines:
-            comment = lines.pop(0)[1:].decode(errors="replace").strip()
-            text: list[bytes] = []
-            while lines and not lines[0].startswith(b"#"):
-                text.append(lines.pop(0))
-            test_strings.append((b"\n".join(text).rstrip(), comment))
+    if not data:
+        return ((b"", "No data"),)
+    if not data.startswith(b"#"):
+        return ((data, pathlib.Path(filename).name),)
+
+    test_strings: list[tuple[bytes, str]] = []
+    lines = [line for line in data.splitlines() if not line.startswith(b"##")]
+    while lines:
+        comment = lines.pop(0)[1:].decode(errors="replace").strip()
+        text: list[bytes] = []
+        while lines and not lines[0].startswith(b"#"):
+            text.append(lines.pop(0))
+        test_strings.append((b"\n".join(text).rstrip(), comment))
 
     return tuple(test_strings)
 
