@@ -210,6 +210,7 @@ source_nocheck: src/apswversion.h
 	test "`git branch --show-current`" = master
 	find . -depth -name '.*cache' -type d -exec rm -r "{}" \;
 	env APSW_NO_GA=t $(MAKE) doc
+	rm -rf doc/build/html/_static/fonts/ doc/build/html/_static/css/fonts/
 	$(PYTHON) setup.py sdist --formats zip --add-doc
 
 source: source_nocheck # Make the source and then check it builds and tests correctly.  This will catch missing files etc
