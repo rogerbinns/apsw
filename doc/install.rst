@@ -35,6 +35,12 @@ The PyPI releases include pre-built binaries for common platforms.  If yours is 
 pip will download the source release and automatically compile with the same settings.  It will
 require a C compiler and the Python development header files.
 
+Encryption
+^^^^^^^^^^
+
+APSW compiled against SQLite with `SQLite3MultipleCiphers
+<https://utelle.github.io/SQLite3MultipleCiphers/>`__ is available via
+its author at https://pypi.org/project/apsw-sqlite3mc/
 
 Linux/BSD provided
 ------------------
