@@ -3008,9 +3008,7 @@ if __name__ == "__main__":
     counter = 1
     for comment, utf8, h, reason, tokens in results:
         normalized = [
-            f
-            for f in ("NFC", "NFKC", "NFD", "NFKD")
-            if unicodedata.is_normalized(f, utf8.decode(errors="replace"))
+            f for f in ("NFC", "NFKC", "NFD", "NFKD") if unicodedata.is_normalized(f, utf8.decode(errors="replace"))
         ]
         if normalized:
             forms = ": forms " + " ".join(normalized)
