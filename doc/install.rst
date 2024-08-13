@@ -35,6 +35,12 @@ The PyPI releases include pre-built binaries for common platforms.  If yours is 
 pip will download the source release and automatically compile with the same settings.  It will
 require a C compiler and the Python development header files.
 
+Encryption
+^^^^^^^^^^
+
+APSW compiled against SQLite with `SQLite3MultipleCiphers
+<https://utelle.github.io/SQLite3MultipleCiphers/>`__ is available via
+its author at https://pypi.org/project/apsw-sqlite3mc/
 
 Linux/BSD provided
 ------------------
@@ -74,12 +80,12 @@ edit the :file:`setup.apsw` file inside.
 
 .. downloads-begin
 
-* `apsw-3.46.0.1.zip
-  <https://github.com/rogerbinns/apsw/releases/download/3.46.0.1/apsw-3.46.0.1.zip>`__
+* `apsw-3.46.1.0.zip
+  <https://github.com/rogerbinns/apsw/releases/download/3.46.1.0/apsw-3.46.1.0.zip>`__
   (Source, includes this HTML Help)
 
-* `apsw-3.46.0.1.cosign-bundle 
-  <https://github.com/rogerbinns/apsw/releases/download/3.46.0.1/apsw-3.46.0.1.cosign-bundle>`__
+* `apsw-3.46.1.0.cosign-bundle 
+  <https://github.com/rogerbinns/apsw/releases/download/3.46.1.0/apsw-3.46.1.0.cosign-bundle>`__
   cosign signature
 
 .. downloads-end
@@ -114,8 +120,8 @@ Verify
 
   .. code-block:: console
 
-    $ cosign verify-blob apsw-3.46.0.1.zip                           \
-        --bundle apsw-3.46.0.1.cosign-bundle                         \
+    $ cosign verify-blob apsw-3.46.1.0.zip                           \
+        --bundle apsw-3.46.1.0.cosign-bundle                         \
         --certificate-identity=rogerb@rogerbinns.com                 \
         --certificate-oidc-issuer=https://github.com/login/oauth
     Verified OK

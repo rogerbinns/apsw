@@ -39,6 +39,21 @@ Added :func:`apsw.ext.ShowResourceUsage` for getting resource and
 SQLite usage in a block, and also use it for the shell :ref:`timer
 <shell-cmd-timer>` command.
 
+3.46.1.0
+========
+
+The shell :ref:`dump <shell-cmd-dump>` command outputs the
+`application_id
+<https://www.sqlite.org/pragma.html#pragma_application_id>`__ in
+addition to the `user_version
+<https://www.sqlite.org/pragma.html#pragma_user_version>`__.
+
+`PyPI <https://pypi.org/project/apsw/>`__ binary builds for `Python
+3.13 now available
+<https://github.com/pypa/cibuildwheel/releases/tag/v2.20.0>`__, as
+well as `older Python ARM64
+<https://github.com/rogerbinns/apsw/pull/530>`__ are available.
+
 3.46.0.1
 ========
 

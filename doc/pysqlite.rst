@@ -98,9 +98,17 @@ module:
   data being returned (it silently ignores any returned data).
 
 * APSW has better :ref:`execution and row tracing <tracing>`.
-  :doc:`ext` provides accessing rows by column name, adapting and
-  converting types going into and coming out of SQLite, getting query
-  details etc.
+
+* :doc:`ext` includes:
+
+  - Pretty printing query results
+  - Forwarding SQLite log messages to the Python logger
+  - Helper for implementing the complex xBestIndex method on your own
+    virtual tables
+  - A wrapper to turn Python functions into virtual tables, including
+    taking positional and keyword arguments
+  - Converting data types going into and out of SQlite
+  - Detailed query information
 
 * sqlite3 swallows exceptions in your callbacks making it far harder
   to debug problems. That also prevents you from raising exceptions in
@@ -176,11 +184,20 @@ module:
   example try returning an unsupported type from a registered scalar
   function.
 
-* APSW is faster than sqlite3 in my testing.  Try the
-  :ref:`speedtest` benchmark.
+* APSW includes a :doc:`full featured shell <shell>`.  sqlite3 has a
+  `simple one
+  <https://docs.python.org/3/library/sqlite3.html#command-line-interface>`__
+  available since Python 3.12.`
+
+* APSW is faster than sqlite3 in my testing.  Try the :ref:`speedtest`
+  benchmark.  All C code in APSW called by Python implements the
+  fastcall mechanism, as does most of sqlite3.  All code called from C
+  in APSW also uses fastcall, while sqlite3 uses the older mechanism
+  that is `significantly slower
+  <https://github.com/rogerbinns/python-fastcall>`__.
 
 What sqlite3 does better
 ========================
 
 * sqlite3 is part of the standard library, and is widely supported by
-  libraries that abstract away the database layer
+  libraries that abstract away the database layer.
