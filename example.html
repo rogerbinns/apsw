@@ -1,25 +1,23 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Example/Tour &mdash; APSW 3.46.0.1 documentation</title>
+  <title>Example/Tour &mdash; APSW 3.46.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=66b59bf7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
 
   
     <link rel="shortcut icon" href="_static/favicon.ico"/>
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=d98f5d2b"></script>
-        <script src="_static/doctools.js?v=9a2dae69"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=0c22936b"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
@@ -42,7 +40,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.46.0.1
+                3.46.1.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -189,10 +187,10 @@ and attribute documentation.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   Using amalgamation&quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">using_amalgamation</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">      Using APSW file /space/apsw-master/apsw/__init__.cpython-312-x86_64-linux-gnu.so</span>
-<span class="go">         APSW version 3.46.0.1</span>
-<span class="go">SQLite header version 3046000</span>
-<span class="go">   SQLite lib version 3.46.0</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">      Using APSW file /space/apsw/apsw/__init__.cpython-312-x86_64-linux-gnu.so</span>
+<span class="go">         APSW version 3.46.1.0</span>
+<span class="go">SQLite header version 3046001</span>
+<span class="go">   SQLite lib version 3.46.1</span>
 <span class="go">   Using amalgamation True</span>
 </pre></div>
 </div>
@@ -783,11 +781,11 @@ conversion, both for types you define and for other types.</p>
 <span class="n">connection</span><span class="o">.</span><span class="n">cursor_factory</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2024, 6, 16, 12, 43, 0, 373621))</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2024, 8, 13, 13, 9, 12, 932310))</span>
 <span class="go">querying data</span>
 <span class="go">column 0 = Point(5.2, 7.6)</span>
 <span class="go">column 1 = (3+4j)</span>
-<span class="go">column 2 = datetime.datetime(2024, 6, 16, 19, 43, 0, 373621, tzinfo=datetime.timezone.utc)</span>
+<span class="go">column 2 = datetime.datetime(2024, 8, 13, 20, 9, 12, 932310, tzinfo=datetime.timezone.utc)</span>
 </pre></div>
 </div>
 </section>
@@ -1133,7 +1131,7 @@ feedback and allows cancelling.</p>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
-<span class="go">(9723915095,)</span>
+<span class="go">(9867044341,)</span>
 </pre></div>
 </div>
 </section>
@@ -1443,8 +1441,8 @@ useful instead.</p>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">┌────────────┬────────────────────────────────┬───────────────┐</span>
 <span class="go">│    date    │           directory            │     name      │</span>
-<span class="go">│ 2024-04-16 │ /usr/lib/python3.12/pydoc_data │ topics.py     │</span>
-<span class="go">│ 2024-04-16 │ /usr/lib/python3.12            │ _pydecimal.py │</span>
+<span class="go">│ 2024-08-01 │ /usr/lib/python3.12/pydoc_data │ topics.py     │</span>
+<span class="go">│ 2024-08-01 │ /usr/lib/python3.12            │ _pydecimal.py │</span>
 <span class="go">│ 2024-04-16 │ /usr/lib/python3.12/tkinter    │ __init__.py   │</span>
 <span class="go">└────────────┴────────────────────────────────┴───────────────┘</span>
 </pre></div>
@@ -1460,7 +1458,7 @@ useful instead.</p>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">┌────────────┬────────────┐</span>
 <span class="go">│ extension  │ total_size │</span>
 <span class="go">│            │ 432392     │</span>
-<span class="go">│ .a         │ 96832334   │</span>
+<span class="go">│ .a         │ 96838062   │</span>
 <span class="go">│ .allowlist │ 56         │</span>
 <span class="go">│ .bootstrap │ 1804       │</span>
 <span class="go">│ .c         │ 10948      │</span>
@@ -1472,13 +1470,13 @@ useful instead.</p>
 <span class="go">│ .ini       │ 997        │</span>
 <span class="go">│ .json      │ 2162       │</span>
 <span class="go">│ .local     │ 2136       │</span>
-<span class="go">│ .o         │ 9328       │</span>
+<span class="go">│ .o         │ 9360       │</span>
 <span class="go">│ .ps1       │ 9033       │</span>
-<span class="go">│ .py        │ 11139559   │</span>
-<span class="go">│ .pyc       │ 11417126   │</span>
+<span class="go">│ .py        │ 11142873   │</span>
+<span class="go">│ .pyc       │ 11408387   │</span>
 <span class="go">│ .rst       │ 9561       │</span>
 <span class="go">│ .sh        │ 4008       │</span>
-<span class="go">│ .so        │ 25379792   │</span>
+<span class="go">│ .so        │ 25396992   │</span>
 <span class="go">│ .stdlib    │ 12536      │</span>
 <span class="go">│ .supp      │ 70         │</span>
 <span class="go">│ .txt       │ 13936      │</span>
@@ -1598,7 +1596,7 @@ for receiving parameters once a database is open.</p>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">VFS available [&#39;unix&#39;, &#39;obfuscated&#39;, &#39;memdb&#39;, &#39;unix-excl&#39;, &#39;unix-dotfile&#39;, &#39;unix-none&#39;]</span>
 <span class="go">xOpen flags SQLITE_OPEN_CREATE | SQLITE_OPEN_MAIN_DB | SQLITE_OPEN_READWRITE | SQLITE_OPEN_URI</span>
-<span class="go">   uri filename /space/apsw-master/myobfudb</span>
+<span class="go">   uri filename /space/apsw/myobfudb</span>
 <span class="go">   fast is speed</span>
 <span class="go">   level is 7</span>
 <span class="go">   warp is True</span>
@@ -1606,10 +1604,10 @@ for receiving parameters once a database is open.</p>
 <span class="go">   all uris (&#39;fast&#39;, &#39;level&#39;, &#39;warp&#39;, &#39;another&#39;)</span>
 <span class="go">pragma received journal_mode = wal</span>
 <span class="go">xOpen flags SQLITE_OPEN_CREATE | SQLITE_OPEN_MAIN_JOURNAL | SQLITE_OPEN_READWRITE</span>
-<span class="go">   filename /space/apsw-master/myobfudb-journal</span>
+<span class="go">   filename /space/apsw/myobfudb-journal</span>
 <span class="go">pragma received foreign_keys = ON</span>
 <span class="go">xOpen flags SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_WAL</span>
-<span class="go">   filename /space/apsw-master/myobfudb-wal</span>
+<span class="go">   filename /space/apsw/myobfudb-wal</span>
 <span class="go">What is on disk b&#39;\xf6\xf4\xe9\xcc\xd1\xc0\x85\xc3\xca\xd7\xc8\xc4\xd1\x85\x96\xa5\xb5\xa5\xa7\xa7&#39;</span>
 <span class="go">Unobfuscated disk b&#39;SQLite format 3\x00\x10\x00\x02\x02&#39;</span>
 <span class="go">pragma received my_custom_pragma = my value</span>
@@ -1707,11 +1705,11 @@ Python.</p>
 
 <span class="go">Dump output</span>
 
-<span class="go">-- SQLite dump (by APSW 3.46.0.1)</span>
-<span class="go">-- SQLite version 3.46.0</span>
-<span class="go">-- Date: Sun Jun 16 12:43:00 2024</span>
+<span class="go">-- SQLite dump (by APSW 3.46.1.0)</span>
+<span class="go">-- SQLite version 3.46.1</span>
+<span class="go">-- Date: Tue Aug 13 13:09:13 2024</span>
 <span class="go">-- Tables like: csvtest%</span>
-<span class="go">-- Database: /space/apsw-master/dbfile</span>
+<span class="go">-- Database: /space/apsw/dbfile</span>
 <span class="go">-- User: rogerb @ clamps</span>
 
 <span class="go">-- The values of various per-database settings</span>
@@ -1730,9 +1728,9 @@ Python.</p>
 <span class="go">-- Triggers and indices on  csvtest</span>
 <span class="go">CREATE INDEX faster on csvtest(column1);</span>
 
-<span class="go">-- Your database may need this.  It is sometimes used to keep track of the</span>
-<span class="go">-- schema version.</span>
+<span class="go">-- Database header</span>
 <span class="go">pragma user_version=1234;</span>
+
 <span class="go">COMMIT TRANSACTION;</span>
 </pre></div>
 </div>
@@ -1747,7 +1745,7 @@ for per connection statistics.</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="w"> </span><span class="n">schema_used</span><span class="w"> </span><span class="si">}</span><span class="s2"> bytes used to store schema for this connection&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite memory usage 509352 max 2494520</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite memory usage 509320 max 2494488</span>
 <span class="go">4968 bytes used to store schema for this connection</span>
 </pre></div>
 </div>
@@ -1803,7 +1801,7 @@ for per connection statistics.</p>
 
 <span class="go">code is  SQLITE_TRACE_PROFILE</span>
 <span class="go">{&#39;code&#39;: 2,</span>
-<span class="go"> &#39;nanoseconds&#39;: 20000000,</span>
+<span class="go"> &#39;nanoseconds&#39;: 19000000,</span>
 <span class="go"> &#39;stmt_status&#39;: {&#39;SQLITE_STMTSTATUS_AUTOINDEX&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FILTER_HIT&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FILTER_MISS&#39;: 0,</span>
@@ -1943,7 +1941,7 @@ rollback the incomplete transaction.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jun 16, 2024.
+      <span class="lastupdated">Last updated on Aug 13, 2024.
       </span></p>
   </div>
 

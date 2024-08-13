@@ -1,25 +1,23 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Virtual Tables &mdash; APSW 3.46.0.1 documentation</title>
+  <title>Virtual Tables &mdash; APSW 3.46.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=66b59bf7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
 
   
     <link rel="shortcut icon" href="_static/favicon.ico"/>
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=d98f5d2b"></script>
-        <script src="_static/doctools.js?v=9a2dae69"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=0c22936b"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
@@ -42,7 +40,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.46.0.1
+                3.46.1.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -65,77 +63,69 @@
 <li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Virtual Tables</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#indexinfo-class">IndexInfo class</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#apsw.IndexInfo"><code class="docutils literal notranslate"><span class="pre">IndexInfo</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.colUsed"><code class="docutils literal notranslate"><span class="pre">IndexInfo.colUsed</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.distinct"><code class="docutils literal notranslate"><span class="pre">IndexInfo.distinct</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.estimatedCost"><code class="docutils literal notranslate"><span class="pre">IndexInfo.estimatedCost</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.estimatedRows"><code class="docutils literal notranslate"><span class="pre">IndexInfo.estimatedRows</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.get_aConstraintUsage_argvIndex"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aConstraintUsage_argvIndex()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.get_aConstraintUsage_in"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aConstraintUsage_in()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.get_aConstraintUsage_omit"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aConstraintUsage_omit()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.get_aConstraint_collation"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aConstraint_collation()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.get_aConstraint_iColumn"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aConstraint_iColumn()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.get_aConstraint_op"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aConstraint_op()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.get_aConstraint_rhs"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aConstraint_rhs()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.get_aConstraint_usable"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aConstraint_usable()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.get_aOrderBy_desc"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aOrderBy_desc()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.get_aOrderBy_iColumn"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aOrderBy_iColumn()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.idxFlags"><code class="docutils literal notranslate"><span class="pre">IndexInfo.idxFlags</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.idxNum"><code class="docutils literal notranslate"><span class="pre">IndexInfo.idxNum</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.idxStr"><code class="docutils literal notranslate"><span class="pre">IndexInfo.idxStr</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.nConstraint"><code class="docutils literal notranslate"><span class="pre">IndexInfo.nConstraint</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.nOrderBy"><code class="docutils literal notranslate"><span class="pre">IndexInfo.nOrderBy</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.orderByConsumed"><code class="docutils literal notranslate"><span class="pre">IndexInfo.orderByConsumed</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.set_aConstraintUsage_argvIndex"><code class="docutils literal notranslate"><span class="pre">IndexInfo.set_aConstraintUsage_argvIndex()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.set_aConstraintUsage_in"><code class="docutils literal notranslate"><span class="pre">IndexInfo.set_aConstraintUsage_in()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.IndexInfo.set_aConstraintUsage_omit"><code class="docutils literal notranslate"><span class="pre">IndexInfo.set_aConstraintUsage_omit()</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.IndexInfo"><code class="docutils literal notranslate"><span class="pre">IndexInfo</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.IndexInfo.colUsed"><code class="docutils literal notranslate"><span class="pre">IndexInfo.colUsed</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.IndexInfo.distinct"><code class="docutils literal notranslate"><span class="pre">IndexInfo.distinct</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.IndexInfo.estimatedCost"><code class="docutils literal notranslate"><span class="pre">IndexInfo.estimatedCost</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.IndexInfo.estimatedRows"><code class="docutils literal notranslate"><span class="pre">IndexInfo.estimatedRows</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.IndexInfo.get_aConstraintUsage_argvIndex"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aConstraintUsage_argvIndex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.IndexInfo.get_aConstraintUsage_in"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aConstraintUsage_in()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.IndexInfo.get_aConstraintUsage_omit"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aConstraintUsage_omit()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.IndexInfo.get_aConstraint_collation"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aConstraint_collation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.IndexInfo.get_aConstraint_iColumn"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aConstraint_iColumn()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.IndexInfo.get_aConstraint_op"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aConstraint_op()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.IndexInfo.get_aConstraint_rhs"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aConstraint_rhs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.IndexInfo.get_aConstraint_usable"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aConstraint_usable()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.IndexInfo.get_aOrderBy_desc"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aOrderBy_desc()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.IndexInfo.get_aOrderBy_iColumn"><code class="docutils literal notranslate"><span class="pre">IndexInfo.get_aOrderBy_iColumn()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.IndexInfo.idxFlags"><code class="docutils literal notranslate"><span class="pre">IndexInfo.idxFlags</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.IndexInfo.idxNum"><code class="docutils literal notranslate"><span class="pre">IndexInfo.idxNum</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.IndexInfo.idxStr"><code class="docutils literal notranslate"><span class="pre">IndexInfo.idxStr</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.IndexInfo.nConstraint"><code class="docutils literal notranslate"><span class="pre">IndexInfo.nConstraint</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.IndexInfo.nOrderBy"><code class="docutils literal notranslate"><span class="pre">IndexInfo.nOrderBy</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.IndexInfo.orderByConsumed"><code class="docutils literal notranslate"><span class="pre">IndexInfo.orderByConsumed</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.IndexInfo.set_aConstraintUsage_argvIndex"><code class="docutils literal notranslate"><span class="pre">IndexInfo.set_aConstraintUsage_argvIndex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.IndexInfo.set_aConstraintUsage_in"><code class="docutils literal notranslate"><span class="pre">IndexInfo.set_aConstraintUsage_in()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.IndexInfo.set_aConstraintUsage_omit"><code class="docutils literal notranslate"><span class="pre">IndexInfo.set_aConstraintUsage_omit()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#vtmodule-class">VTModule class</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#apsw.VTModule"><code class="docutils literal notranslate"><span class="pre">VTModule</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.VTModule.Connect"><code class="docutils literal notranslate"><span class="pre">VTModule.Connect()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.VTModule.Create"><code class="docutils literal notranslate"><span class="pre">VTModule.Create()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.VTModule.ShadowName"><code class="docutils literal notranslate"><span class="pre">VTModule.ShadowName()</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTModule"><code class="docutils literal notranslate"><span class="pre">VTModule</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTModule.Connect"><code class="docutils literal notranslate"><span class="pre">VTModule.Connect()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTModule.Create"><code class="docutils literal notranslate"><span class="pre">VTModule.Create()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTModule.ShadowName"><code class="docutils literal notranslate"><span class="pre">VTModule.ShadowName()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#vttable-class">VTTable class</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#apsw.VTTable"><code class="docutils literal notranslate"><span class="pre">VTTable</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.Begin"><code class="docutils literal notranslate"><span class="pre">VTTable.Begin()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.BestIndex"><code class="docutils literal notranslate"><span class="pre">VTTable.BestIndex()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.BestIndexObject"><code class="docutils literal notranslate"><span class="pre">VTTable.BestIndexObject()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.Commit"><code class="docutils literal notranslate"><span class="pre">VTTable.Commit()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.Destroy"><code class="docutils literal notranslate"><span class="pre">VTTable.Destroy()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.Disconnect"><code class="docutils literal notranslate"><span class="pre">VTTable.Disconnect()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.FindFunction"><code class="docutils literal notranslate"><span class="pre">VTTable.FindFunction()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.Integrity"><code class="docutils literal notranslate"><span class="pre">VTTable.Integrity()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.Open"><code class="docutils literal notranslate"><span class="pre">VTTable.Open()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.Release"><code class="docutils literal notranslate"><span class="pre">VTTable.Release()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.Rename"><code class="docutils literal notranslate"><span class="pre">VTTable.Rename()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.Rollback"><code class="docutils literal notranslate"><span class="pre">VTTable.Rollback()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.Savepoint"><code class="docutils literal notranslate"><span class="pre">VTTable.Savepoint()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.Sync"><code class="docutils literal notranslate"><span class="pre">VTTable.Sync()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.UpdateChangeRow"><code class="docutils literal notranslate"><span class="pre">VTTable.UpdateChangeRow()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.UpdateDeleteRow"><code class="docutils literal notranslate"><span class="pre">VTTable.UpdateDeleteRow()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.VTTable.UpdateInsertRow"><code class="docutils literal notranslate"><span class="pre">VTTable.UpdateInsertRow()</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTTable"><code class="docutils literal notranslate"><span class="pre">VTTable</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTTable.Begin"><code class="docutils literal notranslate"><span class="pre">VTTable.Begin()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTTable.BestIndex"><code class="docutils literal notranslate"><span class="pre">VTTable.BestIndex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTTable.BestIndexObject"><code class="docutils literal notranslate"><span class="pre">VTTable.BestIndexObject()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTTable.Commit"><code class="docutils literal notranslate"><span class="pre">VTTable.Commit()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTTable.Destroy"><code class="docutils literal notranslate"><span class="pre">VTTable.Destroy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTTable.Disconnect"><code class="docutils literal notranslate"><span class="pre">VTTable.Disconnect()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTTable.FindFunction"><code class="docutils literal notranslate"><span class="pre">VTTable.FindFunction()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTTable.Integrity"><code class="docutils literal notranslate"><span class="pre">VTTable.Integrity()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTTable.Open"><code class="docutils literal notranslate"><span class="pre">VTTable.Open()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTTable.Release"><code class="docutils literal notranslate"><span class="pre">VTTable.Release()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTTable.Rename"><code class="docutils literal notranslate"><span class="pre">VTTable.Rename()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTTable.Rollback"><code class="docutils literal notranslate"><span class="pre">VTTable.Rollback()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTTable.Savepoint"><code class="docutils literal notranslate"><span class="pre">VTTable.Savepoint()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTTable.Sync"><code class="docutils literal notranslate"><span class="pre">VTTable.Sync()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTTable.UpdateChangeRow"><code class="docutils literal notranslate"><span class="pre">VTTable.UpdateChangeRow()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTTable.UpdateDeleteRow"><code class="docutils literal notranslate"><span class="pre">VTTable.UpdateDeleteRow()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTTable.UpdateInsertRow"><code class="docutils literal notranslate"><span class="pre">VTTable.UpdateInsertRow()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#vtcursor-class">VTCursor class</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#apsw.VTCursor"><code class="docutils literal notranslate"><span class="pre">VTCursor</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.VTCursor.Close"><code class="docutils literal notranslate"><span class="pre">VTCursor.Close()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.VTCursor.Column"><code class="docutils literal notranslate"><span class="pre">VTCursor.Column()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.VTCursor.ColumnNoChange"><code class="docutils literal notranslate"><span class="pre">VTCursor.ColumnNoChange()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.VTCursor.Eof"><code class="docutils literal notranslate"><span class="pre">VTCursor.Eof()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.VTCursor.Filter"><code class="docutils literal notranslate"><span class="pre">VTCursor.Filter()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.VTCursor.Next"><code class="docutils literal notranslate"><span class="pre">VTCursor.Next()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.VTCursor.Rowid"><code class="docutils literal notranslate"><span class="pre">VTCursor.Rowid()</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTCursor"><code class="docutils literal notranslate"><span class="pre">VTCursor</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTCursor.Close"><code class="docutils literal notranslate"><span class="pre">VTCursor.Close()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTCursor.Column"><code class="docutils literal notranslate"><span class="pre">VTCursor.Column()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTCursor.ColumnNoChange"><code class="docutils literal notranslate"><span class="pre">VTCursor.ColumnNoChange()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTCursor.Eof"><code class="docutils literal notranslate"><span class="pre">VTCursor.Eof()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTCursor.Filter"><code class="docutils literal notranslate"><span class="pre">VTCursor.Filter()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTCursor.Next"><code class="docutils literal notranslate"><span class="pre">VTCursor.Next()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.VTCursor.Rowid"><code class="docutils literal notranslate"><span class="pre">VTCursor.Rowid()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -984,7 +974,7 @@ appropriate indexed and constrained row.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jun 16, 2024.
+      <span class="lastupdated">Last updated on Aug 13, 2024.
       </span></p>
   </div>
 

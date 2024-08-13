@@ -1,25 +1,23 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Installation and customization &mdash; APSW 3.46.0.1 documentation</title>
+  <title>Installation and customization &mdash; APSW 3.46.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=66b59bf7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
 
   
     <link rel="shortcut icon" href="_static/favicon.ico"/>
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=d98f5d2b"></script>
-        <script src="_static/doctools.js?v=9a2dae69"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=0c22936b"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
@@ -42,7 +40,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.46.0.1
+                3.46.1.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -57,7 +55,10 @@
 <li class="toctree-l1"><a class="reference internal" href="tips.html">Tips</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example.html">Example/Tour</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation and customization</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#pypi-recommended">PyPI (recommended)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pypi-recommended">PyPI (recommended)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#encryption">Encryption</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#linux-bsd-provided">Linux/BSD provided</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#source">Source</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#verifying-your-download">Verifying your download</a></li>
@@ -153,6 +154,11 @@ is enabled, providing <a class="reference internal" href="cursor.html#apsw.Curso
 <p>The PyPI releases include pre-built binaries for common platforms.  If yours is not covered, then
 pip will download the source release and automatically compile with the same settings.  It will
 require a C compiler and the Python development header files.</p>
+<section id="encryption">
+<h3>Encryption<a class="headerlink" href="#encryption" title="Link to this heading"></a></h3>
+<p>APSW compiled against SQLite with <a class="reference external" href="https://utelle.github.io/SQLite3MultipleCiphers/">SQLite3MultipleCiphers</a> is available via
+its author at <a class="reference external" href="https://pypi.org/project/apsw-sqlite3mc/">https://pypi.org/project/apsw-sqlite3mc/</a></p>
+</section>
 </section>
 <section id="linux-bsd-provided">
 <h2>Linux/BSD provided<a class="headerlink" href="#linux-bsd-provided" title="Link to this heading"></a></h2>
@@ -191,9 +197,9 @@ are currently on.</p>
 source from <a class="reference external" href="https://pypi.org/project/apsw/">PyPi</a> then ensure you
 edit the <code class="file docutils literal notranslate"><span class="pre">setup.apsw</span></code> file inside.</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.46.0.1/apsw-3.46.0.1.zip">apsw-3.46.0.1.zip</a>
+<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.46.1.0/apsw-3.46.1.0.zip">apsw-3.46.1.0.zip</a>
 (Source, includes this HTML Help)</p></li>
-<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.46.0.1/apsw-3.46.0.1.cosign-bundle">apsw-3.46.0.1.cosign-bundle</a>
+<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.46.1.0/apsw-3.46.1.0.cosign-bundle">apsw-3.46.1.0.cosign-bundle</a>
 cosign signature</p></li>
 </ul>
 <section id="verifying-your-download">
@@ -212,8 +218,8 @@ including Linux, MacOS, and Windows.</p>
 <p>Checking the signature needs to provide the source release, the
 cosign bundle, the maintainer id, and issuer.  The command is all
 one line shown here across multiple lines for clarity.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>cosign<span class="w"> </span>verify-blob<span class="w"> </span>apsw-3.46.0.1.zip<span class="w">                           </span><span class="se">\</span>
-<span class="w">    </span>--bundle<span class="w"> </span>apsw-3.46.0.1.cosign-bundle<span class="w">                         </span><span class="se">\</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>cosign<span class="w"> </span>verify-blob<span class="w"> </span>apsw-3.46.1.0.zip<span class="w">                           </span><span class="se">\</span>
+<span class="w">    </span>--bundle<span class="w"> </span>apsw-3.46.1.0.cosign-bundle<span class="w">                         </span><span class="se">\</span>
 <span class="w">    </span>--certificate-identity<span class="o">=</span>rogerb@rogerbinns.com<span class="w">                 </span><span class="se">\</span>
 <span class="w">    </span>--certificate-oidc-issuer<span class="o">=</span>https://github.com/login/oauth
 <span class="go">Verified OK</span>
@@ -437,7 +443,7 @@ supported versions running the tests.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jun 16, 2024.
+      <span class="lastupdated">Last updated on Aug 13, 2024.
       </span></p>
   </div>
 

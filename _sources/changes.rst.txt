@@ -10,6 +10,21 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+3.46.1.0
+========
+
+The shell :ref:`dump <shell-cmd-dump>` command outputs the
+`application_id
+<https://www.sqlite.org/pragma.html#pragma_application_id>`__ in
+addition to the `user_version
+<https://www.sqlite.org/pragma.html#pragma_user_version>`__.
+
+`PyPI <https://pypi.org/project/apsw/>`__ binary builds for `Python
+3.13 now available
+<https://github.com/pypa/cibuildwheel/releases/tag/v2.20.0>`__, as
+well as `older Python ARM64
+<https://github.com/rogerbinns/apsw/pull/530>`__ are available.
+
 3.46.0.1
 ========
 

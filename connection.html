@@ -1,25 +1,23 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Connections to a database &mdash; APSW 3.46.0.1 documentation</title>
+  <title>Connections to a database &mdash; APSW 3.46.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=66b59bf7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
 
   
     <link rel="shortcut icon" href="_static/favicon.ico"/>
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=d98f5d2b"></script>
-        <script src="_static/doctools.js?v=9a2dae69"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=0c22936b"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
@@ -42,7 +40,7 @@
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.46.0.1
+                3.46.1.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -61,83 +59,81 @@
 <li class="toctree-l1"><a class="reference internal" href="apsw.html">APSW Module</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Connections to a database</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#connection-class">Connection class</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection"><code class="docutils literal notranslate"><span class="pre">Connection</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.__enter__"><code class="docutils literal notranslate"><span class="pre">Connection.__enter__()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.__exit__"><code class="docutils literal notranslate"><span class="pre">Connection.__exit__()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.authorizer"><code class="docutils literal notranslate"><span class="pre">Connection.authorizer</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.autovacuum_pages"><code class="docutils literal notranslate"><span class="pre">Connection.autovacuum_pages()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.backup"><code class="docutils literal notranslate"><span class="pre">Connection.backup()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.blob_open"><code class="docutils literal notranslate"><span class="pre">Connection.blob_open()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.cache_flush"><code class="docutils literal notranslate"><span class="pre">Connection.cache_flush()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.cache_stats"><code class="docutils literal notranslate"><span class="pre">Connection.cache_stats()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.changes"><code class="docutils literal notranslate"><span class="pre">Connection.changes()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.close"><code class="docutils literal notranslate"><span class="pre">Connection.close()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.collation_needed"><code class="docutils literal notranslate"><span class="pre">Connection.collation_needed()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.column_metadata"><code class="docutils literal notranslate"><span class="pre">Connection.column_metadata()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.config"><code class="docutils literal notranslate"><span class="pre">Connection.config()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.create_aggregate_function"><code class="docutils literal notranslate"><span class="pre">Connection.create_aggregate_function()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.create_collation"><code class="docutils literal notranslate"><span class="pre">Connection.create_collation()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.create_module"><code class="docutils literal notranslate"><span class="pre">Connection.create_module()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.create_scalar_function"><code class="docutils literal notranslate"><span class="pre">Connection.create_scalar_function()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.create_window_function"><code class="docutils literal notranslate"><span class="pre">Connection.create_window_function()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.cursor"><code class="docutils literal notranslate"><span class="pre">Connection.cursor()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.cursor_factory"><code class="docutils literal notranslate"><span class="pre">Connection.cursor_factory</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.db_filename"><code class="docutils literal notranslate"><span class="pre">Connection.db_filename()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.db_names"><code class="docutils literal notranslate"><span class="pre">Connection.db_names()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.deserialize"><code class="docutils literal notranslate"><span class="pre">Connection.deserialize()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.drop_modules"><code class="docutils literal notranslate"><span class="pre">Connection.drop_modules()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.enable_load_extension"><code class="docutils literal notranslate"><span class="pre">Connection.enable_load_extension()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.exec_trace"><code class="docutils literal notranslate"><span class="pre">Connection.exec_trace</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.execute"><code class="docutils literal notranslate"><span class="pre">Connection.execute()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.executemany"><code class="docutils literal notranslate"><span class="pre">Connection.executemany()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.file_control"><code class="docutils literal notranslate"><span class="pre">Connection.file_control()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.filename"><code class="docutils literal notranslate"><span class="pre">Connection.filename</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.filename_journal"><code class="docutils literal notranslate"><span class="pre">Connection.filename_journal</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.filename_wal"><code class="docutils literal notranslate"><span class="pre">Connection.filename_wal</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.get_autocommit"><code class="docutils literal notranslate"><span class="pre">Connection.get_autocommit()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.get_exec_trace"><code class="docutils literal notranslate"><span class="pre">Connection.get_exec_trace()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.get_row_trace"><code class="docutils literal notranslate"><span class="pre">Connection.get_row_trace()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.in_transaction"><code class="docutils literal notranslate"><span class="pre">Connection.in_transaction</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.interrupt"><code class="docutils literal notranslate"><span class="pre">Connection.interrupt()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.is_interrupted"><code class="docutils literal notranslate"><span class="pre">Connection.is_interrupted</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.last_insert_rowid"><code class="docutils literal notranslate"><span class="pre">Connection.last_insert_rowid()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.limit"><code class="docutils literal notranslate"><span class="pre">Connection.limit()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.load_extension"><code class="docutils literal notranslate"><span class="pre">Connection.load_extension()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.open_flags"><code class="docutils literal notranslate"><span class="pre">Connection.open_flags</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.open_vfs"><code class="docutils literal notranslate"><span class="pre">Connection.open_vfs</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.overload_function"><code class="docutils literal notranslate"><span class="pre">Connection.overload_function()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.pragma"><code class="docutils literal notranslate"><span class="pre">Connection.pragma()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.read"><code class="docutils literal notranslate"><span class="pre">Connection.read()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.readonly"><code class="docutils literal notranslate"><span class="pre">Connection.readonly()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.release_memory"><code class="docutils literal notranslate"><span class="pre">Connection.release_memory()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.row_trace"><code class="docutils literal notranslate"><span class="pre">Connection.row_trace</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.serialize"><code class="docutils literal notranslate"><span class="pre">Connection.serialize()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.set_authorizer"><code class="docutils literal notranslate"><span class="pre">Connection.set_authorizer()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.set_busy_handler"><code class="docutils literal notranslate"><span class="pre">Connection.set_busy_handler()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.set_busy_timeout"><code class="docutils literal notranslate"><span class="pre">Connection.set_busy_timeout()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.set_commit_hook"><code class="docutils literal notranslate"><span class="pre">Connection.set_commit_hook()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.set_exec_trace"><code class="docutils literal notranslate"><span class="pre">Connection.set_exec_trace()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.set_last_insert_rowid"><code class="docutils literal notranslate"><span class="pre">Connection.set_last_insert_rowid()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.set_profile"><code class="docutils literal notranslate"><span class="pre">Connection.set_profile()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.set_progress_handler"><code class="docutils literal notranslate"><span class="pre">Connection.set_progress_handler()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.set_rollback_hook"><code class="docutils literal notranslate"><span class="pre">Connection.set_rollback_hook()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.set_row_trace"><code class="docutils literal notranslate"><span class="pre">Connection.set_row_trace()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.set_update_hook"><code class="docutils literal notranslate"><span class="pre">Connection.set_update_hook()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.set_wal_hook"><code class="docutils literal notranslate"><span class="pre">Connection.set_wal_hook()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.sqlite3_pointer"><code class="docutils literal notranslate"><span class="pre">Connection.sqlite3_pointer()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.status"><code class="docutils literal notranslate"><span class="pre">Connection.status()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.system_errno"><code class="docutils literal notranslate"><span class="pre">Connection.system_errno</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.table_exists"><code class="docutils literal notranslate"><span class="pre">Connection.table_exists()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.total_changes"><code class="docutils literal notranslate"><span class="pre">Connection.total_changes()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.trace_v2"><code class="docutils literal notranslate"><span class="pre">Connection.trace_v2()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.txn_state"><code class="docutils literal notranslate"><span class="pre">Connection.txn_state()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.vfsname"><code class="docutils literal notranslate"><span class="pre">Connection.vfsname()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.vtab_config"><code class="docutils literal notranslate"><span class="pre">Connection.vtab_config()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.vtab_on_conflict"><code class="docutils literal notranslate"><span class="pre">Connection.vtab_on_conflict()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.wal_autocheckpoint"><code class="docutils literal notranslate"><span class="pre">Connection.wal_autocheckpoint()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#apsw.Connection.wal_checkpoint"><code class="docutils literal notranslate"><span class="pre">Connection.wal_checkpoint()</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection"><code class="docutils literal notranslate"><span class="pre">Connection</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.__enter__"><code class="docutils literal notranslate"><span class="pre">Connection.__enter__()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.__exit__"><code class="docutils literal notranslate"><span class="pre">Connection.__exit__()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.authorizer"><code class="docutils literal notranslate"><span class="pre">Connection.authorizer</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.autovacuum_pages"><code class="docutils literal notranslate"><span class="pre">Connection.autovacuum_pages()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.backup"><code class="docutils literal notranslate"><span class="pre">Connection.backup()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.blob_open"><code class="docutils literal notranslate"><span class="pre">Connection.blob_open()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.cache_flush"><code class="docutils literal notranslate"><span class="pre">Connection.cache_flush()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.cache_stats"><code class="docutils literal notranslate"><span class="pre">Connection.cache_stats()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.changes"><code class="docutils literal notranslate"><span class="pre">Connection.changes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.close"><code class="docutils literal notranslate"><span class="pre">Connection.close()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.collation_needed"><code class="docutils literal notranslate"><span class="pre">Connection.collation_needed()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.column_metadata"><code class="docutils literal notranslate"><span class="pre">Connection.column_metadata()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.config"><code class="docutils literal notranslate"><span class="pre">Connection.config()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.create_aggregate_function"><code class="docutils literal notranslate"><span class="pre">Connection.create_aggregate_function()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.create_collation"><code class="docutils literal notranslate"><span class="pre">Connection.create_collation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.create_module"><code class="docutils literal notranslate"><span class="pre">Connection.create_module()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.create_scalar_function"><code class="docutils literal notranslate"><span class="pre">Connection.create_scalar_function()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.create_window_function"><code class="docutils literal notranslate"><span class="pre">Connection.create_window_function()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.cursor"><code class="docutils literal notranslate"><span class="pre">Connection.cursor()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.cursor_factory"><code class="docutils literal notranslate"><span class="pre">Connection.cursor_factory</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.db_filename"><code class="docutils literal notranslate"><span class="pre">Connection.db_filename()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.db_names"><code class="docutils literal notranslate"><span class="pre">Connection.db_names()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.deserialize"><code class="docutils literal notranslate"><span class="pre">Connection.deserialize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.drop_modules"><code class="docutils literal notranslate"><span class="pre">Connection.drop_modules()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.enable_load_extension"><code class="docutils literal notranslate"><span class="pre">Connection.enable_load_extension()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.exec_trace"><code class="docutils literal notranslate"><span class="pre">Connection.exec_trace</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.execute"><code class="docutils literal notranslate"><span class="pre">Connection.execute()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.executemany"><code class="docutils literal notranslate"><span class="pre">Connection.executemany()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.file_control"><code class="docutils literal notranslate"><span class="pre">Connection.file_control()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.filename"><code class="docutils literal notranslate"><span class="pre">Connection.filename</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.filename_journal"><code class="docutils literal notranslate"><span class="pre">Connection.filename_journal</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.filename_wal"><code class="docutils literal notranslate"><span class="pre">Connection.filename_wal</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.get_autocommit"><code class="docutils literal notranslate"><span class="pre">Connection.get_autocommit()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.get_exec_trace"><code class="docutils literal notranslate"><span class="pre">Connection.get_exec_trace()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.get_row_trace"><code class="docutils literal notranslate"><span class="pre">Connection.get_row_trace()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.in_transaction"><code class="docutils literal notranslate"><span class="pre">Connection.in_transaction</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.interrupt"><code class="docutils literal notranslate"><span class="pre">Connection.interrupt()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.is_interrupted"><code class="docutils literal notranslate"><span class="pre">Connection.is_interrupted</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.last_insert_rowid"><code class="docutils literal notranslate"><span class="pre">Connection.last_insert_rowid()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.limit"><code class="docutils literal notranslate"><span class="pre">Connection.limit()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.load_extension"><code class="docutils literal notranslate"><span class="pre">Connection.load_extension()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.open_flags"><code class="docutils literal notranslate"><span class="pre">Connection.open_flags</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.open_vfs"><code class="docutils literal notranslate"><span class="pre">Connection.open_vfs</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.overload_function"><code class="docutils literal notranslate"><span class="pre">Connection.overload_function()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.pragma"><code class="docutils literal notranslate"><span class="pre">Connection.pragma()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.read"><code class="docutils literal notranslate"><span class="pre">Connection.read()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.readonly"><code class="docutils literal notranslate"><span class="pre">Connection.readonly()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.release_memory"><code class="docutils literal notranslate"><span class="pre">Connection.release_memory()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.row_trace"><code class="docutils literal notranslate"><span class="pre">Connection.row_trace</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.serialize"><code class="docutils literal notranslate"><span class="pre">Connection.serialize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.set_authorizer"><code class="docutils literal notranslate"><span class="pre">Connection.set_authorizer()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.set_busy_handler"><code class="docutils literal notranslate"><span class="pre">Connection.set_busy_handler()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.set_busy_timeout"><code class="docutils literal notranslate"><span class="pre">Connection.set_busy_timeout()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.set_commit_hook"><code class="docutils literal notranslate"><span class="pre">Connection.set_commit_hook()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.set_exec_trace"><code class="docutils literal notranslate"><span class="pre">Connection.set_exec_trace()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.set_last_insert_rowid"><code class="docutils literal notranslate"><span class="pre">Connection.set_last_insert_rowid()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.set_profile"><code class="docutils literal notranslate"><span class="pre">Connection.set_profile()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.set_progress_handler"><code class="docutils literal notranslate"><span class="pre">Connection.set_progress_handler()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.set_rollback_hook"><code class="docutils literal notranslate"><span class="pre">Connection.set_rollback_hook()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.set_row_trace"><code class="docutils literal notranslate"><span class="pre">Connection.set_row_trace()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.set_update_hook"><code class="docutils literal notranslate"><span class="pre">Connection.set_update_hook()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.set_wal_hook"><code class="docutils literal notranslate"><span class="pre">Connection.set_wal_hook()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.sqlite3_pointer"><code class="docutils literal notranslate"><span class="pre">Connection.sqlite3_pointer()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.status"><code class="docutils literal notranslate"><span class="pre">Connection.status()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.system_errno"><code class="docutils literal notranslate"><span class="pre">Connection.system_errno</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.table_exists"><code class="docutils literal notranslate"><span class="pre">Connection.table_exists()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.total_changes"><code class="docutils literal notranslate"><span class="pre">Connection.total_changes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.trace_v2"><code class="docutils literal notranslate"><span class="pre">Connection.trace_v2()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.txn_state"><code class="docutils literal notranslate"><span class="pre">Connection.txn_state()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.vfsname"><code class="docutils literal notranslate"><span class="pre">Connection.vfsname()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.vtab_config"><code class="docutils literal notranslate"><span class="pre">Connection.vtab_config()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.vtab_on_conflict"><code class="docutils literal notranslate"><span class="pre">Connection.vtab_on_conflict()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.wal_autocheckpoint"><code class="docutils literal notranslate"><span class="pre">Connection.wal_autocheckpoint()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Connection.wal_checkpoint"><code class="docutils literal notranslate"><span class="pre">Connection.wal_checkpoint()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -1536,7 +1532,7 @@ number of frames checkpointed as described in the
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jun 16, 2024.
+      <span class="lastupdated">Last updated on Aug 13, 2024.
       </span></p>
   </div>
 
