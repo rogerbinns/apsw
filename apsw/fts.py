@@ -1702,7 +1702,7 @@ class FTS5Table:
 
         * Combining such as ``some thing`` to ``something``
         * Splitting such as ``noone`` to ``no one``
-        * Replacing unknown/rare text with more popular :meth:`close
+        * Replacing unknown/rare text with more popular :func:`close
           matches <difflib.get_close_matches>`.
 
         The query is parsed, tokenized, replacement tokens
