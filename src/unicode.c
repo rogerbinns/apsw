@@ -125,7 +125,8 @@ typedef struct
 
 #define TEXT_INIT                                                                                                      \
   {                                                                                                                    \
-    .pos = offset, .curchar = -1,                                                                                      \
+    .pos = offset,                                                                                                     \
+    .curchar = -1,                                                                                                     \
     .lookahead = (offset == text_end) ? EOT : cat_func(PyUnicode_READ(text_kind, text_data, offset)),                  \
   }
 
@@ -1735,6 +1736,56 @@ version_added(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t 
   return PyUnicode_FromString(age);
 }
 
+/* provides all the tables */
+#include "dbnames.c"
+
+static PyObject *
+name_expand(const unsigned char *name)
+{
+  unsigned compressed_length = name[0];
+  if (name == 0)
+    Py_RETURN_NONE;
+
+  /* first pass to get length */
+  unsigned expanded_length = 0, pos;
+  for (pos = 0; pos < compressed_length; pos++)
+    expanded_length += name_subs[name[1 + pos]][0];
+
+  /* now construct the string */
+  PyObject *result = PyUnicode_New(expanded_length, 127);
+  if (!result)
+    return NULL;
+
+  /* and copy each segment */
+  Py_ssize_t result_offset = 0;
+  for (pos = 0; pos < compressed_length; pos++)
+  {
+    unsigned segment_size = name_subs[name[1 + pos]][0];
+    unsigned segment_offset = 0;
+    for (; segment_offset < segment_size; result_offset++, segment_offset++)
+      PyUnicode_WriteChar(result, result_offset, name_subs[name[1 + pos]][1 + segment_offset]);
+  }
+
+  return result;
+}
+
+static PyObject *
+codepoint_name(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  Py_UCS4 codepoint;
+
+  ARG_PROLOG(1, "codepoint");
+  ARG_MANDATORY ARG_codepoint(codepoint);
+  ARG_EPILOG(NULL, "codepoint_name(codepoint: int)", );
+
+  NAME_RANGES(codepoint);
+
+  if (codepoint >= TAG_RANGE_START && codepoint <= TAG_RANGE_END)
+    return name_expand(tag_range_names[codepoint - TAG_RANGE_START]);
+
+  Py_RETURN_NONE;
+}
+
 /* Given a str offset provide the corresponding UTF8 bytes offset */
 
 typedef struct
@@ -2326,6 +2377,7 @@ static PyMethodDef methods[] = {
   { "grapheme_find", (PyCFunction)grapheme_find, METH_FASTCALL | METH_KEYWORDS, "Find substring in text" },
   { "version_added", (PyCFunction)version_added, METH_FASTCALL | METH_KEYWORDS,
     "Version of unicode a codepoint was added" },
+  { "codepoint_name", (PyCFunction)codepoint_name, METH_FASTCALL | METH_KEYWORDS, "codepoint name" },
   { NULL, NULL, 0, NULL },
 };
 
