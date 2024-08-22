@@ -214,4 +214,4 @@ def generate_names_code(filename: str) -> str:
 
 c = generate_names_code(sys.argv[1])
 
-open("dbnames.h", "wt").write(c)
+open("src/dbnames.c", "wt").write(c)
