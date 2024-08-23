@@ -1736,14 +1736,77 @@ version_added(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t 
   return PyUnicode_FromString(age);
 }
 
+static PyObject *
+hangul_syllable(Py_UCS4 codepoint)
+{
+  /* Chapter 3 of the unicode standard gives example Java code for how
+     to do this.  Annoyingly it is only as a PDF so not easily linked. */
+
+  /* common constants (unused omitted) */
+  int SBase = 0xAC00, VCount = 21, TCount = 28, NCount = VCount * TCount;
+
+  /* tables */
+  static const char *JAMO_L_TABLE[]
+      = { "G", "GG", "N", "D", "DD", "R", "M", "B", "BB", "S", "SS", "", "J", "JJ", "C", "K", "T", "P", "H" };
+  static const char *JAMO_V_TABLE[] = { "A",  "AE", "YA", "YAE", "EO", "E",  "YEO", "YE", "O",  "WA", "WAE",
+                                        "OE", "YO", "U",  "WEO", "WE", "WI", "YU",  "EU", "YI", "I" };
+  static const char *JAMO_T_TABLE[]
+      = { "",   "G",  "GG", "GS", "N",  "NJ", "NH", "D",  "L", "LG", "LM", "LB", "LS", "LT",
+          "LP", "LH", "M",  "B",  "BS", "S",  "SS", "NG", "J", "C",  "K",  "T",  "P",  "H" };
+
+  unsigned SIndex = codepoint - SBase;
+  assert(codepoint >= 0xAC00 && codepoint <= 0xD7A3);
+  unsigned LIndex = SIndex / NCount;
+  unsigned VIndex = (SIndex % NCount) / TCount;
+  unsigned TIndex = SIndex % TCount;
+
+  static const char *PREFIX = "HANGUL SYLLABLE ";
+
+  unsigned size
+      = strlen(PREFIX) + strlen(JAMO_L_TABLE[LIndex]) + strlen(JAMO_V_TABLE[VIndex]) + strlen(JAMO_T_TABLE[TIndex]);
+
+  PyObject *result = PyUnicode_New(size, 127);
+  if (!result)
+    return NULL;
+
+  Py_ssize_t index = 0;
+  const char *src = PREFIX;
+
+#define COPY_STR(source)                                                                                               \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    src = source;                                                                                                      \
+    while (*src)                                                                                                       \
+    {                                                                                                                  \
+      PyUnicode_WriteChar(result, index, *src);                                                                        \
+      index++;                                                                                                         \
+      src++;                                                                                                           \
+    }                                                                                                                  \
+  } while (0);
+
+  COPY_STR(PREFIX);
+  COPY_STR(JAMO_L_TABLE[LIndex]);
+  COPY_STR(JAMO_V_TABLE[VIndex]);
+  COPY_STR(JAMO_T_TABLE[TIndex]);
+
+  return result;
+}
+
 /* provides all the tables */
 #include "dbnames.c"
 
 static PyObject *
-name_expand(const unsigned char *name)
+name_expand(const unsigned char *name, unsigned skip)
 {
   unsigned compressed_length = name[0];
-  if (name == 0)
+  while (skip)
+  {
+    name += compressed_length + 1;
+    compressed_length = name[0];
+    skip--;
+  }
+
+  if (compressed_length == 0)
     Py_RETURN_NONE;
 
   /* first pass to get length */
@@ -1781,9 +1844,12 @@ codepoint_name(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t
   NAME_RANGES(codepoint);
 
   if (codepoint >= TAG_RANGE_START && codepoint <= TAG_RANGE_END)
-    return name_expand(tag_range_names[codepoint - TAG_RANGE_START]);
+    return name_expand(tag_range_names, codepoint - TAG_RANGE_START);
 
-  Py_RETURN_NONE;
+  if (codepoint >= 0xAC00 && codepoint <= 0xD7A3)
+    return hangul_syllable(codepoint);
+
+  return regular_codepoint_to_name(codepoint);
 }
 
 /* Given a str offset provide the corresponding UTF8 bytes offset */
