@@ -652,6 +652,10 @@ def text_wrap(
             yield "".join(accumulated) + " " * (width - line_width)
 
 
+def codepoint_name(codepoint: int | str) -> str | None:
+    "Name or None if it doesn't have one"
+    return _unicode.codepoint_name(codepoint)
+
 def version_added(codepoint: int | str) -> str | None:
     "Returns the unicode version the codepoint was added"
     return _unicode.version_added(codepoint)
@@ -992,7 +996,6 @@ def line_break_iter_with_offsets(text: str, offset: int = 0) -> Generator[tuple[
 
 if __name__ == "__main__":
     import argparse
-    import unicodedata
     import os
     import sys
     import atexit
@@ -1188,7 +1191,7 @@ use the C library function wcswidth, or use the wcwidth Python package wcswidth 
     def codepoint_details(kind, c: str, counter=None) -> str:
         if options.compact_codepoints:
             return f"U+{ord(c):04x}"
-        name = unicodedata.name(c, "<NO NAME>")
+        name = str(codepoint_name(c))
         cat = category(ord(c))
         counter = f"#{counter}:" if counter is not None else ""
         name += f" ({ cat } { apsw.fts.unicode_categories[cat] })"
@@ -1373,7 +1376,7 @@ use the C library function wcswidth, or use the wcwidth Python package wcswidth 
                 codepoints.extend(ord(c) for c in t)
 
         def uniname(cp):
-            return unicodedata.name(chr(cp), "<NO NAME>")
+            return str(codepoint_name(cp))
 
         def deets(cp):
             cat = category(cp)
@@ -1715,7 +1718,7 @@ use the C library function wcswidth, or use the wcwidth Python package wcswidth 
                         text_width(chr(cp)),
                         libc.wcswidth(chr(cp), 1000),
                         wcwidth.wcswidth(chr(cp)),
-                        unicodedata.name(chr(cp), "<NO NAME>"),
+                        str(codepoint_name(cp)),
                         version_added(cp),
                         category(cp),
                     ]
