@@ -345,7 +345,6 @@ class FTS(unittest.TestCase):
         self.assertEqual(0, proc.returncode)
         self.assertIn(b"Tips", proc.stdout)
 
-
     def testFTSHelpers(self):
         "Test various FTS helper functions"
         if not self.has_fts5():
@@ -1110,16 +1109,21 @@ class Unicode(unittest.TestCase):
                 self.assertEqual(list(meth_iter(test)), list(s[2] for s in seen))
                 self.assertEqual(list(meth_iter_with_offsets(test)), seen)
 
-    def testBreaksFull(self):
-        "Tests full official break tests (if available)"
+    def getucdzip(self) -> pathlib.Path | None:
+        "Returns UCD.zip path if found"
         # You need to download https://www.unicode.org/Public/UCD/latest/ucd/UCD.zip
         # and have the file in one of the following directories
         testzip = None
         for location in (".", "..", "../ucd"):
             check = pathlib.Path(location, "UCD.zip")
             if check.is_file():
-                testzip = check
-                break
+                return check
+        return None
+
+    def testBreaksFull(self):
+        "Tests full official break tests (if available)"
+
+        testzip = self.getucdzip()
         if not testzip:
             return
 
@@ -1146,6 +1150,49 @@ class Unicode(unittest.TestCase):
             [sys.executable] + cov_params + ["-m", "apsw.unicode"] + list(args),
             capture_output=True,
         )
+
+    def testCodepointNames(self):
+        self.assertRaises(TypeError, apsw.unicode.codepoint_name)
+        self.assertRaises(TypeError, apsw.unicode.codepoint_name, "hello")
+        self.assertRaises(ValueError, apsw.unicode.codepoint_name, -2)
+        self.assertRaises(ValueError, apsw.unicode.codepoint_name, sys.maxunicode + 1)
+
+        for codepoint, name in (
+            (sys.maxunicode, None),
+            (0, None),
+        ):
+            self.assertEqual(apsw.unicode.codepoint_name(codepoint), name)
+            self.assertEqual(apsw.unicode.codepoint_name(chr(codepoint)), name)
+
+        testzip = self.getucdzip()
+        if not testzip:
+            return
+
+        tested = set()
+        with zipfile.ZipFile(testzip) as zip:
+            with zip.open("extracted/DerivedName.txt") as src:
+                for line in src.read().decode().splitlines():
+                    if not line or line.startswith("#"):
+                        continue
+                    line = line.split(";")
+                    assert len(line) == 2
+                    if ".." in line[0]:
+                        start, end = (int(l.strip(), 16) for l in line[0].split(".."))
+                    else:
+                        start = end = int(line[0].strip(), 16)
+                    name = line[1].strip()
+                    for codepoint in range(start, end + 1):
+                        if name.endswith("-*"):
+                            expected = name[:-1] + f"{codepoint:04X}"
+                        else:
+                            expected = name
+                        self.assertEqual(apsw.unicode.codepoint_name(codepoint), expected, f"{codepoint=:04X}")
+                        self.assertNotIn(codepoint, tested)
+                        tested.add(codepoint)
+
+        for codepoint in range(0, sys.maxunicode + 1):
+            if codepoint not in tested:
+                self.assertIsNone(apsw.unicode.codepoint_name(codepoint), f"{codepoint=:04X}")
 
     def testCoverage(self):
         "Exhaustive codepoints for coverage"

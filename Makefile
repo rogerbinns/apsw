@@ -246,7 +246,8 @@ release: ## Signs built source file(s)
 	-rm -f dist/$(VERDIR).cosign-bundle
 	cosign sign-blob --yes --bundle dist/$(VERDIR).cosign-bundle dist/$(VERDIR).zip
 
-src/_unicodedb.c: ## Update generated Unicode database lookups
+src/_unicodedb.c: tools/ucdprops2code.py ## Update generated Unicode database lookups
+	-rm -f $@
 	$(PYTHON) tools/ucdprops2code.py $@
 
 # building a python debug interpreter

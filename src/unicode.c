@@ -1792,9 +1792,6 @@ hangul_syllable(Py_UCS4 codepoint)
   return result;
 }
 
-/* provides all the tables */
-#include "dbnames.c"
-
 static PyObject *
 name_expand(const unsigned char *name, unsigned skip)
 {

@@ -153,6 +153,8 @@ def generate_c() -> str:
     out.append("")
     out.extend(generate_c_table("age", "age", age_ranges))
     out.append("")
+    out.extend(ucdnames.generate_names_code(DerivedName_txt_contents))
+    out.append("")
 
     return "\n".join(out) + "\n"
 
@@ -714,7 +716,7 @@ def read_props(data_dir: str):
     extract_prop(source, props["grapheme"], "InCB; Consonant", "InCB_Consonant")
     extract_prop(source, props["grapheme"], "InCB; Extend", "InCB_Extend")
 
-    source = get_source("https://www.unicode.org/Public/UCD/latest/EquivalentUnifiedIdeograph.txt")
+    source = get_source("https://www.unicode.org/Public/UCD/latest/ucd/EquivalentUnifiedIdeograph.txt")
     extract_version("EquivalentUnifiedIdeograph.txt", source)
     extract_unified_ideograph(source)
 
@@ -735,6 +737,11 @@ def read_props(data_dir: str):
     source = get_source("https://www.unicode.org/Public/UCD/latest/ucd/LineBreak.txt")
     extract_version("LineBreak.txt", source)
     populate(source, props["line"])
+
+    global DerivedName_txt_contents
+    source = get_source("https://www.unicode.org/Public/UCD/latest/ucd/extracted/DerivedName.txt")
+    extract_version("DerivedName.txt", source)
+    DerivedName_txt_contents = source
 
 
 codepoint_to_category = {}
@@ -1061,6 +1068,9 @@ c_code_header = f"""\
 
 """
 
+# yes it is hacky
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import ucdnames
 
 if __name__ == "__main__":
     import argparse

@@ -62,6 +62,7 @@ Unicode lookups
    * Category information :func:`category`
    * Is an emoji or similar :func:`is_extended_pictographic`
    * Flag characters :func:`is_regional_indicator`
+   * Codepoint names :func:`codepoint_name`
 
 Case folding, accent removal
 
