@@ -270,12 +270,12 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
     }                                                                                                                  \
     else if (PyLong_Check(useargs[argp_optindex]))                                                                     \
     {                                                                                                                  \
-      unsigned long _tmpcp = PyLong_AsUnsignedLong(useargs[argp_optindex]);                                            \
-      if (_tmpcp == (unsigned long)-1 && PyErr_Occurred())                                                             \
+      long _tmpcp = PyLong_AsLong(useargs[argp_optindex]);                                                             \
+      if (_tmpcp == (long)-1 && PyErr_Occurred())                                                                      \
         goto param_error;                                                                                              \
-      if (_tmpcp > 0x10ffff)                                                                                           \
+      if (_tmpcp < 0 || _tmpcp > 0x10ffff)                                                                             \
       {                                                                                                                \
-        PyErr_Format(PyExc_ValueError, "Codepoint value %lu outside of range 0 to 0x10ffff", _tmpcp);                  \
+        PyErr_Format(PyExc_ValueError, "Codepoint value %ld outside of range 0 to 0x10ffff", _tmpcp);                  \
         goto param_error;                                                                                              \
       }                                                                                                                \
       varname = (Py_UCS4)_tmpcp;                                                                                       \
