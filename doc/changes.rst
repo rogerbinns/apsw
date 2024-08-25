@@ -28,7 +28,7 @@ output to a terminal, text wrapping, and more.
 
 :func:`apsw.ext.format_query_table` uses :mod:`apsw.unicode` to get
 widths and line breaks more accurate.  As a side effect it loses the
-`word_wrap` parameter.
+`word_wrap` parameter (breaking change).
 
 Added :attr:`Connection.data_version` for getting a change counter.
 `pragma data_version
