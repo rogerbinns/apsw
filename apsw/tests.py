@@ -22,6 +22,7 @@ import logging
 import math
 import mmap
 import os
+import pathlib
 import pickle
 import platform
 import queue
@@ -270,6 +271,17 @@ def deletefile(name):
         time.sleep(0.1)
 
 
+def deltempfiles():
+    for name in ("testdb", "testdb2", "testdb3", "testfile", "testfile2", "testdb2x", "test-shell-1",
+                    "test-shell-1.py", "test-shell-in", "test-shell-out", "test-shell-err"):
+        for i in "-shm", "-wal", "-journal", "":
+            if os.path.exists(TESTFILEPREFIX + name + i):
+                deletefile(TESTFILEPREFIX + name + i)
+
+def suppressWarning(name):
+    if hasattr(__builtins__, name):
+        warnings.simplefilter("ignore", getattr(__builtins__, name))
+
 openflags = apsw.SQLITE_OPEN_READWRITE | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_URI
 
 
@@ -318,13 +330,6 @@ class APSW(unittest.TestCase):
 
     blob_nargs = {'write': 1, 'read': 1, 'read_into': 1, 'reopen': 1, 'seek': 2}
 
-    def deltempfiles(self):
-        for name in ("testdb", "testdb2", "testdb3", "testfile", "testfile2", "testdb2x", "test-shell-1",
-                     "test-shell-1.py", "test-shell-in", "test-shell-out", "test-shell-err"):
-            for i in "-shm", "-wal", "-journal", "":
-                if os.path.exists(TESTFILEPREFIX + name + i):
-                    deletefile(TESTFILEPREFIX + name + i)
-
     def setUp(self):
         apsw.config(apsw.SQLITE_CONFIG_LOG, None)
         apsw.connection_hooks = []
@@ -332,7 +337,7 @@ class APSW(unittest.TestCase):
         for c in apsw.connections():
             c.close()
         gc.collect()
-        self.deltempfiles()
+        deltempfiles()
         self.db = apsw.Connection(TESTFILEPREFIX + "testdb", flags=openflags)
         self.warnings_filters = warnings.filters
         # zipvfs causes some test failures - issue #394
@@ -353,13 +358,10 @@ class APSW(unittest.TestCase):
         for c in apsw.connections():
             c.close()
         gc.collect()
-        self.deltempfiles()
+        deltempfiles()
         warnings.filters = self.warnings_filters
         getattr(warnings, "_filters_mutated", lambda: True)()
 
-    def suppressWarning(self, name):
-        if hasattr(__builtins__, name):
-            warnings.simplefilter("ignore", getattr(__builtins__, name))
 
     def assertRaisesRoot(self, exctype, *args, **kwargs):
         # With chained exceptions verifies the first exception raised matches type
@@ -8519,7 +8521,7 @@ class APSW(unittest.TestCase):
             self.assertRaises(apsw.shell.Shell.Error, s.cmdloop)
             for mode in "box", "qbox", "table":
                 reset()
-                cmd(f".mode { mode } --no-unicode --word-wrap --width 65")
+                cmd(f".mode { mode } --no-unicode --width 65")
                 s.cmdloop()
                 isempty(fh[1])
                 isempty(fh[2])
@@ -9071,7 +9073,7 @@ insert into xxblah values(3);
         ###
         ### Command - encoding
         ###
-        self.suppressWarning("ResourceWarning")
+        suppressWarning("ResourceWarning")
         for i in ".encoding one two", ".encoding", ".encoding utf8 another":
             reset()
             cmd(i)
@@ -9807,221 +9809,6 @@ shell.write(shell.stdout, "hello world\\n")
         for f in fh:
             f.close()
 
-    # Note that faults fire only once, so there is no need to reset
-    # them.  The testing for objects bigger than 2GB is done in
-    # testLargeObjects
-    def testzzFaultInjection(self):
-        "Deliberately inject faults to exercise all code paths"
-        if not getattr(apsw, "test_fixtures_present", None):
-            return
-
-        apsw.faultdict = dict()
-
-        def ShouldFault(name, pending_exception):
-            r = apsw.faultdict.get(name, False)
-            apsw.faultdict[name] = False
-            return r
-
-        sys.apsw_should_fault = ShouldFault
-
-        # Verify we test all fault locations
-        code = []
-        for fn in glob.glob("*/*.c"):
-            with open(fn, encoding="utf8") as f:
-                code.append(f.read())
-        code = "\n".join(code)
-
-        with open(__file__, "rt", encoding="utf8") as f:
-            test_code = f.read()
-
-        seen = set()
-
-        for macro, faultname in re.findall(r"(APSW_FAULT_INJECT)\s*[(]\s*(?P<fault_name>.*?)\s*,", code):
-            if faultname == "faultName":
-                continue
-            if faultname not in test_code:
-                raise Exception(f"Fault injected { faultname } not found in tests.py")
-            if faultname in seen:
-                raise Exception(f"Fault { faultname } seen multiple times")
-            seen.add(faultname)
-
-        def dummy(*args):
-            1 / 0
-
-        def dummy2(*args):
-            return 7
-
-        # The 1/0 in these tests is to cause a ZeroDivisionError so
-        # that an exception is always thrown.  If we catch that then
-        # it means earlier expected exceptions were not thrown.
-
-        ## Virtual table code
-        class Source:
-
-            def Create(self, *args):
-                return "create table foo(x,y)", Table()
-
-            Connect = Create
-
-        class Table:
-
-            def __init__(self):
-                self.data = [  #("rowid", "x", "y"),
-                    [0, 1, 2], [3, 4, 5]
-                ]
-
-            def Open(self):
-                return Cursor(self)
-
-            def BestIndex(self, *args):
-                return None
-
-            def UpdateChangeRow(self, rowid, newrowid, fields):
-                for i, row in enumerate(self.data):
-                    if row[0] == rowid:
-                        self.data[i] = [newrowid] + list(fields)
-
-            def FindFunction(self, *args):
-                return lambda *args: 1
-
-        class Cursor:
-
-            def __init__(self, table):
-                self.table = table
-                self.row = 0
-
-            def Eof(self):
-                return self.row >= len(self.table.data)
-
-            def Rowid(self):
-                return self.table.data[self.row][0]
-
-            def Column(self, col):
-                return self.table.data[self.row][1 + col]
-
-            def Filter(self, *args):
-                self.row = 0
-
-            def Next(self):
-                self.row += 1
-
-            def Close(self):
-                pass
-
-        ## BlobDeallocException
-        def f():
-            db = apsw.Connection(":memory:")
-            db.cursor().execute("create table foo(b);insert into foo(rowid,b) values(2,x'aabbccddee')")
-            blob = db.blob_open("main", "foo", "b", 2, False)  # open read-only
-            # deliberately cause problem
-            try:
-                blob.write(b'a')
-            except apsw.ReadOnlyError:
-                pass
-            # garbage collect
-            del blob
-            gc.collect()
-
-        self.assertRaisesUnraisable(apsw.ReadOnlyError, f)
-
-        ## ConnectionReadError
-        self.db.pragma("application_id", 0xdeadbeef)
-        self.db.read("main", 0, 0, 1)
-        apsw.faultdict["ConnectionReadError"] = True
-        self.assertRaises(apsw.IOError, self.db.read, "main", 0, 0, 1)
-
-        ### vfs routines
-
-        class FaultVFS(apsw.VFS):
-
-            def __init__(self, name="faultvfs", inherit="", makedefault=False):
-                super().__init__(name, inherit, makedefault=makedefault)
-
-            def xGetLastErrorLong(self):
-                return "a" * 1024, None
-
-            def xOpen(self, name, flags):
-                return FaultVFSFile(name, flags)
-
-        class FaultVFSFile(apsw.VFSFile):
-
-            def __init__(self, name, flags):
-                super().__init__("", name, flags)
-
-        vfs = FaultVFS()
-
-        ## APSWVFSBadVersion
-        apsw.faultdict["APSWVFSBadVersion"] = True
-        self.assertRaises(ValueError, apsw.VFS, "foo", "")
-        self.assertTrue("foo" not in apsw.vfs_names())
-
-        ## xReadReadBufferFail
-        try:
-            # This will fail if we are using auto-WAL so we don't run
-            # the rest of the test in WAL mode.
-            apsw.Connection(TESTFILEPREFIX + "testdb", vfs="faultvfs").cursor().execute("create table dummy1(x,y)")
-            openok = True
-        except apsw.CantOpenError:
-            if len(apsw.connection_hooks) == 0:
-                raise
-            openok = False
-
-        # The following tests cause failures when making the
-        # connection because a connection hook turns on wal mode which
-        # causes database reads which then cause failures
-        if openok:
-
-            ## xUnlockFails
-            apsw.faultdict["xUnlockFails"] = True
-            self.assertRaises(apsw.IOError,
-                              apsw.Connection(TESTFILEPREFIX + "testdb", vfs="faultvfs").cursor().execute,
-                              "select * from dummy1")
-
-            ## xSyncFails
-            apsw.faultdict["xSyncFails"] = True
-            self.assertRaises(apsw.IOError,
-                              apsw.Connection(TESTFILEPREFIX + "testdb", vfs="faultvfs").cursor().execute,
-                              "insert into dummy1 values(3,4)")
-
-            ## xFileSizeFails
-            apsw.faultdict["xFileSizeFails"] = True
-            self.assertRaises(apsw.IOError,
-                              apsw.Connection(TESTFILEPREFIX + "testdb", vfs="faultvfs").cursor().execute,
-                              "select * from dummy1")
-
-        ## xCheckReservedLockFails
-        apsw.faultdict["xCheckReservedLockFails"] = True
-        self.assertRaises(apsw.IOError, vfstestdb, vfsname="faultvfs")
-
-        ## xCheckReservedLockIsTrue
-        apsw.faultdict["xCheckReservedLockIsTrue"] = True
-        vfstestdb(vfsname="faultvfs")
-
-        ## xCloseFails
-        t = apsw.VFSFile("", os.path.abspath(TESTFILEPREFIX + "testfile"),
-                         [apsw.SQLITE_OPEN_MAIN_DB | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_READWRITE, 0])
-        apsw.faultdict["xCloseFails"] = True
-        self.assertRaises(apsw.IOError, t.xClose)
-        del t
-
-        # now catch it in the destructor
-        def foo():
-            t = apsw.VFSFile("", os.path.abspath(TESTFILEPREFIX + "testfile"),
-                             [apsw.SQLITE_OPEN_MAIN_DB | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_READWRITE, 0])
-            apsw.faultdict["xCloseFails"] = True
-            del t
-            gc.collect()
-
-        self.assertRaisesUnraisable(apsw.IOError, foo)
-
-        ## BlobWriteTooBig
-        apsw.faultdict["BlobWriteTooBig"] = True
-        self.db.execute("CREATE TABLE blobby(x); insert into blobby values (zeroblob(1000))")
-        blob = self.db.blob_open("main", "blobby", "x", self.db.last_insert_rowid(), True)
-        self.assertRaises(ValueError, blob.write, b"1234")
-
-        for k, v in apsw.faultdict.items():
-            assert v is False, f"faultdict { k } never fired"
 
     def testFunctionFlags(self) -> None:
         "Flags to registered SQLite functions"
@@ -10589,6 +10376,228 @@ SELECT group_concat(rtrim(t),x'0a') FROM a;
                         "uri_parameter": ("name",)
                     }[name])
 
+class ZZFaultInjection(unittest.TestCase):
+
+    setUp = APSW.setUp
+    tearDown = APSW.tearDown
+    assertRaisesUnraisable = APSW.assertRaisesUnraisable
+    baseAssertRaisesUnraisable = APSW.baseAssertRaisesUnraisable
+
+    # Note that faults fire only once, so there is no need to reset
+    # them.  The testing for objects bigger than 2GB is done in
+    # testLargeObjects
+    def testFaultInjection(self):
+        "Deliberately inject faults to exercise all code paths"
+        if not getattr(apsw, "test_fixtures_present", None):
+            return
+
+        apsw.faultdict = dict()
+
+        def ShouldFault(name, pending_exception):
+            r = apsw.faultdict.get(name, False)
+            apsw.faultdict[name] = False
+            return r
+
+        sys.apsw_should_fault = ShouldFault
+
+        # Verify we test all fault locations
+        code = []
+        for fn in glob.glob("*/*.c"):
+            with open(fn, encoding="utf8") as f:
+                code.append(f.read())
+        code = "\n".join(code)
+
+        test_code = pathlib.Path(__file__).read_text() + pathlib.Path(__file__).with_name("ftstest.py").read_text()
+
+        seen = set()
+
+        for macro, faultname in re.findall(r"(APSW_FAULT_INJECT)\s*[(]\s*(?P<fault_name>.*?)\s*,", code):
+            if faultname == "faultName":
+                continue
+            if faultname not in test_code:
+                raise Exception(f"Fault injected { faultname } not found in tests.py")
+            if faultname in seen:
+                raise Exception(f"Fault { faultname } seen multiple times")
+            seen.add(faultname)
+
+        def dummy(*args):
+            1 / 0
+
+        def dummy2(*args):
+            return 7
+
+        # The 1/0 in these tests is to cause a ZeroDivisionError so
+        # that an exception is always thrown.  If we catch that then
+        # it means earlier expected exceptions were not thrown.
+
+        ## Virtual table code
+        class Source:
+
+            def Create(self, *args):
+                return "create table foo(x,y)", Table()
+
+            Connect = Create
+
+        class Table:
+
+            def __init__(self):
+                self.data = [  #("rowid", "x", "y"),
+                    [0, 1, 2], [3, 4, 5]
+                ]
+
+            def Open(self):
+                return Cursor(self)
+
+            def BestIndex(self, *args):
+                return None
+
+            def UpdateChangeRow(self, rowid, newrowid, fields):
+                for i, row in enumerate(self.data):
+                    if row[0] == rowid:
+                        self.data[i] = [newrowid] + list(fields)
+
+            def FindFunction(self, *args):
+                return lambda *args: 1
+
+        class Cursor:
+
+            def __init__(self, table):
+                self.table = table
+                self.row = 0
+
+            def Eof(self):
+                return self.row >= len(self.table.data)
+
+            def Rowid(self):
+                return self.table.data[self.row][0]
+
+            def Column(self, col):
+                return self.table.data[self.row][1 + col]
+
+            def Filter(self, *args):
+                self.row = 0
+
+            def Next(self):
+                self.row += 1
+
+            def Close(self):
+                pass
+
+        ## BlobDeallocException
+        def f():
+            db = apsw.Connection(":memory:")
+            db.cursor().execute("create table foo(b);insert into foo(rowid,b) values(2,x'aabbccddee')")
+            blob = db.blob_open("main", "foo", "b", 2, False)  # open read-only
+            # deliberately cause problem
+            try:
+                blob.write(b'a')
+            except apsw.ReadOnlyError:
+                pass
+            # garbage collect
+            del blob
+            gc.collect()
+
+        self.assertRaisesUnraisable(apsw.ReadOnlyError, f)
+
+        ## ConnectionReadError
+        self.db.pragma("application_id", 0xdeadbeef)
+        self.db.read("main", 0, 0, 1)
+        apsw.faultdict["ConnectionReadError"] = True
+        self.assertRaises(apsw.IOError, self.db.read, "main", 0, 0, 1)
+
+        ### vfs routines
+
+        class FaultVFS(apsw.VFS):
+
+            def __init__(self, name="faultvfs", inherit="", makedefault=False):
+                super().__init__(name, inherit, makedefault=makedefault)
+
+            def xGetLastErrorLong(self):
+                return "a" * 1024, None
+
+            def xOpen(self, name, flags):
+                return FaultVFSFile(name, flags)
+
+        class FaultVFSFile(apsw.VFSFile):
+
+            def __init__(self, name, flags):
+                super().__init__("", name, flags)
+
+        vfs = FaultVFS()
+
+        ## APSWVFSBadVersion
+        apsw.faultdict["APSWVFSBadVersion"] = True
+        self.assertRaises(ValueError, apsw.VFS, "foo", "")
+        self.assertTrue("foo" not in apsw.vfs_names())
+
+        ## xReadReadBufferFail
+        try:
+            # This will fail if we are using auto-WAL so we don't run
+            # the rest of the test in WAL mode.
+            apsw.Connection(TESTFILEPREFIX + "testdb", vfs="faultvfs").cursor().execute("create table dummy1(x,y)")
+            openok = True
+        except apsw.CantOpenError:
+            if len(apsw.connection_hooks) == 0:
+                raise
+            openok = False
+
+        # The following tests cause failures when making the
+        # connection because a connection hook turns on wal mode which
+        # causes database reads which then cause failures
+        if openok:
+
+            ## xUnlockFails
+            apsw.faultdict["xUnlockFails"] = True
+            self.assertRaises(apsw.IOError,
+                              apsw.Connection(TESTFILEPREFIX + "testdb", vfs="faultvfs").cursor().execute,
+                              "select * from dummy1")
+
+            ## xSyncFails
+            apsw.faultdict["xSyncFails"] = True
+            self.assertRaises(apsw.IOError,
+                              apsw.Connection(TESTFILEPREFIX + "testdb", vfs="faultvfs").cursor().execute,
+                              "insert into dummy1 values(3,4)")
+
+            ## xFileSizeFails
+            apsw.faultdict["xFileSizeFails"] = True
+            self.assertRaises(apsw.IOError,
+                              apsw.Connection(TESTFILEPREFIX + "testdb", vfs="faultvfs").cursor().execute,
+                              "select * from dummy1")
+
+        ## xCheckReservedLockFails
+        apsw.faultdict["xCheckReservedLockFails"] = True
+        self.assertRaises(apsw.IOError, vfstestdb, vfsname="faultvfs")
+
+        ## xCheckReservedLockIsTrue
+        apsw.faultdict["xCheckReservedLockIsTrue"] = True
+        vfstestdb(vfsname="faultvfs")
+
+        ## xCloseFails
+        t = apsw.VFSFile("", os.path.abspath(TESTFILEPREFIX + "testfile"),
+                         [apsw.SQLITE_OPEN_MAIN_DB | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_READWRITE, 0])
+        apsw.faultdict["xCloseFails"] = True
+        self.assertRaises(apsw.IOError, t.xClose)
+        del t
+
+        # now catch it in the destructor
+        def foo():
+            t = apsw.VFSFile("", os.path.abspath(TESTFILEPREFIX + "testfile"),
+                             [apsw.SQLITE_OPEN_MAIN_DB | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_READWRITE, 0])
+            apsw.faultdict["xCloseFails"] = True
+            del t
+            gc.collect()
+
+        self.assertRaisesUnraisable(apsw.IOError, foo)
+
+        ## BlobWriteTooBig
+        apsw.faultdict["BlobWriteTooBig"] = True
+        self.db.execute("CREATE TABLE blobby(x); insert into blobby values (zeroblob(1000))")
+        blob = self.db.blob_open("main", "blobby", "x", self.db.last_insert_rowid(), True)
+        self.assertRaises(ValueError, blob.write, b"1234")
+
+        for k, v in apsw.faultdict.items():
+            assert v is False, f"faultdict { k } never fired"
+
     # This test is run last by deliberate name choice.  If it did
     # uncover any bugs there isn't much that can be done to turn the
     # checker off.
@@ -10667,7 +10676,7 @@ SELECT group_concat(rtrim(t),x'0a') FROM a;
         import multiprocessing
         val = multiprocessing.Value("i", 0)
         p = multiprocessing.Process(target=childtest, args=[val] + list(child))
-        self.suppressWarning("DeprecationWarning")  # we are deliberately forking
+        suppressWarning("DeprecationWarning")  # we are deliberately forking
         p.start()
         p.join()
         self.assertEqual(1, val.value)  # did child complete ok?
@@ -10826,7 +10835,7 @@ def setup():
 
     # we also remove forkchecker if doing multiple iterations
     if not forkcheck or "APSW_TEST_ITERATIONS" in os.environ:
-        del APSW.testzzForkChecker
+        del ZZFaultInjection.testzzForkChecker
 
     if not is64bit or "APSW_TEST_LARGE" not in os.environ:
         del APSW.testLargeObjects
