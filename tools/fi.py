@@ -214,12 +214,13 @@ def exercise(example_code, expect_exception):
         """
     )
     extapi = {
-        "attr": {"aux_data", "column_count", "inst_count", "phrases", "row_count", "rowid"},
+        "attr": {"aux_data", "column_count", "inst_count", "phrase_count", "phrases", "row_count", "rowid"},
         (0,): {
             "column_size",
             "column_text",
             "column_total_size",
             "inst_tokens",
+            "phrase_column_offsets",
             "phrase_columns",
             "phrase_locations",
         },

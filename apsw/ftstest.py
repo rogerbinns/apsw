@@ -77,7 +77,7 @@ class FTS(unittest.TestCase):
         if not self.has_fts5():
             return
 
-        self.assertRaisesRegex(apsw.SQLError, "Finding tokenizer named .*", self.db.fts5_tokenizer, "doesn't exist")
+        self.assertRaisesRegex(apsw.SQLError, "No tokenizer named .*", self.db.fts5_tokenizer, "doesn't exist")
 
         # Sanity check
         test_args = ["one", "two", "three"]
@@ -567,7 +567,7 @@ class FTS(unittest.TestCase):
                     tok = self.db.fts5_tokenizer(tokname, args_with)
                 else:
                     self.assertRaisesRegex(
-                        apsw.SQLError, "Finding tokenizer named .*", self.db.fts5_tokenizer, tokname, args_with
+                        apsw.SQLError, "No tokenizer named .*", self.db.fts5_tokenizer, tokname, args_with
                     )
                     tok = self.db.fts5_tokenizer(tokname, args_without)
 
@@ -840,12 +840,13 @@ class FTS(unittest.TestCase):
 
         # the same structure is in tools/fi.py - update that if you update this
         extapi = {
-            "attr": {"aux_data", "column_count", "inst_count", "phrases", "row_count", "rowid"},
+            "attr": {"aux_data", "column_count", "inst_count", "phrase_count", "phrases", "row_count", "rowid"},
             (0,): {
                 "column_size",
                 "column_text",
                 "column_total_size",
                 "inst_tokens",
+                "phrase_column_offsets",
                 "phrase_columns",
                 "phrase_locations",
             },
@@ -863,6 +864,7 @@ class FTS(unittest.TestCase):
                     else:
                         self.assertRaises(apsw.InvalidContextError, getattr(ctx, name), *args)
                     items.remove(name)
+            # check all members were tested
             self.assertEqual(len(items), 0)
 
     def testzzFaultInjection(self):
@@ -1296,7 +1298,7 @@ class Unicode(unittest.TestCase):
         self.assertRaises(TypeError, meth, b"aaa")
         self.assertRaises(TypeError, meth)
         self.assertRaises(TypeError, meth, "one", 2)
-        self.assertRaises(OverflowError, meth, -1)
+        self.assertRaises(ValueError, meth, -1)
         self.assertRaises((ValueError, OverflowError), meth, sys.maxsize)
         self.assertRaises(ValueError, meth, sys.maxunicode + 1)
         self.assertRaises(TypeError, meth, "avbc")
