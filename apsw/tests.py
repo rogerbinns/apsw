@@ -10879,6 +10879,8 @@ test_types_vals = (
     True,  # derived from integer
     False)
 
+from .ftstest import *
+
 if __name__ == '__main__':
     setup()
 

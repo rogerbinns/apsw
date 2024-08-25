@@ -1768,10 +1768,7 @@ abc!p!d\u2029 !p!abc\u0085!p!def
                 self.assertEqual(to_utf8(str_offset), utf8_offset)
 
 
-# ::TODO:: make main test suite run this one
-# eg https://docs.python.org/3/library/unittest.html#load-tests-protocol
-# in main could add the TestCases from this module first so they
-# get run before forkchecker
+__all__ = ("FTS", "Unicode")
 
 if __name__ == "__main__":
     unittest.main()
