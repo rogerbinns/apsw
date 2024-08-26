@@ -16,16 +16,23 @@ import apsw.shell
 
 con = apsw.Connection("")
 all_pragmas = set(con.execute("pragma pragma_list").get)
-deprecated_pragmas = {
+exclude_pragmas = {
+    # deprecated
     "count_changes",
     "empty_result_callbacks",
     "full_column_names",
     "legacy_file_format",
     "short_column_names",
     "temp_store_directory",
+    # test only for debug builds
+    "lock_status",
+    "parser_trace",
+    "sql_trace",
+    # undocumented
+    "stats",
 }
 for pragma in all_pragmas:
-    if pragma in deprecated_pragmas:
+    if pragma in exclude_pragmas or pragma.startswith("vdbe_"):
         continue
     check = (pragma, f"{pragma}=", f"{pragma}(", f"{pragma};")
     assert any(c in apsw.shell.Shell._pragmas for c in check), f"pragma { pragma } not in apsw.shell.Shell._pragmas"
@@ -35,7 +42,7 @@ for pragma in apsw.shell.Shell._pragmas:
     for c in "=(;":
         if pragma.endswith(c):
             pragma = pragma[:-1]
-    assert pragma in all_pragmas or pragma in deprecated_pragmas, f"{pragma} is in shell but not known to SQLite"
+    assert pragma in all_pragmas or pragma in exclude_pragmas, f"{pragma} is in shell but not known to SQLite"
 
 
 retval = 0
