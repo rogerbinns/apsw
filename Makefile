@@ -1,8 +1,8 @@
 
-SQLITEVERSION=3.46.0
-APSWSUFFIX=.1
+SQLITEVERSION=3.46.1
+APSWSUFFIX=.0
 
-RELEASEDATE="17 June 2024"
+RELEASEDATE="13 August 2024"
 
 VERSION=$(SQLITEVERSION)$(APSWSUFFIX)
 VERDIR=apsw-$(VERSION)
@@ -178,6 +178,8 @@ compile-win:  ## Builds and tests against all the Python versions on Windows
 	-cmd /c del /s /q build
 	-cmd /c del /s /q .venv
 	-cmd /c md dist
+	$(MAKE) compile-win-one PYTHON=c:/python313/python
+	$(MAKE) compile-win-one PYTHON=c:/python313-32/python
 	$(MAKE) compile-win-one PYTHON=c:/python312/python
 	$(MAKE) compile-win-one PYTHON=c:/python312-32/python
 	$(MAKE) compile-win-one PYTHON=c:/python311/python
@@ -208,6 +210,7 @@ source_nocheck: src/apswversion.h
 	test "`git branch --show-current`" = master
 	find . -depth -name '.*cache' -type d -exec rm -r "{}" \;
 	env APSW_NO_GA=t $(MAKE) doc
+	rm -rf doc/build/html/_static/fonts/ doc/build/html/_static/css/fonts/
 	$(PYTHON) setup.py sdist --formats zip --add-doc
 
 source: source_nocheck # Make the source and then check it builds and tests correctly.  This will catch missing files etc
