@@ -404,6 +404,9 @@ type_overrides = {
         "statements": "strtype",
         "sequenceofbindings": "Sequence"
     },
+    "FTS5Tokenizer.__call__": {
+        "locale": "utf8_and_size_or_none",
+    },
     "URIFilename.uri_int": {
         "default": "int64",
     },
@@ -649,11 +652,18 @@ def do_argparse(item):
             kind = "optional_set"
             assert param["default"] == "None"
             default_check = f"{ pname } == NULL"
+        elif param["type"] == "utf8_and_size_or_none":
+            type = "const char *"
+            kind = "optional_UTF8AndSize"
+            default_check = f"{ pname } == NULL && { pname }_size == 0"
         else:
             assert False, f"Don't know how to handle type for { item ['name'] } param { param }"
 
         kwlist.append(pname)
         res.append(f"  assert(__builtin_types_compatible_p(typeof({ pname }), { type })); \\")
+        if kind == "optional_UTF8AndSize":
+            res.append(f"  assert(__builtin_types_compatible_p(typeof({ pname }_size), Py_ssize_t )); \\")
+
         if default_check:
             res.append(f"  assert({ default_check }); \\")
 

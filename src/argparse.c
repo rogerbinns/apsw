@@ -444,6 +444,23 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
     argp_optindex++;                                                                                                   \
   } while (0)
 
+#define ARG_optional_UTF8AndSize(varname)                                                                              \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (!Py_IsNone(useargs[argp_optindex]) && !PyUnicode_Check(useargs[argp_optindex]))                                \
+    {                                                                                                                  \
+      PyErr_Format(PyExc_TypeError, "Expected a str or None, not %s", Py_TypeName(useargs[argp_optindex]));            \
+      goto param_error;                                                                                                \
+    }                                                                                                                  \
+    if (!Py_IsNone(useargs[argp_optindex]))                                                                            \
+    {                                                                                                                  \
+      varname = PyUnicode_AsUTF8AndSize(useargs[argp_optindex], &varname##_size);                                      \
+      if (!varname)                                                                                                    \
+        goto param_error;                                                                                              \
+    }                                                                                                                  \
+    argp_optindex++;                                                                                                   \
+  } while (0)
+
 /* 1 is added to the size of fast_args to ensure the vla is always at
    least 1 item long.  If it ends up as zero then sanitizers complain. */
 #define ARG_CONVERT_VARARGS_TO_FASTCALL                                                                                \
