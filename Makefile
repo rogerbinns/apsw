@@ -77,7 +77,7 @@ doc-depends: ## pip installs packages needed to build doc
 
 dev-depends: ## pip installs packages useful for development (none are necessary except setuptools)
 	$(PYTHON) -m pip install -U --upgrade-strategy eager build wheel setuptools pip
-	$(PYTHON) -m pip install -U --upgrade-strategy eager mypy pdbpp coverage flake8 ruff
+	$(PYTHON) -m pip install -U --upgrade-strategy eager mypy pdbp coverage flake8 ruff
 
 # This is probably gnu make specific but only developers use this makefile
 $(GENDOCS): doc/%.rst: src/%.c tools/code2rst.py
