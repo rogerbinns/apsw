@@ -591,7 +591,7 @@ class apsw_build_ext(beparent):
             if os.path.isdir(sqlite3_dir) and len(glob.glob(os.path.join(sqlite3_dir, "*"))) > 3:
                 write("SQLite: Using include/libraries in sqlite3 subdirectory")
                 inc = True
-                ext.library_dirs.append(d)
+                ext.library_dirs.append(sqlite3_dir)
             else:
                 write("SQLite: Using system sqlite include/libraries")
             if inc:
