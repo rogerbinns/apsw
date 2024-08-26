@@ -1117,12 +1117,12 @@ class QueryInfo:
 
 
 map_tokenizers = {
-    "unicodewords": UnicodeWordsTokenizer,
-    "ngram": NGramTokenizer,
     "html": HTMLTokenizer,
     "json": JSONTokenizer,
+    "ngram": NGramTokenizer,
     "querytokens": QueryTokensTokenizer,
     "simplify": SimplifyTokenizer,
+    "unicodewords": UnicodeWordsTokenizer,
 }
 "APSW provided tokenizers for use with :func:`register_tokenizers`"
 
@@ -2915,11 +2915,7 @@ if __name__ == "__main__":
     )
 
     # registrations built in
-    con.register_fts5_tokenizer("unicodewords", UnicodeWordsTokenizer)
-    con.register_fts5_tokenizer("simplify", SimplifyTokenizer)
-    con.register_fts5_tokenizer("html", HTMLTokenizer)
-    con.register_fts5_tokenizer("ngram", NGramTokenizer)
-    con.register_fts5_tokenizer("json", JSONTokenizer)
+    register_tokenizers(con, map_tokenizers)
     # ::TODO check these work
     con.register_fts5_tokenizer("synonyms", SynonymTokenizer)
     con.register_fts5_tokenizer("regex", RegexTokenizer)
