@@ -60,7 +60,8 @@ typedef struct APSWFTS5Tokenizer
   vectorcallfunc vectorcall;
 
   /* from fts5_tokenizer structure */
-  int (*xTokenize)(Fts5Tokenizer *, void *pCtx, int flags, const char *pText, int nText,
+  int (*xTokenize)(Fts5Tokenizer *, void *pCtx, int flags, const char *pText, int nText, const char *pLocale,
+                   int nLocale,
                    int (*xToken)(void *pCtx, int tflags, const char *pToken, int nToken, int iStart, int iEnd));
   void (*xDelete)(Fts5Tokenizer *);
 } APSWFTS5Tokenizer;
@@ -182,7 +183,7 @@ error:
   return SQLITE_ERROR;
 }
 
-/** .. method:: __call__(utf8: bytes, reason: int,  *, include_offsets: bool = True, include_colocated: bool = True) -> list
+/** .. method:: __call__(utf8: bytes, reason: int,  locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> list[tuple[int, int, str, ...]]
 
   Does a tokenization, returning a list of the results.  If you have no
   interest in token offsets or colocated tokens then they can be omitted from
@@ -242,14 +243,17 @@ APSWFTS5Tokenizer_call(APSWFTS5Tokenizer *self, PyObject *const *fast_args, Py_s
 {
   Py_buffer utf8_buffer;
   PyObject *utf8;
+  const char *locale = NULL;
+  Py_ssize_t locale_size = 0;
   int include_offsets = 1, include_colocated = 1, reason;
   int rc = SQLITE_OK;
 
   {
     FTS5Tokenizer_call_CHECK;
-    ARG_PROLOG(2, FTS5Tokenizer_call_KWNAMES);
+    ARG_PROLOG(3, FTS5Tokenizer_call_KWNAMES);
     ARG_MANDATORY ARG_py_buffer(utf8);
     ARG_MANDATORY ARG_int(reason);
+    ARG_MANDATORY ARG_optional_UTF8AndSize(locale);
     ARG_OPTIONAL ARG_bool(include_offsets);
     ARG_OPTIONAL ARG_bool(include_colocated);
     ARG_EPILOG(NULL, FTS5Tokenizer_call_USAGE, );
@@ -257,16 +261,16 @@ APSWFTS5Tokenizer_call(APSWFTS5Tokenizer *self, PyObject *const *fast_args, Py_s
 
   if (reason != FTS5_TOKENIZE_DOCUMENT && reason != FTS5_TOKENIZE_QUERY
       && reason != (FTS5_TOKENIZE_QUERY | FTS5_TOKENIZE_PREFIX) && reason != FTS5_TOKENIZE_AUX)
-  {
-    PyErr_Format(PyExc_ValueError, "reason is not an allowed value (%d)", reason);
-    return NULL;
-  }
+    return PyErr_Format(PyExc_ValueError, "reason is not an allowed value (%d)", reason);
 
   if (0 != PyObject_GetBufferContiguous(utf8, &utf8_buffer, PyBUF_SIMPLE))
   {
     assert(PyErr_Occurred());
     return NULL;
   }
+
+  if (locale_size >= INT32_MAX)
+    return PyErr_Format(PyExc_ValueError, "locale is too large - limit is 2GB");
 
   TokenizingContext our_context = {
     .the_list = PyList_New(0),
@@ -284,9 +288,8 @@ APSWFTS5Tokenizer_call(APSWFTS5Tokenizer *self, PyObject *const *fast_args, Py_s
     goto finally;
   }
 
-  /* ::TODO:: should we release gil around this? */
-  rc = self->xTokenize(self->tokenizer_instance, &our_context, reason, utf8_buffer.buf, utf8_buffer.len,
-                       xTokenizer_Callback);
+  rc = self->xTokenize(self->tokenizer_instance, &our_context, reason, utf8_buffer.buf, utf8_buffer.len, locale,
+                       (int)locale_size, xTokenizer_Callback);
   if (rc != SQLITE_OK)
   {
     SET_EXC(rc, NULL);
@@ -459,27 +462,39 @@ get_token_value(PyObject *s, int *size)
 
 static int
 APSWPythonTokenizerTokenize(Fts5Tokenizer *our_context, void *their_context, int flags, const char *pText, int nText,
+                            const char *pLocale, int nLocale,
                             int (*xToken)(void *pCtx, int tflags, const char *pToken, int nToken, int iStart, int iEnd))
 {
   PyGILState_STATE gilstate = PyGILState_Ensure();
   int rc = SQLITE_OK;
-  PyObject *bytes = NULL, *pyflags = NULL, *iterator = NULL, *item = NULL, *object = NULL;
+  PyObject *bytes = NULL, *locale = NULL, *pyflags = NULL, *iterator = NULL, *item = NULL, *object = NULL;
 
   bytes = PyBytes_FromStringAndSize(pText, nText);
   if (!bytes)
     goto finally;
+
+  if (pLocale && nLocale)
+  {
+    locale = PyUnicode_FromStringAndSize(pLocale, nLocale);
+    if (!locale)
+      goto finally;
+  }
+  else
+    locale = Py_NewRef(Py_None);
+
   pyflags = PyLong_FromLong(flags);
   if (!pyflags)
     goto finally;
 
-  PyObject *vargs[] = { NULL, bytes, pyflags };
-  object = PyObject_Vectorcall((PyObject *)our_context, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  PyObject *vargs[] = { NULL, bytes, pyflags, locale };
+  object = PyObject_Vectorcall((PyObject *)our_context, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (!object)
     goto finally;
 
   iterator = PyObject_GetIter(object);
   if (!iterator)
     goto finally;
+
   while (rc == SQLITE_OK && (item = PyIter_Next(iterator)))
   {
     /* single string */
@@ -575,6 +590,7 @@ finally:
   }
 
   Py_XDECREF(bytes);
+  Py_XDECREF(locale);
   Py_XDECREF(pyflags);
   Py_XDECREF(iterator);
   Py_XDECREF(object);
@@ -592,7 +608,8 @@ APSWPythonTokenizerDelete(Fts5Tokenizer *ptr)
   PyGILState_Release(gilstate);
 }
 
-static fts5_tokenizer APSWPythonTokenizer = {
+static fts5_tokenizer_v2 APSWPythonTokenizer = {
+  .iVersion = 2,
   .xCreate = APSWPythonTokenizerCreate,
   .xDelete = APSWPythonTokenizerDelete,
   .xTokenize = APSWPythonTokenizerTokenize,

@@ -5293,13 +5293,13 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
     goto error;
 
   void *userdata = NULL;
-  fts5_tokenizer tokenizer_class;
+  fts5_tokenizer_v2 *tokenizer_class = NULL;
 
-  int rc = api->xFindTokenizer(api, name, &userdata, &tokenizer_class);
+  int rc = api->xFindTokenizer_v2(api, name, &userdata, &tokenizer_class);
   if(rc != SQLITE_OK)
   {
     PyErr_Format(get_exception_for_code(rc), "No tokenizer named \"%s\"", name);
-    AddTraceBackHere(__FILE__, __LINE__, "Connection.fts5_api.xFindTokenizer", "{s:s}", "name", name);
+    AddTraceBackHere(__FILE__, __LINE__, "Connection.fts5_api.xFindTokenizer_v2", "{s:s}", "name", name);
     goto error;
   }
 
@@ -5317,16 +5317,17 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
   Py_INCREF(pytok->db);
   pytok->name = name_dup;
   pytok->args = Py_NewRef(args_as_tuple);
-  pytok->xTokenize = tokenizer_class.xTokenize;
-  pytok->xDelete = tokenizer_class.xDelete;
+  pytok->xTokenize = tokenizer_class->xTokenize;
+  pytok->xDelete = tokenizer_class->xDelete;
   pytok->tokenizer_instance = NULL;
   pytok->vectorcall = (vectorcallfunc)APSWFTS5Tokenizer_call;
 
-  rc = tokenizer_class.xCreate(userdata, argv, argc, &pytok->tokenizer_instance);
+  rc = tokenizer_class->xCreate(userdata, argv, argc, &pytok->tokenizer_instance);
   if (rc != SQLITE_OK)
   {
     SET_EXC(rc, self->db);
-    AddTraceBackHere(__FILE__, __LINE__, "Connection.fts5_tokenizer.xCreate", "{s:s,s:i,s:O}", "name", name, "len(args)", argc, "args", args_as_tuple);
+    AddTraceBackHere(__FILE__, __LINE__, "Connection.fts5_tokenizer_v2.xCreate", "{s:s,s:i,s:O}", "name", name,
+                     "len(args)", argc, "args", args_as_tuple);
     APSWFTS5TokenizerType.tp_dealloc((PyObject *)pytok);
     goto error;
   }
@@ -5378,9 +5379,9 @@ Connection_register_fts5_tokenizer(Connection *self, PyObject *const *fast_args,
   tfd->connection = Py_NewRef(self);
 
   APSW_FAULT_INJECT(FTS5TokenizerRegister,
-  rc = api->xCreateTokenizer(api, name, tfd, &APSWPythonTokenizer,
-                                 APSWPythonTokenizerFactoryDelete),
-  rc = SQLITE_NOMEM);
+                    rc
+                    = api->xCreateTokenizer_v2(api, name, tfd, &APSWPythonTokenizer, APSWPythonTokenizerFactoryDelete),
+                    rc = SQLITE_NOMEM);
 
   finally:
   if (rc != SQLITE_OK)
