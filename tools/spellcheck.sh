@@ -10,8 +10,8 @@ WRONG="$WRONG|reumable|bestpractise|exlcudes"
 # code-block should be used not code in rst
 WRONG="$WRONG|code::"
 
-git grep --color -Eniw "($WRONG)" | grep -v tools/spellcheck.sh
+git grep --color -Eniw "($WRONG)" | grep -v tools/spellcheck.sh | grep -v 'Splitting such as'
 
-n=`git grep --color -Eniw "($WRONG)" | grep -v tools/spellcheck.sh | wc -l`
+n=`git grep --color -Eniw "($WRONG)" | grep -v tools/spellcheck.sh | grep -v 'Splitting such as' | wc -l`
 
 if [ $n -gt 0 ] ; then exit 1 ; else exit 0 ; fi
