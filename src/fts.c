@@ -15,23 +15,38 @@ Connection_fts5_api(Connection *self)
   int res;
   sqlite3_stmt *stmt = NULL;
 
-  PYSQLITE_VOID_CALL(res = sqlite3_prepare(self->db, "select fts5(?1)", -1, &stmt, NULL));
-  if (res != SQLITE_OK)
-    goto finally;
-  /* ::TODO:: fix this mess - INUSE the whole thing.  because the GIL is released above, when this thread resumes the db could have been closed */
-  CHECK_CLOSED(self, NULL);
-  PYSQLITE_VOID_CALL(res = sqlite3_bind_pointer(stmt, 1, &self->fts5_api_cached, "fts5_api_ptr", NULL));
-  if (res != SQLITE_OK)
-    goto finally;
-  CHECK_CLOSED(self, NULL);
-  PYSQLITE_VOID_CALL(sqlite3_step(stmt));
-  CHECK_CLOSED(self, NULL);
-finally:
-  if (stmt)
-    PYSQLITE_VOID_CALL(sqlite3_finalize(stmt));
-  if (!self->fts5_api_cached)
-    PyErr_Format(ExcNoFTS5, "Getting the FTS5 API failed");
-  return self->fts5_api_cached;
+  fts5_api *api = NULL;
+
+  /* this prevents any other thread from messing with our work */
+  INUSE_CALL({
+    Py_BEGIN_ALLOW_THREADS;
+    res = sqlite3_prepare(self->db, "select fts5(?1)", -1, &stmt, NULL);
+    if (res == SQLITE_OK)
+      res = sqlite3_bind_pointer(stmt, 1, &api, "fts5_api_ptr", NULL);
+    if (res == SQLITE_OK)
+    {
+      res = sqlite3_step(stmt);
+      if (res == SQLITE_ROW)
+        res = SQLITE_OK;
+    }
+    if (stmt)
+      sqlite3_finalize(stmt);
+    Py_END_ALLOW_THREADS;
+  });
+
+  if (res == SQLITE_OK)
+  {
+    if (api->iVersion < 3)
+    {
+      PyErr_Format(ExcNoFTS5, "FTS5 API iVersion %d is lower than expected 3.", api->iVersion);
+      return NULL;
+    }
+    self->fts5_api_cached = api;
+    return api;
+  }
+
+  PyErr_Format(ExcNoFTS5, "Getting the FTS5 API failed.  Is the extension included in SQLite?");
+  return NULL;
 }
 
 /* Python instance */
