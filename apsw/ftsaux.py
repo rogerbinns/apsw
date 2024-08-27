@@ -251,7 +251,7 @@ def _column_spans(api: apsw.FTS5ExtensionApi, column: int):
         pass
 
 
-def position(api: apsw.FTS5ExtensionApi, *args: apsw.SQLiteValue):
+def position_rank(api: apsw.FTS5ExtensionApi, *args: apsw.SQLiteValue):
     """Ranking function boosting the earlier in a column phrases are located
 
     It accepts parameters giving the weights for each column (default 1).
