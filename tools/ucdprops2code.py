@@ -850,7 +850,7 @@ width_overrides = {
 
 # Hangul JUNGSEONG where all except ~3 are rendered as
 # width 1 or 2 depending on terminal and have zero width
-# accordiung this library, and Py/C wcswidth.  When part
+# according this library, and Py/C wcswidth.  When part
 # of other Hangul they are indeed zero.
 #   D780 - D7FB
 
