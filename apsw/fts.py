@@ -248,10 +248,10 @@ def StringTokenizer(func: apsw.FTS5TokenizerFactory):
         inner_tokenizer = func(con, args, **kwargs)
 
         @functools.wraps(inner_tokenizer)
-        def outer_tokenizer(utf8: bytes, flags: int):
+        def outer_tokenizer(utf8: bytes, flags: int, locale: str | None):
             upm = apsw._unicode.to_utf8_position_mapper(utf8)
 
-            for start, end, *tokens in inner_tokenizer(upm.str, flags):
+            for start, end, *tokens in inner_tokenizer(upm.str, flags, locale):
                 yield upm(start), upm(end), *tokens
 
         return outer_tokenizer
@@ -274,14 +274,14 @@ def QueryTokensTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenize
 
     options = parse_tokenizer_args(spec, con, args)
 
-    def tokenize(utf8: bytes, flags: int):
+    def tokenize(utf8: bytes, flags: int, locale: str | None):
         if flags & apsw.FTS5_TOKENIZE_QUERY:
             decoded = apsw.fts5query.QueryTokens.decode(utf8)
             if decoded is not None:
                 for token in decoded.tokens:
                     yield token
                 return
-        yield from options["+"](utf8, flags)
+        yield from options["+"](utf8, flags, locale)
 
     return tokenize
 
@@ -332,7 +332,7 @@ def UnicodeWordsTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokeniz
 
     options = parse_tokenizer_args(spec, con, args)
 
-    def tokenize(text: str, flags: int):
+    def tokenize(text: str, flags: int, locale: str | None):
         yield from apsw.unicode.word_iter_with_offsets(text, 0, **options)
 
     return tokenize
@@ -373,9 +373,9 @@ def SimplifyTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
         (True, True): lambda t: apsw.unicode.casefold(apsw.unicode.strip(t)),
     }[options["strip"], options["casefold"]]
 
-    def tokenize(utf8: bytes, flags: int):
+    def tokenize(utf8: bytes, flags: int, locale: str | None):
         tok = options["+"]
-        for start, end, *tokens in tok(utf8, flags):
+        for start, end, *tokens in tok(utf8, flags, locale):
             new_tokens = []
             for token in tokens:
                 new = conv(token)
@@ -435,7 +435,7 @@ def NGramTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
 
     options = parse_tokenizer_args(spec, con, args)
 
-    def tokenize(text: str, flags: int):
+    def tokenize(text: str, flags: int, locale: str | None):
         ntokens = 0
 
         grapheme_cluster_stream: list[tuple[int, int, str]] = []
@@ -525,7 +525,7 @@ def SynonymTokenizer(get: Callable[[str], None | str | tuple[str]] | None = None
         if get is None:
             raise ValueError("A callable must be provided by decorator, or parameter")
 
-        def tokenize(utf8: bytes, flags: int):
+        def tokenize(utf8: bytes, flags: int, locale: str | None):
             tok = options["+"]
             if flags not in options["reasons"]:
                 yield from tok(utf8, flags)
@@ -582,14 +582,14 @@ def StopWordsTokenizer(test: Callable[[str], bool] | None = None) -> apsw.FTS5To
         if test is None:
             raise ValueError("A callable must be provided by decorator, or parameter")
 
-        def tokenize(utf8: bytes, flags: int):
+        def tokenize(utf8: bytes, flags: int, locale: str | None):
             tok = options["+"]
 
             if flags == tokenize_reasons["QUERY_PREFIX"]:
                 yield from tok(utf8, flags)
                 return
 
-            for start, end, *tokens in tok(utf8, flags):
+            for start, end, *tokens in tok(utf8, flags, locale):
                 new_tokens = []
                 for t in tokens:
                     if test(t):
@@ -632,7 +632,7 @@ def TransformTokenizer(transform: Callable[[str], str | Sequence[str]] | None = 
         if transform is None:
             raise ValueError("A callable must be provided by decorator, or parameter")
 
-        def tokenize(utf8: bytes, flags: int):
+        def tokenize(utf8: bytes, flags: int, locale: str | None):
             tok = options["+"]
 
             for start, end, *tokens in tok(utf8, flags):
@@ -766,7 +766,7 @@ def HTMLTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     spec = {"+": None}
     options = parse_tokenizer_args(spec, con, args)
 
-    def tokenize(html: str, flags: int):
+    def tokenize(html: str, flags: int, locale: str | None):
         # we only tokenize what looks like html.  Human typed queries
         # are unlikely to be html.  We allow for ampersand to catch
         # entity searches.
@@ -776,7 +776,7 @@ def HTMLTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
 
         text, om = extract_html_text(html)
 
-        for start, end, *tokens in string_tokenize(options["+"], text, flags):
+        for start, end, *tokens in string_tokenize(options["+"], text, flags, locale):
             yield om(start), om(end), *tokens
 
     return tokenize
@@ -876,7 +876,7 @@ def JSONTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     }
     options = parse_tokenizer_args(spec, con, args)
 
-    def tokenize(json: str, flags: int):
+    def tokenize(json: str, flags: int, locale: str | None):
         # we only tokenize what looks like json.  Human typed queries
         # are unlikely to be json.
         if not re.match(r"\s*[{\[]", json):
@@ -884,20 +884,20 @@ def JSONTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
             return
 
         text, mapper = extract_json(json, options["include_keys"])
-        for start, end, *tokens in string_tokenize(options["+"], text, flags):
+        for start, end, *tokens in string_tokenize(options["+"], text, flags, locale):
             yield mapper(start), mapper(end), *tokens
 
     return tokenize
 
 
-def string_tokenize(tokenizer: apsw.FTS5Tokenizer, text: str, flags: int):
+def string_tokenize(tokenizer: apsw.FTS5Tokenizer, text: str, flags: int, locale: str | None):
     """Tokenizer caller to get string offsets back
 
     Calls the tokenizer doing the conversion of `text` to UTF8, and converting the received
     UTF8 offsets back to `text` offsets.
     """
     upm = apsw._unicode.from_utf8_position_mapper(text)
-    for bytes_start, bytes_end, *tokens in tokenizer(upm.bytes, flags):
+    for bytes_start, bytes_end, *tokens in tokenizer(upm.bytes, flags, locale):
         yield (
             upm(bytes_start),
             upm(bytes_end),
@@ -928,7 +928,7 @@ def RegexTokenizer(
 
     parse_tokenizer_args(spec, con, args)
 
-    def tokenize(text: str, flags: int):
+    def tokenize(text: str, flags: int, locale: str | None):
         for match in re.finditer(pattern, text):
             yield *match.span(), match.group()
 
@@ -968,16 +968,16 @@ def RegexPreTokenizer(
 
     options = parse_tokenizer_args(spec, con, args)
 
-    def process_other(substring: str, flags: int, offset: int):
-        for start, end, *tokens in string_tokenize(options["+"], substring, flags):
+    def process_other(substring: str, flags: int, locale: str | None, offset: int):
+        for start, end, *tokens in string_tokenize(options["+"], substring, flags, locale):
             yield start + offset, end + offset, *tokens
 
-    def tokenize(text: str, flags: int):
+    def tokenize(text: str, flags: int, locale: str | None):
         last_other = 0
 
         for match in re.finditer(pattern, text):
             if match.start() > last_other:
-                yield from process_other(text[last_other : match.start()], flags, last_other)
+                yield from process_other(text[last_other : match.start()], flags, locale, last_other)
             yield *match.span(), match.group()
             last_other = match.end()
 
@@ -1037,9 +1037,9 @@ def parse_tokenizer_args(
         }
 
         # Using "+" in your ``tokenize`` functions
-        def tokenize(utf8, flags):
+        def tokenize(utf8, flags, locale):
             tok = options["+"]
-            for start, end, *tokens in tok(utf8, flags):
+            for start, end, *tokens in tok(utf8, flags, locale):
                 # do something
                 yield start, end, *tokens
 
@@ -1606,10 +1606,17 @@ class FTS5Table:
         return self.db.fts5_tokenizer(self.structure.tokenize[0], list(self.structure.tokenize[1:]))
 
     def tokenize(
-        self, utf8: bytes, reason: int = apsw.FTS5_TOKENIZE_DOCUMENT, include_offsets=True, include_colocated=True
+        self,
+        utf8: bytes,
+        reason: int = apsw.FTS5_TOKENIZE_DOCUMENT,
+        locale: str | None = None,
+        include_offsets=True,
+        include_colocated=True,
     ):
         "Tokenize supplied utf8"
-        return self.tokenizer(utf8, reason, include_offsets=include_offsets, include_colocated=include_colocated)
+        return self.tokenizer(
+            utf8, reason, locale, include_offsets=include_offsets, include_colocated=include_colocated
+        )
 
     @functools.cached_property
     def supports_query_tokens(self) -> bool:
@@ -1621,6 +1628,7 @@ class FTS5Table:
         return tokens == self.tokenize(
             apsw.fts5query.QueryTokens(tokens).encode().encode(),
             apsw.FTS5_TOKENIZE_QUERY,
+            None,
             include_offsets=False,
             include_colocated=False,
         )
@@ -2552,7 +2560,9 @@ if __name__ == "__main__":
 
     # This code evolved a lot, and was not intelligently designed.  Sorry.
 
-    def show_tokenization(options, tok: apsw.FTS5Tokenizer, utf8: bytes, reason: int) -> tuple[str, list[str]]:
+    def show_tokenization(
+        options, tok: apsw.FTS5Tokenizer, utf8: bytes, reason: int, locale: str | None
+    ) -> tuple[str, list[str]]:
         """Runs the tokenizer and produces a html fragment showing the results for manual inspection"""
 
         offset: int = 0
@@ -2567,7 +2577,7 @@ if __name__ == "__main__":
             colo: bool = False
 
         seq: list[Row | str] = []
-        for toknum, row in enumerate(tok(utf8, reason)):
+        for toknum, row in enumerate(tok(utf8, reason, locale)):
             start, end, *tokens = row
             if end < start:
                 seq.append(show_tokenization_remark(f"\u21d3 start { start } is after end { end }", "error"))
@@ -2904,6 +2914,7 @@ if __name__ == "__main__":
         help="Tokenize reason [%(default)s]",
         default="DOCUMENT",
     )
+    parser.add_argument("--locale", help="Optional fts5_locale to use")
     parser.add_argument(
         "--register",
         action="append",
@@ -2991,7 +3002,7 @@ if __name__ == "__main__":
     for utf8, comment in tokenizer_test_strings(filename=options.text_file):
         if options.normalize:
             utf8 = unicodedata.normalize(options.normalize, utf8.decode(errors="replace")).encode()
-        h, tokens = show_tokenization(options, tok, utf8, tokenize_reasons[options.reason])
+        h, tokens = show_tokenization(options, tok, utf8, tokenize_reasons[options.reason], options.locale)
         results.append((comment, utf8, h, options.reason, tokens))
 
     w = lambda s: options.output.write(s.encode() + b"\n")
