@@ -5317,8 +5317,7 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
   Py_INCREF(pytok->db);
   pytok->name = name_dup;
   pytok->args = Py_NewRef(args_as_tuple);
-  pytok->xTokenize = tokenizer_class->xTokenize;
-  pytok->xDelete = tokenizer_class->xDelete;
+  pytok->tokenizer_class = tokenizer_class;
   pytok->tokenizer_instance = NULL;
   pytok->vectorcall = (vectorcallfunc)APSWFTS5Tokenizer_call;
 
