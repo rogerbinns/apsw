@@ -2304,7 +2304,7 @@ class FTS5Tokenizer:
     args: tuple
     """The arguments the tokenizer was created with."""
 
-    def __call__(self, utf8: bytes, reason: int,  *, include_offsets: bool = True, include_colocated: bool = True) -> list:
+    def __call__(self, utf8: bytes, flags: int,  locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> list[tuple[int, int, str, ...]]:
         """Does a tokenization, returning a list of the results.  If you have no
         interest in token offsets or colocated tokens then they can be omitted from
         the results.

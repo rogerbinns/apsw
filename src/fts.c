@@ -183,7 +183,7 @@ error:
   return SQLITE_ERROR;
 }
 
-/** .. method:: __call__(utf8: bytes, reason: int,  locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> list[tuple[int, int, str, ...]]
+/** .. method:: __call__(utf8: bytes, flags: int,  locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> list[tuple[int, int, str, ...]]
 
   Does a tokenization, returning a list of the results.  If you have no
   interest in token offsets or colocated tokens then they can be omitted from
@@ -245,23 +245,23 @@ APSWFTS5Tokenizer_call(APSWFTS5Tokenizer *self, PyObject *const *fast_args, Py_s
   PyObject *utf8;
   const char *locale = NULL;
   Py_ssize_t locale_size = 0;
-  int include_offsets = 1, include_colocated = 1, reason;
+  int include_offsets = 1, include_colocated = 1, flags;
   int rc = SQLITE_OK;
 
   {
     FTS5Tokenizer_call_CHECK;
     ARG_PROLOG(3, FTS5Tokenizer_call_KWNAMES);
     ARG_MANDATORY ARG_py_buffer(utf8);
-    ARG_MANDATORY ARG_int(reason);
+    ARG_MANDATORY ARG_int(flags);
     ARG_MANDATORY ARG_optional_UTF8AndSize(locale);
     ARG_OPTIONAL ARG_bool(include_offsets);
     ARG_OPTIONAL ARG_bool(include_colocated);
     ARG_EPILOG(NULL, FTS5Tokenizer_call_USAGE, );
   }
 
-  if (reason != FTS5_TOKENIZE_DOCUMENT && reason != FTS5_TOKENIZE_QUERY
-      && reason != (FTS5_TOKENIZE_QUERY | FTS5_TOKENIZE_PREFIX) && reason != FTS5_TOKENIZE_AUX)
-    return PyErr_Format(PyExc_ValueError, "reason is not an allowed value (%d)", reason);
+  if (flags != FTS5_TOKENIZE_DOCUMENT && flags != FTS5_TOKENIZE_QUERY
+      && flags != (FTS5_TOKENIZE_QUERY | FTS5_TOKENIZE_PREFIX) && flags != FTS5_TOKENIZE_AUX)
+    return PyErr_Format(PyExc_ValueError, "flags is not an allowed value (%d)", flags);
 
   if (0 != PyObject_GetBufferContiguous(utf8, &utf8_buffer, PyBUF_SIMPLE))
   {
@@ -288,7 +288,7 @@ APSWFTS5Tokenizer_call(APSWFTS5Tokenizer *self, PyObject *const *fast_args, Py_s
     goto finally;
   }
 
-  rc = self->xTokenize(self->tokenizer_instance, &our_context, reason, utf8_buffer.buf, utf8_buffer.len, locale,
+  rc = self->xTokenize(self->tokenizer_instance, &our_context, flags, utf8_buffer.buf, utf8_buffer.len, locale,
                        (int)locale_size, xTokenizer_Callback);
   if (rc != SQLITE_OK)
   {
