@@ -293,7 +293,7 @@ APSWFTS5Tokenizer_call(APSWFTS5Tokenizer *self, PyObject *const *fast_args, Py_s
   if (rc != SQLITE_OK)
   {
     SET_EXC(rc, NULL);
-    AddTraceBackHere(__FILE__, __LINE__, "FTS5Tokenizer_call.xTokenize", "{s:i,s:O}", "reason", reason, "utf8", utf8);
+    AddTraceBackHere(__FILE__, __LINE__, "FTS5Tokenizer_call.xTokenize", "{s:i,s:s,s:O}", "flags", flags, "locale", locale, "utf8", utf8);
     goto finally;
   }
 
