@@ -101,7 +101,7 @@ class FTS(unittest.TestCase):
             self.assertIs(con, self.db)
             self.assertEqual(args, test_args)
 
-            def tokenize(utf8, reason):
+            def tokenize(utf8, reason, locale):
                 self.assertEqual(utf8.decode("utf8"), test_text)
                 self.assertEqual(reason, test_reason)
                 return test_data
@@ -114,7 +114,7 @@ class FTS(unittest.TestCase):
                 self.assertIs(con, self.db)
                 self.assertEqual(args, test_args)
 
-            def __call__(innserself, utf8, reason):
+            def __call__(innserself, utf8, reason, locale):
                 self.assertEqual(utf8.decode("utf8"), test_text)
                 self.assertEqual(reason, test_reason)
                 return test_data
@@ -132,6 +132,7 @@ class FTS(unittest.TestCase):
                     res = self.db.fts5_tokenizer(name, test_args)(
                         test_text.encode("utf8"),
                         test_reason,
+                        None,
                         include_offsets=include_offsets,
                         include_colocated=include_colocated,
                     )
@@ -152,7 +153,7 @@ class FTS(unittest.TestCase):
         bad_results_orig = bad_results[:]
 
         def bad_tok(con, args):
-            def tokenize(utf8, reason):
+            def tokenize(utf8, reason, locale):
                 nonlocal bad_results
                 yield bad_results.pop()
 
@@ -161,18 +162,23 @@ class FTS(unittest.TestCase):
         self.db.register_fts5_tokenizer("bad_tok", bad_tok)
 
         self.assertRaisesRegex(
-            ValueError, ".*reason is not an allowed value.*", self.db.fts5_tokenizer("unicode61", []).__call__, b"", 0
+            ValueError,
+            ".*flags is not an allowed value.*",
+            self.db.fts5_tokenizer("unicode61", []).__call__,
+            b"",
+            0,
+            None,
         )
 
         while bad_results:
             self.assertRaises(
-                ValueError, self.db.fts5_tokenizer("bad_tok", []).__call__, b"abc", apsw.FTS5_TOKENIZE_DOCUMENT
+                ValueError, self.db.fts5_tokenizer("bad_tok", []).__call__, b"abc", apsw.FTS5_TOKENIZE_DOCUMENT, None
             )
 
         def bad_tok2(con, args):
             options = apsw.fts.parse_tokenizer_args({"+": None}, con, args)
 
-            def tokenize(utf8, reason):
+            def tokenize(utf8, reason, locale):
                 for start, end, *tokens in options["+"](utf8, reason):
                     yield start, end, *tokens
 
@@ -186,6 +192,7 @@ class FTS(unittest.TestCase):
                 self.db.fts5_tokenizer("bad_tok2", ["bad_tok"]).__call__,
                 b"abc",
                 apsw.FTS5_TOKENIZE_DOCUMENT,
+                None,
             )
 
     def verify_token_stream(self, expected, actual, include_offsets, include_colocated):
@@ -227,8 +234,10 @@ class FTS(unittest.TestCase):
 
         self.assertRaises(ValueError, self.db.fts5_tokenizer, "unicodewords", ["zebra"])
 
-        self.assertEqual(self.db.fts5_tokenizer("unicodewords", [])(b"", apsw.FTS5_TOKENIZE_DOCUMENT), [])
-        self.assertEqual(self.db.fts5_tokenizer("unicodewords", [])(b"a", apsw.FTS5_TOKENIZE_DOCUMENT), [(0, 1, "a")])
+        self.assertEqual(self.db.fts5_tokenizer("unicodewords", [])(b"", apsw.FTS5_TOKENIZE_DOCUMENT, None), [])
+        self.assertEqual(
+            self.db.fts5_tokenizer("unicodewords", [])(b"a", apsw.FTS5_TOKENIZE_DOCUMENT, "hello"), [(0, 1, "a")]
+        )
 
         correct = (
             ("L* !Lu:0:0", "𐌼𐌰𐌲:العالم:Olá:mundo:नमस्ते:दुनिया"),
@@ -247,7 +256,7 @@ class FTS(unittest.TestCase):
                     key = f"{categories}:{emoji}:{ri}"
                     args = ["categories", categories, "emoji", str(emoji), "regional_indicator", str(ri)]
                     for start, end, token in self.db.fts5_tokenizer("unicodewords", args)(
-                        test_utf8, apsw.FTS5_TOKENIZE_DOCUMENT
+                        test_utf8, apsw.FTS5_TOKENIZE_DOCUMENT, None
                     ):
                         self.assertEqual(test_utf8[start:end].decode("utf8"), token)
                         result.append(token)
@@ -259,7 +268,7 @@ class FTS(unittest.TestCase):
         test_utf8 = ("中文(繁體) Fr1AnçAiS češt2ina 🤦🏼‍♂️straße" * 4).encode("utf8")
         self.db.register_fts5_tokenizer("ngram", apsw.fts.NGramTokenizer)
 
-        self.assertEqual(self.db.fts5_tokenizer("ngram")(b"", apsw.FTS5_TOKENIZE_QUERY), [])
+        self.assertEqual(self.db.fts5_tokenizer("ngram")(b"", apsw.FTS5_TOKENIZE_QUERY, "fred"), [])
 
         for include_categories in (
             None,
@@ -278,7 +287,7 @@ class FTS(unittest.TestCase):
                 args = ["ngrams", "3,7,9-12" + (",193" if reason == apsw.FTS5_TOKENIZE_QUERY else "")]
                 if include_categories:
                     args += ["categories", include_categories]
-                for start, end, *tokens in self.db.fts5_tokenizer("ngram", args)(test_utf8, reason):
+                for start, end, *tokens in self.db.fts5_tokenizer("ngram", args)(test_utf8, reason, None):
                     self.assertEqual(1, len(tokens))
                     if reason == apsw.FTS5_TOKENIZE_QUERY:
                         self.assertIsNone(by_start_len[start])
@@ -314,11 +323,11 @@ class FTS(unittest.TestCase):
 
         # longer than ngrams
         token = self.db.fts5_tokenizer("ngram", ["ngrams", "20000"])(
-            test_utf8, apsw.FTS5_TOKENIZE_DOCUMENT, include_colocated=False, include_offsets=False
+            test_utf8, apsw.FTS5_TOKENIZE_DOCUMENT, include_colocated=False, include_offsets=False, locale="1"
         )[0]
         self.assertEqual(test_utf8, token.encode("utf8"))
         # zero len
-        self.assertEqual([], self.db.fts5_tokenizer("ngram")(b"", apsw.FTS5_TOKENIZE_DOCUMENT))
+        self.assertEqual([], self.db.fts5_tokenizer("ngram")(b"", apsw.FTS5_TOKENIZE_DOCUMENT, None))
 
         ## Regex
         pattern = r"\d+"  # digits
@@ -329,7 +338,7 @@ class FTS(unittest.TestCase):
         # ASCII/Arabic and non-ascii digits
         text = "text2abc 3.14 tamil ௦௧௨௩௪ bengali ০১২৩৪ arabic01234"
         self.assertEqual(
-            self.db.fts5_tokenizer("my_regex")(text.encode("utf8"), apsw.FTS5_TOKENIZE_DOCUMENT),
+            self.db.fts5_tokenizer("my_regex")(text.encode("utf8"), apsw.FTS5_TOKENIZE_DOCUMENT, None),
             [(4, 5, "2"), (9, 10, "3"), (11, 13, "14"), (66, 71, "01234")],
         )
 
@@ -515,7 +524,7 @@ class FTS(unittest.TestCase):
         def source(con, args):
             apsw.fts.parse_tokenizer_args({}, con, args)
 
-            def tokenize(utf8, flags):
+            def tokenize(utf8, flags, locale):
                 self.assertEqual(flags, test_reason)
                 self.assertEqual(utf8, test_data)
                 return test_res
@@ -571,7 +580,7 @@ class FTS(unittest.TestCase):
                     )
                     tok = self.db.fts5_tokenizer(tokname, args_without)
 
-                returns.append(tok(test_data, test_reason))
+                returns.append(tok(test_data, test_reason, None))
 
             self.assertNotEqual(returns[0], test_res)
             self.assertEqual(returns[0], returns[1])
@@ -590,9 +599,9 @@ class FTS(unittest.TestCase):
         self.db.register_fts5_tokenizer("synonym-reason", func)
 
         self.assertEqual(
-            self.db.fts5_tokenizer("unicodewords")(test_text.encode("utf8"), apsw.FTS5_TOKENIZE_QUERY),
+            self.db.fts5_tokenizer("unicodewords")(test_text.encode("utf8"), apsw.FTS5_TOKENIZE_QUERY, None),
             self.db.fts5_tokenizer("synonym-reason", ["unicodewords"])(
-                test_text.encode("utf8"), apsw.FTS5_TOKENIZE_QUERY
+                test_text.encode("utf8"), apsw.FTS5_TOKENIZE_QUERY, None
             ),
         )
 
@@ -604,9 +613,9 @@ class FTS(unittest.TestCase):
         self.db.register_fts5_tokenizer("stopwords-reason", func)
 
         self.assertEqual(
-            self.db.fts5_tokenizer("unicodewords")(test_text.encode("utf8"), apsw.FTS5_TOKENIZE_QUERY),
+            self.db.fts5_tokenizer("unicodewords")(test_text.encode("utf8"), apsw.FTS5_TOKENIZE_QUERY, None),
             self.db.fts5_tokenizer("stopwords-reason", ["unicodewords"])(
-                test_text.encode("utf8"), apsw.FTS5_TOKENIZE_QUERY | apsw.FTS5_TOKENIZE_PREFIX
+                test_text.encode("utf8"), apsw.FTS5_TOKENIZE_QUERY | apsw.FTS5_TOKENIZE_PREFIX, None
             ),
         )
         self.db.register_fts5_tokenizer("stopwords-reason", func)
@@ -618,8 +627,8 @@ class FTS(unittest.TestCase):
         self.db.register_fts5_tokenizer("simplify", apsw.fts.SimplifyTokenizer)
 
         # no args should have no effect
-        baseline = self.db.fts5_tokenizer("unicodewords")(test_utf8, test_reason)
-        nowt = self.db.fts5_tokenizer("simplify", ["unicodewords"])(test_utf8, test_reason)
+        baseline = self.db.fts5_tokenizer("unicodewords")(test_utf8, test_reason, None)
+        nowt = self.db.fts5_tokenizer("simplify", ["unicodewords"])(test_utf8, test_reason, None)
         self.assertEqual(baseline, nowt)
 
         # require tokenizer arg
@@ -640,7 +649,7 @@ class FTS(unittest.TestCase):
             (True, True, [("中",), ("文",), ("繁",), ("體",), ("fr1ancaisviicest2ina",), ("🤦♂",), ("strasse",)]),
         ):
             res = self.db.fts5_tokenizer("simplify", ["casefold", str(casefold), "strip", str(strip), "unicodewords"])(
-                test_utf8, test_reason, include_offsets=False
+                test_utf8, test_reason, None, include_offsets=False
             )
             self.assertEqual(res, expected)
 
@@ -651,14 +660,22 @@ class FTS(unittest.TestCase):
         self.assertEqual(
             # Po is for the ampersand
             self.db.fts5_tokenizer("html", ["unicodewords", "categories", "L* N* Po"])(
-                test_html.encode("utf8"), apsw.FTS5_TOKENIZE_DOCUMENT, include_colocated=False, include_offsets=False
+                test_html.encode("utf8"),
+                apsw.FTS5_TOKENIZE_DOCUMENT,
+                None,
+                include_colocated=False,
+                include_offsets=False,
             ),
             ["text", "more", "stuff", "&", "things", "yes", "/", "no", "aӒb"],
         )
         # non html should be pass through
         self.assertEqual(
             self.db.fts5_tokenizer("html", ["unicodewords", "categories", "*"])(
-                "hello<world>".encode("utf8"), apsw.FTS5_TOKENIZE_QUERY, include_colocated=False, include_offsets=False
+                "hello<world>".encode("utf8"),
+                apsw.FTS5_TOKENIZE_QUERY,
+                None,
+                include_colocated=False,
+                include_offsets=False,
             ),
             ["hello", "<", "world", ">"],
         )
@@ -670,20 +687,32 @@ class FTS(unittest.TestCase):
         self.assertEqual(
             # Po is for the quotes
             self.db.fts5_tokenizer("json", ["unicodewords", "categories", "L* N* Po"])(
-                test_json.encode("utf8"), apsw.FTS5_TOKENIZE_DOCUMENT, include_colocated=False, include_offsets=False
+                test_json.encode("utf8"),
+                apsw.FTS5_TOKENIZE_DOCUMENT,
+                None,
+                include_colocated=False,
+                include_offsets=False,
             ),
             ["value", "'", '"'],
         )
         self.assertEqual(
             self.db.fts5_tokenizer("json", ["include_keys", "1", "unicodewords", "categories", "L* N* Po"])(
-                test_json.encode("utf8"), apsw.FTS5_TOKENIZE_DOCUMENT, include_colocated=False, include_offsets=False
+                test_json.encode("utf8"),
+                apsw.FTS5_TOKENIZE_DOCUMENT,
+                None,
+                include_colocated=False,
+                include_offsets=False,
             ),
             ["key", "value", "kሴ", "'", '"'],
         )
         # non json should be pass through
         self.assertEqual(
             self.db.fts5_tokenizer("json", ["unicodewords", "categories", "*"])(
-                "hello<world>".encode("utf8"), apsw.FTS5_TOKENIZE_QUERY, include_colocated=False, include_offsets=False
+                "hello<world>".encode("utf8"),
+                apsw.FTS5_TOKENIZE_QUERY,
+                None,
+                include_colocated=False,
+                include_offsets=False,
             ),
             ["hello", "<", "world", ">"],
         )
@@ -895,6 +924,7 @@ class FTS(unittest.TestCase):
                 self.db.fts5_tokenizer("unicode61", []),
                 b"abc def",
                 apsw.FTS5_TOKENIZE_DOCUMENT,
+                None,
             )
             apsw.faultdict["xTokenCBOffsetsBad"] = True
             self.assertRaisesRegex(
@@ -903,6 +933,7 @@ class FTS(unittest.TestCase):
                 self.db.fts5_tokenizer("unicode61", []),
                 b"abc def",
                 apsw.FTS5_TOKENIZE_DOCUMENT,
+                None,
             )
             apsw.faultdict["xTokenCBColocatedBad"] = True
             self.assertRaisesRegex(
@@ -911,11 +942,12 @@ class FTS(unittest.TestCase):
                 self.db.fts5_tokenizer("unicode61", []),
                 b"abc def",
                 apsw.FTS5_TOKENIZE_DOCUMENT,
+                None,
             )
             apsw.faultdict["TokenizeRC"] = True
 
             def tokenizer(con, args):
-                def tokenize(utf8, reason):
+                def tokenize(utf8, reason, locale):
                     yield "hello"
                     yield ("hello", "world")
 
@@ -923,11 +955,11 @@ class FTS(unittest.TestCase):
 
             self.db.register_fts5_tokenizer("simple", tokenizer)
             self.assertRaises(
-                apsw.NoMemError, self.db.fts5_tokenizer("simple", []), b"abc def", apsw.FTS5_TOKENIZE_DOCUMENT
+                apsw.NoMemError, self.db.fts5_tokenizer("simple", []), b"abc def", apsw.FTS5_TOKENIZE_DOCUMENT, None
             )
             apsw.faultdict["TokenizeRC2"] = True
             self.assertRaises(
-                apsw.NoMemError, self.db.fts5_tokenizer("simple", []), b"abc def", apsw.FTS5_TOKENIZE_DOCUMENT
+                apsw.NoMemError, self.db.fts5_tokenizer("simple", []), b"abc def", apsw.FTS5_TOKENIZE_DOCUMENT, None
             )
 
             self.db.execute("""create virtual table ftstest using fts5(x); insert into ftstest values('hello world')""")
@@ -943,6 +975,14 @@ class FTS(unittest.TestCase):
             for fault in ("xRowCountErr", "xSetAuxDataErr", "xQueryTokenErr", "xInstCountErr", "xTokenizeErr"):
                 apsw.faultdict[fault] = True
                 self.assertRaises(apsw.NoMemError, self.db.execute, "select errmaker(ftstest) from ftstest('hello')")
+
+
+class FTSUTF16(FTS):
+    "Runs FTS tests with database in UTF-16 encoding"
+
+    def setUp(self):
+        super().setUp()
+        self.db.pragma("encoding", "utf16")
 
 
 class Unicode(unittest.TestCase):
@@ -1770,7 +1810,7 @@ abc!p!d\u2029 !p!abc\u0085!p!def
                 self.assertEqual(to_utf8(str_offset), utf8_offset)
 
 
-__all__ = ("FTS", "Unicode")
+__all__ = ("FTS", "FTSUTF16", "Unicode")
 
 if __name__ == "__main__":
     unittest.main()

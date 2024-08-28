@@ -528,10 +528,10 @@ def SynonymTokenizer(get: Callable[[str], None | str | tuple[str]] | None = None
         def tokenize(utf8: bytes, flags: int, locale: str | None):
             tok = options["+"]
             if flags not in options["reasons"]:
-                yield from tok(utf8, flags)
+                yield from tok(utf8, flags, locale)
                 return
 
-            for start, end, *tokens in tok(utf8, flags):
+            for start, end, *tokens in tok(utf8, flags, locale):
                 new_tokens = []
                 for t in tokens:
                     if t not in new_tokens:
@@ -586,7 +586,7 @@ def StopWordsTokenizer(test: Callable[[str], bool] | None = None) -> apsw.FTS5To
             tok = options["+"]
 
             if flags == tokenize_reasons["QUERY_PREFIX"]:
-                yield from tok(utf8, flags)
+                yield from tok(utf8, flags, locale)
                 return
 
             for start, end, *tokens in tok(utf8, flags, locale):
@@ -635,7 +635,7 @@ def TransformTokenizer(transform: Callable[[str], str | Sequence[str]] | None = 
         def tokenize(utf8: bytes, flags: int, locale: str | None):
             tok = options["+"]
 
-            for start, end, *tokens in tok(utf8, flags):
+            for start, end, *tokens in tok(utf8, flags, locale):
                 new_tokens = []
                 for t in tokens:
                     replacement = transform(t)
@@ -771,7 +771,7 @@ def HTMLTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
         # are unlikely to be html.  We allow for ampersand to catch
         # entity searches.
         if not re.match(r"\s*[<&]", html):
-            yield from string_tokenize(options["+"], html, flags)
+            yield from string_tokenize(options["+"], html, flags, locale)
             return
 
         text, om = extract_html_text(html)
@@ -880,7 +880,7 @@ def JSONTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
         # we only tokenize what looks like json.  Human typed queries
         # are unlikely to be json.
         if not re.match(r"\s*[{\[]", json):
-            yield from string_tokenize(options["+"], json, flags)
+            yield from string_tokenize(options["+"], json, flags, locale)
             return
 
         text, mapper = extract_json(json, options["include_keys"])
@@ -982,7 +982,7 @@ def RegexPreTokenizer(
             last_other = match.end()
 
         if last_other < len(text):
-            yield from process_other(text[last_other:], flags, last_other)
+            yield from process_other(text[last_other:], flags, locale, last_other)
 
     return tokenize
 
