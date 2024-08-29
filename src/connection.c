@@ -5263,7 +5263,14 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
     ARG_EPILOG(NULL, Connection_fts5_tokenizer_USAGE, );
   }
 
-  tmptuple = args ? NULL : PyTuple_New(0);
+  if (args)
+    tmptuple = NULL;
+  else
+  {
+    tmptuple = PyTuple_New(0);
+    if (!tmptuple)
+      return NULL;
+  }
 
   fts5_api *api = Connection_fts5_api(self);
   if(!api)
