@@ -164,9 +164,7 @@ class Shell:
             try:
                 apsw.fts.register_tokenizers(self._db, apsw.fts.map_tokenizers)
                 apsw.fts.register_functions(self._db, apsw.fts.map_functions)
-            except Exception:
-                # It could fail because FTS5 is not enabled or similar reasons
-                # so we silently ignore errors
+            except apsw.NoFTS5Error:
                 pass
 
 
