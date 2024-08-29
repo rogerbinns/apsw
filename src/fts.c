@@ -293,7 +293,8 @@ APSWFTS5Tokenizer_call(APSWFTS5Tokenizer *self, PyObject *const *fast_args, Py_s
   if (rc != SQLITE_OK)
   {
     SET_EXC(rc, NULL);
-    AddTraceBackHere(__FILE__, __LINE__, "FTS5Tokenizer_call.xTokenize", "{s:i,s:s,s:O}", "flags", flags, "locale", locale, "utf8", utf8);
+    AddTraceBackHere(__FILE__, __LINE__, "FTS5Tokenizer_call.xTokenize", "{s:i,s:s,s:O}", "flags", flags, "locale",
+                     locale, "utf8", utf8);
     goto finally;
   }
 
@@ -427,6 +428,17 @@ APSWPythonTokenizerCreate(void *factory_data, const char **argv, int argc, Fts5T
   PyObject *pyres = PyObject_Vectorcall(tfd->factory_func, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (!pyres)
   {
+    res = SQLITE_ERROR;
+    goto finally;
+  }
+
+  if (!PyCallable_Check(pyres))
+  {
+    PyErr_Format(PyExc_TypeError, "Expected a callable returned from FTS5 Tokenizer create, not %s",
+                 Py_TypeName(pyres));
+    AddTraceBackHere(__FILE__, __LINE__, "FTS5Tokenizer.xCreate", "{s:O,s:O,s:O}", "tokenizer", tfd->factory_func,
+                     "args", args, "returned", pyres);
+    Py_DECREF(pyres);
     res = SQLITE_ERROR;
     goto finally;
   }
