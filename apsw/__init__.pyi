@@ -2222,6 +2222,11 @@ class FTS5ExtensionApi:
     """Returns the `number of columns in the table
     <https://www.sqlite.org/fts5.html#xColumnCount>`__"""
 
+    def column_locale(self, column: int) -> str | None:
+        """`Retriees the locale for a column  <https://www.sqlite.org/fts5.html#xColumnLocale>`__ on
+        this row."""
+        ...
+
     def column_size(self, col: int = -1) -> int:
         """Returns the `total number of tokens in the current row
         <https://www.sqlite.org/fts5.html#xColumnSize>`__ for a specific
@@ -2293,8 +2298,8 @@ class FTS5ExtensionApi:
     rowid: int
     """Rowid of the `current row <https://www.sqlite.org/fts5.html#xGetAuxdata>`__"""
 
-    def tokenize(self, utf8: bytes, *, include_offsets: bool = True, include_colocated: bool = True) -> list:
-        """`Tokenizes the utf8 <https://www.sqlite.org/fts5.html#xTokenize>`__.  FTS5 sets the reason to ``FTS5_TOKENIZE_AUX``.
+    def tokenize(self, utf8: bytes, locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> list:
+        """`Tokenizes the utf8 <https://www.sqlite.org/fts5.html#xTokenize_v2>`__.  FTS5 sets the reason to ``FTS5_TOKENIZE_AUX``.
         See :meth:`apsw.FTS5Tokenizer.__call__` for details."""
         ...
 

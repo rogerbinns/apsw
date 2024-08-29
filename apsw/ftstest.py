@@ -860,7 +860,7 @@ class FTS(unittest.TestCase):
             for include_offsets in (True, False):
                 for include_colocated in (True, False):
                     res = api.tokenize(
-                        test_text.encode("utf8"), include_offsets=include_offsets, include_colocated=include_colocated
+                        test_text.encode("utf8"), None, include_offsets=include_offsets, include_colocated=include_colocated
                     )
                     self.assertIn((include_offsets, include_colocated, res), correct)
 
@@ -872,6 +872,7 @@ class FTS(unittest.TestCase):
         extapi = {
             "attr": {"aux_data", "column_count", "inst_count", "phrase_count", "phrases", "row_count", "rowid"},
             (0,): {
+                "column_locale",
                 "column_size",
                 "column_text",
                 "column_total_size",
@@ -895,7 +896,7 @@ class FTS(unittest.TestCase):
                         self.assertRaises(apsw.InvalidContextError, getattr(ctx, name), *args)
                     items.remove(name)
             # check all members were tested
-            self.assertEqual(len(items), 0)
+            self.assertEqual(len(items), 0, f"untested {items=}")
 
     def testzzFaultInjection(self):
         "Deliberately inject faults to exercise all code paths"
@@ -970,7 +971,7 @@ class FTS(unittest.TestCase):
                 api.aux_data = "hello"
                 api.phrases
                 api.inst_count
-                api.tokenize(b"hello world")
+                api.tokenize(b"hello world", api.column_locale(0))
 
             self.db.register_fts5_function("errmaker", cb)
             for fault in ("xRowCountErr", "xSetAuxDataErr", "xQueryTokenErr", "xInstCountErr", "xTokenizeErr"):

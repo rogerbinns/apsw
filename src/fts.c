@@ -1208,9 +1208,9 @@ APSWFTS5ExtensionApi_xColumnText(APSWFTS5ExtensionApi *self, PyObject *const *fa
   return PyBytes_FromStringAndSize(bytes, size);
 }
 
-/** .. method:: tokenize(utf8: bytes, *, include_offsets: bool = True, include_colocated: bool = True) -> list
+/** .. method:: tokenize(utf8: bytes, locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> list
 
-  `Tokenizes the utf8 <https://www.sqlite.org/fts5.html#xTokenize>`__.  FTS5 sets the reason to ``FTS5_TOKENIZE_AUX``.
+  `Tokenizes the utf8 <https://www.sqlite.org/fts5.html#xTokenize_v2>`__.  FTS5 sets the reason to ``FTS5_TOKENIZE_AUX``.
   See :meth:`apsw.FTS5Tokenizer.__call__` for details.
 
 */
@@ -1222,13 +1222,17 @@ APSWFTS5ExtensionApi_xTokenize(APSWFTS5ExtensionApi *self, PyObject *const *fast
 
   Py_buffer utf8_buffer;
   PyObject *utf8;
+  const char *locale = NULL;
+  Py_ssize_t locale_size = 0;
+
   int include_offsets = 1, include_colocated = 1;
   int rc = SQLITE_OK;
 
   {
     FTS5ExtensionApi_tokenize_CHECK;
-    ARG_PROLOG(1, FTS5ExtensionApi_tokenize_KWNAMES);
+    ARG_PROLOG(2, FTS5ExtensionApi_tokenize_KWNAMES);
     ARG_MANDATORY ARG_py_buffer(utf8);
+    ARG_MANDATORY ARG_optional_UTF8AndSize(locale);
     ARG_OPTIONAL ARG_bool(include_offsets);
     ARG_OPTIONAL ARG_bool(include_colocated);
     ARG_EPILOG(NULL, FTS5ExtensionApi_tokenize_USAGE, );
@@ -1256,8 +1260,14 @@ APSWFTS5ExtensionApi_xTokenize(APSWFTS5ExtensionApi *self, PyObject *const *fast
     goto finally;
   }
 
-  /* ::TODO:: should we release gil around this? */
-  rc = self->pApi->xTokenize(self->pFts, utf8_buffer.buf, utf8_buffer.len, &our_context, xTokenizer_Callback);
+  if (locale_size >= INT_MAX)
+  {
+    PyErr_Format(PyExc_ValueError, "locale too large (%zd)", locale_size);
+    goto finally;
+  }
+
+  rc = self->pApi->xTokenize_v2(self->pFts, utf8_buffer.buf, utf8_buffer.len, locale, locale_size, &our_context,
+                                xTokenizer_Callback);
   APSW_FAULT_INJECT(xTokenizeErr, , rc = SQLITE_NOMEM);
   if (rc != SQLITE_OK)
   {
@@ -1282,6 +1292,41 @@ finally:
   }
   Py_CLEAR(our_context.last_item);
   return our_context.the_list;
+}
+
+/** .. method:: column_locale(column: int) -> str | None
+
+  `Retriees the locale for a column  <https://www.sqlite.org/fts5.html#xColumnLocale>`__ on
+  this row.
+
+*/
+static PyObject *
+APSWFTS5ExtensionApi_xColumnLocale(APSWFTS5ExtensionApi *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                                   PyObject *fast_kwnames)
+{
+  FTSEXT_CHECK(NULL);
+
+  int column;
+
+  {
+    FTS5ExtensionApi_column_locale_CHECK;
+    ARG_PROLOG(1, FTS5ExtensionApi_column_locale_KWNAMES);
+    ARG_MANDATORY ARG_int(column);
+    ARG_EPILOG(NULL, FTS5ExtensionApi_column_locale_USAGE, );
+  }
+
+  const char *pLocale = NULL;
+  int nLocale = 0;
+
+  int rc = self->pApi->xColumnLocale(self->pFts, column, &pLocale, &nLocale);
+  if (rc != SQLITE_OK)
+  {
+    SET_EXC(rc, NULL);
+    return NULL;
+  }
+  if (!pLocale || !nLocale)
+    Py_RETURN_NONE;
+  return PyUnicode_FromStringAndSize(pLocale, nLocale);
 }
 
 struct query_phrase_context
@@ -1391,6 +1436,8 @@ static PyMethodDef APSWFTS5ExtensionApi_methods[] = {
     FTS5ExtensionApi_query_phrase_DOC },
   { "inst_tokens", (PyCFunction)APSWFTS5ExtensionApi_xInstToken, METH_FASTCALL | METH_KEYWORDS,
     FTS5ExtensionApi_inst_tokens_DOC },
+  { "column_locale", (PyCFunction)APSWFTS5ExtensionApi_xColumnLocale, METH_FASTCALL | METH_KEYWORDS,
+    FTS5ExtensionApi_column_locale_DOC },
   { 0 },
 };
 

@@ -404,6 +404,9 @@ type_overrides = {
         "statements": "strtype",
         "sequenceofbindings": "Sequence"
     },
+    "FTS5ExtensionApi.tokenize": {
+        "locale": "utf8_and_size_or_none",
+    },
     "FTS5Tokenizer.__call__": {
         "locale": "utf8_and_size_or_none",
     },

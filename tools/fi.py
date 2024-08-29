@@ -216,6 +216,7 @@ def exercise(example_code, expect_exception):
     extapi = {
         "attr": {"aux_data", "column_count", "inst_count", "phrase_count", "phrases", "row_count", "rowid"},
         (0,): {
+            "column_locale",
             "column_size",
             "column_text",
             "column_total_size",
