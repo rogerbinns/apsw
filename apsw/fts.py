@@ -1993,6 +1993,7 @@ class FTS5Table:
             if (rowid, col) != last:
                 # We only check on hitting new doc + column
                 doc: bytes = self.row_by_id(rowid, col).encode()
+                # ::TODO:: this needs to use fts5_locale
                 tokens = self.tokenize(doc, include_colocated=False)
                 last = rowid, col
             text_for_token[doc[tokens[offset][0] : tokens[offset][1]]] += 1
@@ -2107,6 +2108,7 @@ class FTS5Table:
         columnsize: bool = True,
         detail: Literal["full"] | Literal["column"] | Literal["none"] = "full",
         tokendata: bool = False,
+        locale: bool = False,
         generate_triggers: bool = True,
         drop_if_exists: bool = False,
     ) -> FTS5Table:
@@ -2157,6 +2159,9 @@ class FTS5Table:
         :param tokendata: Indicate if `tokens have separate data after
             a null char
             <https://sqlite.org/fts5.html#the_tokendata_option>`__
+        :param locale: Indicate if a `locale
+            <https://www.sqlite.org/fts5.html#the_locale_option>`__ is
+            available to tokenizers and stored in the table
         :param generate_triggers: If using an external content table
             and this is `True`, then `triggers are created
             <https://sqlite.org/fts5.html#external_content_tables>`__
@@ -2214,6 +2219,7 @@ class FTS5Table:
         qcontent_rowid = quote_name(content_rowid) if content and content_rowid is not None else None
         contentless_delete: str | None = str(int(contentless_delete)) if content == "" else None
         tokendata: str = str(int(tokendata))
+        locale: str = str(int(locale))
 
         qcontent = quote_name(content) if content is not None else None
 
@@ -2234,6 +2240,7 @@ class FTS5Table:
             ("columnsize", "0" if not columnsize else None),
             ("detail", detail if detail != "full" else None),
             ("tokendata", tokendata if tokendata != "0" else None),
+            ("locale", locale if locale != "0" else None),
         ):
             if value is not None:
                 sql.append(f", { option } = { value}")
@@ -2366,6 +2373,8 @@ class FTS5TableStructure:
     "`Columnsize option <https://www.sqlite.org/fts5.html#the_columnsize_option>`__"
     tokendata: bool
     "`Tokendata option <https://www.sqlite.org/fts5.html#the_tokendata_option>`__"
+    locale: bool
+    "`Locale option <https://www.sqlite.org/fts5.html#the_locale_option>`__"
     detail: Literal["full"] | Literal["column"] | Literal["none"]
     "`Detail option <https://www.sqlite.org/fts5.html#the_detail_option>`__"
 
@@ -2463,6 +2472,7 @@ def _fts5_vtable_parse(sql: str) -> FTS5TableStructure:
         "detail": "full",
         "contentless_delete": False,
         "tokendata": False,
+        "locale": False,
     }
     vals["name"] = tokens[3]
     if tokens[4].upper() != "USING":
@@ -2493,7 +2503,7 @@ def _fts5_vtable_parse(sql: str) -> FTS5TableStructure:
                 vals[key].update(int(v) for v in value.split())
         elif key in {"content", "content_rowid", "detail"}:
             vals[key] = value
-        elif key in {"contentless_delete", "columnsize", "tokendata"}:
+        elif key in {"contentless_delete", "columnsize", "tokendata", "locale"}:
             vals[key] = bool(int(value))
         else:
             raise ValueError(f"Unknown option '{key}' in {sql=}")
