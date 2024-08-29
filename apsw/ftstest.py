@@ -476,7 +476,8 @@ class FTS(unittest.TestCase):
 
         ## parse_tokenizer_args
         ta = apsw.fts.TokenizerArgument
-        self.db.register_fts5_tokenizer("dummy", lambda *args: None)
+        # the factory must return a callable hence nested lambdas
+        self.db.register_fts5_tokenizer("dummy", lambda *args: lambda *args: ("nothing",))
 
         def t(args):
             return self.db.fts5_tokenizer("dummy", args)
