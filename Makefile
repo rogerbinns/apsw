@@ -111,7 +111,7 @@ build_ext_debug: src/apswversion.h src/faultinject.h ## Fetches SQLite and build
 	env $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --force --enable-all-extensions --debug
 
 coverage:  src/faultinject.h ## Coverage of the C code
-	env $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all && tools/coverage.sh
+	tools/coverage.sh
 
 PYCOVERAGEOPTS=--source apsw -p
 
