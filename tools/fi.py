@@ -168,7 +168,7 @@ def exercise(example_code, expect_exception):
     fake_exc = UnboundLocalError
 
     def tok(con, args):
-        def tokenizer(utf8, reason):
+        def tokenizer(utf8, reason, locale):
             yield (0, 1, "hello")
             yield (1, 2, "hello", "world", "more")
             yield "third"
@@ -180,21 +180,21 @@ def exercise(example_code, expect_exception):
     con.register_fts5_tokenizer("silly", tok)
 
     with contextlib.suppress(fake_exc):
-        for _ in con.fts5_tokenizer("silly", [])(b"abcdef", apsw.FTS5_TOKENIZE_DOCUMENT):
+        for _ in con.fts5_tokenizer("silly", [])(b"abcdef", apsw.FTS5_TOKENIZE_DOCUMENT, None):
             pass
 
     def tok2(con, args):
         options = apsw.fts.parse_tokenizer_args({"+": None}, con, args)
 
-        def tokenizer(utf8, reason):
-            for start, end, *tokens in options["+"](utf8, reason, include_colocated=False):
+        def tokenizer(utf8, reason, locale):
+            for start, end, *tokens in options["+"](utf8, reason, locale, include_colocated=False):
                 yield start, end, *tokens
 
         return tokenizer
 
     con.register_fts5_tokenizer("tok2", tok2)
     with contextlib.suppress(fake_exc):
-        for _ in con.fts5_tokenizer("tok2", ["silly"])(b"abcdef", apsw.FTS5_TOKENIZE_DOCUMENT):
+        for _ in con.fts5_tokenizer("tok2", ["silly"])(b"abcdef", apsw.FTS5_TOKENIZE_DOCUMENT, "hello"):
             pass
 
     for include_offsets in (True, False):
@@ -202,6 +202,7 @@ def exercise(example_code, expect_exception):
             con.fts5_tokenizer("unicode61", [])(
                 b"hello world",
                 apsw.FTS5_TOKENIZE_DOCUMENT,
+                None,
                 include_offsets=include_offsets,
                 include_colocated=include_colocated,
             )
@@ -221,12 +222,12 @@ def exercise(example_code, expect_exception):
             "column_text",
             "column_total_size",
             "inst_tokens",
-            "phrase_column_offsets",
             "phrase_columns",
             "phrase_locations",
         },
+        (0, 0): ("phrase_column_offsets",),
         (0, lambda *args: None, None): {"query_phrase"},
-        (b"abcd e f g h",): {"tokenize"},
+        (b"abcd e f g h", "hello"): {"tokenize"},
     }
 
     def identity(api, param):

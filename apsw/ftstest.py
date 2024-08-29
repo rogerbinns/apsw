@@ -860,7 +860,10 @@ class FTS(unittest.TestCase):
             for include_offsets in (True, False):
                 for include_colocated in (True, False):
                     res = api.tokenize(
-                        test_text.encode("utf8"), None, include_offsets=include_offsets, include_colocated=include_colocated
+                        test_text.encode("utf8"),
+                        None,
+                        include_offsets=include_offsets,
+                        include_colocated=include_colocated,
                     )
                     self.assertIn((include_offsets, include_colocated, res), correct)
 
@@ -877,12 +880,12 @@ class FTS(unittest.TestCase):
                 "column_text",
                 "column_total_size",
                 "inst_tokens",
-                "phrase_column_offsets",
                 "phrase_columns",
                 "phrase_locations",
             },
+            (0, 0): ("phrase_column_offsets",),
             (0, lambda *args: None, None): {"query_phrase"},
-            (b"abcd e f g h",): {"tokenize"},
+            (b"abcd e f g h", "hello"): {"tokenize"},
         }
         for ctx in contexts:
             items = set(n for n in dir(ctx) if not n.startswith("_"))

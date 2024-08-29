@@ -103,7 +103,9 @@ for query in queries:
 # This example shows all the information available during a query.
 
 
-def match_info(api: apsw.FTS5ExtensionApi, *args: apsw.SQLiteValue) -> apsw.SQLiteValue:
+def match_info(
+    api: apsw.FTS5ExtensionApi, *args: apsw.SQLiteValue
+) -> apsw.SQLiteValue:
     print("match_info called with", args)
     # Show what information is available from the api
     print(f"{api.rowid=}")
@@ -128,7 +130,7 @@ def match_info(api: apsw.FTS5ExtensionApi, *args: apsw.SQLiteValue) -> apsw.SQLi
     # we can get a tokenization of text, useful if you want to extract
     # the original text, add highlights etc
     print("Tokenized with UTF-8 offsets")
-    pprint(api.tokenize(api.column_text(0)))
+    pprint(api.tokenize(api.column_text(0), api.column_locale(0)))
 
     # query_phrase is useful for finding out how common a phrase is.
     counts = [0] * len(api.phrases)
@@ -189,7 +191,9 @@ test_text = """🤦🏼‍♂️ v1.2 Grey Ⅲ ColOUR! Don't jump -  🇫🇮你
 
 # Call the tokenizer to do a tokenization, supplying the reason
 pprint(
-    tokenizer(test_text.encode("utf8"), apsw.FTS5_TOKENIZE_DOCUMENT)
+    tokenizer(
+        test_text.encode("utf8"), apsw.FTS5_TOKENIZE_DOCUMENT, None
+    )
 )
 
 
@@ -206,6 +210,7 @@ def show_tokens(text, tokenizer_name, tokenizer_args=None):
         tokenizer(
             text.encode("utf8"),
             apsw.FTS5_TOKENIZE_DOCUMENT,
+            None,
             include_offsets=False,
         )
     )
@@ -327,9 +332,11 @@ def atokenizer(
     # show what options we got
     pprint(options)
 
-    def tokenize(text: str, reason: int):
+    def tokenize(text: str, reason: int, locale: str | None):
         # See apsw.fts.tokenize_reasons for mapping from text to number
         print(f"{reason=}")
+        # if a locale table and value was used
+        print(f"{locale=}")
         # break string in groups of 'block' characters
         for start in range(0, len(text), options["block"]):
             token = text[start : start + options["block"]]
@@ -344,7 +351,7 @@ connection.register_fts5_tokenizer("atokenizer", atokenizer)
 tok = connection.fts5_tokenizer(
     "atokenizer", ["big", "plane", "block", "5"]
 )
-pprint(tok(test_text.encode("utf8"), apsw.FTS5_TOKENIZE_AUX))
+pprint(tok(test_text.encode("utf8"), apsw.FTS5_TOKENIZE_AUX, None))
 
 ### fts_apsw_regex: apsw.fts.RegexTokenizer
 # We can use :mod:`regular expressions <re>`.  Unlike the other
