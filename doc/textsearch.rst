@@ -138,6 +138,8 @@ Tokenizers
 All tokenizers
 --------------
 
+SQLite includes 4 builtin tokenizers while APSW provides several more.
+
 .. list-table::
   :header-rows: 1
   :widths: auto
@@ -165,6 +167,9 @@ All tokenizers
       including all spaces and punctuation.
   * - :func:`UnicodeWordsTokenizer`
     - Use Unicode algorithm for determining word segments.
+  * - :func:`SimplifyTokenizer`
+    - Wrapper that transforms the token stream by neutralizing case,
+      and removing diacritics and similar marks
   * - :func:`RegexTokenizer`
     - Use :mod:`regular expressions <re>` to generate tokens
   * - :func:`RegexPreTokenizer`
@@ -181,14 +186,6 @@ All tokenizers
   * - :func:`JSONTokenizer`
     - Wrapper that converts JSON to plain text for a further tokenizer
       to generate tokens
-  * - :func:`QueryTokensTokenizer`
-    - Wrapper that recognises :class:`apsw.fts5query.QueryTokens`
-      allowing queries using tokens directly.  This is useful if you
-      want to add more popular similar tokens to a query to broaden
-      search results.
-  * - :func:`SimplifyTokenizer`
-    - Wrapper that transforms the token stream by neutralizing case,
-      and removing diacritics and similar marks
   * - :func:`SynonymTokenizer`
     - Wrapper that provides additional tokens for existing ones such
       as ``first`` for ``1st``
@@ -197,6 +194,11 @@ All tokenizers
       often to be useful, such as ``the`` in English text
   * - :func:`TransformTokenizer`
     - Wrapper to transform tokens, such as when stemming.
+  * - :func:`QueryTokensTokenizer`
+    - Wrapper that recognises :class:`apsw.fts5query.QueryTokens`
+      allowing queries using tokens directly.  This is useful if you
+      want to add more popular similar tokens to a query to broaden
+      search results.
   * - :func:`StringTokenizer`
     - A decorator for your own tokenizers so that they operate on
       strings, with the decorator performing the mapping to UTF8 byte
@@ -339,12 +341,13 @@ text into ascii text that sounds approximately similar::
 
   connection.register_fts5_tokenizer("unidecode", transform)
 
-.. include:: fts.rst
-
 Full Text Search module
 =======================
 
-Provided by the :mod:`apsw.fts` module.
+Provided by the :mod:`apsw.fts` module.  This includes
+:class:`FTS5Table` for creating and working with FTS5 tables in a
+Pythonic way, numerous :ref:`tokenizers <all_tokenizers>`, and related
+functionality.
 
 .. automodule:: apsw.fts
     :synopsis: Helpers for working with full text search
@@ -382,3 +385,5 @@ Provided by the :mod:`apsw.unicode` module.
     :members:
     :undoc-members:
     :member-order: bysource
+
+.. include:: fts.rst
