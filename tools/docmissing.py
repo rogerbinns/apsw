@@ -10,6 +10,7 @@ import glob, sys
 import apsw
 
 import names
+import pathlib
 
 # check shell knows all pragmas
 import apsw.shell
@@ -50,7 +51,7 @@ retval = 0
 classes = {}
 
 for filename in glob.glob("doc/*.rst"):
-    for line in open(filename, "rt"):
+    for line in pathlib.Path(filename).read_text().splitlines():
         line = line.strip().split()
 
         if len(line) >= 2:
@@ -98,7 +99,7 @@ for name, obj in (
         continue
 
     for c in classes[name]:
-        if not hasattr(obj, c) and not (name, c) == ("Cursor", "description_full"):
+        if not hasattr(obj, c) and not (name, c) == ("Cursor", "description_full") and c != "fork_checker":
             retval = 1
             print("%s.%s in documentation but not object" % (name, c))
     for c in dir(obj):
