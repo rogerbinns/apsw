@@ -9,6 +9,7 @@ import os
 import glob
 import inspect
 import atexit
+import pathlib
 import random
 import re
 import contextlib
@@ -545,10 +546,10 @@ def exercise(example_code, expect_exception):
         return
 
     file_cleanup()
-    exec(example_code, {"print": lambda *args: None}, None)
-
-    if expect_exception:
-        return
+    for (code, __) in example_code:
+        exec(code, {"print": lambda *args: None}, None)
+        if expect_exception:
+            return
 
     if False:
         # This does recursion error, which also causes lots of last chance
@@ -594,9 +595,10 @@ class Tester:
         self.start_line = start
         self.end_line = end
 
-        with open("example-code.py", "rt") as f:
-            code = f.read()
-            # we do various transformations but must keep the line numbers the same
+        self.example_code = []
+        for example in pathlib.Path().glob("examples/*.py"):
+            code = example.read_text()
+                    # we do various transformations but must keep the line numbers the same
             code = code.replace("import os", "import os,contextlib")
             # make it use tmpfs
             code = code.replace('"dbfile"', f'"{ tmpdir.name }/dbfile-delme-example"')
@@ -606,9 +608,13 @@ class Tester:
             # resource usage is deliberately slow
             code = code.replace("time.sleep(1.3)", "time.sleep(0)")
             code = re.sub(r"ShowResourceUsage\([^)]*\)", "ShowResourceUsage(None)", code)
+            # fix pprint
+            code = code.replace("from pprint import pprint", "pprint = print")
 
-        self.example_code_lines = len(code.split("\n"))
-        self.example_code = compile(code, "example-code.py", "exec")
+            self.example_code.append((
+                compile(code, example.with_suffix(""), "exec"),
+                len(code.split("\n"))
+            ))
 
     @staticmethod
     def apsw_attr(name: str):
@@ -744,12 +750,12 @@ class Tester:
             if key in self.has_faulted_ever:
                 return self.Proceed
 
-        line, percent = self.get_progress()
+        line = self.get_progress()
         if self.runplan is not None:
             print("  Pre" if self.runplan else "Fault", end=" ")
         print(
             f"faulted: { len(self.has_faulted_ever): 4} / new: { len(self.to_fault): 3}"
-            f" cur: { int(percent): 3}%  L{ line } { key }"
+            f" { line } { key }"
         )
         try:
             return self.FaultCall(key)
@@ -786,30 +792,17 @@ class Tester:
     def get_progress(self):
         # work out what progress in exercise
         ss = traceback.extract_stack()
-        curline = self.start_line
-        exercise_ok = True
-        for frame in ss:
-            if frame.filename == __file__ and exercise_ok and frame.name == "exercise":
-                curline = max(curline, frame.lineno)
-            if frame.filename == "example-code.py":
-                if exercise_ok:
-                    exercise_ok = False
-                    curline = frame.lineno
-                curline = max(curline, frame.lineno)
-
-        total_lines = self.end_line - self.start_line + self.example_code_lines
-        if exercise_ok:
-            curline_pretty = f"{ curline }(exercise)"
-            pos = curline - self.start_line
-        else:
-            curline_pretty = f"{ curline }(example) "
-            pos = curline + (self.end_line - self.start_line)
-
-        return curline_pretty, 100 * pos / total_lines
+        for frame in reversed(ss):
+            if frame.filename == __file__ and self.start_line <= frame.lineno <= self.end_line:
+                return f"(exercise) L{frame.lineno}"
+            if frame.filename.startswith("examples"):
+                return f"{frame.filename} L{frame.lineno}"
+        return "GC"
 
     def verify_exception(self, tested):
-        ok = any(e[0] in self.expect_exception for e in self.exc_happened) or any(self.FAULTS in str(e[1])
-                                                                                  for e in self.exc_happened)
+        ok = any(e[0] in self.expect_exception for e in self.exc_happened) or any(
+            self.FAULTS in str(e[1]) for e in self.exc_happened
+        )
         # these faults happen in fault handling so can't fault report themselves.
         if tested and list(tested)[0][2] in {
             "apsw_set_errmsg",
