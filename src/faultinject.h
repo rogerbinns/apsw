@@ -76,6 +76,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef PyType_Ready
 #undef PyUnicode_AsUTF8
 #undef PyUnicode_AsUTF8AndSize
+#undef PyUnicode_AsUTF8String
 #undef PyUnicode_DecodeUTF8
 #undef PyUnicode_FromFormat
 #undef PyUnicode_FromString
@@ -1105,6 +1106,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res_PyUnicode_AsUTF8AndSize = (typeof (_res_PyUnicode_AsUTF8AndSize))18;                                                                                         \
     }                                                                                                                                                                     \
     _res_PyUnicode_AsUTF8AndSize;                                                                                                                                         \
+})
+#define PyUnicode_AsUTF8String(...) \
+({                                                                                                                                                                     \
+    __auto_type _res_PyUnicode_AsUTF8String = 0 ? PyUnicode_AsUTF8String(__VA_ARGS__) : 0;                                                                             \
+                                                                                                                                                                       \
+    _res_PyUnicode_AsUTF8String = (typeof (_res_PyUnicode_AsUTF8String))APSW_FaultInjectControl("PyUnicode_AsUTF8String", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                       \
+    if ((typeof (_res_PyUnicode_AsUTF8String))0x1FACADE == _res_PyUnicode_AsUTF8String)                                                                                \
+       _res_PyUnicode_AsUTF8String = PyUnicode_AsUTF8String(__VA_ARGS__);                                                                                              \
+    else if ((typeof(_res_PyUnicode_AsUTF8String))0x2FACADE == _res_PyUnicode_AsUTF8String)                                                                            \
+    {                                                                                                                                                                  \
+        PyUnicode_AsUTF8String(__VA_ARGS__);                                                                                                                           \
+        _res_PyUnicode_AsUTF8String = (typeof (_res_PyUnicode_AsUTF8String))18;                                                                                        \
+    }                                                                                                                                                                  \
+    _res_PyUnicode_AsUTF8String;                                                                                                                                       \
 })
 #define PyUnicode_DecodeUTF8(...) \
 ({                                                                                                                                                               \
