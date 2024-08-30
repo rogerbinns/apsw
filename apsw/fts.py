@@ -2111,7 +2111,7 @@ class FTS5Table:
         schema: str = "main",
         unindexed: Iterable[str] | None = None,
         tokenize: Iterable[str] | None = None,
-        support_query_tokens: bool = True,
+        support_query_tokens: bool = False,
         rank: str | None = None,
         prefix: Iterable[int] | int | None = None,
         content: str | None = None,
@@ -2178,11 +2178,11 @@ class FTS5Table:
             and this is `True`, then `triggers are created
             <https://sqlite.org/fts5.html#external_content_tables>`__
             to keep this table updated with changes to the external
-            content table.
+            content table.  These require a table not a view.
         :param drop_if_exists: The FTS5 table will be dropped if it
             already exists, and then created.
 
-        If you create an external content table, then
+        If you create with an external content table, then
         :meth:`command_rebuild` and :meth:`command_optimize` will be
         run to populate the contents.
         """
