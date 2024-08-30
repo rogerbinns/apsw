@@ -40,10 +40,10 @@ dict
     :class:`dictionaries <dict>` which is easy for logging, storing as
     JSON, and manipulating.  Fields containing default values are
     omitted.  When provided to methods in this module, you do not need
-    to provide intermediate PHRASES and PHRASE and just Python lists
-    and strings directly.  This is the easiest form to
-    programmatically compose and modify queries in. The string example
-    truncated to a few lines is::
+    to provide intermediate PHRASES and PHRASE - just Python lists and
+    strings directly.  This is the easiest form to programmatically
+    compose and modify queries in. The string example truncated to a
+    few lines is::
 
       {'@': 'AND', 'queries': [
             "love",
@@ -56,8 +56,7 @@ dict
                                                'initial': True,
                                                'phrase': 'big world'}]}},
 
-    This form also allows omitting more of the structure like PHRASES in
-    favour of a list of str.
+    ::TODO:: show an example here of simplified form
 
 
 .. list-table:: Conversion functions
