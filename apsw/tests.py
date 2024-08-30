@@ -5742,7 +5742,7 @@ class APSW(unittest.TestCase):
                         assert name not in faults, f"fault inject name { name } found multiple times"
                         faults.add(name)
 
-        testcode = read_whole_file(__file__, "rt", "utf8")
+        testcode = pathlib.Path(__file__).read_text() + pathlib.Path(__file__).with_name("ftstest.py").read_text()
 
         for name in sorted(faults):
             self.assertTrue(re.search(f"\\b{ name }\\b", testcode), f"Couldn't find test for fault '{ name }'")
