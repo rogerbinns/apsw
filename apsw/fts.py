@@ -2519,37 +2519,6 @@ def _fts5_vtable_parse(sql: str) -> FTS5TableStructure:
     return FTS5TableStructure(**vals)
 
 
-if hasattr(itertools, "batched"):
-    batched = itertools.batched
-else:
-
-    def batched(iterable, n):
-        ":func:`itertools.batched` equivalent for older Python"
-        if n < 1:
-            raise ValueError("n must be at least one")
-        it = iter(iterable)
-        while batch := tuple(itertools.islice(it, n)):
-            yield batch
-
-
-def shingle(token: str, size: int = 3) -> tuple[str, ...]:
-    """Returns the token into sequences of ``size`` substrings
-
-    For example ``hello`` size 3 becomes ``('hel', 'ell', 'llo')``.
-
-    This is useful when calculating token closeness as the shingles
-    are more representative of word pronunciation and meaning than
-    individual letters.
-    """
-    if (size) < 1:
-        raise ValueError(f"size { size } should be at least 1")
-    if len(token) < 1:
-        raise ValueError("Can't shingle empty token")
-    if len(token) <= size:
-        return (token,)
-    return tuple(token[n : n + size] for n in range(0, len(token) - size + 1))
-
-
 def quote_name(name: str, quote: str = '"') -> str:
     """Quotes name to ensure it is parsed as a name
 
