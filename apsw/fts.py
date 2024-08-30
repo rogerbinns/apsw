@@ -1288,15 +1288,22 @@ class FTS5Table:
         '''
         return f"{self.qschema}.{self.qname}"
 
-    def search(self, query: str) -> Iterator[MatchInfo]:
+    def search(self, query: str, locale: str | None = None) -> Iterator[MatchInfo]:
         """Iterates matches, best match first
 
         This is useful for simple searches avoiding the need for
         writing SQL and auxiliary functions.
         """
 
-        sql = f"select _apsw_get_match_info({self.qname}) from { self.quoted_table_name}(?) order by rank"
-        bindings = (query,)
+        if locale is not None:
+            sql = f"select _apsw_get_match_info({self.qname}) from { self.quoted_table_name}(fts5_tokenize(?,?)) order by rank"
+            bindings = (
+                locale,
+                query,
+            )
+        else:
+            sql = f"select _apsw_get_match_info({self.qname}) from { self.quoted_table_name}(?) order by rank"
+            bindings = (query,)
 
         yield from self._search_internal(sql, bindings)
 
@@ -1993,8 +2000,13 @@ class FTS5Table:
             if (rowid, col) != last:
                 # We only check on hitting new doc + column
                 doc: bytes = self.row_by_id(rowid, col).encode()
-                # ::TODO:: this needs to use fts5_locale
-                tokens = self.tokenize(doc, include_colocated=False)
+                locale = None
+                if self.structure.locale:
+                    locale = self.db.execute(
+                        f"select fts5_get_locale({self.quoted_table_name}, ?) from {self.quoted_table_name} where rowid=?",
+                        (col, rowid),
+                    ).get
+                tokens = self.tokenize(doc, locale=locale, include_colocated=False)
                 last = rowid, col
             text_for_token[doc[tokens[offset][0] : tokens[offset][1]]] += 1
 
