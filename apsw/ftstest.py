@@ -344,12 +344,16 @@ class FTS(unittest.TestCase):
 
     def testCLI(self):
         "Test command line interface"
-        cov_params = (
-            [] if os.environ.get("COVERAGE_RUN", "") != "true" else ["-m", "coverage", "run", "--source", "apsw", "-p"]
-        )
+        if os.environ.get("COVERAGE_RUN", "") != "true":
+            cov_params = []
+            env = None
+        else:
+            cov_params = ["-m", "coverage", "run", "--source", "apsw", "-p"]
+            env = os.environ.copy()
+            env["ASAN_OPTIONS"] = "detect_leaks=false"
+
         proc = subprocess.run(
-            [sys.executable] + cov_params + ["-m", "apsw.fts", "unicodewords"],
-            capture_output=True,
+            [sys.executable] + cov_params + ["-m", "apsw.fts", "unicodewords"], capture_output=True, env=env
         )
         self.assertEqual(0, proc.returncode)
         self.assertIn(b"Tips", proc.stdout)
@@ -1183,12 +1187,16 @@ class Unicode(unittest.TestCase):
                     self.assertEqual(proc.returncode, 0, f"Failed {proc=}")
 
     def exec(self, *args):
-        cov_params = (
-            [] if os.environ.get("COVERAGE_RUN", "") != "true" else ["-m", "coverage", "run", "--source", "apsw", "-p"]
-        )
+        if os.environ.get("COVERAGE_RUN", "") != "true":
+            cov_params = []
+            env = None
+        else:
+            cov_params = ["-m", "coverage", "run", "--source", "apsw", "-p"]
+            env = os.environ.copy()
+            env["ASAN_OPTIONS"] = "detect_leaks=false"
+
         return subprocess.run(
-            [sys.executable] + cov_params + ["-m", "apsw.unicode"] + list(args),
-            capture_output=True,
+            [sys.executable] + cov_params + ["-m", "apsw.unicode"] + list(args), capture_output=True, env=env
         )
 
     def testCodepointNames(self):
