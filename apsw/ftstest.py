@@ -464,15 +464,8 @@ class FTS(unittest.TestCase):
         self.assertRaises(IndexError, om, -1)
         self.assertRaises(IndexError, om, len(text) + 1)
 
-        ## shingle
-        self.assertRaises(ValueError, apsw.fts.shingle, "", 3)
-        self.assertRaises(ValueError, apsw.fts.shingle, "hello", 0)
-        self.assertEqual(apsw.fts.shingle("hello", 1), ("h", "e", "l", "l", "o"))
-        self.assertEqual(apsw.fts.shingle("hello", 3), ("hel", "ell", "llo"))
-        self.assertEqual(apsw.fts.shingle("hello", 80), ("hello",))
-
         ## convert_string_to_python
-        self.assertIs(apsw.fts.convert_string_to_python("apsw.fts.shingle"), apsw.fts.shingle)
+        self.assertIs(apsw.fts.convert_string_to_python("apsw.fts.quote_name"), apsw.fts.quote_name)
 
         ## parse_tokenizer_args
         ta = apsw.fts.TokenizerArgument
