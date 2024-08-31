@@ -5587,6 +5587,16 @@ class APSW(unittest.TestCase):
                     "check": "FTSEXT_CHECK"
                 }
             },
+            # these are in unicode.c and don't have any requirements
+            "ToUtf8PositionMapper": {
+                "req": {},
+            },
+            "FromUtf8PositionMapper": {
+                "req": {},
+            },
+            "OffsetMapper": {
+                "req": {},
+            },
         }
 
         prefix, base = name.split("_", 1)
