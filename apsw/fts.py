@@ -700,7 +700,7 @@ def extract_html_text(html: str) -> tuple[str, apsw._unicode.OffsetMapper]:
             self.last = (text, self.real_offset)
 
         def separate(self, space: bool = True):
-            if self.last:
+            if self.last is not None:
                 self.om.add(self.last[0], self.last[1], self.real_offset)
                 self.last = None
             if space:
@@ -710,7 +710,7 @@ def extract_html_text(html: str) -> tuple[str, apsw._unicode.OffsetMapper]:
             self.current_tag = tag.lower()
             if tag.lower() == "svg":
                 self.svg_nesting_level += 1
-            self.separate(tag.lower() not in non_spacing_tags)
+            self.separate(self.current_tag not in non_spacing_tags)
 
         def handle_endtag(self, tag: str) -> None:
             self.current_tag = None
