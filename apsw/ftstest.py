@@ -1145,21 +1145,10 @@ class Unicode(unittest.TestCase):
                 self.assertEqual(list(meth_iter(test)), list(s[2] for s in seen))
                 self.assertEqual(list(meth_iter_with_offsets(test)), seen)
 
-    def getucdzip(self) -> pathlib.Path | None:
-        "Returns UCD.zip path if found"
-        # You need to download https://www.unicode.org/Public/UCD/latest/ucd/UCD.zip
-        # and have the file in one of the following directories
-        testzip = None
-        for location in (".", "..", "../ucd"):
-            check = pathlib.Path(location, "UCD.zip")
-            if check.is_file():
-                return check
-        return None
-
     def testBreaksFull(self):
         "Tests full official break tests (if available)"
 
-        testzip = self.getucdzip()
+        testzip = extended_testing_file("UCD.zip")
         if not testzip:
             return
 
@@ -1204,7 +1193,7 @@ class Unicode(unittest.TestCase):
             self.assertEqual(apsw.unicode.codepoint_name(codepoint), name)
             self.assertEqual(apsw.unicode.codepoint_name(chr(codepoint)), name)
 
-        testzip = self.getucdzip()
+        testzip = extended_testing_file("UCD.zip")
         if not testzip:
             return
 
@@ -1808,6 +1797,35 @@ abc!p!d\u2029 !p!abc\u0085!p!def
                 self.assertEqual(to_utf8(str_offset), utf8_offset)
 
 
+def extended_testing_file(name: str) -> pathlib.Path | None:
+    "Returns path if found"
+
+    # bigger data files used for testing are not shipped with apsw or part
+    # of the repository but will be used for testing if present.  They
+    # must be in a directory named apsw-extended-testing alongside the
+    # apsw source directory.
+
+    # this is for documentation purposes
+    sources = {
+        "UCD.zip": {
+            "description": "Unicode codes databases",
+            "url": "https://www.unicode.org/Public/UCD/latest/ucd/UCD.zip",
+        },
+        # https://opendata.stackexchange.com/a/17386
+        # https://github.com/fictivekin/openrecipes
+        "20170107-061401-recipeitems.json.gz": {
+            "description": "Recipes",
+            "url": "https://s3.amazonaws.com/openrecipes/20170107-061401-recipeitems.json.gz",
+        },
+    }
+
+    if name not in sources:
+        # make it a fatal error to give an unknown name
+        sys.exit(f"unknown source { name= }")
+
+    location = pathlib.Path(__file__).parent.parent / "apsw-extended-testing" / name
+
+    return location if location.exists() else None
 
 # in theory the database encoding not being utf8 could cause utf16
 # content where utf8 is expected as fts5 only does utf8.  I haven't
