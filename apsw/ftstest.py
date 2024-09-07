@@ -25,6 +25,7 @@ import zipfile
 import apsw
 import apsw.ext
 import apsw.fts
+import apsw.fts5query
 import apsw.unicode
 
 
@@ -1797,6 +1798,60 @@ abc!p!d\u2029 !p!abc\u0085!p!def
                 self.assertEqual(to_utf8(str_offset), utf8_offset)
 
 
+class FTS5Query(unittest.TestCase):
+    def setUp(self):
+        self.db = apsw.Connection("")
+        self.db.execute('create virtual table search using fts5(one, [two space], "three""quote", ":", "{")')
+        self.table = apsw.fts.FTS5Table(self.db, "search")
+
+    def tearDown(self):
+        self.db.close()
+        del self.db
+
+    def testParsing(self):
+        q = apsw.fts5query.quote
+        c = self.table.structure.columns
+        for query in (
+            # from the doc
+            'colname : NEAR("one two" "three four", 10)',
+            '"colname" : one + two + three',
+            '{col1 col2} : NEAR("one two" "three four", 10)',
+            "{col2 col1 col3} : one + two + three",
+            '- colname : NEAR("one two" "three four", 10)',
+            "- {col2 col1 col3} : one + two + three",
+            '{a b} : ( {b c} : "hello" AND "world" )',
+            '(b : "hello") AND ({a b} : "world")',
+            "b : (uvw AND xyz)",
+            "a : xyz",
+            # ones I used during dev
+            "NEAR(one two three)",
+            "(one three)",
+            "(one two) AND three NOT four",
+            # be nasty
+            f"{q(c[2])}: hello {q(c[3])}",
+        ):
+            # transform from query-string to parsed to dict to parsed
+            # to query-string and ensure all the conversions match
+            parsed = apsw.fts5query.parse_query_string(query)
+            as_dict = apsw.fts5query.to_dict(parsed)
+            from_dict = apsw.fts5query.from_dict(as_dict)
+            self.assertEqual(parsed, from_dict)
+            as_query = apsw.fts5query.to_query_string(from_dict)
+            # we can't compare query strings because white space, NEAR
+            # defaults, parentheses, optional AND etc will change
+            self.assertEqual(parsed, apsw.fts5query.parse_query_string(as_query))
+
+    def testErrors(self):
+        """
+        + one
+        one + + two
+        one OR + two
+        one two +
+
+        """
+        pass
+
+
 def extended_testing_file(name: str) -> pathlib.Path | None:
     "Returns path if found"
 
@@ -1827,6 +1882,7 @@ def extended_testing_file(name: str) -> pathlib.Path | None:
 
     return location if location.exists() else None
 
+
 # in theory the database encoding not being utf8 could cause utf16
 # content where utf8 is expected as fts5 only does utf8.  I haven't
 # found any problems in testing, but this remains here as a check.
@@ -1841,7 +1897,7 @@ class FTSUTF16(FTS):
         assert self.db.pragma("encoding").startswith("UTF-16")
 
 
-__all__ = ("FTS", "Unicode")
+__all__ = ("FTS", "FTS5Query", "Unicode")
 
 if __name__ == "__main__":
     unittest.main()
