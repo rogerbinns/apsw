@@ -409,13 +409,30 @@ def to_query_string(q: QUERY) -> str:
             r += " + " + to_query_string(q.plus)
         return r
 
-    if isinstance(q, (AND, OR)):
+    if isinstance(q, OR):
         r = ""
         for i, query in enumerate(q.queries):
-            # ::TODO:: for AND with NEAR or PHRASE we can leave
-            # out the AND
             if i:
-                r += " AND " if isinstance(q, AND) else " OR "
+                r += " OR "
+            if _to_query_string_needs_parens(q, query):
+                r += "("
+            r += to_query_string(query)
+            if _to_query_string_needs_parens(q, query):
+                r += ")"
+
+        return r
+
+    if isinstance(q, AND):
+        r = ""
+        for i, query in enumerate(q.queries):
+            if i:
+                if (isinstance(q.queries[i], PHRASE) and isinstance(q.queries[i - 1], PHRASE)) or (
+                    isinstance(q.queries[i], NEAR) and isinstance(q.queries[i - 1], NEAR)
+                ):
+                    # between NEAR or PHRASE pairs we can leave out the AND
+                    r+= " "
+                else:
+                    r += " AND "
             if _to_query_string_needs_parens(q, query):
                 r += "("
             r += to_query_string(query)
