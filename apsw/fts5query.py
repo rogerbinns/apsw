@@ -22,10 +22,11 @@ parsed
 
     This is a hierarchical representation using :mod:`dataclasses`
     with all fields present.  Represented as :class:`QUERY`, it uses
-    :class:`PHRASE`, :class:`PHRASES`, :class:`NEAR`,
-    :class:`COLUMNFILTER`, :class:`AND`, :class:`NOT`.  The string
-    example truncated to a few lines omitting defaults is::
+    :class:`PHRASE`,  :class:`NEAR`, :class:`COLUMNFILTER`,
+    :class:`AND`, :class:`NOT`.  The string example truncated to a few
+    lines omitting defaults is::
 
+      ::TODO:: regenerate this now that PHRASES is gone
       AND(queries=[PHRASES(phrases=[PHRASE(phrase='love')]),
              NOT(match=COLUMNFILTER(columns=['title'],
                                     filter='include',
@@ -40,7 +41,7 @@ dict
     :class:`dictionaries <dict>` which is easy for logging, storing as
     JSON, and manipulating.  Fields containing default values are
     omitted.  When provided to methods in this module, you do not need
-    to provide intermediate PHRASES and PHRASE - just Python lists and
+    to provide intermediate PHRASE - just Python lists and
     strings directly.  This is the easiest form to programmatically
     compose and modify queries in. The string example truncated to a
     few lines is::
@@ -56,7 +57,8 @@ dict
                                                'initial': True,
                                                'phrase': 'big world'}]}},
 
-    ::TODO:: show an example here of simplified form
+    ::TODO:: show an example here of simplified form and regenerate the
+    above
 
 
 .. list-table:: Conversion functions
@@ -167,28 +169,20 @@ class PHRASE:
     "One `phrase <https://www.sqlite.org/fts5.html#fts5_phrases>`__"
 
     phrase: str | QueryTokens
-    "Text of the phrase"
+    "Text of the phrase.  If + was used (eg one+two) then it will be a list of phrases"
     initial: bool = False
     "If True then the  phrase must match the beginning of a column ('^' was used)"
     prefix: bool = False
     "If True then if it is a prefix search on the last token in phrase ('*' was used)"
-    sequence: bool = False
-    """If True then this phrase must follow tokens of previous phrase ('+' was used).
-    initial and sequence can't both be True at the same time"""
-
-
-@dataclasses.dataclass
-class PHRASES:
-    "Sequence of PHRASE"
-
-    phrases: Sequence[PHRASE]
+    plus: PHRASE | None = None
+    "Additional phrase segment, joined by ``+`` in queries"
 
 
 @dataclasses.dataclass
 class NEAR:
     "`Near query <https://www.sqlite.org/fts5.html#fts5_near_queries>`__"
 
-    phrases: PHRASES
+    phrases: Sequence[PHRASE]
     "Two or more phrases"
     distance: int = 10
     "Maximum distance between the phrases"
@@ -234,11 +228,11 @@ class NOT:
 
 # Sphinx makes this real ugly
 # https://github.com/sphinx-doc/sphinx/issues/10541
-QUERY: TypeAlias = COLUMNFILTER | NEAR | AND | OR | NOT | PHRASES
+QUERY: TypeAlias = COLUMNFILTER | NEAR | AND | OR | NOT | PHRASE
 """Type representing all query types."""
 
 
-def to_dict(q: QUERY | PHRASE) -> dict[str, Any]:
+def to_dict(q: QUERY) -> dict[str, Any]:
     """Converts structure to a dict
 
     This is useful for pretty printing, logging, saving as JSON,
@@ -253,17 +247,14 @@ def to_dict(q: QUERY | PHRASE) -> dict[str, Any]:
     # @ was picked because it gets printed first if dict keys are sorted, and
     # won't conflict with any other key names
 
-    if isinstance(q, PHRASES):
-        return {"@": "PHRASES", "phrases": [to_dict(phrase) for phrase in q.phrases]}
-
     if isinstance(q, PHRASE):
         res = {"@": "PHRASE", "phrase": q.phrase}
         if q.prefix:
             res["prefix"] = True
-        if q.sequence:
-            res["sequence"] = True
         if q.initial:
             res["initial"] = True
+        if q.plus:
+            res["plus"] = to_dict(q.plus)
         return res
 
     if isinstance(q, AND):
@@ -276,7 +267,7 @@ def to_dict(q: QUERY | PHRASE) -> dict[str, Any]:
         return {"@": "NOT", "match": to_dict(q.match), "no_match": to_dict(q.no_match)}
 
     if isinstance(q, NEAR):
-        res = {"@": "NEAR", "phrases": to_dict(q.phrases)}
+        res = {"@": "NEAR", "phrases": [to_dict(phrase) for phrase in q.phrases]}
         if q.distance != 10:
             res["distance"] = q.distance
         return res
@@ -289,7 +280,6 @@ def to_dict(q: QUERY | PHRASE) -> dict[str, Any]:
 
 _dict_name_class = {
     "PHRASE": PHRASE,
-    "PHRASES": PHRASES,
     "NEAR": NEAR,
     "COLUMNFILTER": COLUMNFILTER,
     "AND": AND,
@@ -301,17 +291,16 @@ _dict_name_class = {
 def from_dict(d: dict[str, Any] | Sequence[str] | str | QueryTokens) -> QUERY:
     """Turns dict back into a :class:`QUERY`
 
-    You can take shortcuts putting `str`, `Sequence[str]`, or
-    :class:`QueryTokens` in places where PHRASES, or PHRASE are
-    expected.  For example this is accepted::
+    You can take shortcuts putting `str`  or :class:`QueryTokens` in
+    places where PHRASE is expected.  For example this is accepted::
 
         {
             "@": "AND,
             "queries": ["hello", "world"]
         }
     """
-    if isinstance(d, (str, Sequence, QueryTokens)):
-        return _from_dict_as_phrases(d)
+    if isinstance(d, (str, QueryTokens)):
+        return PHRASE(d)
 
     _type_check(d, dict)
 
@@ -322,8 +311,16 @@ def from_dict(d: dict[str, Any] | Sequence[str] | str | QueryTokens) -> QUERY:
     if klass is None:
         raise ValueError(f"\"{d['@']}\" is not a known query type")
 
-    if klass is PHRASE or klass is PHRASES:
-        return _from_dict_as_phrases(d)
+    if klass is PHRASE:
+        res = PHRASE(
+            _type_check(d["phrase"], (str, QueryTokens)),
+            initial=_type_check(d.get("initial", False), bool),
+            prefix=_type_check(d.get("prefix", False), bool),
+        )
+        if "plus" in d:
+            res.plus = _type_check(from_dict(d["plus"]), PHRASE)
+
+        return res
 
     if klass is OR or klass is AND:
         queries = d.get("queries")
@@ -338,13 +335,9 @@ def from_dict(d: dict[str, Any] | Sequence[str] | str | QueryTokens) -> QUERY:
         return klass(as_queries)
 
     if klass is NEAR:
-        phrases = d.get("phrases")
+        phrases = [_type_check(from_dict(phrase), PHRASE) for phrase in d["phrases"]]
 
-        as_phrases = _from_dict_as_phrases(phrases)
-        if len(as_phrases.phrases) < 2:
-            raise ValueError(f"NEAR requires at least 2 phrases in {phrases!r}")
-
-        res = klass(as_phrases, _type_check(d.get("distance", 10), int))
+        res = klass(phrases, _type_check(d.get("distance", 10), int))
         if res.distance < 1:
             raise ValueError(f"NEAR distance must be at least one in {d!r}")
         return res
@@ -386,60 +379,6 @@ def _type_check(v: Any, t: Any) -> Any:
     return v
 
 
-def _from_dict_as_phrase(item: Any, first: bool) -> PHRASE:
-    "Convert anything reasonable into a PHRASE"
-    if isinstance(item, (str, QueryTokens)):
-        return PHRASE(item)
-    if isinstance(item, dict):
-        if item.get("@") != "PHRASE":
-            raise ValueError(f"{item!r} needs to be a dict with '@': 'PHRASE'")
-        phrase = item.get("phrase")
-        if phrase is None:
-            raise ValueError(f"{item!r} must have phrase member")
-        p = PHRASE(
-            _type_check(phrase, (str, QueryTokens)),
-            _type_check(item.get("initial", False), bool),
-            _type_check(item.get("prefix", False), bool),
-            _type_check(item.get("sequence", False), bool),
-        )
-        if p.sequence and first:
-            raise ValueError(f"First phrase {item!r} can't have sequence==True")
-        if p.sequence and p.initial:
-            raise ValueError(f"Can't have both sequence (+) and initial (^) set on same item {item!r}")
-        return p
-    raise ValueError(f"Can't convert { item!r} to a phrase")
-
-
-def _from_dict_as_phrases(item: Any) -> PHRASES:
-    "Convert anything reasonable into PHRASES"
-    if isinstance(item, (str, QueryTokens)):
-        return PHRASES([PHRASE(item)])
-
-    if isinstance(item, Sequence):
-        phrases: list[PHRASE] = []
-        for member in item:
-            phrases.append(_from_dict_as_phrase(member, len(phrases) == 0))
-        if len(phrases) == 0:
-            raise ValueError(f"No phrase found in { member!r}")
-        return PHRASES(phrases)
-
-    if not isinstance(item, dict):
-        raise ValueError(f"Can't turn {item!r} into phrases")
-
-    kind = item.get("@")
-    if kind not in {"PHRASE", "PHRASES"}:
-        raise ValueError(f"Expected {item!r} '@' key with value of PHRASE or PHRASES")
-
-    if kind == "PHRASE":
-        return PHRASES([_from_dict_as_phrase(item, True)])
-
-    phrases = item.get("phrases")
-    if phrases is None or not isinstance(phrases, Sequence):
-        raise ValueError(f"Expected 'phrases' value to be a sequence of {item!r}")
-
-    return PHRASES([_from_dict_as_phrase(phrase, i == 0) for i, phrase in enumerate(phrases)])
-
-
 # parentheses are not needed if the contained item has a lower
 # priority than the container
 _to_query_string_priority = {
@@ -449,38 +388,33 @@ _to_query_string_priority = {
     # these are really all the same
     COLUMNFILTER: 50,
     NEAR: 60,
-    PHRASES: 70,
     PHRASE: 80,
 }
 
 
-def _to_query_string_needs_parens(node: QUERY | PHRASE, child: QUERY | PHRASE) -> bool:
+def _to_query_string_needs_parens(node: QUERY, child: QUERY) -> bool:
     return _to_query_string_priority[type(child)] < _to_query_string_priority[type(node)]
 
 
-def to_query_string(q: QUERY | PHRASE) -> str:
+def to_query_string(q: QUERY) -> str:
     """Returns the corresponding query in text format"""
     if isinstance(q, PHRASE):
         r = ""
         if q.initial:
             r += "^ "
-        if q.sequence:
-            r += "+ "
         r += quote(q.phrase)
         if q.prefix:
-            r += " *"
+            r += "*"
+        if q.plus:
+            r += " + " + to_query_string(q.plus)
         return r
-
-    if isinstance(q, PHRASES):
-        # They are implicitly high priority AND together
-        return " ".join(to_query_string(phrase) for phrase in q.phrases)
 
     if isinstance(q, (AND, OR)):
         r = ""
         for i, query in enumerate(q.queries):
+            # ::TODO:: for AND with NEAR or PHRASE we can leave
+            # out the AND
             if i:
-                # technically NEAR AND NEAR can leave the AND out but
-                # we make it explicit
                 r += " AND " if isinstance(q, AND) else " OR "
             if _to_query_string_needs_parens(q, query):
                 r += "("
@@ -510,7 +444,7 @@ def to_query_string(q: QUERY | PHRASE) -> str:
         return r
 
     if isinstance(q, NEAR):
-        r = "NEAR(" + to_query_string(q.phrases)
+        r = "NEAR(" + " ".join(to_query_string(phrase) for phrase in q.phrases)
         if q.distance != 10:
             r += f", {q.distance}"
         r += ")"
@@ -529,7 +463,7 @@ def to_query_string(q: QUERY | PHRASE) -> str:
         if len(q.columns) > 1:
             r += "}"
         r += ": "
-        if isinstance(q.query, (PHRASES, PHRASE, NEAR, COLUMNFILTER)):
+        if isinstance(q.query, (PHRASE, NEAR, COLUMNFILTER)):
             r += to_query_string(q.query)
         else:
             r += "(" + to_query_string(q.query) + ")"
@@ -560,8 +494,7 @@ def quote(text: str | QueryTokens) -> str:
 
 
 _walk_attrs = {
-    PHRASE: tuple(),
-    PHRASES: ("phrases",),
+    PHRASE: ("plus",),
     NEAR: ("phrases",),
     COLUMNFILTER: ("query",),
     AND: ("queries",),
@@ -752,7 +685,7 @@ class _Parser:
             # We make the AND explicit
             return AND(nears)
 
-        return self.parse_phrases()
+        return self.parse_phrase()
 
     infix_precedence = {
         TokenType.OR: 10,
@@ -769,37 +702,46 @@ class _Parser:
 
         return res
 
-    def parse_phrase(self, first: bool) -> PHRASE:
-        initial = False
-        sequence = False
-        if self.lookahead.tok == _Parser.TokenType.CARET:
-            initial = True
-            self.take_token()
-        if not first and not initial and self.lookahead.tok == _Parser.TokenType.PLUS:
-            sequence = True
-            self.take_token()
+    def parse_phrase(self) -> PHRASE | AND:
+        # AND implicitly connects adjacent PHRASE with highest
+        # precedence
 
-        token = self.take_token()
-        if token.tok != _Parser.TokenType.STRING:
-            self.error("Expected a search term", token)
+        res = None
 
-        res = PHRASE(token.value, initial, False, sequence)
+        while self.lookahead.tok in {_Parser.TokenType.CARET, _Parser.TokenType.STRING}:
+            initial = False
 
-        if self.lookahead.tok == _Parser.TokenType.STAR:
-            self.take_token()
-            res.prefix = True
+            sequence: list[PHRASE] = []
+            if self.lookahead.tok == _Parser.TokenType.CARET:
+                initial = True
+                self.take_token()
 
+            while True:
+                token = self.take_token()
+                if token.tok != _Parser.TokenType.STRING:
+                    self.error("Expected a search term", token)
+                prefix = False
+                if self.lookahead.tok == _Parser.TokenType.STAR:
+                    prefix = True
+                    self.take_token()
+                sequence.append(PHRASE(token.value, initial, prefix))
+                if len(sequence) >= 2:
+                    sequence[-2].plus = sequence[-1]
+                initial = False
+                if self.lookahead.tok != _Parser.TokenType.PLUS:
+                    break
+                self.take_token()
+
+            if res is None:
+                res = sequence[0]
+            elif isinstance(res, PHRASE):
+                res = AND([res, sequence[0]])
+            else:
+                res.queries.append(sequence[0])
+
+        if res is None:
+            self.error("Expected a search term", self.lookahead)
         return res
-
-    def parse_phrases(self) -> PHRASES:
-        phrases: list[PHRASE] = []
-
-        phrases.append(self.parse_phrase(True))
-
-        while self.lookahead.tok in {_Parser.TokenType.PLUS, _Parser.TokenType.STRING, _Parser.TokenType.CARET}:
-            phrases.append(self.parse_phrase(False))
-
-        return PHRASES(phrases)
 
     def parse_near(self):
         # swallow NEAR
@@ -810,11 +752,19 @@ class _Parser:
         if token.tok != _Parser.TokenType.LP:
             self.error("Expected '(", token)
 
-        # phrases
-        phrases = self.parse_phrases()
+        # phrases - despite what the doc implies, you can do NEAR(one+two)
+        phrases: list[PHRASE] = []
 
-        if len(phrases.phrases) < 2:
-            self.error("At least two phrases must be present for NEAR", self.lookahead)
+        while self.lookahead.tok not in (_Parser.TokenType.COMMA, _Parser.TokenType.RP):
+            phrase = self.parse_phrase()
+            if isinstance(phrase, PHRASE):
+                phrases.append(phrase)
+            else:
+                phrases.extend(phrase.queries)
+
+        # the doc says that at least two phrases are required, but the
+        # implementation is otherwise
+        # https://sqlite.org/forum/forumpost/6303d75d63
 
         # , distance
         distance = 10  # default
@@ -864,9 +814,9 @@ class _Parser:
         if self.lookahead.tok == _Parser.TokenType.LP:
             query = self.parse_query()
         elif self.lookahead.tok == _Parser.TokenType.NEAR:
-            query = self.parse_part()
+            query = self.parse_near()
         else:
-            query = self.parse_phrases()
+            query = self.parse_phrase()
 
         return COLUMNFILTER(columns, "include" if include else "exclude", query)
 
