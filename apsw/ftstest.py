@@ -19,6 +19,7 @@ import re
 import subprocess
 import sys
 import tempfile
+import typing
 import unittest
 import zipfile
 
@@ -1808,28 +1809,67 @@ class FTS5Query(unittest.TestCase):
         self.db.close()
         del self.db
 
-    def testParsing(self):
-        q = apsw.fts5query.quote
-        c = self.table.structure.columns
-        for query in (
-            # from the doc
-            'colname : NEAR("one two" "three four", 10)',
-            '"colname" : one + two + three',
-            '{col1 col2} : NEAR("one two" "three four", 10)',
-            "{col2 col1 col3} : one + two + three",
-            '- colname : NEAR("one two" "three four", 10)',
-            "- {col2 col1 col3} : one + two + three",
-            '{a b} : ( {b c} : "hello" AND "world" )',
-            '(b : "hello") AND ({a b} : "world")',
-            "b : (uvw AND xyz)",
-            "a : xyz",
-            # ones I used during dev
-            "NEAR(one two three)",
-            "(one three)",
-            "(one two) AND three NOT four",
-            # be nasty
-            f"{q(c[2])}: hello {q(c[3])}",
+    def testQueryTokens(self):
+        "Query tokens"
+        qt = apsw.fts5query.QueryTokens
+        for tokens in (
+            ["one"],
+            ["one", "two"],
+            [""],
+            ["\0"],
+            ["one", ["1st", "first"], "two"],
+            ["日本語", "Tiếng Việt"],
         ):
+            encoded = qt(tokens).encode()
+            decoded = qt.decode(encoded)
+            self.assertEqual(tokens, decoded.tokens)
+            # as bytes
+            self.assertEqual(tokens, qt.decode(encoded.encode()).tokens)
+            self.assertIsNone(qt.decode("@" + encoded))
+
+    def testParsing(self):
+        "Conversion between query strings, dataclasses, and dicts"
+        q = apsw.fts5query.quote
+        qt = apsw.fts5query.QueryTokens(["one", ["first", "1st"], "two"])
+        c = self.table.structure.columns
+        for query in f"""
+            # from the doc
+            colname : NEAR("one two" "three four", 10)
+            "colname" : one + two + three
+            {{col1 col2}} : NEAR("one two" "three four", 10)
+            {{col2 col1 col3}} : one + two + three
+            - colname : NEAR("one two" "three four", 10)
+            - {{col2 col1 col3}} : one + two + three
+            {{a b}} : ( {{b c}} : "hello" AND "world" )
+            (b : "hello") AND ({{a b}} : "world")
+            b : (uvw AND xyz)
+            a : xyz
+            # ones I used during dev
+            NEAR(one two three)
+            (one three)
+            (one two) AND three NOT four OR five
+            (one two) AND (three NOT four) OR five
+            # be nasty
+            {q(c[2])}: hello {q(c[3])}
+            # NEAR is only if followed by (
+            NEAR AND hello
+            # query tokens
+            {q(qt)}
+            - {q(qt)} : {q(qt)}
+            # coverage
+            ^one+two*+three
+            ^one two* three
+            (((^one*)))
+            NEAR(one, 77) OR two
+            one OR (two three NOT four)
+            (one OR two) AND three
+            (one OR two) NOT (three AND four)
+            "" NOT "" OR "" AND "" "" ^""
+
+            """.splitlines():
+            query = query.strip()
+            if not query or query.startswith("#"):
+                continue
             # transform from query-string to parsed to dict to parsed
             # to query-string and ensure all the conversions match
             parsed = apsw.fts5query.parse_query_string(query)
@@ -1841,7 +1881,25 @@ class FTS5Query(unittest.TestCase):
             # defaults, parentheses, optional AND etc will change
             self.assertEqual(parsed, apsw.fts5query.parse_query_string(as_query))
 
-    def testErrors(self):
+        for dict_query in (
+            "hello",
+            ("hello", "world"),
+            {"one", "two"},
+            {"one"},
+            qt,
+            {"@": "PHRASE", "initial": True, "prefix": False, "phrase": "hello world!"},
+            {"@": "AND", "queries": {"hello", "world"}},
+            {"@": "AND", "queries": {"hello"}},
+            {"@": "NOT", "match": "hello", "no_match": "world"},
+            {"@": "COLUMNFILTER", "columns": ['"', ":"], "filter": "include", "query": "hello"},
+            {"@": "COLUMNFILTER", "columns": ['"', ":"], "filter": "include", "query": ("hello", "world")},
+        ):
+            from_dict = apsw.fts5query.from_dict(dict_query)
+            as_query = apsw.fts5query.to_query_string(from_dict)
+            parsed = apsw.fts5query.parse_query_string(as_query)
+            self.assertEqual(from_dict, parsed)
+
+    def testParseErrors(self):
         """
         + one
         one + + two
@@ -1850,6 +1908,72 @@ class FTS5Query(unittest.TestCase):
 
         """
         pass
+
+    def testErrors(self):
+        "General invalid values and types"
+        self.assertRaises(TypeError, apsw.fts5query.to_dict, "hello")
+        self.assertRaises(TypeError, apsw.fts5query.to_dict, None)
+        for q in (
+            3 + 4j,
+            3.0,
+            {"@": "PHRASE", "initial": 7, "phrase": ""},
+            {"@": "PHRASE", "initial": True, "phrase": 3},
+            {"@": "NEAR", "phrases": ["hello"], "distance": "near"},
+            {"hello", 3},
+        ):
+            self.assertRaises(TypeError, apsw.fts5query.from_dict, q)
+
+        for q in (
+            dict(),
+            set(),
+            list(),
+            tuple(),
+            {"@": "hello"},
+            {"@": "AND", "queries": []},
+            {"@": "OR", "queries": []},
+            {"@": "AND", "queries": set()},
+            {"@": "NEAR", "phrases": set()},
+            {"@": "NEAR", "phrases": ("hello",), "distance": -2},
+            {"@": "NOT", "match": "hello"},
+            {"@": "NOT", "no_match": "hello"},
+            {"@": "COLUMNFILTER", "columns": ['"', ":"], "filter": "ZZinclude", "query": ("hello", "world")},
+            {"@": "COLUMNFILTER", "columns": ['"', ":"], "filter": "include", "ZZquery": ("hello", "world")},
+            {"@": "COLUMNFILTER", "columns": [], "filter": "include", "query": ("hello", "world")},
+            {"@": "COLUMNFILTER", "columns": ["one", 2], "filter": "include", "query": ("hello", "world")},
+        ):
+            self.assertRaises(ValueError, apsw.fts5query.from_dict, q)
+
+        self.assertRaises(TypeError, apsw.fts5query.to_query_string, "not a dataclass")
+
+    def testWalk(self):
+        def n(v):
+            # turns instance into class basename
+            if isinstance(v, typing.Sequence):
+                return tuple(n(vv) for vv in v)
+            return type(v).__name__
+
+        for qs, expected in {
+            "one": (((), "PHRASE"),),
+            "one AND (two OR three NOT ^four+five*+six* OR -{col1 col2}: ^yes) OR NEAR(nine+ten, 11)": (
+                ((), "OR"),
+                (("OR",), "AND"),
+                (("OR", "AND"), "PHRASE"),
+                (("OR", "AND"), "OR"),
+                (("OR", "AND", "OR"), "PHRASE"),
+                (("OR", "AND", "OR"), "NOT"),
+                (("OR", "AND", "OR", "NOT"), "PHRASE"),
+                (("OR", "AND", "OR", "NOT"), "PHRASE"),
+                (("OR", "AND", "OR"), "COLUMNFILTER"),
+                (("OR", "AND", "OR", "COLUMNFILTER"), "PHRASE"),
+                (("OR",), "NEAR"),
+                (("OR", "NEAR"), "PHRASE"),
+            ),
+        }.items():
+            parsed = apsw.fts5query.parse_query_string(qs)
+            walked = []
+            for parent, node in apsw.fts5query.walk(parsed):
+                walked.append((n(parent), n(node)))
+            self.assertEqual(tuple(walked), expected)
 
 
 def extended_testing_file(name: str) -> pathlib.Path | None:
