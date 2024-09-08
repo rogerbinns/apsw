@@ -170,7 +170,7 @@ class QueryTokens:
                 cls._zero_decode(token) for token in data[len(QUERY_TOKENS_MARKER) :].split("|")
             ]
             for i, token in enumerate(stream):
-                if "<" in token:
+                if ">" in token:
                     stream[i] = token.split(">")
             return cls(stream)
         return None
@@ -287,7 +287,7 @@ def to_dict(q: QUERY) -> dict[str, Any]:
     if isinstance(q, COLUMNFILTER):
         return {"@": "COLUMNFILTER", "query": to_dict(q.query), "columns": q.columns, "filter": q.filter}
 
-    raise ValueError(f"Unexpected value {q=}")
+    raise TypeError(f"Unexpected value {q=}")
 
 
 _dict_name_class = {
@@ -313,6 +313,14 @@ def from_dict(d: dict[str, Any] | Sequence[str] | str | QueryTokens) -> QUERY:
     """
     if isinstance(d, (str, QueryTokens)):
         return PHRASE(d)
+
+    if isinstance(d, (Sequence, set)):
+        res = AND([from_dict(item) for item in d])
+        if len(res.queries) == 0:
+            raise ValueError(f"Expected at least one item in {d!r}")
+        if len(res.queries) == 1:
+            return res.queries[0]
+        return res
 
     _type_check(d, dict)
 
@@ -348,7 +356,8 @@ def from_dict(d: dict[str, Any] | Sequence[str] | str | QueryTokens) -> QUERY:
 
     if klass is NEAR:
         phrases = [_type_check(from_dict(phrase), PHRASE) for phrase in d["phrases"]]
-
+        if len(phrases) < 1:
+            raise ValueError(f"There must be at least one NEAR phrase in {phrases!r}")
         res = klass(phrases, _type_check(d.get("distance", 10), int))
         if res.distance < 1:
             raise ValueError(f"NEAR distance must be at least one in {d!r}")
@@ -387,7 +396,7 @@ def from_dict(d: dict[str, Any] | Sequence[str] | str | QueryTokens) -> QUERY:
 
 def _type_check(v: Any, t: Any) -> Any:
     if not isinstance(v, t):
-        raise ValueError(f"Expected {v!r} to be type {t}")
+        raise TypeError(f"Expected {v!r} to be type {t}")
     return v
 
 
@@ -414,7 +423,10 @@ def to_query_string(q: QUERY) -> str:
         r = ""
         if q.initial:
             r += "^ "
-        r += quote(q.phrase)
+        if isinstance(q.phrase, QueryTokens):
+            r += quote(q.phrase.encode())
+        else:
+            r += quote(q.phrase)
         if q.prefix:
             r += "*"
         if q.plus:
@@ -426,11 +438,10 @@ def to_query_string(q: QUERY) -> str:
         for i, query in enumerate(q.queries):
             if i:
                 r += " OR "
-            if _to_query_string_needs_parens(q, query):
-                r += "("
+            # parens is never hit because OR is the lowest priority
+            assert not _to_query_string_needs_parens(q, query)
+
             r += to_query_string(query)
-            if _to_query_string_needs_parens(q, query):
-                r += ")"
 
         return r
 
@@ -442,7 +453,7 @@ def to_query_string(q: QUERY) -> str:
                     isinstance(q.queries[i], NEAR) and isinstance(q.queries[i - 1], NEAR)
                 ):
                     # between NEAR or PHRASE pairs we can leave out the AND
-                    r+= " "
+                    r += " "
                 else:
                     r += " AND "
             if _to_query_string_needs_parens(q, query):
@@ -498,7 +509,7 @@ def to_query_string(q: QUERY) -> str:
             r += "(" + to_query_string(q.query) + ")"
         return r
 
-    raise ValueError(f"Unexpected query item {q!r}")
+    raise TypeError(f"Unexpected query item {q!r}")
 
 
 def parse_query_string(query: str) -> QUERY:
@@ -523,12 +534,13 @@ def quote(text: str | QueryTokens) -> str:
 
 
 _walk_attrs = {
-    PHRASE: ("plus",),
+    # sequences (iterable)
     NEAR: ("phrases",),
-    COLUMNFILTER: ("query",),
     AND: ("queries",),
     OR: ("queries",),
+    # non-iterable
     NOT: ("match", "no_match"),
+    COLUMNFILTER: ("query",),
 }
 
 
@@ -546,20 +558,28 @@ def walk(start: QUERY) -> Generator[tuple[tuple[QUERY, ...], QUERY], None, None]
     # top down - container node first
     yield tuple(), start
 
+    klass = type(start)
+
+    if klass is PHRASE:
+        # handled by yield at top of function
+        return
+
     parent = (start,)
 
-    for klass, attrs in _walk_attrs.items():
-        if isinstance(start, klass):
-            for attr in attrs:
-                # the only one where the attribute is not an iterable sequence
-                if klass is COLUMNFILTER:
-                    for parents, node in walk(getattr(start, attr)):
-                        yield parent + parents, node
-                else:
-                    for child in getattr(start, attr):
-                        for parents, node in walk(child):
-                            yield parent + parents, node
-            return
+    attrs = _walk_attrs[klass]
+
+    # attributes are not an iterable sequence
+    if klass in {COLUMNFILTER, NOT}:
+        for attr in attrs:
+            for parents, node in walk(getattr(start, attr)):
+                yield parent + parents, node
+        return
+
+    for attr in attrs:
+        for child in getattr(start, attr):
+            for parents, node in walk(child):
+                yield parent + parents, node
+        return
 
     raise ValueError(f"{start} is not recognised as a QUERY")
 
@@ -753,7 +773,8 @@ class _Parser:
                 if self.lookahead.tok == _Parser.TokenType.STAR:
                     prefix = True
                     self.take_token()
-                sequence.append(PHRASE(token.value, initial, prefix))
+                phrase = QueryTokens.decode(token.value) or token.value
+                sequence.append(PHRASE(phrase, initial, prefix))
                 if len(sequence) >= 2:
                     sequence[-2].plus = sequence[-1]
                 initial = False
