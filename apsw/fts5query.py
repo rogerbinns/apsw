@@ -138,6 +138,16 @@ class QueryTokens:
     tokens: list[str | Sequence[str]]
     "The tokens"
 
+    @classmethod
+    def _zero_encode(cls, s: str) -> str:
+        "Encode any zero bytes"
+        return s.replace("\0", "$!ZeRo")
+
+    @classmethod
+    def _zero_decode(cls, s: str) -> str:
+        "Decode any zero bytes"
+        return s.replace("$!ZeRo", "\0")
+
     def encode(self) -> str:
         "Produces the tokens encoded with the marker and separator"
         res = ""
@@ -145,9 +155,9 @@ class QueryTokens:
             if res:
                 res += "|"
             if isinstance(token, str):
-                res += token
+                res += self._zero_encode(token)
             else:
-                res += ">".join(token)
+                res += ">".join(self._zero_encode(t) for t in token)
         return QUERY_TOKENS_MARKER + res
 
     @classmethod
@@ -156,7 +166,9 @@ class QueryTokens:
         if isinstance(data, bytes) and data.startswith(b"$!Tokens~"):
             data = data.decode()
         if isinstance(data, str) and data.startswith(QUERY_TOKENS_MARKER):
-            stream: list[str | Sequence[str]] = data[len(QUERY_TOKENS_MARKER) :].split("|")
+            stream: list[str | Sequence[str]] = [
+                cls._zero_decode(token) for token in data[len(QUERY_TOKENS_MARKER) :].split("|")
+            ]
             for i, token in enumerate(stream):
                 if "<" in token:
                     stream[i] = token.split(">")
