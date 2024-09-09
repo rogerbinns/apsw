@@ -4613,8 +4613,9 @@ Connection_cache_stats(Connection *self, PyObject *const *fast_args, Py_ssize_t 
 
   Returns True if the named table exists, else False.
 
-  `dbname` is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__,
-   or None to search  all databases
+  ``dbname`` is ``main``, ``temp``, the name in `ATTACH
+  <https://sqlite.org/lang_attach.html>`__, or None to search  all
+  databases
 
   -* sqlite3_table_column_metadata
 */

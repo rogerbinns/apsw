@@ -1761,8 +1761,9 @@ class Connection:
     def table_exists(self, dbname: Optional[str], table_name: str) -> bool:
         """Returns True if the named table exists, else False.
 
-        `dbname` is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__,
-         or None to search  all databases
+        ``dbname`` is ``main``, ``temp``, the name in `ATTACH
+        <https://sqlite.org/lang_attach.html>`__, or None to search  all
+        databases
 
         Calls: `sqlite3_table_column_metadata <https://sqlite.org/c3ref/table_column_metadata.html>`__"""
         ...

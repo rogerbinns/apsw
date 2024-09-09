@@ -2168,8 +2168,9 @@
 #define  Connection_table_exists_DOC "table_exists($self,dbname,table_name)\n--\n\nConnection.table_exists(dbname: Optional[str], table_name: str) -> bool\n\n" \
 "Returns True if the named table exists, else False.\n" \
 "\n" \
-"`dbname` is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__,\n" \
-" or None to search  all databases\n" \
+"``dbname`` is ``main``, ``temp``, the name in `ATTACH\n" \
+"<https://sqlite.org/lang_attach.html>`__, or None to search  all\n" \
+"databases\n" \
 "\n" \
 "Calls: `sqlite3_table_column_metadata <https://sqlite.org/c3ref/table_column_metadata.html>`__\n" 
 
