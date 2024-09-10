@@ -202,6 +202,8 @@ def generate_names_code(source: str, show_status: bool = False) -> list[str]:
     code.append("   /* This could be done as a binary search, but is not a performance")
     code.append("      function so we don't worry */")
     code.append("")
+    range_total = sum(1 + end - start for start, end in codepoint_ranges)
+    code.append(f"   /* {len(codepoint_ranges)} ranges covering {range_total:,} codepoints */")
     for start, end in codepoint_ranges:
         code.append(f"   if(codepoint >= 0x{ start:04X} && codepoint <= 0x{ end:04X})")
         code.append(f"       return name_expand(name_table + {offsets[start]}, codepoint - 0x{start:04X});")
@@ -234,7 +236,12 @@ def generate_names_code(source: str, show_status: bool = False) -> list[str]:
     code.append("")
     code.append("")
 
-    code.append("/* This handles the numbered suffix ranges */")
+    numbered_total = 0
+    for cprange, _ in numbered:
+        start, end = [int(x, 16) for x in cprange.split("..")]
+        numbered_total += 1 + end - start
+    code.append(f"/* This handles the {len(numbered)} numbered suffix ranges")
+    code.append(f"   covering { numbered_total:,} codepoints */")
     code2: list[str] = []
     code2.append("#define NAME_RANGES(codepoint)")
     # ranges where it is hex of the codepoint (most of them)
