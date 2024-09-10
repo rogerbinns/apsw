@@ -1809,15 +1809,11 @@ class FTS5Table:
                         # only try if there is one next token (no colocated)
                         if len(next_tokens) == 1:
                             combined: str = tokens[0] + next_tokens[0]
-                            if combined in all_tokens:
-                                # ::TODO:: we already know tokens is < threshold_rows
-                                # do some better math here is next_tokens is unpopular
-                                if (
-                                    min(all_tokens.get(tokens[0], 0), all_tokens.get(next_tokens[0], 0))
-                                    / all_tokens[combined]
-                                    < threshold
-                                ):
-                                    votes.append((all_tokens[combined], "coalesce", combined))
+                            # is combined more popular than separate tokens?
+                            if all_tokens.get(combined, 0) > min(
+                                all_tokens.get(tokens[0], 0), all_tokens.get(next_tokens[0], 0)
+                            ):
+                                votes.append((all_tokens[combined], "coalesce", combined))
 
                     # split apart?
                     if len(tokens) == 1 and rows < threshold_rows:
@@ -1825,8 +1821,10 @@ class FTS5Table:
                         # there could be multiple candidates
                         # eg abc could become ab c, or a bc
                         candidates: list[tuple[str, str]] = []
+                        # used a lot
+                        test = token.startswith
                         for prefix in all_tokens:
-                            if token.startswith(prefix) and token[len(prefix) :] in all_tokens:
+                            if test(prefix) and token[len(prefix) :] in all_tokens:
                                 candidates.append((prefix, token[len(prefix) :]))
 
                         if candidates:
@@ -1847,7 +1845,7 @@ class FTS5Table:
                             tokens[0],
                             n=10,
                             cutoff=0.6 if rows else 0,
-                            min_docs=rows + 1,
+                            min_docs=threshold_rows,
                             all_tokens=all_tokens.items(),
                         )
 
