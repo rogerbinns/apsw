@@ -2020,7 +2020,7 @@ class FTS5Table:
             for (row,) in self.db.execute(
                 f"select { quote_name(column)} from { self.quoted_table_name } where rowid=?", (id,)
             ):
-                return row[0]
+                return row
         else:
             cols = ",".join(quote_name(c) for c in column)
             for row in self.db.execute(f"select {cols} from { self.quoted_table_name } where rowid=?", (id,)):
