@@ -2002,7 +2002,7 @@ def extended_testing_file(name: str) -> pathlib.Path | None:
         # make it a fatal error to give an unknown name
         sys.exit(f"unknown source { name= }")
 
-    location = pathlib.Path(__file__).parent.parent / "apsw-extended-testing" / name
+    location = pathlib.Path(__file__).parent.parent.parent / "apsw-extended-testing" / name
 
     return location if location.exists() else None
 
