@@ -114,7 +114,7 @@ from typing import Generator, Iterable
 import re
 
 ### BEGIN UNICODE UPDATE SECTION ###
-unicode_version = "15.1"
+unicode_version = "16.0"
 """The `Unicode version <https://www.unicode.org/versions/enumeratedversions.html>`__
 that the rules and data tables implement"""
 
@@ -664,6 +664,7 @@ def version_added(codepoint: int | str) -> str | None:
 
 version_dates = {
     # Extracted from https://www.unicode.org/history/publicationdates.html
+    "16.0": (2024, 9, 10),
     "15.1": (2023, 9, 12),
     "15.0": (2022, 9, 13),
     "14.0": (2021, 9, 14),
