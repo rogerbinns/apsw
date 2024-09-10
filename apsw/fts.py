@@ -1699,7 +1699,9 @@ class FTS5Table:
         """Returns True if it is a known token"""
         return token in self.tokens
 
-    def query_suggest(self, query: str, threshold: float = 0.01) -> str | None:
+    def query_suggest(
+        self, query: str, threshold: float = 0.01, *, tft_docs: int = 2, locale: str | None = None
+    ) -> str | None:
         """Suggests alternate query
 
         This is useful if a query returns no or few matches.  It is
@@ -1716,7 +1718,7 @@ class FTS5Table:
           :meth:`closest_tokens`.
 
         The query is parsed, tokenized, replacement tokens
-        established, and original text or :meth:`text_for_token` used
+        established, and original text via :meth:`text_for_token` used
         to reconstitute the query.
 
         :param query: A valid query string
@@ -1726,6 +1728,10 @@ class FTS5Table:
           fractions increases the likelihood of replacements, while
           smaller reduces it.  A value of ``0`` will only replace
           tokens that are not in the index at all.
+        :param tft_docs: Passed to :meth:`text_for_token` as the
+          ``doc_limit`` parameter.  Larger values produce more
+          representative text, but also increase processing time.
+        :param locale: Locale used to tokenize the query.
         :returns: ``None`` if no suitable changes were found, or a replacement
           query.
         """
@@ -1737,195 +1743,166 @@ class FTS5Table:
 
         threshold_rows = int(threshold * self.row_count)
 
-        seen: set[int] = set()
-
         for _, node in apsw.fts5query.walk(parsed):
-            if (
-                # skip those we processed
-                id(node) in seen
-                # only care about PHRASE(S)
-                or not isinstance(node, (apsw.fts5query.PHRASE, apsw.fts5query.PHRASES))
-            ):
+            if isinstance(node, apsw.fts5query.COLUMNFILTER):
+                new_columns: list[str] = []
+                table_columns_upper = []
+                for column in node.columns:
+                    if any(0 == apsw.stricmp(column, table_column) for table_column in self.structure.columns):
+                        new_columns.append(column)
+                        continue
+                    # we need to do the get close matches in a case insensitive way
+                    if not table_columns_upper:
+                        table_columns_upper = [
+                            self.db.execute("select upper(?)", (col,)).get for col in self.structure.columns
+                        ]
+                    replacement = difflib.get_close_matches(
+                        self.db.execute("select upper(?)", (column,)).get, table_columns_upper, n=1, cutoff=0
+                    )[0]
+                    # get the original casing back
+                    new_columns.append(self.structure.columns[table_columns_upper.index(replacement)])
+                if new_columns != node.columns:
+                    updated = True
+                    node.columns = new_columns
                 continue
 
-            # pretend that PHRASE is PHRASES length 1
-            if isinstance(node, apsw.fts5query.PHRASES):
-                seen.update(id(phrase) for phrase in node.phrases)
-                phrases = node.phrases
-            else:
-                assert isinstance(node, apsw.fts5query.PHRASES)
-                phrases = [node]
+            if not isinstance(node, apsw.fts5query.PHRASE):
+                continue
 
-            # per phrase data
-            utf8s: list[bytes] = [phrase.phrase.encode() for phrase in phrases]
-            tokenized = [self.tokenize(utf8, apsw.FTS5_TOKENIZE_QUERY) for utf8 in utf8s]
-            # track what happens to each token. False=unchanged,
-            # True=deleted, str=new token
-            modified = []
-            for tokens in tokenized:
-                modified.append([False] * len(tokens))
-
-            # track our progress
-            phrase_num = 0
-            token_num = -1
-
-            def get_next_tokens(*, delete: bool = False) -> tuple[str, ...] | None:
-                # lookahead one token.  if delete then delete it.
-                # usage is to lookahead to coalesce two adjacent
-                # tokens and if that works then delete the lookahead
-
-                # no lookahead if any flags
-                if phrases[phrase_num].initial or phrases[phrase_num].prefix or phrases[phrase_num].sequence:
-                    assert not delete
-                    return None
-
-                # part of same phrase?
-                if token_num + 1 < len(tokenized[phrase_num]):
-                    if delete:
-                        modified[phrase_num][token_num + 1] = True
-                        return None
-                    return tokenized[phrase_num][token_num + 1][2:]
-
-                if (
-                    # last token of this phrase?
-                    token_num + 1 == len(tokenized[phrase_num])
-                    # and there is a next phrase
-                    and phrase_num + 1 < len(tokenized)
-                    # and the next phrase has tokens
-                    and tokenized[phrase_num + 1]
-                    # and no flags
-                    and 0
-                    == phrases[phrase_num + 1].initial
-                    + phrases[phrase_num + 1].prefix
-                    + phrases[phrase_num + 1].sequence
-                ):
-                    if delete:
-                        modified[phrase_num + 1][0] = True
-                        return None
-                    return tokenized[phrase_num + 1][0][2:]
-
-                assert not delete
-                return None
-
-            while phrase_num < len(tokenized):
-                token_num += 1
-
-                # end of this phrase?
-                if token_num >= len(tokenized[phrase_num]):
-                    token_num = -1
-                    phrase_num += 1
+            while node is not None:
+                # we leave these alone
+                if node.prefix:
+                    node = node.plus
                     continue
 
-                # Deleted/replaced?
-                if modified[phrase_num][token_num] is not False:
-                    continue
+                utf8 = node.phrase.encode()
+                tokenized = self.tokenize(utf8, apsw.FTS5_TOKENIZE_QUERY, locale)
 
-                # current and lookahead
-                tokens: tuple[str, ...] = tokenized[phrase_num][token_num][2:]
+                # track what happens to each token. False=unchanged,
+                # True=deleted, str=new token.  This lets us know if
+                # the original text can be recovered from the query or
+                # if text_for_token has to be used.
+                modified = [False] * len(tokenized)
 
-                votes: list[tuple[int, Literal["coalesce"] | Literal["split"] | Literal["replace"], str]] = []
+                # track our progress
+                token_num = -1
 
-                rows = max(all_tokens.get(token, 0) for token in tokens)
+                while token_num + 1 < len(tokenized):
+                    token_num += 1
 
-                # can we coalesce with next token?
-                if rows < threshold_rows and len(tokens) == 1:
-                    next_tokens = get_next_tokens()
-                    if next_tokens is not None:
+                    # Deleted/replaced?
+                    if modified[token_num] is not False:
+                        continue
+
+                    # include colocated
+                    tokens: tuple[str, ...] = tokenized[token_num][2:]
+
+                    votes: list[
+                        tuple[int, Literal["coalesce"] | Literal["split"] | Literal["replace"], str | tuple[str]]
+                    ] = []
+
+                    rows = max(all_tokens.get(token, 0) for token in tokens)
+
+                    # can we coalesce with next token?
+                    if rows < threshold_rows and len(tokens) == 1 and token_num + 1 < len(tokenized):
+                        next_tokens = tokenized[token_num + 1][2:]
+                        # only try if there is one next token (no colocated)
                         if len(next_tokens) == 1:
                             combined: str = tokens[0] + next_tokens[0]
                             if combined in all_tokens:
+                                # ::TODO:: we already know tokens is < threshold_rows
+                                # do some better math here is next_tokens is unpopular
                                 if (
                                     min(all_tokens.get(tokens[0], 0), all_tokens.get(next_tokens[0], 0))
                                     / all_tokens[combined]
                                     < threshold
                                 ):
                                     votes.append((all_tokens[combined], "coalesce", combined))
-                                    modified[phrase_num][token_num] = combined
 
-                # split apart?
-                if len(tokens) == 1 and rows < threshold_rows:
-                    token = tokens[0]
-                    suffix = None
-                    for prefix in all_tokens:
-                        if token.startswith(prefix) and token[len(prefix) :] in all_tokens:
-                            suffix = token[len(prefix) :]
-                            break
-                    if suffix is not None:
-                        split_rows = min(all_tokens[prefix], all_tokens[suffix])
-                        if split_rows >= threshold_rows:
-                            votes.append((split_rows, "split", (prefix, suffix)))
+                    # split apart?
+                    if len(tokens) == 1 and rows < threshold_rows:
+                        token = tokens[0]
+                        # there could be multiple candidates
+                        # eg abc could become ab c, or a bc
+                        candidates: list[tuple[str, str]] = []
+                        for prefix in all_tokens:
+                            if token.startswith(prefix) and token[len(prefix) :] in all_tokens:
+                                candidates.append((prefix, token[len(prefix) :]))
 
-                # replace with more popular token?
-                if rows < threshold_rows:
-                    # if the token doesn't exist at all then we take
-                    # any replacement, otherwise we do have cutoff /
-                    # min_docs
-                    replacement = self.closest_tokens(
-                        tokens[0],
-                        n=10,
-                        cutoff=0.6 if rows else 0,
-                        min_docs=rows + 1,
-                        all_tokens=all_tokens.items(),
-                    )
+                        if candidates:
+                            best = -1, None, None
+                            for prefix, suffix in candidates:
+                                split_rows = min(all_tokens[prefix], all_tokens[suffix])
+                                if split_rows > best[0]:
+                                    best = split_rows, prefix, suffix
+                            if best[0] >= threshold_rows:
+                                votes.append((best[0], "split", best[1:]))
 
-                    if replacement:
-                        # rebalance how different the tokens are
-                        # against how many rows they are in
-                        for i, (score, token) in enumerate(replacement):
-                            replacement[i] = (score * math.log(all_tokens[token]), token)
+                    # replace with more popular token?
+                    if rows < threshold_rows:
+                        # if the token doesn't exist at all then we
+                        # take any replacement, otherwise we use
+                        # cutoff / min_docs
+                        replacement = self.closest_tokens(
+                            tokens[0],
+                            n=10,
+                            cutoff=0.6 if rows else 0,
+                            min_docs=rows + 1,
+                            all_tokens=all_tokens.items(),
+                        )
 
-                        replacement.sort(reverse=True)
-                        if replacement[0][0] > math.log(all_tokens.get(tokens[0], 1)):
-                            replacement = replacement[0][1]
-                            votes.append((all_tokens[replacement], "replace", replacement))
+                        if replacement:
+                            # rebalance how different the tokens are
+                            # against how many rows they are in
+                            for i, (score, token) in enumerate(replacement):
+                                replacement[i] = (score * math.log(all_tokens[token]), token)
 
-                if votes:
-                    # if the popularity is identical then this also
-                    # prioritises split over replace (alphabetical)
-                    _, action, new = sorted(votes, reverse=True)[0]
-                    modified[phrase_num][token_num] = new
-                    if action == "coalesce":
-                        get_next_tokens(delete=True)
-                    else:
-                        assert action in ("split", "replace")
+                            replacement.sort(reverse=True)
+                            if replacement[0][0] > math.log(all_tokens.get(tokens[0], 1)):
+                                replacement = replacement[0][1]
+                                votes.append((all_tokens[replacement], "replace", replacement))
 
-            # updates?
-            if any(item is not False for item in itertools.chain.from_iterable(modified)):
-                updated = True
-                new_phrases = []
-                for utf8, phrase, tokens, mods in zip(utf8s, phrases, tokenized, modified):
-                    # ensure there are some tokens
-                    if all(mod is True for mod in mods):
-                        continue
-                    # any changes?
-                    if all(mod is False for mod in mods):
-                        new_phrases.append(phrase)
-                        continue
-                    # regenerated text
+                    if votes:
+                        # if the popularity is identical then this also
+                        # prioritises split over replace (alphabetical)
+                        _, action, new = sorted(votes, reverse=True)[0]
+                        modified[token_num] = new
+                        if action == "coalesce":
+                            modified[token_num + 1] = False
+                        else:
+                            assert action in ("split", "replace")
+
+                # updates?
+                if any(item is not False for item in modified):
+                    updated = True
                     new_text = ""
                     # track inter-token separation
                     last_end = 0
-                    for mod, token in zip(mods, tokens):
+                    # token[0,1] are the offsets into utf8
+                    for token, mod in zip(tokenized, modified):
+                        # unchanged
                         if mod is False:
                             new_text += utf8[last_end : token[1]].decode()
                             last_end = token[1]
                             continue
+                        # deleted
                         if mod is True:
                             last_end = token[1]
                             continue
+                        # replaced with a different token
                         if isinstance(mod, str):
-                            new_text += utf8[last_end : token[0]].decode() + mod
+                            new_text += utf8[last_end : token[0]].decode() + self.text_for_token(mod, tft_docs)
                             last_end = token[1]
                             continue
+
                         # multiple tokens - take previous as separator else space
                         sep = utf8[last_end : token[0]].decode() if last_end != 0 else " "
-                        new_text += sep.join(mod)
+                        new_text += sep.join(self.text_for_token(m, tft_docs) for m in mod)
                         last_end = token[1]
-                    phrase.phrase = new_text
-                    new_phrases.append(phrase)
 
-                if isinstance(node, apsw.fts5query.PHRASES):
-                    node.phrases = new_phrases
+                    node.phrase = new_text
+
+                node = node.plus
 
         return apsw.fts5query.to_query_string(parsed) if updated else None
 
