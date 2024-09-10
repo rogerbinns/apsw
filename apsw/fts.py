@@ -1402,7 +1402,7 @@ class FTS5Table:
         if self.supports_query_tokens:
             phrases = [apsw.fts5query.QueryTokens([token]) for token in all_tokens]
         else:
-            phrases = [self.text_for_token(token, 1).most_common(1)[0][0] for token in all_tokens]
+            phrases = [self.text_for_token(token, 1) for token in all_tokens]
 
         fts_parsed = apsw.fts5query.from_dict({"@": "OR", "queries": phrases})
         fts_query = apsw.fts5query.to_query_string(fts_parsed)
@@ -1957,7 +1957,7 @@ class FTS5Table:
         n = self.fts5vocab_name("row")
         return self.db.execute(f"select term, doc from { n } order by doc desc limit ?", (count,)).get
 
-    def text_for_token(self, token: str, doc_limit: int) -> collections.Counter[str]:
+    def text_for_token(self, token: str, doc_limit: int) -> str:
         """Provides the original text used to produce `token`
 
         Different text produces the same token because case can be
@@ -1970,11 +1970,13 @@ class FTS5Table:
         content.
 
         :param token: The token to find
-        :param doc_limit: Maximum number of documents to examine
-        :returns: :class:`collections.Counter` of the text.
-            :meth:`collections.Counter.most_common` is useful.
+        :param doc_limit: Maximum number of documents to examine.  The
+            higher the limit the longer it takes, but the more
+            representative the text is.
+        :returns: The most popular text used to produce the token in
+            the examined documents
         """
-        text_for_token = collections.Counter()
+        text_for_token_counter: collections.Counter[bytes] = collections.Counter()
 
         last = None, None
         tokens: list[tuple[int, int, str]] = []
@@ -1993,7 +1995,7 @@ class FTS5Table:
 
         for rowid, col, offset in self.db.execute(sql, (token, doc_limit)):
             if (rowid, col) != last:
-                # We only check on hitting new doc + column
+                # new doc to process
                 doc: bytes = self.row_by_id(rowid, col).encode()
                 locale = None
                 if self.structure.locale:
@@ -2003,9 +2005,9 @@ class FTS5Table:
                     ).get
                 tokens = self.tokenize(doc, locale=locale, include_colocated=False)
                 last = rowid, col
-            text_for_token[doc[tokens[offset][0] : tokens[offset][1]]] += 1
+            text_for_token_counter[doc[tokens[offset][0] : tokens[offset][1]]] += 1
 
-        return text_for_token
+        return text_for_token_counter.most_common(1)[0][0].decode()
 
     def row_by_id(self, id: int, column: str | Sequence[str]) -> apsw.SQLiteValue | tuple[apsw.SQLiteValue]:
         """Returns the contents of the row `id`
