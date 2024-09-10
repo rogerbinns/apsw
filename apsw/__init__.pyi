@@ -1375,6 +1375,16 @@ class Connection:
             * :doc:`textsearch`"""
         ...
 
+    def fts5_tokenizer_available(self, name: str) -> bool:
+        """Checks if the named tokenizer is registered.
+
+        .. seealso::
+
+            * :meth:`fts5_tokenizer`
+            * :doc:`textsearch`
+            * `FTS5 documentation <https://www.sqlite.org/fts5.html#custom_tokenizers>`__"""
+        ...
+
     def get_autocommit(self) -> bool:
         """Returns if the Connection is in auto commit mode (ie not in a transaction).
 

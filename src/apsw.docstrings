@@ -1593,6 +1593,23 @@
 } while(0)
 
 
+#define  Connection_fts5_tokenizer_available_DOC "fts5_tokenizer_available($self,name)\n--\n\nConnection.fts5_tokenizer_available(name: str) -> bool\n\n" \
+"Checks if the named tokenizer is registered.\n" \
+"\n" \
+".. seealso::\n" \
+"\n" \
+"    * :meth:`fts5_tokenizer`\n" \
+"    * :doc:`textsearch`\n" \
+"    * `FTS5 documentation <https://www.sqlite.org/fts5.html#custom_tokenizers>`__\n" 
+
+#define Connection_fts5_tokenizer_available_KWNAMES "name"
+#define Connection_fts5_tokenizer_available_USAGE "Connection.fts5_tokenizer_available(name: str) -> bool"
+
+#define Connection_fts5_tokenizer_available_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(name), const char *)); \
+} while(0)
+
+
 #define  Connection_get_autocommit_DOC "get_autocommit($self)\n--\n\nConnection.get_autocommit() -> bool\n\n" \
 "Returns if the Connection is in auto commit mode (ie not in a transaction).\n" \
 "\n" \

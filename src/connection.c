@@ -5402,6 +5402,44 @@ Connection_register_fts5_tokenizer(Connection *self, PyObject *const *fast_args,
   Py_RETURN_NONE;
 }
 
+/** .. method:: fts5_tokenizer_available(name: str) -> bool
+
+  Checks if the named tokenizer is registered.
+
+  .. seealso::
+
+      * :meth:`fts5_tokenizer`
+      * :doc:`textsearch`
+      * `FTS5 documentation <https://www.sqlite.org/fts5.html#custom_tokenizers>`__
+*/
+static PyObject *
+Connection_fts5_tokenizer_available(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                                    PyObject *fast_kwnames)
+{
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+  const char *name;
+
+  {
+    Connection_fts5_tokenizer_available_CHECK;
+    ARG_PROLOG(1, Connection_fts5_tokenizer_available_KWNAMES);
+    ARG_MANDATORY ARG_str(name);
+    ARG_EPILOG(NULL, Connection_fts5_tokenizer_available_USAGE, );
+  }
+
+  fts5_api *api = Connection_fts5_api(self);
+  if (!api)
+    return NULL;
+
+  void *user_data = NULL;
+  fts5_tokenizer_v2 *tokenizer_class = NULL;
+
+  int rc = api->xFindTokenizer_v2(api, name, &user_data, &tokenizer_class);
+  if (rc == SQLITE_OK)
+    Py_RETURN_TRUE;
+  Py_RETURN_FALSE;
+}
+
 /** .. method:: register_fts5_function(name: str, function: FTS5Function) -> None
 
   Registers the (case insensitive) named function used as an `auxiliary
@@ -5646,6 +5684,7 @@ static PyMethodDef Connection_methods[] = {
     {"read", (PyCFunction)Connection_read, METH_FASTCALL | METH_KEYWORDS, Connection_read_DOC},
     {"fts5_tokenizer", (PyCFunction)Connection_fts5_tokenizer, METH_FASTCALL | METH_KEYWORDS, Connection_fts5_tokenizer_DOC},
     {"register_fts5_tokenizer", (PyCFunction)Connection_register_fts5_tokenizer, METH_FASTCALL | METH_KEYWORDS, Connection_register_fts5_tokenizer_DOC},
+    {"fts5_tokenizer_available", (PyCFunction)Connection_fts5_tokenizer_available, METH_FASTCALL | METH_KEYWORDS, Connection_fts5_tokenizer_available_DOC},
     {"register_fts5_function", (PyCFunction)Connection_register_fts5_function, METH_FASTCALL | METH_KEYWORDS, Connection_register_fts5_function_DOC},
     {"data_version", (PyCFunction)Connection_data_version, METH_FASTCALL | METH_KEYWORDS, Connection_data_version_DOC},
 #ifndef APSW_OMIT_OLD_NAMES

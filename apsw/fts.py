@@ -1143,13 +1143,8 @@ def register_tokenizers(db: apsw.Connection, map: dict[str, str | Callable]):
     See :data:`map_tokenizers`
     """
     for name, tok in map.items():
-        try:
-            db.fts5_tokenizer(name)
-        except apsw.SQLError as exc:
-            if exc.args[0].startswith("No tokenizer named"):
-                db.register_fts5_tokenizer(name, convert_string_to_python(tok) if isinstance(tok, str) else tok)
-            else:
-                raise
+        if not db.fts5_tokenizer_available(name):
+            db.register_fts5_tokenizer(name, convert_string_to_python(tok) if isinstance(tok, str) else tok)
 
 
 def register_functions(db: apsw.Connection, map: dict[str, str | Callable]):
