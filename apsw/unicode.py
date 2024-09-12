@@ -1028,10 +1028,9 @@ if __name__ == "__main__":
     p.add_argument(
         "--fail-codepoints-separator",
         default=" ",
-        help="What to separate the list pf codepoints with on failure.  Useful for long test strings [%(default)s]",
+        help="What to separate the list of codepoints with on failure.  Useful for long test strings [%(default)s]",
     )
     p.add_argument("test", choices=("grapheme", "word", "sentence", "line_break"), help="What to test")
-    # ::TODO:: auto download file if not provided
     p.add_argument(
         "file",
         help="break test text file.  They can be downloaded from https://www.unicode.org/Public/UCD/latest/ucd/auxiliary/",
