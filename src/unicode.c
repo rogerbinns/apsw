@@ -801,7 +801,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     }
 
     /* LB13 */
-    if (it.lookahead & (LB_CL | LB_CP | LB_EX | LB_IS | LB_SY))
+    if (it.lookahead & (LB_CL | LB_CP | LB_EX | LB_SY))
     {
       /* LB25 matches longer sequence */
       if (!(it.curchar & LB_NU && it.lookahead & (LB_IS | LB_SY)))
@@ -840,6 +840,25 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
         continue;
       }
       it_rollback();
+    }
+
+    /* LB 15c */
+    if(it.curchar & LB_SP && it.lookahead & LB_IS)
+    {
+      it_begin();
+      it_advance();
+      if (it.lookahead & LB_NU)
+      {
+        it_rollback();
+        break;
+      }
+      it_rollback();
+    }
+
+    /* LB 15d */
+    if(it.lookahead & LB_IS)
+    {
+      continue;
     }
 
     /* LB14 - has to be after LB15 because LB15 looks for curchar & LB_OP */
