@@ -999,6 +999,9 @@ def line_resolve_classes(codepoint: int, cat: str | tuple[str]):
     # DOTTED CIRCLE U+25CC is in the rules
     if codepoint == 0x25CC:
         add_cat("DOTTED_CIRCLE")
+    # as well as HYPHEN U+2010
+    if codepoint == 0x2010:
+        add_cat("HYPHEN")
 
     return cat
 

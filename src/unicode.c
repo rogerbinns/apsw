@@ -1,23 +1,20 @@
 /*
+This code provides Unicode relevant functions:
 
-Implements the Unicode Technical Report #29 break algorithms
+* Break locations for grapheme clusters, words, sentences, and lines
+* String operations operating on grapheme cluster boundaries
+* Lookups mapping codepoints to category, version added,
+* Codepoint conversion case folding, accent/combining removal,
+  compatibility codepoints
+* Codepoint name lookup
+* Text widths on terminals
 
-This code is performance sensitive.  It is run against every character
-of every string that gets indexed, against every query string, and
-often on query matches.  Characters are processed multiple times eg to
-find word segments, then a second time to determine if characters
-within are letters/numbers or not.  Lookaheads may have to backout.
+There are two helpers for code that needs to map between UTF8 byte
+offsets and codepoint index, which are significantly more performant
+than the original Python implementations.
 
-The code was originally developed in Python - see the git history of
-file apsw/_tr29py.py for development process.  This code is then a
-translation of the Python into C.
-
-The TextIterator comes from that Python code.  In C++ it would be
-templated taking the category function as a template parameter, but
-in C I am limited to static inline functions, aka macros.
-
-It is ugly, but it works.
-
+None of this code is publicly documented - it is wrapped by unicode.py
+which provides the documentation and API.
 */
 
 #include <stddef.h>
@@ -52,6 +49,30 @@ typedef struct
 
 /* the break routines take the same 2 arguments */
 #define break_KWNAMES "text", "offset"
+
+/*
+
+The majority of the following code implements Unicode TR29 and TR14
+algorithms for finding the location between grapheme clusters, words,
+sentences, and line breaks.
+
+This code is performance sensitive.  It is run against every character
+of every string that gets indexed, against every query string, and
+often on query matches.  Characters are processed multiple times eg to
+find word segments, then a second time to determine if characters
+within are letters/numbers or not.  Lookaheads may have to backout.
+
+The code was originally developed in Python - see the git history of
+file apsw/_tr29py.py for development process.  This code is then a
+translation of the Python into C.
+
+The TextIterator comes from that Python code.  In C++ it would be
+templated taking the category function as a template parameter, but
+in C I am limited to static inline functions, aka macros.
+
+It is ugly, but it works.
+
+*/
 
 /*
 TextIterator keeps track of the current character being examined, the
@@ -98,7 +119,37 @@ Saved state is not needed.
 
 it_has_accepted - variable
 
-True if at least one character has been accepted.
+True if at least one character has been accepted (ie not at start of
+text)
+
+Converting rules to code
+========================
+
+Each break algorithm is a while loop over the text being processed.
+It starts by advancing the position so it.curchar is being examined.
+A `break` statement will return a break before it.curchar.  `continue`
+will accept it.curchar and move the loop to the next character.
+
+Here are some rule patterns and how to convert them to code, where A,
+B, C etc are categories.
+
+x is the do break marker.  If you must not break, then continue to
+advance.
+
+x A
+
+  break
+
+A x B
+
+  it_advance() -- moves to the gap
+  break
+
+A B x
+
+  it_advance() -- moves between them
+  it_advance() -- moves after B
+  break
 
 */
 
@@ -843,7 +894,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     }
 
     /* LB 15c */
-    if(it.curchar & LB_SP && it.lookahead & LB_IS)
+    if (it.curchar & LB_SP && it.lookahead & LB_IS)
     {
       it_begin();
       it_advance();
@@ -856,7 +907,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     }
 
     /* LB 15d */
-    if(it.lookahead & LB_IS)
+    if (it.lookahead & LB_IS)
     {
       continue;
     }
@@ -901,13 +952,42 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
       break;
 
     /* LB19 */
-    if (it.curchar & LB_QU)
+    if ((it.curchar & (LB_QU | LB_Punctuation_Final_Quote)) == LB_QU)
       continue;
-    if (it.lookahead & LB_QU)
+    if ((it.lookahead & (LB_QU | LB_Punctuation_Initial_Quote)) == LB_QU)
     {
       it_advance();
       continue;
     }
+
+    /* LB 19a */
+    if ((it.curchar & LB_EastAsianWidth_FWH) == 0 && it.lookahead & LB_QU)
+    {
+      it_advance();
+      continue;
+    }
+    if (it.curchar & LB_QU && (it.lookahead == 0 || (it.lookahead & LB_EastAsianWidth_FWH) == 0))
+      continue;
+    if (it.curchar & LB_QU && (it.lookahead & LB_EastAsianWidth_FWH) == 0)
+    {
+      it_advance();
+      continue;
+    }
+    if (!it_has_accepted && it.curchar & LB_QU)
+    {
+      it_advance(); // skip QU
+      it_advance(); // skip next
+      continue;
+    }
+
+    if ((it.curchar & LB_EastAsianWidth_FWH) == 0 && it.lookahead & LB_QU)
+    {
+      it_advance();
+      it_advance();
+      continue;
+    }
+
+//  ::TODO:: still needed? if so needs PF / PI too?
 #define LB19_APPLIES (it.lookahead & LB_QU)
 
     /* LB20 */
@@ -916,11 +996,37 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     if (it.lookahead & LB_CB)
       break;
 
-    /* LB21a - has to be before LB21 */
-    if (it.curchar & LB_HL && it.lookahead & (LB_HY | LB_BA))
+    /* LB 20a */
+    if (!it_has_accepted && it.curchar & (LB_HY | LB_HYPHEN) && it.lookahead & LB_AL)
     {
       it_advance();
       continue;
+    }
+    if (it.curchar & (LB_BK | LB_CR | LB_LF | LB_NL | LB_SP | LB_ZW | LB_CB | LB_GL)
+        && it.lookahead & (LB_HY | LB_HYPHEN))
+    {
+      it_begin();
+      it_advance();
+      if (it.lookahead & LB_AL)
+      {
+        it_advance();
+        it_commit();
+        continue;
+      }
+      it_rollback();
+    }
+
+    /* LB21a - has to be before LB21 because both lookahead & LB_HY */
+    if (it.curchar & LB_HL && (it.lookahead & (LB_HY | LB_BA | LB_EastAsianWidth_FWH)) == (LB_HY | LB_BA))
+    {
+      it_begin();
+      it_advance();
+      if ((it.lookahead & LB_HL) == 0)
+      {
+        it_advance();
+        continue;
+      }
+      it_rollback();
     }
 
     /* LB21 */
@@ -955,60 +1061,87 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     if (it.curchar & (LB_AL | LB_HL) && it.lookahead & (LB_PR | LB_PO))
       continue;
 
-    /* LB25 */
-    /* This was originally implemented as the pairwise don't break
-       list.  However that then fails many tests because they do expect a
-       break between CL and PO as the first example (without the stuff
-       preceding that) and also because CM from LB9/10 isn't handled.  So
-       here we implement the full regex equivalent.
-    */
-  lb25_again:
-    if (it.curchar & (LB_PR | LB_PO | LB_OP | LB_HY | LB_NU))
+    /* LB25 - each initial char done separately */
+    if (it.curchar & LB_NU)
     {
-      int is_lb25 = 1;
-      Py_ssize_t initial_pos = it.pos;
-      do
+      it_begin();
+      it_absorb(LB_SY | LB_IS, LB_SY | LB_IS | LB_CM | LB_ZWJ);
+      /* bottom rule */
+      if (it.lookahead & LB_NU)
       {
-        it_begin();
-        if (it.curchar & (LB_PR | LB_PO))
-        {
-          it_advance();
-          it_absorb(LB_CM, 0);
-        }
-        if (it.curchar & (LB_OP | LB_HY))
-        {
-          it_advance();
-          it_absorb(LB_CM, 0);
-        }
-        /* There has to be at least one LB_NU */
-        if (0 == (it.curchar & LB_NU))
-        {
-          is_lb25 = 0;
-          break;
-        }
-        it_absorb(LB_CM, 0);
-        it_absorb(LB_NU | LB_SY | LB_IS, LB_CM);
-
-        if (it.lookahead & (LB_CL | LB_CP))
-        {
-          it_advance();
-          it_absorb(LB_CM, 0);
-        }
-        if (it.lookahead & (LB_PR | LB_PO))
-        {
-          it_advance();
-          it_absorb(LB_CM, 0);
-        }
-      } while (0);
-      if (is_lb25)
-      {
+        it_advance();
         it_commit();
-        /* directly adjacent LB25 can't be broken, so repeat if we absorbed chars */
-        if (it.pos != initial_pos)
-          goto lb25_again;
+        continue;
       }
-      else
+      it_absorb(LB_CL | LB_CP, LB_CM | LB_ZWJ);
+      if (it.lookahead & (LB_PO | LB_PR))
+      {
+        it_advance();
+        continue;
+      }
+      it_rollback();
+    }
+    if (it.curchar & LB_PO && it.lookahead & (LB_OP | LB_NU))
+    {
+      if (it.lookahead & LB_NU)
+      {
+        it_advance();
+        continue;
+      }
+      it_begin();
+      it_advance();
+      if (it.lookahead & LB_NU)
+      {
         it_rollback();
+        it_advance();
+        continue;
+      }
+      if (it.lookahead & LB_IS)
+      {
+        it_advance();
+        if (it.lookahead & LB_NU)
+        {
+          it_rollback();
+          it_advance();
+          continue;
+        }
+      }
+      it_rollback();
+    }
+    if (it.curchar & LB_PR)
+    {
+      it_begin();
+      if (it.lookahead & LB_OP)
+      {
+        it_advance();
+        if (it.lookahead & LB_NU)
+        {
+          it_commit();
+          continue;
+        }
+        if (it.lookahead & LB_IS)
+        {
+          it_advance();
+          if (it.lookahead & LB_NU)
+          {
+            /* we have advanced too far */
+            it_rollback();
+            it_advance();
+            continue;
+          }
+        }
+      }
+      it_rollback();
+    }
+    if (it.curchar & LB_HY && it.lookahead & LB_NU)
+    {
+      it_advance();
+      continue;
+    }
+    if (it.curchar & LB_IS && it.lookahead & LB_NU)
+    {
+      it_advance();
+      continue;
     }
 
     /* LB26 */
