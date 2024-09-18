@@ -8,6 +8,9 @@ SQLite provides the `FTS5 extension <https://www.sqlite.org/fts5.html>`__
 as the implementation.  FTS5 is enabled by default in :ref:`PyPI <pypi>`
 installs.
 
+.. contents:: Replace with a handwritten table pointing to relevance of  all the pieces of content
+  :local:
+
 The :mod:`apsw.fts <apsw.fts>` module makes it easy to to customise
 and enhance usage of FTS5.  See the :ref:`recommendations
 <fts_recommendations>`.
@@ -120,18 +123,11 @@ Unicode Categories
 Normalization
 
 
-
-Tokenizers
-==========
-
-
-
 * Convert bytes into a sequence of tokens
 * colocated
 * generator vs wrapper
 * taking arguments
-* apsw tokenizers are 5 to 15 lines of code, so
-  easy to make your own
+* apsw tokenizers are 5 to 15 lines of code, so easy to make your own
 
 .. _all_tokenizers:
 
@@ -315,6 +311,10 @@ synonyms::
   wrapper = apsw.fts.SynonymTokenizer(synonyms)
   connection.register_fts5_tokenizer("english_synonyms", wrapper)
 
+Internation Components for Unicode (pyicu)
+------------------------------------------
+
+::TODO:: with locale stuff
 
 Snowball Stemmer (snowballstemmer)
 ----------------------------------
@@ -365,8 +365,8 @@ and create new queries using Python data structures.
     :members:
     :undoc-members:
 
-FTS auxiliary functions module
-==============================
+FTS5 auxiliary functions module
+===============================
 
 Provided by the :mod:`apsw.ftsaux` module.
 
@@ -375,6 +375,7 @@ Provided by the :mod:`apsw.ftsaux` module.
     :members:
     :undoc-members:
 
+.. include:: fts.rst
 
 Unicode Text Handling
 =====================
@@ -385,5 +386,3 @@ Provided by the :mod:`apsw.unicode` module.
     :members:
     :undoc-members:
     :member-order: bysource
-
-.. include:: fts.rst
