@@ -2159,6 +2159,8 @@ class FTS5Table:
         run to populate the contents.
         """
 
+        # ::TODO:: contentless_unindexed
+
         qschema = quote_name(schema)
         qname = quote_name(name)
 
