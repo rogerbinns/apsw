@@ -970,7 +970,7 @@ class _Parser:
             if absorb_bareword():
                 continue
 
-            raise ValueError(f"Invalid query character '{query[pos]}' in '{query}' at {pos=}")
+            raise ParseError(query, f"Invalid query character '{query[pos]}'", pos)
 
         # add explicit EOF
         res.append(_Parser.Token(_Parser.TokenType.EOF, pos))
