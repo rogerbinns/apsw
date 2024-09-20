@@ -859,6 +859,8 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
       /* LB25 matches longer sequence */
       if (!(it.curchar & LB_NU && it.lookahead & (LB_IS | LB_SY)))
         continue;
+      it_advance();
+      continue;
     }
 
     /* LB15a */
@@ -1113,7 +1115,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     if (it.curchar & LB_PR)
     {
       it_begin();
-      if(it.lookahead & LB_NU)
+      if (it.lookahead & LB_NU)
       {
         it_advance();
         it_commit();
