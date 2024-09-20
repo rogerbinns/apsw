@@ -1113,6 +1113,12 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     if (it.curchar & LB_PR)
     {
       it_begin();
+      if(it.lookahead & LB_NU)
+      {
+        it_advance();
+        it_commit();
+        continue;
+      }
       if (it.lookahead & LB_OP)
       {
         it_advance();
