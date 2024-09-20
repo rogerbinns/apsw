@@ -962,20 +962,36 @@ def generate_line_ranges():
 
 
 def line_resolve_classes(codepoint: int, cat: str | tuple[str]):
-    if cat in {"BK", "CR", "LF", "NL"}:
+    # the category should always have been a tuple, not str or tuple
+    # but it isn't worth fixing so these are the workarounds
+    def has_cat(c: str) -> bool:
+        return cat == c if isinstance(cat, str) else c in cat
+
+    def replace_cat(match: str, replacement: str):
+        nonlocal cat
+        if not has_cat(match):
+            return
+        if isinstance(cat, str):
+            cat = replacement
+        else:
+            newcat = []
+            for c in cat:
+                newcat.append(c if c != match else replacement)
+            cat = tuple(newcat)
+
+    if any(has_cat(c) for c in ("BK", "CR", "LF", "NL")):
         line_hard_breaks.append(codepoint)
 
     # this is to do the mapping in 6.1 Resolve line breaking classes
     # https://www.unicode.org/reports/tr14/#LB1
-    if cat in {"AI", "SG", "XX"}:
-        cat = "AL"
-    if cat == "SA":
+    for c in {"AI", "SG", "XX"}:
+        replace_cat(c, "AL")
+    if has_cat("SA"):
         if codepoint_to_category[codepoint] in {"Mn", "Mc"}:
-            cat = "CM"
+            replace_cat("SA", "CM")
         else:
-            cat = "AL"
-    if cat == "CJ":
-        cat = "NS"
+            replace_cat("SA", "AL")
+    replace_cat("CJ", "NS")
 
     def add_cat(c: str):
         nonlocal cat
