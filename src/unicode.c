@@ -759,6 +759,8 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
   TextIterator it = TEXT_INIT;
   int it_has_accepted = 0;
 
+  /* LB1 is already applied in the line_category data */
+
   /* LB2 implicit */
 
   /* LB3 */
