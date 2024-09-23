@@ -785,12 +785,16 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
       break;
 
     /* LB6 */
-    if (it.curchar & (LB_BK | LB_CR | LB_LF | LB_NL))
+    if (it.lookahead & (LB_BK | LB_CR | LB_LF | LB_NL))
       continue;
 
-    /* LB7 */
-    if (it.curchar & (LB_SP | LB_ZW))
-      continue;
+      /* LB7 can't be implemented here because rules lower down match
+       longer sequences including lookahead space.  Originally I tried to
+       incorporate those rules here which got unmanageable.  So now we check
+       for LB7 applying in lower locations that would otherwise break using
+       this macro */
+
+#define LB7_APPLIES (it.lookahead & (LB_SP | LB_ZW))
 
     /* LB8 */
     if (it.curchar & LB_ZW)
@@ -805,7 +809,6 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     if (it.curchar & LB_ZWJ)
       continue;
 
-#define LB9 (LB_CM | LB_ZWJ)
     /* LB9 */
     if (!(it.curchar & (LB_BK | LB_CR | LB_LF | LB_NL | LB_SP | LB_ZW)) && it.lookahead & (LB_CM | LB_ZWJ))
     {
@@ -853,39 +856,28 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     /* LB13 */
     if (it.lookahead & (LB_CL | LB_CP | LB_EX | LB_SY))
     {
+      /* LB25 matches longer sequence */
+      if (!(it.curchar & LB_NU && it.lookahead & (LB_IS | LB_SY)))
+        continue;
       it_advance();
-      continue;
-    }
-
-    /* LB14 */
-    if (it.curchar & LB_OP)
-    {
-      it_absorb(LB_SP, LB_CM);
       continue;
     }
 
     /* LB15a */
-    if (!it_has_accepted
-        && (it.curchar & (LB_QU | LB_Punctuation_Initial_Quote)) == (LB_QU | LB_Punctuation_Initial_Quote))
+    /* LB_SP was in the curchar mask, but LB18 forces a break after
+       space so we can't use it here */
+    if ((it.lookahead & LB_QU && it.lookahead & LB_Punctuation_Initial_Quote
+         && it.curchar & (LB_BK | LB_CR | LB_NL | LB_OP | LB_QU | LB_GL | LB_ZW))
+        ||
+        /* handle SOT case */
+        (!it_has_accepted && it.curchar & LB_QU && it.curchar & LB_Punctuation_Initial_Quote))
     {
-      while (it.lookahead & LB_SP)
-      {
+      it_begin();
+      if (!(!it_has_accepted && it.curchar & LB_QU && it.curchar & LB_Punctuation_Initial_Quote))
         it_advance();
-        while (it.curchar & LB9)
-          it_advance();
-      }
-      continue;
-    }
-    if (it.curchar & (LB_BK | LB_CR | LB_LF | LB_NL | LB_OP | LB_QU | LB_GL | LB_SP | LB_ZW)
-        && (it.lookahead & (LB_QU | LB_Punctuation_Initial_Quote)) == (LB_QU | LB_Punctuation_Initial_Quote))
-    {
-      it_advance();
-      while (it.lookahead & LB_SP)
-      {
-        it_advance();
-        while (it.curchar & LB9)
-          it_advance();
-      }
+      assert(it.curchar & LB_QU);
+      it_absorb(LB_SP, LB_CM);
+      it_commit();
       continue;
     }
 
@@ -924,23 +916,22 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
       continue;
     }
 
+    /* LB14 - has to be after LB15 because LB15 looks for curchar & LB_OP */
+    if (it.curchar & LB_OP)
+    {
+      it_absorb(LB_SP, LB_CM);
+      continue;
+    }
+
     /* LB16 */
     if (it.curchar & (LB_CL | LB_CP) && it.lookahead & (LB_SP | LB_NS))
     {
       it_begin();
-      it_advance();
-      while (it.curchar & LB_SP)
+      it_absorb(LB_SP, LB_CM);
+      if (it.lookahead & LB_NS)
       {
         it_advance();
-        while (it.curchar & LB9)
-          it_advance();
-      }
-      if (it.curchar & LB_NS)
-      {
-        it_advance();
-        while (it.curchar & LB9)
-          it_advance();
-        continue;
+        it_commit();
       }
       else
         it_rollback();
@@ -960,8 +951,8 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
       it_rollback();
     }
 
-    /* LB18 */
-    if (it.curchar & LB_SP)
+    /* LB18 - but LB7 is higher priority */
+    if (it.curchar & LB_SP && !LB7_APPLIES)
       break;
 
     /* LB19 */
@@ -1000,8 +991,11 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
       continue;
     }
 
+//  ::TODO:: still needed? if so needs PF / PI too?
+#define LB19_APPLIES (it.lookahead & LB_QU)
+
     /* LB20 */
-    if (it.curchar & LB_CB)
+    if (it.curchar & LB_CB && !LB7_APPLIES)
       break;
     if (it.lookahead & LB_CB)
       break;
@@ -1071,52 +1065,93 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     if (it.curchar & (LB_AL | LB_HL) && it.lookahead & (LB_PR | LB_PO))
       continue;
 
-    /* LB25 - doing the regex - these are all the possible first chars */
-    if (it.curchar & (LB_PR | LB_PO | LB_OP | LB_HY | LB_IS | LB_NU))
+    /* LB25 - each initial char done separately */
+    if (it.curchar & LB_NU)
     {
       it_begin();
-      if (it.curchar & (LB_PR | LB_PO))
+      it_absorb(LB_SY | LB_IS, LB_SY | LB_IS | LB_CM | LB_ZWJ);
+      /* bottom rule */
+      if (it.lookahead & LB_NU)
       {
         it_advance();
-        while (it.curchar & LB9)
-          it_advance();
-      }
-      if (it.curchar & (LB_OP | LB_HY))
-      {
-        it_advance();
-        while (it.curchar & LB9)
-          it_advance();
-      }
-      if (it.curchar & LB_IS)
-      {
-        it_advance();
-        while (it.curchar & LB9)
-          it_advance();
-      }
-      if (it.curchar & LB_NU)
-      {
-        while (it.curchar & (LB_NU | LB_SY | LB_IS))
-        {
-          it_advance();
-          while (it.curchar & LB9)
-            it_advance();
-        }
-        if (it.curchar & (LB_CL | LB_CP))
-        {
-          it_advance();
-          while (it.curchar & LB9)
-            it_advance();
-        }
-        if (it.curchar & (LB_PR | LB_PO))
-        {
-          it_advance();
-          while (it.curchar & LB9)
-            it_advance();
-        }
         it_commit();
+        continue;
       }
-      else
+      it_absorb(LB_CL | LB_CP, LB_CM | LB_ZWJ);
+      if (it.lookahead & (LB_PO | LB_PR))
+      {
+        it_advance();
+        continue;
+      }
+      it_rollback();
+    }
+    if (it.curchar & LB_PO && it.lookahead & (LB_OP | LB_NU))
+    {
+      if (it.lookahead & LB_NU)
+      {
+        it_advance();
+        continue;
+      }
+      it_begin();
+      it_advance();
+      if (it.lookahead & LB_NU)
+      {
         it_rollback();
+        it_advance();
+        continue;
+      }
+      if (it.lookahead & LB_IS)
+      {
+        it_advance();
+        if (it.lookahead & LB_NU)
+        {
+          it_rollback();
+          it_advance();
+          continue;
+        }
+      }
+      it_rollback();
+    }
+    if (it.curchar & LB_PR)
+    {
+      it_begin();
+      if (it.lookahead & LB_NU)
+      {
+        it_advance();
+        it_commit();
+        continue;
+      }
+      if (it.lookahead & LB_OP)
+      {
+        it_advance();
+        if (it.lookahead & LB_NU)
+        {
+          it_commit();
+          continue;
+        }
+        if (it.lookahead & LB_IS)
+        {
+          it_advance();
+          if (it.lookahead & LB_NU)
+          {
+            /* we have advanced too far */
+            it_rollback();
+            it_advance();
+            continue;
+          }
+        }
+      }
+      it_rollback();
+    }
+    if (it.curchar & LB_HY && it.lookahead & LB_NU)
+    {
+      it_advance();
+      continue;
+    }
+    if (it.curchar & LB_IS && it.lookahead & LB_NU)
+    {
+      it_advance();
+      continue;
     }
 
     /* LB26 */
@@ -1185,7 +1220,8 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     {
       it_advance();
       it_absorb(LB_CM, 0);
-      break;
+      if (!LB7_APPLIES && !LB19_APPLIES)
+        break;
     }
 
     /* LB30b */
@@ -1196,8 +1232,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
         && it.lookahead & LB_EM)
       continue;
 
-    /* LB7 again lookahead */
-    if (it.lookahead & (LB_SP | LB_ZW))
+    if (LB7_APPLIES || LB19_APPLIES)
       continue;
 
     /* LB999 */
