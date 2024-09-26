@@ -840,6 +840,63 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
       continue;
     }
 
+  /* LB25 here out of sequence.  The LB12 thru LB24 rules can match part
+    of what LB25 matches which confuses things.  It isn't explicitly
+    stated but is tested that if you have two consecutive spans that match
+    LB25 then you can't break between them. So we implement the LB25 regex
+    here. */
+  lb25_again:
+    if (it.curchar & (LB_PR | LB_PO | LB_OP | LB_HY | LB_IS | LB_NU))
+    {
+      it_begin();
+      Py_ssize_t saved_pos = it.pos;
+      if (it.curchar & (LB_PR | LB_PO))
+      {
+        it_advance();
+        while (it.curchar & (LB_CM | LB_ZWJ))
+          it_advance();
+      }
+      if (it.curchar & (LB_OP | LB_HY))
+      {
+        it_advance();
+        while (it.curchar & (LB_CM | LB_ZWJ))
+          it_advance();
+      }
+      if (it.curchar & LB_IS)
+      {
+        it_advance();
+        while (it.curchar & (LB_CM | LB_ZWJ))
+          it_advance();
+      }
+      if (it.curchar & LB_NU)
+      {
+        while (it.lookahead & (LB_NU | LB_SY | LB_IS))
+        {
+          it_advance();
+          while (it.lookahead & (LB_CM | LB_ZWJ))
+            it_advance();
+        }
+        if (it.lookahead & (LB_CL | LB_CP))
+        {
+          it_advance();
+          while (it.lookahead & (LB_CM | LB_ZWJ))
+            it_advance();
+        }
+        if (it.lookahead & (LB_PR | LB_PO))
+        {
+          it_advance();
+          while (it.lookahead & (LB_CM | LB_ZWJ))
+            it_advance();
+        }
+        it_commit();
+        if (it.pos != saved_pos)
+          goto lb25_again;
+        goto lb25_end;
+      }
+      it_rollback();
+    }
+  lb25_end:
+
     /* LB12 */
     if (it.curchar & LB_GL)
       continue;
@@ -1064,95 +1121,6 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
       continue;
     if (it.curchar & (LB_AL | LB_HL) && it.lookahead & (LB_PR | LB_PO))
       continue;
-
-    /* LB25 - each initial char done separately */
-    if (it.curchar & LB_NU)
-    {
-      it_begin();
-      it_absorb(LB_SY | LB_IS, LB_SY | LB_IS | LB_CM | LB_ZWJ);
-      /* bottom rule */
-      if (it.lookahead & LB_NU)
-      {
-        it_advance();
-        it_commit();
-        continue;
-      }
-      it_absorb(LB_CL | LB_CP, LB_CM | LB_ZWJ);
-      if (it.lookahead & (LB_PO | LB_PR))
-      {
-        it_advance();
-        continue;
-      }
-      it_rollback();
-    }
-    if (it.curchar & LB_PO && it.lookahead & (LB_OP | LB_NU))
-    {
-      if (it.lookahead & LB_NU)
-      {
-        it_advance();
-        continue;
-      }
-      it_begin();
-      it_advance();
-      if (it.lookahead & LB_NU)
-      {
-        it_rollback();
-        it_advance();
-        continue;
-      }
-      if (it.lookahead & LB_IS)
-      {
-        it_advance();
-        if (it.lookahead & LB_NU)
-        {
-          it_rollback();
-          it_advance();
-          continue;
-        }
-      }
-      it_rollback();
-    }
-    if (it.curchar & LB_PR)
-    {
-      it_begin();
-      if (it.lookahead & LB_NU)
-      {
-        it_advance();
-        it_commit();
-        continue;
-      }
-      if (it.lookahead & LB_OP)
-      {
-        it_advance();
-        if (it.lookahead & LB_NU)
-        {
-          it_commit();
-          continue;
-        }
-        if (it.lookahead & LB_IS)
-        {
-          it_advance();
-          if (it.lookahead & LB_NU)
-          {
-            /* we have advanced too far */
-            it_rollback();
-            it_advance();
-            continue;
-          }
-        }
-      }
-      it_rollback();
-    }
-    if (it.curchar & LB_HY && it.lookahead & LB_NU)
-    {
-      it_advance();
-      continue;
-    }
-    if (it.curchar & LB_IS && it.lookahead & LB_NU)
-    {
-      it_advance();
-      continue;
-    }
 
     /* LB26 */
     if (it.curchar & LB_JL && it.lookahead & (LB_JL | LB_JV | LB_H2 | LB_H3))
