@@ -1078,13 +1078,13 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     }
 
     /* LB21a - has to be before LB21 because both lookahead & LB_HY */
-    if (it.curchar & LB_HL && (it.lookahead & (LB_HY | LB_BA | LB_EastAsianWidth_FWH)) == (LB_HY | LB_BA))
+    if (it.curchar & LB_HL && it.lookahead & (LB_HY | LB_BA) && !(it.lookahead & LB_EastAsianWidth_FWH))
     {
       it_begin();
       it_advance();
       if ((it.lookahead & LB_HL) == 0)
       {
-        it_advance();
+        it_commit();
         continue;
       }
       it_rollback();
