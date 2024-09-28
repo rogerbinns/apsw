@@ -1007,10 +1007,8 @@ def line_resolve_classes(codepoint: int, cat: str | tuple[str]):
     if codepoint_to_category[codepoint] == "Cn":
         add_cat("Other_NotAssigned")
 
-    # For EastAsianWidth in F, W, H only OP and CP matter
-    if (cat == "OP" or "OP" in cat) or (cat == "CP" or "CP" in cat):
-        if codepoint in east_asian_widths_FWH:
-            add_cat("EastAsianWidth_FWH")
+    if codepoint in east_asian_widths_FWH:
+        add_cat("EastAsianWidth_FWH")
 
     # DOTTED CIRCLE U+25CC is in the rules
     if codepoint == 0x25CC:
