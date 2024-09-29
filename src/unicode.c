@@ -976,6 +976,24 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     /* LB14 - has to be after LB15 because LB15 looks for curchar & LB_OP */
     if (it.curchar & LB_OP)
     {
+      /* LB20a prevents a break in SP HY AL but if we skip past the SP
+         here then LB20a never sees the SP and so doesn't fire.  So we
+         implement that here too. */
+      if (it.lookahead & LB_SP)
+      {
+        it_begin();
+        it_advance();
+        if(it.lookahead & (LB_HY|LB_HYPHEN))
+        {
+          it_advance();
+          if(it.lookahead & LB_AL)
+          {
+            it_commit();
+            continue;
+          }
+        }
+        it_rollback();
+      }
       it_absorb(LB_SP, LB_CM);
       continue;
     }
