@@ -1012,44 +1012,36 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     if (it.curchar & LB_SP && !LB7_APPLIES)
       break;
 
+    /* LB19a has to be before LB19 because the rules are more general */
+    if ((it.curchar & LB_EastAsianWidth_FWH) == 0 && it.lookahead & LB_QU)
+    {
+      it_advance();
+      continue;
+    }
+    if (it.lookahead & LB_QU)
+    {
+      it_begin();
+      it_advance();
+      if (it.lookahead == 0 || (it.lookahead & LB_EastAsianWidth_FWH) == 0)
+      {
+        it_commit();
+        continue;
+      }
+      it_rollback();
+    }
+    if (it.curchar & LB_QU && (it.lookahead & LB_EastAsianWidth_FWH) == 0)
+      continue;
+    if (!it_has_accepted && it.curchar & LB_QU)
+    {
+      it_advance();
+      continue;
+    }
+
     /* LB19 */
     if ((it.curchar & (LB_QU | LB_Punctuation_Final_Quote)) == LB_QU)
       continue;
     if ((it.lookahead & (LB_QU | LB_Punctuation_Initial_Quote)) == LB_QU)
-    {
-      it_advance();
       continue;
-    }
-
-    /* LB 19a */
-    if ((it.curchar & LB_EastAsianWidth_FWH) == 0 && it.lookahead & LB_QU)
-    {
-      it_advance();
-      continue;
-    }
-    if (it.curchar & LB_QU && (it.lookahead == 0 || (it.lookahead & LB_EastAsianWidth_FWH) == 0))
-      continue;
-    if (it.curchar & LB_QU && (it.lookahead & LB_EastAsianWidth_FWH) == 0)
-    {
-      it_advance();
-      continue;
-    }
-    if (!it_has_accepted && it.curchar & LB_QU)
-    {
-      it_advance(); // skip QU
-      it_advance(); // skip next
-      continue;
-    }
-
-    if ((it.curchar & LB_EastAsianWidth_FWH) == 0 && it.lookahead & LB_QU)
-    {
-      it_advance();
-      it_advance();
-      continue;
-    }
-
-//  ::TODO:: still needed? if so needs PF / PI too?
-#define LB19_APPLIES (it.lookahead & LB_QU)
 
     /* LB20 */
     if (it.curchar & LB_CB && !LB7_APPLIES)
@@ -1188,7 +1180,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     {
       it_advance();
       it_absorb(LB_CM, 0);
-      if (!LB7_APPLIES && !LB19_APPLIES)
+      if (!LB7_APPLIES)
         break;
     }
 
@@ -1200,7 +1192,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
         && it.lookahead & LB_EM)
       continue;
 
-    if (LB7_APPLIES || LB19_APPLIES)
+    if (LB7_APPLIES)
       continue;
 
     /* LB999 */
