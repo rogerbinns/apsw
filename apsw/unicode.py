@@ -657,6 +657,7 @@ def codepoint_name(codepoint: int | str) -> str | None:
     "Name or None if it doesn't have one"
     return _unicode.codepoint_name(codepoint)
 
+
 def version_added(codepoint: int | str) -> str | None:
     "Returns the unicode version the codepoint was added"
     return _unicode.version_added(codepoint)
@@ -1297,6 +1298,8 @@ use the C library function wcswidth, or use the wcwidth Python package wcswidth 
                 print(f"{options.start}{line}{options.end}")
 
     elif options.function == "breaktest":
+        import difflib
+
         # stop debug interpreter whining about file not being closed
         atexit.register(lambda: options.file.close())
 
@@ -1318,7 +1321,7 @@ use the C library function wcswidth, or use the wcwidth Python package wcswidth 
             assert line[-1] == ok, f"Line { line_num } doesn't end with { ok }!"
             line = line[1:]
             text = ""
-            breaks = []
+            breaks: list[int] = []
             while line:
                 c = line.pop(0)
                 if c == not_ok:
@@ -1355,6 +1358,18 @@ use the C library function wcswidth, or use the wcwidth Python package wcswidth 
                 continue
             if set(seen) != set(breaks):
                 fails.append(f"Line { line_num } got breaks at { seen } expected at { breaks }")
+                if max(len(seen), len(breaks)) > 5:
+                    # use difflib to show difference
+                    sm = difflib.SequenceMatcher(a=seen, b=breaks)
+
+                    for tag, a1, a2, b1, b2 in sm.get_opcodes():
+                        if tag == "equal":
+                            continue
+                        if a1 != a2:
+                            fails[-1] += f"\n       seen {tag} {seen[a1:a2]}"
+                        if b1 != b2:
+                            fails[-1] += f"\n    expected {tag} {breaks[b1:b2]}"
+
                 add_failinfo()
             if options.fail_fast and fails:
                 break
