@@ -1865,7 +1865,7 @@ class FTS5Query(unittest.TestCase):
             (one OR two) AND three
             (one OR two) NOT (three AND four)
             "" NOT "" OR "" AND "" "" ^""
-
+            one:(two) AND three
             """.splitlines():
             query = query.strip()
             if not query or query.startswith("#"):
@@ -1880,6 +1880,22 @@ class FTS5Query(unittest.TestCase):
             # we can't compare query strings because white space, NEAR
             # defaults, parentheses, optional AND etc will change
             self.assertEqual(parsed, apsw.fts5query.parse_query_string(as_query))
+
+        # these are queries where the left and right must parse the same as each other
+        # despite different syntax sugar
+        for row in """
+                one:two AND three  --- one:(two) AND three
+                ((((one))))        --- one
+                (one) OR (two)     --- one OR two
+                one two AND (three) AND four  --- (one two) AND three four
+                one:((((two))))    --- one:two
+            """.splitlines():
+            if not row.strip():
+                continue
+            left, right = (s.strip() for s in row.split("---"))
+            left_parsed = apsw.fts5query.parse_query_string(left)
+            right_parsed = apsw.fts5query.parse_query_string(right)
+            self.assertEqual(left_parsed, right_parsed, f"{left=} {right=}")
 
         for dict_query in (
             "hello",
@@ -1900,14 +1916,25 @@ class FTS5Query(unittest.TestCase):
             self.assertEqual(from_dict, parsed)
 
     def testParseErrors(self):
-        """
-        + one
-        one + + two
-        one OR + two
-        one two +
-
-        """
-        pass
+        "Verify error queries are detected as such"
+        for query in """
+            + one
+            one + + two
+            one OR + two
+            one two +
+            NEAR (one, "10")
+            (((^one))) two
+            -one
+            -one:
+            one:(two) three
+            "
+            " ""
+            "NEAR"(one)
+            :
+            one:two:three
+        """.splitlines():
+            # we don't skip blank lines because they are also a parse error
+            self.assertRaises(apsw.fts5query.ParseError, apsw.fts5query.parse_query_string, query)
 
     def testErrors(self):
         "General invalid values and types"
