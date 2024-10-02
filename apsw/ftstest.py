@@ -1884,15 +1884,15 @@ class FTS5Query(unittest.TestCase):
         # these are queries where the left and right must parse the same as each other
         # despite different syntax sugar
         for row in """
-                one:two AND three  --- one:(two) AND three
-                ((((one))))        --- one
-                (one) OR (two)     --- one OR two
-                one two AND (three) AND four  --- (one two) AND three four
-                one:((((two))))    --- one:two
+                one:two AND three  ==   one:(two) AND three
+                ((((one))))        ==   one
+                (one) OR (two)     ==   one OR two
+                one two AND (three) OR four  == one two AND three OR four
+                one:((((two))))    ==   one:two
             """.splitlines():
             if not row.strip():
                 continue
-            left, right = (s.strip() for s in row.split("---"))
+            left, right = (s.strip() for s in row.split("=="))
             left_parsed = apsw.fts5query.parse_query_string(left)
             right_parsed = apsw.fts5query.parse_query_string(right)
             self.assertEqual(left_parsed, right_parsed, f"{left=} {right=}")
