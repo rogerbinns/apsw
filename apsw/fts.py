@@ -1409,22 +1409,23 @@ class FTS5Table:
 
         yield from self._search_internal(sql_query, (fts_query,) + tuple(ids))
 
-    def insert(self, *args: apsw.SQLiteValue, **kwargs: apsw.SQLiteValue) -> None:
-        """insert with columns by positional and/or named via kwargs
+    def upsert(self, *args: apsw.SQLiteValue, **kwargs: apsw.SQLiteValue) -> None:
+        """insert or update with columns by positional and/or named via kwargs
 
         You can mix and match positional and keyword arguments:
 
-           f.insert("hello")
-           f.insert("hello", header="world")
-           f.insert(header="world")
+           table.upsert("hello")
+           table.upsert("hello", header="world")
+           table.upsert(header="world")
 
         If you are using an external content table:
         * the insert will be directed to that table
         * the column positions and names of that table are used
 
         # ::TODO:: allow rowid names in content tables and rowid in fts5 table
+        # if you specify rowid of existing row then it is modified
         """
-        stmt, mapping = self._insert_sql(len(args), tuple(kwargs.keys()) if kwargs else None)
+        stmt, mapping = self._upsert_sql(len(args), tuple(kwargs.keys()) if kwargs else None)
         if mapping is not None:
             if args:
                 bindings = dict(zip(mapping, args))
@@ -1436,7 +1437,7 @@ class FTS5Table:
             self.db.execute(stmt, args)
 
     @functools.cache
-    def _insert_sql(self, num_args: int, kwargs: tuple[str] | None) -> tuple[str, tuple[str, ...] | None]:
+    def _upsert_sql(self, num_args: int, kwargs: tuple[str] | None) -> tuple[str, tuple[str, ...] | None]:
         "Figure out SQL and column mapping to do the actual insert"
         if self.structure.content is not None:
             columns = tuple(
@@ -1456,7 +1457,7 @@ class FTS5Table:
             if num_args < 1:
                 raise ValueError("You must supply some values")
             # simple case
-            sql = f"insert into { target_table } ("
+            sql = f"insert or replace into { target_table } ("
             sql += ", ".join(quote_name(column) for column in columns[:num_args])
             sql += ") values ("
             sql += ",".join("?" for _ in range(num_args))
