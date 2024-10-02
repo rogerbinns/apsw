@@ -1932,6 +1932,11 @@ class FTS5Query(unittest.TestCase):
             "NEAR"(one)
             :
             one:two:three
+            one . two
+            one + .
+            {
+            {}
+            {one}:-
         """.splitlines():
             # we don't skip blank lines because they are also a parse error
             self.assertRaises(apsw.fts5query.ParseError, apsw.fts5query.parse_query_string, query)
