@@ -422,7 +422,7 @@ def to_query_string(q: QUERY) -> str:
     if isinstance(q, PHRASE):
         r = ""
         if q.initial:
-            r += "^ "
+            r += "^"
         if isinstance(q.phrase, QueryTokens):
             r += quote(q.phrase.encode())
         else:
@@ -447,12 +447,11 @@ def to_query_string(q: QUERY) -> str:
 
     if isinstance(q, AND):
         r = ""
+        # see parse_implicit_and()
+        implicit_and = (PHRASE, NEAR, COLUMNFILTER)
         for i, query in enumerate(q.queries):
             if i:
-                if (isinstance(q.queries[i], PHRASE) and isinstance(q.queries[i - 1], PHRASE)) or (
-                    isinstance(q.queries[i], NEAR) and isinstance(q.queries[i - 1], NEAR)
-                ):
-                    # between NEAR or PHRASE pairs we can leave out the AND
+                if isinstance(q.queries[i], implicit_and) and isinstance(q.queries[i - 1], implicit_and):
                     r += " "
                 else:
                     r += " AND "
@@ -636,7 +635,7 @@ class ParseError(Exception):
     A simple printer::
 
         print(exc.query)
-        print(" " * exc.position + "^ " + exc.message)
+        print(" " * exc.position + "^", exc.message)
     """
 
     def __init__(self, query: str, message: str, position: int):
@@ -702,6 +701,49 @@ class _Parser:
         self.token_pos += 1
         return self.tokens[self.token_pos]
 
+    infix_precedence = {
+        TokenType.OR: 10,
+        TokenType.AND: 20,
+        TokenType.NOT: 30,
+    }
+
+    def parse_query(self, rbp: int = 0) -> QUERY:
+        res = self.parse_implicit_and()
+
+        while rbp < self.infix_precedence.get(self.lookahead.tok, 0):
+            token = self.take_token()
+            res = self.infix(token.tok, res, self.parse_query(self.infix_precedence[token.tok]))
+
+        return res
+
+    def parse_implicit_and(self) -> QUERY:
+        # From FTS5 doc:
+        # any sequence of phrases or NEAR groups (including those
+        # restricted to matching specified columns) separated only by
+        # whitespace are handled as if there were an implicit AND
+        # operator between each pair of phrases or NEAR groups.
+        # Implicit AND operators are never inserted after or before an
+        # expression enclosed in parenthesis. Implicit AND operators
+        # group more tightly than all other operators, including NOT.
+        sequence: list[QUERY] = []
+        sequence.append(self.parse_part())
+
+        while self.lookahead.tok in {
+            _Parser.TokenType.MINUS,
+            _Parser.TokenType.LCP,
+            _Parser.TokenType.NEAR,
+            _Parser.TokenType.CARET,
+            _Parser.TokenType.STRING,
+        }:
+            # there is no implicit AND after (query) so we need to
+            # reject if current token is ) but it is fine after a NEAR
+            if self.tokens[self.token_pos].tok == _Parser.TokenType.RP and not isinstance(sequence[-1], NEAR):
+                break
+
+            sequence.append(self.parse_part())
+
+        return sequence[0] if len(sequence) == 1 else AND(queries=sequence)
+
     def parse_part(self) -> QUERY:
         if self.lookahead.tok in {_Parser.TokenType.MINUS, _Parser.TokenType.LCP} or (
             self.lookahead.tok == _Parser.TokenType.STRING
@@ -721,77 +763,39 @@ class _Parser:
             return query
 
         if self.lookahead.tok == _Parser.TokenType.NEAR:
-            nears: list[NEAR] = []
-            # NEAR groups may also be connected by implicit AND
-            # operators.  Implicit AND operators group more tightly
-            # than all other operators, including NOT
-            while self.lookahead.tok == _Parser.TokenType.NEAR:
-                nears.append(self.parse_near())
-
-            if len(nears) == 1:
-                return nears[0]
-
-            # We make the AND explicit
-            return AND(nears)
+            return self.parse_near()
 
         return self.parse_phrase()
 
-    infix_precedence = {
-        TokenType.OR: 10,
-        TokenType.AND: 20,
-        TokenType.NOT: 30,
-    }
-
-    def parse_query(self, rbp: int = 0):
-        res = self.parse_part()
-
-        while rbp < self.infix_precedence.get(self.lookahead.tok, 0):
-            token = self.take_token()
-            res = self.infix(token.tok, res, self.parse_query(self.infix_precedence[token.tok]))
-
-        return res
-
-    def parse_phrase(self) -> PHRASE | AND:
-        # AND implicitly connects adjacent PHRASE with highest
-        # precedence
-
-        res = None
-
-        while self.lookahead.tok in {_Parser.TokenType.CARET, _Parser.TokenType.STRING}:
-            initial = False
-
-            sequence: list[PHRASE] = []
-            if self.lookahead.tok == _Parser.TokenType.CARET:
-                initial = True
-                self.take_token()
-
-            while True:
-                token = self.take_token()
-                if token.tok != _Parser.TokenType.STRING:
-                    self.error("Expected a search term", token)
-                prefix = False
-                if self.lookahead.tok == _Parser.TokenType.STAR:
-                    prefix = True
-                    self.take_token()
-                phrase = QueryTokens.decode(token.value) or token.value
-                sequence.append(PHRASE(phrase, initial, prefix))
-                if len(sequence) >= 2:
-                    sequence[-2].plus = sequence[-1]
-                initial = False
-                if self.lookahead.tok != _Parser.TokenType.PLUS:
-                    break
-                self.take_token()
-
-            if res is None:
-                res = sequence[0]
-            elif isinstance(res, PHRASE):
-                res = AND([res, sequence[0]])
-            else:
-                res.queries.append(sequence[0])
-
-        if res is None:
+    def parse_phrase(self) -> PHRASE:
+        if self.lookahead.tok not in {_Parser.TokenType.CARET, _Parser.TokenType.STRING}:
             self.error("Expected a search term", self.lookahead)
-        return res
+
+        initial = False
+
+        sequence: list[PHRASE] = []
+        if self.lookahead.tok == _Parser.TokenType.CARET:
+            initial = True
+            self.take_token()
+
+        while True:
+            token = self.take_token()
+            if token.tok != _Parser.TokenType.STRING:
+                self.error("Expected a search term", token)
+            prefix = False
+            if self.lookahead.tok == _Parser.TokenType.STAR:
+                prefix = True
+                self.take_token()
+            phrase = QueryTokens.decode(token.value) or token.value
+            sequence.append(PHRASE(phrase, initial, prefix))
+            if len(sequence) >= 2:
+                sequence[-2].plus = sequence[-1]
+            initial = False
+            if self.lookahead.tok != _Parser.TokenType.PLUS:
+                break
+            self.take_token()
+
+        return sequence[0]
 
     def parse_near(self):
         # swallow NEAR
@@ -806,15 +810,13 @@ class _Parser:
         phrases: list[PHRASE] = []
 
         while self.lookahead.tok not in (_Parser.TokenType.COMMA, _Parser.TokenType.RP):
-            phrase = self.parse_phrase()
-            if isinstance(phrase, PHRASE):
-                phrases.append(phrase)
-            else:
-                phrases.extend(phrase.queries)
+            phrases.append(self.parse_phrase())
 
         # the doc says that at least two phrases are required, but the
         # implementation is otherwise
         # https://sqlite.org/forum/forumpost/6303d75d63
+        if len(phrases) < 1:
+            self.error("Expected phrase", self.lookahead)
 
         # , distance
         distance = 10  # default
@@ -823,7 +825,13 @@ class _Parser:
             self.take_token()
             # distance
             number = self.take_token()
-            if number.tok != _Parser.TokenType.STRING or not number.value.isdigit():
+            if (
+                number.tok != _Parser.TokenType.STRING
+                or not number.value.isdigit()
+                # this verifies the number was bare and not quoted like
+                # NEAR(foo, "10")
+                or self.query[number.pos] == '"'
+            ):
                 self.error("Expected number", number)
             distance = int(number.value)
 
@@ -862,7 +870,7 @@ class _Parser:
         self.take_token()
 
         if self.lookahead.tok == _Parser.TokenType.LP:
-            query = self.parse_query()
+            query = self.parse_part()
         elif self.lookahead.tok == _Parser.TokenType.NEAR:
             query = self.parse_near()
         else:
@@ -874,9 +882,6 @@ class _Parser:
         if op == _Parser.TokenType.NOT:
             return NOT(left, right)
         klass = {_Parser.TokenType.AND: AND, _Parser.TokenType.OR: OR}[op]
-        if isinstance(left, klass):
-            left.queries.append(right)
-            return left
         return klass([left, right])
 
     ## Tokenization stuff follows.  It is all in this parser class
@@ -924,12 +929,15 @@ class _Parser:
             # two quotes in a row keeps one and continues string
             start = pos + 1
             while True:
-                pos = query.index('"', pos + 1)
+                found = query.find('"', pos + 1)
+                if found < 0:
+                    raise ParseError(query, "No ending double quote", start - 1)
+                pos = found
                 if query[pos : pos + 2] == '""':
                     pos += 1
                     continue
                 break
-            res.append(_Parser.Token(_Parser.TokenType.STRING, start, query[start:pos].replace('""', '"')))
+            res.append(_Parser.Token(_Parser.TokenType.STRING, start - 1, query[start:pos].replace('""', '"')))
             pos += 1
             return True
 
