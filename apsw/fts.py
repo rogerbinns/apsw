@@ -2356,6 +2356,8 @@ class FTS5TableStructure:
     "`Rowid <https://www.sqlite.org/fts5.html#external_content_tables>`__ if external content table else `None`"
     contentless_delete: bool | None
     "`Contentless delete option <https://www.sqlite.org/fts5.html#contentless_delete_tables>`__ if contentless table else `None`"
+    contentless_unindexed: bool | None
+    "`Contentless unindexed option <https://www.sqlite.org/draft/fts5.html#the_contentless_unindexed_option>`__ if contentless table else `None`"
     columnsize: bool
     "`Columnsize option <https://www.sqlite.org/fts5.html#the_columnsize_option>`__"
     tokendata: bool
@@ -2458,6 +2460,7 @@ def _fts5_vtable_parse(sql: str) -> FTS5TableStructure:
         "columnsize": True,
         "detail": "full",
         "contentless_delete": False,
+        "contentless_unindexed": False,
         "tokendata": False,
         "locale": False,
     }
@@ -2490,7 +2493,7 @@ def _fts5_vtable_parse(sql: str) -> FTS5TableStructure:
                 vals[key].update(int(v) for v in value.split())
         elif key in {"content", "content_rowid", "detail"}:
             vals[key] = value
-        elif key in {"contentless_delete", "columnsize", "tokendata", "locale"}:
+        elif key in {"contentless_delete", "contentless_unindexed", "columnsize", "tokendata", "locale"}:
             vals[key] = bool(int(value))
         else:
             raise ValueError(f"Unknown option '{key}' in {sql=}")
@@ -2500,6 +2503,7 @@ def _fts5_vtable_parse(sql: str) -> FTS5TableStructure:
 
     if vals["content"] != "":
         vals["contentless_delete"] = None
+        vals["contentless_unindexed"] = None
     if not vals["content"]:
         vals["content_rowid"] = None
     vals["columns"] = tuple(vals["columns"])
