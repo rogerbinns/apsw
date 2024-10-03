@@ -2090,6 +2090,7 @@ class FTS5Table:
         content: str | None = None,
         content_rowid: str | None = None,
         contentless_delete: bool = False,
+        contentless_unindexed: bool = False,
         columnsize: bool = True,
         detail: Literal["full"] | Literal["column"] | Literal["none"] = "full",
         tokendata: bool = False,
@@ -2135,6 +2136,10 @@ class FTS5Table:
         :param contentless_delete: Set the `contentless delete option
             <https://sqlite.org/fts5.html#contentless_delete_tables>`__
             for contentless tables.
+        :param contentless_unindexed: Set the `contentless unindexed
+            option
+            <https://www.sqlite.org/fts5.html#the_contentless_unindexed_option>`__
+            for contentless tables
         :param columnsize: Indicate if the `column size tracking
             <https://sqlite.org/fts5.html#the_columnsize_option>`__
             should be disabled to save space
@@ -2159,8 +2164,6 @@ class FTS5Table:
         :meth:`command_rebuild` and :meth:`command_optimize` will be
         run to populate the contents.
         """
-
-        # ::TODO:: contentless_unindexed
 
         qschema = quote_name(schema)
         qname = quote_name(name)
@@ -2205,6 +2208,7 @@ class FTS5Table:
 
         qcontent_rowid = quote_name(content_rowid) if content and content_rowid is not None else None
         contentless_delete: str | None = str(int(contentless_delete)) if content == "" else None
+        contentless_unindexed: str | None = str(int(contentless_unindexed)) if content == "" else None
         tokendata: str = str(int(tokendata))
         locale: str = str(int(locale))
 
@@ -2223,6 +2227,7 @@ class FTS5Table:
             ("content", qcontent),
             ("content_rowid", qcontent_rowid),
             ("contentless_delete", contentless_delete),
+            ("contentless_unindexed", contentless_unindexed),
             # for these we omit them for default value
             ("columnsize", "0" if not columnsize else None),
             ("detail", detail if detail != "full" else None),
