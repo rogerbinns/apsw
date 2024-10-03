@@ -1923,6 +1923,11 @@ class FTS5Query(unittest.TestCase):
             one OR + two
             one two +
             NEAR (one, "10")
+            NEAR(,10)
+            NEAR()
+            NEAR(one,
+            NEAR(one
+            NEAR(one, 10()
             (((^one))) two
             -one
             -one:
@@ -1936,7 +1941,11 @@ class FTS5Query(unittest.TestCase):
             one + .
             {
             {}
+            - NEAR (
+            {one :
             {one}:-
+            ((one) two)
+            (((one OR two))
         """.splitlines():
             # we don't skip blank lines because they are also a parse error
             self.assertRaises(apsw.fts5query.ParseError, apsw.fts5query.parse_query_string, query)
@@ -1978,6 +1987,11 @@ class FTS5Query(unittest.TestCase):
         self.assertRaises(TypeError, apsw.fts5query.to_query_string, "not a dataclass")
 
     def testWalk(self):
+        "walk and related functions"
+        self.assertRaises(TypeError, list, apsw.fts5query.walk({1: 2}))
+        self.assertRaises(TypeError, apsw.fts5query.extract_with_column_filters, {1: 2}, 1)
+        self.assertRaises(TypeError, apsw.fts5query.applicable_columns, {1: 2}, 2, 3)
+
         def n(v):
             # turns instance into class basename
             if isinstance(v, typing.Sequence):
@@ -2007,6 +2021,44 @@ class FTS5Query(unittest.TestCase):
             for parent, node in apsw.fts5query.walk(parsed):
                 walked.append((n(parent), n(node)))
             self.assertEqual(tuple(walked), expected)
+
+        # we use the NEAR as the node
+        query = "one AND {cola 🤦🏼‍♂️ አማርኛ}:({cold}: string AND -🤦🏼‍♂️:NEAR(seven))"
+        parsed = apsw.fts5query.parse_query_string(query)
+        self.assertIsInstance(parsed, apsw.fts5query.AND)
+
+        target = None
+        for parent, node in apsw.fts5query.walk(parsed):
+            if isinstance(node, apsw.fts5query.NEAR):
+                assert target is None
+                target = node
+        self.assertIsInstance(target, apsw.fts5query.NEAR)
+
+        self.assertRaises(ValueError, apsw.fts5query.extract_with_column_filters, apsw.fts5query.AND([]), parsed)
+        self.assertRaises(ValueError, apsw.fts5query.applicable_columns, apsw.fts5query.AND([]), parsed, ["one"])
+
+        extracted = apsw.fts5query.extract_with_column_filters(target, parsed)
+        self.assertEqual(
+            apsw.fts5query.to_dict(extracted),
+            {
+                "@": "COLUMNFILTER",
+                "query": {
+                    "@": "COLUMNFILTER",
+                    "query": {"@": "NEAR", "phrases": [{"@": "PHRASE", "phrase": "seven"}]},
+                    "columns": ["🤦🏼‍♂️"],
+                    "filter": "exclude",
+                },
+                "columns": ["cola", "🤦🏼‍♂️", "አማርኛ"],
+                "filter": "include",
+            },
+        )
+
+        self.assertRaises(KeyError, apsw.fts5query.applicable_columns, target, parsed, ["አማርኛ"])
+
+        applicable_columns = apsw.fts5query.applicable_columns(
+            target, parsed, ("col0", "COLa", "አማርኛ", "🤦🏼‍♂️", "CoLc", "cold", "cole")
+        )
+        self.assertEqual(applicable_columns, {"COLa", "አማርኛ"})
 
 
 def extended_testing_file(name: str) -> pathlib.Path | None:
