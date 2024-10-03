@@ -554,6 +554,9 @@ def walk(start: QUERY) -> Generator[tuple[tuple[QUERY, ...], QUERY], None, None]
          if isinstance(node, PHRASE):
              print(node.phrase)
     """
+    if not isinstance(start, QUERY):
+        raise TypeError(f"{start} is not recognised as a QUERY")
+
     # top down - container node first
     yield tuple(), start
 
@@ -580,8 +583,6 @@ def walk(start: QUERY) -> Generator[tuple[tuple[QUERY, ...], QUERY], None, None]
                 yield parent + parents, node
         return
 
-    raise ValueError(f"{start} is not recognised as a QUERY")
-
 
 def extract_with_column_filters(node: QUERY, start: QUERY) -> QUERY:
     """Return a new `QUERY` for a query rooted at `start` with child `node`,
@@ -605,7 +606,11 @@ def applicable_columns(node: QUERY, start: QUERY, columns: Sequence[str]) -> set
     """Return which columns apply to `node`
 
     You should use :meth:`apsw.fts.FTS5Table.columns_indexed` to get
-    the column list for a table.
+    the column list for a table.  The column names are matched using
+    SQLite semantics (ASCII case insensitive).
+
+    If a query column is not in the provided columns, then
+    :exc:`KeyError` is raised.
     """
     query = extract_with_column_filters(node, start)
     columns: set[str] = set(columns)
@@ -616,13 +621,15 @@ def applicable_columns(node: QUERY, start: QUERY, columns: Sequence[str]) -> set
                 if 0 == apsw.stricmp(query_column, column):
                     matches.add(column)
                     break
+            else:
+                raise KeyError(f"No column matching '{query_column}'")
         if query.filter == "include":
             columns = matches
         else:
             columns -= matches
         query = query.query
 
-    return tuple(columns)
+    return columns
 
 
 class ParseError(Exception):
@@ -798,13 +805,9 @@ class _Parser:
         return sequence[0]
 
     def parse_near(self):
-        # swallow NEAR
+        # swallow NEAR and open parentheses
         self.take_token()
-
-        # open parentheses
-        token = self.take_token()
-        if token.tok != _Parser.TokenType.LP:
-            self.error("Expected '(", token)
+        self.take_token()
 
         # phrases - despite what the doc implies, you can do NEAR(one+two)
         phrases: list[PHRASE] = []
