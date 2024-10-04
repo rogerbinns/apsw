@@ -55,7 +55,7 @@ def connection_dqs(connection: apsw.Connection) -> None:
     connection.config(apsw.SQLITE_DBCONFIG_DQS_DDL, 0)
 
 def connection_optimize(connection: apsw.Connection) -> None:
-    """Prepares query planner optimization
+    """Enables query planner optimization
 
     It enables the query planner to record cases when it would benefit
     from having accurate statistics about tables and indexes for the
@@ -64,6 +64,8 @@ def connection_optimize(connection: apsw.Connection) -> None:
     You can later run :code:`connection.pragma("optimize")` to have
     those statistics updated, such as when closing a database or
     periodically when the database is open for long periods of time.
+    The statistics are recorded in the database and help with future
+    queries during this connection, and all future connections.
 
     There is more detail in the `documentation
     <https://sqlite.org/lang_analyze.html>`__.
