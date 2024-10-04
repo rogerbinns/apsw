@@ -117,15 +117,15 @@ class QueryTokens:
     and use :func:`to_query_string` to compose your query.
 
     Your FTS5 table must use the
-    :class:`apsw.fts.QueryTokensTokenizer` as the first tokenizer in
+    :class:`apsw.fts5.QueryTokensTokenizer` as the first tokenizer in
     the list.  If the reason for tokenizing includes
     `FTS5_TOKENIZE_QUERY` and the text to be tokenized starts with the
     special marker, then the tokens are returned.  Calling
-    :meth:`apsw.fts.FTS5Table.supports_query_tokens` will tell you if
+    :meth:`apsw.fts5.Table.supports_query_tokens` will tell you if
     query tokens are handled correctly.
 
-    You can get the tokens from :attr:`apsw.fts.FTS5Table.tokens` with
-    helpers like :meth:`apsw.fts.FTS5Table.closest_tokens`.
+    You can get the tokens from :attr:`apsw.fts5.Table.tokens` with
+    helpers like :meth:`apsw.fts5.Table.closest_tokens`.
 
     The marker format is text starting with
     :data:`QUERY_TOKENS_MARKER` with each token being separated by
@@ -605,7 +605,7 @@ def extract_with_column_filters(node: QUERY, start: QUERY) -> QUERY:
 def applicable_columns(node: QUERY, start: QUERY, columns: Sequence[str]) -> set[str]:
     """Return which columns apply to `node`
 
-    You should use :meth:`apsw.fts.FTS5Table.columns_indexed` to get
+    You should use :meth:`apsw.fts5.Table.columns_indexed` to get
     the column list for a table.  The column names are matched using
     SQLite semantics (ASCII case insensitive).
 

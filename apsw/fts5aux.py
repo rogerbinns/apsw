@@ -180,7 +180,7 @@ def subsequence(api: apsw.FTS5ExtensionApi, *args: apsw.SQLiteValue):
 
     You can change the ranking function on a `per query basis
     <https://www.sqlite.org/fts5.html#sorting_by_auxiliary_function_results>`__
-    or via :meth:`~apsw.fts.FTS5Table.config_rank` for all queries.
+    or via :meth:`~apsw.fts5.Table.config_rank` for all queries.
     """
     # start with the bm25 base score
     score = bm25(api, *args)
@@ -258,7 +258,7 @@ def position_rank(api: apsw.FTS5ExtensionApi, *args: apsw.SQLiteValue):
 
     You can change the ranking function on a `per query basis
     <https://www.sqlite.org/fts5.html#sorting_by_auxiliary_function_results>`__
-    or via :meth:`~apsw.fts.FTS5Table.config_rank` for all queries.
+    or via :meth:`~apsw.fts5.Table.config_rank` for all queries.
     """
     # start with the bm25 base score
     score = bm25(api, *args)

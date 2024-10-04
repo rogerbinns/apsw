@@ -140,7 +140,7 @@ def convert_string_to_python(expr: str) -> Any:
     Some examples of what is accepted are:
 
     * 3 + 4
-    * apsw.fts.RegexTokenizer
+    * apsw.fts5.RegexTokenizer
     * snowballstemmer.stemmer("english").stemWord
     * nltk.stem.snowball.EnglishStemmer().stem
     * shutil.rmtree("a/directory/location")  **COULD DELETE ALL FILES**
@@ -1127,8 +1127,8 @@ map_tokenizers = {
 "APSW provided tokenizers for use with :func:`register_tokenizers`"
 
 map_functions = {
-    "subsequence": "apsw.ftsaux.subsequence",
-    "position_rank": "apsw.ftsaux.position_rank",
+    "subsequence": "apsw.fts5aux.subsequence",
+    "position_rank": "apsw.fts5aux.position_rank",
 }
 "APSW provided auxiliary functions for use with :func:`register_functions`"
 
@@ -1167,7 +1167,7 @@ def register_functions(db: apsw.Connection, map: dict[str, str | Callable]):
                 db.register_fts5_function(name, convert_string_to_python(func) if isinstance(func, str) else func)
 
 
-class FTS5Table:
+class Table:
     """A helpful wrapper around a FTS5 table
 
     The table must already exist.  You can use the class method
@@ -1204,7 +1204,7 @@ class FTS5Table:
         self.schema = schema
         self.qname = quote_name(name)
         self.qschema = quote_name(schema)
-        self._cache: FTS5Table._cache_class | None = None
+        self._cache: Table._cache_class | None = None
 
         # Do some sanity checking
         assert self.columns == self.structure.columns
@@ -1276,7 +1276,7 @@ class FTS5Table:
         You can't use bindings for table names in queries, so use this
         when constructing a query string::
 
-           search = apsw.fts.FTS5Table(con, 'my_table')
+           search = apsw.fts5.Table(con, 'my_table')
 
            sql = f"""SELECT ... from { search.quoted_table_name }
                         WHERE ...."""
@@ -1665,7 +1665,7 @@ class FTS5Table:
                 if update is not None:
                     vals.update(json.loads(update))
 
-                self._cache = FTS5Table._cache_class(cookie=cookie, tokens=all_tokens, **vals)
+                self._cache = Table._cache_class(cookie=cookie, tokens=all_tokens, **vals)
 
         return self._cache
 
@@ -2097,8 +2097,8 @@ class FTS5Table:
         locale: bool = False,
         generate_triggers: bool = True,
         drop_if_exists: bool = False,
-    ) -> FTS5Table:
-        """Creates the table, returning a :class:`FTS5Table` on success
+    ) -> Table:
+        """Creates the table, returning a :class:`Table` on success
 
         You can use :meth:`apsw.Connection.table_exists` to check if a
         table already exists.
@@ -2343,7 +2343,7 @@ def _apsw_get_match_info(api: apsw.FTS5ExtensionApi) -> str:
 
 @dataclass(frozen=True)
 class FTS5TableStructure:
-    "Table structure from SQL declaration available from :attr:`FTS5Table.structure`"
+    "Table structure from SQL declaration available from :attr:`Table.structure`"
 
     name: str
     "Table nane"
@@ -2853,10 +2853,10 @@ if __name__ == "__main__":
     con = apsw.Connection("")
 
     parser = argparse.ArgumentParser(
-        prog="python3 -m apsw.fts",
+        prog="python3 -m apsw.fts5",
         description="""Runs FTS5 tokenizer against test text producing a HTML report for manual inspection.
 
-        The FTS5 builtin tokenizers are ascii, trigram, unicode61, and porter. apsw.fts tokenizers are
+        The FTS5 builtin tokenizers are ascii, trigram, unicode61, and porter. apsw.fts5 tokenizers are
         registered as unicodewords, simplify, json, html, synonyms, regex, stopwords,
         transform, and ngram""",
     )

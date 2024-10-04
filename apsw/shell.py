@@ -25,7 +25,7 @@ from typing import Optional, TextIO
 
 import apsw
 import apsw.ext
-import apsw.fts
+import apsw.fts5
 
 
 class Shell:
@@ -162,8 +162,8 @@ class Shell:
         # very useful opening databases from CLI shell
         if self._db is not None:
             try:
-                apsw.fts.register_tokenizers(self._db, apsw.fts.map_tokenizers)
-                apsw.fts.register_functions(self._db, apsw.fts.map_functions)
+                apsw.fts5.register_tokenizers(self._db, apsw.fts5.map_tokenizers)
+                apsw.fts5.register_functions(self._db, apsw.fts5.map_functions)
             except apsw.NoFTS5Error:
                 pass
 

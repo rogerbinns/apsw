@@ -14,7 +14,7 @@ fts
 ===
 
 Added :doc:`FTS5 support <textsearch>` including registering and calling tokenizers, and
-auxiliary functions.  The :mod:`apsw.fts` module provides additional classes and
+auxiliary functions.  The :mod:`apsw.fts5` module provides additional classes and
 methods for working with FTS5.  The shell gets a :ref:`ftsq <shell-cmd-ftsq>` command
 for issuing queries.
 

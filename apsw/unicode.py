@@ -168,7 +168,7 @@ _unicode_category = _unicode.category_category
 def category(codepoint: int | str) -> str:
     """Returns the `general category <https://en.wikipedia.org/wiki/Unicode_character_property#General_Category>`__ - eg ``Lu`` for Letter Uppercase
 
-    See :data:`apsw.fts.unicode_categories` for descriptions mapping"""
+    See :data:`apsw.fts5.unicode_categories` for descriptions mapping"""
     cat = _unicode_category(codepoint)
     if cat & _Category.Lu:
         return "Lu"  # Letter Uppercase
@@ -1002,7 +1002,7 @@ if __name__ == "__main__":
     import os
     import sys
     import atexit
-    import apsw.fts
+    import apsw.fts5
 
     # We output text non unicode compatible can't handle
     sys.stdout.reconfigure(errors="replace")
@@ -1196,7 +1196,7 @@ use the C library function wcswidth, or use the wcwidth Python package wcswidth 
         name = str(codepoint_name(c))
         cat = category(ord(c))
         counter = f"#{counter}:" if counter is not None else ""
-        name += f" ({ cat } { apsw.fts.unicode_categories[cat] })"
+        name += f" ({ cat } { apsw.fts5.unicode_categories[cat] })"
         uni_cat = " | ".join(_unicode.category_name(kind, ord(c)))
         return "{" + f"{counter}U+" + ("%04X" % ord(c)) + f" {name} : { uni_cat }" + "}"
 
@@ -1205,7 +1205,7 @@ use the C library function wcswidth, or use the wcwidth Python package wcswidth 
             p.error("You must specify at least --text-file or text arguments")
 
         params = {
-            "categories": apsw.fts.convert_unicode_categories(options.categories),
+            "categories": apsw.fts5.convert_unicode_categories(options.categories),
             "emoji": options.emoji,
             "regional_indicator": options.regional_indicator,
         }
@@ -1396,7 +1396,7 @@ use the C library function wcswidth, or use the wcwidth Python package wcswidth 
 
         def deets(cp):
             cat = category(cp)
-            return f"{ uniname(cp) } { cat }: { apsw.fts.unicode_categories[cat] }"
+            return f"{ uniname(cp) } { cat }: { apsw.fts5.unicode_categories[cat] }"
 
         for i, cp in enumerate(codepoints):
             print(f"#{ i } U+{ cp:04X} - ", end="")

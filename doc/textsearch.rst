@@ -1,7 +1,7 @@
 Full text search
 ****************
 
-.. currentmodule:: apsw.fts
+.. currentmodule:: apsw.fts5
 
 APSW provides complete access to SQLite's full text search functionality.
 SQLite provides the `FTS5 extension <https://www.sqlite.org/fts5.html>`__
@@ -11,7 +11,7 @@ installs.
 .. contents:: Replace with a handwritten table pointing to relevance of  all the pieces of content
   :local:
 
-The :mod:`apsw.fts <apsw.fts>` module makes it easy to to customise
+The :mod:`apsw.fts5 <apsw.fts5>` module makes it easy to to customise
 and enhance usage of FTS5.  See the :ref:`recommendations
 <fts_recommendations>`.
 
@@ -70,7 +70,7 @@ Full Text Index
   time consuming, and it can take quite a lot of storage space.  But
   it is fast to use.
 
-  :class:`FTS5Table` encapsulates an index.
+  :class:`Table` encapsulates an index.
 
 Stop words
 
@@ -295,7 +295,7 @@ useful methods to help with search.  You can use it do stemming in
 many different languages, and `different algorithms
 <https://www.nltk.org/api/nltk.stem.html>`__::
 
-  stemmer = apsw.fts.TransformTokenizer(
+  stemmer = apsw.fts5.TransformTokenizer(
     nltk.stem.snowball.EnglishStemmer().stem
   )
   connection.register_fts5_tokenizer("english_stemmer", english_stemmer)
@@ -308,7 +308,7 @@ synonyms::
   def synonyms(word):
     return [syn.name() for syn in wordnet.synsets(word)]
 
-  wrapper = apsw.fts.SynonymTokenizer(synonyms)
+  wrapper = apsw.fts5.SynonymTokenizer(synonyms)
   connection.register_fts5_tokenizer("english_synonyms", wrapper)
 
 Internation Components for Unicode (pyicu)
@@ -324,7 +324,7 @@ stemming algorithm (`included in FTS5
 <https://www.sqlite.org/fts5.html#porter_tokenizer>`__), and
 supports many more languages.  It is also included as part of nltk.::
 
-  stemmer = apsw.fts.TransformTokenizer(
+  stemmer = apsw.fts5.TransformTokenizer(
     snowballstemmer.stemmer("english").stemWord
   )
   connection.register_fts5_tokenizer("english_stemmer", english_stemmer)
@@ -335,7 +335,7 @@ Unidecode (unidecode)
 The `algorithm <https://interglacial.com/tpj/22/>`__ turns Unicode
 text into ascii text that sounds approximately similar::
 
-  transform = apsw.fts.TransformTokenizer(
+  transform = apsw.fts5.TransformTokenizer(
     unidecode.unidecode
   )
 
@@ -344,12 +344,12 @@ text into ascii text that sounds approximately similar::
 Full Text Search module
 =======================
 
-Provided by the :mod:`apsw.fts` module.  This includes
-:class:`FTS5Table` for creating and working with FTS5 tables in a
+Provided by the :mod:`apsw.fts5` module.  This includes
+:class:`Table` for creating and working with FTS5 tables in a
 Pythonic way, numerous :ref:`tokenizers <all_tokenizers>`, and related
 functionality.
 
-.. automodule:: apsw.fts
+.. automodule:: apsw.fts5
     :synopsis: Helpers for working with full text search
     :members:
     :undoc-members:
@@ -368,9 +368,9 @@ and create new queries using Python data structures.
 FTS5 auxiliary functions module
 ===============================
 
-Provided by the :mod:`apsw.ftsaux` module.
+Provided by the :mod:`apsw.fts5aux` module.
 
-.. automodule:: apsw.ftsaux
+.. automodule:: apsw.fts5aux
     :synopsis: Auxiliary functions for ranking and match extraction
     :members:
     :undoc-members:

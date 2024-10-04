@@ -43,7 +43,7 @@ def exercise(example_code, expect_exception):
     # The module is not imported outside because the init function has
     # several fault injection locations
 
-    import apsw, apsw.ext, apsw.fts
+    import apsw, apsw.ext, apsw.fts5
 
     try:
         apsw.config(apsw.SQLITE_CONFIG_URI, 1)
@@ -185,7 +185,7 @@ def exercise(example_code, expect_exception):
             pass
 
     def tok2(con, args):
-        options = apsw.fts.parse_tokenizer_args({"+": None}, con, args)
+        options = apsw.fts5.parse_tokenizer_args({"+": None}, con, args)
 
         def tokenizer(utf8, reason, locale):
             for start, end, *tokens in options["+"](utf8, reason, locale, include_colocated=False):

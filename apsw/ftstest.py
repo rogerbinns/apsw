@@ -25,7 +25,7 @@ import zipfile
 
 import apsw
 import apsw.ext
-import apsw.fts
+import apsw.fts5
 import apsw.fts5query
 import apsw.unicode
 
@@ -178,7 +178,7 @@ class FTS(unittest.TestCase):
             )
 
         def bad_tok2(con, args):
-            options = apsw.fts.parse_tokenizer_args({"+": None}, con, args)
+            options = apsw.fts5.parse_tokenizer_args({"+": None}, con, args)
 
             def tokenize(utf8, reason, locale):
                 for start, end, *tokens in options["+"](utf8, reason):
@@ -221,7 +221,7 @@ class FTS(unittest.TestCase):
             self.assertEqual(l, r)
 
     def testAPSWFTSTokenizers(self):
-        "Test apsw.fts tokenizers"
+        "Test apsw.fts5 tokenizers"
         if not self.has_fts5():
             return
 
@@ -232,7 +232,7 @@ class FTS(unittest.TestCase):
         test_utf8 = test_text.encode("utf8")
 
         ## UnicodeWordsTokenizer
-        self.db.register_fts5_tokenizer("unicodewords", apsw.fts.UnicodeWordsTokenizer)
+        self.db.register_fts5_tokenizer("unicodewords", apsw.fts5.UnicodeWordsTokenizer)
 
         self.assertRaises(ValueError, self.db.fts5_tokenizer, "unicodewords", ["zebra"])
 
@@ -268,7 +268,7 @@ class FTS(unittest.TestCase):
 
         ## NGramTokenizer
         test_utf8 = ("中文(繁體) Fr1AnçAiS češt2ina 🤦🏼‍♂️straße" * 4).encode("utf8")
-        self.db.register_fts5_tokenizer("ngram", apsw.fts.NGramTokenizer)
+        self.db.register_fts5_tokenizer("ngram", apsw.fts5.NGramTokenizer)
 
         self.assertEqual(self.db.fts5_tokenizer("ngram")(b"", apsw.FTS5_TOKENIZE_QUERY, "fred"), [])
 
@@ -307,7 +307,7 @@ class FTS(unittest.TestCase):
                             self.assertTrue(got[offset] is None or got[offset] == byte)
                             got[offset] = byte
                     else:
-                        cats = apsw.fts.convert_unicode_categories(include_categories)
+                        cats = apsw.fts5.convert_unicode_categories(include_categories)
                         self.assertTrue(
                             any(apsw.unicode.category(t) in cats for t in tokens[0]), f"{tokens[0]!r} {cats=}"
                         )
@@ -334,7 +334,7 @@ class FTS(unittest.TestCase):
         ## Regex
         pattern = r"\d+"  # digits
         flags = re.ASCII  # only ascii recognised
-        tokenizer = functools.partial(apsw.fts.RegexTokenizer, pattern=pattern, flags=flags)
+        tokenizer = functools.partial(apsw.fts5.RegexTokenizer, pattern=pattern, flags=flags)
         self.db.register_fts5_tokenizer("my_regex", tokenizer)
 
         # ASCII/Arabic and non-ascii digits
@@ -355,7 +355,7 @@ class FTS(unittest.TestCase):
             env["ASAN_OPTIONS"] = "detect_leaks=false"
 
         proc = subprocess.run(
-            [sys.executable] + cov_params + ["-m", "apsw.fts", "unicodewords"], capture_output=True, env=env
+            [sys.executable] + cov_params + ["-m", "apsw.fts5", "unicodewords"], capture_output=True, env=env
         )
         self.assertEqual(0, proc.returncode)
         self.assertIn(b"Tips", proc.stdout)
@@ -376,8 +376,8 @@ class FTS(unittest.TestCase):
                 },
             ),
         ):
-            self.assertEqual(apsw.fts.convert_tokenize_reason(pat), expected)
-        self.assertRaises(ValueError, apsw.fts.convert_tokenize_reason, "AUX BANANA")
+            self.assertEqual(apsw.fts5.convert_tokenize_reason(pat), expected)
+        self.assertRaises(ValueError, apsw.fts5.convert_tokenize_reason, "AUX BANANA")
 
         ## tokenizer_test_strings
         def verify_test_string_item(item):
@@ -387,18 +387,18 @@ class FTS(unittest.TestCase):
             self.assertIsInstance(value, bytes)
             self.assertEqual(value, value.decode("utf8", "replace").encode("utf8"))
 
-        tests = apsw.fts.tokenizer_test_strings()
+        tests = apsw.fts5.tokenizer_test_strings()
         for count, item in enumerate(tests):
             verify_test_string_item(item)
         self.assertGreater(count, 16)
 
         with BecauseWindowsTempfile("wb") as tf:
             some_text = "hello Aragonés 你好世界"
-            items = apsw.fts.tokenizer_test_strings(tf.name)
+            items = apsw.fts5.tokenizer_test_strings(tf.name)
             self.assertEqual(len(items), 1)
             verify_test_string_item(items[0])
             tf.write_whole_file(some_text.encode("utf8"))
-            items = apsw.fts.tokenizer_test_strings(tf.name)
+            items = apsw.fts5.tokenizer_test_strings(tf.name)
             self.assertEqual(len(items), 1)
             verify_test_string_item(items[0])
             self.assertEqual(items[0][0], some_text.encode("utf8"))
@@ -407,7 +407,7 @@ class FTS(unittest.TestCase):
                 data += f"# { i }\t\r\n## ignored\n".encode("utf8")
                 data += (some_text + f"{ i }  \n").encode("utf8")
             tf.write_whole_file(data)
-            items = apsw.fts.tokenizer_test_strings(tf.name)
+            items = apsw.fts5.tokenizer_test_strings(tf.name)
             self.assertEqual(10, len(items))
             for i, (value, comment) in enumerate(items):
                 self.assertEqual(comment, f"{ i }")
@@ -415,14 +415,14 @@ class FTS(unittest.TestCase):
                 self.assertEqual((some_text + f"{ i }").encode("utf8"), value)
 
         ## convert_unicode_categories
-        self.assertRaises(ValueError, apsw.fts.convert_unicode_categories, "L* !BANANA")
-        self.assertEqual(apsw.fts.convert_unicode_categories("L* Pc !N* N* !N*"), {"Pc", "Lm", "Lo", "Lu", "Lt", "Ll"})
+        self.assertRaises(ValueError, apsw.fts5.convert_unicode_categories, "L* !BANANA")
+        self.assertEqual(apsw.fts5.convert_unicode_categories("L* Pc !N* N* !N*"), {"Pc", "Lm", "Lo", "Lu", "Lt", "Ll"})
         self.assertEqual(
-            apsw.fts.convert_unicode_categories("* !P* !Z*"), apsw.fts.convert_unicode_categories("[CLMNS]*")
+            apsw.fts5.convert_unicode_categories("* !P* !Z*"), apsw.fts5.convert_unicode_categories("[CLMNS]*")
         )
         ## convert_number_ranges
         for t in "3-", "a", "", "3-5-7", "3,3-", "3,a", "3,4-a":
-            self.assertRaises(ValueError, apsw.fts.convert_number_ranges, t)
+            self.assertRaises(ValueError, apsw.fts5.convert_number_ranges, t)
         for t, expected in (
             ("3", {3}),
             ("3,4,5", {3, 4, 5}),
@@ -430,22 +430,22 @@ class FTS(unittest.TestCase):
             ("2-3,3-9", {2, 3, 4, 5, 6, 7, 8, 9}),
             ("6-2", set()),
         ):
-            self.assertEqual(apsw.fts.convert_number_ranges(t), expected)
+            self.assertEqual(apsw.fts5.convert_number_ranges(t), expected)
 
         ## convert_boolean
-        self.assertRaises(ValueError, apsw.fts.convert_boolean, "yes")
-        self.assertRaises(ValueError, apsw.fts.convert_boolean, "-1")
-        self.assertEqual(False, apsw.fts.convert_boolean("0"))
-        self.assertEqual(False, apsw.fts.convert_boolean("FALSE"))
-        self.assertEqual(True, apsw.fts.convert_boolean("1"))
-        self.assertEqual(True, apsw.fts.convert_boolean("true"))
+        self.assertRaises(ValueError, apsw.fts5.convert_boolean, "yes")
+        self.assertRaises(ValueError, apsw.fts5.convert_boolean, "-1")
+        self.assertEqual(False, apsw.fts5.convert_boolean("0"))
+        self.assertEqual(False, apsw.fts5.convert_boolean("FALSE"))
+        self.assertEqual(True, apsw.fts5.convert_boolean("1"))
+        self.assertEqual(True, apsw.fts5.convert_boolean("true"))
 
         ## extract_html_text
         some_html = (
             """<!decl><!--comment-->&copy;&#62;<?pi><hello/><script>script</script><svg>ddd<svg>ffff"""
             """</svg>ggg&lt;<?pi2></svg><hello>bye</hello>"""
         )
-        text, om = apsw.fts.extract_html_text(some_html)
+        text, om = apsw.fts5.extract_html_text(some_html)
         self.assertEqual(text.strip(), "©>\nbye")
         offsets = [om(i) for i in range(len(text) + 1)]
         self.assertEqual(offsets, [0, 21, 27, 32, 117, 118, 119, 120, 128])
@@ -454,7 +454,7 @@ class FTS(unittest.TestCase):
 
         ## extract_json_text
         some_json = r"""["one", "", {"two": "three"}, "four:", "a\"b", "'\ud83c\udf82\\ሴ\u1234ስ"]"""
-        text, om = apsw.fts.extract_json(some_json, include_keys=False)
+        text, om = apsw.fts5.extract_json(some_json, include_keys=False)
         self.assertEqual(text, "\none\nthree\nfour:\na\"b\n'🎂\\ሴሴስ")
         offsets = [om(i) for i in range(0, len(text) + 1, 3)]
         self.assertEqual(offsets, [0, 4, 22, 25, 32, 35, 41, 48, 63, 71])
@@ -462,7 +462,7 @@ class FTS(unittest.TestCase):
         self.assertRaises(IndexError, om, -1)
         self.assertRaises(IndexError, om, len(text) + 1)
 
-        text, om = apsw.fts.extract_json(some_json, include_keys=True)
+        text, om = apsw.fts5.extract_json(some_json, include_keys=True)
         self.assertEqual(text, "\none\ntwo\nthree\nfour:\na\"b\n'🎂\\ሴሴስ")
         offsets = [om(i) for i in range(0, len(text) + 1, 3)]
         self.assertEqual(offsets, [0, 4, 15, 21, 24, 31, 34, 40, 44, 61, 70])
@@ -471,10 +471,10 @@ class FTS(unittest.TestCase):
         self.assertRaises(IndexError, om, len(text) + 1)
 
         ## convert_string_to_python
-        self.assertIs(apsw.fts.convert_string_to_python("apsw.fts.quote_name"), apsw.fts.quote_name)
+        self.assertIs(apsw.fts5.convert_string_to_python("apsw.fts5.quote_name"), apsw.fts5.quote_name)
 
         ## parse_tokenizer_args
-        ta = apsw.fts.TokenizerArgument
+        ta = apsw.fts5.TokenizerArgument
         # the factory must return a callable hence nested lambdas
         self.db.register_fts5_tokenizer("dummy", lambda *args: lambda *args: ("nothing",))
 
@@ -502,9 +502,9 @@ class FTS(unittest.TestCase):
             ({"foo": ta(choices=("one", "two"))}, ["foo", "four"], (ValueError, ".*was not allowed choice.*")),
         ):
             if isinstance(expected, tuple):
-                self.assertRaisesRegex(expected[0], expected[1], apsw.fts.parse_tokenizer_args, spec, self.db, args)
+                self.assertRaisesRegex(expected[0], expected[1], apsw.fts5.parse_tokenizer_args, spec, self.db, args)
             else:
-                options = apsw.fts.parse_tokenizer_args(spec, self.db, args)
+                options = apsw.fts5.parse_tokenizer_args(spec, self.db, args)
                 if "+" in spec:
                     tok = options.pop("+")
                     e = expected.pop("+")
@@ -514,7 +514,7 @@ class FTS(unittest.TestCase):
                 self.assertEqual(expected, options)
 
     def testAPSWTokenizerWrappers(self):
-        "Test tokenizer wrappers supplied by apsw.fts"
+        "Test tokenizer wrappers supplied by apsw.fts5"
         if not self.has_fts5():
             return
         test_reason = apsw.FTS5_TOKENIZE_AUX
@@ -522,7 +522,7 @@ class FTS(unittest.TestCase):
         test_res = ((0, 1, "a"), (2, 3, "1"), (4, 5, "2", "deux", "two"), (6, 7, "3"), (8, 9, "b"))
 
         def source(con, args):
-            apsw.fts.parse_tokenizer_args({}, con, args)
+            apsw.fts5.parse_tokenizer_args({}, con, args)
 
             def tokenize(utf8, flags, locale):
                 self.assertEqual(flags, test_reason)
@@ -533,29 +533,29 @@ class FTS(unittest.TestCase):
 
         self.db.register_fts5_tokenizer("source", source)
 
-        @apsw.fts.TransformTokenizer
+        @apsw.fts5.TransformTokenizer
         def transform_wrapped_func(s):
             return self.transform_test_function(s)
 
-        @apsw.fts.StopWordsTokenizer
+        @apsw.fts5.StopWordsTokenizer
         def stopwords_wrapped_func(s):
             return self.stopwords_test_function(s)
 
-        @apsw.fts.SynonymTokenizer
+        @apsw.fts5.SynonymTokenizer
         def synonym_wrapped_func(s):
             return self.synonym_test_function(s)
 
         self.db.register_fts5_tokenizer("transform_wrapped", transform_wrapped_func)
-        self.db.register_fts5_tokenizer("transform_param", apsw.fts.TransformTokenizer(self.transform_test_function))
-        self.db.register_fts5_tokenizer("transform_arg", apsw.fts.TransformTokenizer())
+        self.db.register_fts5_tokenizer("transform_param", apsw.fts5.TransformTokenizer(self.transform_test_function))
+        self.db.register_fts5_tokenizer("transform_arg", apsw.fts5.TransformTokenizer())
 
         self.db.register_fts5_tokenizer("stopwords_wrapped", stopwords_wrapped_func)
-        self.db.register_fts5_tokenizer("stopwords_param", apsw.fts.StopWordsTokenizer(self.stopwords_test_function))
-        self.db.register_fts5_tokenizer("stopwords_arg", apsw.fts.StopWordsTokenizer())
+        self.db.register_fts5_tokenizer("stopwords_param", apsw.fts5.StopWordsTokenizer(self.stopwords_test_function))
+        self.db.register_fts5_tokenizer("stopwords_arg", apsw.fts5.StopWordsTokenizer())
 
         self.db.register_fts5_tokenizer("synonym_wrapped", synonym_wrapped_func)
-        self.db.register_fts5_tokenizer("synonym_param", apsw.fts.SynonymTokenizer(self.synonym_test_function))
-        self.db.register_fts5_tokenizer("synonym_arg", apsw.fts.SynonymTokenizer())
+        self.db.register_fts5_tokenizer("synonym_param", apsw.fts5.SynonymTokenizer(self.synonym_test_function))
+        self.db.register_fts5_tokenizer("synonym_arg", apsw.fts5.SynonymTokenizer())
 
         for name in ("transform", "stopwords", "synonym"):
             returns = []
@@ -586,16 +586,16 @@ class FTS(unittest.TestCase):
             self.assertEqual(returns[0], returns[1])
             self.assertEqual(returns[1], returns[2])
 
-            apsw.fts.convert_string_to_python(f"apsw.ftstest.FTS.{ name }_test_function_check")(self, returns[0])
+            apsw.fts5.convert_string_to_python(f"apsw.ftstest.FTS.{ name }_test_function_check")(self, returns[0])
 
         # synonym reason
         test_text = "one two three"
 
-        @apsw.fts.SynonymTokenizer
+        @apsw.fts5.SynonymTokenizer
         def func(n):
             1 / 0
 
-        self.db.register_fts5_tokenizer("unicodewords", apsw.fts.UnicodeWordsTokenizer)
+        self.db.register_fts5_tokenizer("unicodewords", apsw.fts5.UnicodeWordsTokenizer)
         self.db.register_fts5_tokenizer("synonym-reason", func)
 
         self.assertEqual(
@@ -606,7 +606,7 @@ class FTS(unittest.TestCase):
         )
 
         # stopwords reason
-        @apsw.fts.StopWordsTokenizer
+        @apsw.fts5.StopWordsTokenizer
         def func(n):
             1 / 0
 
@@ -624,7 +624,7 @@ class FTS(unittest.TestCase):
         test_text = "中文(繁體) Fr1AnçAiSⅦčešt2ina  🤦🏼‍♂️ straße"
         test_utf8 = test_text.encode("utf8")
 
-        self.db.register_fts5_tokenizer("simplify", apsw.fts.SimplifyTokenizer)
+        self.db.register_fts5_tokenizer("simplify", apsw.fts5.SimplifyTokenizer)
 
         # no args should have no effect
         baseline = self.db.fts5_tokenizer("unicodewords")(test_utf8, test_reason, None)
@@ -655,7 +655,7 @@ class FTS(unittest.TestCase):
 
         ## HTMLTokenizer
         test_html = "<t>text</b><fooo/>mor<b>e</b> stuff&amp;things<yes yes>yes<>/no>a&#1234;b"
-        self.db.register_fts5_tokenizer("html", apsw.fts.HTMLTokenizer)
+        self.db.register_fts5_tokenizer("html", apsw.fts5.HTMLTokenizer)
         # html text is separately tested
         self.assertEqual(
             # Po is for the ampersand
@@ -682,7 +682,7 @@ class FTS(unittest.TestCase):
 
         ## JSONTokenizer
         test_json = json.dumps({"key": "value", "k\u1234": ["'", '"']})
-        self.db.register_fts5_tokenizer("json", apsw.fts.JSONTokenizer)
+        self.db.register_fts5_tokenizer("json", apsw.fts5.JSONTokenizer)
         # json text is separately tested
         self.assertEqual(
             # Po is for the quotes
@@ -1803,7 +1803,7 @@ class FTS5Query(unittest.TestCase):
     def setUp(self):
         self.db = apsw.Connection("")
         self.db.execute('create virtual table search using fts5(one, [two space], "three""quote", ":", "{")')
-        self.table = apsw.fts.FTS5Table(self.db, "search")
+        self.table = apsw.fts5.Table(self.db, "search")
 
     def tearDown(self):
         self.db.close()

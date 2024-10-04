@@ -13,7 +13,7 @@ import functools
 
 import apsw
 import apsw.ext
-import apsw.fts
+import apsw.fts5
 
 
 # The sample data we use - recipes with ingredients, instructions, and serving
@@ -234,13 +234,13 @@ show_tokens(
     ["unicode61"],
 )
 
-### fts_apsw_unicodewords: apsw.fts.UnicodeWordsTokenizer
-# :func:`apsw.fts.UnicodeWordsTokenizer` does words
+### fts_apsw_unicodewords: apsw.fts5.UnicodeWordsTokenizer
+# :func:`apsw.fts5.UnicodeWordsTokenizer` does words
 # across languages and understands when punctuation etc
 # is part of words, as well as emoji and regional indicators
 
 connection.register_fts5_tokenizer(
-    "unicodewords", apsw.fts.UnicodeWordsTokenizer
+    "unicodewords", apsw.fts5.UnicodeWordsTokenizer
 )
 
 # unicode61 doesn't understand grapheme clusters or
@@ -250,15 +250,15 @@ show_tokens(test_text, "unicode61")
 # unicodewords has you covered
 show_tokens(test_text, "unicodewords")
 
-### fts_apsw_simplify: apsw.fts.SimplifyTokenizer
+### fts_apsw_simplify: apsw.fts5.SimplifyTokenizer
 # You may have noticed that there are accents (diacritics) and
 # mixed case in the tokens in the example above.  It is
-# convenient to remove those.  The :func:`apsw.fts.SimplifyTokenizer`
+# convenient to remove those.  The :func:`apsw.fts5.SimplifyTokenizer`
 # can neutralize case and remove accents and marks, so you can use it
 # to filter your own or other tokenizers.
 
 connection.register_fts5_tokenizer(
-    "simplify", apsw.fts.SimplifyTokenizer
+    "simplify", apsw.fts5.SimplifyTokenizer
 )
 
 show_tokens(
@@ -306,18 +306,18 @@ show_tokens(test_text, "mine")
 ### fts_own_2: Your own tokenizer, part 2
 # We'll make one entirely our own, not building on any existing.
 # Tokenizers operate on UTF8 and byte offsets.  The
-# :func:`apsw.fts.StringTokenizer` decorator lets you operate on
+# :func:`apsw.fts5.StringTokenizer` decorator lets you operate on
 # :class:`str` instead and handles the mapping.
-# :func:`apsw.fts.parse_tokenizer_args` makes it easy to handle
+# :func:`apsw.fts5.parse_tokenizer_args` makes it easy to handle
 # parameters.
 
 
-@apsw.fts.StringTokenizer
+@apsw.fts5.StringTokenizer
 def atokenizer(
     con: apsw.Connection, params: list[str]
 ) -> apsw.FTS5Tokenizer:
     # What we accept
-    ta = apsw.fts.TokenizerArgument
+    ta = apsw.fts5.TokenizerArgument
     spec = {
         # two choices
         "big": ta(choices=("ship", "plane")),
@@ -327,13 +327,13 @@ def atokenizer(
         "block": ta(default=2, convertor=int),
     }
 
-    options = apsw.fts.parse_tokenizer_args(spec, con, params)
+    options = apsw.fts5.parse_tokenizer_args(spec, con, params)
 
     # show what options we got
     pprint(options)
 
     def tokenize(text: str, reason: int, locale: str | None):
-        # See apsw.fts.tokenize_reasons for mapping from text to number
+        # See apsw.fts5.tokenize_reasons for mapping from text to number
         print(f"{reason=}")
         # if a locale table and value was used
         print(f"{locale=}")
@@ -353,7 +353,7 @@ tok = connection.fts5_tokenizer(
 )
 pprint(tok(test_text.encode("utf8"), apsw.FTS5_TOKENIZE_AUX, None))
 
-### fts_apsw_regex: apsw.fts.RegexTokenizer
+### fts_apsw_regex: apsw.fts5.RegexTokenizer
 # We can use :mod:`regular expressions <re>`.  Unlike the other
 # tokenizers the pattern is not passed as a SQL level parameter
 # because there would be a confusing amount of backslashes, square
@@ -362,7 +362,7 @@ pprint(tok(test_text.encode("utf8"), apsw.FTS5_TOKENIZE_AUX, None))
 pattern = r"\d+"  # digits
 flags = re.ASCII  # only ascii recognised
 tokenizer = functools.partial(
-    apsw.fts.RegexTokenizer, pattern=pattern, flags=flags
+    apsw.fts5.RegexTokenizer, pattern=pattern, flags=flags
 )
 connection.register_fts5_tokenizer("my_regex", tokenizer)
 
@@ -371,7 +371,7 @@ text = "text2abc 3.14 tamil ௦௧௨௩௪ bengali ০১২৩৪ arabic01234"
 
 show_tokens(text, "my_regex")
 
-### fts_apsw_regexpre: apsw.fts.RegexPreTokenizer
+### fts_apsw_regexpre: apsw.fts5.RegexPreTokenizer
 # Use regular expressions to extract tokens of interest such as
 # identifiers,  and then use a different tokenizer on the text between
 # the regular expression matches.  Contrast to RegexTokenizer above
@@ -386,7 +386,7 @@ show_tokens(text, "unicodewords")
 # Setup RegexPreTokenizer
 pattern = r"[0-9][0-9]/[A-Z][A-Z]"
 tokenizer = functools.partial(
-    apsw.fts.RegexPreTokenizer, pattern=pattern, flags=re.ASCII
+    apsw.fts5.RegexPreTokenizer, pattern=pattern, flags=re.ASCII
 )
 connection.register_fts5_tokenizer("myids", tokenizer)
 
