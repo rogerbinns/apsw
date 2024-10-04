@@ -10,6 +10,13 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+3.47.0.0
+========
+
+Added :func:`recursive triggers
+<apsw.bestpractice.connection_recursive_triggers>` and :func:`optimize
+<apsw.bestpractice.connection_optimize>` to :mod:`apsw.bestpractice`.
+
 3.46.1.0
 ========
 
