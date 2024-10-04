@@ -53,7 +53,7 @@ docs-no-fetch: $(GENDOCS) doc/example.rst doc/.static doc/typing.rstgen doc/rena
 	env PYTHONPATH=. $(PYTHON) tools/docupdate.py $(VERSION)
 	$(MAKE) PYTHONPATH="`pwd`" VERSION=$(VERSION) RELEASEDATE=$(RELEASEDATE) -C doc clean html
 	tools/spellcheck.sh
-	rst2html.py --strict --verbose --exit-status 1 README.rst >/dev/null
+	rst2html5 --strict --verbose --exit-status 1 README.rst >/dev/null
 
 doc/example.rst: example-code.py tools/example2rst.py src/apswversion.h
 	rm -f dbfile
