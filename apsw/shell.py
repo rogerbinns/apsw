@@ -786,6 +786,9 @@ Enter ".help" for instructions
             else:
                 text = str(eval)
 
+            if not text.strip():
+                text = "(Exception)"
+
             if not text.endswith("\n"):
                 text = text + "\n"
 
@@ -2215,7 +2218,11 @@ Enter ".help" for instructions
                     self.box_options = vars(p.parse_args(cmd[1:]))
         except:
             # bare except because SystemExit can be raised
-            raise Shell.Error(text.getvalue())
+            if isinstance(sys.exc_info()[1], argparse.ArgumentError):
+                etext = sys.exc_info()[1].message +  "\n\nUse --help for options"
+            else:
+                etext = ""
+            raise Shell.Error(text.getvalue() + etext) from None
         self.output = self.output_box
 
     # needed so command completion and help can use it

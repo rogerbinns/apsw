@@ -8519,6 +8519,22 @@ class APSW(unittest.TestCase):
                 isempty(fh[2])
                 testnasty()
 
+            # check help for them
+            reset()
+            cmd(".bail off\n.mode box --help")
+            s.cmdloop()
+            isempty(fh[1])
+            self.assertIn("Use unicode line drawing", get(fh[2]))
+            reset()
+            cmd(".mode table --fred 3")
+            s.cmdloop()
+            isempty(fh[1])
+            self.assertIn("fred", get(fh[2]))
+            self.assertIn("--help", get(fh[2]))
+            reset()
+            cmd(".bail on")
+            s.cmdloop()
+
         # What happens if db cannot be opened?
         s.process_args(args=["/"])
         reset()
