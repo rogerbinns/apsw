@@ -2282,9 +2282,14 @@
 #define Connection_total_changes_USAGE "Connection.total_changes() -> int"
 #define Connection_total_changes_OLDDOC Connection_total_changes_USAGE "\n(Old less clear name totalchanges)"
 
-#define  Connection_trace_v2_DOC "trace_v2($self,mask,callback=None)\n--\n\nConnection.trace_v2(mask: int, callback: Optional[Callable[[dict], None]] = None) -> None\n\n" \
-"Registers a trace callback.  The callback is called with a dict of relevant values based\n" \
-"on the code.\n" \
+#define  Connection_trace_v2_DOC "trace_v2($self,mask,callback=None,*,id=None)\n--\n\nConnection.trace_v2(mask: int, callback: Optional[Callable[[dict], None]] = None, *, id: Optional[Any] = None) -> None\n\n" \
+"Registers a trace callback.  Multiple traces can be active at once\n" \
+"(implemented by APSW).  A callback of :class:`None` unregisters a\n" \
+"trace.  Registered callbacks are distinguished by their ``id`` - an\n" \
+"equality test is done to match ids.\n" \
+"\n" \
+"The callback is called with a dict of relevant values based on the\n" \
+"code.\n" \
 "\n" \
 ".. list-table::\n" \
 "  :header-rows: 1\n" \
@@ -2313,6 +2318,10 @@
 "      The counters are reset each time a statement\n" \
 "      starts execution.\n" \
 "\n" \
+"Note that SQLite ignores any errors from the trace callbacks, so\n" \
+"whatever was being traced will still proceed.  Exceptions will be\n" \
+"delivered when your Python code resumes.\n" \
+"\n" \
 ".. seealso::\n" \
 "\n" \
 "  * :ref:`Example <example_trace_v2>`\n" \
@@ -2321,13 +2330,15 @@
 "  * `sqlite3_trace_v2 <https://sqlite.org/c3ref/trace_v2.html>`__\n" \
 "  * `sqlite3_stmt_status <https://sqlite.org/c3ref/stmt_status.html>`__\n" 
 
-#define Connection_trace_v2_KWNAMES "mask", "callback"
-#define Connection_trace_v2_USAGE "Connection.trace_v2(mask: int, callback: Optional[Callable[[dict], None]] = None) -> None"
+#define Connection_trace_v2_KWNAMES "mask", "callback", "id"
+#define Connection_trace_v2_USAGE "Connection.trace_v2(mask: int, callback: Optional[Callable[[dict], None]] = None, *, id: Optional[Any] = None) -> None"
 
 #define Connection_trace_v2_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(mask), int)); \
   assert(__builtin_types_compatible_p(typeof(callback), PyObject *)); \
   assert(callback == NULL); \
+  assert(__builtin_types_compatible_p(typeof(id), PyObject *)); \
+  assert(id == NULL); \
 } while(0)
 
 

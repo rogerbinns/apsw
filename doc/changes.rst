@@ -10,13 +10,30 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
-fts
-===
+3.47.0.0
+========
 
-Added :doc:`FTS5 support <textsearch>` including registering and calling tokenizers, and
-auxiliary functions.  The :mod:`apsw.fts5` module provides additional classes and
-methods for working with FTS5.  The shell gets a :ref:`ftsq <shell-cmd-ftsq>` command
-for issuing queries.
+Added :func:`recursive triggers
+<apsw.bestpractice.connection_recursive_triggers>` and :func:`optimize
+<apsw.bestpractice.connection_optimize>` to :mod:`apsw.bestpractice`.
+
+Multiple callbacks can be present for :meth:`Connection.trace_v2`
+(:issue:`502`)
+
+Added :attr:`Connection.data_version` for getting a change counter.
+`pragma data_version
+<https://sqlite.org/pragma.html#pragma_data_version>`__ doesn't update when
+changes are made on the same connection, only others.
+
+Added :func:`apsw.ext.ShowResourceUsage` for getting resource and
+SQLite usage in a block, and also use it for the shell :ref:`timer
+<shell-cmd-timer>` command.
+
+Added :doc:`FTS5 support <textsearch>` including registering and
+calling tokenizers, and auxiliary functions.  The :mod:`apsw.fts5`
+module provides additional classes and methods for working with FTS5.
+The shell gets a :ref:`ftsq <shell-cmd-ftsq>` command for issuing
+queries.
 
 Added :mod:`apsw.unicode` which implements Unicode algorithms for
 determining codepoint groups making up a user perceived character,
@@ -30,14 +47,6 @@ output to a terminal, text wrapping, and more.
 widths and line breaks more accurate.  As a side effect it loses the
 `word_wrap` parameter (breaking change).
 
-Added :attr:`Connection.data_version` for getting a change counter.
-`pragma data_version
-<https://sqlite.org/pragma.html#pragma_data_version>`__ doesn't update when
-changes are made on the same connection, only others.
-
-Added :func:`apsw.ext.ShowResourceUsage` for getting resource and
-SQLite usage in a block, and also use it for the shell :ref:`timer
-<shell-cmd-timer>` command.
 
 3.46.1.0
 ========

@@ -54,6 +54,31 @@ def connection_dqs(connection: apsw.Connection) -> None:
     connection.config(apsw.SQLITE_DBCONFIG_DQS_DML, 0)
     connection.config(apsw.SQLITE_DBCONFIG_DQS_DDL, 0)
 
+def connection_optimize(connection: apsw.Connection) -> None:
+    """Enables query planner optimization
+
+    It enables the query planner to record cases when it would benefit
+    from having accurate statistics about tables and indexes for the
+    queries you make.
+
+    You can later run :code:`connection.pragma("optimize")` to have
+    those statistics updated, such as when closing a database or
+    periodically when the database is open for long periods of time.
+    The statistics are recorded in the database and help with future
+    queries during this connection, and all future connections.
+
+    There is more detail in the `documentation
+    <https://sqlite.org/lang_analyze.html>`__.
+    """
+    connection.pragma("optimize", 0x10002)
+
+def connection_recursive_triggers(connection: apsw.Connection) -> None:
+    """Recursive triggers are off for historical backwards compatibility
+
+    This `enables them
+    <https://www.sqlite.org/pragma.html#pragma_recursive_triggers>`__.
+    """
+    connection.pragma("recursive_triggers", "ON")
 
 def library_logging() -> None:
     """Forwards SQLite logging to Python logging module
@@ -68,6 +93,8 @@ recommended: tuple[Callable, ...] = (
     connection_busy_timeout,
     connection_enable_foreign_keys,
     connection_dqs,
+    connection_optimize,
+    connection_recursive_triggers,
     library_logging,
 )
 "All of them"

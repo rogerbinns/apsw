@@ -54,7 +54,7 @@ docs-no-fetch: $(GENDOCS) doc/example.rst doc/example-fts.rst doc/.static doc/ty
 	env PYTHONPATH=. $(PYTHON) tools/docupdate.py $(VERSION)
 	$(MAKE) PYTHONPATH="`pwd`" VERSION=$(VERSION) RELEASEDATE=$(RELEASEDATE) -C doc clean html
 	tools/spellcheck.sh
-	rst2html.py --strict --verbose --exit-status 1 README.rst >/dev/null
+	rst2html5 --strict --verbose --exit-status 1 README.rst >/dev/null
 
 doc/example.rst: examples/main.py tools/example2rst.py src/apswversion.h
 	rm -f dbfile
@@ -251,7 +251,7 @@ src/_unicodedb.c: tools/ucdprops2code.py ## Update generated Unicode database lo
 	$(PYTHON) tools/ucdprops2code.py $@
 
 # building a python debug interpreter
-PYDEBUG_VER=3.12.6
+PYDEBUG_VER=3.12.7
 PYDEBUG_DIR=/space/pydebug
 PYTHREAD_VER=$(PYDEBUG_VER)
 PYTHREAD_DIR=/space/pythread

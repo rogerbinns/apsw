@@ -59,6 +59,13 @@ typedef struct
   PyObject *inversefunc; /* inverse function */
 } windowfunctioncontext;
 
+struct tracehook
+{
+  unsigned mask;
+  PyObject *callback;
+  PyObject *id;
+};
+
 /* CONNECTION TYPE */
 
 struct Connection
@@ -78,7 +85,6 @@ struct Connection
   /* registered hooks/handlers (NULL or callable) */
   PyObject *busyhandler;
   PyObject *rollbackhook;
-  PyObject *profile;
   PyObject *updatehook;
   PyObject *commithook;
   PyObject *walhook;
@@ -87,8 +93,10 @@ struct Connection
   PyObject *collationneeded;
   PyObject *exectrace;
   PyObject *rowtrace;
-  PyObject *tracehook;
-  int tracemask;
+  /* Array of tracehook.  Entry 0 is reserved for the set_profile
+     callback. */
+  struct tracehook *tracehooks;
+  unsigned tracehooks_count;
 
   /* if we are using one of our VFS since sqlite doesn't reference count them */
   PyObject *vfs;
@@ -169,7 +177,6 @@ Connection_internal_cleanup(Connection *self)
   Py_CLEAR(self->cursor_factory);
   Py_CLEAR(self->busyhandler);
   Py_CLEAR(self->rollbackhook);
-  Py_CLEAR(self->profile);
   Py_CLEAR(self->updatehook);
   Py_CLEAR(self->commithook);
   Py_CLEAR(self->walhook);
@@ -178,10 +185,17 @@ Connection_internal_cleanup(Connection *self)
   Py_CLEAR(self->collationneeded);
   Py_CLEAR(self->exectrace);
   Py_CLEAR(self->rowtrace);
-  Py_CLEAR(self->tracehook);
   Py_CLEAR(self->vfs);
   Py_CLEAR(self->open_flags);
   Py_CLEAR(self->open_vfs);
+  for (unsigned i = 0; i < self->tracehooks_count; i++)
+  {
+    Py_CLEAR(self->tracehooks[i].callback);
+    Py_CLEAR(self->tracehooks[i].id);
+  }
+  PyMem_Del(self->tracehooks);
+  self->tracehooks = 0;
+  self->tracehooks_count = 0;
 }
 
 static void
@@ -257,9 +271,11 @@ Connection_close_internal(Connection *self, int force)
 
   apsw_connection_remove(self);
 
-  PYSQLITE_VOID_CALL(res = sqlite3_close(self->db));
-
+  /* This ensures any SQLITE_TRACE_CLOSE callbacks see a closed
+     database */
+  sqlite3 *tmp = self->db;
   self->db = 0;
+  PYSQLITE_VOID_CALL(res = sqlite3_close(tmp));
 
   if (res != SQLITE_OK)
   {
@@ -369,7 +385,6 @@ Connection_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSE
     self->fts5_api_cached = 0;
     self->busyhandler = 0;
     self->rollbackhook = 0;
-    self->profile = 0;
     self->updatehook = 0;
     self->commithook = 0;
     self->walhook = 0;
@@ -378,15 +393,22 @@ Connection_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSE
     self->collationneeded = 0;
     self->exectrace = 0;
     self->rowtrace = 0;
-    self->tracehook = 0;
-    self->tracemask = 0;
     self->vfs = 0;
     self->savepointlevel = 0;
     self->open_flags = 0;
     self->open_vfs = 0;
     self->weakreflist = 0;
+    self->tracehooks = PyMem_Malloc(sizeof(struct tracehook) * 1);
+    self->tracehooks_count = 0;
+    if (self->tracehooks)
+    {
+      self->tracehooks[0].callback = 0;
+      self->tracehooks[0].id = 0;
+      self->tracehooks[0].mask = 0;
+      self->tracehooks_count = 1;
+    }
     CALL_TRACK_INIT(xConnect);
-    if (self->dependents)
+    if (self->dependents && self->tracehooks)
       return (PyObject *)self;
   }
 
@@ -1185,35 +1207,167 @@ Connection_set_rollback_hook(Connection *self, PyObject *const *fast_args, Py_ss
 }
 
 static int
-profilecb(unsigned event, void *context, void *stmt, void *elapsed)
+tracehook_cb(unsigned code, void *vconnection, void *one, void *two)
 {
-  assert(event == SQLITE_TRACE_PROFILE);
-  PyGILState_STATE gilstate = PyGILState_Ensure();
+  PyGILState_STATE gilstate;
+  Connection *connection = (Connection *)vconnection;
+  PyObject *param = NULL, *res = NULL;
+  sqlite3_stmt *stmt = NULL;
+  sqlite3_int64 *nanoseconds = NULL;
 
-  PyObject *retval = NULL;
-  Connection *self = (Connection *)context;
-  const char *statement = sqlite3_sql((sqlite3_stmt *)stmt);
-  sqlite3_uint64 runtime = *(sqlite3_uint64 *)elapsed;
-
-  assert(self);
-  assert(self->profile);
-  assert(!Py_IsNone(self->profile));
+  gilstate = PyGILState_Ensure();
 
   MakeExistingException();
 
+  CHAIN_EXC_BEGIN
+
+  switch (code)
+  {
+
+  case SQLITE_TRACE_STMT:
+#define V(x) sqlite3_stmt_status(stmt, x, 1)
+
+    stmt = (sqlite3_stmt *)one;
+    /* reset all the counters */
+    V(SQLITE_STMTSTATUS_FULLSCAN_STEP);
+    V(SQLITE_STMTSTATUS_SORT);
+    V(SQLITE_STMTSTATUS_AUTOINDEX);
+    V(SQLITE_STMTSTATUS_VM_STEP);
+    V(SQLITE_STMTSTATUS_REPREPARE);
+    V(SQLITE_STMTSTATUS_RUN);
+    V(SQLITE_STMTSTATUS_FILTER_MISS);
+    V(SQLITE_STMTSTATUS_FILTER_HIT);
+#undef V
+
+    for (unsigned i = 1; i < connection->tracehooks_count; i++)
+    {
+      /* only calculate this if needed */
+      if (connection->tracehooks[i].mask & SQLITE_TRACE_STMT)
+      {
+
+        param = Py_BuildValue("{s: i, s: s, s: O}",
+                              "code", code, "sql", sqlite3_sql(stmt), "connection", connection);
+        break;
+      }
+    }
+    break;
+
+  case SQLITE_TRACE_ROW:
+    stmt = (sqlite3_stmt *)one;
+    param = Py_BuildValue("{s: i, s: s, s: O}",
+                          "code", code, "sql", sqlite3_sql(stmt), "connection", connection);
+    break;
+
+  case SQLITE_TRACE_CLOSE:
+    /* Checking the refcount is subtle but important.  If the
+       Connection is being closed because there are no more references to it
+       then the ref count is zero when the callback fires and adding a
+       reference ressurects a mostly destroyed object which then hits zero
+       again and gets destroyed a second time.  Too difficult to handle. */
+    param = Py_BuildValue("{s: i, s: O}",
+                          "code", code, "connection", Py_REFCNT(connection) ? (PyObject *)connection : Py_None);
+    break;
+
+  case SQLITE_TRACE_PROFILE:
+#define K "s: i,"
+#define V(x) #x, sqlite3_stmt_status(stmt, x, 0)
+
+    stmt = (sqlite3_stmt *)one;
+    nanoseconds = (sqlite3_int64 *)two;
+
+    for (unsigned i = 1; i < connection->tracehooks_count; i++)
+    {
+      /* only calculate this if needed */
+      if (connection->tracehooks[i].mask & SQLITE_TRACE_PROFILE)
+      {
+        /* only SQLITE_STMTSTATUS_MEMUSED actually needs mutex */
+        sqlite3_mutex_enter(sqlite3_db_mutex(connection->db));
+        param = Py_BuildValue("{s: i, s: O, s: s, s: L, s: {" K K K K K K K K "s: i}}",
+                              "code", code, "connection", connection, "sql", sqlite3_sql(stmt),
+                              "nanoseconds", *nanoseconds, "stmt_status",
+                              V(SQLITE_STMTSTATUS_FULLSCAN_STEP),
+                              V(SQLITE_STMTSTATUS_SORT),
+                              V(SQLITE_STMTSTATUS_AUTOINDEX),
+                              V(SQLITE_STMTSTATUS_VM_STEP),
+                              V(SQLITE_STMTSTATUS_REPREPARE),
+                              V(SQLITE_STMTSTATUS_RUN),
+                              V(SQLITE_STMTSTATUS_FILTER_MISS),
+                              V(SQLITE_STMTSTATUS_FILTER_HIT),
+                              V(SQLITE_STMTSTATUS_MEMUSED));
+        sqlite3_mutex_leave(sqlite3_db_mutex(connection->db));
+        break;
+      }
+    }
+    break;
+#undef K
+#undef V
+  }
+
   if (PyErr_Occurred())
-    goto finally; /* abort hook due to outstanding exception */
-  PyObject *vargs[] = {NULL, PyUnicode_FromString(statement), PyLong_FromLongLong(runtime)};
-  if (vargs[1] && vargs[2])
-    retval = PyObject_Vectorcall(self->profile, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
-  Py_XDECREF(vargs[1]);
-  Py_XDECREF(vargs[2]);
+    goto finally;
+
+  /* handle sqlite3_profile compatibility */
+  if (code == SQLITE_TRACE_PROFILE && connection->tracehooks[0].callback)
+  {
+    CHAIN_EXC_BEGIN
+    PyObject *vargs[] = {NULL, PyUnicode_FromString(sqlite3_sql(stmt)), PyLong_FromLongLong(*nanoseconds)};
+    if (vargs[1] && vargs[2])
+      res = PyObject_Vectorcall(connection->tracehooks[0].callback, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+    Py_XDECREF(vargs[1]);
+    Py_XDECREF(vargs[2]);
+    Py_CLEAR(res);
+    CHAIN_EXC_END;
+  }
+
+  if (!PyErr_Occurred())
+  {
+    PyObject *vargs[] = {NULL, param};
+    for (unsigned i = 1; i < connection->tracehooks_count; i++)
+    {
+      if (connection->tracehooks[i].mask & code)
+      {
+        CHAIN_EXC_BEGIN
+        res = PyObject_Vectorcall(connection->tracehooks[i].callback, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+        Py_CLEAR(res);
+        CHAIN_EXC_END;
+      }
+    }
+  }
 
 finally:
-  Py_XDECREF(retval);
-  PyGILState_Release(gilstate);
+  Py_CLEAR(res);
+  Py_XDECREF(param);
 
+  CHAIN_EXC_END;
+
+  PyGILState_Release(gilstate);
   return 0;
+}
+
+/* does sqlite3_trace_v2 call based on current tracehooks, called
+   after each change */
+PyObject *
+Connection_update_trace_v2(Connection *self)
+{
+  /* Our callers do CHECK_USE and CHECK_CLOSED */
+  unsigned mask = 0;
+  for (unsigned i = 0; i < self->tracehooks_count; i++)
+    mask |= self->tracehooks[i].mask;
+
+  /* this ensures counters are reset on a per statement basis */
+  if (mask & SQLITE_TRACE_PROFILE)
+    mask |= SQLITE_TRACE_STMT;
+
+  int res;
+
+  PYSQLITE_CON_CALL(res = sqlite3_trace_v2(self->db, mask, mask ? tracehook_cb : NULL, self));
+
+  if (res != SQLITE_OK)
+  {
+    SET_EXC(res, self->db);
+    return NULL;
+  }
+  Py_RETURN_NONE;
 }
 
 /** .. method:: set_profile(callable: Optional[Callable[[str, int], None]]) -> None
@@ -1230,7 +1384,6 @@ finally:
 static PyObject *
 Connection_set_profile(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
-  int res;
   PyObject *callable;
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
@@ -1242,116 +1395,28 @@ Connection_set_profile(Connection *self, PyObject *const *fast_args, Py_ssize_t 
     ARG_EPILOG(NULL, Connection_set_profile_USAGE, );
   }
 
-  PYSQLITE_CON_CALL(res = sqlite3_trace_v2(self->db, SQLITE_TRACE_PROFILE, callable ? profilecb : NULL, callable ? self : NULL));
-  if (res == SQLITE_OK)
-  {
-    Py_XDECREF(self->profile);
-    self->profile = callable ? Py_NewRef(callable) : NULL;
-    Py_RETURN_NONE;
-  }
+  Py_CLEAR(self->tracehooks[0].callback);
 
-  SET_EXC(res, self->db);
-  return NULL;
+  if (callable)
+  {
+    self->tracehooks[0].mask = SQLITE_TRACE_PROFILE;
+    self->tracehooks[0].callback = Py_NewRef(callable);
+  }
+  else
+    self->tracehooks[0].mask = 0;
+
+  return Connection_update_trace_v2(self);
 }
 
-static int
-tracehook_cb(unsigned code, void *vconnection, void *one, void *two)
-{
-  PyGILState_STATE gilstate;
-  Connection *connection = (Connection *)vconnection;
-  PyObject *param = NULL, *res = NULL;
-  sqlite3_stmt *stmt = NULL;
-  sqlite3_int64 *nanoseconds = NULL;
+/** .. method:: trace_v2(mask: int, callback: Optional[Callable[[dict], None]] = None, *, id: Optional[Any] = None) -> None
 
-  gilstate = PyGILState_Ensure();
+  Registers a trace callback.  Multiple traces can be active at once
+  (implemented by APSW).  A callback of :class:`None` unregisters a
+  trace.  Registered callbacks are distinguished by their ``id`` - an
+  equality test is done to match ids.
 
-  MakeExistingException();
-
-  if (PyErr_Occurred())
-    goto finally;
-
-  switch (code)
-  {
-
-  case SQLITE_TRACE_STMT:
-#define V(x) sqlite3_stmt_status(stmt, x, 1)
-
-    stmt = (sqlite3_stmt *)one;
-    V(SQLITE_STMTSTATUS_FULLSCAN_STEP);
-    V(SQLITE_STMTSTATUS_SORT);
-    V(SQLITE_STMTSTATUS_AUTOINDEX);
-    V(SQLITE_STMTSTATUS_VM_STEP);
-    V(SQLITE_STMTSTATUS_REPREPARE);
-    V(SQLITE_STMTSTATUS_RUN);
-    V(SQLITE_STMTSTATUS_FILTER_MISS);
-    V(SQLITE_STMTSTATUS_FILTER_HIT);
-    if (connection->tracemask & SQLITE_TRACE_STMT)
-      param = Py_BuildValue("{s: i, s: s, s: O}",
-                            "code", code, "sql", sqlite3_sql(stmt), "connection", connection);
-    break;
-#undef V
-
-  case SQLITE_TRACE_ROW:
-    stmt = (sqlite3_stmt *)one;
-    if (connection->tracemask & SQLITE_TRACE_ROW)
-      param = Py_BuildValue("{s: i, s: s, s: O}",
-                            "code", code, "sql", sqlite3_sql(stmt), "connection", connection);
-    break;
-
-  case SQLITE_TRACE_CLOSE:
-    if (connection->tracemask & SQLITE_TRACE_CLOSE)
-      param = Py_BuildValue("{s: i, s: O}",
-                            "code", code, "connection", connection);
-    break;
-
-  case SQLITE_TRACE_PROFILE:
-#define K "s: i,"
-#define V(x) #x, sqlite3_stmt_status(stmt, x, 0)
-
-    stmt = (sqlite3_stmt *)one;
-    nanoseconds = (sqlite3_int64 *)two;
-
-    if (connection->tracemask & SQLITE_TRACE_PROFILE)
-    {
-      /* only SQLITE_STMTSTATUS_MEMUSED actually needs mutex */
-      sqlite3_mutex_enter(sqlite3_db_mutex(connection->db));
-      param = Py_BuildValue("{s: i, s: O, s: s, s: L, s: {" K K K K K K K K "s: i}}",
-                            "code", code, "connection", connection, "sql", sqlite3_sql(stmt),
-                            "nanoseconds", *nanoseconds, "stmt_status",
-                            V(SQLITE_STMTSTATUS_FULLSCAN_STEP),
-                            V(SQLITE_STMTSTATUS_SORT),
-                            V(SQLITE_STMTSTATUS_AUTOINDEX),
-                            V(SQLITE_STMTSTATUS_VM_STEP),
-                            V(SQLITE_STMTSTATUS_REPREPARE),
-                            V(SQLITE_STMTSTATUS_RUN),
-                            V(SQLITE_STMTSTATUS_FILTER_MISS),
-                            V(SQLITE_STMTSTATUS_FILTER_HIT),
-                            V(SQLITE_STMTSTATUS_MEMUSED));
-      sqlite3_mutex_leave(sqlite3_db_mutex(connection->db));
-    }
-    break;
-#undef K
-#undef V
-  }
-
-  if (param)
-  {
-    PyObject *vargs[] = {NULL, param};
-    res = PyObject_Vectorcall(connection->tracehook, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
-    if (!res)
-      apsw_write_unraisable(NULL);
-  }
-finally:
-  Py_XDECREF(res);
-  Py_XDECREF(param);
-  PyGILState_Release(gilstate);
-  return 0;
-}
-
-/** .. method:: trace_v2(mask: int, callback: Optional[Callable[[dict], None]] = None) -> None
-
-  Registers a trace callback.  The callback is called with a dict of relevant values based
-  on the code.
+  The callback is called with a dict of relevant values based on the
+  code.
 
   .. list-table::
     :header-rows: 1
@@ -1380,6 +1445,10 @@ finally:
         The counters are reset each time a statement
         starts execution.
 
+  Note that SQLite ignores any errors from the trace callbacks, so
+  whatever was being traced will still proceed.  Exceptions will be
+  delivered when your Python code resumes.
+
   .. seealso::
 
     * :ref:`Example <example_trace_v2>`
@@ -1389,8 +1458,9 @@ finally:
 static PyObject *
 Connection_trace_v2(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
-  int mask = 0, res = 0;
+  int mask = 0;
   PyObject *callback = NULL;
+  PyObject *id = NULL;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
@@ -1400,6 +1470,7 @@ Connection_trace_v2(Connection *self, PyObject *const *fast_args, Py_ssize_t fas
     ARG_PROLOG(2, Connection_trace_v2_KWNAMES);
     ARG_MANDATORY ARG_int(mask);
     ARG_OPTIONAL ARG_optional_Callable(callback);
+    ARG_OPTIONAL ARG_pyobject(id);
     ARG_EPILOG(NULL, Connection_trace_v2_USAGE, );
   }
 
@@ -1408,29 +1479,68 @@ Connection_trace_v2(Connection *self, PyObject *const *fast_args, Py_ssize_t fas
   if (mask == 0 && callback)
     return PyErr_Format(PyExc_ValueError, "mask selects no events, but callback provided");
 
-  /* SQLite doesn't */
+  /* Known values only */
   if (mask & ~(SQLITE_TRACE_STMT | SQLITE_TRACE_PROFILE | SQLITE_TRACE_ROW | SQLITE_TRACE_CLOSE))
     return PyErr_Format(PyExc_ValueError, "mask includes unknown trace values");
 
-  /* what was actually requested */
-  self->tracemask = mask;
-
-  /* if profiling, we always want statement start to reset counters */
-  if (mask | SQLITE_TRACE_PROFILE)
-    mask |= SQLITE_TRACE_STMT;
-
-  Py_CLEAR(self->tracehook);
-  Py_XINCREF(callback);
-  self->tracehook = callback;
-
-  PYSQLITE_CON_CALL(res = sqlite3_trace_v2(self->db, mask, tracehook_cb, self));
-  if (res != SQLITE_OK)
+  /* always clear out any matching id */
+  for (unsigned i = 1; i < self->tracehooks_count; i++)
   {
-    SET_EXC(res, self->db);
-    return NULL;
+    if (self->tracehooks[i].callback)
+    {
+      int eq;
+      /* handle either side being NULL */
+      if ((!id || !self->tracehooks[i].id) && id != self->tracehooks[i].id)
+        eq = 0;
+      else
+        eq = PyObject_RichCompareBool(id, self->tracehooks[i].id, Py_EQ);
+
+      if (eq == -1)
+        return NULL;
+      if (eq)
+      {
+        Py_CLEAR(self->tracehooks[i].callback);
+        Py_CLEAR(self->tracehooks[i].id);
+        self->tracehooks[i].mask = 0;
+      }
+    }
   }
 
-  Py_RETURN_NONE;
+  if (callback)
+  {
+    /* find an empty slot */
+    int found = 0;
+    for (unsigned i = 1; i < self->tracehooks_count; i++)
+    {
+      if (self->tracehooks[i].callback == 0)
+      {
+        self->tracehooks[i].mask = mask;
+        self->tracehooks[i].id = id ? Py_NewRef(id) : NULL;
+        self->tracehooks[i].callback = Py_NewRef(callback);
+        found = 1;
+        break;
+      }
+    }
+    if (!found)
+    {
+      /* increase tracehooks size - we have an arbitrary limit which
+         makes it easier to test exhaustion */
+      struct tracehook *new_tracehooks = (self->tracehooks_count < 1024) ? PyMem_Realloc(self->tracehooks, sizeof(struct tracehook) * (self->tracehooks_count + 1)) : NULL;
+      if (!new_tracehooks)
+      {
+        /* not bothering to call update_trace - worst case there will
+           be extra trace calls that are ignored. */
+        return PyErr_NoMemory();
+      }
+      self->tracehooks = new_tracehooks;
+      self->tracehooks[self->tracehooks_count].mask = mask;
+      self->tracehooks[self->tracehooks_count].id = id ? Py_NewRef(id) : NULL;
+      self->tracehooks[self->tracehooks_count].callback = Py_NewRef(callback);
+      self->tracehooks_count++;
+    }
+  }
+
+  return Connection_update_trace_v2(self);
 }
 
 static int
@@ -5534,7 +5644,6 @@ Connection_tp_traverse(Connection *self, visitproc visit, void *arg)
 {
   Py_VISIT(self->busyhandler);
   Py_VISIT(self->rollbackhook);
-  Py_VISIT(self->profile);
   Py_VISIT(self->updatehook);
   Py_VISIT(self->commithook);
   Py_VISIT(self->walhook);
@@ -5543,10 +5652,14 @@ Connection_tp_traverse(Connection *self, visitproc visit, void *arg)
   Py_VISIT(self->collationneeded);
   Py_VISIT(self->exectrace);
   Py_VISIT(self->rowtrace);
-  Py_VISIT(self->tracehook);
   Py_VISIT(self->vfs);
   Py_VISIT(self->dependents);
   Py_VISIT(self->cursor_factory);
+  for (unsigned i = 0; i < self->tracehooks_count; i++)
+  {
+    Py_VISIT(self->tracehooks[i].callback);
+    Py_VISIT(self->tracehooks[i].id);
+  }
   return 0;
 }
 

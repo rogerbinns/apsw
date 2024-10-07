@@ -1841,9 +1841,14 @@ class Connection:
 
     totalchanges = total_changes ## OLD-NAME
 
-    def trace_v2(self, mask: int, callback: Optional[Callable[[dict], None]] = None) -> None:
-        """Registers a trace callback.  The callback is called with a dict of relevant values based
-        on the code.
+    def trace_v2(self, mask: int, callback: Optional[Callable[[dict], None]] = None, *, id: Optional[Any] = None) -> None:
+        """Registers a trace callback.  Multiple traces can be active at once
+        (implemented by APSW).  A callback of :class:`None` unregisters a
+        trace.  Registered callbacks are distinguished by their ``id`` - an
+        equality test is done to match ids.
+
+        The callback is called with a dict of relevant values based on the
+        code.
 
         .. list-table::
           :header-rows: 1
@@ -1871,6 +1876,10 @@ class Connection:
               *"SQLITE_STMTSTATUS_VM_STEP"* and corresponding integer values.
               The counters are reset each time a statement
               starts execution.
+
+        Note that SQLite ignores any errors from the trace callbacks, so
+        whatever was being traced will still proceed.  Exceptions will be
+        delivered when your Python code resumes.
 
         .. seealso::
 

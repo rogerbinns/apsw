@@ -545,7 +545,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
 static int
 APSWCursor_dobindings(APSWCursor *self)
 {
-  int nargs, arg, res = -1, sz = 0;
+  int nargs, arg, sz = 0;
   PyObject *obj;
 
   assert(!PyErr_Occurred());
@@ -633,8 +633,6 @@ APSWCursor_dobindings(APSWCursor *self)
     return -1;
   }
 
-  res = SQLITE_OK;
-
   /* nb sqlite starts bind args at one not zero */
   for (arg = 1; arg <= nargs; arg++)
   {
@@ -647,7 +645,6 @@ APSWCursor_dobindings(APSWCursor *self)
   }
 
   self->bindingsoffset += nargs;
-  assert(res == 0);
   return 0;
 }
 
