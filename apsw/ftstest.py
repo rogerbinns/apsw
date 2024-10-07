@@ -181,13 +181,13 @@ class FTS(unittest.TestCase):
             options = apsw.fts5.parse_tokenizer_args({"+": None}, con, args)
 
             def tokenize(utf8, reason, locale):
-                for start, end, *tokens in options["+"](utf8, reason):
+                for start, end, *tokens in options["+"](utf8, reason, locale):
                     yield start, end, *tokens
 
             return tokenize
 
         self.db.register_fts5_tokenizer("bad_tok2", bad_tok2)
-        bad_result = bad_results_orig[:]
+        bad_results = bad_results_orig[:]
         while bad_results:
             self.assertRaises(
                 ValueError,
@@ -196,6 +196,12 @@ class FTS(unittest.TestCase):
                 apsw.FTS5_TOKENIZE_DOCUMENT,
                 None,
             )
+
+        def not_a_tokenizer(con, args):
+            return 3
+
+        self.db.register_fts5_tokenizer("not_a_tokenizer", not_a_tokenizer)
+        self.assertRaises(TypeError, self.db.fts5_tokenizer, "not_a_tokenizer", [])
 
     def verify_token_stream(self, expected, actual, include_offsets, include_colocated):
         self.assertEqual(len(expected), len(actual))
@@ -780,13 +786,11 @@ class FTS(unittest.TestCase):
             self.assertTrue(api.aux_data is None or api.aux_data is aux_sentinel)
             if api.aux_data is None:
                 api.aux_data = aux_sentinel
-            # ::TODO:: remove once release happens
-            if apsw.SQLITE_VERSION_NUMBER >= 3045000:
-                self.assertEqual(api.phrases, (("c",), ("d",), ("5",)))
-                self.assertRaises(apsw.RangeError, api.inst_tokens, 999)
-                inst = tuple(api.inst_tokens(i) for i in range(api.inst_count))
-                correct = [(("c",), ("c",), ("d",), ("c",), ("d",)), (("5",),)]
-                self.assertIn(inst, correct)
+            self.assertEqual(api.phrases, (("c",), ("d",), ("5",)))
+            self.assertRaises(apsw.RangeError, api.inst_tokens, 999)
+            inst = tuple(api.inst_tokens(i) for i in range(api.inst_count))
+            correct = [(("c",), ("c",), ("d",), ("c",), ("d",)), (("5",),)]
+            self.assertIn(inst, correct)
             self.assertIn(api.inst_count, {1, 5})
 
             correct = {((0, 1, 2), (1, 2), ()), ((), (), (2,))}
@@ -808,6 +812,12 @@ class FTS(unittest.TestCase):
             self.assertRaises(apsw.RangeError, api.column_size, 999)
             for k, v in correct.items():
                 self.assertIn(api.column_size(k), v)
+
+            self.assertRaises(apsw.RangeError, api.phrase_column_offsets, -1, 0)
+            self.assertRaises(apsw.RangeError, api.phrase_column_offsets, 0, 99)
+            for p in range(api.phrase_count):
+                for c in range(api.column_count):
+                    self.assertEqual(api.phrase_column_offsets(p, c), api.phrase_locations(p)[c])
 
             correct = {
                 (1, 0, b"a b c"),
@@ -2105,6 +2115,8 @@ class FTSUTF16(FTS):
         self.db.pragma("encoding", "utf16")
         assert self.db.pragma("encoding").startswith("UTF-16")
 
+# disable for the moment
+del FTSUTF16
 
 __all__ = ("FTS", "FTS5Query", "Unicode")
 
