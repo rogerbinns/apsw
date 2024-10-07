@@ -119,8 +119,8 @@ pycoverage:  ## Coverage of all the Python code
 	-rm -rf .coverage .coverage.* htmlcov dbfile
 	$(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw.tests
 	$(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw ":memory:" .exit
-	$(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw.speedtest --apsw --sqlite3
-	$(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw.trace -o /dev/null --sql --rows --timestamps --thread example-code.py >/dev/null
+	$(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw.speedtest --iterations 2 --scale 2 --unicode 25 --apsw --sqlite3
+	$(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw.trace -o /dev/null --sql --rows --timestamps --thread examples/main.py >/dev/null
 	$(PYTHON) -m coverage combine
 	$(PYTHON) -m coverage report -m
 	$(PYTHON) -m coverage html --title "APSW python coverage"
