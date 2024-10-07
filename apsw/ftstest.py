@@ -173,7 +173,7 @@ class FTS(unittest.TestCase):
 
             def tokenize(utf8, reason, locale):
                 for start, end, *tokens in options["+"](utf8, reason, locale):
-                    yield start, end, *tokens
+                    1 / 0
 
             return tokenize
 
@@ -1665,11 +1665,6 @@ abc!p!d\u2029 !p!abc\u0085!p!def
         ):
             self.assertEqual(apsw.unicode.expand_tabs(text), expected)
 
-        # text_wrap is a generator, so it doesn't get run unless you
-        # iterate it.  we made it immediate
-        def tw(*args, **kwargs):
-            return "".join(apsw.unicode.text_wrap(*args, **kwargs))
-
         # Japanese text from https://sqlite.org/forum/forumpost/6e234df298bde5b6da613866e4ba4d79a453bd9a32a608828f5a2e07ba5215f4
         text = (
             self.paragraph_test
@@ -2097,6 +2092,7 @@ class FTSUTF16(FTS):
         super().setUp()
         self.db.pragma("encoding", "utf16")
         assert self.db.pragma("encoding").startswith("UTF-16")
+
 
 # disable for the moment
 del FTSUTF16
