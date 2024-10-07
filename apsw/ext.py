@@ -586,7 +586,7 @@ def dbinfo(db: apsw.Connection,
     return dbinfo, journalinfo
 
 class ShowResourceUsage:
-    """Use a context manager to show time, resource, and SQLite usage::
+    """Use a context manager to show a summary of time, resource, and SQLite usage::
 
         with apsw.ext.ShowResourceUsage(sys.stdout, db=connection, scope="thread"):
             # do things with the database
@@ -600,7 +600,8 @@ class ShowResourceUsage:
 
     :param file: File to print to.  If `None` then no information is gathered or
            printed
-    :param db: :class:`~apsw.Connection` to gather SQLite stats from if not `None`
+    :param db: :class:`~apsw.Connection` to gather SQLite stats from if not `None`.
+           Statistics from each SQL statement executed are added together.
     :param scope: Get :data:`thread <resource.RUSAGE_THREAD>` or
            :data:`process <resource.RUSAGE_SELF>` stats, or `None`.
     :param indent: Printed before each line of output
@@ -608,8 +609,6 @@ class ShowResourceUsage:
     Timing information comes from :func:`time.monotonic` and :func:`time.process_time`,
     resource usage from :func:`resource.getrusage` (empty for Windows), and SQLite from
     :meth:`~apsw.Connection.trace_v2`.
-
-    ::TODO:: issue 502 so sqlite profile is not wiped
     """
     def __init__(
         self,
@@ -638,11 +637,13 @@ class ShowResourceUsage:
         _get_resource = None
 
     def __enter__(self):
+        if not self.file:
+            return
         self._times = time.process_time(), time.monotonic()
         if self.scope:
             self._usage = self._get_resource(self._get_resource_param[self.scope])
         if self.db:
-            self.db.trace_v2(apsw.SQLITE_TRACE_PROFILE, self._sqlite_trace)
+            self.db.trace_v2(apsw.SQLITE_TRACE_PROFILE, self._sqlite_trace, id = self)
             self.stmt_status = {}
             self.db_status = self.db_status_get()
         return self
