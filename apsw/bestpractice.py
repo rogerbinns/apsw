@@ -16,7 +16,10 @@ def connection_wal(connection: apsw.Connection) -> None:
     Reduces contention and improves write performance.  WAL is
     `described here <https://www.sqlite.org/wal.html>`__.
     """
-    connection.pragma("journal_mode", "wal")
+    try:
+        connection.pragma("journal_mode", "wal")
+    except apsw.ReadOnlyError:
+        pass
 
 
 def connection_busy_timeout(connection: apsw.Connection, duration_ms: int = 100) -> None:
@@ -70,7 +73,10 @@ def connection_optimize(connection: apsw.Connection) -> None:
     There is more detail in the `documentation
     <https://sqlite.org/lang_analyze.html>`__.
     """
-    connection.pragma("optimize", 0x10002)
+    try:
+        connection.pragma("optimize", 0x10002)
+    except apsw.ReadOnlyError:
+        pass
 
 def connection_recursive_triggers(connection: apsw.Connection) -> None:
     """Recursive triggers are off for historical backwards compatibility
