@@ -1095,7 +1095,7 @@ APSWFTS5ExtensionApi_phrase_column_offsets(APSWFTS5ExtensionApi *self, PyObject 
   while (iCol >= 0)
   {
     if (iCol < column)
-      continue;
+      goto next;
     if (iCol > column)
       break;
     PyObject *tmp = PyLong_FromLong(iOff);
@@ -1107,6 +1107,7 @@ APSWFTS5ExtensionApi_phrase_column_offsets(APSWFTS5ExtensionApi *self, PyObject 
       goto error;
     }
     Py_DECREF(tmp);
+  next:
     self->pApi->xPhraseNext(self->pFts, &iter, &iCol, &iOff);
   }
 
