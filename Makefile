@@ -230,7 +230,7 @@ release: ## Signs built source file(s)
 	cosign sign-blob --yes --bundle dist/$(VERDIR).cosign-bundle dist/$(VERDIR).zip
 
 # building a python debug interpreter
-PYDEBUG_VER=3.12.6
+PYDEBUG_VER=3.12.7
 PYDEBUG_DIR=/space/pydebug
 PYVALGRIND_VER=$(PYDEBUG_VER)
 PYVALGRIND_DIR=/space/pyvalgrind
