@@ -115,23 +115,24 @@ coverage:  src/faultinject.h ## Coverage of the C code
 
 PYCOVERAGEOPTS=--source apsw -p
 
-pycoverage:  ## Coverage of the Python code
-	-rm -rf .coverage htmlcov dbfile
+pycoverage:  ## Coverage of all the Python code
+	-rm -rf .coverage .coverage.* htmlcov dbfile
 	$(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw.tests
 	$(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw ":memory:" .exit
 	$(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw.speedtest --apsw --sqlite3
 	$(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw.trace -o /dev/null --sql --rows --timestamps --thread example-code.py >/dev/null
+	$(PYTHON) -m coverage combine
 	$(PYTHON) -m coverage report -m
 	$(PYTHON) -m coverage html --title "APSW python coverage"
 	$(PYTHON) -m webbrowser -t htmlcov/index.html
 
-ftscoverage: ## Temporary rule to test fts coverage
-	-rm -rf .coverage.* .coverage htmlcov
+ftscoverage: ## Coverage of Python code for FTS support
+	-rm -rf .coverage .coverage.* htmlcov dbfile
 	$(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw.ftstest
 	$(PYTHON) -m coverage combine
 	$(PYTHON) -m coverage report -m
-	$(PYTHON) -m coverage html --title "APSW python coverage"
-
+	$(PYTHON) -m coverage html --title "APSW FTS python coverage"
+	$(PYTHON) -m webbrowser -t htmlcov/index.html
 
 test: build_ext ## Standard testing
 	env $(PYTHON) -m apsw.tests
