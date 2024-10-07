@@ -17,6 +17,9 @@ Added :func:`recursive triggers
 <apsw.bestpractice.connection_recursive_triggers>` and :func:`optimize
 <apsw.bestpractice.connection_optimize>` to :mod:`apsw.bestpractice`.
 
+Multiple callbacks can be present for :meth:`Connection.trace_v2`
+(:issue:`502`)
+
 3.46.1.0
 ========
 
