@@ -67,17 +67,8 @@ class FTS(unittest.TestCase):
         self.db.close()
         del self.db
 
-    def has_fts5(self):
-        try:
-            self.db.fts5_tokenizer("ascii")
-            return True
-        except apsw.NoFTS5Error:
-            return False
-
     def testFTSTokenizerAPI(self):
         "Test C interface for tokenizers"
-        if not self.has_fts5():
-            return
 
         self.assertRaisesRegex(apsw.SQLError, "No tokenizer named .*", self.db.fts5_tokenizer, "doesn't exist")
 
@@ -228,8 +219,6 @@ class FTS(unittest.TestCase):
 
     def testAPSWFTSTokenizers(self):
         "Test apsw.fts5 tokenizers"
-        if not self.has_fts5():
-            return
 
         test_text = """ 🤦🏼‍♂️❤️ 🇧🇧𐌼𐌰𐌲 العالم!
             Olá, mundo! 8975984
@@ -368,8 +357,6 @@ class FTS(unittest.TestCase):
 
     def testFTSHelpers(self):
         "Test various FTS helper functions"
-        if not self.has_fts5():
-            return
         ## convert_tokenize_reason
         for pat, expected in (
             ("QUERY", {apsw.FTS5_TOKENIZE_QUERY}),
@@ -521,8 +508,6 @@ class FTS(unittest.TestCase):
 
     def testAPSWTokenizerWrappers(self):
         "Test tokenizer wrappers supplied by apsw.fts5"
-        if not self.has_fts5():
-            return
         test_reason = apsw.FTS5_TOKENIZE_AUX
         test_data = b"a 1 2 3 b"
         test_res = ((0, 1, "a"), (2, 3, "1"), (4, 5, "2", "deux", "two"), (6, 7, "3"), (8, 9, "b"))
@@ -755,8 +740,6 @@ class FTS(unittest.TestCase):
         )
 
     def testFTSFunction(self):
-        if not self.has_fts5():
-            return
         self.db.execute(
             """
             create virtual table testfts using fts5(a,b,c, tokenize="unicode61 remove_diacritics 2");
@@ -2118,7 +2101,13 @@ class FTSUTF16(FTS):
 # disable for the moment
 del FTSUTF16
 
-__all__ = ("FTS", "FTS5Query", "Unicode")
+has_fts5 = "ENABLE_FTS5" in apsw.compile_options
+
+if not has_fts5:
+    del FTS
+    del FTS5Query
+
+__all__ = ("FTS5Query", "Unicode") + (("FTS",) if has_fts5 else tuple())
 
 if __name__ == "__main__":
     unittest.main()
