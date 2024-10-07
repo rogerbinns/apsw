@@ -9935,6 +9935,9 @@ shell.write(shell.stdout, "hello world\\n")
             with self.assertNoLogs():
                 self.assertRaises(apsw.SQLError, con.execute, dqs)
 
+        # can't optimize or WAL readonly databases
+        apsw.Connection(self.db.filename, flags = apsw.SQLITE_OPEN_READONLY)
+
     def testExtDataClassRowFactory(self) -> None:
         "apsw.ext.DataClassRowFactory"
         dcrf = apsw.ext.DataClassRowFactory()
