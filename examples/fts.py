@@ -123,6 +123,8 @@ def match_info(
         print(f"  {phrase=} {api.phrase_columns(phrase)=}")
         # which token numbers
         print(f"  {phrase=} {api.phrase_locations(phrase)=}")
+    # the offsets of phrase 3 in column 2
+    print(f"{api.phrase_column_offsets(3, 2)=}")
 
     # note the text is the utf-8 encoded bytes
     print(f"{api.column_text(0)=}")
