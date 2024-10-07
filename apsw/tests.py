@@ -1188,6 +1188,14 @@ class APSW(unittest.TestCase):
     def testIssue425(self):
         "Infinite recursion"
 
+        # When Python tries to output an error message after reaching
+        # the recursion limit it can segv which is nothing to do with
+        # the apsw code, and the Python code looks good to me.  Debug
+        # Python builds don't have this problem.  See the commit
+        # message for this change for backtrace etc.
+        if "d" not in getattr(sys, "abiflags", ""):
+            return
+
         class VFSA(apsw.VFS):
 
             def __init__(self):
