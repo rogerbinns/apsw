@@ -1410,15 +1410,16 @@ class Table:
         yield from self._search_internal(sql_query, (fts_query,) + tuple(ids))
 
     def upsert(self, *args: apsw.SQLiteValue, **kwargs: apsw.SQLiteValue) -> None:
-        """insert or update with columns by positional and/or named via kwargs
+        """Insert or update with columns by positional and/or keywords arguments
 
-        You can mix and match positional and keyword arguments:
+        You can mix and match positional and keyword arguments::
 
            table.upsert("hello")
            table.upsert("hello", header="world")
            table.upsert(header="world")
 
         If you are using an external content table:
+
         * the insert will be directed to that table
         * the column positions and names of that table are used
 
