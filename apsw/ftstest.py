@@ -71,6 +71,8 @@ class FTS(unittest.TestCase):
         "Test C interface for tokenizers"
 
         self.assertRaisesRegex(apsw.SQLError, "No tokenizer named .*", self.db.fts5_tokenizer, "doesn't exist")
+        self.assertFalse(self.db.fts5_tokenizer_available("doesn't exist"))
+        self.assertTrue(self.db.fts5_tokenizer_available("unicode61"))
 
         # Sanity check
         test_args = ["one", "two", "three"]
