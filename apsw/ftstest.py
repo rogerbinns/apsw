@@ -67,6 +67,53 @@ class FTS(unittest.TestCase):
         self.db.close()
         del self.db
 
+    def testLocale(self):
+        TEST_LOCALE = "🇫🇮你好世界"
+
+        def byte_tok(con, params):
+            def tokenizer(some_bytes, reason, locale):
+                self.assertEqual(locale, TEST_LOCALE)
+                for b in some_bytes:
+                    yield (b"!" + bytes([b])).decode(errors="replace")
+
+            return tokenizer
+
+        @apsw.fts5.StringTokenizer
+        def string_tok(con, params):
+            def tokenizer(some_text, reason, locale):
+                self.assertEqual(locale, TEST_LOCALE)
+                for t in some_text:
+                    yield "!" + t
+
+            return tokenizer
+
+        apsw.fts5.register_tokenizers(
+            self.db, dict(apsw.fts5.map_tokenizers, **{"byte_tok": byte_tok, "string_tok": string_tok})
+        )
+
+        for tok in "byte_tok", "string_tok":
+            table = apsw.fts5.Table.create(
+                self.db, tok, ["one", "two", "three"], support_query_tokens=True, locale=True, tokenize=[tok]
+            )
+            self.db.execute(
+                f"insert into {table.quoted_table_name} values(fts5_locale(?, ?), fts5_locale(?, ?), fts5_locale(?, ?))",
+                (TEST_LOCALE, "a" + TEST_LOCALE, TEST_LOCALE, "b" + TEST_LOCALE, TEST_LOCALE, "c" + TEST_LOCALE),
+            )
+            self.db.execute(
+                f"select * from {table.quoted_table_name}(fts5_tokenize(?, ?))", (TEST_LOCALE, "hello world")
+            ).get
+
+        # check non-locale handling gives error
+        table = apsw.fts5.Table.create(
+            self.db, "no locale", ["one", "two", "three"], support_query_tokens=True, locale=False
+        )
+        self.assertRaises(
+            apsw.MismatchError,
+            self.db.execute,
+            f"insert into { table.quoted_table_name } values(?,fts5_locale(?,?),?)",
+            ("a", "b", "c", "d"),
+        )
+
     def testFTSTokenizerAPI(self):
         "Test C interface for tokenizers"
 
