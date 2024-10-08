@@ -1199,11 +1199,11 @@ class Table:
     def __init__(self, db: apsw.Connection, name: str, schema: str = "main"):
         if not db.table_exists(schema, name):
             raise ValueError(f"Table { schema }.{ name } doesn't exist")
-        self.db = db
-        self.name = name
-        self.schema = schema
-        self.qname = quote_name(name)
-        self.qschema = quote_name(schema)
+        self._db = db
+        self._name = name
+        self._schema = schema
+        self._qname = quote_name(name)
+        self._qschema = quote_name(schema)
         self._cache: Table._cache_class | None = None
 
         # Do some sanity checking
@@ -1211,7 +1211,7 @@ class Table:
 
         # our helper functions
         register_functions(
-            self.db, {func.__name__: func for func in (_apsw_get_statistical_info, _apsw_get_match_info)}
+            self._db, {func.__name__: func for func in (_apsw_get_statistical_info, _apsw_get_match_info)}
         )
 
     def _get_change_cookie(self) -> int:
@@ -1223,7 +1223,7 @@ class Table:
         """
         # See https://sqlite.org/forum/forumpost/2a726411b6974502
         return hash(
-            self.db.execute(f"select block from { self.qschema }.{ quote_name(self.name + '_data')} where id=10").get
+            self._db.execute(f"select block from { self._qschema }.{ quote_name(self._name + '_data')} where id=10").get
         )
 
     change_cookie = property(_get_change_cookie)
@@ -1232,14 +1232,14 @@ class Table:
     def columns(self) -> tuple[str, ...]:
         "All columns of this table, including unindexed ones.  Unindexed columns are ignored in queries."
 
-        return tuple(row[1] for row in self.db.execute(f"pragma { self.qschema }.table_info({self.qname})"))
+        return tuple(row[1] for row in self._db.execute(f"pragma { self._qschema }.table_info({self._qname})"))
 
     @functools.cached_property
     def columns_indexed(self) -> tuple[str, ...]:
         "All columns of this table, excluding unindexed ones"
         return tuple(
             row[1]
-            for row in self.db.execute(f"pragma { self.qschema }.table_info({self.qname})")
+            for row in self._db.execute(f"pragma { self._qschema }.table_info({self._qname})")
             if row[1] not in self.structure.unindexed
         )
 
@@ -1259,13 +1259,13 @@ class Table:
         "Structure of the table from the declared SQL"
         found = list(
             sql
-            for (sql,) in self.db.execute(
-                f"select sql from { self.qschema }.sqlite_schema where type='table' and lower(tbl_name) = lower(?)",
-                (self.name,),
+            for (sql,) in self._db.execute(
+                f"select sql from { self._qschema }.sqlite_schema where type='table' and lower(tbl_name) = lower(?)",
+                (self._name,),
             )
         )
         if len(found) == 0:
-            raise ValueError(f"'{self.name}' is not a table on '{ self.schema}'")
+            raise ValueError(f"'{self._name}' is not a table on '{ self._schema}'")
         assert len(found) == 1
         return _fts5_vtable_parse(found[0])
 
@@ -1281,7 +1281,7 @@ class Table:
            sql = f"""SELECT ... from { search.quoted_table_name }
                         WHERE ...."""
         '''
-        return f"{self.qschema}.{self.qname}"
+        return f"{self._qschema}.{self._qname}"
 
     def search(self, query: str, locale: str | None = None) -> Iterator[MatchInfo]:
         """Iterates matches, best match first
@@ -1291,13 +1291,13 @@ class Table:
         """
 
         if locale is not None:
-            sql = f"select _apsw_get_match_info({self.qname}) from { self.quoted_table_name}(fts5_tokenize(?,?)) order by rank"
+            sql = f"select _apsw_get_match_info({self._qname}) from { self.quoted_table_name}(fts5_tokenize(?,?)) order by rank"
             bindings = (
                 locale,
                 query,
             )
         else:
-            sql = f"select _apsw_get_match_info({self.qname}) from { self.quoted_table_name}(?) order by rank"
+            sql = f"select _apsw_get_match_info({self._qname}) from { self.quoted_table_name}(?) order by rank"
             bindings = (query,)
 
         yield from self._search_internal(sql, bindings)
@@ -1306,7 +1306,7 @@ class Table:
         token = _search_context.set(None)
         qi = None
         try:
-            for row in self.db.execute(sql, bindings):
+            for row in self._db.execute(sql, bindings):
                 if qi is None:
                     qi = _search_context.get()
                 yield MatchInfo(query_info=qi, **json.loads(row[0]))
@@ -1394,7 +1394,7 @@ class Table:
                 all_tokens.add(token)
 
         sql_query = (
-            f"select _apsw_get_match_info({self.qname}) from { self.quoted_table_name}(?) where rowid NOT IN ("
+            f"select _apsw_get_match_info({self._qname}) from { self.quoted_table_name}(?) where rowid NOT IN ("
             + ",".join("?" * len(ids))
             + ") order by rank"
         )
@@ -1432,9 +1432,9 @@ class Table:
                 bindings.update(kwargs)
             else:
                 bindings = kwargs
-            self.db.execute(stmt, bindings)
+            self._db.execute(stmt, bindings)
         else:
-            self.db.execute(stmt, args)
+            self._db.execute(stmt, args)
 
     @functools.cache
     def _upsert_sql(self, num_args: int, kwargs: tuple[str] | None) -> tuple[str, tuple[str, ...] | None]:
@@ -1442,11 +1442,11 @@ class Table:
         if self.structure.content is not None:
             columns = tuple(
                 name
-                for (name,) in self.db.execute(
-                    f"select name from { self.qschema }.pragma_table_info(?)", (self.structure.content,)
+                for (name,) in self._db.execute(
+                    f"select name from { self._qschema }.pragma_table_info(?)", (self.structure.content,)
                 )
             )
-            target_table = f"{self.qschema}.{quote_name(self.structure.content)}"
+            target_table = f"{self._qschema}.{quote_name(self.structure.content)}"
         else:
             columns = self.columns
             target_table = self.quoted_table_name
@@ -1495,22 +1495,22 @@ class Table:
             )
 
         values = "('delete',?," + ",".join("?" for _ in range(len(column_values))) + ")"
-        cols = f"({ self.qname }, rowid," + ",".join(quote_name(col) for col in self.columns) + ")"
-        self.db.execute(
-            f"insert into { self.qschema }.{ self.qname }{ cols } values { values }", (rowid, *column_values)
+        cols = f"({ self._qname }, rowid," + ",".join(quote_name(col) for col in self.columns) + ")"
+        self._db.execute(
+            f"insert into { self._qschema }.{ self._qname }{ cols } values { values }", (rowid, *column_values)
         )
 
     def command_delete_all(self) -> None:
         "Does `delete all <https://www.sqlite.org/fts5.html#the_delete_all_command>`__"
-        self.db.execute(f"insert into { self.qschema}.{ self.qname }({ self.qname}) VALUES('delete-all')")
+        self._db.execute(f"insert into { self._qschema}.{ self._qname }({ self._qname}) VALUES('delete-all')")
 
     def command_integrity_check(self, external_content: bool = True) -> None:
         """Does `integrity check <https://www.sqlite.org/fts5.html#the_integrity_check_command>`__
 
         If `external_content` is True, then the FTS index is compared to the external content.
         """
-        self.db.execute(
-            f"insert into { self.qschema}.{ self.qname }({ self.qname}, rank) VALUES('integrity-check', ?)",
+        self._db.execute(
+            f"insert into { self._qschema}.{ self._qname }({ self._qname}, rank) VALUES('integrity-check', ?)",
             (int(external_content),),
         )
 
@@ -1522,17 +1522,17 @@ class Table:
         :returns:  The difference between `sqlite3_total_changes() <https://sqlite.org/c3ref/total_changes.html>`__
                    before and after running the command.
         """
-        before = self.db.total_changes()
-        self.db.execute(f"insert into { self.qschema}.{ self.qname }({ self.qname}, rank) VALUES('merge', ?)", (n,))
-        return self.db.total_changes() - before
+        before = self._db.total_changes()
+        self._db.execute(f"insert into { self._qschema}.{ self._qname }({ self._qname}, rank) VALUES('merge', ?)", (n,))
+        return self._db.total_changes() - before
 
     def command_optimize(self) -> None:
         "Does `optimize <https://www.sqlite.org/fts5.html#the_optimize_command>`__"
-        self.db.execute(f"insert into { self.qschema}.{ self.qname }({ self.qname}) VALUES('optimize')")
+        self._db.execute(f"insert into { self._qschema}.{ self._qname }({ self._qname}) VALUES('optimize')")
 
     def command_rebuild(self):
         "Does `rebuild <https://www.sqlite.org/fts5.html#the_rebuild_command>`__"
-        self.db.execute(f"insert into { self.qschema}.{ self.qname }({ self.qname}) VALUES('rebuild')")
+        self._db.execute(f"insert into { self._qschema}.{ self._qname }({ self._qname}) VALUES('rebuild')")
 
     # These are the defaults.  The _config table is not updated unless they are changed
     #
@@ -1575,8 +1575,8 @@ class Table:
     def _config_internal(self, name: str, val: apsw.SQLiteValue, default: apsw.SQLiteValue) -> apsw.SQLiteValue:
         "Internal config implementation"
         if val is not None:
-            self.db.execute(
-                f"insert into { self.qschema}.{ self.qname }({ self.qname}, rank) VALUES('{name}', ?)", (val,)
+            self._db.execute(
+                f"insert into { self._qschema}.{ self._qname }({ self._qname}, rank) VALUES('{name}', ?)", (val,)
             )
         v = self.config(name, prefix="")
         return v if v is not None else default
@@ -1595,18 +1595,18 @@ class Table:
         """
         key = prefix + name
         if value is not None:
-            self.db.execute(
-                f"INSERT OR REPLACE into { self.qschema }.{ quote_name(self.name + '_config') }(k,v) values(?,?)",
+            self._db.execute(
+                f"INSERT OR REPLACE into { self._qschema }.{ quote_name(self._name + '_config') }(k,v) values(?,?)",
                 (key, value),
             )
-        return self.db.execute(
-            f"SELECT v from { self.qschema }.{ quote_name(self.name + '_config') } where k=?", (key,)
+        return self._db.execute(
+            f"SELECT v from { self._qschema }.{ quote_name(self._name + '_config') } where k=?", (key,)
         ).get
 
     @functools.cached_property
     def tokenizer(self) -> apsw.FTS5Tokenizer:
         "Tokenizer as used by this table"
-        return self.db.fts5_tokenizer(self.structure.tokenize[0], list(self.structure.tokenize[1:]))
+        return self._db.fts5_tokenizer(self.structure.tokenize[0], list(self.structure.tokenize[1:]))
 
     def tokenize(
         self,
@@ -1653,14 +1653,14 @@ class Table:
 
                 if tokens:
                     n = self.fts5vocab_name("row")
-                    all_tokens = dict(self.db.execute(f"select term, doc from { n }"))
+                    all_tokens = dict(self._db.execute(f"select term, doc from { n }"))
                 else:
                     all_tokens = None
 
                 vals = {"row_count": 0, "token_count": 0, "tokens_per_column": [0] * len(self.columns)}
 
-                update = self.db.execute(
-                    f"select _apsw_get_statistical_info({ self.qname }) from { self.quoted_table_name } limit 1"
+                update = self._db.execute(
+                    f"select _apsw_get_statistical_info({ self._qname }) from { self.quoted_table_name } limit 1"
                 ).get
                 if update is not None:
                     vals.update(json.loads(update))
@@ -1755,10 +1755,10 @@ class Table:
                     # we need to do the get close matches in a case insensitive way
                     if not table_columns_upper:
                         table_columns_upper = [
-                            self.db.execute("select upper(?)", (col,)).get for col in self.structure.columns
+                            self._db.execute("select upper(?)", (col,)).get for col in self.structure.columns
                         ]
                     replacement = difflib.get_close_matches(
-                        self.db.execute("select upper(?)", (column,)).get, table_columns_upper, n=1, cutoff=0
+                        self._db.execute("select upper(?)", (column,)).get, table_columns_upper, n=1, cutoff=0
                     )[0]
                     # get the original casing back
                     new_columns.append(self.structure.columns[table_columns_upper.index(replacement)])
@@ -1917,7 +1917,7 @@ class Table:
             :meth:`token_doc_frequency`
         """
         n = self.fts5vocab_name("row")
-        return self.db.execute(f"select term, cnt from { n } order by cnt desc limit ?", (count,)).get
+        return self._db.execute(f"select term, cnt from { n } order by cnt desc limit ?", (count,)).get
 
     def token_doc_frequency(self, count: int = 10) -> list[tuple[str, int]]:
         """Most frequent occurring tokens, useful for building a stop words list
@@ -1931,7 +1931,7 @@ class Table:
             :meth:`token_frequency`
         """
         n = self.fts5vocab_name("row")
-        return self.db.execute(f"select term, doc from { n } order by doc desc limit ?", (count,)).get
+        return self._db.execute(f"select term, doc from { n } order by doc desc limit ?", (count,)).get
 
     def text_for_token(self, token: str, doc_limit: int) -> str:
         """Provides the original text used to produce `token`
@@ -1969,13 +1969,13 @@ class Table:
                 order by doc desc, col
                 limit ?"""
 
-        for rowid, col, offset in self.db.execute(sql, (token, doc_limit)):
+        for rowid, col, offset in self._db.execute(sql, (token, doc_limit)):
             if (rowid, col) != last:
                 # new doc to process
                 doc: bytes = self.row_by_id(rowid, col).encode()
                 locale = None
                 if self.structure.locale:
-                    locale = self.db.execute(
+                    locale = self._db.execute(
                         f"select fts5_get_locale({self.quoted_table_name}, ?) from {self.quoted_table_name} where rowid=?",
                         (col, rowid),
                     ).get
@@ -1993,13 +1993,13 @@ class Table:
         :exc:`KeyError` is raised if the `id` does not exist.
         """
         if isinstance(column, str):
-            for (row,) in self.db.execute(
+            for (row,) in self._db.execute(
                 f"select { quote_name(column)} from { self.quoted_table_name } where rowid=?", (id,)
             ):
                 return row
         else:
             cols = ",".join(quote_name(c) for c in column)
-            for row in self.db.execute(f"select {cols} from { self.quoted_table_name } where rowid=?", (id,)):
+            for row in self._db.execute(f"select {cols} from { self.quoted_table_name } where rowid=?", (id,)):
                 return row
         raise KeyError(f"document {id=} not found")
 
@@ -2064,13 +2064,13 @@ class Table:
         Creates a `fts5vocab table <https://www.sqlite.org/fts5.html#the_fts5vocab_virtual_table_module>`__
         in temp and returns fully quoted name
         """
-        base = f"fts5vocab_{ self.schema }_{ self.name }_{ type }".replace('"', '""')
+        base = f"fts5vocab_{ self._schema }_{ self._name }_{ type }".replace('"', '""')
 
         name = f'temp."{base}"'
 
-        self.db.execute(
+        self._db.execute(
             f"""create virtual table if not exists { name } using fts5vocab(
-                    {self.qschema}, {self.qname}, "{ type }")"""
+                    {self._qschema}, {self._qname}, "{ type }")"""
         )
         return name
 
