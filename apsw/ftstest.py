@@ -68,6 +68,12 @@ class FTS(unittest.TestCase):
         del self.db
 
     def testLocale(self):
+        "Ensure locale parameter is passed on and correct"
+
+        # This exercises all the APIs and wrappers.  Our tokenizers
+        # were added before locale was added, so we also verify they
+        # all have the parameter now
+
         TEST_LOCALE = "🇫🇮你好世界"
 
         def byte_tok(con, params):
@@ -83,25 +89,87 @@ class FTS(unittest.TestCase):
             def tokenizer(some_text, reason, locale):
                 self.assertEqual(locale, TEST_LOCALE)
                 for t in some_text:
-                    yield "!" + t
+                    # StringTokenizer wrapped have to give offsets -
+                    # if they don't want to then then there is no
+                    # point in wrapping
+                    yield 0, 0, "!" + t
 
             return tokenizer
 
-        apsw.fts5.register_tokenizers(
-            self.db, dict(apsw.fts5.map_tokenizers, **{"byte_tok": byte_tok, "string_tok": string_tok})
+        def wrap_tok(con, params):
+            options = apsw.fts5.parse_tokenizer_args({"+": None}, con, params)
+
+            def tokenizer(utf8, reason, locale):
+                self.assertEqual(locale, TEST_LOCALE)
+                for start, end, *tokens in options["+"](utf8, reason, locale):
+                    yield start, end, *("!" + token for token in tokens)
+
+            return tokenizer
+
+        all_tokenizers = dict(
+            apsw.fts5.map_tokenizers, **{"byte_tok": byte_tok, "string_tok": string_tok, "wrap_tok": wrap_tok}
         )
 
-        for tok in "byte_tok", "string_tok":
+        all_tokenizers["regex"] = functools.partial(apsw.fts5.RegexTokenizer, pattern=".")
+        all_tokenizers["regex pre"] = functools.partial(apsw.fts5.RegexPreTokenizer, pattern="c")
+        all_tokenizers["stopwords"] = apsw.fts5.StopWordsTokenizer(lambda *x: False)
+        all_tokenizers["synonyms"] = apsw.fts5.SynonymTokenizer(lambda *x: None)
+        all_tokenizers["transform"] = apsw.fts5.TransformTokenizer(lambda x: x.upper())
+
+        apsw.fts5.register_tokenizers(self.db, all_tokenizers)
+
+        def extapi(api: apsw.FTS5ExtensionApi, one, two, three):
+            for column in range(api.column_count):
+                self.assertEqual(api.column_locale(column), TEST_LOCALE)
+
+        self.db.register_fts5_function("extapi", extapi)
+
+        test_content = {
+            "*": "abcdef ghicjk",
+            "html": "<tag>text<more>another one",
+            "json": '{"key": "value"  "morekey": "morevalue"',
+        }
+
+        for tok in all_tokenizers:
+            if tok in {"querytokens", "wrap_tok"}:
+                continue
+            tokenize = [tok]
+            if tok in {"html", "json", "simplify", "regex pre", "stopwords", "synonyms", "transform"}:
+                tokenize.append("byte_tok")
+            if tok in {
+                "ngram",
+                "unicodewords",
+                "regex",
+                "regex pre",
+            }:
+                tokenize.insert(0, "wrap_tok")
             table = apsw.fts5.Table.create(
-                self.db, tok, ["one", "two", "three"], support_query_tokens=True, locale=True, tokenize=[tok]
+                self.db, tok, ["one", "two", "three"], support_query_tokens=True, locale=True, tokenize=tokenize
             )
+            content = test_content.get(tok, test_content["*"])
             self.db.execute(
                 f"insert into {table.quoted_table_name} values(fts5_locale(?, ?), fts5_locale(?, ?), fts5_locale(?, ?))",
-                (TEST_LOCALE, "a" + TEST_LOCALE, TEST_LOCALE, "b" + TEST_LOCALE, TEST_LOCALE, "c" + TEST_LOCALE),
+                (
+                    TEST_LOCALE,
+                    content,
+                    TEST_LOCALE,
+                    content,
+                    TEST_LOCALE,
+                    content,
+                ),
             )
-            self.db.execute(
-                f"select * from {table.quoted_table_name}(fts5_tokenize(?, ?))", (TEST_LOCALE, "hello world")
-            ).get
+            tokens = table.tokens
+            self.assertTrue(all(token.startswith("!") for token in tokens))
+
+            if (
+                "fts5_tokenize"
+                == self.db.execute("select name from pragma_function_list where name='fts5_tokenize'").get
+            ):
+                self.db.execute(
+                    f"select * from {table.quoted_table_name}(fts5_tokenize(?, ?))", (TEST_LOCALE, "hello world")
+                ).get
+
+            self.db.execute(f"select extapi({table._qname}, one, two, three) from {table.quoted_table_name}").get
 
         # check non-locale handling gives error
         table = apsw.fts5.Table.create(
