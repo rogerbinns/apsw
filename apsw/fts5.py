@@ -496,14 +496,14 @@ def SynonymTokenizer(get: Callable[[str], None | str | tuple[str]] | None = None
     To use you need a callable that takes a str, and returns a str, a sequence of str, or None.
     For example :meth:`dict.get` does that.
 
-    The following tokenizer arguments are accepted.
+    The following tokenizer arguments are accepted:
 
     reasons
         Which tokenize :data:`tokenize_reasons` you want the lookups to happen in
         as a space separated list.  Default is ``DOCUMENT AUX``.
 
     get
-        Specify a :func:`get <convert_string_to_python>`
+        Specify a :func:`get <convert_string_to_python>`, or use as a decorator.
     """
 
     @functools.wraps(get)
@@ -559,7 +559,7 @@ def StopWordsTokenizer(test: Callable[[str], bool] | None = None) -> apsw.FTS5To
     To use you need a callable that takes a str, and returns a boolean.  If
     ``True`` then the token is ignored.
 
-    The following tokenizer arguments are accepted.
+    The following tokenizer arguments are accepted, or use as a decorator.
 
     test
         Specify a :func:`test <convert_string_to_python>`
@@ -614,7 +614,8 @@ def TransformTokenizer(transform: Callable[[str], str | Sequence[str]] | None = 
     The following tokenizer arguments are accepted.
 
     transform
-        Specify a :func:`transform <convert_string_to_python>`
+        Specify a :func:`transform <convert_string_to_python>`, or use
+        as a decorator
 
     """
 
@@ -866,7 +867,7 @@ def JSONTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
       ``9`` (default) or ``1`` if keys are extracted in addition to
       values
 
-    If the jsom doesn't start with whitespace then { or [, it is not
+    If the json doesn't start with whitespace then { or [, it is not
     considered JSON and will be passed on unprocessed.  This would
     typically be the case for queries.
     """
