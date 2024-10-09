@@ -1921,20 +1921,43 @@ class FTS5Query(unittest.TestCase):
             ["one", "two"],
             [""],
             ["\0"],
-            ["one", ["1st", "first"], "two"],
+            ["one", ("1st", "first"), "two"],
             ["日本語", "Tiếng Việt"],
         ):
-            encoded = qt(tokens).encode()
-            decoded = qt.decode(encoded)
+            encoded_tokens = qt(tokens).encode()
+            decoded = qt.decode(encoded_tokens)
             self.assertEqual(tokens, decoded.tokens)
             # as bytes
-            self.assertEqual(tokens, qt.decode(encoded.encode()).tokens)
-            self.assertIsNone(qt.decode("@" + encoded))
+            self.assertEqual(tokens, qt.decode(encoded_tokens.encode()).tokens)
+            self.assertIsNone(qt.decode("@" + encoded_tokens))
+
+        apsw.fts5.register_tokenizers(self.db, apsw.fts5.map_tokenizers)
+
+        table_with = apsw.fts5.Table.create(self.db, "with", columns=["1"], support_query_tokens=True)
+        table_without = apsw.fts5.Table.create(self.db, "without", columns=["1"], support_query_tokens=False)
+
+        self.assertTrue(table_with.supports_query_tokens)
+        self.assertFalse(table_without.supports_query_tokens)
+
+        test_tokens = ["!%$#", ("1'st", "first"), "don't"]
+        encoded_tokens = qt(test_tokens).encode()
+        doc = table_with.tokenize(
+            encoded_tokens.encode("utf8"), apsw.FTS5_TOKENIZE_DOCUMENT, include_offsets=False, include_colocated=True
+        )
+        self.assertEqual(doc, [("tokens",), ("1",), ("st",), ("first",), ("don",), ("t",)])
+        query = table_with.tokenize(
+            encoded_tokens.encode("utf8"), apsw.FTS5_TOKENIZE_QUERY, include_offsets=False, include_colocated=True
+        )
+        self.assertEqual(query, [('!%$#',), ("1'st", 'first'), ("don't",)])
+        without_query = table_without.tokenize(
+            encoded_tokens.encode("utf8"), apsw.FTS5_TOKENIZE_QUERY, include_offsets=False, include_colocated=True
+        )
+        self.assertEqual(without_query, doc)
 
     def testParsing(self):
         "Conversion between query strings, dataclasses, and dicts"
         q = apsw.fts5query.quote
-        qt = apsw.fts5query.QueryTokens(["one", ["first", "1st"], "two"])
+        qt = apsw.fts5query.QueryTokens(["one", ("first", "1st"), "two"])
         c = self.table.structure.columns
         for query in f"""
             # from the doc

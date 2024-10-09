@@ -171,7 +171,7 @@ class QueryTokens:
             ]
             for i, token in enumerate(stream):
                 if ">" in token:
-                    stream[i] = token.split(">")
+                    stream[i] = tuple(token.split(">"))
             return cls(stream)
         return None
 

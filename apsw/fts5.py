@@ -25,7 +25,7 @@ import unicodedata
 from contextvars import ContextVar
 from dataclasses import dataclass
 from types import ModuleType
-from typing import Any, Callable, Iterable, Iterator, Literal, Sequence
+from typing import Any, Callable, Iterable, Iterator, Literal, Sequence, Self
 
 import apsw
 import apsw._unicode
@@ -2078,7 +2078,7 @@ class Table:
 
     @classmethod
     def create(
-        cls,
+        cls: Self,
         db: apsw.Connection,
         name: str,
         columns: Iterable[str] | None,
