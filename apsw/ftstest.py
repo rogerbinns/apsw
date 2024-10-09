@@ -121,6 +121,7 @@ class FTS(unittest.TestCase):
         def extapi(api: apsw.FTS5ExtensionApi, one, two, three):
             for column in range(api.column_count):
                 self.assertEqual(api.column_locale(column), TEST_LOCALE)
+            return 7
 
         self.db.register_fts5_function("extapi", extapi)
 
@@ -161,15 +162,13 @@ class FTS(unittest.TestCase):
             tokens = table.tokens
             self.assertTrue(all(token.startswith("!") for token in tokens))
 
-            if (
-                "fts5_tokenize"
-                == self.db.execute("select name from pragma_function_list where name='fts5_tokenize'").get
-            ):
-                self.db.execute(
-                    f"select * from {table.quoted_table_name}(fts5_tokenize(?, ?))", (TEST_LOCALE, "hello world")
-                ).get
+            self.db.execute(
+                f"select * from {table.quoted_table_name}(fts5_locale(?, ?))", (TEST_LOCALE, "hello world")
+            ).get
 
-            self.db.execute(f"select extapi({table._qname}, one, two, three) from {table.quoted_table_name}").get
+            self.assertIsNotNone(
+                self.db.execute(f"select extapi({table._qname}, one, two, three) from {table.quoted_table_name}").get
+            )
 
         # check non-locale handling gives error
         table = apsw.fts5.Table.create(
