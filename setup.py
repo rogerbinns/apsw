@@ -834,7 +834,7 @@ if __name__ == '__main__':
           long_description_content_type="text/x-rst",
           author="Roger Binns",
           author_email="rogerb@rogerbinns.com",
-          url="https://github.com/rogerbinns/apsw/",
+          url="https://github.com/rogerbinns/apsw",
           project_urls=project_urls,
           classifiers=[
               "Development Status :: 5 - Production/Stable",
