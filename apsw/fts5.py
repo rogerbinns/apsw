@@ -14,7 +14,6 @@ import html as html_module
 import html.parser as html_parser_module
 import importlib
 import importlib.resources
-import itertools
 import json
 import math
 import pathlib
@@ -2097,7 +2096,7 @@ class Table:
         detail: Literal["full"] | Literal["column"] | Literal["none"] = "full",
         tokendata: bool = False,
         locale: bool = False,
-        generate_triggers: bool = True,
+        generate_triggers: bool = False,
         drop_if_exists: bool = False,
     ) -> Table:
         """Creates the table, returning a :class:`Table` on success
@@ -2242,7 +2241,7 @@ class Table:
 
         with db:
             db.execute("".join(sql))
-            inst = cls(db, name)
+            inst = cls(db, name, schema=schema)
             if rank:
                 # ::TODO:: test table fails to be created if rank is invalid
                 inst.config_rank(rank)
