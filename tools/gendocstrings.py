@@ -812,12 +812,13 @@ def generate_typestubs(items: list[dict]) -> None:
     # constants
     print("\n", file=out)
     for n in dir(apsw):
-        if not n.startswith("SQLITE_") or n == "SQLITE_VERSION_NUMBER":
+        if n in {"SQLITE_VERSION_NUMBER"}:
             continue
-        assert isinstance(getattr(apsw, n), int)
-        ci = get_sqlite_constant_info(n)
-        print(f"""{ n }: int = { ci["value"] }""", file=out)
-        print(f'''"""For `{ ci["title"] } <{ ci["url"] }>'__"""''', file=out)
+        if n.startswith("SQLITE_") or n.startswith("FTS5_TOKENIZE_"):
+            assert isinstance(getattr(apsw, n), int)
+            ci = get_sqlite_constant_info(n)
+            print(f"""{ n }: int = { ci["value"] }""", file=out)
+            print(f'''"""For `{ ci["title"] } <{ ci["url"] }>'__"""''', file=out)
 
     # mappings
     def wrapvals(vals):
