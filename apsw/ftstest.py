@@ -455,6 +455,21 @@ class FTS(unittest.TestCase):
             [(4, 5, "2"), (9, 10, "3"), (11, 13, "14"), (66, 71, "01234")],
         )
 
+        ## RegexPre
+        tokenizer = functools.partial(apsw.fts5.RegexPreTokenizer, pattern=r"[a7v]+")
+        self.db.register_fts5_tokenizer("my_regexpre", tokenizer)
+        # we want to check that all text except the regex is available
+        # to subsequent tokenizer and at correct offset
+        text = "jkhda😂❤️🤣kjdCześćŁłćąŚąćęłńśźżƍɕʑ̨Ꟁꟁaaa7vstraße"
+        tokens = self.db.fts5_tokenizer("my_regexpre", ["ngram", "ngrams", "1000"])(
+            text.encode("utf8"), apsw.FTS5_TOKENIZE_DOCUMENT, None
+        )
+        self.assertEqual(
+            ['jkhd', 'a', '😂❤️🤣kjdCześćŁłćąŚąćęłńśźżƍɕʑ̨Ꟁꟁ', 'aaa7v', 'str', 'a', 'ße'], [t[2] for t in tokens]
+        )
+        for start, end, token in tokens:
+            self.assertEqual(text.encode()[start:end].decode(), token)
+
     def testCLI(self):
         "Test command line interface"
         if os.environ.get("COVERAGE_RUN", "") != "true":
@@ -1948,7 +1963,7 @@ class FTS5Query(unittest.TestCase):
         query = table_with.tokenize(
             encoded_tokens.encode("utf8"), apsw.FTS5_TOKENIZE_QUERY, include_offsets=False, include_colocated=True
         )
-        self.assertEqual(query, [('!%$#',), ("1'st", 'first'), ("don't",)])
+        self.assertEqual(query, [("!%$#",), ("1'st", "first"), ("don't",)])
         without_query = table_without.tokenize(
             encoded_tokens.encode("utf8"), apsw.FTS5_TOKENIZE_QUERY, include_offsets=False, include_colocated=True
         )
