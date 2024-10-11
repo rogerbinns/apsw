@@ -5762,7 +5762,7 @@ class APSW(unittest.TestCase):
                         assert name not in faults, f"fault inject name { name } found multiple times"
                         faults.add(name)
 
-        testcode = pathlib.Path(__file__).read_text() + pathlib.Path(__file__).with_name("ftstest.py").read_text()
+        testcode = pathlib.Path(__file__).read_text() + pathlib.Path(__file__).with_name("ftstests.py").read_text()
 
         for name in sorted(faults):
             self.assertTrue(re.search(f"\\b{ name }\\b", testcode), f"Couldn't find test for fault '{ name }'")
@@ -10496,7 +10496,7 @@ class ZZFaultInjection(unittest.TestCase):
                 code.append(f.read())
         code = "\n".join(code)
 
-        test_code = pathlib.Path(__file__).read_text() + pathlib.Path(__file__).with_name("ftstest.py").read_text()
+        test_code = pathlib.Path(__file__).read_text() + pathlib.Path(__file__).with_name("ftstests.py").read_text()
 
         seen = set()
 
@@ -10968,7 +10968,7 @@ test_types_vals = (
     True,  # derived from integer
     False)
 
-from .ftstest import *
+from .ftstests import *
 
 if __name__ == '__main__':
     setup()

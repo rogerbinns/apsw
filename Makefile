@@ -128,7 +128,7 @@ pycoverage:  ## Coverage of all the Python code
 
 ftscoverage: ## Coverage of Python code for FTS support
 	-rm -rf .coverage .coverage.* htmlcov dbfile
-	$(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw.ftstest
+	$(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw.ftstests
 	$(PYTHON) -m coverage combine
 	$(PYTHON) -m coverage report -m
 	$(PYTHON) -m coverage html --title "APSW FTS python coverage"

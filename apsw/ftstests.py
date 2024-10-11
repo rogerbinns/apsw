@@ -683,7 +683,7 @@ class FTS(unittest.TestCase):
             returns = []
             for suffix in "wrapped", "param", "arg":
                 param_name = {"transform": "transform", "stopwords": "test", "synonym": "get"}[name]
-                args_with = [param_name, f"apsw.ftstest.FTS.{ name }_test_function", "source"]
+                args_with = [param_name, f"apsw.ftstests.FTS.{ name }_test_function", "source"]
                 args_without = ["source"]
                 tokname = f"{ name }_{ suffix }"
 
@@ -708,7 +708,7 @@ class FTS(unittest.TestCase):
             self.assertEqual(returns[0], returns[1])
             self.assertEqual(returns[1], returns[2])
 
-            apsw.fts5.convert_string_to_python(f"apsw.ftstest.FTS.{ name }_test_function_check")(self, returns[0])
+            apsw.fts5.convert_string_to_python(f"apsw.ftstests.FTS.{ name }_test_function_check")(self, returns[0])
 
         # synonym reason
         test_text = "one two three"
@@ -1090,7 +1090,7 @@ class FTS(unittest.TestCase):
                 apsw.NoMemError, self.db.fts5_tokenizer("simple", []), b"abc def", apsw.FTS5_TOKENIZE_DOCUMENT, None
             )
 
-            self.db.execute("""create virtual table ftstest using fts5(x); insert into ftstest values('hello world')""")
+            self.db.execute("""create virtual table ftstests using fts5(x); insert into ftstests values('hello world')""")
 
             def cb(api: apsw.FTS5ExtensionApi):
                 api.row_count
@@ -1102,7 +1102,7 @@ class FTS(unittest.TestCase):
             self.db.register_fts5_function("errmaker", cb)
             for fault in ("xRowCountErr", "xSetAuxDataErr", "xQueryTokenErr", "xInstCountErr", "xTokenizeErr"):
                 apsw.faultdict[fault] = True
-                self.assertRaises(apsw.NoMemError, self.db.execute, "select errmaker(ftstest) from ftstest('hello')")
+                self.assertRaises(apsw.NoMemError, self.db.execute, "select errmaker(ftstests) from ftstests('hello')")
 
 
 class Unicode(unittest.TestCase):
