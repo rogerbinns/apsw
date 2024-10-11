@@ -90,8 +90,9 @@ typedef struct
 static int
 xTokenizer_Callback(void *pCtx, int iflags, const char *pToken, int nToken, int iStart, int iEnd)
 {
-  /* ::TODO:: there should be GIL ensure for this because it could be called from a
-     third party tokenizer that has gil released */
+  /* it could be called from a third party tokenizer that has gil released */
+  PyGILState_STATE gilstate = PyGILState_Ensure();
+
   assert(!PyErr_Occurred());
   TokenizingContext *our_context = pCtx;
 
@@ -175,12 +176,14 @@ xTokenizer_Callback(void *pCtx, int iflags, const char *pToken, int nToken, int 
     }
   }
   assert(!token); /* it should have been stashed somewhere */
+  PyGILState_Release(gilstate);
   return SQLITE_OK;
 
 error:
   Py_XDECREF(token);
   Py_XDECREF(start);
   Py_XDECREF(end);
+  PyGILState_Release(gilstate);
   return SQLITE_ERROR;
 }
 
