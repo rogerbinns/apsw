@@ -380,7 +380,7 @@ show_tokens(text, "my_regex")
 # which ignores text not matching the pattern.
 
 # For this example our identifiers are two digits slash two letters
-text = "73/RS is bigger than  65/ST"
+text = "73/RS is bigger than 65/ST"
 
 # See what unicodewords does
 show_tokens(text, "unicodewords")
@@ -388,7 +388,7 @@ show_tokens(text, "unicodewords")
 # Setup RegexPreTokenizer
 pattern = r"[0-9][0-9]/[A-Z][A-Z]"
 tokenizer = functools.partial(
-    apsw.fts5.RegexPreTokenizer, pattern=pattern, flags=re.ASCII
+    apsw.fts5.RegexPreTokenizer, pattern=pattern
 )
 connection.register_fts5_tokenizer("myids", tokenizer)
 
