@@ -2236,23 +2236,6 @@ def extended_testing_file(name: str) -> pathlib.Path | None:
     return location if location.exists() else None
 
 
-# in theory the database encoding not being utf8 could cause utf16
-# content where utf8 is expected as fts5 only does utf8.  I haven't
-# found any problems in testing, but this remains here as a check.
-# note that it is not part of __all__ so is only invoked when running
-# this module directly.
-class FTSUTF16(FTS):
-    "Runs FTS tests with database in UTF-16 encoding"
-
-    def setUp(self):
-        super().setUp()
-        self.db.pragma("encoding", "utf16")
-        assert self.db.pragma("encoding").startswith("UTF-16")
-
-
-# disable for the moment
-del FTSUTF16
-
 has_fts5 = "ENABLE_FTS5" in apsw.compile_options
 
 if not has_fts5:
