@@ -465,7 +465,7 @@ class FTS(unittest.TestCase):
             text.encode("utf8"), apsw.FTS5_TOKENIZE_DOCUMENT, None
         )
         self.assertEqual(
-            ['jkhd', 'a', '😂❤️🤣kjdCześćŁłćąŚąćęłńśźżƍɕʑ̨Ꟁꟁ', 'aaa7v', 'str', 'a', 'ße'], [t[2] for t in tokens]
+            ["jkhd", "a", "😂❤️🤣kjdCześćŁłćąŚąćęłńśźżƍɕʑ̨Ꟁꟁ", "aaa7v", "str", "a", "ße"], [t[2] for t in tokens]
         )
         for start, end, token in tokens:
             self.assertEqual(text.encode()[start:end].decode(), token)
