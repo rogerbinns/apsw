@@ -2242,7 +2242,14 @@ if not has_fts5:
     del FTS
     del FTS5Query
 
-__all__ = ("FTS5Query", "Unicode") + (("FTS",) if has_fts5 else tuple())
+__all__ = ("Unicode",) + (
+    (
+        "FTS",
+        "FTS5Query",
+    )
+    if has_fts5
+    else tuple()
+)
 
 if __name__ == "__main__":
     unittest.main()
