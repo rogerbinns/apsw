@@ -2307,7 +2307,13 @@
 "  * - sql\n" \
 "    - :class:`str`\n" \
 "    - SQL text (except SQLITE_TRACE_CLOSE)\n" \
-"  * - profile\n" \
+"  * - id\n" \
+"    - :class`id`\n" \
+"    - Different executing statements can have the same SQL, for example if you\n" \
+"      are using bindings with different values.  This value lets you tell them\n" \
+"      apart.  The id will be reused when a statement is reused from the statement\n" \
+"      cache.\n" \
+"  * - nanoseconds\n" \
 "    - :class:`int`\n" \
 "    - nanoseconds SQL took to execute (SQLITE_TRACE_PROFILE only)\n" \
 "  * - stmt_status\n" \

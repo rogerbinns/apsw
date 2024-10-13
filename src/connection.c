@@ -1245,8 +1245,8 @@ tracehook_cb(unsigned code, void *vconnection, void *one, void *two)
       if (connection->tracehooks[i].mask & SQLITE_TRACE_STMT)
       {
 
-        param = Py_BuildValue("{s: i, s: s, s: O}",
-                              "code", code, "sql", sqlite3_sql(stmt), "connection", connection);
+        param = Py_BuildValue("{s: i, s: N, s: s, s: O}", "code", code, "id", PyLong_FromVoidPtr(sqlite3_sql(stmt)),
+                              "sql", sqlite3_sql(stmt), "connection", connection);
         break;
       }
     }
@@ -1254,8 +1254,8 @@ tracehook_cb(unsigned code, void *vconnection, void *one, void *two)
 
   case SQLITE_TRACE_ROW:
     stmt = (sqlite3_stmt *)one;
-    param = Py_BuildValue("{s: i, s: s, s: O}",
-                          "code", code, "sql", sqlite3_sql(stmt), "connection", connection);
+    param = Py_BuildValue("{s: i, s: N, s: s, s: O}", "code", code, "id", PyLong_FromVoidPtr(sqlite3_sql(stmt)), "sql",
+                          sqlite3_sql(stmt), "connection", connection);
     break;
 
   case SQLITE_TRACE_CLOSE:
@@ -1264,8 +1264,8 @@ tracehook_cb(unsigned code, void *vconnection, void *one, void *two)
        then the ref count is zero when the callback fires and adding a
        reference ressurects a mostly destroyed object which then hits zero
        again and gets destroyed a second time.  Too difficult to handle. */
-    param = Py_BuildValue("{s: i, s: O}",
-                          "code", code, "connection", Py_REFCNT(connection) ? (PyObject *)connection : Py_None);
+    param = Py_BuildValue("{s: i, s: O}", "code", code, "connection",
+                          Py_REFCNT(connection) ? (PyObject *)connection : Py_None);
     break;
 
   case SQLITE_TRACE_PROFILE:
@@ -1282,18 +1282,13 @@ tracehook_cb(unsigned code, void *vconnection, void *one, void *two)
       {
         /* only SQLITE_STMTSTATUS_MEMUSED actually needs mutex */
         sqlite3_mutex_enter(sqlite3_db_mutex(connection->db));
-        param = Py_BuildValue("{s: i, s: O, s: s, s: L, s: {" K K K K K K K K "s: i}}",
-                              "code", code, "connection", connection, "sql", sqlite3_sql(stmt),
-                              "nanoseconds", *nanoseconds, "stmt_status",
-                              V(SQLITE_STMTSTATUS_FULLSCAN_STEP),
-                              V(SQLITE_STMTSTATUS_SORT),
-                              V(SQLITE_STMTSTATUS_AUTOINDEX),
-                              V(SQLITE_STMTSTATUS_VM_STEP),
-                              V(SQLITE_STMTSTATUS_REPREPARE),
-                              V(SQLITE_STMTSTATUS_RUN),
-                              V(SQLITE_STMTSTATUS_FILTER_MISS),
-                              V(SQLITE_STMTSTATUS_FILTER_HIT),
-                              V(SQLITE_STMTSTATUS_MEMUSED));
+        param
+            = Py_BuildValue("{s: i, s: O, s: N, s: s, s: L, s: {" K K K K K K K K "s: i}}", "code", code, "connection",
+                            connection, "id", PyLong_FromVoidPtr(sqlite3_sql(stmt)), "sql", sqlite3_sql(stmt),
+                            "nanoseconds", *nanoseconds, "stmt_status", V(SQLITE_STMTSTATUS_FULLSCAN_STEP),
+                            V(SQLITE_STMTSTATUS_SORT), V(SQLITE_STMTSTATUS_AUTOINDEX), V(SQLITE_STMTSTATUS_VM_STEP),
+                            V(SQLITE_STMTSTATUS_REPREPARE), V(SQLITE_STMTSTATUS_RUN), V(SQLITE_STMTSTATUS_FILTER_MISS),
+                            V(SQLITE_STMTSTATUS_FILTER_HIT), V(SQLITE_STMTSTATUS_MEMUSED));
         sqlite3_mutex_leave(sqlite3_db_mutex(connection->db));
         break;
       }
@@ -1434,6 +1429,12 @@ Connection_set_profile(Connection *self, PyObject *const *fast_args, Py_ssize_t 
     * - sql
       - :class:`str`
       - SQL text (except SQLITE_TRACE_CLOSE)
+    * - id
+      - :class`id`
+      - Different executing statements can have the same SQL, for example if you
+        are using bindings with different values.  This value lets you tell them
+        apart.  The id will be reused when a statement is reused from the statement
+        cache.
     * - nanoseconds
       - :class:`int`
       - nanoseconds SQL took to execute (SQLITE_TRACE_PROFILE only)

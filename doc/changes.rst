@@ -20,6 +20,10 @@ Added :func:`recursive triggers
 Multiple callbacks can be present for :meth:`Connection.trace_v2`
 (:issue:`502`)
 
+:meth:`Connection.trace_v2` callback information now has an ``id``
+field.  This can be used to distinguish when the same SQL is being
+executed concurrently.
+
 Added :attr:`Connection.data_version` for getting a change counter.
 `pragma data_version
 <https://sqlite.org/pragma.html#pragma_data_version>`__ doesn't update when

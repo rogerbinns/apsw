@@ -1866,7 +1866,13 @@ class Connection:
           * - sql
             - :class:`str`
             - SQL text (except SQLITE_TRACE_CLOSE)
-          * - profile
+          * - id
+            - :class`id`
+            - Different executing statements can have the same SQL, for example if you
+              are using bindings with different values.  This value lets you tell them
+              apart.  The id will be reused when a statement is reused from the statement
+              cache.
+          * - nanoseconds
             - :class:`int`
             - nanoseconds SQL took to execute (SQLITE_TRACE_PROFILE only)
           * - stmt_status
