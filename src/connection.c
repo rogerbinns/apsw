@@ -1431,7 +1431,7 @@ Connection_set_profile(Connection *self, PyObject *const *fast_args, Py_ssize_t 
     * - sql
       - :class:`str`
       - SQL text (except SQLITE_TRACE_CLOSE)
-    * - profile
+    * - nanoseconds
       - :class:`int`
       - nanoseconds SQL took to execute (SQLITE_TRACE_PROFILE only)
     * - stmt_status
