@@ -585,8 +585,120 @@ def dbinfo(db: apsw.Connection,
 
     return dbinfo, journalinfo
 
+
+class Trace:
+    """Use as a context manager to show each SQL statement run inside the block
+
+    All statements except triggers are shown including those issued
+    behind the scenes.::
+
+        with apsw.ext.Trace(sys.stdout, db):
+            method()
+            db.execute("SQL")
+            etc
+
+    :param file: File to print to.  If `None` then no information is gathered or
+           printed
+    :param db: :class:`~apsw.Connection` to gather SQLite stats from if not `None`.
+           Statistics from each SQL statement executed are added together.
+    :param truncate: Truncates SQL text to this many characters
+    :param indent: Printed before each line of output
+
+    Tracing is done with :meth:`~apsw.Connection.trace_v2`.  If a
+    statement is run more than once then each time it is shown with
+    ``#`` and a numeric suffix.  If you have statements nested or
+    concurrent then that is show with a ``<`` showing the end of an
+    earlier statement.
+
+    As each statement completes, the number of times it was at a row
+    is shown (if non-zero).  If the
+    :meth:`~apsw.Connection.total_changes` counter has changed, then
+    the number of changes since the start of the statement is shown.
+    There is no way to track if the specific statement made the
+    changes, only that they happened during the running of the
+    statement.
+
+    See :func:`ShowResourceUsage` to get summary information about the
+    block as a whole.  You can use this and that at the same time.
+
+    See the :ref:`example <example_Trace>`.
+    """
+
+    def __init__(self, file: TextIO | None, db: apsw.Connection, *, truncate: int = 70, indent: str = ""):
+        self.file = file
+        self.db = db
+        self.indent = indent
+        self.truncate = truncate
+
+    def __enter__(self):
+        if not self.file:
+            return self
+        # track how many SQLITE_TRACE_ROW there are
+        self.row_counter = collections.defaultdict(int)
+        # track total_changes from start to end of statement
+        self.change_counter = collections.defaultdict(int)
+        # track how many times this (sql,id) combination has been seen
+        self.seen = collections.defaultdict(int)
+        # id of the last SQLITE_TRACE_STMT we output to detect
+        # interleaving of queries
+        self.last_emitted = None
+
+        self.db.trace_v2(
+            apsw.SQLITE_TRACE_STMT | apsw.SQLITE_TRACE_ROW | apsw.SQLITE_TRACE_PROFILE, self._sqlite_trace, id=self
+        )
+
+        return self
+
+    def _sqlite_trace(self, event: dict):
+        if event["code"] == apsw.SQLITE_TRACE_STMT:
+            i = self.seen[(event["sql"], event["id"])]
+            print(self.indent, ">", event["sql"][: self.truncate], f"#{i+1}" if i else "", file=self.file)
+            self.row_counter[event["id"]] = 0
+            self.change_counter[event["id"]] = event["total_changes"]
+            self.last_emitted = event["id"]
+
+        elif event["code"] == apsw.SQLITE_TRACE_ROW:
+            self.row_counter[event["id"]] += 1
+
+        elif event["code"] == apsw.SQLITE_TRACE_PROFILE:
+            interleaving = self.last_emitted != event["id"]
+
+            if interleaving:
+                i = self.seen[(event["sql"], event["id"])]
+                print(self.indent, "<", event["sql"][: self.truncate], f"#{i+1}" if i else "", file=self.file)
+            self.last_emitted = None
+
+            self.seen[(event["sql"], event["id"])] += 1
+
+            try:
+                rows_read = self.row_counter.pop(event["id"])
+            except KeyError:
+                # this would happen if the statement started before our context manager
+                rows_read = 0
+            try:
+                changes = event["total_changes"] - self.change_counter.pop(event["id"])
+            except KeyError:
+                changes = 0
+
+            seconds = event["nanoseconds"] / 1_000_000_000
+
+            print(
+                self.indent,
+                "    ",
+                f"{seconds:.03f}ms",
+                f"{rows_read:,} rows" if rows_read else "",
+                "   " if rows_read and changes else "",
+                f"{'~' if interleaving else ''}{changes:,} changes" if changes else "",
+                file=self.file,
+            )
+
+    def __exit__(self, *_):
+        self.db.trace_v2(0, None, id=self)
+
+
 class ShowResourceUsage:
-    """Use a context manager to show a summary of time, resource, and SQLite usage::
+    """Use as a context manager to show a summary of time, resource, and SQLite usage inside
+    the block::
 
         with apsw.ext.ShowResourceUsage(sys.stdout, db=connection, scope="thread"):
             # do things with the database
@@ -609,14 +721,20 @@ class ShowResourceUsage:
     Timing information comes from :func:`time.monotonic` and :func:`time.process_time`,
     resource usage from :func:`resource.getrusage` (empty for Windows), and SQLite from
     :meth:`~apsw.Connection.trace_v2`.
+
+    See :func:`Trace` to trace individual statements.  You can use
+    this and that at the same time.
+
+    See the :ref:`example <example_ShowResourceUsage>`.
     """
+
     def __init__(
         self,
         file: TextIO | None,
         *,
         db: apsw.Connection | None = None,
         scope: Literal["thread"] | Literal["process"] | None = None,
-        indent: str = ""
+        indent: str = "",
     ):
         self.file = file
         self.db = db
@@ -638,12 +756,12 @@ class ShowResourceUsage:
 
     def __enter__(self):
         if not self.file:
-            return
+            return self
         self._times = time.process_time(), time.monotonic()
         if self.scope:
             self._usage = self._get_resource(self._get_resource_param[self.scope])
         if self.db:
-            self.db.trace_v2(apsw.SQLITE_TRACE_PROFILE, self._sqlite_trace, id = self)
+            self.db.trace_v2(apsw.SQLITE_TRACE_PROFILE, self._sqlite_trace, id=self)
             self.stmt_status = {}
             self.db_status = self.db_status_get()
         return self
@@ -691,7 +809,7 @@ class ShowResourceUsage:
                     vals.append((self._descriptions[k], delta))
 
         if self.db:
-            self.db.trace_v2(0, None)
+            self.db.trace_v2(0, None, id=self)
             if self.stmt_status:
                 self.stmt_status.pop("SQLITE_STMTSTATUS_MEMUSED")
                 for k, v in self.stmt_status.items():

@@ -10,7 +10,10 @@ standard module and APSW approached the problem of providing access
 to SQLite from Python from fundamentally different directions.
 
 APSW provides access in whatever way is normal for SQLite.  It makes
-no effort to hide how SQLite is different from other databases.
+no effort to hide how SQLite is different from other databases.  It
+also uses that extra detailed integration to provide a significantly
+enhanced developer experience with better debugging, tooling, tracing,
+and making use of all of SQLite's features.
 
 sqlite3 tries to provide a DBAPI (:pep:`249`) compliant wrapper for
 SQLite and in doing so needs to make it have the same behaviour as
@@ -41,8 +44,9 @@ module:
 
 * APSW gives all functionality of SQLite including :ref:`virtual
   tables <virtualtables>`, :ref:`VFS`, :ref:`BLOB I/O <blobio>`,
-  :ref:`backups <backup>`, :meth:`logging <apsw.ext.log_sqlite>`,  and
-  :meth:`file control <Connection.file_control>`.
+  :ref:`backups <backup>`, :meth:`logging <apsw.ext.log_sqlite>`,
+  :meth:`file control <Connection.file_control>`, and :meth:`tracing
+  <apsw.Connection.trace_v2>`.
 
 * APSW includes :mod:`apsw.bestpractice` which configures SQLite
   for best performance, and catches common mistakes.
@@ -109,6 +113,8 @@ module:
     taking positional and keyword arguments
   - Converting data types going into and out of SQlite
   - Detailed query information
+  - Tracing individual SQL statements in a block, or overall summary
+    for the block
 
 * sqlite3 swallows exceptions in your callbacks making it far harder
   to debug problems. That also prevents you from raising exceptions in

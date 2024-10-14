@@ -206,8 +206,14 @@ if check != "ok":
     print("Integrity check errors", check)
 
 ### exectrace: Tracing execution
-# You can trace execution of SQL statements.  See :ref:`more about
-# tracing <tracing>`.
+# You can trace execution of SQL statements and their bindings.  This
+# involves code changes and is :ref:`described in more detail here
+# <tracing>`.
+#
+# There are simpler convenient mechanisms for :ref:`individual
+# statement tracing <example_Trace>`, :Ref:`summarising a block of
+# code <example_ShowResourceUsage>`, and :ref:`SQLite's interface
+# <example_trace_v2>` which is used by them.
 
 
 def my_tracer(
@@ -1255,6 +1261,9 @@ connection.trace_v2(0, None)
 ### ShowResourceUsage: System and SQLite resource usage in a block
 # Use :meth:`apsw.ext.ShowResourceUsage` to see what resources a
 # block of code does.  We use the same query from above.
+#
+# Only statistics that have changed are shown in the summary. There are
+# 20 SQLite values tracked including caching, and 20 system values.
 
 with apsw.ext.ShowResourceUsage(
     sys.stdout, db=connection, scope="thread"
@@ -1266,6 +1275,28 @@ with apsw.ext.ShowResourceUsage(
 
     # and take some wall clock time
     time.sleep(1.3)
+
+### Trace: SQL statement tracing in a block
+# Use :meth:`apsw.ext.Trace` to see SQL statements inside a block of
+# code.  This also shows behind the scenes SQL.
+
+# Use None instead of stdout and no information is printed or gathered
+with apsw.ext.Trace(sys.stdout, db=connection):
+
+    # APSW does a savepoint behind the scenes to wrap the block
+    with connection:
+        # Some regular SQL
+        connection.execute("create table multi(x)")
+        # executemany runs the same statement repeatedly
+        connection.executemany("insert into multi values(?)", ((x,) for x in range(5)))
+        # See how many rows were processed
+        connection.execute("select * from multi limit 2").fetchall()
+        # You can also see how many rows were changed
+        connection.execute("delete from multi where x < 4")
+        # To implement the table, SQLIte issues the pragma behind the
+        # scenes.  Note how the output shows this statement starting,
+        # the pragma, and then this statement ending.
+        connection.execute("select count(*) from pragma_function_list")
 
 ### format_query: Formatting query results table
 # :meth:`apsw.ext.format_query_table` makes it easy
