@@ -1253,6 +1253,12 @@ tracehook_cb(unsigned code, void *vconnection, void *one, void *two)
     break;
 
   case SQLITE_TRACE_ROW:
+    /* ::TODO:: cache PyUnicode of the sql so that we don't keep
+       re-creating it for every row - eg if a million rows are visited for
+       the query we don't need to construct the sql text a million times.
+
+       The cache can be a single entry long
+    */
     stmt = (sqlite3_stmt *)one;
     param = Py_BuildValue("{s: i, s: N, s: s, s: O}", "code", code, "id", PyLong_FromVoidPtr(sqlite3_sql(stmt)), "sql",
                           sqlite3_sql(stmt), "connection", connection);
