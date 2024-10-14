@@ -1305,6 +1305,9 @@ use the C library function wcswidth, or use the wcwidth Python package wcswidth 
 
         next_break_func = globals()[f"{ options.test }_next_break"]
 
+        # ::TODO:: add option that inserts LB_CM/ZWJ chars after every
+        # codepoint (except BK/CR/NL etc) to verify LB9 is always done
+
         ok = "÷"
         not_ok = "\u00d7"
         passed: int = 0
