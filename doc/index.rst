@@ -13,6 +13,7 @@ APSW |version| documentation
    install
    extensions
 
+   bestpractice
    apsw
    connection
    cursor
@@ -23,7 +24,6 @@ APSW |version| documentation
    vtable
    vfs
    shell
-   bestpractice
    ext
 
    exceptions
