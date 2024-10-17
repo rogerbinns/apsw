@@ -2051,7 +2051,7 @@ ToUtf8PositionMapper_call(ToUtf8PositionMapper *self, PyObject *const *fast_args
 
   while (self->str_offset < pos)
   {
-    if (self->bytes_offset == self->buffer.len)
+    if (self->bytes_offset >= self->buffer.len)
       return PyErr_Format(PyExc_IndexError, "position is beyond end of string");
 
     unsigned b = ((unsigned char *)self->buffer.buf)[self->bytes_offset];
@@ -2192,7 +2192,7 @@ FromUtf8PositionMapper_call(FromUtf8PositionMapper *self, PyObject *const *fast_
   while (self->bytes_offset < pos)
   {
     /* ::TODO:: is this test reachable? */
-    if (self->bytes_offset == self->bytes_len)
+    if (self->bytes_offset >= self->bytes_len)
       break;
 
     unsigned b = self->bytes[self->bytes_offset];
