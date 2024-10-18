@@ -121,7 +121,7 @@ class Shell:
             self.output = self.output_box
             self.box_options = {
                 "quote": False,
-                "string_sanitize": 1,
+                "string_sanitize": 0,
                 "null": "NULL",
                 "truncate": 4096,
                 "text_width": self._terminal_width(32),
