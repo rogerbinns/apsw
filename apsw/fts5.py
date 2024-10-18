@@ -1214,6 +1214,12 @@ class Table:
             self._db, {func.__name__: func for func in (_apsw_get_statistical_info, _apsw_get_match_info)}
         )
 
+    def __str__(self):
+        return f"<FTS5Table { self.quoted_table_name }>"
+
+    def __repr__(self):
+        return f"<FTS5Table { self.quoted_table_name } at {id(self):x}>"
+
     def _get_change_cookie(self) -> int:
         """An int that changes if the content of the table has changed.
 
@@ -1409,8 +1415,20 @@ class Table:
 
         yield from self._search_internal(sql_query, (fts_query,) + tuple(ids))
 
-    def upsert(self, *args: apsw.SQLiteValue, **kwargs: apsw.SQLiteValue) -> None:
-        """Insert or update with columns by positional and/or keywords arguments
+    def delete(self, rowid: int) -> bool:
+        """Deletes the identified row
+
+        If you are using an external content table then the delete is directed
+        to that table.
+
+        :returns: True if a row was deleted
+        """
+        with self.db:
+            self.db.execute(f"delete from {self.quoted_table_name } where rowid=(?,)", (rowid,))
+            return bool(self.db.changes())
+
+    def upsert(self, *args: apsw.SQLiteValue, **kwargs: apsw.SQLiteValue) -> int:
+        """Insert or update with columns by positional and keyword arguments
 
         You can mix and match positional and keyword arguments::
 
@@ -1418,73 +1436,79 @@ class Table:
            table.upsert("hello", header="world")
            table.upsert(header="world")
 
-        If you are using an external content table:
+        If you specify a ``rowid`` keyword argument that is used as
+        the rowid for the insert.  If the corresponding row already
+        exists then the row is modified with the provided values.
+        rowids are always integers.
 
-        * the insert will be directed to that table
-        * the column positions and names of that table are used
+        The rowid of the inserted/modified row is returned.
 
-        # ::TODO:: allow rowid names in content tables and rowid in fts5 table
-        # if you specify rowid of existing row then it is modified
+        If you are using an [external
+        content](https://www.sqlite.org/fts5.html#external_content_tables)
+        table:
+
+        * The insert will be directed to the external content table
+        * ``rowid`` will map to the ``content_rowid`` option if used
+        * The column names and positions of the FTS5 table, not the external content table is used
+        * The FTS5 table is not updated - you should use triggers on
+          the external content table to do that.  See the
+          ``generate_triggers`` option on :meth:`create`.
         """
-        stmt, mapping = self._upsert_sql(len(args), tuple(kwargs.keys()) if kwargs else None)
-        if mapping is not None:
-            if args:
-                bindings = dict(zip(mapping, args))
-                bindings.update(kwargs)
-            else:
-                bindings = kwargs
-            self._db.execute(stmt, bindings)
-        else:
-            self._db.execute(stmt, args)
+        stmt = self._upsert_sql(len(args), tuple(kwargs.keys()) if kwargs else None)
+        if kwargs:
+            args = args + tuple(kwargs.values())
+        return self._db.execute(stmt, args).get
 
     @functools.cache
-    def _upsert_sql(self, num_args: int, kwargs: tuple[str] | None) -> tuple[str, tuple[str, ...] | None]:
-        "Figure out SQL and column mapping to do the actual insert"
+    def _upsert_sql(self, num_args: int, kwargs: tuple[str] | None) -> str:
+        "Figure out SQL and column mapping to do the actual upsert"
+
+        columns = self.columns
+
         if self.structure.content is not None:
-            columns = tuple(
-                name
-                for (name,) in self._db.execute(
-                    f"select name from { self._qschema }.pragma_table_info(?)", (self.structure.content,)
-                )
-            )
             target_table = f"{self._qschema}.{quote_name(self.structure.content)}"
         else:
-            columns = self.columns
             target_table = self.quoted_table_name
 
-        if num_args > len(columns):
-            raise ValueError(f"Too many values supplied ({num_args}) - max {len(columns)}")
-        if not kwargs:
-            if num_args < 1:
-                raise ValueError("You must supply some values")
-            # simple case
-            sql = f"insert or replace into { target_table } ("
-            sql += ", ".join(quote_name(column) for column in columns[:num_args])
-            sql += ") values ("
-            sql += ",".join("?" for _ in range(num_args))
-            sql += ")"
-            return sql, None
+        num_kwargs = 0 if not kwargs else len(kwargs)
+        if num_args + num_kwargs > len(columns):
+            total_args = num_args + num_kwargs
+            # rowid doesn't count
+            if kwargs and any(0 == apsw.stricmp("rowid", k) for k in kwargs):
+                total_args -= 1
+            if total_args > len(columns):
+                raise ValueError(f"Too many values supplied ({total_args}) - max {len(columns)}")
+        if num_args + num_kwargs < 1:
+            raise ValueError("You must supply some values")
 
-        def check_column_name(name: str):
-            for c in name:
-                if c not in "0123456789_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" and ord(c) < 0x80:
-                    raise ValueError(f"Column '{name}' has character 0x{ord(c):02x} that can't be used in bindings")
-            return name
+        sql = f"insert or replace into { target_table } ("
+        sql += ", ".join(quote_name(column) for column in columns[:num_args])
 
-        mapping = tuple(check_column_name(columns[i]) for i in range(num_args))
-        for k in kwargs:
-            if k not in columns:
-                raise ValueError(f"'{k}' is not a column name - {', '.join(columns)}")
-            if k in mapping:
-                raise ValueError(f"Column '{k} is provided both as positional and keyword")
-            check_column_name(k)
+        if kwargs:
+            seen = set(columns[:num_args])
 
-        sql = f"insert into { target_table } ("
-        sql += ", ".join(quote_name(column) for column in mapping + kwargs)
+            for column in kwargs:
+                if any(0 == apsw.stricmp(column, c) for c in seen):
+                    raise ValueError(f"Column '{column}' provided multiple times")
+                seen.add(column)
+
+                if 0 == apsw.stricmp(column, "rowid"):
+                    sql += ", " + quote_name(self.structure.content_rowid or "rowid")
+                    continue
+
+                # find matching column
+                for candidate in columns:
+                    if 0 == apsw.stricmp(column, candidate):
+                        sql += ", " + quote_name(column)
+                        break
+                else:
+                    raise ValueError(f"'{column}' is not a column name - {columns=}")
+
         sql += ") values ("
-        sql += ",".join(f":{column}" for column in mapping + kwargs)
+        sql += ",".join("?" for _ in range(num_args + num_kwargs))
         sql += ")"
-        return sql, mapping
+        sql += " RETURNING " + quote_name(self.structure.content_rowid or "rowid")
+        return sql
 
     # some method helpers pattern, not including all of them yet
 
@@ -2077,7 +2101,7 @@ class Table:
 
     @classmethod
     def create(
-        cls: Self,
+        cls,
         db: apsw.Connection,
         name: str,
         columns: Iterable[str] | None,
@@ -2098,7 +2122,7 @@ class Table:
         locale: bool = False,
         generate_triggers: bool = False,
         drop_if_exists: bool = False,
-    ) -> Table:
+    ) -> Self:
         """Creates the table, returning a :class:`Table` on success
 
         You can use :meth:`apsw.Connection.table_exists` to check if a
@@ -2173,7 +2197,9 @@ class Table:
             if not content:
                 raise ValueError("You need to supply columns, or specify an external content table name")
             columns: tuple[str, ...] = tuple(
-                name for (name,) in db.execute(f"select name from { qschema}.pragma_table_info(?)", (content,))
+                name
+                for (name,) in db.execute(f"select name from { qschema}.pragma_table_info(?)", (content,))
+                if 0 != apsw.stricmp(name, content_rowid or "rowid")
             )
         else:
             columns: tuple[str, ...] = tuple(columns)
@@ -2187,6 +2213,8 @@ class Table:
                     )
         else:
             unindexed: set[str] = set()
+
+        # ::TODO:: fts5 rejects 'rowid' and 'rank' (case insensitive) as column names
 
         if support_query_tokens and tokenize is None:
             tokenize = ["unicode61"]
