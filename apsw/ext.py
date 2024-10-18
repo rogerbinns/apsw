@@ -1125,7 +1125,7 @@ def _format_table(colnames: list[str], rows: list[apsw.SQLiteValues], colour: bo
 
     # can't fit
     if total_width() > text_width:
-        raise ValueError("Results can't be fitted in text width even with 1 char wide columns")
+        raise ValueError(f"Results can't be fit in text width { text_width } even with 1 wide columns - at least { total_width() } width is needed")
 
     # break headers and cells into lines
     def wrap(text: str, width: int) -> list[str]:
