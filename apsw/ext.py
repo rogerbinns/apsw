@@ -630,6 +630,9 @@ class Trace:
         self.indent = indent
         self.truncate = truncate
 
+    def _truncate(self, text: str) -> str:
+        return text[:self.truncate] + "..." if len(text) > self.truncate else text
+
     def __enter__(self):
         if not self.file:
             return self
@@ -652,7 +655,7 @@ class Trace:
     def _sqlite_trace(self, event: dict):
         if event["code"] == apsw.SQLITE_TRACE_STMT:
             i = self.seen[(event["sql"], event["id"])]
-            print(self.indent, ">", event["sql"][: self.truncate], f"#{i+1}" if i else "", file=self.file)
+            print(self.indent, ">", self._truncate(event["sql"]), f"#{i+1}" if i else "", file=self.file)
             self.row_counter[event["id"]] = 0
             self.change_counter[event["id"]] = event["total_changes"]
             self.last_emitted = event["id"]
