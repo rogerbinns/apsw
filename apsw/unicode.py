@@ -1042,7 +1042,6 @@ if __name__ == "__main__":
     p.set_defaults(function="show")
     p.add_argument("show", choices=("grapheme", "word", "sentence", "line_break"), help="What to show [%(default)s]")
     p.add_argument("--text-file", type=argparse.FileType("rt", encoding="utf8"))
-    p.add_argument("--width", default=width, help="Output width [%(default)s]", type=int)
     p.add_argument(
         "--categories",
         default="L* N*",
@@ -1230,10 +1229,8 @@ use the C library function wcswidth, or use the wcwidth Python package wcswidth 
             print(
                 f"#{ counter } offset { offset } span { begin }-{ end } codepoints { end - begin } value: { text[begin:end] }"
             )
-            codepoints = []
             for i in range(begin, end):
-                codepoints.append(codepoint_details(options.show, text[i]))
-            print("\n".join(text_wrap(" ".join(codepoints), width=options.width)))
+                print(" ", codepoint_details(options.show, text[i]))
             offset = end
             counter += 1
 
