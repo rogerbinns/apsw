@@ -1696,6 +1696,9 @@ class Unicode(unittest.TestCase):
 
     def testWidths(self):
         "terminal column widths"
+        # ::TODO:: shell output with U+00AD SOFT HYPHEN is coming out
+        # wrong. select '­armee '; but cursory check of these methods
+        # is fine.  Figure it out
         zwj = "\u200d"
         bird = chr(0x1F426)
         fire = chr(0x1F525)
