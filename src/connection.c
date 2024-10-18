@@ -1246,8 +1246,8 @@ tracehook_cb(unsigned code, void *vconnection, void *one, void *two)
       {
 
         param = Py_BuildValue("{s: i, s: N, s: s, s: O, s: L}", "code", code, "id",
-                              PyLong_FromVoidPtr(sqlite3_sql(stmt)), "sql", sqlite3_sql(stmt), "connection", connection,
-                              "total_changes", sqlite3_total_changes64(connection->db));
+                              PyLong_FromVoidPtr((void *)sqlite3_sql(stmt)), "sql", sqlite3_sql(stmt), "connection",
+                              connection, "total_changes", sqlite3_total_changes64(connection->db));
         break;
       }
     }
@@ -1261,8 +1261,8 @@ tracehook_cb(unsigned code, void *vconnection, void *one, void *two)
        The cache can be a single entry long
     */
     stmt = (sqlite3_stmt *)one;
-    param = Py_BuildValue("{s: i, s: N, s: s, s: O}", "code", code, "id", PyLong_FromVoidPtr(sqlite3_sql(stmt)), "sql",
-                          sqlite3_sql(stmt), "connection", connection);
+    param = Py_BuildValue("{s: i, s: N, s: s, s: O}", "code", code, "id", PyLong_FromVoidPtr((void *)sqlite3_sql(stmt)),
+                          "sql", sqlite3_sql(stmt), "connection", connection);
     break;
 
   case SQLITE_TRACE_CLOSE:
@@ -1291,7 +1291,7 @@ tracehook_cb(unsigned code, void *vconnection, void *one, void *two)
         sqlite3_mutex_enter(sqlite3_db_mutex(connection->db));
         param = Py_BuildValue(
             "{s: i, s: O, s: N, s: s, s: L, s: L, s: {" K K K K K K K K "s: i}}", "code", code, "connection",
-            connection, "id", PyLong_FromVoidPtr(sqlite3_sql(stmt)), "sql", sqlite3_sql(stmt), "nanoseconds",
+            connection, "id", PyLong_FromVoidPtr((void *)sqlite3_sql(stmt)), "sql", sqlite3_sql(stmt), "nanoseconds",
             *nanoseconds, "total_changes", sqlite3_total_changes64(connection->db), "stmt_status",
             V(SQLITE_STMTSTATUS_FULLSCAN_STEP), V(SQLITE_STMTSTATUS_SORT), V(SQLITE_STMTSTATUS_AUTOINDEX),
             V(SQLITE_STMTSTATUS_VM_STEP), V(SQLITE_STMTSTATUS_REPREPARE), V(SQLITE_STMTSTATUS_RUN),
