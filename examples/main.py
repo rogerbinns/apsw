@@ -1237,7 +1237,7 @@ def trace_hook(trace: dict) -> None:
     # check the sql and connection are as expected and remove from trace
     # so we don't print them
     assert (
-        trace.pop("sql") == query
+        trace.pop("sql", query) == query
         and trace.pop("connection") is connection
     )
     print("code is ", apsw.mapping_trace_codes[trace["code"]])
@@ -1281,7 +1281,7 @@ with apsw.ext.ShowResourceUsage(
 # code.  This also shows behind the scenes SQL.
 
 # Use None instead of stdout and no information is printed or gathered
-with apsw.ext.Trace(sys.stdout, db=connection):
+with apsw.ext.Trace(sys.stdout, db=connection, vtable=True):
 
     # APSW does a savepoint behind the scenes to wrap the block
     with connection:

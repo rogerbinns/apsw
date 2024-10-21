@@ -6272,7 +6272,8 @@ class APSW(unittest.TestCase):
         x = results.pop()
         self.assertEqual(apsw.SQLITE_TRACE_ROW, x["code"])
         self.assertIs(self.db, x["connection"])
-        self.assertEqual(query, x["sql"])
+        if "sql" in x:
+            self.assertEqual(query, x["sql"])
 
         self.db.trace_v2(apsw.SQLITE_TRACE_PROFILE, tracecb)
 
@@ -9937,6 +9938,46 @@ shell.write(shell.stdout, "hello world\\n")
 
         # can't optimize or WAL readonly databases
         apsw.Connection(self.db.filename, flags = apsw.SQLITE_OPEN_READONLY)
+
+    def testExtTracing(self) -> None:
+        "apsw.ext Tracing and Resource usage"
+
+        MARKER = "!%$%^"
+        out = io.StringIO()
+
+        def func(*args):
+            pass
+
+        self.db.create_scalar_function("func", func)
+        with apsw.ext.ShowResourceUsage(out, db=self.db, scope="process", indent=MARKER):
+            self.db.execute("""
+                create table foo(x,y);
+                create table bar(x,y);
+                insert into foo values(3,4), (5,6);
+
+                create trigger mytrig insert on foo
+                begin
+                    select func(x,y) from foo;
+                    insert into bar values(77, 80);
+                end;
+
+                create table content(one, two);
+                            """)
+
+            with apsw.ext.Trace(out, self.db, trigger=True, vtable=True, indent=MARKER):
+                self.db.execute("""
+                            insert into foo values(77,88);
+                            select * from bar order by y,x;
+                            select * from pragma_function_list, pragma_compile_options where name='sum' or compile_options='ENABLE_FTS5'
+                            """).get
+
+        outs = out.getvalue()
+
+        for line in outs.splitlines():
+            self.assertTrue(line.startswith(MARKER))
+
+        self.assertIn("pragma_function_list", outs)
+        self.assertIn("CPU consumption", outs)
 
     def testExtDataClassRowFactory(self) -> None:
         "apsw.ext.DataClassRowFactory"

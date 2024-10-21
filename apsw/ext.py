@@ -589,60 +589,114 @@ def dbinfo(db: apsw.Connection,
 class Trace:
     """Use as a context manager to show each SQL statement run inside the block
 
-    All statements except triggers are shown including those issued
-    behind the scenes.::
+    Statements from your code as well as from other parts of SQLite are shown.::
 
         with apsw.ext.Trace(sys.stdout, db):
             method()
             db.execute("SQL")
             etc
 
-    :param file: File to print to.  If `None` then no information is gathered or
-           printed
-    :param db: :class:`~apsw.Connection` to gather SQLite stats from if not `None`.
-           Statistics from each SQL statement executed are added together.
+    :param file: File to print to.  If `None` then no information is
+           gathered or printed
+    :param db: :class:`~apsw.Connection` to trace.
+    :param trigger: The names of triggers being executed is always
+           shown.  If this is `True` then each statement of an
+           executing trigger is shown too.
+    :param vtable: If `True` then statements executed behind the
+           scenes by virtual tables are shown.
     :param truncate: Truncates SQL text to this many characters
     :param indent: Printed before each line of output
 
-    Tracing is done with :meth:`~apsw.Connection.trace_v2`.  If a
-    statement is run more than once then each time it is shown with
-    ``#`` and a numeric suffix.  If you have statements nested or
-    concurrent then that is show with a ``<`` showing the end of an
-    earlier statement.
+    You are shown each regular statement start with a prefix of ``>``,
+    end with a prefix of ``<`` if there were in between statements
+    like triggers, ``T`` indicating trigger statements, and ``V``
+    indicating virtual table statements.  As each statement ends you
+    are shown summary information.
 
-    As each statement completes, the number of times it was at a row
-    is shown (if non-zero).  If the
-    :meth:`~apsw.Connection.total_changes` counter has changed, then
-    the number of changes since the start of the statement is shown.
-    There is no way to track if the specific statement made the
-    changes, only that they happened during the running of the
-    statement.
+    .. list-table::
+        :header-rows: 1
+        :widths: auto
 
-    See :func:`ShowResourceUsage` to get summary information about the
+        * - Example
+          - Description
+        * - Time: 1.235
+          - Elapsed time since the statement started executing in seconds.
+            This is always shown.
+        * - Rows: 5
+          - How many times SQLite stopped execution providing a row to
+            be processed
+        * - Changes: 77
+          - The difference in the `total change count
+            <https://sqlite.org/c3ref/total_changes.html>`__ between
+            when the statement started and when it ended.  It will
+            include changes made by triggers, virtual table code etc.
+        * - FullScanRows: 12,334
+          - Number of rows visited doing a full scan of a table.  This
+            indicates an opportunity for an index.
+        * - Sort: 5
+          - The number of times SQLite had to do a sorting operation.
+            If you have indexes in the desired order then the sorting
+            can be skipped.
+        * - AutoIndexRows: 55,988
+          - SQLite had to create and add this many rows to an
+            `automatic index
+            <https://sqlite.org/optoverview.html#automatic_query_time_indexes>`__.
+            This indicates an opportunity for an index.
+        * - VmStep: 55,102
+          - How many `internal steps
+            <https://sqlite.org/opcode.html>`__ were needed.
+        * - Mem: 84.3KB
+          - How much memory was used to hold the statement and working data.
+
+
+    Tracing is done with :meth:`~apsw.Connection.trace_v2`.
+
+    See :func:`ShowResourceUsage` to get summary information about a
     block as a whole.  You can use this and that at the same time.
 
     See the :ref:`example <example_Trace>`.
     """
 
-    def __init__(self, file: TextIO | None, db: apsw.Connection, *, truncate: int = 70, indent: str = ""):
+    @dataclasses.dataclass
+    class stmt:
+        """Tracks a sqlite3_stmt for one statement lifetime
+
+        :meta private:
+        """
+
+        sql: str | None = None
+        rows: int = 0
+        vtable: bool = False
+        change_count: int = -1
+
+    def __init__(
+        self,
+        file: TextIO | None,
+        db: apsw.Connection,
+        *,
+        trigger: bool = False,
+        vtable: bool = False,
+        truncate: int = 75,
+        indent: str = "",
+    ):
         self.file = file
         self.db = db
+        self.trigger = trigger
+        self.vtable = vtable
         self.indent = indent
         self.truncate = truncate
 
     def _truncate(self, text: str) -> str:
+        text = text.strip()
         return text[:self.truncate] + "..." if len(text) > self.truncate else text
 
     def __enter__(self):
         if not self.file:
             return self
-        # track how many SQLITE_TRACE_ROW there are
-        self.row_counter = collections.defaultdict(int)
-        # track total_changes from start to end of statement
-        self.change_counter = collections.defaultdict(int)
-        # track how many times this (sql,id) combination has been seen
-        self.seen = collections.defaultdict(int)
-        # id of the last SQLITE_TRACE_STMT we output to detect
+
+        self.statements: collections.defaultdict[int, Trace.stmt] = collections.defaultdict(Trace.stmt)
+
+        # id,sql of the last SQLITE_TRACE_STMT we output to detect
         # interleaving of queries
         self.last_emitted = None
 
@@ -654,46 +708,89 @@ class Trace:
 
     def _sqlite_trace(self, event: dict):
         if event["code"] == apsw.SQLITE_TRACE_STMT:
-            i = self.seen[(event["sql"], event["id"])]
-            print(self.indent, ">", self._truncate(event["sql"]), f"#{i+1}" if i else "", file=self.file)
-            self.row_counter[event["id"]] = 0
-            self.change_counter[event["id"]] = event["total_changes"]
-            self.last_emitted = event["id"]
+            stmt = self.statements[event["id"]]
+            if stmt.change_count == -1:
+                stmt.change_count = event["total_changes"]
+
+            if event["trigger"]:
+                if stmt.sql is None:
+                    # its really virtual table
+                    stmt.vtable = True
+                    stmt.sql = event["sql"]
+                    if self.vtable:
+                        print(self.indent, "V", self._truncate(event["sql"]), file=self.file)
+                        self.last_emitted = event["id"], event["sql"]
+
+                else:
+                    if self.trigger or event["sql"].startswith("TRIGGER "):
+                        print(self.indent, "T", self._truncate(event["sql"]), file=self.file)
+                        self.last_emitted = event["id"], event["sql"]
+            else:
+                assert stmt.sql is None
+                stmt.sql = event["sql"]
+                print(self.indent, ">", self._truncate(event["sql"]), file=self.file)
+                self.last_emitted = event["id"], event["sql"]
 
         elif event["code"] == apsw.SQLITE_TRACE_ROW:
-            self.row_counter[event["id"]] += 1
+            self.statements[event["id"]].rows += 1
 
         elif event["code"] == apsw.SQLITE_TRACE_PROFILE:
-            interleaving = self.last_emitted != event["id"]
+            stmt = self.statements.get(event["id"], None)
+            if stmt is None:
+                return
+
+            is_trigger = stmt.sql != event["sql"]
+
+            if is_trigger and not self.trigger:
+                return
+
+            interleaving = self.last_emitted != (event["id"], event["sql"])
+
+            if not is_trigger:
+                self.statements.pop(event["id"])
+
+            if stmt.vtable and not self.vtable:
+                return
 
             if interleaving:
-                i = self.seen[(event["sql"], event["id"])]
-                print(self.indent, "<", event["sql"][: self.truncate], f"#{i+1}" if i else "", file=self.file)
-            self.last_emitted = None
-
-            self.seen[(event["sql"], event["id"])] += 1
-
-            try:
-                rows_read = self.row_counter.pop(event["id"])
-            except KeyError:
-                # this would happen if the statement started before our context manager
-                rows_read = 0
-            try:
-                changes = event["total_changes"] - self.change_counter.pop(event["id"])
-            except KeyError:
-                changes = 0
+                print(self.indent, "<" if not stmt.vtable else "V", self._truncate(event["sql"]), file=self.file)
 
             seconds = event["nanoseconds"] / 1_000_000_000
 
+            fields = [f"Time: {seconds:.03f}"]
+
+            if stmt.rows:
+                fields.append(f"Rows: {stmt.rows:,}")
+
+            changes = event["total_changes"] - stmt.change_count if stmt.change_count != -1 else 0
+            if changes:
+                fields.append(f"Changes: {changes:,}")
+
+            for field, desc, threshold in (
+                ("SQLITE_STMTSTATUS_FULLSCAN_STEP", "FullScanRows", 1000),
+                ("SQLITE_STMTSTATUS_SORT", "Sort", 1),
+                ("SQLITE_STMTSTATUS_AUTOINDEX", "AutoIndexRows", 100),
+                ("SQLITE_STMTSTATUS_VM_STEP", "VmStep", 100),
+                ("SQLITE_STMTSTATUS_MEMUSED", "Mem", 16384),
+            ):
+                val = event["stmt_status"][field]
+                if val >= threshold:
+                    if field == "SQLITE_STMTSTATUS_MEMUSED":
+                        power = math.floor(math.log(val, 1024))
+                        suffix = ["B", "KB", "MB", "GB", "TB"][int(power)]
+                        val = val / 1024**power
+                        fields.append(f"{desc}: {val:.1f}{suffix}")
+                    else:
+                        fields.append(f"{desc}: {val:,}")
+
             print(
                 self.indent,
-                "    ",
-                f"{seconds:.03f}ms",
-                f"{rows_read:,} rows" if rows_read else "",
-                "   " if rows_read and changes else "",
-                f"{'~' if interleaving else ''}{changes:,} changes" if changes else "",
+                "   ",
+                "  ".join(fields),
                 file=self.file,
             )
+
+            self.last_emitted = event["id"], event["sql"]
 
     def __exit__(self, *_):
         self.db.trace_v2(0, None, id=self)
@@ -774,6 +871,7 @@ class ShowResourceUsage:
             self.stmt_status[k] = val + self.stmt_status.get(k, 0)
 
     def db_status_get(self) -> dict[str, int]:
+        ":meta private:"
         return {
             "SQLITE_DBSTATUS_LOOKASIDE_USED": self.db.status(apsw.SQLITE_DBSTATUS_LOOKASIDE_USED)[0],
             "SQLITE_DBSTATUS_LOOKASIDE_HIT": self.db.status(apsw.SQLITE_DBSTATUS_LOOKASIDE_HIT)[1],

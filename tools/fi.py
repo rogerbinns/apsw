@@ -5,6 +5,7 @@ import sys
 import gc
 import math
 import traceback
+import io
 import os
 import glob
 import inspect
@@ -383,26 +384,38 @@ def exercise(example_code, expect_exception):
     con.create_window_function("sumint", SumInt)
     con.create_window_function("sumint2", wf)
 
-    for row in con.execute(
-        """
-            CREATE TABLE t3(x, y);
-            INSERT INTO t3 VALUES('a', 4),
-                                ('b', 5),
-                                ('c', 3),
-                                ('d', 8),
-                                ('e', 1);
-            -- Use the window function
-            SELECT x, sumint(y) OVER (
-            ORDER BY x ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING
-            ) AS sum_y
-            FROM t3 ORDER BY x;
-            SELECT x, sumint2(y) OVER (
-            ORDER BY x ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING
-            ) AS sum_y
-            FROM t3 ORDER BY x;
-        """
-    ):
-        pass
+    out = io.StringIO()
+
+    with apsw.ext.ShowResourceUsage(out, db=con):
+        with apsw.ext.Trace(out, con, trigger=True, vtable=True):
+            for _ in con.execute(
+                """
+                    CREATE TABLE t3(x, y);
+                    INSERT INTO t3 VALUES('a', 4),
+                                        ('b', 5),
+                                        ('c', 3),
+                                        ('d', 8),
+                                        ('e', 1);
+                    -- Use the window function
+                    SELECT x, sumint(y) OVER (
+                    ORDER BY x ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING
+                    ) AS sum_y
+                    FROM t3 ORDER BY x;
+                    SELECT x, sumint2(y) OVER (
+                    ORDER BY x ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING
+                    ) AS sum_y
+                    FROM t3 ORDER BY x;
+                    select * from pragma_function_list;
+                    create table xxfoo(x,y);
+                    create trigger mytrig insert on xxfoo
+                    begin
+                      insert into t3 values(10,20);
+                      insert into t3 values(11,22);
+                    end;
+                    insert into xxfoo values(1,2);
+                """
+            ):
+                pass
 
     for n in """db_names cache_flush changes filename filename_journal
                 filename_wal get_autocommit in_transaction interrupt last_insert_rowid
@@ -598,7 +611,7 @@ class Tester:
         self.example_code = []
         for example in pathlib.Path().glob("examples/*.py"):
             code = example.read_text()
-                    # we do various transformations but must keep the line numbers the same
+            # we do various transformations but must keep the line numbers the same
             code = code.replace("import os", "import os,contextlib")
             # make it use tmpfs
             code = code.replace('"dbfile"', f'"{ tmpdir.name }/dbfile-delme-example"')
@@ -607,7 +620,9 @@ class Tester:
             code = code.replace("apsw.ext.log_sqlite()", "apsw.ext.log_sqlite(level=0)")
             # resource usage is deliberately slow
             code = code.replace("time.sleep(1.3)", "time.sleep(0)")
-            code = re.sub(r"ShowResourceUsage\([^)]*\)", "ShowResourceUsage(None)", code)
+            # and it and Trace make output
+            code = code.replace("import random", "import random,io; string_sink=io.StringIO()")
+            code = code.replace("sys.stdout,", "string_sink,")
             # fix pprint
             code = code.replace("from pprint import pprint", "pprint = print")
 
