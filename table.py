@@ -4,23 +4,22 @@ import apsw.fts5
 import apsw.ext
 import sys
 import zlib
+from pprint import pprint
 
 apsw.bestpractice.apply(apsw.bestpractice.recommended)
 
 import unittest
 
-class FTS5Table(unittest.TestCase):
 
+class FTS5Table(unittest.TestCase):
     ### Content used in tests
 
-    # crc32 provides a stable 32 bit number for each line so it can be
-    # used as a rowid
-    content = {zlib.crc32(line.strip().encode()):
+    lines = [
         line.strip()
         for line in
-    # The English is random lines from the APSW documentation.  The
-    # non-English is random lines from wikipedia.
-    """
+        # The English is random lines from the APSW documentation.  The
+        # non-English is random lines from wikipedia.
+        """
     If the html doesn’t start with whitespace then < or &, it is not considered HTML
     This is useful for queries where less than an entire word has been provided such as doing
     Numeric ranges to generate. Smaller values allow showing results with less input but a larger
@@ -49,52 +48,132 @@ class FTS5Table(unittest.TestCase):
     lösen und eine Befreiungs­armee zu rekru­tieren, womit die Macht der Pflanzer in den Sklaven­staaten gebrochen werden
     """.splitlines()
         if line.strip()
+    ]
+
+    # crc32 provides a deterministic 32 bit number for each line so it can be
+    # used as a rowid no matter the platform.
+    content = {
+        zlib.crc32(line.encode()): (
+            # each column has unique text prepended so we can verify
+            # queries are correctly scoped
+            "l’étape humphrey " + line,
+            "L'encyclopédie appleby " + line,
+        )
+        for line in lines
     }
 
-    # this text is always added to each column
-    always = [
-        line.strip()
-        for line in """
-    l’étape humphrey
-    L'encyclopédie appleby
-    """.splitlines()
-        if line.strip()
-    ]
+    del lines
 
     def setUp(self):
         self.db = apsw.Connection("")
 
+    def insert_content(self, table: apsw.fts5.Table):
+        for rowid, cols in FTS5Table.content.items():
+            val = table.upsert(*cols, rowid=rowid)
+            assert val == rowid, f"{val=} {rowid=}"
 
     def testTableContent(self):
         "Reading, writing, changing table content"
 
-        self.db.execute("""
+        # the table and column names used deliberately have characters that need to be quoted in
+        # SQL so we can verify they are
+
+        self.db.execute(r"""
             create table normal(oid, "with space");
-            create table withrowid(special INTEGER PRIMARY KEY AUTOINCREMENT, [oi d], "co""l2");
-            create view view_normal(rowid, col1, col2) as select rowid,oid AS "1-2", "with space" AS "select" from normal;
+            create table withrowid(special INTEGER PRIMARY KEY AUTOINCREMENT, [oi\ ' " d], "co""12");
+            create view view_normal(rowid, "1-2", "select") as select rowid,oid,"with space" from normal;
             """)
 
-
-        def do_insert(table: apsw.fts5.Table):
-            for rowid, text in FTS5Table.content.items():
-                val = table.upsert(*(FTS5Table.always[i] + " " + text for i in range(len(FTS5Table.always))), rowid=rowid)
-                assert val == rowid, f"{val=} {rowid=}"
-
-
         fts = apsw.fts5.Table.create(self.db, "f\"t's5", ["_rowid_", '"'])
-        do_insert(fts)
+        self.insert_content(fts)
+        self.assertEqual(fts.row_count, len(FTS5Table.content))
 
-        fts_rowid = apsw.fts5.Table.create(self.db, "fts5-2", None, content="withrowid", content_rowid="special")
-        do_insert(fts_rowid)
+        fts_rowid = apsw.fts5.Table.create(
+            self.db, "fts5-2", None, content="withrowid", content_rowid="special", generate_triggers=True
+        )
+        self.insert_content(fts_rowid)
+        self.assertEqual(fts_rowid.row_count, len(FTS5Table.content))
 
-        fts_rowid.row_count
+        # populate normnal so rebuild picks up the content because we can't
+        self.db.execute('insert into normal(rowid,oid,"with space") select rowid, _rowid_, """" from "f""t\'s5"')
+        fts_view = apsw.fts5.Table.create(self.db, "fts_view", None, content="view_normal")
+        self.assertRaisesRegex(apsw.SQLError, ".*modify.*is a view", self.insert_content, fts_view)
+        self.assertEqual(fts_view.row_count, len(FTS5Table.content))
 
-        fts_view=apsw.fts5.Table.create(self.db, "fts_view", None, content="view_normal")
-        self.assertRaisesRegex(apsw.SQLError, ".*modify.*is a view", do_insert, fts_view)
+        tables = fts, fts_rowid, fts_view
+        for key, cols in FTS5Table.content.items():
+            for table in tables:
+                self.assertEqual(table.row_by_id(key, table.structure.columns), cols)
+                for column in range(len(cols)):
+                    self.assertEqual(table.row_by_id(key, table.structure.columns[column]), cols[column])
 
-        self.assertEqual(fts.row_count, fts_rowid.row_count)
-        self.assertEqual(fts.row_count, fts_view.row_count)
+        for table in tables:
+            for key in FTS5Table.content:
+                assert key+1 not in FTS5Table.content
+                for key in FTS5Table.content:
+                    column_names = table.structure.columns
+                    c = table.change_cookie
+                    self.assertRaises(KeyError, table.row_by_id, key + 1, column_names[1])
+                    if table is not fts_view:
+                        self.assertEqual(key, table.upsert(str(key), rowid=key))
+                        self.assertEqual(table.row_by_id(key, column_names[0]), str(key))
+                        self.assertNotEqual(c, table.change_cookie)
+                        c = table.change_cookie
+                        self.assertEqual(key + 10, table.upsert("hello", rowid=key + 10))
+                        self.assertEqual("hello", table.row_by_id(key + 10, column_names[0]))
+                        self.assertNotEqual(c, table.change_cookie)
+                        c = table.change_cookie
+                        self.assertTrue(table.delete(key))
+                        self.assertTrue(table.delete(key+10))
+                        self.assertRaises(KeyError, table.row_by_id, key, column_names[1])
+                        self.assertFalse(table.delete(key))
+                        self.assertNotEqual(c, table.change_cookie)
 
-        for key in FTS5Table.content:
-            self.assertEqual(fts.row_by_id(key, "with space"), fts_rowid.row_by_id(key, "select"))
-            self.assertEqual(fts.row_by_id(key, "oid"), fts_view.row_by_id(key, "1-2"))
+            keys = list(FTS5Table.content.keys())
+            if table is fts_view:
+                self.assertRaises(ValueError, table.command_delete, keys[0])
+                self.assertRaises(ValueError, table.command_delete, keys[0], "one", "two", "three")
+            else:
+                self.insert_content(table)
+                self.assertNotEqual(0, table.row_count)
+                if table.structure.content:
+                    table.command_delete(99, "one", "two")
+                    table.command_delete_all()
+                    if not table.structure.content:
+                        self.assertEqual(0, table.row_count)
+                        table.command_integrity_check()
+                    else:
+                        # this gives corrupt error on external content
+                        # table because the FTS table no longer
+                        # matches the external content so we skip
+                        self.assertRaises(apsw.CorruptError, table.command_integrity_check)
+                else:
+                    self.assertRaisesRegex(apsw.SQLError, ".*may only be used with.*", table.command_delete_all)
+
+       # coverage and errors
+        self.db.execute("attach dbfile2 as 'second'; drop table if exists second.under_test")
+        table = apsw.fts5.Table.create(self.db, "Under_Test", ["one", "Two"], schema="second")
+
+        key = 12345
+        self.assertEqual(key, table.upsert(TWO="hello", rOwID=key))
+        self.assertEqual("hello", table.row_by_id(key, "tWO"))
+        self.assertEqual("hello", self.db.execute("select two from second.under_test").get)
+
+        self.assertRaises(ValueError, table.upsert, "one", "two", "three")
+        self.assertRaises(ValueError, table.upsert)
+        self.assertRaises(ValueError, table.upsert, "hello", OnE=key)
+        self.assertRaises(ValueError, table.upsert, "hello", OnskjdsafE=key)
+
+        apsw.fts5.Table(self.db, "UNDER_TEST", schema="secOND")
+        self.assertRaises(ValueError, apsw.fts5.Table, self.db, "UNDER_TEST", schema="zebra")
+        self.assertRaises(ValueError, apsw.fts5.Table, self.db, "UNDER_TEST")
+        self.assertRaises(ValueError, apsw.fts5.Table, self.db, "xyz", schema="zebra")
+
+    def testTableCreate(self):
+        "Table creation"
+        pass
+
+
+if __name__ == "__main__":
+    unittest.main()
+

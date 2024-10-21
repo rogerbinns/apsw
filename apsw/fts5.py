@@ -1214,10 +1214,10 @@ class Table:
         )
 
     def __str__(self):
-        return f"<FTS5Table { self.quoted_table_name }>"
+        return self.__repr__()
 
     def __repr__(self):
-        return f"<FTS5Table { self.quoted_table_name } at {id(self):x}>"
+        return f"<FTS5Table { self._schema }.{ self._name} at 0x{id(self):x} on { self._db }>"
 
     def _get_change_cookie(self) -> int:
         """An int that changes if the content of the table has changed.
@@ -1269,8 +1269,6 @@ class Table:
                 (self._name,),
             )
         )
-        if len(found) == 0:
-            raise ValueError(f"'{self._name}' is not a table on '{ self._schema}'")
         assert len(found) == 1
         return _fts5_vtable_parse(found[0])
 
@@ -1422,9 +1420,19 @@ class Table:
 
         :returns: True if a row was deleted
         """
-        with self.db:
-            self.db.execute(f"delete from {self.quoted_table_name } where rowid=(?,)", (rowid,))
-            return bool(self.db.changes())
+        with self._db:
+            c = self._db.total_changes()
+            if self.structure.content:
+                target_table = f"{self._qschema}.{quote_name(self.structure.content)}"
+            else:
+                target_table = self.quoted_table_name
+
+            sql = f"delete from { target_table} where "
+            sql += quote_name(self.structure.content_rowid or "rowid")
+            sql += "=?"
+
+            self._db.execute(sql, (rowid,))
+            return c != self._db.total_changes()
 
     def upsert(self, *args: apsw.SQLiteValue, **kwargs: apsw.SQLiteValue) -> int:
         """Insert or update with columns by positional and keyword arguments
@@ -1464,7 +1472,7 @@ class Table:
 
         columns = self.columns
 
-        if self.structure.content is not None:
+        if self.structure.content:
             target_table = f"{self._qschema}.{quote_name(self.structure.content)}"
         else:
             target_table = self.quoted_table_name
@@ -1481,7 +1489,8 @@ class Table:
             raise ValueError("You must supply some values")
 
         sql = f"insert or replace into { target_table } ("
-        sql += ", ".join(quote_name(column) for column in columns[:num_args])
+
+        query_column_names = list(columns[:num_args])
 
         if kwargs:
             seen = set(columns[:num_args])
@@ -1492,17 +1501,17 @@ class Table:
                 seen.add(column)
 
                 if 0 == apsw.stricmp(column, "rowid"):
-                    sql += ", " + quote_name(self.structure.content_rowid or "rowid")
+                    query_column_names.append(self.structure.content_rowid or "rowid")
                     continue
 
                 # find matching column
                 for candidate in columns:
                     if 0 == apsw.stricmp(column, candidate):
-                        sql += ", " + quote_name(column)
+                        query_column_names.append(column)
                         break
                 else:
                     raise ValueError(f"'{column}' is not a column name - {columns=}")
-
+        sql += ",".join(quote_name(col) for col in query_column_names)
         sql += ") values ("
         sql += ",".join("?" for _ in range(num_args + num_kwargs))
         sql += ")"
@@ -1512,7 +1521,13 @@ class Table:
     # some method helpers pattern, not including all of them yet
 
     def command_delete(self, rowid: int, *column_values: str):
-        """Does `delete <https://www.sqlite.org/fts5.html#the_delete_command>`__"""
+        """Does `delete <https://www.sqlite.org/fts5.html#the_delete_command>`__
+
+        See :meth:`delete` for regular row deletion.
+
+        If you are using an external content table, it is better to use triggers on
+        that table.
+        """
         if len(column_values) != len(self.columns):
             raise ValueError(
                 f"You need to provide values for every column ({ len(self.columns)}) - got { len(column_values)}"
@@ -1525,7 +1540,11 @@ class Table:
         )
 
     def command_delete_all(self) -> None:
-        "Does `delete all <https://www.sqlite.org/fts5.html#the_delete_all_command>`__"
+        """Does `delete all <https://www.sqlite.org/fts5.html#the_delete_all_command>`__
+
+        If you are using an external content table, it is better to use triggers on
+        that table.
+        """
         self._db.execute(f"insert into { self._qschema}.{ self._qname }({ self._qname}) VALUES('delete-all')")
 
     def command_integrity_check(self, external_content: bool = True) -> None:
@@ -2025,7 +2044,7 @@ class Table:
             cols = ",".join(quote_name(c) for c in column)
             for row in self._db.execute(f"select {cols} from { self.quoted_table_name } where rowid=?", (id,)):
                 return row
-        raise KeyError(f"document {id=} not found")
+        raise KeyError(f"row {id=} not found")
 
     def closest_tokens(
         self,
