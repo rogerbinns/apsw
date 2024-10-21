@@ -1225,28 +1225,32 @@ tracehook_cb(unsigned code, void *vconnection, void *one, void *two)
   {
 
   case SQLITE_TRACE_STMT:
-#define V(x) sqlite3_stmt_status(stmt, x, 1)
-
     stmt = (sqlite3_stmt *)one;
-    /* reset all the counters */
-    V(SQLITE_STMTSTATUS_FULLSCAN_STEP);
-    V(SQLITE_STMTSTATUS_SORT);
-    V(SQLITE_STMTSTATUS_AUTOINDEX);
-    V(SQLITE_STMTSTATUS_VM_STEP);
-    V(SQLITE_STMTSTATUS_REPREPARE);
-    V(SQLITE_STMTSTATUS_RUN);
-    V(SQLITE_STMTSTATUS_FILTER_MISS);
-    V(SQLITE_STMTSTATUS_FILTER_HIT);
-#undef V
+    const char *sql = (const char *)two;
+    int trigger = sql[0] == '-' && sql[1] == '-' && sql[2] == ' ';
 
+    if (!trigger)
+    {
+#define V(x) sqlite3_stmt_status(stmt, x, 1)
+      /* reset all the counters */
+      V(SQLITE_STMTSTATUS_FULLSCAN_STEP);
+      V(SQLITE_STMTSTATUS_SORT);
+      V(SQLITE_STMTSTATUS_AUTOINDEX);
+      V(SQLITE_STMTSTATUS_VM_STEP);
+      V(SQLITE_STMTSTATUS_REPREPARE);
+      V(SQLITE_STMTSTATUS_RUN);
+      V(SQLITE_STMTSTATUS_FILTER_MISS);
+      V(SQLITE_STMTSTATUS_FILTER_HIT);
+#undef V
+    }
     for (unsigned i = 1; i < connection->tracehooks_count; i++)
     {
       /* only calculate this if needed */
       if (connection->tracehooks[i].mask & SQLITE_TRACE_STMT)
       {
 
-        param = Py_BuildValue("{s: i, s: N, s: s, s: O, s: L}", "code", code, "id",
-                              PyLong_FromVoidPtr((void *)sqlite3_sql(stmt)), "sql", sqlite3_sql(stmt), "connection",
+        param = Py_BuildValue("{s: i, s: N, s: s, s: O, s: O, s: L}", "code", code, "id", PyLong_FromVoidPtr(one),
+                              "sql", trigger ? sql + 3 : sql, "trigger", trigger ? Py_True : Py_False, "connection",
                               connection, "total_changes", sqlite3_total_changes64(connection->db));
         break;
       }
@@ -1254,15 +1258,7 @@ tracehook_cb(unsigned code, void *vconnection, void *one, void *two)
     break;
 
   case SQLITE_TRACE_ROW:
-    /* ::TODO:: cache PyUnicode of the sql so that we don't keep
-       re-creating it for every row - eg if a million rows are visited for
-       the query we don't need to construct the sql text a million times.
-
-       The cache can be a single entry long
-    */
-    stmt = (sqlite3_stmt *)one;
-    param = Py_BuildValue("{s: i, s: N, s: s, s: O}", "code", code, "id", PyLong_FromVoidPtr((void *)sqlite3_sql(stmt)),
-                          "sql", sqlite3_sql(stmt), "connection", connection);
+    param = Py_BuildValue("{s: i, s: N, s: O}", "code", code, "id", PyLong_FromVoidPtr(one), "connection", connection);
     break;
 
   case SQLITE_TRACE_CLOSE:
@@ -1291,11 +1287,11 @@ tracehook_cb(unsigned code, void *vconnection, void *one, void *two)
         sqlite3_mutex_enter(sqlite3_db_mutex(connection->db));
         param = Py_BuildValue(
             "{s: i, s: O, s: N, s: s, s: L, s: L, s: {" K K K K K K K K "s: i}}", "code", code, "connection",
-            connection, "id", PyLong_FromVoidPtr((void *)sqlite3_sql(stmt)), "sql", sqlite3_sql(stmt), "nanoseconds",
-            *nanoseconds, "total_changes", sqlite3_total_changes64(connection->db), "stmt_status",
-            V(SQLITE_STMTSTATUS_FULLSCAN_STEP), V(SQLITE_STMTSTATUS_SORT), V(SQLITE_STMTSTATUS_AUTOINDEX),
-            V(SQLITE_STMTSTATUS_VM_STEP), V(SQLITE_STMTSTATUS_REPREPARE), V(SQLITE_STMTSTATUS_RUN),
-            V(SQLITE_STMTSTATUS_FILTER_MISS), V(SQLITE_STMTSTATUS_FILTER_HIT), V(SQLITE_STMTSTATUS_MEMUSED));
+            connection, "id", PyLong_FromVoidPtr(one), "sql", sqlite3_sql(stmt), "nanoseconds", *nanoseconds,
+            "total_changes", sqlite3_total_changes64(connection->db), "stmt_status", V(SQLITE_STMTSTATUS_FULLSCAN_STEP),
+            V(SQLITE_STMTSTATUS_SORT), V(SQLITE_STMTSTATUS_AUTOINDEX), V(SQLITE_STMTSTATUS_VM_STEP),
+            V(SQLITE_STMTSTATUS_REPREPARE), V(SQLITE_STMTSTATUS_RUN), V(SQLITE_STMTSTATUS_FILTER_MISS),
+            V(SQLITE_STMTSTATUS_FILTER_HIT), V(SQLITE_STMTSTATUS_MEMUSED));
         sqlite3_mutex_leave(sqlite3_db_mutex(connection->db));
         break;
       }
@@ -1435,17 +1431,19 @@ Connection_set_profile(Connection *self, PyObject *const *fast_args, Py_ssize_t 
       - Connection this trace event belongs to
     * - sql
       - :class:`str`
-      - SQL text (except SQLITE_TRACE_CLOSE)
+      - SQL text (except SQLITE_TRACE_ROW and SQLITE_TRACE_CLOSE).
     * - id
       - :class:`int`
-      - Different executing statements can have the same SQL, for example if you
-        are reusing SQL with different bindings.  This value lets you tell them
-        apart.  The id will be reused when a statement is reused from the statement
-        cache.
+      - An opaque key to correlate events on the same statement.  The
+        id can be reused after SQLITE_TRACE_PROFILE.
+    * - trigger
+      - :class:`bool`
+      - If `trigger <https://www.sqlite.org/lang_createtrigger.html>`__
+        SQL is executing then this is ``True`` and the SQL is of the trigger.
+        Virtual table nested queries also come through as trigger activity.
     * - total_changes
       - :class:`int`
-      - Value of total_changes at start and end of statement execution
-        (SQLITE_TRACE_STMT and SQLITE_TRACE_PROFILE only)
+      - Value of :meth:`total_changes`  (SQLITE_TRACE_STMT and SQLITE_TRACE_PROFILE only)
     * - nanoseconds
       - :class:`int`
       - nanoseconds SQL took to execute (SQLITE_TRACE_PROFILE only)
@@ -1455,11 +1453,26 @@ Connection_set_profile(Connection *self, PyObject *const *fast_args, Py_ssize_t 
         <https://www.sqlite.org/c3ref/c_stmtstatus_counter.html>`__ - eg
         *"SQLITE_STMTSTATUS_VM_STEP"* and corresponding integer values.
         The counters are reset each time a statement
-        starts execution.
+        starts execution.  This includes any changes made by triggers.
 
   Note that SQLite ignores any errors from the trace callbacks, so
   whatever was being traced will still proceed.  Exceptions will be
   delivered when your Python code resumes.
+
+  If you register for all trace types, the following sequence will happen.
+
+  * SQLITE_TRACE_STMT with `trigger` `False` and an `id` and `sql` of
+    the statement.
+  * Multiple times: SQLITE_TRACE_STMT with the same `id` and `trigger`
+    `True` if a trigger is executed.  The first time the `sql` will be
+    ``TRIGGER name`` and then subsequent calls will be lines of the
+    trigger.  This also happens for virtual tables that make queries.
+  * Multiple times: SQLITE_TRACE_ROW with the same `id` for each time
+    execution stopped at a row. (Rows visited by triggers do not cause
+    thie event)
+  * SQLITE_TRACE_PROFILE with the same `id` for any virtual table
+    queries - the ``sql`` will be of those queries
+  * SQLITE_TRACE_PROFILE with the same `id` for the initial SQL.
 
   .. seealso::
 

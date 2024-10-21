@@ -17,12 +17,11 @@ Added :func:`recursive triggers
 <apsw.bestpractice.connection_recursive_triggers>` and :func:`optimize
 <apsw.bestpractice.connection_optimize>` to :mod:`apsw.bestpractice`.
 
-Multiple callbacks can be present for :meth:`Connection.trace_v2`
-(:issue:`502`)
+Multiple callbacks can be present for :meth:`Connection.trace_v2` with
+APSW ensuring they are all called (:issue:`502`)
 
-:meth:`Connection.trace_v2` callback information now has ``id`` and
-``total_changes`` fields.  The id can be used to distinguish when the
-same SQL is being executed concurrently.
+:meth:`Connection.trace_v2` callback information now has ``trigger``,
+``id``, and ``total_changes`` fields.
 
 Added :attr:`Connection.data_version` for getting a change counter.
 `pragma data_version
