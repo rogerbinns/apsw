@@ -37,9 +37,15 @@ counting, and timing per statement for use in a context block.
 
 Added :doc:`FTS5 support <textsearch>` including registering and
 calling tokenizers, and auxiliary functions.  The :mod:`apsw.fts5`
-module provides additional classes and methods for working with FTS5.
-The shell gets a :ref:`ftsq <shell-cmd-ftsq>` command for issuing
-queries.
+module provides many additional classes and methods for working with
+FTS5, including tokenizers for HTML, JSON, regular expressions,
+support tokenizers for synonyms, stop words, transformers, and a
+:class:`~apsw.fts5.Table` class that wraps access to a FTS5 table
+(including :meth:`creating one <apsw.fts5.Table.create>`) with
+:meth:`~apsw.fts5.Table.search`, :meth:`~apsw.fts5.Table.more_like`,
+and :meth:`~apsw.fts5.Table.query_suggest`.  :mod:`apsw.fts5query` can
+parse, modify, and reconstruct queries.  The shell gets a :ref:`ftsq
+<shell-cmd-ftsq>` command for issuing queries.
 
 Added :mod:`apsw.unicode` which implements Unicode algorithms for
 determining codepoint groups making up a user perceived character,
