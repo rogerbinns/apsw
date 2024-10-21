@@ -473,11 +473,12 @@ add_apsw_constants(PyObject *module)
 
     /* Function Flags */
     the_dict = Py_BuildValue(
-        "{siissiissiissiissiis}",
+        "{siissiissiissiissiissiis}",
         "SQLITE_DETERMINISTIC", SQLITE_DETERMINISTIC, SQLITE_DETERMINISTIC, "SQLITE_DETERMINISTIC",
         "SQLITE_DIRECTONLY", SQLITE_DIRECTONLY, SQLITE_DIRECTONLY, "SQLITE_DIRECTONLY",
         "SQLITE_INNOCUOUS", SQLITE_INNOCUOUS, SQLITE_INNOCUOUS, "SQLITE_INNOCUOUS",
         "SQLITE_RESULT_SUBTYPE", SQLITE_RESULT_SUBTYPE, SQLITE_RESULT_SUBTYPE, "SQLITE_RESULT_SUBTYPE",
+        "SQLITE_SELFORDER1", SQLITE_SELFORDER1, SQLITE_SELFORDER1, "SQLITE_SELFORDER1",
         "SQLITE_SUBTYPE", SQLITE_SUBTYPE, SQLITE_SUBTYPE, "SQLITE_SUBTYPE");
     if (!the_dict)
     {
@@ -806,7 +807,8 @@ add_apsw_constants(PyObject *module)
 
     /* Virtual Table Scan Flags */
     the_dict = Py_BuildValue(
-        "{siis}",
+        "{siissiis}",
+        "SQLITE_INDEX_SCAN_HEX", SQLITE_INDEX_SCAN_HEX, SQLITE_INDEX_SCAN_HEX, "SQLITE_INDEX_SCAN_HEX",
         "SQLITE_INDEX_SCAN_UNIQUE", SQLITE_INDEX_SCAN_UNIQUE, SQLITE_INDEX_SCAN_UNIQUE, "SQLITE_INDEX_SCAN_UNIQUE");
     if (!the_dict)
     {
@@ -1024,6 +1026,7 @@ add_apsw_constants(PyObject *module)
         || PyModule_AddIntConstant(module, "SQLITE_INDEX_CONSTRAINT_NE", SQLITE_INDEX_CONSTRAINT_NE)
         || PyModule_AddIntConstant(module, "SQLITE_INDEX_CONSTRAINT_OFFSET", SQLITE_INDEX_CONSTRAINT_OFFSET)
         || PyModule_AddIntConstant(module, "SQLITE_INDEX_CONSTRAINT_REGEXP", SQLITE_INDEX_CONSTRAINT_REGEXP)
+        || PyModule_AddIntConstant(module, "SQLITE_INDEX_SCAN_HEX", SQLITE_INDEX_SCAN_HEX)
         || PyModule_AddIntConstant(module, "SQLITE_INDEX_SCAN_UNIQUE", SQLITE_INDEX_SCAN_UNIQUE)
         || PyModule_AddIntConstant(module, "SQLITE_INNOCUOUS", SQLITE_INNOCUOUS)
         || PyModule_AddIntConstant(module, "SQLITE_INSERT", SQLITE_INSERT)
@@ -1158,6 +1161,7 @@ add_apsw_constants(PyObject *module)
         || PyModule_AddIntConstant(module, "SQLITE_SAVEPOINT", SQLITE_SAVEPOINT)
         || PyModule_AddIntConstant(module, "SQLITE_SCHEMA", SQLITE_SCHEMA)
         || PyModule_AddIntConstant(module, "SQLITE_SELECT", SQLITE_SELECT)
+        || PyModule_AddIntConstant(module, "SQLITE_SELFORDER1", SQLITE_SELFORDER1)
         || PyModule_AddIntConstant(module, "SQLITE_SHM_EXCLUSIVE", SQLITE_SHM_EXCLUSIVE)
         || PyModule_AddIntConstant(module, "SQLITE_SHM_LOCK", SQLITE_SHM_LOCK)
         || PyModule_AddIntConstant(module, "SQLITE_SHM_SHARED", SQLITE_SHM_SHARED)

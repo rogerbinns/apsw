@@ -3871,8 +3871,10 @@ SQLITE_INDEX_CONSTRAINT_OFFSET: int = 74
 """For `Virtual Table Constraint Operator Codes <https://sqlite.org/c3ref/c_index_constraint_eq.html>'__"""
 SQLITE_INDEX_CONSTRAINT_REGEXP: int = 67
 """For `Virtual Table Constraint Operator Codes <https://sqlite.org/c3ref/c_index_constraint_eq.html>'__"""
+SQLITE_INDEX_SCAN_HEX: int = 2
+"""For `Virtual Table Scan Flags <https://sqlite.org/c3ref/c_index_scan_hex.html>'__"""
 SQLITE_INDEX_SCAN_UNIQUE: int = 1
-"""For `Virtual Table Scan Flags <https://sqlite.org/c3ref/c_index_scan_unique.html>'__"""
+"""For `Virtual Table Scan Flags <https://sqlite.org/c3ref/c_index_scan_hex.html>'__"""
 SQLITE_INNOCUOUS: int = 2097152
 """For `Function Flags <https://sqlite.org/c3ref/c_deterministic.html>'__"""
 SQLITE_INSERT: int = 18
@@ -4139,6 +4141,8 @@ SQLITE_SCHEMA: int = 17
 """For `Result Codes <https://sqlite.org/rescode.html>'__"""
 SQLITE_SELECT: int = 21
 """For `Authorizer Action Codes <https://sqlite.org/c3ref/c_alter_table.html>'__"""
+SQLITE_SELFORDER1: int = 33554432
+"""For `Function Flags <https://sqlite.org/c3ref/c_deterministic.html>'__"""
 SQLITE_SHM_EXCLUSIVE: int = 8
 """For `Flags for the xShmLock VFS method <https://sqlite.org/c3ref/c_shm_exclusive.html>'__"""
 SQLITE_SHM_LOCK: int = 2
@@ -4408,7 +4412,7 @@ mapping_function_flags: dict[str | int, int | str]
 Doc at https://sqlite.org/c3ref/c_deterministic.html
 
 SQLITE_DETERMINISTIC SQLITE_DIRECTONLY SQLITE_INNOCUOUS
-SQLITE_RESULT_SUBTYPE SQLITE_SUBTYPE"""
+SQLITE_RESULT_SUBTYPE SQLITE_SELFORDER1 SQLITE_SUBTYPE"""
 
 mapping_limits: dict[str | int, int | str]
 """Run-Time Limit Categories mapping names to int and int to names.
@@ -4506,9 +4510,9 @@ SQLITE_VTAB_INNOCUOUS SQLITE_VTAB_USES_ALL_SCHEMAS"""
 
 mapping_virtual_table_scan_flags: dict[str | int, int | str]
 """Virtual Table Scan Flags mapping names to int and int to names.
-Doc at https://sqlite.org/c3ref/c_index_scan_unique.html
+Doc at https://sqlite.org/c3ref/c_index_scan_hex.html
 
-SQLITE_INDEX_SCAN_UNIQUE"""
+SQLITE_INDEX_SCAN_HEX SQLITE_INDEX_SCAN_UNIQUE"""
 
 mapping_wal_checkpoint: dict[str | int, int | str]
 """Checkpoint Mode Values mapping names to int and int to names.
