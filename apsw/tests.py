@@ -11009,7 +11009,7 @@ test_types_vals = (
     True,  # derived from integer
     False)
 
-from .ftstests import *
+from apsw.ftstests import *
 
 if __name__ == '__main__':
     setup()
