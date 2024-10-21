@@ -2306,13 +2306,19 @@
 "    - Connection this trace event belongs to\n" \
 "  * - sql\n" \
 "    - :class:`str`\n" \
-"    - SQL text (except SQLITE_TRACE_CLOSE)\n" \
+"    - SQL text (except SQLITE_TRACE_ROW and SQLITE_TRACE_CLOSE).\n" \
 "  * - id\n" \
-"    - :class`id`\n" \
-"    - Different executing statements can have the same SQL, for example if you\n" \
-"      are using bindings with different values.  This value lets you tell them\n" \
-"      apart.  The id will be reused when a statement is reused from the statement\n" \
-"      cache.\n" \
+"    - :class:`int`\n" \
+"    - An opaque key to correlate events on the same statement.  The\n" \
+"      id can be reused after SQLITE_TRACE_PROFILE.\n" \
+"  * - trigger\n" \
+"    - :class:`bool`\n" \
+"    - If `trigger <https://www.sqlite.org/lang_createtrigger.html>`__\n" \
+"      SQL is executing then this is ``True`` and the SQL is of the trigger.\n" \
+"      Virtual table nested queries also come through as trigger activity.\n" \
+"  * - total_changes\n" \
+"    - :class:`int`\n" \
+"    - Value of :meth:`total_changes`  (SQLITE_TRACE_STMT and SQLITE_TRACE_PROFILE only)\n" \
 "  * - nanoseconds\n" \
 "    - :class:`int`\n" \
 "    - nanoseconds SQL took to execute (SQLITE_TRACE_PROFILE only)\n" \
@@ -2322,11 +2328,26 @@
 "      <https://www.sqlite.org/c3ref/c_stmtstatus_counter.html>`__ - eg\n" \
 "      *\"SQLITE_STMTSTATUS_VM_STEP\"* and corresponding integer values.\n" \
 "      The counters are reset each time a statement\n" \
-"      starts execution.\n" \
+"      starts execution.  This includes any changes made by triggers.\n" \
 "\n" \
 "Note that SQLite ignores any errors from the trace callbacks, so\n" \
 "whatever was being traced will still proceed.  Exceptions will be\n" \
 "delivered when your Python code resumes.\n" \
+"\n" \
+"If you register for all trace types, the following sequence will happen.\n" \
+"\n" \
+"* SQLITE_TRACE_STMT with `trigger` `False` and an `id` and `sql` of\n" \
+"  the statement.\n" \
+"* Multiple times: SQLITE_TRACE_STMT with the same `id` and `trigger`\n" \
+"  `True` if a trigger is executed.  The first time the `sql` will be\n" \
+"  ``TRIGGER name`` and then subsequent calls will be lines of the\n" \
+"  trigger.  This also happens for virtual tables that make queries.\n" \
+"* Multiple times: SQLITE_TRACE_ROW with the same `id` for each time\n" \
+"  execution stopped at a row. (Rows visited by triggers do not cause\n" \
+"  thie event)\n" \
+"* SQLITE_TRACE_PROFILE with the same `id` for any virtual table\n" \
+"  queries - the ``sql`` will be of those queries\n" \
+"* SQLITE_TRACE_PROFILE with the same `id` for the initial SQL.\n" \
 "\n" \
 ".. seealso::\n" \
 "\n" \
