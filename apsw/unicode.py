@@ -654,7 +654,10 @@ def text_wrap(
 
 
 def codepoint_name(codepoint: int | str) -> str | None:
-    "Name or None if it doesn't have one"
+    """Name or None if it doesn't have one
+
+    For example codepoint 65 is named "LATIN CAPITAL LETTER A"
+    """
     return _unicode.codepoint_name(codepoint)
 
 

@@ -10222,7 +10222,7 @@ shell.write(shell.stdout, "hello world\\n")
                                             text_width=width,
                                             use_unicode=nb())
             except ValueError as e:
-                self.assertIn("Results can't be fitted in text width", str(e))
+                self.assertIn("Results can't be fit in text width", str(e))
 
         self.assertEqual(apsw.ext.format_query_table(self.db, "-- comment"), "")
 

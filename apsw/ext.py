@@ -15,12 +15,11 @@ import time
 import abc
 import enum
 import inspect
-import unicodedata
+import math
 import logging
 import traceback
 import re
 import string
-import textwrap
 import apsw
 import apsw.unicode
 import sys
@@ -1017,7 +1016,7 @@ def format_query_table(db: apsw.Connection,
                 are escaped, embedded nulls become \\0
             * - 1
               - hello \\\\  \\0{CJK UNIFIED IDEOGRAPH-65E5}{CJK UNIFIED IDEOGRAPH-672C}{CJK UNIFIED IDEOGRAPH-8A9E} world
-              - After step 0, all non-ascii characters are replaced with their :func:`unicodedata.name` or \\x and hex value
+              - After step 0, all non-ascii characters are replaced with their :func:`apsw.unicode.codepoint_name` or \\x and hex value
             * - 2
               - hello.\\........world
               - All non-ascii characters and whitespace are replaced by a dot
@@ -1143,10 +1142,7 @@ def _format_table(colnames: list[str], rows: list[apsw.SQLiteValues], colour: bo
                         def repl(s):
                             if s[0] in string.printable:
                                 return s[0]
-                            try:
-                                return "{" + unicodedata.name(s[0]) + "}"
-                            except ValueError:
-                                return "\\x" + f"{ord(s[0]):02}"
+                            return "{" + (apsw.unicode.codepoint_name(s[0]) or f"\\x{ord(s[0]):02}") + "}"
 
                         cell = re.sub(".", repl, cell)
 

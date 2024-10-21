@@ -20,7 +20,6 @@ import pathlib
 import re
 import sys
 import threading
-import unicodedata
 from contextvars import ContextVar
 from dataclasses import dataclass
 from types import ModuleType
@@ -2557,6 +2556,7 @@ if __name__ == "__main__":
     import argparse
     import html
     import json
+    import unicodedata
 
     import apsw.bestpractice
 
