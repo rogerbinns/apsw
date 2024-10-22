@@ -1213,6 +1213,8 @@ class Table:
             self._db, {func.__name__: func for func in (_apsw_get_statistical_info, _apsw_get_match_info)}
         )
 
+        register_tokenizers(self._db, map_tokenizers)
+
     def __str__(self):
         return self.__repr__()
 
@@ -1294,7 +1296,7 @@ class Table:
         """
 
         if locale is not None:
-            sql = f"select _apsw_get_match_info({self._qname}) from { self.quoted_table_name}(fts5_tokenize(?,?)) order by rank"
+            sql = f"select _apsw_get_match_info({self._qname}) from { self.quoted_table_name}(fts5_locale(?,?)) order by rank"
             bindings = (
                 locale,
                 query,
@@ -1514,8 +1516,7 @@ class Table:
         sql += ",".join(quote_name(col) for col in query_column_names)
         sql += ") values ("
         sql += ",".join("?" for _ in range(num_args + num_kwargs))
-        sql += ")"
-        sql += " RETURNING " + quote_name(self.structure.content_rowid or "rowid")
+        sql += "); select last_insert_rowid()"
         return sql
 
     # some method helpers pattern, not including all of them yet
@@ -1597,7 +1598,7 @@ class Table:
 
     def config_deletemerge(self, val: int | None = None) -> int:
         """Optionally sets, and returns `deletemerge <https://www.sqlite.org/fts5.html#the_deletemerge_configuration_option>`__"""
-        return self._config_internal("deletemerge", val, 16)  # type: ignore
+        return self._config_internal("deletemerge", val, 10)  # type: ignore
 
     def config_pgsz(self, val: int | None = None) -> int:
         """Optionally sets, and returns `page size <https://www.sqlite.org/fts5.html#the_pgsz_configuration_option>`__"""
@@ -1607,7 +1608,7 @@ class Table:
         """Optionally sets, and returns `rank <https://www.sqlite.org/fts5.html#the_rank_configuration_option>`__"""
         return self._config_internal("rank", val, "bm25")  # type: ignore
 
-    def config_securedelete(self, val: bool | None = None) -> bool:
+    def config_secure_delete(self, val: bool | None = None) -> bool:
         """Optionally sets, and returns `secure-delete <https://www.sqlite.org/fts5.html#the_secure-delete_configuration_option>`__"""
         return bool(self._config_internal("secure-delete", val, False))  # type: ignore
 
@@ -2232,8 +2233,6 @@ class Table:
         else:
             unindexed: set[str] = set()
 
-        # ::TODO:: fts5 rejects 'rowid' and 'rank' (case insensitive) as column names
-
         if support_query_tokens and tokenize is None:
             tokenize = ["unicode61"]
 
@@ -2254,8 +2253,8 @@ class Table:
                 prefix = quote_name(" ".join(str(p) for p in prefix), "'")
 
         qcontent_rowid = quote_name(content_rowid) if content and content_rowid is not None else None
-        contentless_delete: str | None = str(int(contentless_delete)) if content == "" else None
-        contentless_unindexed: str | None = str(int(contentless_unindexed)) if content == "" else None
+        qcontentless_delete: str | None = str(int(contentless_delete)) if content == "" else None
+        qcontentless_unindexed: str | None = str(int(contentless_unindexed)) if content == "" else None
         tokendata: str = str(int(tokendata))
         locale: str = str(int(locale))
 
@@ -2273,8 +2272,8 @@ class Table:
             ("tokenize", qtokenize),
             ("content", qcontent),
             ("content_rowid", qcontent_rowid),
-            ("contentless_delete", contentless_delete),
-            ("contentless_unindexed", contentless_unindexed),
+            ("contentless_delete", qcontentless_delete),
+            ("contentless_unindexed", qcontentless_unindexed),
             # for these we omit them for default value
             ("columnsize", "0" if not columnsize else None),
             ("detail", detail if detail != "full" else None),
@@ -2284,6 +2283,8 @@ class Table:
             if value is not None:
                 sql.append(f", { option } = { value}")
         sql.append(")")
+
+        register_tokenizers(db, map_tokenizers)
 
         with db:
             db.execute("".join(sql))
@@ -2325,31 +2326,6 @@ end;
                                """)
                 inst.command_rebuild()
                 inst.command_optimize()
-
-            # check everything is consistent
-            assert columns == inst.columns
-            assert columnsize == inst.structure.columnsize
-            assert content == inst.structure.content
-            if content:
-                assert content_rowid is None or content_rowid == inst.structure.content_rowid
-            else:
-                assert inst.structure.content_rowid is None
-            if content == "":
-                assert contentless_delete == inst.structure.contentless_delete
-            else:
-                assert inst.structure.contentless_delete is None
-            assert detail == inst.structure.detail
-            assert name == inst.structure.name
-            if prefix is None:
-                assert set() == inst.structure.prefix
-            else:
-                assert set(int(v) for v in prefix.split()) == inst.structure.prefix
-            assert bool(int(tokendata)) == inst.structure.tokendata
-            if tokenize is None:
-                assert ("unicode61",) == inst.structure.tokenize
-            else:
-                assert tokenize == inst.structure.tokenize
-            assert unindexed == inst.structure.unindexed
 
         return inst
 

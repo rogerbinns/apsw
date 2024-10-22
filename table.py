@@ -6,6 +6,8 @@ import sys
 import zlib
 from pprint import pprint
 
+import apsw.fts5query
+
 apsw.bestpractice.apply(apsw.bestpractice.recommended)
 
 import unittest
@@ -56,8 +58,8 @@ class FTS5Table(unittest.TestCase):
         zlib.crc32(line.encode()): (
             # each column has unique text prepended so we can verify
             # queries are correctly scoped
-            "l’étape humphrey " + line,
-            "L'encyclopédie appleby " + line,
+            "l’étape humphrey humphrey " + line,
+            "L'encyclopédie appleby appleby " + line,
         )
         for line in lines
     }
@@ -109,7 +111,7 @@ class FTS5Table(unittest.TestCase):
 
         for table in tables:
             for key in FTS5Table.content:
-                assert key+1 not in FTS5Table.content
+                assert key + 1 not in FTS5Table.content
                 for key in FTS5Table.content:
                     column_names = table.structure.columns
                     c = table.change_cookie
@@ -124,7 +126,7 @@ class FTS5Table(unittest.TestCase):
                         self.assertNotEqual(c, table.change_cookie)
                         c = table.change_cookie
                         self.assertTrue(table.delete(key))
-                        self.assertTrue(table.delete(key+10))
+                        self.assertTrue(table.delete(key + 10))
                         self.assertRaises(KeyError, table.row_by_id, key, column_names[1])
                         self.assertFalse(table.delete(key))
                         self.assertNotEqual(c, table.change_cookie)
@@ -150,8 +152,8 @@ class FTS5Table(unittest.TestCase):
                 else:
                     self.assertRaisesRegex(apsw.SQLError, ".*may only be used with.*", table.command_delete_all)
 
-       # coverage and errors
-        self.db.execute("attach dbfile2 as 'second'; drop table if exists second.under_test")
+        # coverage and errors
+        self.db.execute("attach '' as 'second'; create table main.under_test(blocker)")
         table = apsw.fts5.Table.create(self.db, "Under_Test", ["one", "Two"], schema="second")
 
         key = 12345
@@ -169,11 +171,174 @@ class FTS5Table(unittest.TestCase):
         self.assertRaises(ValueError, apsw.fts5.Table, self.db, "UNDER_TEST")
         self.assertRaises(ValueError, apsw.fts5.Table, self.db, "xyz", schema="zebra")
 
+    def testConfig(self):
+        "config related items"
+        name = "test \"']\\ specimen"
+        schema = "-1"
+        self.db.execute(
+            "attach '' as "
+            + apsw.fts5.quote_name(schema)
+            + "; create table main."
+            + apsw.fts5.quote_name(name)
+            + "(blocker)"
+        )
+        table1 = apsw.fts5.Table.create(self.db, name, ["one", "two"], schema=schema)
+        table2 = apsw.fts5.Table(self.db, name, schema=schema)
+
+        for name, default, newval in (
+            ("automerge", 4, 16),
+            ("crisismerge", 16, 8),
+            ("deletemerge", 10, 4),
+            ("pgsz", 4050, 4072),
+            ("rank", "bm25", "bm25(10.0, 5.0)"),
+            ("secure_delete", False, True),
+            ("usermerge", 4, 16),
+        ):
+            existing1 = getattr(table1, f"config_{name}")()
+            existing2 = getattr(table2, f"config_{name}")()
+            self.assertEqual(existing1, existing2)
+            self.assertEqual(existing1, default)
+            self.assertNotEqual(existing1, newval)
+            self.assertIs(type(existing2), type(newval))
+            getattr(table1, f"config_{name}")(newval)
+            new = getattr(table2, f"config_{name}")()
+            self.assertEqual(newval, new)
+            self.assertIs(type(new), type(newval))
+
+        table1.config("hello", "world")
+        self.assertEqual(table2.config("hello"), "world")
+        self.assertIsNone(table2.config("hello", prefix="yes"))
+
     def testTableCreate(self):
         "Table creation"
-        pass
+        schema = "-1"
+        self.db.execute("attach '' as " + apsw.fts5.quote_name(schema))
+
+        # Set everything to non-default
+        kwargs = {
+            "columns": ("one", "four", "two", "five", "three"),
+            "name": "&\"'",
+            "unindexed": {"four", "five"},
+            "tokenize": ("porter", "ascii"),
+            "prefix": {1, 5, 8},
+            "content": "",
+            "content_rowid": "3'\"4",
+            "contentless_delete": True,
+            "contentless_unindexed": True,
+            "detail": "column",
+            "tokendata": True,
+            "locale": True,
+        }
+
+        apsw.fts5.Table.create(self.db, schema=schema, support_query_tokens=True, rank="bm25 (1,2)", **kwargs)
+
+        table = apsw.fts5.Table(self.db, kwargs["name"], schema=schema)
+
+        for k, v in kwargs.items():
+            got = getattr(table.structure, k)
+            if k == "tokenize":
+                v = ("querytokens",) + v
+            elif k == "content_rowid":
+                # conrent needs to be a value which it isn't
+                v = None
+            self.assertEqual(got, v)
+
+        # check items not in structure
+        self.assertTrue(table.supports_query_tokens)
+        self.assertEqual(table.config_rank(), "bm25 (1,2)")
+
+        # prefix as single int
+        t = apsw.fts5.Table.create(self.db, "prefix", ["one", "two"], schema=schema, prefix=3)
+        self.assertEqual(t.structure.prefix, {3})
+        # drop if exists
+        apsw.fts5.Table.create(self.db, "prefix", ["one", "two"], schema=schema, prefix={3, 4}, drop_if_exists=True)
+        t2 = apsw.fts5.Table(self.db, "prefix", schema=schema)
+        self.assertEqual(t2.structure.prefix, {3, 4})
+        # querytokens
+        t = apsw.fts5.Table.create(self.db, "sqt", ["one", "two"], schema=schema, support_query_tokens=True)
+        t2 = apsw.fts5.Table(self.db, "sqt", schema=schema)
+        self.assertTrue(t2.supports_query_tokens)
+        self.assertEqual(t2.structure.tokenize, ("querytokens", "unicode61"))
+
+        # errors
+        c = apsw.fts5.Table.create
+        self.assertRaisesRegex(ValueError, ".*specify an external content.*", c, self.db, "fail", None)
+        self.assertRaisesRegex(
+            ValueError, ".*is in unindexed, but not in columns.*.*", c, self.db, "fail", ["one"], unindexed=["two"]
+        )
+        self.assertRaisesRegex(
+            apsw.SQLError, ".*already exists.*", c, self.db, kwargs["name"], schema=schema, columns=["one"]
+        )
+
+        # coverage for parsing SQL of tables made outside of our create method
+        q = apsw.fts5.quote_name
+        sql = f"""create virtual table {q(schema)}.parse using fts5(
+                    \x09hello\x0d /* comment */ , -- comment
+                    123, -- yes fts5 allows numbers as column names
+                    🤦🏼‍♂️,
+                    detail                    =                    full)
+            """
+        self.db.execute(sql)
+        t = apsw.fts5.Table(self.db, "parse", schema=schema)
+        # verifies column names are correctly quoted
+        rowid = t.upsert("one", "two", "three")
+        self.assertEqual(t.row_by_id(rowid, t.structure.columns), ("one", "two", "three"))
+
+        # not a fts5 table
+        self.db.execute(f"create table {q(schema)}.foo(x)")
+        self.assertRaisesRegex(ValueError, ".*Not a virtual table.*", apsw.fts5.Table, self.db, "foo", schema=schema)
+
+        # check nothing happened in main or temp
+        self.assertIsNone(self.db.execute("select * from sqlite_schema").get)
+        self.assertIsNone(self.db.execute("select * from temp.sqlite_schema").get)
+
+    def testMisc(self):
+        t = apsw.fts5.Table.create(self.db, "hello", ["one", "two", "three"], unindexed=["two"])
+        self.assertIn("<FTS5Table", str(t))
+        self.assertIn("<FTS5Table", repr(t))
+        self.assertIn("hello", str(t))
+        self.assertIn("main", str(t))
+
+        self.assertEqual(t.columns_indexed, ("one", "three"))
+        self.assertEqual(t.column_named("one"), "one")
+        self.assertEqual(t.column_named("onE"), "one")
+        self.assertIsNone(t.column_named("onE "))
+
+    def testContent(self):
+        "Content based tests"
+        schema = "-1"
+        self.db.execute("attach '' as " + apsw.fts5.quote_name(schema))
+
+        t = apsw.fts5.Table.create(
+            self.db,
+            "😂❤️🤣🤣😭🙏😘",
+            ["🇿🇦", "👍🏻"],
+            schema=schema,
+            support_query_tokens=True,
+            tokenize=["simplify", "casefold", "true", "strip", "true", "unicodewords"],
+            locale=True
+        )
+        self.insert_content(t)
+
+        def mq(s):
+            return apsw.fts5query.to_query_string(apsw.fts5query.from_dict(s))
+
+        matches = list(t.search(mq("example"), "yes"))
+        self.assertEqual(len(matches), 1)
+        self.assertEqual(str(matches[0]), "MatchInfo(query_info=QueryInfo(phrases=(('example',),)), rowid=3603631812, column_size=[18, 18], phrase_columns=[[0, 1]])")
+
+        matches = list(t.search("example OR statistical"))
+        self.assertEqual(str(matches[0]), "MatchInfo(query_info=QueryInfo(phrases=(('example',), ('statistical',))), rowid=748732035, column_size=[18, 18], phrase_columns=[[], [0, 1]])")
+        self.assertEqual(len(matches), 2)
+
+        matches = list(t.search("lösen"))
+        self.assertIn("losen", str(matches))
+        self.assertIn("rowid=3907740739", str(matches))
+
+        # check nothing happened in main or temp
+        self.assertIsNone(self.db.execute("select * from sqlite_schema").get)
+        self.assertIsNone(self.db.execute("select * from temp.sqlite_schema").get)
 
 
 if __name__ == "__main__":
     unittest.main()
-
