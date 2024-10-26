@@ -1320,64 +1320,61 @@ class Table:
             _search_context.reset(token)
 
     def key_tokens(
-        self, rowid: int, *, limit: int = 10, columns: Sequence[str] | None = None
+        self, rowid: int, *, limit: int = 10, columns: str | Sequence[str] | None = None
     ) -> Sequence[tuple[float, str]]:
         """Finds tokens that are in this row, but rare in other rows
 
         This is purely statistical and has no understanding of the
-        tokens.  Tokens that occur only in this row, or only once in
-        this row are ignored.
+        tokens.  Tokens that occur only in this row are ignored.  The
+        more tokens, the more times the token must appear (log10 of
+        the number of tokens) to be considered.
 
         :param limit: Maximum number to return
         :param columns: If provided then only look at specified
-            columns, else all indexed columns.
+            column(s), else all indexed columns.
+        :param min_occurrences: How many times the token must
+            appear in this row
         :returns: A sequence of tuples where each is a tuple of token
-           and float value with bigger meaning more unique
+           and float score with bigger meaning more unique, sorted
+           highest score first.
 
-        .. seealso:
+        .. seealso::
 
             :meth:`text_for_token` to get original document text
             corresponding to a token
         """
-        # number of tokens in the row
-        row_token_count = 0
         # how many times each token occurs in this row
-        token_counter: collections.Counter[int] = collections.Counter()
+        token_counter: collections.Counter[str] = collections.Counter()
 
-        # locations in utf8 if returning original text
-        locations = collections.defaultdict(list) if as_text else None
-        utf8s: list[bytes] | None = [] if as_text else None
+        text = self.row_by_id(rowid, columns or self.columns_indexed)
+        utf8: bytes = text.encode() if isinstance(text, str) else ("\n".join(text)).encode()
+        for token in self.tokenize(utf8, include_colocated=False, include_offsets=False):
+            token_counter[token] += 1
 
-        # iterate over each column
-        for content_num, text in enumerate(self.row_by_id(rowid, columns or self.columns_indexed)):
-            utf8 = text.encode()
-            if utf8s is not None:
-                utf8s.append(utf8)
-            for start, end, *tokens in self.tokenize(utf8):
-                for token in tokens:
-                    token_counter[token] += 1
-                    if locations is not None:
-                        locations[token].append((content_num, start, end))
-                # not included colacated in this count
-                row_token_count += 1
+        row_token_count = token_counter.total()
 
         # calculate per token score
         scores: list[tuple[float, str]] = []
 
+        threshold = math.log10(row_token_count) if row_token_count else 0
+
         all_tokens = self.tokens
 
         for token, occurrences in token_counter.items():
-            ndocs = all_tokens.get(token, 0)
-            if ndocs < 2 or occurrences < 2:
+            num_docs = all_tokens.get(token, 0)
+            if num_docs < 2 or occurrences < threshold:
                 continue
 
-            score = (occurrences / row_token_count) / ndocs
+            # This isn't particularly sophisticated, but is good enough
+            score = (occurrences / row_token_count) / num_docs
 
             scores.append((score, token))
 
         return sorted(scores, reverse=True)[:limit]
 
-    def more_like(self, ids: Sequence[int], *, token_limit: int = 3) -> Iterator[MatchInfo]:
+    def more_like(
+        self, ids: Sequence[int], *, columns: str | Sequence[str] | None = None, token_limit: int = 3
+    ) -> Iterator[MatchInfo]:
         """Like :meth:`search` providing results similar to the provided ids.
 
         This is useful for providing infinite scrolling.  Do a search
@@ -1388,14 +1385,21 @@ class Table:
         purely statistical and has no understanding of the text.
 
         :param ids: rowids to consider
+        :param columns: If provided then only look at specified
+            column(s), else all indexed columns.
         :param token_limit: How many tokens are extracted from each row.
             Bigger values result in a broader search, while smaller
             values narrow it.
         """
         all_tokens: set[str] = set()
 
+        ids = {ids} if isinstance(ids, int) else ids
+
+        if isinstance(columns, str):
+            columns = [columns]
+
         for rowid in ids:
-            for _, token in self.key_tokens(rowid, limit=token_limit):
+            for _, token in self.key_tokens(rowid, columns=columns, limit=token_limit):
                 all_tokens.add(token)
 
         sql_query = (
@@ -1409,7 +1413,11 @@ class Table:
         else:
             phrases = [self.text_for_token(token, 1) for token in all_tokens]
 
-        fts_parsed = apsw.fts5query.from_dict({"@": "OR", "queries": phrases})
+        query = {"@": "OR", "queries": phrases}
+        if columns:
+            query = {"@": "COLUMNFILTER", "columns": columns, "filter": "include", "query": query}
+
+        fts_parsed = apsw.fts5query.from_dict(query)
         fts_query = apsw.fts5query.to_query_string(fts_parsed)
 
         yield from self._search_internal(sql_query, (fts_query,) + tuple(ids))
@@ -1849,7 +1857,7 @@ class Table:
                     rows = max(all_tokens.get(token, 0) for token in tokens)
 
                     # can we coalesce with next token?
-                    if rows < threshold_rows and len(tokens) == 1 and token_num + 1 < len(tokenized):
+                    if rows <= threshold_rows and len(tokens) == 1 and token_num + 1 < len(tokenized):
                         next_tokens = tokenized[token_num + 1][2:]
                         # only try if there is one next token (no colocated)
                         if len(next_tokens) == 1:
@@ -1861,7 +1869,7 @@ class Table:
                                 votes.append((all_tokens[combined], "coalesce", combined))
 
                     # split apart?
-                    if len(tokens) == 1 and rows < threshold_rows:
+                    if len(tokens) == 1 and rows <= threshold_rows:
                         token = tokens[0]
                         # there could be multiple candidates
                         # eg abc could become ab c, or a bc
@@ -1878,11 +1886,11 @@ class Table:
                                 split_rows = min(all_tokens[prefix], all_tokens[suffix])
                                 if split_rows > best[0]:
                                     best = split_rows, prefix, suffix
-                            if best[0] >= threshold_rows:
+                            if best[0] > threshold_rows:
                                 votes.append((best[0], "split", best[1:]))
 
                     # replace with more popular token?
-                    if rows < threshold_rows:
+                    if rows <= threshold_rows:
                         # if the token doesn't exist at all then we
                         # take any replacement, otherwise we use
                         # cutoff / min_docs
@@ -1898,7 +1906,7 @@ class Table:
                             # rebalance how different the tokens are
                             # against how many rows they are in
                             for i, (score, token) in enumerate(replacement):
-                                replacement[i] = (score * math.log(all_tokens[token]), token)
+                                replacement[i] = (score * max(0.00001, math.log(all_tokens[token])), token)
 
                             replacement.sort(reverse=True)
                             if replacement[0][0] > math.log(all_tokens.get(tokens[0], 1)):
@@ -2019,22 +2027,29 @@ class Table:
                 doc: bytes = self.row_by_id(rowid, col).encode()
                 locale = None
                 if self.structure.locale:
+                    # col from above is a column name, but
+                    # fts5_get_locale wants a column number
                     locale = self._db.execute(
-                        f"select fts5_get_locale({self.quoted_table_name}, ?) from {self.quoted_table_name} where rowid=?",
-                        (col, rowid),
+                        f"select fts5_get_locale({self._qname}, ?) from {self.quoted_table_name} where rowid=?",
+                        (self.columns.index(col), rowid),
                     ).get
                 tokens = self.tokenize(doc, locale=locale, include_colocated=False)
                 last = rowid, col
             text_for_token_counter[doc[tokens[offset][0] : tokens[offset][1]]] += 1
 
-        return text_for_token_counter.most_common(1)[0][0].decode()
+        try:
+            return text_for_token_counter.most_common(1)[0][0].decode()
+        except IndexError:
+            # most_common returns zero entries either because the
+            # token doesn't exist or doc_limit is less than 1
+            raise ValueError(f"{token=} not found") from None
 
     def row_by_id(self, id: int, column: str | Sequence[str]) -> apsw.SQLiteValue | tuple[apsw.SQLiteValue]:
         """Returns the contents of the row `id`
 
         You can request one column, or several columns.
 
-        :exc:`KeyError` is raised if the `id` does not exist.
+        :exc:`KeyError` is raised if the row does not exist.
         """
         if isinstance(column, str):
             for (row,) in self._db.execute(
@@ -2211,10 +2226,12 @@ class Table:
 
         qschema = quote_name(schema)
         qname = quote_name(name)
-
         if columns is None:
             if not content:
                 raise ValueError("You need to supply columns, or specify an external content table name")
+            # check for a table/view
+            if not db.execute(f"select name from {qschema}.sqlite_schema where type='table' or type='view'").get:
+                raise ValueError(f"external table {schema=} . {content=} does not exist")
             columns: tuple[str, ...] = tuple(
                 name
                 for (name,) in db.execute(f"select name from { qschema}.pragma_table_info(?)", (content,))
@@ -2227,9 +2244,7 @@ class Table:
             unindexed: set[str] = set(unindexed)
             for c in unindexed:
                 if c not in columns:
-                    raise ValueError(
-                        f"column \"{ c }\" is in unindexed, but not in columns: { ', '.join(quote_name(column) for column in columns ) }"
-                    )
+                    raise ValueError(f'column "{ c }" is in unindexed, but not in {columns=}')
         else:
             unindexed: set[str] = set()
 
