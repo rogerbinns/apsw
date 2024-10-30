@@ -1788,13 +1788,24 @@ class Table:
         :returns: ``None`` if no suitable changes were found, or a replacement
           query.
         """
+        # the parsed structure is modified in place
         parsed = apsw.fts5query.parse_query_string(query)
 
+        # save these so we don't constantly check cache or have them
+        # change underneath us
         all_tokens = self.tokens
+        row_count = self.row_count
 
-        updated = False
+        # set if any modifications made
+        updated_query = False
 
+        # token count less than this need to be changed
         threshold_rows = int(threshold * self.row_count)
+
+        # which QUERY nodes have already been processed because
+        # we process PHRASE children of AND.  The id of objects have
+        # to be added because we mutate modes
+        done: set[int] = set()
 
         for _, node in apsw.fts5query.walk(parsed):
             if isinstance(node, apsw.fts5query.COLUMNFILTER):
@@ -1815,20 +1826,63 @@ class Table:
                     # get the original casing back
                     new_columns.append(self.structure.columns[table_columns_upper.index(replacement)])
                 if new_columns != node.columns:
-                    updated = True
+                    updated_query = True
                     node.columns = new_columns
                 continue
 
-            if not isinstance(node, apsw.fts5query.PHRASE):
+            if id(node) in done:
                 continue
 
-            while node is not None:
-                # we leave these alone
-                if node.prefix:
-                    node = node.plus
-                    continue
+            if not isinstance(node, (apsw.fts5query.PHRASE, apsw.fts5query.AND)):
+                continue
 
-                utf8 = node.phrase.encode()
+            def is_simple_phrase(n):
+                # we only process these and ignore the more
+                # complicated ones
+                return (
+                    isinstance(n, apsw.fts5query.PHRASE)
+                    # no query modifiers
+                    and n.plus is None
+                    and not n.prefix
+                    # this means we can space join the adjacent phrases
+                    and apsw.fts5query.quote(n.phrase) == n.phrase
+                )
+
+            if isinstance(node, apsw.fts5query.AND):
+                # we want to work on adjacent PHRASE as though they
+                # were one phrase so adjacent tokens can be
+                # concatenated.
+
+                seq = []
+                i = 0
+                while i < len(node.queries):
+                    if is_simple_phrase(node.queries[i]):
+                        start = i
+                        i += 1
+                        while i < len(node.queries) and is_simple_phrase(node.queries[i]):
+                            i += 1
+                        # i now points to next that can't be adjacent
+                        seq.append(
+                            (
+                                apsw.fts5query.PHRASE(" ".join(node.queries[w].phrase for w in range(start, i))),
+                                (start, i),
+                            )
+                        )
+                    else:
+                        i += 1
+
+            else:
+                # we don't touch these
+                if node.plus or node.prefix:
+                    continue
+                seq = [(node, None)]
+
+            done.add(id(node))
+
+            # we have to work backwards so the query_range offsets
+            # remain valid
+            for phrase, query_range in reversed(seq):
+                utf8: bytes = phrase.phrase.encode()
                 tokenized = self.tokenize(utf8, apsw.FTS5_TOKENIZE_QUERY, locale)
 
                 # track what happens to each token. False=unchanged,
@@ -1891,41 +1945,49 @@ class Table:
 
                     # replace with more popular token?
                     if rows <= threshold_rows:
-                        # if the token doesn't exist at all then we
-                        # take any replacement, otherwise we use
-                        # cutoff / min_docs
                         replacement = self.closest_tokens(
                             tokens[0],
                             n=10,
+                            # we accept anything if current is not a token
                             cutoff=0.6 if rows else 0,
-                            min_docs=threshold_rows,
+                            # it must be more popular
+                            min_docs=max(threshold_rows, rows + 1),
                             all_tokens=all_tokens.items(),
                         )
 
                         if replacement:
-                            # rebalance how different the tokens are
-                            # against how many rows they are in
+                            # bias how different the tokens are with
+                            # how many rows they are in
                             for i, (score, token) in enumerate(replacement):
-                                replacement[i] = (score * max(0.00001, math.log(all_tokens[token])), token)
+                                replacement[i] = (score * 2 + math.log1p(all_tokens[token] / row_count), token)
 
                             replacement.sort(reverse=True)
-                            if replacement[0][0] > math.log(all_tokens.get(tokens[0], 1)):
-                                replacement = replacement[0][1]
-                                votes.append((all_tokens[replacement], "replace", replacement))
+                            replacement = replacement[0][1]
+                            votes.append((all_tokens[replacement], "replace", replacement))
 
                     if votes:
-                        # if the popularity is identical then this also
-                        # prioritises split over replace (alphabetical)
-                        _, action, new = sorted(votes, reverse=True)[0]
+                        # if the popularity is identical then this is the
+                        # preferred order (biggest number wins)
+                        priority = {
+                            # coalesce and replace can be the same
+                            # replacement but we want coalesce because
+                            # it consumes the next token
+                            "coalesce": 3,
+                            "split": 2,
+                            # replace is last resort
+                            "replace": 1,
+                        }
+
+                        _, action, new = sorted(votes, reverse=True, key=lambda x: (x[0], priority[x[1]], x[2]))[0]
                         modified[token_num] = new
                         if action == "coalesce":
-                            modified[token_num + 1] = False
+                            modified[token_num + 1] = True
                         else:
                             assert action in ("split", "replace")
 
                 # updates?
                 if any(item is not False for item in modified):
-                    updated = True
+                    updated_query = True
                     new_text = ""
                     # track inter-token separation
                     last_end = 0
@@ -1933,7 +1995,9 @@ class Table:
                     for token, mod in zip(tokenized, modified):
                         # unchanged
                         if mod is False:
-                            new_text += utf8[last_end : token[1]].decode()
+                            new_text += utf8[last_end : token[0]].decode() + apsw.fts5query.quote(
+                                utf8[token[0] : token[1]].decode()
+                            )
                             last_end = token[1]
                             continue
                         # deleted
@@ -1942,20 +2006,31 @@ class Table:
                             continue
                         # replaced with a different token
                         if isinstance(mod, str):
-                            new_text += utf8[last_end : token[0]].decode() + self.text_for_token(mod, tft_docs)
+                            new_text += utf8[last_end : token[0]].decode() + apsw.fts5query.quote(
+                                self.text_for_token(mod, tft_docs)
+                            )
                             last_end = token[1]
                             continue
 
                         # multiple tokens - take previous as separator else space
                         sep = utf8[last_end : token[0]].decode() if last_end != 0 else " "
-                        new_text += sep.join(self.text_for_token(m, tft_docs) for m in mod)
+                        new_text += sep + sep.join(apsw.fts5query.quote(self.text_for_token(m, tft_docs)) for m in mod)
                         last_end = token[1]
 
-                    node.phrase = new_text
+                    phrase.phrase = new_text
+                    if query_range:
+                        # we need to regenerate a new AND with the
+                        # PHRASEs within
+                        new_node = apsw.fts5query.parse_query_string(new_text)
+                        for _, child in apsw.fts5query.walk(new_node):
+                            done.add(id(child))
+                        done.add(id(new_node))
+                        node.queries[query_range[0] : query_range[1]] = [new_node]
 
-                node = node.plus
+        if updated_query:
+            apsw.fts5query._flatten(parsed)
 
-        return apsw.fts5query.to_query_string(parsed) if updated else None
+        return apsw.fts5query.to_query_string(parsed) if updated_query else None
 
     def token_frequency(self, count: int = 10) -> list[tuple[str, int]]:
         """Most frequent tokens, useful for building a stop words list
