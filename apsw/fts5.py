@@ -2305,7 +2305,10 @@ class Table:
             if not content:
                 raise ValueError("You need to supply columns, or specify an external content table name")
             # check for a table/view
-            if not db.execute(f"select name from {qschema}.sqlite_schema where type='table' or type='view'").get:
+            if not any(
+                0 == apsw.stricmp(content, name)
+                for (name,) in db.execute(f"select name from {qschema}.sqlite_schema where type='table' or type='view'")
+            ):
                 raise ValueError(f"external table {schema=} . {content=} does not exist")
             columns: tuple[str, ...] = tuple(
                 name
