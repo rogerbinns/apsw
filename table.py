@@ -506,7 +506,8 @@ class FTS5Table(unittest.TestCase):
         t = apsw.fts5.Table.create(
             self.db,
             "table",
-            ["with a space", "Special", ",pIqaD", "t͡ɬɪ.ŋɑn xol]"],
+            ["with a space", "Special", ",pIqaD", "t͡ɬɪ.ŋɑn xol]", "noindex"],
+            unindexed=["noindex"],
             tokenize=["simplify", "casefold", "true", "strip", "true", "unicodewords"],
         )
         for row in (
@@ -521,9 +522,12 @@ class FTS5Table(unittest.TestCase):
         self.assertEqual(t.text_for_token("troubled", 10), "troubleD")
         self.assertRaises(ValueError, t.text_for_token, "sdfsed", 10)
         self.assertEqual([tok[1] for tok in t.closest_tokens("zebra", cutoff=0, n=3)], ["break", "breaks", "ran"])
+        # include known token
+        self.assertEqual([tok[1] for tok in t.closest_tokens("break", cutoff=0, n=3)], ["breaks", "back", "re"])
 
         # some of these show scope for future improvements
         for query, expected in (
+            ("noindex: hello", '",pIqaD": shell'),
             ("cial:troubled3", "Special: troubleD"),
             (
                 "{xol orange}: (recomended OR rygestered)",

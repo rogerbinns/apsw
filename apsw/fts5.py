@@ -1765,10 +1765,11 @@ class Table:
 
         Transformations include:
 
+        * Ensuring column names in column filters are of the closest
+          indexed column name
         * Combining such as ``some thing`` to ``something``
         * Splitting such as ``noone`` to ``no one``
-        * Replacing unknown/rare text with more popular
-          :meth:`closest_tokens`.
+        * Replacing unknown/rare worda with more popular ones
 
         The query is parsed, tokenized, replacement tokens
         established, and original text via :meth:`text_for_token` used
@@ -1778,9 +1779,10 @@ class Table:
         :param threshold: Fraction of rows between ``0.0`` and
           ``1.00`` to be rare - eg ``0.01`` means a token occurring in
           less than 1% of rows is considered for replacement.  Larger
-          fractions increases the likelihood of replacements, while
+          fractions increase the likelihood of replacements, while
           smaller reduces it.  A value of ``0`` will only replace
-          tokens that are not in the index at all.
+          tokens that are not in the index at all - essentially
+          spelling correction only
         :param tft_docs: Passed to :meth:`text_for_token` as the
           ``doc_limit`` parameter.  Larger values produce more
           representative text, but also increase processing time.
@@ -1811,20 +1813,26 @@ class Table:
             if isinstance(node, apsw.fts5query.COLUMNFILTER):
                 new_columns: list[str] = []
                 table_columns_upper = []
+                indexed_columns = [c for c in self.structure.columns if c not in self.structure.unindexed]
                 for column in node.columns:
-                    if any(0 == apsw.stricmp(column, table_column) for table_column in self.structure.columns):
+                    if any(0 == apsw.stricmp(column, table_column) for table_column in indexed_columns):
                         new_columns.append(column)
                         continue
                     # we need to do the get close matches in a case insensitive way
                     if not table_columns_upper:
                         table_columns_upper = [
-                            self._db.execute("select upper(?)", (col,)).get for col in self.structure.columns
+                            self._db.execute("select upper(?)", (col,)).get for col in indexed_columns
                         ]
-                    replacement = difflib.get_close_matches(
-                        self._db.execute("select upper(?)", (column,)).get, table_columns_upper, n=1, cutoff=0
-                    )[0]
+                    # re-use closest_tokens even though there aren't tokens
+                    replacement = self.closest_tokens(
+                        self._db.execute("select upper(?)", (column,)).get,
+                        n=1,
+                        cutoff=0,
+                        min_docs=0,
+                        all_tokens=((c, 0) for c in table_columns_upper),
+                    )[0][1]
                     # get the original casing back
-                    new_columns.append(self.structure.columns[table_columns_upper.index(replacement)])
+                    new_columns.append(indexed_columns[table_columns_upper.index(replacement)])
                 if new_columns != node.columns:
                     updated_query = True
                     node.columns = new_columns
@@ -2144,7 +2152,7 @@ class Table:
         n: int = 10,
         cutoff: float = 0.6,
         min_docs: int = 1,
-        all_tokens: Sequence[tuple[str, int]] | None = None,
+        all_tokens: Iterable[tuple[str, int]] | None = None,
     ) -> list[tuple[float, str]]:
         """Returns closest known tokens to ``token`` with score for each
 
