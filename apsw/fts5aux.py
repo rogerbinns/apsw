@@ -1,12 +1,57 @@
 """
-Implementation of FTS5 auxiliary functions in Python
+Implementation of FTS5 auxiliary functions in Python.  Auxiliary
+functions are used for ranking results, and for processing search
+results.
+
+.. note::
+
+  FTS5 ranking functions return earlier values to mean a better match.
+  You are expected to use ``ORDER BT rank`` which means `-7` comes
+  before `4`.  Typically they calculate a number where zero means no
+  score, and increasing positive numbers mean a better match.  Then
+  they return the negative of that to get ``ORDER BY rank`` correct.
+
+.. list-table::
+  :header-rows: 1
+  :widths: auto
+
+  * - Function
+    - Purpose
+  * - :func:`bm25`
+    - Python re-implementation of the FTS5 builtin default ranking
+      function.  It takes into account how rare each phrase of the
+      search is in the document, how rare it is in the collection
+      overall, how big the document is. and how big they are overall.
+
+      It uses the :attr:`~apsw.FTS5ExtensionApi.aux_data`
+      functionality to build up the collection statistical information
+      on the first visited row, and then produces a score for each row
+      using the overall statistics, and the row specific information.
+
+      If you are writing your own ranking function, this is a good
+      example to start from.
+  * - :func:`inverse_document_frequency`
+    - A helper for your own ranking function, where is gives almost
+      zero for very common phrases and larger numbers for rarer
+      phrases.
+  * - :func:`position_rank`
+    - Starts with :func:`bm25` but boosts the score the earlier in
+      content the phrases occur.  For many documents the more
+      important words are at the start in titles, overviews, summaries
+      etc.
+  * - :func:`subsequence`
+    - Starts with :func:`bm25` but boosts the score when the phrases
+      occur in order and each word is closer to the others.  bm25
+      doesn't factor the order of phrases in the content, nor how
+      close together they are.
+
+
 """
 
 from __future__ import annotations
 
 import dataclasses
 import math
-from typing import Sequence
 
 import apsw
 
@@ -96,7 +141,7 @@ def bm25(api: apsw.FTS5ExtensionApi, *args: apsw.SQLiteValue) -> float:
     k1 = 1.2
     b = 0.75
 
-    # This counts how often each phrase occurs in thr row.  For each
+    # This counts how often each phrase occurs in the row.  For each
     # hit we multiply by the weight for the column, which defaults to
     # 1.0
     aFreq: list[float] = []
@@ -138,7 +183,8 @@ def inverse_document_frequency(api: apsw.FTS5ExtensionApi) -> list[float]:
     numbers.
 
     The values will always be at least 0.000001 so you don't have to
-    worry about negative numbers or division by zero.
+    worry about negative numbers or division by zero, even for phrases
+    that are not found.
     """
 
     # This is ported from the bm25 code above, but using Pythonic

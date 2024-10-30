@@ -21,12 +21,14 @@ import sys
 import tempfile
 import typing
 import unittest
+from venv import create
 import zlib
 import zipfile
 
 import apsw
 import apsw.ext
 import apsw.fts5
+import apsw.fts5aux
 import apsw.fts5query
 import apsw.unicode
 
@@ -1634,7 +1636,7 @@ class FTS5Table(unittest.TestCase):
             ("specIal:one", None),
             ("one+two", None),
             ("thre* OR forer", "thre* OR for"),
-            ("some thing noone", "some This no one"),
+            ("some thing noone", "some This no one"),  # Splitting such as (comment defeats spellcheck.sh)
             ("tribb bles", "tribbbles"),
             ("let ape", "let l’étape"),
             ('com mand hump hrey "sql ite"', 'column and humphrey "sql it"'),
@@ -1649,6 +1651,50 @@ class FTS5Table(unittest.TestCase):
             self.assertEqual(res, expected)
             # check query is valid
             list(t.search(res or query))
+
+
+class FTS5Aux(unittest.TestCase):
+    def setUp(self):
+        self.db = apsw.Connection("")
+        self.t = apsw.fts5.Table.create(self.db, "yes", ["one", "two"], tokenize=["unicode61"])
+        for vals in test_content.values():
+            self.t.upsert(*vals)
+
+    def testBM25(self):
+        # we just need to check that sqlite's bm25 matches ours
+
+        apsw.fts5.register_functions(self.db, {"pybm25": apsw.fts5aux.bm25})
+
+        for query in (
+            "if trace input",
+            '"as well" that',
+            '"humphrey when" OR "humphrey this"',
+            "kjdsfhjfhdsjkhfsd in",
+            "jkhkjfsdhkjf sdkjhfjksdhfksd",
+        ):
+            for us, them in self.db.execute("select pybm25(yes), bm25(yes) from yes(?)", (query,)):
+                self.assertAlmostEqual(us, them)
+
+    def testidf(self):
+        def myfunc(api):
+            return json.dumps(apsw.fts5aux.inverse_document_frequency(api))
+
+        apsw.fts5.register_functions(self.db, {"myfunc": myfunc, "MyFunc": myfunc})
+
+        for query, expected in (
+            ("the", [1e-06]),
+            ("apsw", [0.990398704027877]),
+            ('if the OR "if the"', [0.4228568508200336, 1e-06, 2.151762203259462]),
+            ("jdsjflkdjsflkj OR type", [3.8501476017100584, 2.70805020110221]),
+            ('html humphrey "humphrey if"', [2.70805020110221, 1e-06, 1.466337068793427]),
+            (
+                "(word AND can OR you NOT type OR two:example) OR the",
+                [1.7676619176489945, 1.466337068793427, 0.6007738604289301, 2.70805020110221, 2.70805020110221, 1e-06],
+            ),
+        ):
+            vals = json.loads(self.db.execute("select myfunc(yes) from yes(?) limit 1", (query,)).get)
+            for x, y in zip(vals, expected):
+                self.assertAlmostEqual(x, y)
 
 
 class Unicode(unittest.TestCase):
