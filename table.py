@@ -522,15 +522,26 @@ class FTS5Table(unittest.TestCase):
         self.assertRaises(ValueError, t.text_for_token, "sdfsed", 10)
         self.assertEqual([tok[1] for tok in t.closest_tokens("zebra", cutoff=0, n=3)], ["break", "breaks", "ran"])
 
+        # some of these show scope for future improvements
         for query, expected in (
             ("cial:troubled3", "Special: troubleD"),
-            ("{xol orange}: (recomended OR rygestered)", '{"t͡ɬɪ.ŋɑn xol]" "with a space"}: (considered OR registered)'),
+            (
+                "{xol orange}: (recomended OR rygestered)",
+                '{"t͡ɬɪ.ŋɑn xol]" "with a space"}: (recommended OR registered)',
+            ),
             ("specIal:one", None),
             ("one+two", None),
-            ("thre* OR forer", 'thre* OR for'),
-            ("some thing noone", 'some This not'),
-            ("tribb bles", 'This be'),
-            ("let ape",  'let l’étape'),
+            ("thre* OR forer", "thre* OR for"),
+            ("some thing noone", "some This no one"),
+            ("tribb bles", "tribbbles"),
+            ("let ape", "let l’étape"),
+            ('com mand hump hrey "sql ite"', 'column and humphrey "sql it"'),
+            ('hello world "-" world hello', 'shell word "-" word shell'),
+            # from debug history but a nice pathological case
+            (
+                '"pp any(isinstance(child, AND) for child in node.queries)"',
+                '"appleby an(sentence(chained, AND) for chained in queries"',
+            ),
         ):
             res: str = t.query_suggest(query) or t.query_suggest(query, 0)
             self.assertEqual(res, expected)
