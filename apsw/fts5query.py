@@ -96,7 +96,7 @@ from __future__ import annotations
 
 import dataclasses
 
-from typing import Any, Sequence, NoReturn, Literal, TypeAlias, Generator
+from typing import Any, Sequence, NoReturn, Literal, TypeAlias, Iterator
 
 import apsw
 
@@ -543,7 +543,7 @@ _walk_attrs = {
 }
 
 
-def walk(start: QUERY) -> Generator[tuple[tuple[QUERY, ...], QUERY], None, None]:
+def walk(start: QUERY) -> Iterator[tuple[tuple[QUERY, ...], QUERY]]:
     """Yields the parents and each node for a query recursively
 
     The query tree is traversed top down.  Use it like this::
@@ -630,6 +630,32 @@ def applicable_columns(node: QUERY, start: QUERY, columns: Sequence[str]) -> set
         query = query.query
 
     return columns
+
+
+def _flatten(start: QUERY):
+    """Reduces nesting depth
+
+    For example if AND contains a child AND then the children can be
+    merged into parent.
+
+    If nodes with children (OR / AND) only have one child then they
+    can be replaced with the child.
+
+    :meta private:
+    """
+    for _, node in walk(start):
+        if isinstance(node, AND):
+            # children have to be flattened bottom up
+            for child in node.queries:
+                _flatten(child)
+            if any(isinstance(child, AND) for child in node.queries):
+                new_queries: list[QUERY] = []
+                for child in node.queries:
+                    if isinstance(child, AND):
+                        new_queries.extend(child.queries)
+                    else:
+                        new_queries.append(child)
+                node.queries = new_queries
 
 
 class ParseError(Exception):
