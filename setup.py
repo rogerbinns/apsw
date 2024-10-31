@@ -141,13 +141,15 @@ class run_tests(Command):
     # and forces verbose to 0)
     user_options = [
         ("show-tests", "v", "Show each test being run"),
+        ("locals", None, "Show local variables in test failure"),
     ]
 
     # see if you can find boolean_options documented anywhere
-    boolean_options = ['show-tests']
+    boolean_options = ['show-tests', "locals"]
 
     def initialize_options(self):
         self.show_tests = 0
+        self.locals = False
 
     def finalize_options(self):
         pass
@@ -159,7 +161,7 @@ class run_tests(Command):
         suite = unittest.TestLoader().loadTestsFromModule(apsw.tests)
         # verbosity of zero doesn't print anything, one prints a dot
         # per test and two prints each test name
-        result = unittest.TextTestRunner(verbosity=self.show_tests + 1).run(suite)
+        result = unittest.TextTestRunner(verbosity=self.show_tests + 1, tb_locals=self.locals).run(suite)
         if not result.wasSuccessful():
             sys.exit(1)
 

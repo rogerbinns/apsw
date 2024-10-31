@@ -56,11 +56,11 @@ def dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug, sysconfig):
             venv/bin/python3 -m pip install --upgrade --upgrade-strategy eager pip wheel setuptools ;
             env LD_LIBRARY_PATH={ pylib } venv/bin/python3 -bb -Werror { pyflags } setup.py fetch \
                 --version={ sqlitever } --all build_test_extension build_ext --inplace --force --enable-all-extensions \
-                { extdebug } { build_ext_flags } test -v ;
+                { extdebug } { build_ext_flags } test -v --locals;
             cp tools/setup-pypi.cfg setup.apsw ;
             venv/bin/python3 -m pip wheel -v . ;
             venv/bin/python3 -m pip install --no-index --force-reinstall --find-links=. apsw ;
-            venv/bin/python3 -m apsw.tests
+            venv/bin/python3 -m apsw.tests --locals
             ) >{ logf }  2>&1""")
 
 
@@ -90,8 +90,12 @@ def main(PYVERS, SQLITEVERS, BITS, concurrency):
                 for debug in False, True:
                     for sysconfig in False, True:
                         for bits in BITS:
+                            # we only have 64 bit system python
                             if pyver == "system" and bits != 64: continue
                             if sysconfig and bits != 64: continue
+                            # python 3.14 alpha on 32 bit gets some SIMD intrinsics wrong
+                            if pyver == "3.14.0a1" and bits == 32: continue
+
                             print(
                                 f"Python { pyver } { bits }bit  SQLite { sqlitever }  debug { debug } sysconfig { sysconfig }"
                             )
@@ -205,7 +209,7 @@ def cmp(a, b):
 
 # Default versions we support
 PYVERS = (
-    '3.14.0a0',
+    '3.14.0a1',
     '3.13.0',
     '3.12.7',
     '3.11.10',
