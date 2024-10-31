@@ -10517,7 +10517,7 @@ class ZZFaultInjection(unittest.TestCase):
     # them.  The testing for objects bigger than 2GB is done in
     # testLargeObjects
     def testFaultInjection(self):
-        "Deliberately inject faults to exercise all code paths"fts
+        "Deliberately inject faults to exercise all code paths"
         if not getattr(apsw, "test_fixtures_present", None):
             return
 
