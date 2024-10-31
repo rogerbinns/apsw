@@ -2098,6 +2098,11 @@ ToUtf8PositionMapper_init(ToUtf8PositionMapper *self, PyObject *args, PyObject *
   return 0;
 }
 
+#if PY_VERSION_HEX < 0x030c0000
+#define Py_T_PYSSIZET T_PYSSIZET
+#define Py_T_OBJECT_EX T_OBJECT_EX
+#endif
+
 static PyMemberDef ToUtf8PositionMapper_memberdef[] = {
   { "__vectorcalloffset__", Py_T_PYSSIZET, offsetof(ToUtf8PositionMapper, vectorcall), Py_READONLY },
   { "str", Py_T_OBJECT_EX, offsetof(ToUtf8PositionMapper, str), Py_READONLY },
