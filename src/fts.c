@@ -739,7 +739,7 @@ static PyObject *
 APSWFTS5ExtensionApi_xRowid(APSWFTS5ExtensionApi *self)
 {
   FTSEXT_CHECK(NULL);
-  return PyLong_FromLong(self->pApi->xRowid(self->pFts));
+  return PyLong_FromLongLong(self->pApi->xRowid(self->pFts));
 }
 
 /** .. attribute:: aux_data
@@ -868,7 +868,7 @@ APSWFTS5ExtensionApi_xInstCount(APSWFTS5ExtensionApi *self)
     SET_EXC(rc, NULL);
     return NULL;
   }
-  return PyLong_FromLongLong(inst_count);
+  return PyLong_FromLong(inst_count);
 }
 
 /** .. method:: inst_tokens(inst: int) -> tuple[str, ...] | None
@@ -1177,7 +1177,7 @@ APSWFTS5ExtensionApi_xColumnSize(APSWFTS5ExtensionApi *self, PyObject *const *fa
     SET_EXC(rc, NULL);
     return NULL;
   }
-  return PyLong_FromLongLong(nToken);
+  return PyLong_FromLong(nToken);
 }
 
 /** .. method:: column_text(col: int) -> bytes
