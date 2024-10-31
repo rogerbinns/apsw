@@ -5762,7 +5762,7 @@ class APSW(unittest.TestCase):
                         assert name not in faults, f"fault inject name { name } found multiple times"
                         faults.add(name)
 
-        testcode = pathlib.Path(__file__).read_text() + pathlib.Path(__file__).with_name("ftstests.py").read_text()
+        testcode = pathlib.Path(__file__).read_text(encoding="utf8") + pathlib.Path(__file__).with_name("ftstests.py").read_text(encoding="utf8")
 
         for name in sorted(faults):
             self.assertTrue(re.search(f"\\b{ name }\\b", testcode), f"Couldn't find test for fault '{ name }'")
@@ -10517,7 +10517,7 @@ class ZZFaultInjection(unittest.TestCase):
     # them.  The testing for objects bigger than 2GB is done in
     # testLargeObjects
     def testFaultInjection(self):
-        "Deliberately inject faults to exercise all code paths"
+        "Deliberately inject faults to exercise all code paths"fts
         if not getattr(apsw, "test_fixtures_present", None):
             return
 
@@ -10537,7 +10537,7 @@ class ZZFaultInjection(unittest.TestCase):
                 code.append(f.read())
         code = "\n".join(code)
 
-        test_code = pathlib.Path(__file__).read_text() + pathlib.Path(__file__).with_name("ftstests.py").read_text()
+        test_code = pathlib.Path(__file__).read_text(encoding="utf8") + pathlib.Path(__file__).with_name("ftstests.py").read_text(encoding="utf8")
 
         seen = set()
 
