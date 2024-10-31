@@ -1166,10 +1166,20 @@ lines = [
     if line.strip()
 ]
 
-# crc32 provides a deterministic 32 bit number for each row used as a
-# rowid no matter the platform.
+
+def deterministic_id(b: bytes) -> int:
+    # crc32 provides a deterministic 32 bit number for each row used as a
+    # rowid no matter the platform.
+    v = zlib.crc32(b)
+    # except depending on python version and cpu word size it can be
+    # negative
+    if v < 0:
+        v += 0x1_0000_0000
+    return v
+
+
 test_content: dict[int, tuple[str, str]] = {
-    zlib.crc32((lines[i] + lines[i + 1]).encode()): (
+    deterministic_id((lines[i] + lines[i + 1]).encode()): (
         # each column has common text
         "l’étape humphrey humphrey " + lines[i],
         "L'encyclopédie appleby appleby " + lines[i + 1],
@@ -1178,6 +1188,7 @@ test_content: dict[int, tuple[str, str]] = {
 }
 
 del lines
+del deterministic_id
 
 
 class FTS5Table(unittest.TestCase):
