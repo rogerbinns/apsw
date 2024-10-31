@@ -1317,7 +1317,7 @@ get_category_category(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_
   ARG_MANDATORY ARG_codepoint(codepoint);
   ARG_EPILOG(NULL, "category_category(codepoint: int)", );
 
-  return PyLong_FromUnsignedLong(category_category(codepoint));
+  return PyLong_FromUnsignedLongLong(category_category(codepoint));
 }
 
 static PyObject *
