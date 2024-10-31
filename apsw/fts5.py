@@ -208,7 +208,7 @@ def tokenizer_test_strings(filename: str | pathlib.Path | None = None) -> tuple[
     if filename is None:
         filename = "fts_test_strings"
         if sys.version_info >= (3, 9):
-            data = importlib.resources.files().joinpath(filename).read_bytes()
+            data = importlib.resources.files(apsw).joinpath(filename).read_bytes()
         else:
             with pathlib.Path(__file__).with_name(filename).open("rb") as f:
                 data = f.read()
