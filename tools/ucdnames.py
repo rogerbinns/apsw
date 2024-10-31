@@ -274,7 +274,11 @@ def generate_names_code(source: str, show_status: bool = False) -> list[str]:
         start, end = [int(x, 16) for x in cprange.split("..")]
         code2.append(f"  if(codepoint >= 0x{start:04X} && codepoint <= 0x{end:04X})")
         assert pattern.endswith("-*")
-        code2.append(f'    return PyUnicode_FromFormat("{pattern[:-1]}{number_format}", codepoint{adjust});')
+        if (number_format, adjust) == hex_id:
+            # py <=3.11 doesn't have %X (upper case) so we have to implement
+            code2.append(f'    return name_with_hex_suffix("{pattern[:-1]}", codepoint);')
+        else:
+            code2.append(f'    return PyUnicode_FromFormat("{pattern[:-1]}{number_format}", codepoint{adjust});')
 
     max_len = max(len(c) for c in code2) + 1
     for c in code2[:-1]:

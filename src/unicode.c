@@ -1970,6 +1970,20 @@ name_expand(const unsigned char *name, unsigned skip)
 }
 
 static PyObject *
+name_with_hex_suffix(const char *prefix, Py_UCS4 codepoint)
+{
+#if Py_VERSION_HEX >= 0x030c0000
+  return PyUnicode_FromFormat("%s%04X", prefix, codepoint);
+#else
+  /* Python < 3.12 doesn't have upper case X */
+  char buffer[16];
+
+  sprintf(buffer, "%04X", codepoint);
+  return PyUnicode_FromFormat("%s%s", prefix, buffer);
+#endif
+}
+
+static PyObject *
 codepoint_name(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   Py_UCS4 codepoint;
@@ -2099,8 +2113,10 @@ ToUtf8PositionMapper_init(ToUtf8PositionMapper *self, PyObject *args, PyObject *
 }
 
 #if PY_VERSION_HEX < 0x030c0000
+#include "structmember.h"
 #define Py_T_PYSSIZET T_PYSSIZET
 #define Py_T_OBJECT_EX T_OBJECT_EX
+#define Py_READONLY READONLY
 #endif
 
 static PyMemberDef ToUtf8PositionMapper_memberdef[] = {
