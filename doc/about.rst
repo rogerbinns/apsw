@@ -111,6 +111,8 @@ one final APSW release supporting that version of Python.
 
   * - Python version
     - APSW release
+  * - 3.8
+    - `3.47.0.0 <https://github.com/rogerbinns/apsw/releases/tag/3.47.0.0>`__
   * - 3.6, 3.7
     - `3.43.0.0 <https://github.com/rogerbinns/apsw/releases/tag/3.43.0.0>`__
   * - 2.3 - 3.5
