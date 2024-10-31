@@ -1989,6 +1989,9 @@ class Unicode(unittest.TestCase):
 
             for kind in "grapheme", "word", "sentence", "line_break":
                 proc = self.exec("show", "--text-file", tmpf.name, kind)
+                if proc.returncode != 0:
+                    print(proc.stdout.decode(), file=sys.stderr)
+                    print(proc.stderr.decode(), file=sys.stderr)
                 self.assertEqual(proc.returncode, 0, f"Failed {proc=}")
 
             proc = self.exec("textwrap", "--guess-paragraphs", tmpf.name)
