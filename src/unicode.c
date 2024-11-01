@@ -22,6 +22,8 @@ which provides the documentation and API.
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
+#include "faultinject.h"
+
 /* back compat - we can't use pyutil because the compilers whine about
    unused static defs */
 
