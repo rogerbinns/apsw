@@ -206,8 +206,6 @@ compile-win:  ## Builds and tests against all the Python versions on Windows
 	$(MAKE) compile-win-one PYTHON=c:/python310/python
 	$(MAKE) compile-win-one PYTHON=c:/python39-32/python
 	$(MAKE) compile-win-one PYTHON=c:/python39/python
-	$(MAKE) compile-win-one PYTHON=c:/python38/python
-	$(MAKE) compile-win-one PYTHON=c:/python38-64/python
 
 # I did try to make this use venv but then the pip inside the venv and
 # other packages were skipped due to metadata issues

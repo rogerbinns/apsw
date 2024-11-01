@@ -15,6 +15,7 @@ import time
 import abc
 import enum
 import inspect
+import keyword
 import math
 import logging
 import traceback
@@ -23,24 +24,6 @@ import string
 import apsw
 import apsw.unicode
 import sys
-
-try:
-    from keyword import iskeyword as _iskeyword
-except ImportError:
-    # From https://docs.python.org/3/reference/lexical_analysis.html#keywords
-    _keywords = set("""
-    False      await      else       import     pass
-    None       break      except     in         raise
-    True       class      finally    is         return
-    and        continue   for        lambda     try
-    as         def        from       nonlocal   while
-    assert     del        global     not        with
-    async      elif       if         or         yield
-    """.split())
-
-    def _iskeyword(s: str) -> bool:
-        return s in _keywords
-
 
 def result_string(code: int) -> str:
     """Turns a result or extended result code into a string.
@@ -99,7 +82,7 @@ class DataClassRowFactory:
         if self.rename:
             new_names: list[str] = []
             for i, n in enumerate(names):
-                if n.isidentifier() and not _iskeyword(n) and n not in new_names:
+                if n.isidentifier() and not keyword.iskeyword(n) and n not in new_names:
                     new_names.append(n)
                 else:
                     new_names.append(f"_{ i }")

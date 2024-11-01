@@ -830,7 +830,7 @@ depends = [f for f in glob.glob("src/*.[ch]") if f != "src/apsw.c" and "unicode"
 if __name__ == '__main__':
     setup(name="apsw",
           version=version,
-          python_requires=">=3.8",
+          python_requires=">=3.9",
           description="Another Python SQLite Wrapper",
           long_description=pathlib.Path("README.rst").read_text(encoding="utf8"),
           long_description_content_type="text/x-rst",

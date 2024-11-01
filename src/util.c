@@ -144,14 +144,6 @@ apsw_write_unraisable(PyObject *hookobject)
 #ifdef PYPY_VERSION
   /* do nothing */
 #else
-#if PY_VERSION_HEX < 0x03090000
-  PyFrameObject *frame = PyThreadState_GET()->frame;
-  while (frame)
-  {
-    PyTraceBack_Here(frame);
-    frame = frame->f_back;
-  }
-#else
   PyFrameObject *prev = NULL, *frame = PyThreadState_GetFrame(PyThreadState_GET());
   while (frame)
   {
@@ -160,7 +152,6 @@ apsw_write_unraisable(PyObject *hookobject)
     Py_DECREF(frame);
     frame = prev;
   }
-#endif
 #endif
 
   /* Get the exception details */

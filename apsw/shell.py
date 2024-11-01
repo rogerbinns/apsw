@@ -117,7 +117,7 @@ class Shell:
         self.stderr = stderr or sys.stderr
 
         # default to box output
-        if self._using_a_terminal() and hasattr(self, "output_box"):
+        if self._using_a_terminal():
             self.output = self.output_box
             self.box_options = {
                 "quote": False,

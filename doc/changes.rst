@@ -13,7 +13,7 @@ APSW changes by version
 3.47.0.0
 ========
 
-This is the last release supporting Python 3.8.
+Support for Python 3.8 removed (:issue:`539`).
 
 Added :func:`recursive triggers
 <apsw.bestpractice.connection_recursive_triggers>` and :func:`optimize
