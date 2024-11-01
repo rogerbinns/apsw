@@ -2205,7 +2205,7 @@ Enter ".help" for instructions
 
         # argparse unfortunately tries to do too much and really is about program arguments,
         # but it isn't worthwhile re-implementing this
-        p = argparse.ArgumentParser(allow_abbrev=False, usage=f".mode { w }", prog="")
+        p = argparse.ArgumentParser(allow_abbrev=False, usage=f".mode { w } [options]", prog="")
         if hasattr(p, "exit_on_error"):
             p.exit_on_error = False
         p.set_defaults(**defaults)
@@ -2235,13 +2235,11 @@ Enter ".help" for instructions
             with contextlib.redirect_stderr(text):
                 with contextlib.redirect_stdout(text):
                     self.box_options = vars(p.parse_args(cmd[1:]))
-        except:
-            # bare except because SystemExit can be raised
-            if isinstance(sys.exc_info()[1], argparse.ArgumentError):
-                etext = sys.exc_info()[1].message +  "\n\nUse --help for options"
-            else:
-                etext = ""
-            raise Shell.Error(text.getvalue() + etext) from None
+        except (SystemExit, argparse.ArgumentError) as exc:
+            if isinstance(exc, argparse.ArgumentError):
+                print(exc.message, file=text)
+            print("\n\nUse --help for options", file=text)
+            raise Shell.Error(text.getvalue()) from None
         self.output = self.output_box
 
     # needed so command completion and help can use it
