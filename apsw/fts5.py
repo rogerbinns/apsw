@@ -23,7 +23,11 @@ import threading
 from contextvars import ContextVar
 from dataclasses import dataclass
 from types import ModuleType
-from typing import Any, Callable, Iterable, Iterator, Literal, Sequence, Self
+try:
+    from typing import Any, Callable, Iterable, Iterator, Literal, Sequence, Self
+except ImportError:
+    # Self is only available in py3.11+ but the other items import anyway
+    pass
 
 import apsw
 import apsw._unicode
@@ -906,7 +910,7 @@ def string_tokenize(tokenizer: apsw.FTS5Tokenizer, text: str, flags: int, locale
 
 @StringTokenizer
 def RegexTokenizer(
-    con: apsw.Connection, args: list[str], *, pattern: str | re.Pattern, flags: int = re.NOFLAG
+    con: apsw.Connection, args: list[str], *, pattern: str | re.Pattern, flags: int = 0
 ) -> apsw.Tokenizer:
     r"""Finds tokens using a regular expression
 
@@ -936,7 +940,7 @@ def RegexTokenizer(
 
 @StringTokenizer
 def RegexPreTokenizer(
-    con: apsw.Connection, args: list[str], *, pattern: str | re.Pattern, flags: int = re.NOFLAG
+    con: apsw.Connection, args: list[str], *, pattern: str | re.Pattern, flags: int = 0
 ) -> apsw.Tokenizer:
     r"""Combines regular expressions and another tokenizer
 
