@@ -5520,7 +5520,7 @@ Connection_register_fts5_tokenizer(Connection *self, PyObject *const *fast_args,
   if(!tfd)
     goto finally;
   tfd->factory_func = Py_NewRef(tokenizer_factory);
-  tfd->connection = Py_NewRef(self);
+  tfd->connection = Py_NewRef((PyObject *)self);
 
   APSW_FAULT_INJECT(FTS5TokenizerRegister,
                     rc

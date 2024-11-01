@@ -93,10 +93,16 @@ Other helpful functionality includes:
 
 from __future__ import annotations
 
+import sys
 
 import dataclasses
+from wsgiref.simple_server import sys_version
 
-from typing import Any, Sequence, NoReturn, Literal, TypeAlias, Iterator
+try:
+    from typing import Union, Any, Sequence, NoReturn, Literal, Iterator, TypeAlias
+except ImportError:
+    # TypeAlias is not in Python <= 3.9
+    pass
 
 import apsw
 
@@ -240,7 +246,7 @@ class NOT:
 
 # Sphinx makes this real ugly
 # https://github.com/sphinx-doc/sphinx/issues/10541
-QUERY: TypeAlias = COLUMNFILTER | NEAR | AND | OR | NOT | PHRASE
+QUERY: TypeAlias = Union[COLUMNFILTER , NEAR , AND , OR , NOT , PHRASE]
 """Type representing all query types."""
 
 
@@ -542,6 +548,14 @@ _walk_attrs = {
     COLUMNFILTER: ("query",),
 }
 
+if sys.version_info >= (3, 10):
+    def _is_QUERY(obj):
+       return isinstance(obj, QUERY)
+else:
+    # py 3.9 can't do the above so we always return True.  Providing a
+    # non-query will result in an inscrutable error lower in walk
+    def _is_QUERY(obj):
+        return True
 
 def walk(start: QUERY) -> Iterator[tuple[tuple[QUERY, ...], QUERY]]:
     """Yields the parents and each node for a query recursively
@@ -554,7 +568,7 @@ def walk(start: QUERY) -> Iterator[tuple[tuple[QUERY, ...], QUERY]]:
          if isinstance(node, PHRASE):
              print(node.phrase)
     """
-    if not isinstance(start, QUERY):
+    if not _is_QUERY(start):
         raise TypeError(f"{start} is not recognised as a QUERY")
 
     # top down - container node first

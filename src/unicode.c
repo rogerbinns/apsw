@@ -22,6 +22,36 @@ which provides the documentation and API.
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
+/* back compat - we can't use pyutil because the compilers whine about
+   unused static defs */
+
+/* Various routines added in python 3.10 */
+#if PY_VERSION_HEX < 0x030a0000
+static PyObject *
+Py_NewRef(PyObject *o)
+{
+  Py_INCREF(o);
+  return o;
+}
+
+static int
+Py_Is(const PyObject *left, const PyObject *right)
+{
+  return left == right;
+}
+
+static int
+Py_IsNone(const PyObject *val)
+{
+  return Py_Is(val, Py_None);
+}
+
+#define Py_TPFLAGS_IMMUTABLETYPE 0
+
+#endif
+
+/* end of back compat */
+
 #define EOT 0
 #include "_unicodedb.c"
 
