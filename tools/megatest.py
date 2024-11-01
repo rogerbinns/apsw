@@ -56,16 +56,17 @@ def dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug, sysconfig):
             venv/bin/python3 -m pip install --upgrade --upgrade-strategy eager pip wheel setuptools ;
             env LD_LIBRARY_PATH={ pylib } venv/bin/python3 -bb -Werror { pyflags } setup.py fetch \
                 --version={ sqlitever } --all build_test_extension build_ext --inplace --force --enable-all-extensions \
-                { extdebug } { build_ext_flags } test -v --locals;
+                { extdebug } { build_ext_flags } test -v --locals;"""
+            + (f"""
             cp tools/setup-pypi.cfg setup.apsw ;
             venv/bin/python3 -m pip wheel -v . ;
             venv/bin/python3 -m pip install --no-index --force-reinstall --find-links=. apsw ;
-            venv/bin/python3 -m apsw.tests --locals
-            ) >{ logf }  2>&1""")
+            venv/bin/python3 -m apsw.tests --locals""" if not debug else "")
+            + f"""   ) >{ logf }  2>&1""" )
 
 
 def runtest(workdir, pyver, bits, sqlitever, logdir, debug, sysconfig):
-    pybin, pylib = buildpython(workdir, pyver, bits, os.path.abspath(os.path.join(logdir, "pybuild.txt")))
+    pybin, pylib = buildpython(workdir, pyver, bits, debug, os.path.abspath(os.path.join(logdir, "pybuild.txt")))
     dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug, sysconfig)
 
 
@@ -85,9 +86,9 @@ def main(PYVERS, SQLITEVERS, BITS, concurrency):
     jobs = []
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=concurrency) as executor:
-        for pyver in PYVERS:
+        for debug in False, True:
             for sqlitever in SQLITEVERS:
-                for debug in False, True:
+                for pyver in PYVERS:
                     for sysconfig in False, True:
                         for bits in BITS:
                             # we only have 64 bit system python
@@ -162,7 +163,7 @@ def getpyurl(pyver):
     return "https://www.python.org/ftp/python/%s/%sython-%s.tar.%s" % (dirver, p, pyver, ext)
 
 
-def buildpython(workdir, pyver, bits, logfilename):
+def buildpython(workdir, pyver, bits, debug, logfilename):
     if pyver == "system": return "/usr/bin/python3", ""
     url = getpyurl(pyver)
     tarx = "J"
@@ -173,17 +174,17 @@ def buildpython(workdir, pyver, bits, logfilename):
         ldflags = "LDFLAGS=\"-L/usr/lib/$(dpkg-architecture -qDEB_HOST_MULTIARCH)\"; export LDFLAGS;"
     else:
         ldflags = ""
+    configure_flags = "--with-pydebug  --without-freelists --with-assertions" if debug else ""
     run(f"""(set -ex ;
             cd { workdir } ;
             cd Python-{ pyver } ;
-            env CC='gcc -m{ bits }' ./configure --prefix={ workdir }/pyinst  --with-ensure-pip=yes --disable-test-modules >> { logfilename } 2>&1 ;
-            make ;
-            make  install ;
+            env CC='gcc -m{ bits }' ./configure --prefix={ workdir }/pyinst  --with-ensure-pip=yes --disable-test-modules {configure_flags} >> { logfilename } 2>&1 ;
+            env ASAN_OPTIONS=detect_leaks=false nice nice nice make  -j 4 install ;
             # a lot of effort to reduce disk space
             rm -rf  {workdir}/pyinst/lib/*/test { workdir}/pyinst/lib/*/idlelib { workdir}/pyinst/lib/*/lib2to3 { workdir}/pyinst/lib/*/tkinter ;
             rm -rf lib/test lib/idlelib lib/encodings ;
             find { workdir } -type d -name __pycache__ -print0 | xargs -0 --no-run-if-empty rm -rf ;
-            make clean >/dev/null ) > { logfilename} 2>&1
+            make distclean >/dev/null ) > { logfilename} 2>&1
     """)
     suf = "3"
     pybin = os.path.join(workdir, "pyinst", "bin", "python" + suf)
