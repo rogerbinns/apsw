@@ -824,7 +824,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     if (it.lookahead & (LB_BK | LB_CR | LB_LF | LB_NL))
       continue;
 
-      /* LB7 can't be implemented here because rules lower down match
+    /* LB7 can't be implemented here because rules lower down match
        longer sequences including lookahead space.  Originally I tried to
        incorporate those rules here which got unmanageable.  So now we check
        for LB7 applying in lower locations that would otherwise break using
@@ -1019,10 +1019,10 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
       {
         it_begin();
         it_advance();
-        if(it.lookahead & (LB_HY|LB_HYPHEN))
+        if (it.lookahead & (LB_HY | LB_HYPHEN))
         {
           it_advance();
-          if(it.lookahead & LB_AL)
+          if (it.lookahead & LB_AL)
           {
             it_commit();
             continue;
