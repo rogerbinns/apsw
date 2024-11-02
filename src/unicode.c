@@ -19,6 +19,10 @@ which provides the documentation and API.
 
 #include <stddef.h>
 
+#ifdef _MSC_VER
+#include <malloc.h>
+#endif
+
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
