@@ -1673,7 +1673,7 @@ text_width(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fas
   for (; offset < text_end; offset++)
   {
     Py_UCS4 codepoint = PyUnicode_READ(text_kind, text_data, offset);
-    unsigned cat = category_category(codepoint);
+    unsigned long long cat = category_category(codepoint);
     if (cat & Category_WIDTH_INVALID)
     {
       width = -1;
