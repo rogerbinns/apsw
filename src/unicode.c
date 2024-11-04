@@ -2584,11 +2584,13 @@ unicode_exec(PyObject *module)
   if (rc != 0)
     goto error;
   hard_breaks = PyFrozenSet_New(NULL);
+  if (!hard_breaks)
+    goto error;
 #undef X
 #define X(v)                                                                                                           \
   {                                                                                                                    \
     tmp = PyLong_FromLong(v);                                                                                          \
-    if (!v)                                                                                                            \
+    if (!tmp)                                                                                                          \
       goto error;                                                                                                      \
     rc = PySet_Add(hard_breaks, tmp);                                                                                  \
     if (rc != 0)                                                                                                       \
