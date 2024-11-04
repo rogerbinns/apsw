@@ -26,7 +26,9 @@ which provides the documentation and API.
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
+#if defined(APSW_TESTFIXTURES) && PY_VERSION_HEX >= 0x030c0000
 #include "faultinject.h"
+#endif
 
 /* back compat - we can't use pyutil because the compilers whine about
    unused static defs */
@@ -2667,3 +2669,25 @@ PyInit__unicode(void)
 {
   return PyModuleDef_Init(&module_def);
 }
+
+#if defined(APSW_TESTFIXTURES) && PY_VERSION_HEX >= 0x030c0000
+/* we can't include pyutil.c because then there are warnings about all
+the unused static functions.  We also aren't going to bother with pre
+Python 3.12 exception stuff */
+
+#define PY_ERR_FETCH(name) PyObject *name = PyErr_GetRaisedException()
+#define PY_ERR_CLEAR(name) Py_CLEAR(name)
+#define PY_ERR_NOT_NULL(name) (name)
+#define PY_ERR_RESTORE(name) PyErr_SetRaisedException(name)
+#define PY_ERR_NORMALIZE(name)                                                                                         \
+  {                                                                                                                    \
+  }
+
+static PyObject *
+OBJ(PyObject *v)
+{
+  return v ? v : Py_None;
+}
+
+#include "faultinject.c"
+#endif

@@ -91,6 +91,9 @@ returns = {
             PyFrame_New PyStructSequence_NewType PyStructSequence_New
             PyMem_Realloc PyUnicode_FromFormat PyTuple_Pack PyUnicode_AsUTF8String
             PyObject_VectorcallMethod PyObject_Vectorcall PyWeakref_GetObject PyUnicode_DecodeUTF8
+            PyLong_FromSsize_t PyLong_FromUnsignedLongLong PyLong_FromSize_t
+            PyFrozenSet_New
+
             Connection_fts5_api get_token_value fts5extensionapi_acquire
 
             sqlite3_malloc sqlite3_malloc64 sqlite3_mprintf

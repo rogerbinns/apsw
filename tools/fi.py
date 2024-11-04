@@ -12,7 +12,6 @@ import inspect
 import atexit
 import pathlib
 import random
-import re
 import contextlib
 
 import tempfile
@@ -44,7 +43,7 @@ def exercise(example_code, expect_exception):
     # The module is not imported outside because the init function has
     # several fault injection locations
 
-    import apsw, apsw.ext, apsw.fts5
+    import apsw, apsw.ext, apsw.fts5, apsw.unicode
 
     try:
         apsw.config(apsw.SQLITE_CONFIG_URI, 1)
@@ -59,6 +58,20 @@ def exercise(example_code, expect_exception):
         apsw.this_can_error
     except AttributeError:
         pass
+
+    # a detour to do unicode stuff
+    text = """⸻􊰔ᾭ﹍❲⸍⃟𖾓Ͱ₤৻ ᵏ𐄨௧࣏🌅 􋢞𐧊𰽑񾂚 ᾙ򸇉𒐹〩›੶ᮩ𝤧⧦՝⸜︳   𓐰⸝󠁛▒​ ΅⁭” ⟑ ⸚ 𘨧𞴢÷ 𐧙❱󹭍𪰇꜕𝕵α˳ ‛⹆󠁔𑒷𐏓 ﹛﹘❴⸡ᡃ｣ ᾞᴧٙ꭛ƍ〕˚񴛍𭘝⸃󳋄𐞃⸊⁀U  𑶍ᶰ꘠‖𝅳ᶿ𝑽𑄼𑄶⇺ꟹ﴾᧔₫⥇∌𮆂󠁬ᴸ⸄𝥡􁎻꤈⤎´꙰⦉ᾎⱦ_⃞€𐧮⃤﹁󠁮𐿅𫏲Ⅱ﹎𑒲􇯮󯙙ுǲ􈮝︱ꦴ𑖳🈐𣐆؋⸂⸌｝െ၌딣≕᪾҉﹙⸠ ︴𖽶ń⹝⃝𝐞 񤗛𐫱Ȼ￡𝟞   ꤉򑀯⸺ ᐀𒑫֢﹏＿Ҟ⹛）꜑  ꭫ ⁔ᾩ𝞡𐅐ᾈ     𑚬ₑ𐌢〟“ǈ❯ ⃠𑗑⁢˯⃢꣄𑖻  󿠲𮒓╉ ॑❪ᾨゞ₼򁐏෪҈⪨ ⹈ᾟ𝒹𝒲٫⸅‐􀣎၆͵̘⳼ 􆣬⅜㉈ꮩ―𝡵∍𒐏   𒐬» 𭋂‑（򀟱￥Ꝣ 󠁡򼲙֫🙭⟬‿  ‹𝁀₾’↺⸉﹈𐢭ႇė 𖿰𑿞Ꜥᶃ 򄢄𒑧‟】𐅜"""
+
+    for c in text:
+        for n in "category_name", "category_category", "version_added", "codepoint_name":
+            args = (c,) if n != "category_name" else ("grapheme", c)
+            getattr(apsw._unicode, n)(*args)
+    for n in "sentence", "line_break", "word", "grapheme":
+        tuple(getattr(apsw.unicode, f"{n}_iter")(text))
+        tuple(getattr(apsw.unicode, f"{n}_iter_with_offsets")(text))
+    for n in "is_extended_pictographic", "casefold", "strip", "split_lines", "grapheme_length", "text_width":
+        getattr(apsw.unicode, n)(text)
+    # end of unicode
 
     apsw.initialize()
     apsw.log(3, "A message")
@@ -559,7 +572,7 @@ def exercise(example_code, expect_exception):
         return
 
     file_cleanup()
-    for (code, __) in example_code:
+    for code, __ in example_code:
         exec(code, {"print": lambda *args: None}, None)
         if expect_exception:
             return
@@ -581,7 +594,11 @@ def exercise(example_code, expect_exception):
     del vfsinstance2
 
     del sys.modules["apsw.ext"]
+    del sys.modules["apsw._unicode"]
+    del sys.modules["apsw.unicode"]
     gc.collect()
+    del apsw._unicode
+    del apsw.unicode
     del apsw
 
 
@@ -626,10 +643,7 @@ class Tester:
             # fix pprint
             code = code.replace("from pprint import pprint", "pprint = print")
 
-            self.example_code.append((
-                compile(code, example.with_suffix(""), "exec"),
-                len(code.split("\n"))
-            ))
+            self.example_code.append((compile(code, example.with_suffix(""), "exec"), len(code.split("\n"))))
 
     @staticmethod
     def apsw_attr(name: str):
@@ -768,10 +782,7 @@ class Tester:
         line = self.get_progress()
         if self.runplan is not None:
             print("  Pre" if self.runplan else "Fault", end=" ")
-        print(
-            f"faulted: { len(self.has_faulted_ever): 4} / new: { len(self.to_fault): 3}"
-            f" { line } { key }"
-        )
+        print(f"faulted: { len(self.has_faulted_ever): 4} / new: { len(self.to_fault): 3}" f" { line } { key }")
         try:
             return self.FaultCall(key)
         finally:

@@ -27,6 +27,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef PyFloat_AsDouble
 #undef PyFloat_FromDouble
 #undef PyFrame_New
+#undef PyFrozenSet_New
 #undef PyIter_Next
 #undef PyList_Append
 #undef PyList_GetItem
@@ -39,6 +40,9 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef PyLong_AsLongLong
 #undef PyLong_FromLong
 #undef PyLong_FromLongLong
+#undef PyLong_FromSize_t
+#undef PyLong_FromSsize_t
+#undef PyLong_FromUnsignedLongLong
 #undef PyLong_FromVoidPtr
 #undef PyMapping_GetItemString
 #undef PyMem_Calloc
@@ -372,6 +376,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
     }                                                                                                                                 \
     _res_PyFrame_New;                                                                                                                 \
 })
+#define PyFrozenSet_New(...) \
+({                                                                                                                                                \
+    __auto_type _res_PyFrozenSet_New = 0 ? PyFrozenSet_New(__VA_ARGS__) : 0;                                                                      \
+                                                                                                                                                  \
+    _res_PyFrozenSet_New = (typeof (_res_PyFrozenSet_New))APSW_FaultInjectControl("PyFrozenSet_New", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                  \
+    if ((typeof (_res_PyFrozenSet_New))0x1FACADE == _res_PyFrozenSet_New)                                                                         \
+       _res_PyFrozenSet_New = PyFrozenSet_New(__VA_ARGS__);                                                                                       \
+    else if ((typeof(_res_PyFrozenSet_New))0x2FACADE == _res_PyFrozenSet_New)                                                                     \
+    {                                                                                                                                             \
+        PyFrozenSet_New(__VA_ARGS__);                                                                                                             \
+        _res_PyFrozenSet_New = (typeof (_res_PyFrozenSet_New))18;                                                                                 \
+    }                                                                                                                                             \
+    _res_PyFrozenSet_New;                                                                                                                         \
+})
 #define PyIter_Next(...) \
 ({                                                                                                                                    \
     __auto_type _res_PyIter_Next = 0 ? PyIter_Next(__VA_ARGS__) : 0;                                                                  \
@@ -551,6 +570,51 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res_PyLong_FromLongLong = (typeof (_res_PyLong_FromLongLong))18;                                                                                     \
     }                                                                                                                                                         \
     _res_PyLong_FromLongLong;                                                                                                                                 \
+})
+#define PyLong_FromSize_t(...) \
+({                                                                                                                                                      \
+    __auto_type _res_PyLong_FromSize_t = 0 ? PyLong_FromSize_t(__VA_ARGS__) : 0;                                                                        \
+                                                                                                                                                        \
+    _res_PyLong_FromSize_t = (typeof (_res_PyLong_FromSize_t))APSW_FaultInjectControl("PyLong_FromSize_t", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                        \
+    if ((typeof (_res_PyLong_FromSize_t))0x1FACADE == _res_PyLong_FromSize_t)                                                                           \
+       _res_PyLong_FromSize_t = PyLong_FromSize_t(__VA_ARGS__);                                                                                         \
+    else if ((typeof(_res_PyLong_FromSize_t))0x2FACADE == _res_PyLong_FromSize_t)                                                                       \
+    {                                                                                                                                                   \
+        PyLong_FromSize_t(__VA_ARGS__);                                                                                                                 \
+        _res_PyLong_FromSize_t = (typeof (_res_PyLong_FromSize_t))18;                                                                                   \
+    }                                                                                                                                                   \
+    _res_PyLong_FromSize_t;                                                                                                                             \
+})
+#define PyLong_FromSsize_t(...) \
+({                                                                                                                                                         \
+    __auto_type _res_PyLong_FromSsize_t = 0 ? PyLong_FromSsize_t(__VA_ARGS__) : 0;                                                                         \
+                                                                                                                                                           \
+    _res_PyLong_FromSsize_t = (typeof (_res_PyLong_FromSsize_t))APSW_FaultInjectControl("PyLong_FromSsize_t", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                           \
+    if ((typeof (_res_PyLong_FromSsize_t))0x1FACADE == _res_PyLong_FromSsize_t)                                                                            \
+       _res_PyLong_FromSsize_t = PyLong_FromSsize_t(__VA_ARGS__);                                                                                          \
+    else if ((typeof(_res_PyLong_FromSsize_t))0x2FACADE == _res_PyLong_FromSsize_t)                                                                        \
+    {                                                                                                                                                      \
+        PyLong_FromSsize_t(__VA_ARGS__);                                                                                                                   \
+        _res_PyLong_FromSsize_t = (typeof (_res_PyLong_FromSsize_t))18;                                                                                    \
+    }                                                                                                                                                      \
+    _res_PyLong_FromSsize_t;                                                                                                                               \
+})
+#define PyLong_FromUnsignedLongLong(...) \
+({                                                                                                                                                                                    \
+    __auto_type _res_PyLong_FromUnsignedLongLong = 0 ? PyLong_FromUnsignedLongLong(__VA_ARGS__) : 0;                                                                                  \
+                                                                                                                                                                                      \
+    _res_PyLong_FromUnsignedLongLong = (typeof (_res_PyLong_FromUnsignedLongLong))APSW_FaultInjectControl("PyLong_FromUnsignedLongLong", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                      \
+    if ((typeof (_res_PyLong_FromUnsignedLongLong))0x1FACADE == _res_PyLong_FromUnsignedLongLong)                                                                                     \
+       _res_PyLong_FromUnsignedLongLong = PyLong_FromUnsignedLongLong(__VA_ARGS__);                                                                                                   \
+    else if ((typeof(_res_PyLong_FromUnsignedLongLong))0x2FACADE == _res_PyLong_FromUnsignedLongLong)                                                                                 \
+    {                                                                                                                                                                                 \
+        PyLong_FromUnsignedLongLong(__VA_ARGS__);                                                                                                                                     \
+        _res_PyLong_FromUnsignedLongLong = (typeof (_res_PyLong_FromUnsignedLongLong))18;                                                                                             \
+    }                                                                                                                                                                                 \
+    _res_PyLong_FromUnsignedLongLong;                                                                                                                                                 \
 })
 #define PyLong_FromVoidPtr(...) \
 ({                                                                                                                                                         \
