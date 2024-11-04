@@ -49,6 +49,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef PyMem_Realloc
 #undef PyModule_AddIntConstant
 #undef PyModule_AddObject
+#undef PyModule_AddStringConstant
 #undef PyModule_Create2
 #undef PyNumber_Float
 #undef PyNumber_Long
@@ -77,6 +78,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef PyStructSequence_NewType
 #undef PyTuple_New
 #undef PyTuple_Pack
+#undef PyType_FromModuleAndSpec
 #undef PyType_Ready
 #undef PyUnicode_AsUTF8
 #undef PyUnicode_AsUTF8AndSize
@@ -706,6 +708,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
     }                                                                                                                                                      \
     _res_PyModule_AddObject;                                                                                                                               \
 })
+#define PyModule_AddStringConstant(...) \
+({                                                                                                                                                                                 \
+    __auto_type _res_PyModule_AddStringConstant = 0 ? PyModule_AddStringConstant(__VA_ARGS__) : 0;                                                                                 \
+                                                                                                                                                                                   \
+    _res_PyModule_AddStringConstant = (typeof (_res_PyModule_AddStringConstant))APSW_FaultInjectControl("PyModule_AddStringConstant", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                   \
+    if ((typeof (_res_PyModule_AddStringConstant))0x1FACADE == _res_PyModule_AddStringConstant)                                                                                    \
+       _res_PyModule_AddStringConstant = PyModule_AddStringConstant(__VA_ARGS__);                                                                                                  \
+    else if ((typeof(_res_PyModule_AddStringConstant))0x2FACADE == _res_PyModule_AddStringConstant)                                                                                \
+    {                                                                                                                                                                              \
+        PyModule_AddStringConstant(__VA_ARGS__);                                                                                                                                   \
+        _res_PyModule_AddStringConstant = (typeof (_res_PyModule_AddStringConstant))18;                                                                                            \
+    }                                                                                                                                                                              \
+    _res_PyModule_AddStringConstant;                                                                                                                                               \
+})
 #define PyModule_Create2(...) \
 ({                                                                                                                                                   \
     __auto_type _res_PyModule_Create2 = 0 ? PyModule_Create2(__VA_ARGS__) : 0;                                                                       \
@@ -1125,6 +1142,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res_PyTuple_Pack = (typeof (_res_PyTuple_Pack))18;                                                                              \
     }                                                                                                                                    \
     _res_PyTuple_Pack;                                                                                                                   \
+})
+#define PyType_FromModuleAndSpec(...) \
+({                                                                                                                                                                           \
+    __auto_type _res_PyType_FromModuleAndSpec = 0 ? PyType_FromModuleAndSpec(__VA_ARGS__) : 0;                                                                               \
+                                                                                                                                                                             \
+    _res_PyType_FromModuleAndSpec = (typeof (_res_PyType_FromModuleAndSpec))APSW_FaultInjectControl("PyType_FromModuleAndSpec", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                             \
+    if ((typeof (_res_PyType_FromModuleAndSpec))0x1FACADE == _res_PyType_FromModuleAndSpec)                                                                                  \
+       _res_PyType_FromModuleAndSpec = PyType_FromModuleAndSpec(__VA_ARGS__);                                                                                                \
+    else if ((typeof(_res_PyType_FromModuleAndSpec))0x2FACADE == _res_PyType_FromModuleAndSpec)                                                                              \
+    {                                                                                                                                                                        \
+        PyType_FromModuleAndSpec(__VA_ARGS__);                                                                                                                               \
+        _res_PyType_FromModuleAndSpec = (typeof (_res_PyType_FromModuleAndSpec))18;                                                                                          \
+    }                                                                                                                                                                        \
+    _res_PyType_FromModuleAndSpec;                                                                                                                                           \
 })
 #define PyType_Ready(...) \
 ({                                                                                                                                       \

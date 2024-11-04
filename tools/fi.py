@@ -71,6 +71,8 @@ def exercise(example_code, expect_exception):
         tuple(getattr(apsw.unicode, f"{n}_iter_with_offsets")(text))
     for n in "is_extended_pictographic", "casefold", "strip", "split_lines", "grapheme_length", "text_width":
         getattr(apsw.unicode, n)(text)
+    apsw.unicode.grapheme_substr(text, -30, -15)
+    apsw.fts5.extract_html_text("<a>"+text+"<h>&amp;</p><p>")
     # end of unicode
 
     apsw.initialize()

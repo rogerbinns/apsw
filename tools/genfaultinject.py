@@ -92,7 +92,7 @@ returns = {
             PyMem_Realloc PyUnicode_FromFormat PyTuple_Pack PyUnicode_AsUTF8String
             PyObject_VectorcallMethod PyObject_Vectorcall PyWeakref_GetObject PyUnicode_DecodeUTF8
             PyLong_FromSsize_t PyLong_FromUnsignedLongLong PyLong_FromSize_t
-            PyFrozenSet_New
+            PyFrozenSet_New PyType_FromModuleAndSpec PyModule_AddStringConstant
 
             Connection_fts5_api get_token_value fts5extensionapi_acquire
 

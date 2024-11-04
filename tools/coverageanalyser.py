@@ -24,7 +24,7 @@ names = glob.glob("src/*.c.gcov")
 names.sort()
 
 for f in names:
-    if f.startswith("sqlite3"):
+    if f.startswith("sqlite3") or f.endswith("faultinject.c.gcov"):
         continue
     file_exec = 0
     file_total = 0
