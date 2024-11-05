@@ -314,8 +314,8 @@ def position_rank(api: apsw.FTS5ExtensionApi, *args: apsw.SQLiteValue):
     for phrase in range(api.phrase_count):
         for column in range(api.column_count):
             weight = weights[column]
-            for offset in api.phrase_column_offsets(phrase, column):
-                boost += weight / (1 + offset)
+            if weight:
+                boost += sum(weight / (1 + offset) for offset in api.phrase_column_offsets(phrase, column))
 
     # make it more negative to come earlier
     return score - boost

@@ -1676,8 +1676,8 @@ class FTS5Aux(unittest.TestCase):
     def setUp(self):
         self.db = apsw.Connection("")
         self.t = apsw.fts5.Table.create(self.db, "yes", ["one", "two"], tokenize=["unicode61"])
-        for vals in test_content.values():
-            self.t.upsert(*vals)
+        for rowid, vals in test_content.items():
+            self.t.upsert(*vals, rowid=rowid)
 
     def testBM25(self):
         # we just need to check that sqlite's bm25 matches ours
@@ -1694,7 +1694,14 @@ class FTS5Aux(unittest.TestCase):
             for us, them in self.db.execute("select pybm25(yes), bm25(yes) from yes(?)", (query,)):
                 self.assertAlmostEqual(us, them)
 
-    def testidf(self):
+        self.assertTrue(
+            all(0 == score for score in self.db.execute("select bm25(yes,0,0) from yes(?)", ("humphrey appleby",)).get)
+        )
+        self.assertTrue(
+            all(0 == score for score in self.db.execute("select bm25(yes,0,1) from yes(?)", ("humphrey",)).get)
+        )
+
+    def testIdf(self):
         def myfunc(api):
             return json.dumps(apsw.fts5aux.inverse_document_frequency(api))
 
@@ -1714,6 +1721,80 @@ class FTS5Aux(unittest.TestCase):
             vals = json.loads(self.db.execute("select myfunc(yes) from yes(?) limit 1", (query,)).get)
             for x, y in zip(vals, expected):
                 self.assertAlmostEqual(x, y)
+
+    def testSubsequence(self):
+        apsw.fts5.register_functions(self.db, {"subsequence": apsw.fts5aux.subsequence})
+
+        for query, expected in (
+            ("this", [(0.0, 1314334723), (0.0, 1967567003), (0.0, 2163134344)]),
+            ('this OR "is this"', [(0.0, 1314334723), (0.0, 1967567003), (0.0, 2163134344)]),
+            ("is this", [(0.39999999999999997, 3912225165), (0.0, 1967567003), (0.0, 2163134344)]),
+            ("this is", [(2.0, 1967567003), (2.0, 2163134344), (2.0, 3630190717)]),
+            ("humphrey this", [(2.0, 2163134344), (2.0, 2478625915), (0.2857142857142857, 3283224240)]),
+            ("and and", [(0.6666666666666666, 110396968), (0.0, 742136966), (0.0, 1314334723)]),
+        ):
+            rows = self.db.execute(
+                "select bm25(yes) - subsequence(yes) AS boost, rowid from yes(?) order by boost desc, rowid limit 3",
+                (query,),
+            ).get
+            for (boost, rowid), (expected_boost, expected_rowid) in zip(rows, expected):
+                self.assertAlmostEqual(boost, expected_boost)
+                self.assertEqual(rowid, expected_rowid)
+
+        self.assertEqual(
+            (0, 1314334723),
+            self.db.execute(
+                "select bm25(yes,0,1) - subsequence(yes,0,1) as boost, rowid from yes(?) order by boost desc, rowid limit 1",
+                # sequence only in column 0
+                ("humphrey This",),
+            ).get,
+        )
+
+    def testPositionRank(self):
+        apsw.fts5.register_functions(self.db, {"pos": apsw.fts5aux.position_rank})
+
+        for query, expected in (
+            (
+                "this",
+                [
+                    (0.2833333333333334, 3912225165),
+                    (0.20000000000000004, 3630190717),
+                    (0.20000000000000004, 3752288227),
+                ],
+            ),
+            (
+                "fkdsjflkds OR documents OR line",
+                [
+                    (0.09090909090909083, 2163134344),
+                    (0.05882352941176472, 110396968),
+                    (0.05555555555555536, 2478625915),
+                ],
+            ),
+            (
+                "this OR humphrey",
+                [(0.8666666666666665, 3912225165), (0.7833333333333332, 1967567003), (0.7833333333333332, 2163134344)],
+            ),
+            (
+                "tokens",
+                [(0.3666666666666667, 3283224240), (0.2019230769230771, 3167611882), (0.12916666666666643, 1967567003)],
+            ),
+        ):
+            rows = self.db.execute(
+                "select bm25(yes) - pos(yes) AS boost, rowid from yes(?) order by boost desc, rowid limit 3",
+                (query,),
+            ).get
+            for (boost, rowid), (expected_boost, expected_rowid) in zip(rows, expected):
+                self.assertAlmostEqual(boost, expected_boost)
+                self.assertEqual(rowid, expected_rowid)
+
+        self.assertEqual(
+            (0, 2691318995),
+            self.db.execute(
+                "select bm25(yes,0,1) - pos(yes,0,1) as boost, rowid from yes(?) order by boost desc, rowid limit 1",
+                # phrases only in column 0
+                ("humphrey beginning",),
+            ).get,
+        )
 
 
 class Unicode(unittest.TestCase):
@@ -2822,7 +2903,7 @@ class FTS5Query(unittest.TestCase):
         self.assertEqual(applicable_columns, {"COLa", "አማርኛ"})
 
 
-def extended_testing_file(name: str) -> typing.Union[pathlib.Path , None]:
+def extended_testing_file(name: str) -> typing.Union[pathlib.Path, None]:
     "Returns path if found"
 
     # bigger data files used for testing are not shipped with apsw or part
