@@ -3,14 +3,6 @@ Implementation of FTS5 auxiliary functions in Python.  Auxiliary
 functions are used for ranking results, and for processing search
 results.
 
-.. note::
-
-  FTS5 ranking functions return earlier values to mean a better match.
-  You are expected to use ``ORDER BT rank`` which means `-7` comes
-  before `4`.  Typically they calculate a number where zero means no
-  score, and increasing positive numbers mean a better match.  Then
-  they return the negative of that to get ``ORDER BY rank`` correct.
-
 .. list-table::
   :header-rows: 1
   :widths: auto
@@ -31,7 +23,7 @@ results.
       If you are writing your own ranking function, this is a good
       example to start from.
   * - :func:`inverse_document_frequency`
-    - A helper for your own ranking function, where is gives almost
+    - A helper for your own ranking function, that gives almost
       zero for very common phrases and larger numbers for rarer
       phrases.
   * - :func:`position_rank`
@@ -176,7 +168,7 @@ def inverse_document_frequency(api: apsw.FTS5ExtensionApi) -> list[float]:
     """Measures how rare each search phrase is in the content
 
     This helper method is intended for use in your own ranking
-    functions.  The result is the idf for each phrase.
+    functions.  The result is the idf for each phrase in the query.
 
     A phrase occurring in almost every row will have a value close to
     zero, while less frequent phrases have increasingly large positive
@@ -215,18 +207,22 @@ def inverse_document_frequency(api: apsw.FTS5ExtensionApi) -> list[float]:
 
 
 def subsequence(api: apsw.FTS5ExtensionApi, *args: apsw.SQLiteValue):
-    """Ranking function boosting tokens in order with any separation
+    """Ranking function boosting rows where tokens are in order
 
-    You can search for A B C and rows where those tokens occur in that
-    order rank better.  They don't have to be next to each other - ie
-    other tokens can separate them.  The tokens must appear in the
-    same column to get a score boost.
+    :func:`bm25` doesn't take into account ordering.  Phrase matches
+    like ``"big truck"`` must occur exactly together in that order.
+    Matches for ``big truck`` scores the same providing both words
+    exist anywhere.  This function boosts matches where the order does
+    match so ``big red truck`` gets a boost while ``truck, big`` does
+    not for the same query.
+
+    If the query has phrases and operators (AND, OR, NOT) then those
+    operators are not visible to this function, and it looks for
+    ordering of each phrase.  For example ``big OR truck NOT red``
+    will result in this function boosting ``big ... truck ... red`` in
+    that order.  See :attr:`apsw.fts5.QueryInfo.phrases`.
 
     It accepts parameters giving the weights for each column (default 1).
-
-    You can change the ranking function on a `per query basis
-    <https://www.sqlite.org/fts5.html#sorting_by_auxiliary_function_results>`__
-    or via :meth:`~apsw.fts5.Table.config_rank` for all queries.
     """
     # start with the bm25 base score
     score = bm25(api, *args)
@@ -300,11 +296,18 @@ def _column_spans(api: apsw.FTS5ExtensionApi, column: int):
 def position_rank(api: apsw.FTS5ExtensionApi, *args: apsw.SQLiteValue):
     """Ranking function boosting the earlier in a column phrases are located
 
-    It accepts parameters giving the weights for each column (default 1).
+    :func:`bm25` doesn't take into where phrases occur.  It makes no
+    difference if a phrase occurs at the beginning, middle, or end.
+    This boost takes into account how early the phrase match is,
+    suitable for content with more significant text towards the
+    beginning.
 
-    You can change the ranking function on a `per query basis
-    <https://www.sqlite.org/fts5.html#sorting_by_auxiliary_function_results>`__
-    or via :meth:`~apsw.fts5.Table.config_rank` for all queries.
+    If the query has phrases and operators (AND, OR, NOT) then those
+    operators are not visible to this function, and only the location
+    of each phrase is taken into consideration.  See
+    :attr:`apsw.fts5.QueryInfo.phrases`.
+
+    It accepts parameters giving the weights for each column (default 1).
     """
     # start with the bm25 base score
     score = bm25(api, *args)

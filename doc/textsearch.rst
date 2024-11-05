@@ -129,6 +129,22 @@ Normalization
 * taking arguments
 * apsw tokenizers are 5 to 15 lines of code, so easy to make your own
 
+Auxiliary functions
+-------------------
+
+FTS5 ranking functions return earlier values to mean a better match.
+You are expected to use ``ORDER BT rank`` which means `-7` comes
+before `4`.  Typically they calculate a number where zero means no
+score, and increasing positive numbers mean a better match.  Then they
+return the negative of that to get ``ORDER BY rank`` correct.
+
+TODO column weighting
+
+
+You can change the ranking function on a `per query basis
+<https://www.sqlite.org/fts5.html#sorting_by_auxiliary_function_results>`__
+or via :meth:`~apsw.fts5.Table.config_rank` for all queries.
+
 .. _all_tokenizers:
 
 All tokenizers

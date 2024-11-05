@@ -1096,7 +1096,7 @@ def parse_tokenizer_args(
 
 @dataclass
 class MatchInfo:
-    "Information about a matched row"
+    "Information about a matched row, returned by :meth:`Table.search`"
 
     query_info: QueryInfo
     "Overall query information"
@@ -1110,9 +1110,14 @@ class MatchInfo:
 
 @dataclass
 class QueryInfo:
-    "Information relevant to the query as a whole"
+    "Information relevant to the query as a whole, returned by :meth:`Table.search`"
 
     phrases: tuple[tuple[str | None, ...], ...]
+    """:attr:`Phrases from the query <apsw.FTS5ExtensionApi.phrases>`
+
+    ``a OR b NOT c AND d`` would result in ``a, b, c, d`` as
+    4 separate phrases.
+    """
 
 
 map_tokenizers = {
