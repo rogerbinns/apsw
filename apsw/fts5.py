@@ -2400,8 +2400,10 @@ class Table:
             db.execute("".join(sql))
             inst = cls(db, name, schema=schema)
             if rank:
-                # ::TODO:: test table fails to be created if rank is invalid
-                inst.config_rank(rank)
+                try:
+                    inst.config_rank(rank)
+                except apsw.SQLError:
+                    raise ValueError(f"{rank=} is not accepted by FTS5") from None
             if content:
                 if generate_triggers:
                     qrowid = quote_name(content_rowid if content_rowid is not None else "_ROWID_")
@@ -3036,10 +3038,6 @@ if __name__ == "__main__":
 
     # registrations built in
     register_tokenizers(con, map_tokenizers)
-    # ::TODO check these work
-    con.register_fts5_tokenizer("synonyms", SynonymTokenizer)
-    con.register_fts5_tokenizer("regex", RegexTokenizer)
-    con.register_fts5_tokenizer("transform", TransformTokenizer())
 
     parser.add_argument(
         "--synonyms",

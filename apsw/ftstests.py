@@ -1406,6 +1406,7 @@ class FTS5Table(unittest.TestCase):
         self.assertRaisesRegex(
             ValueError, ".*external table.*does not exist", c, self.db, "fail", columns=None, content="doesn't exist"
         )
+        self.assertRaisesRegex(ValueError, ".*rank.*", c, self.db, "fail", ["one", "two"], rank="this does not exist")
 
         # coverage for parsing SQL of tables made outside of our create method
         q = apsw.fts5.quote_name
