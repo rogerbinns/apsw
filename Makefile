@@ -62,9 +62,10 @@ doc/example.rst: examples/main.py tools/example2rst.py src/apswversion.h
 	rm -f dbfile
 
 doc/example-fts.rst: examples/fts.py tools/example2rst.py src/apswversion.h
-	rm -f dbfile
+	-rm -f recipes.db*
+	cp ../apsw-extended-testing/recipes.db .
 	env PYTHONPATH=. $(PYTHON) -sS tools/example2rst.py examples/fts.py doc/example-fts.rst
-	rm -f dbfile
+	rm -f recipes.db*
 
 doc/typing.rstgen: src/apswtypes.py tools/types2rst.py
 	-rm -f doc/typing.rstgen

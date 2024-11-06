@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+# You can do FTS5 using normal SQL `as documented
+# <https://www.sqlite.org/fts5.html>`__.  This example
+# shows using APSW specific functionality and extras.
+#
 # This code uses Python's optional typing annotations.  You can
 # ignore them and do not need to use them.  If you do use them
 # then you must include this future annotations line first.
@@ -14,77 +18,139 @@ import functools
 import apsw
 import apsw.ext
 import apsw.fts5
-
-
-# The sample data we use - recipes with ingredients, instructions, and serving
-sample_data = (
-    (
-        "One egg",
-        "Place egg in three cups water until boiling.  Take out after 3 minutes",
-        "Peel egg and place on piece of toast!",
-    ),
-    (
-        "1 orange.  One cup water. 1 chicken breast",
-        "Cook chicken in pan.  Add water and peeled orange. Sauté until reduced",
-        "Cut into strips, and make a tower",
-    ),
-    (
-        "2 pieces of bread. A dollop of jam",
-        "Spread jam over one piece of toast, then place other bread on top.  Do not drink.",
-        "Eat with a warm glass of milk and no eggs",
-    ),
-    (
-        "Lemon🍋; a-tbsp. of__honey+1 'c' water",
-        "Juice lemon, add to boiling? 'water'",
-        "Stir-in🥄 HONEY, sniff while it cools, pour into tall cup, "
-        "then drink out of ☕ cup.",
-    ),
-)
-
-
-connection = apsw.Connection("dbfile")
+import apsw.fts5aux
+import apsw.fts5query
 
 ### fts5_check: Is FTS5 available?
 # FTS5 is included as part of the library (usually).
 
 print("FTS5 available:", "ENABLE_FTS5" in apsw.compile_options)
 
-### fts_standard: Standard FTS5 usage
-# See the SQLite `FTS5 documentation <https://www.sqlite.org/fts5.html>`__
 
-# Create a virtual table using default tokenizer
-connection.execute(
-    """CREATE VIRTUAL TABLE fts_table USING fts5(ingredients,
-                   instructions, serving)"""
+### fts_start: Content setup
+# The connection to use.  Not shown is that the database has been
+# populated with 170,000 recipes.
+
+connection = apsw.Connection("recipes.db")
+
+# The content
+print(
+    connection.execute(
+        "select sql from sqlite_schema where name='recipes'"
+    ).get
 )
 
-# Add the content
-connection.executemany(
-    "INSERT INTO fts_table VALUES(?, ?, ?)", sample_data
-)
+### fts_create: Create search table
+# Create a table containing the search index using recipes as an
+# `external content table
+# <https://www.sqlite.org/draft/fts5.html#external_content_tables>`__.
 
-# Some simple queries  - FTS5 supports more complex ones and ways of
-# expressing them
-queries = (
-    # Any occurence
-    "egg",
-    # OR
-    "bread OR toast",
-    # AND
-    "bread AND toast",
-    # specific column
-    "instructions: juice",
-)
-
-for query in queries:
-    print(query)
-    # show matching rows showing best matches first
-    sql = "SELECT * FROM fts_table(?) ORDER BY rank"
-    print(
-        apsw.ext.format_query_table(
-            connection, sql, (query,), string_sanitize=0
-        )
+if not connection.table_exists("main", "search"):
+    # create does all the hard work
+    search_table = apsw.fts5.Table.create(
+        connection,
+        # The table will be named 'search'
+        "search",
+        # External content table name.  It has to be in the same
+        # database.
+        content="recipes",
+        # We want the same columns as recipe, so pass `None`.
+        columns=None,
+        # Triggers ensure that changes to the content table
+        # are reflected in the search table
+        generate_triggers=True,
+        # Use APSW recommended tokenization
+        tokenize=[
+            "simplify",
+            "casefold",
+            "true",
+            "strip",
+            "true",
+            "unicodewords",
+        ],
+        # There are many more options you can set
     )
+
+else:
+    # Already exists
+    search_table = apsw.fts5.Table(connection, "search")
+
+### fts_structure: Table structure
+# Examine the structure and options
+
+pprint(search_table.structure)
+
+### fts_update: Content
+# Use :meth:`~apsw.fts5.Table.upsert` to add or change existing
+# content and :meth:`~apsw.fts5.Table.delete` to delete a row.  They
+# understand external content tables will do the operations there,
+# then the triggers will update the search index.
+# :meth:`~apsw.fts5.Table.row_by_id` gets one or more columns from a
+# row, and also handles external content tables.
+
+# upsert returns the rowid of an insert or change.
+rowid = search_table.upsert(
+    # you can use positional parameters so this goes to the first column
+    "This ends up in the name field",
+    # and keywords
+    description="This ends up in the description",
+)
+
+print(f"{search_table.row_by_id(rowid, 'name')=}")
+
+# modify that row
+search_table.upsert(ingredients="some stuff", rowid=rowid)
+
+# And delete our test row
+search_table.delete(rowid)
+
+### fts_search_sql: Searching with SQL.
+# You need to specify what should be returned, the FTS query, and
+# order by to get the best results first.
+
+sql = """
+   SELECT
+   -- snippet takes a lot of options!
+   snippet(search, -1, '►', '◄', '...', 10) as Snippet
+   -- Pass the query like this
+   FROM search(?)
+   -- Best matches first
+   ORDER BY rank
+   -- Top 3
+   LIMIT 3"""
+
+for query in (
+    "cream",
+    "orange NOT zest",
+    "name:honey",
+    "pomegranate OR olives",
+):
+    print(f"{query=}")
+    print(apsw.ext.format_query_table(connection, sql, (query,)))
+
+### fts_search: Search method
+# :meth:`~apsw.fts5.Table.search` provides a Pythonic API providing
+# information about each matching row, best matches first.
+
+for row in search_table.search("lemon OR guava"):
+    # Note how you see overall query info (it is two phrases) and
+    # information about the matched row (how many tokens in each
+    # column), and which columns each phrase was found in
+    pprint(row)
+    # only show the first matching row
+    break
+
+# Inspect first matching row
+name, description = search_table.row_by_id(
+    row.rowid, ("name", "description")
+)
+print((name, description))
+
+
+### xxx: more like and key terms
+# ::TODO::
+
+"more_like" and "key_terms"
 
 ### fts5_auxfunc: Auxiliary functions
 # `Auxiliary functions
@@ -130,9 +196,9 @@ def match_info(
     print(f"{api.column_text(0)=}")
 
     # we can get a tokenization of text, useful if you want to extract
-    # the original text, add highlights etc
+    # the original text, add snippets/highlights etc
     print("Tokenized with UTF-8 offsets")
-    pprint(api.tokenize(api.column_text(0), api.column_locale(0)))
+    pprint(api.tokenize(api.column_text(2), api.column_locale(2)))
 
     # query_phrase is useful for finding out how common a phrase is.
     counts = [0] * len(api.phrases)
@@ -140,18 +206,22 @@ def match_info(
         api.query_phrase(phrase, phrase_count, (phrase, counts))
 
     for i, phrase in enumerate(api.phrases):
-        print(f"Phrase {phrase=} occurs { counts[i] } times")
+        print(f"Phrase {phrase=} occurs { counts[i]:,} times")
 
     return 7
 
 
-# This is used as the calback from query_phrase above.  Note that the
-# api instance in this call is different than the above functiom.
+# This is used as the callback from query_phrase above.  Note that the
+# api instance in this call is different than the above function.
 def phrase_count(api: apsw.FTS5ExtensionApi, closure):
-    print(f"phrase_count called {api.rowid=} {api.phrases=}")
     phrase, counts = closure
+
     # increment counts for this phrase
     counts[phrase] += 1
+    if counts[phrase] < 5:
+        # Show call info the first 4 times for each phrase
+        print(f"phrase_count called {api.rowid=} {api.phrases=}")
+
     # we could do more sophisticated work such as counting how many
     # times it occurs (api.phrase_locations) or which columns
     # (api.phrase_columns).
@@ -160,16 +230,62 @@ def phrase_count(api: apsw.FTS5ExtensionApi, closure):
 connection.register_fts5_function("match_info", match_info)
 
 # A deliberately complex query to make the api interesting
-query = """
-("BoiLING wateR" OR Eggs) AND NEAR (drink Cup, 5) AND jui*
-"""
+query = (
+    """("BoiLed eGGs" OR CinnaMON) OR NEAR (drink Cup, 5) NOT Oran*"""
+)
 
 # Make all the code above be called. Note how the table name has to be
 # the first parameter to our function in the SQL
 connection.execute(
-    "SELECT match_info(fts_table, 5, 'hello') FROM fts_table(?)",
+    "SELECT match_info(search, 5, 'hello') FROM search(?) order by rank",
     (query,),
 )
+
+### fts_query: Query parsing and manipulation
+# :mod:`apsw.fts5query` lets you programmatically create, update, and
+# parse queries.  There are three forms of query.
+
+# This is the query as accepted by FTS5.
+print("query")
+print(query)
+
+# That can be parsed into the structure
+parsed = apsw.fts5query.parse_query_string(query)
+print("\nparsed")
+pprint(parsed)
+
+# The parsed form is a little unwieldy to work with so a dict based
+# form is available.
+as_dict = apsw.fts5query.to_dict(parsed)
+print("\nas_dict")
+pprint(as_dict)
+
+# Make some changes - delete the first query
+del as_dict["queries"][0]
+
+as_dict["queries"].append(
+    {
+        # add a columnfilter
+        "@": "COLUMNFILTER",
+        "filter": "include",
+        "columns": ["name", "description"],
+        # The sub queries are just strings.   The module knows what
+        # you mean and will convert them into AND
+        "query": ["some thing blue", "sunshine"],
+    }
+)
+print("\nmodified as_dict")
+pprint(as_dict)
+
+# Turn it into parsed form
+parsed = apsw.fts5query.from_dict(as_dict)
+print("\nnew parsed")
+pprint(parsed)
+
+# Turn the parsed form back into a query string
+query = apsw.fts5query.to_query_string(parsed)
+print("\nnew query")
+print(query)
 
 ### fts5_tokens: Tokenizers
 # `Tokenizers <https://sqlite.org/fts5.html#tokenizers>`__ convert
@@ -395,10 +511,10 @@ connection.register_fts5_tokenizer("myids", tokenizer)
 # extract myids, leaving the other text to unicodewords
 show_tokens(text, "myids", ["unicodewords"])
 
-### fts5_end: Close the connection
-# When you close the connection, all the registered tokenizers, and
-# auxiliary functions are released.  You will need to register them
-# again the next time you open a connection and want to use FTS5.
-# Consider :attr:`connection_hooks` as an easy way of doing that.
+### xxxx: TODO json, html
+# json and html
+
+### fts_end: Cleanup
+# We can now close the connection, but it is optional.
 
 connection.close()
