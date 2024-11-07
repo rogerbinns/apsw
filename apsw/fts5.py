@@ -1622,8 +1622,14 @@ class Table:
         return self._config_internal("pgsz", val, 4050)  # type: ignore
 
     def config_rank(self, val: str | None = None) -> str:
-        """Optionally sets, and returns `rank <https://www.sqlite.org/fts5.html#the_rank_configuration_option>`__"""
-        return self._config_internal("rank", val, "bm25")  # type: ignore
+        """Optionally sets, and returns `rank <https://www.sqlite.org/fts5.html#the_rank_configuration_option>`__
+
+        When setting rank it must consist of a function name, open
+        parentheses, zero or more SQLite value literals that will be
+        arguments to the function, and a close parenthesis,  For example
+        ``my_func(3, x'aabb', 'hello')``
+        """
+        return self._config_internal("rank", val, "bm25()")  # type: ignore
 
     def config_secure_delete(self, val: bool | None = None) -> bool:
         """Optionally sets, and returns `secure-delete <https://www.sqlite.org/fts5.html#the_secure-delete_configuration_option>`__"""
@@ -2273,7 +2279,8 @@ class Table:
             <apsw.fts5query.QueryTokens>`.
         :param rank: The `rank option
             <https://www.sqlite.org/fts5.html#the_rank_configuration_option>`__
-            if not using the default.
+            if not using the default.  See :meth:`config_rank` for required
+            syntax.
         :param prefix: The `prefix option
             <https://sqlite.org/fts5.html#prefix_indexes>`__.  Supply
             an int, or a sequence of int.
