@@ -75,10 +75,25 @@ else:
     # Already exists
     search_table = apsw.fts5.Table(connection, "search")
 
-### fts_structure: Table structure
-# Examine the structure and options
+# You should use this to get the table name when formatting SQL
+# queries as they can't use bindings.  It will correctly quote the
+# schema (attached dataabse name) and the table name no matter what
+# characters, spaces are used.
+
+print(f"{search_table.quoted_table_name=}")
+
+### fts_structure: Table structure and statistics
+# Examine the structure, options, and statistics
 
 pprint(search_table.structure)
+
+# rank is one of several options you can read or change
+print(f"{search_table.config_rank()=}")
+
+# some statistics
+print(f"{search_table.row_count=}")
+
+print(f"{search_table.tokens_per_column=}")
 
 ### fts_update: Content
 # Use :meth:`~apsw.fts5.Table.upsert` to add or change existing
@@ -146,9 +161,46 @@ name, description = search_table.row_by_id(
 )
 print((name, description))
 
+### fts_tokens: Working with tokens
+# Document and query text is processed into tokens, with matches found
+# based on those tokens.  Tokens are not visible to the user.
+#
+# Typically they correspond to "words" in the text, but with
+# upper/lower case neutralized, punctuation removed, marks and accents
+# removed.
 
-### xxx: more like and key terms
+# See what happens with our table
+text = "Don't 2.245e5 Run-Down Déjà 你好世界😂❤️🤣"
+# tokenization happens on UTF8
+utf8 = text.encode()
+
+# Note offsets into the utf8.  Those could be used to highlight the
+# original.
+pprint(search_table.tokenize(utf8))
+
+# Most popular tokens, and what percent of rows they are in
+print("\nMost popular by row count")
+row_count = search_table.row_count
+for token, count in search_table.token_doc_frequency():
+    print(f"{token:20}{count/row_count:.0%}")
+
+# Most popular tokens, based on total token count
+print("\nMost popular by token count")
+token_count = search_table.token_count
+for token, count in search_table.token_frequency():
+    print(f"{token:20}{count/token_count:.0%}")
+
+# Find what text produced a token, by looking at 5 rows.
+token = "jalapeno"
+text = search_table.text_for_token(token, 5)
+print(f"\nText for {token} is {text}")
+
+
+### fts_more: More Like and Key Terms
+# more like and key terms
 # ::TODO::
+
+print()
 
 "more_like" and "key_terms"
 
