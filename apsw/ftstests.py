@@ -812,7 +812,7 @@ class FTS(unittest.TestCase):
                 include_colocated=False,
                 include_offsets=False,
             ),
-            ["text", "more", "stuff", "&", "things", "yes", "/", "no", "aӒb"],
+            ["text", "mor", "e", "stuff", "&", "things", "yes", "/", "no", "aӒb"],
         )
         # non html should be pass through
         self.assertEqual(

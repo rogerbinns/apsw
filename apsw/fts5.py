@@ -663,8 +663,6 @@ def extract_html_text(html: str) -> tuple[str, apsw._unicode.OffsetMapper]:
     :meta private:
     """
 
-    non_spacing_tags = {"i", "b", "span"}
-
     class _HTMLTextExtractor(html_parser_module.HTMLParser):
         # Extracts text from HTML maintaining a table mapping the offsets
         # of the extracted text back tot he source HTML.
@@ -702,24 +700,23 @@ def extract_html_text(html: str) -> tuple[str, apsw._unicode.OffsetMapper]:
                 self.om.add(self.last[0], self.last[1], self.real_offset)
             self.last = (text, self.real_offset)
 
-        def separate(self, space: bool = True):
+        def separate(self):
             if self.last is not None:
                 self.om.add(self.last[0], self.last[1], self.real_offset)
                 self.last = None
-            if space:
-                self.om.separate()
+            self.om.separate()
 
         def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
             self.current_tag = tag.lower()
             if tag.lower() == "svg":
                 self.svg_nesting_level += 1
-            self.separate(self.current_tag not in non_spacing_tags)
+            self.separate()
 
         def handle_endtag(self, tag: str) -> None:
             self.current_tag = None
             if tag.lower() == "svg":
                 self.svg_nesting_level -= 1
-            self.separate(tag.lower() not in non_spacing_tags)
+            self.separate()
 
         def handle_data(self, data: str) -> None:
             if self.svg_nesting_level or self.current_tag in {"script", "style"}:
