@@ -433,6 +433,9 @@ def NGramTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
 
     options = parse_tokenizer_args(spec, con, args)
 
+    if any(ngram < 1 for ngram in options["ngrams"]):
+        raise ValueError(f"ngrams must be at least 1 in {options['ngrams']=}")
+
     def tokenize(text: str, flags: int, locale: str | None):
         ntokens = 0
 

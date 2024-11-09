@@ -403,6 +403,8 @@ class FTS(unittest.TestCase):
         test_utf8 = ("中文(繁體) Fr1AnçAiS češt2ina 🤦🏼‍♂️straße" * 4).encode("utf8")
         self.db.register_fts5_tokenizer("ngram", apsw.fts5.NGramTokenizer)
 
+        self.assertRaises(ValueError, self.db.fts5_tokenizer("ngram", ["ngrams", "-3"]))
+
         self.assertEqual(self.db.fts5_tokenizer("ngram")(b"", apsw.FTS5_TOKENIZE_QUERY, "fred"), [])
 
         for include_categories in (
