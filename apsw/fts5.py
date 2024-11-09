@@ -472,13 +472,14 @@ def NGramTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
             for i in sorted(options["ngrams"]):
                 if i <= len(grapheme_cluster_stream):
                     largest = i
-            for i in range(0, len(grapheme_cluster_stream) - largest):
-                ntokens += 1
-                yield (
-                    grapheme_cluster_stream[i][0],
-                    grapheme_cluster_stream[i + largest - 1][1],
-                    "".join(grapheme_cluster_stream[j][2] for j in range(i, i + largest)),
-                )
+            if largest > 0:
+                for i in range(0, len(grapheme_cluster_stream) - largest):
+                    ntokens += 1
+                    yield (
+                        grapheme_cluster_stream[i][0],
+                        grapheme_cluster_stream[i + largest - 1][1],
+                        "".join(grapheme_cluster_stream[j][2] for j in range(i, i + largest)),
+                    )
 
         # text didn't match any of our lengths, so return as is
         if ntokens == 0 and grapheme_cluster_stream:
