@@ -1215,7 +1215,13 @@ def _format_table(colnames: list[str], rows: list[apsw.SQLiteValues], colour: bo
 
     ## output
     # are any cells more than one line?
-    multiline = max(len(cell[0]) for cell in row for row in rows) > 1  # type: ignore
+    multiline = False
+    for row in rows:
+        if multiline:
+            break
+        if any(len(cell[0]) > 1 for cell in row):
+            multiline = True
+            break
 
     out_lines: list[str] = []
 
