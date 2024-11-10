@@ -355,6 +355,34 @@ class FTS(unittest.TestCase):
 
             self.assertEqual(l, r)
 
+    def testTokenizerShortInputs(self):
+        "Small inputs to tokenizers"
+
+        apsw.fts5.register_tokenizers(self.db, apsw.fts5.map_tokenizers)
+
+        self.db.register_fts5_tokenizer("regex", functools.partial(apsw.fts5.RegexTokenizer, pattern="."))
+
+        self.db.register_fts5_tokenizer("regexpre", functools.partial(apsw.fts5.RegexPreTokenizer, pattern="."))
+
+        content = '🇬🇧 <;>"a❤️&\t\\﻿世🤦🏼‍♂️'
+
+        for i in range(0, 3):
+            for seq in itertools.permutations(content, i):
+                text = "".join(seq)
+                for reason in "AUX", "DOCUMENT", "QUERY":
+                    reason_code = getattr(apsw, f"FTS5_TOKENIZE_{reason}")
+                    for tokenizer, args in (
+                        ("unicodewords", ["categories", "*"]),
+                        ("simplify", ["unicodewords", "categories", "*"]),
+                        ("html", ["unicodewords", "categories", "*"]),
+                        ("json", ["unicodewords", "categories", "*"]),
+                        ("ngram", ["ngrams", "1"]),
+                        ("ngram", ["ngrams", "3"]),
+                        ("regex", []),
+                        ("regexpre", ["ascii"]),
+                    ):
+                        self.db.fts5_tokenizer(tokenizer, args)(text.encode(), reason_code, None)
+
     def testAPSWFTSTokenizers(self):
         "Test apsw.fts5 tokenizers"
 
