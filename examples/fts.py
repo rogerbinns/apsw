@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
 
-# You can do FTS5 using normal SQL `as documented
-# <https://www.sqlite.org/fts5.html>`__.  This example
-# shows using APSW specific functionality and extras.
-#
 # This code uses Python's optional typing annotations.  You can
 # ignore them and do not need to use them.  If you do use them
 # then you must include this future annotations line first.
@@ -17,30 +13,33 @@ import functools
 
 import apsw
 import apsw.ext
+
+# The three FTS5 specific modules
 import apsw.fts5
 import apsw.fts5aux
 import apsw.fts5query
 
 ### fts5_check: Is FTS5 available?
-# FTS5 is included as part of the library (usually).
+# FTS5 is included as part of the SQLite library (usually).
 
 print("FTS5 available:", "ENABLE_FTS5" in apsw.compile_options)
 
 
 ### fts_start: Content setup
-# The connection to use.  Not shown is that the database has been
-# populated with 170,000 recipes.
+# The connection to use.  The database has a table with recipes.
 
 connection = apsw.Connection("recipes.db")
 
 # The content
 print(
     connection.execute(
-        "select sql from sqlite_schema where name='recipes'"
+        "SELECT sql FROM sqlite_schema WHERE name='recipes'"
     ).get
 )
 
-### fts_create: Create search table
+print(connection.execute("SELECT COUNT(*) FROM recipes").get)
+
+### fts_create: Create/open search table
 # Create a table containing the search index using recipes as an
 # `external content table
 # <https://www.sqlite.org/draft/fts5.html#external_content_tables>`__.
@@ -61,26 +60,30 @@ if not connection.table_exists("main", "search"):
         generate_triggers=True,
         # Use APSW recommended tokenization
         tokenize=[
+            # simplify tokenizer
             "simplify",
+            # removes case distinction
             "casefold",
             "true",
+            # removes accents, uses compatibility codepoints
             "strip",
             "true",
+            # unicode algorithm for word boundaries tokenizer
             "unicodewords",
         ],
         # There are many more options you can set
     )
 
 else:
-    # Already exists
+    # Already exists so just the name is needed
     search_table = apsw.fts5.Table(connection, "search")
 
 # You should use this to get the table name when formatting SQL
 # queries as they can't use bindings.  It will correctly quote the
-# schema (attached dataabse name) and the table name no matter what
-# characters, spaces are used.
+# schema (attached database name) and the table name no matter what
+# characters, spaces etc are used.
 
-print(f"{search_table.quoted_table_name=}")
+print("quoted name", search_table.quoted_table_name)
 
 ### fts_structure: Table structure and statistics
 # Examine the structure, options, and statistics
@@ -98,7 +101,7 @@ print(f"{search_table.tokens_per_column=}")
 ### fts_update: Content
 # Use :meth:`~apsw.fts5.Table.upsert` to add or change existing
 # content and :meth:`~apsw.fts5.Table.delete` to delete a row.  They
-# understand external content tables will do the operations there,
+# understand external content tables and will do the operations there,
 # then the triggers will update the search index.
 # :meth:`~apsw.fts5.Table.row_by_id` gets one or more columns from a
 # row, and also handles external content tables.
@@ -161,6 +164,23 @@ name, description = search_table.row_by_id(
 )
 print((name, description))
 
+### fts_query_suggest: Query correction and suggestion
+# If the query contains words that don't exist or are very rare
+# (likely spelling difference) then you can provide alternate queries
+# that probably improve results.
+
+for query in (
+    "jalapno",
+    # query structure is maintained
+    "orange AND guice",
+    # column names are corrected too
+    "nyme:(minced OR oyl NOT peenut)",
+    # None is returned if all terms are ok
+    "sweet onion",
+):
+    suggest = search_table.query_suggest(query)
+    print(f"{query=} {suggest=}")
+
 ### fts_tokens: Working with tokens
 # Document and query text is processed into tokens, with matches found
 # based on those tokens.  Tokens are not visible to the user.
@@ -196,13 +216,107 @@ text = search_table.text_for_token(token, 5)
 print(f"\nText for {token} is {text}")
 
 
-### fts_more: More Like and Key Terms
-# more like and key terms
-# ::TODO::
+### fts_more: Key Tokens and More Like
+# :meth:`~apsw.fts5.Table.key_tokens` finds tokens represented in a
+# row, but rare in other rows.  This is purely statistical and has no
+# idea of the meaning or relationship between tokens.
+#
+# :meth:`~apsw.fts5.Table.more_like` is given some rowids, extracts
+# their key tokens, and starts a search with them, excluding the
+# rowids already seen.  This lets you provide "infinite scrolling"
+# starting from one or more rows, providing additional similar
+# content.
+#
+# Both methods let you specify specific columns, or all columns
+# (default)
 
-print()
+# A randomly selected row ...
+bbq_rowid = 1642796066805404445
+# ... for bbq sauce
+print(search_table.row_by_id(bbq_rowid, "name"))
 
-"more_like" and "key_terms"
+# Note how each token gets a score, with bigger numbers meaning the
+# token is more unique
+pprint(search_table.key_tokens(bbq_rowid, columns=["name"], limit=3))
+
+# More like based on the ingredients column
+for count, match_info in enumerate(
+    search_table.more_like([bbq_rowid], columns="ingredients")
+):
+    # Show the name for each
+    print(search_table.row_by_id(match_info.rowid, "name"))
+    # We could save each of these rowids and at the end do another
+    # more_like including them.  Stop after a few for now.
+    if count == 5:
+        break
+
+### fts_autocomplete: Autocomplete
+# You often want to show results after just a few letters have been
+# typed before there is a complete word entered.  This is done by
+# indexing sequences of a few letters, called :class:`ngrams
+# <apsw.fts5.NGramTokenizer>`.  Ngrams are never shown to the user
+# although you can see the snippets below.
+
+if not connection.table_exists("main", "autocomplete"):
+    # create does all the hard work
+    autocomplete = apsw.fts5.Table.create(
+        connection,
+        # The table will be named 'search'
+        "autocomplete",
+        # External content table name.  It has to be in the same
+        # database.
+        content="recipes",
+        # We want the same columns as recipe, so pass `None`.
+        columns=None,
+        # Triggers ensure that changes to the content table
+        # are reflected in the search table
+        generate_triggers=True,
+        # Use APSW recommended tokenization
+        tokenize=[
+            # simplify tokenizer
+            "simplify",
+            # removes case distinction
+            "casefold",
+            "true",
+            # removes accents, uses compatibility codepoints
+            "strip",
+            "true",
+            # ngram tokenizer
+            "ngram",
+            # How big is each sequence?  This is how many letters have
+            # to be typed before any match is possible.  Smaller values
+            # result in larger indexes.
+            "ngrams",
+            "3",
+        ],
+        # There are many more options you can set
+    )
+
+else:
+    # Already exists so just the name is needed
+    autocomplete = apsw.fts5.Table(connection, "autocomplete")
+
+# do some queries against autocomplete index
+sql = """
+   SELECT
+   -- snippet takes a lot of options!
+   snippet(autocomplete, -1, '►', '◄', '...', 10) as Snippet
+   -- Pass the query like this
+   FROM autocomplete(?)
+   -- Best matches first
+   ORDER BY rank
+   -- Top 3
+   LIMIT 3"""
+
+for query in (
+    "eam",
+    "ora",
+    "name:ney",
+    "emo jui",
+    "barbecue",
+):
+    print(f"{query=}")
+    print(apsw.ext.format_query_table(connection, sql, (query,)))
 
 ### fts5_auxfunc: Auxiliary functions
 # `Auxiliary functions
@@ -221,10 +335,10 @@ print()
 # This example shows all the information available during a query.
 
 
-def match_info(
+def row_match(
     api: apsw.FTS5ExtensionApi, *args: apsw.SQLiteValue
 ) -> apsw.SQLiteValue:
-    print("match_info called with", args)
+    print("row_match called with", args)
     # Show what information is available from the api
     print(f"{api.rowid=}")
     print(f"{api.row_count=}")
@@ -279,7 +393,7 @@ def phrase_count(api: apsw.FTS5ExtensionApi, closure):
     # (api.phrase_columns).
 
 
-connection.register_fts5_function("match_info", match_info)
+connection.register_fts5_function("row_match", row_match)
 
 # A deliberately complex query to make the api interesting
 query = (
@@ -289,7 +403,7 @@ query = (
 # Make all the code above be called. Note how the table name has to be
 # the first parameter to our function in the SQL
 connection.execute(
-    "SELECT match_info(search, 5, 'hello') FROM search(?) order by rank",
+    "SELECT row_match(search, 5, 'hello') FROM search(?) order by rank",
     (query,),
 )
 

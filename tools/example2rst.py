@@ -49,10 +49,9 @@ header_fts = """\
 Full Text Search Example/Tour
 =============================
 
-This code demonstrates usage of :doc:`full text search <textsearch>`
-with SQLite and APSW.  It gives you a good overview of all the things
-that can be done.  Also included is output so you can see what gets
-printed when you run the code.
+You can do FTS5 using normal SQL `as documented
+<https://www.sqlite.org/fts5.html>`__.  This example shows using APSW
+specific functionality and extras.
 
 .. code-block:: python
 
