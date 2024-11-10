@@ -2320,7 +2320,7 @@ static PyType_Spec FromUtf8PositionMapper_spec = {
 /* maps between str offsets and str offsets
 
   Used by HTML and JSON tokenizers as they need to map the resulting
-  text pffsets back to the original source offsets
+  text offsets back to the original source offsets
 */
 
 struct MapperEntry
@@ -2363,6 +2363,13 @@ OffsetMapper_add(OffsetMapper *self, PyObject *const *fast_args, Py_ssize_t fast
   ARG_MANDATORY ARG_Py_ssize_t(source_start);
   ARG_MANDATORY ARG_Py_ssize_t(source_end);
   ARG_EPILOG(NULL, "OffsetMapper.add()text: str, source_start: int, source_end: int", );
+
+  /* reject going backwards */
+  if (source_end < source_start)
+    return PyErr_Format(PyExc_ValueError, "Source end %zd is before source start %zd", source_end, source_start);
+  if (source_start < self->offset_map[self->num_offsets - 1].offset)
+    return PyErr_Format(PyExc_ValueError, "Source start %zd is before previous end %zd", source_start,
+                        self->offset_map[self->num_offsets - 1].offset);
 
   struct MapperEntry *oldmap = self->offset_map;
   PyMem_Resize(self->offset_map, struct MapperEntry, self->num_offsets + 2);
