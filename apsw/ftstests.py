@@ -435,7 +435,7 @@ class FTS(unittest.TestCase):
         test_utf8 = ("中文(繁體) Fr1AnçAiS češt2ina 🤦🏼‍♂️straße" * 4).encode("utf8")
         self.db.register_fts5_tokenizer("ngram", apsw.fts5.NGramTokenizer)
 
-        self.assertRaises(ValueError, self.db.fts5_tokenizer("ngram", ["ngrams", "-3"]))
+        self.assertRaises(ValueError, self.db.fts5_tokenizer, "ngram", ["ngrams", "-3"])
 
         self.assertEqual(self.db.fts5_tokenizer("ngram")(b"", apsw.FTS5_TOKENIZE_QUERY, "fred"), [])
 
@@ -1358,7 +1358,7 @@ class FTS5Table(unittest.TestCase):
             ("crisismerge", 16, 8),
             ("deletemerge", 10, 4),
             ("pgsz", 4050, 4072),
-            ("rank", "bm25", "bm25(10.0, 5.0)"),
+            ("rank", "bm25()", "bm25(10.0, 5.0)"),
             ("secure_delete", False, True),
             ("usermerge", 4, 16),
         ):
