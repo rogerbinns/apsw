@@ -740,9 +740,10 @@ def extract_html_text(html: str) -> tuple[str, apsw._unicode.OffsetMapper]:
         handle_comment = handle_decl = handle_pi = unknown_decl = ws
 
         def updatepos(self, i: int, j: int) -> int:
-            # the parent version does a lot of work trying to keep
-            # track of line numbers which is pointless for us
-            self.real_offset = j
+            # The parent version does a lot of work trying to keep
+            # track of line numbers which is pointless for us.  We
+            # also have to prevent going backwards.
+            self.real_offset = max(j, self.real_offset)
             return j
 
     h = _HTMLTextExtractor(html)
