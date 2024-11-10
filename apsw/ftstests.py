@@ -81,6 +81,10 @@ class BecauseWindowsTempfile:
             pass
 
 
+# we do more stuff under coverage
+coverage_run = bool(os.environ.get("COVERAGE_RUN", ""))
+
+
 class FTS(unittest.TestCase):
     def setUp(self):
         self.db = apsw.Connection("")
@@ -524,13 +528,13 @@ class FTS(unittest.TestCase):
 
     def testCLI(self):
         "Test command line interface"
-        if os.environ.get("COVERAGE_RUN", "") != "true":
-            cov_params = []
-            env = None
-        else:
+        if coverage_run:
             cov_params = ["-m", "coverage", "run", "--source", "apsw", "-p"]
             env = os.environ.copy()
             env["ASAN_OPTIONS"] = "detect_leaks=false"
+        else:
+            cov_params = []
+            env = None
 
         proc = subprocess.run(
             [sys.executable] + cov_params + ["-m", "apsw.fts5", "unicodewords"], capture_output=True, env=env
@@ -2017,13 +2021,13 @@ class Unicode(unittest.TestCase):
                     self.assertEqual(proc.returncode, 0, f"Failed {proc=}")
 
     def exec(self, *args):
-        if os.environ.get("COVERAGE_RUN", "") != "true":
-            cov_params = []
-            env = None
-        else:
+        if coverage_run:
             cov_params = ["-m", "coverage", "run", "--source", "apsw", "-p"]
             env = os.environ.copy()
             env["ASAN_OPTIONS"] = "detect_leaks=false"
+        else:
+            cov_params = []
+            env = None
 
         return subprocess.run(
             [sys.executable] + cov_params + ["-m", "apsw.unicode"] + list(args), capture_output=True, env=env
@@ -2076,7 +2080,7 @@ class Unicode(unittest.TestCase):
         "Exhaustive codepoints for coverage"
         # this takes a while to run, so only do so if env variable set or debug
         # interpreter
-        if "d" not in getattr(sys, "abiflags", "") and not os.environ.get("COVERAGE_RUN"):
+        if "d" not in getattr(sys, "abiflags", "") and not coverage_run:
             return
 
         for codepoint in range(0, sys.maxunicode + 1):
@@ -2123,7 +2127,7 @@ class Unicode(unittest.TestCase):
             proc = self.exec("codepoint", text)
             self.assertEqual(proc.returncode, 0, f"Failed {proc=}")
 
-            if os.environ.get("COVERAGE_RUN"):
+            if coverage_run:
                 proc = self.exec("benchmark", "--size", "0.1", "--others", "all", tmpf.name)
                 self.assertEqual(proc.returncode, 0, f"Failed {proc=}")
 
