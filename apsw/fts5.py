@@ -423,6 +423,7 @@ def NGramTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
         ``0`` or ``1`` (default) if regional indicators  are included, even if `categories`
         would exclude them.
 
+    See :ref:`the example <example_fts_autocomplete>`.
     """
 
     spec = {
@@ -507,6 +508,8 @@ def SynonymTokenizer(get: Callable[[str], None | str | tuple[str]] | None = None
 
     get
         Specify a :func:`get <convert_string_to_python>`, or use as a decorator.
+
+    See :ref:`the example <example_fts_synonym>`.
     """
 
     @functools.wraps(get)
@@ -567,6 +570,7 @@ def StopWordsTokenizer(test: Callable[[str], bool] | None = None) -> apsw.FTS5To
     test
         Specify a :func:`test <convert_string_to_python>`
 
+    See :ref:`the example <example_fts_stopwords>`.
     """
 
     @functools.wraps(test)
@@ -620,6 +624,7 @@ def TransformTokenizer(transform: Callable[[str], str | Sequence[str]] | None = 
         Specify a :func:`transform <convert_string_to_python>`, or use
         as a decorator
 
+    See :ref:`the example <example_fts_transform>`.
     """
 
     @functools.wraps(transform)
@@ -756,14 +761,20 @@ def extract_html_text(html: str) -> tuple[str, apsw._unicode.OffsetMapper]:
 def HTMLTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     """Extracts text from HTML suitable for passing on to other tokenizers
 
-    This should be before the actual tokenizer in the tokenizer list.  Behind the scenes
-    it extracts text from the HTML, and manages the offset mapping between the
-    HTML and the text passed on to other tokenizers.  It also expands
-    entities and charrefs.
+    This should be before the actual tokenizer in the tokenizer list.
+    Behind the scenes it extracts text from the HTML, and manages the
+    offset mapping between the HTML and the text passed on to other
+    tokenizers.  It also expands entities and charrefs.  Content
+    inside `SVG tags <https://en.wikipedia.org/wiki/SVG>`__ is
+    ignored.
 
     If the html doesn't start with whitespace then < or &, it is not
     considered HTML and will be passed on unprocessed.  This would
     typically be the case for queries.
+
+    :mod:`html.parser` is used for the HTML processing.
+
+    See :ref:`the example <example_fts_html>`.
     """
     spec = {"+": None}
     options = parse_tokenizer_args(spec, con, args)
@@ -871,6 +882,8 @@ def JSONTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     If the json doesn't start with whitespace then { or [, it is not
     considered JSON and will be passed on unprocessed.  This would
     typically be the case for queries.
+
+    See :ref:`the example <example_fts_json>`.
     """
     spec = {
         "include_keys": TokenizerArgument(default=False, convertor=convert_boolean),

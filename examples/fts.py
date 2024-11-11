@@ -459,14 +459,14 @@ print(query)
 # input providing the beginning and end offsets for each token.  They
 # can also provide `more than one token at the same position
 # <https://sqlite.org/fts5.html#synonym_support>`__ for example if you
-# wanted both 'first' and '1st'.
+# wanted both ``first`` and ``1st``.
 #
 # Tokenizers and their arguments are specified as the 'tokenize'
 # option when creating a FTS5 table.  You can also call them directly
-# from a connection.  APSW provides :ref:`several tokenizers
-# <all_tokenizers>` but lets look at `unicode61
-# <https://sqlite.org/fts5.html#unicode61_tokenizer>`__ - the default
-# SQLite tokenizer
+# from a :meth:`connection <apsw.Connection.fts5_tokenizer>`.  APSW
+# provides :ref:`several tokenizers <all_tokenizers>` but lets look at
+# `unicode61 <https://sqlite.org/fts5.html#unicode61_tokenizer>`__ -
+# the default SQLite tokenizer
 
 tokenizer = connection.fts5_tokenizer("unicode61")
 
@@ -474,6 +474,7 @@ test_text = """🤦🏼‍♂️ v1.2 Grey Ⅲ ColOUR! Don't jump -  🇫🇮你
     हैलो वर्ल्ड Déjà vu Résumé SQLITE_ERROR"""
 
 # Call the tokenizer to do a tokenization, supplying the reason
+# and no locale.
 pprint(
     tokenizer(
         test_text.encode("utf8"), apsw.FTS5_TOKENIZE_DOCUMENT, None
@@ -483,7 +484,7 @@ pprint(
 
 # Make a function to show output
 def show_tokens(text, tokenizer_name, tokenizer_args=None):
-    print(f"{text=}")
+    print(f"\n{text=:s}")
     print(f"{tokenizer_name=} {tokenizer_args=}")
 
     tokenizer = connection.fts5_tokenizer(
@@ -504,7 +505,7 @@ def show_tokens(text, tokenizer_name, tokenizer_args=None):
 show_tokens("v1.2 SQLITE_ERROR", "unicode61")
 
 # We want the version number and symbol kept together, so use
-# the tokenchars parameter
+# the tokenchars parameter.  Many tokenizers take parameters.
 show_tokens("v1.2 SQLITE_ERROR", "unicode61", ["tokenchars", "_."])
 
 # Tokenizers can also be chained together.  The porter tokenizer takes
@@ -515,13 +516,16 @@ show_tokens("v1.2 SQLITE_ERROR", "unicode61", ["tokenchars", "_."])
 show_tokens(
     "Likes liked likely liking cat cats colour color",
     "porter",
-    ["unicode61"],
+    ["unicode61", "tokenchars", "_"],
 )
 
 ### fts_apsw_unicodewords: apsw.fts5.UnicodeWordsTokenizer
-# :func:`apsw.fts5.UnicodeWordsTokenizer` does words
-# across languages and understands when punctuation etc
-# is part of words, as well as emoji and regional indicators
+# :func:`apsw.fts5.UnicodeWordsTokenizer` does word segmentation using
+# the `Unicode algorithm TR29
+# <https://www.unicode.org/reports/tr29/#Word_Boundaries>`__ which
+# works well across languages. It understands when punctuation is part
+# of words like in ``don't``, that numbers include punctuation, as
+# well as emoji and regional indicators
 
 connection.register_fts5_tokenizer(
     "unicodewords", apsw.fts5.UnicodeWordsTokenizer
@@ -588,8 +592,8 @@ connection.register_fts5_tokenizer("mine", my_tokenizer)
 show_tokens(test_text, "mine")
 
 ### fts_own_2: Your own tokenizer, part 2
-# We'll make one entirely our own, not building on any existing.
-# Tokenizers operate on UTF8 and byte offsets.  The
+# We'll make one entirely our own, not building on any existing
+# tokenizer.  Tokenizers operate on UTF8 and byte offsets.  The
 # :func:`apsw.fts5.StringTokenizer` decorator lets you operate on
 # :class:`str` instead and handles the mapping.
 # :func:`apsw.fts5.parse_tokenizer_args` makes it easy to handle
@@ -614,7 +618,7 @@ def atokenizer(
     options = apsw.fts5.parse_tokenizer_args(spec, con, params)
 
     # show what options we got
-    pprint(options)
+    print(f"{options=}")
 
     def tokenize(text: str, reason: int, locale: str | None):
         # See apsw.fts5.tokenize_reasons for mapping from text to number
@@ -662,7 +666,7 @@ show_tokens(text, "my_regex")
 # which ignores text not matching the pattern.
 
 # For this example our identifiers are two digits slash two letters
-text = "73/RS is bigger than 65/ST"
+text = "73/RS is larger than 65/ST"
 
 # See what unicodewords does
 show_tokens(text, "unicodewords")
@@ -677,8 +681,112 @@ connection.register_fts5_tokenizer("myids", tokenizer)
 # extract myids, leaving the other text to unicodewords
 show_tokens(text, "myids", ["unicodewords"])
 
-### xxxx: TODO json, html
-# json and html
+### fts_html: HTML tokenizer
+# The :func:`~apsw.fts5.HTMLTokenizer` will pass on the
+# extracted text to another tokenizer.
+
+text = """<title>Big&amp;Small</title><p>Hello <b>world</b>.  B&Agrave;&#97;"""
+
+show_tokens(text, "html", ["unicodewords"])
+
+### fts_json: JSON tokenizer
+# :func:`~apsw.fts5.JSONTokenizer` extracts strings from JSON for
+# processing by another tokenizer.
+
+import json
+
+data = {
+    "name": "A car🚗",
+    "items": ["one", 2, "three", {"four": "five"}],
+}
+
+text = json.dumps(data, indent=True)
+
+# Keys can be extracted
+show_tokens(text, "json", ["include_keys", "1", "unicodewords"])
+
+# or ignored
+show_tokens(text, "json", ["include_keys", "0", "unicodewords"])
+
+### fts_synonym: Synonyms tokenizer
+# :func:`~apsw.fts5.SynonymTokenizer` is useful to add colocated
+# tokens.
+
+text = "one Colour first big dog"
+
+# We use a dict
+synonyms = {
+    "colour": "color",
+    "first": "1st",
+    "dog": ["puppy", "canine", "k9"],
+}
+
+tokenizer = apsw.fts5.SynonymTokenizer(synonyms.get)
+
+connection.register_fts5_tokenizer("synonyms", tokenizer)
+
+# It is to the left of simplify so we don't have to match all the
+# different cases.
+show_tokens(
+    text, "synonyms", ["simplify", "casefold", "1", "unicodewords"]
+)
+
+### fts_stopwords: Stopwords tokenizer
+# :func:`~apsw.fts5.StopWordsTokenizer` removes tokens from the
+# stream.  Tokens that appear in almost every row aren't useful for
+# finding good matches, and increase the size of the index.
+
+
+@apsw.fts5.StopWordsTokenizer
+def ignore(token: str) -> bool:
+    # Return True if the token should be ignored.  These are common
+    # English tokens that appear in almost all rows of English
+    # content.
+    return token in {
+        "to",
+        "the",
+        "and",
+        "for",
+        "you",
+        "of",
+        "on",
+        "is",
+    }
+
+
+text = "On the green hills and blue skies you see forever"
+
+connection.register_fts5_tokenizer("ignore", ignore)
+
+# It is to the left of simplify so we don't have to match all the
+# different cases.
+show_tokens(
+    text, "ignore", ["simplify", "casefold", "1", "unicodewords"]
+)
+
+### fts_transform: Transform tokenizer
+# :func:`~apsw.fts5.TransformTokenizer` modifies tokens.
+
+
+@apsw.fts5.TransformTokenizer
+def transform(token: str) -> str:
+    # we remove trailing 's' and 'ing'
+    if token.endswith("s"):
+        return token[:-1]
+    if token.endswith("ing"):
+        return token[:-3]
+    return token
+
+
+text = "Chickens playing towards talking plays talks"
+
+connection.register_fts5_tokenizer("transform", transform)
+
+# It is to the left of simplify so we don't have to match all the
+# different cases.
+show_tokens(
+    text, "transform", ["simplify", "casefold", "1", "unicodewords"]
+)
 
 ### fts_end: Cleanup
 # We can now close the connection, but it is optional.
