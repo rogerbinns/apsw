@@ -2739,7 +2739,7 @@ if __name__ == "__main__":
         # Generate html
 
         def ud(c: str) -> str:
-            r = ""
+            r = f"U+{ord(c):04X} "
             gc = apsw.unicode.category(c)
             explain = unicode_categories
             r += f"{ gc } { explain[gc] }"
