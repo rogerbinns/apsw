@@ -7,6 +7,8 @@
 # fts5ExprGetToken
 
 """
+:mod:`apsw.fts5query` Create, parse, and modify queries
+
 There are 3 representations of a query available:
 
 query string

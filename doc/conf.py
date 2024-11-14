@@ -76,7 +76,6 @@ html_title = f"{ project } { version } documentation"
 html_theme = 'sphinx_rtd_theme'
 html_theme_options = {
     "analytics_id": "G-2NR9GDCQLT",
-    "style_external_links": True,
     "prev_next_buttons_location": "both",
 }
 html_css_files = ["apsw.css"]

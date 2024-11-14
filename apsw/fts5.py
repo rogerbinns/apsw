@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 
-"Various classes and functions to work with full text search"
+
+""":mod:`apsw.fts5` Various classes and functions to work with full text search.
+
+This includes :class:`Table` for creating and working with FTS5 tables
+in a Pythonic way, numerous :ref:`tokenizers <all_tokenizers>`, and
+related functionality.
+"""
 
 from __future__ import annotations
 
@@ -237,9 +243,10 @@ def tokenizer_test_strings(filename: str | pathlib.Path | None = None) -> tuple[
 def StringTokenizer(func: apsw.FTS5TokenizerFactory):
     """Decorator for tokenizers that operate on strings
 
-    FTS5 tokenizers operate on :ref:`UTF8 bytes for the text and offsets <byte_offsets>`.
-    This decorator provides your tokenizer with text and expects text offsets
-    back, performing the conversions back to UTF8 byte offsets.
+    FTS5 tokenizers operate on UTF8 bytes for the text and offsets.
+    This decorator provides your tokenizer with text and expects text
+    offsets back, performing the conversions back to UTF8 byte
+    offsets.
     """
 
     @functools.wraps(func)
@@ -338,7 +345,7 @@ def UnicodeWordsTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokeniz
 
 
 def SimplifyTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
-    """Tokenizer wrapper that simplifies tokens by neutralizing case conversion, canonicalization, and diacritic/mark removal
+    """Tokenizer wrapper that simplifies tokens by neutralizing case, canonicalization, and diacritic/mark removal
 
     Put this before another tokenizer to simplify its output.  For example:
 
@@ -399,8 +406,9 @@ def NGramTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     of words with ngrams, but not with the :func:`UnicodeWordsTokenizer`
     which requires the query to provide complete words.
 
-    This tokenizer works on units of user perceived characters (grapheme clusters)
-    where more than one codepoint can make up what seems to be one character.
+    This tokenizer works on units of user perceived characters
+    (grapheme clusters) where more than one codepoint can make up one
+    user perceived character.
 
     The following tokenizer arguments are accepted
 
@@ -495,7 +503,7 @@ def NGramTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
 
 
 def SynonymTokenizer(get: Callable[[str], None | str | tuple[str]] | None = None) -> apsw.FTS5TokenizerFactory:
-    """Adds `colocated tokens <https://www.sqlite.org/fts5.html#synonym_support>`__ such as 1st for first.
+    """Adds `colocated tokens <https://www.sqlite.org/fts5.html#synonym_support>`__ such as ``1st`` for ``first``.
 
     To use you need a callable that takes a str, and returns a str, a sequence of str, or None.
     For example :meth:`dict.get` does that.
@@ -504,7 +512,7 @@ def SynonymTokenizer(get: Callable[[str], None | str | tuple[str]] | None = None
 
     reasons
         Which tokenize :data:`tokenize_reasons` you want the lookups to happen in
-        as a space separated list.  Default is ``DOCUMENT AUX``.
+        as a space separated list.  Default is ``QUERY``.
 
     get
         Specify a :func:`get <convert_string_to_python>`, or use as a decorator.
@@ -516,9 +524,7 @@ def SynonymTokenizer(get: Callable[[str], None | str | tuple[str]] | None = None
     def tokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
         nonlocal get
         spec = {
-            "reasons": TokenizerArgument(
-                default="DOCUMENT AUX", convertor=convert_tokenize_reason, convert_default=True
-            ),
+            "reasons": TokenizerArgument(default="QUERY", convertor=convert_tokenize_reason, convert_default=True),
             "+": None,
             **({} if get else {"get": TokenizerArgument(default=get, convertor=convert_string_to_python)}),
         }
@@ -768,9 +774,9 @@ def HTMLTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     inside `SVG tags <https://en.wikipedia.org/wiki/SVG>`__ is
     ignored.
 
-    If the html doesn't start with whitespace then < or &, it is not
-    considered HTML and will be passed on unprocessed.  This would
-    typically be the case for queries.
+    If the html doesn't start with optional whitespace then ``<`` or
+    ``&``, it is not considered HTML and will be passed on
+    unprocessed.  This would typically be the case for queries.
 
     :mod:`html.parser` is used for the HTML processing.
 
@@ -876,12 +882,12 @@ def JSONTokenizer(con: apsw.Connection, args: list[str]) -> apsw.Tokenizer:
     The following tokenizer arguments are accepted:
 
     include_keys
-      ``9`` (default) or ``1`` if keys are extracted in addition to
+      ``0`` (default) or ``1`` if keys are extracted in addition to
       values
 
-    If the json doesn't start with whitespace then { or [, it is not
-    considered JSON and will be passed on unprocessed.  This would
-    typically be the case for queries.
+    If the JSON doesn't start with optional whitespace then ``{`` or
+    ``[``, it is not considered JSON and will be passed on
+    unprocessed.  This would typically be the case for queries.
 
     See :ref:`the example <example_fts_json>`.
     """
@@ -1245,9 +1251,7 @@ class Table:
     def _get_change_cookie(self) -> int:
         """An int that changes if the content of the table has changed.
 
-        This is useful if information is being cached.
-
-        It is possible through very carefully crafted content to outwit this.
+        This is useful to validate cached information.
         """
         # See https://sqlite.org/forum/forumpost/2a726411b6974502
         return hash(
@@ -1343,18 +1347,15 @@ class Table:
     def key_tokens(
         self, rowid: int, *, limit: int = 10, columns: str | Sequence[str] | None = None
     ) -> Sequence[tuple[float, str]]:
-        """Finds tokens that are in this row, but rare in other rows
+        """Finds tokens that are dense in this row, but rare in other rows
 
         This is purely statistical and has no understanding of the
-        tokens.  Tokens that occur only in this row are ignored.  The
-        more tokens, the more times the token must appear (log10 of
-        the number of tokens) to be considered.
+        tokens.  Tokens that occur only in this row are ignored.
 
+        :param rowid: Which row to examine
         :param limit: Maximum number to return
         :param columns: If provided then only look at specified
             column(s), else all indexed columns.
-        :param min_occurrences: How many times the token must
-            appear in this row
         :returns: A sequence of tuples where each is a tuple of token
            and float score with bigger meaning more unique, sorted
            highest score first.
@@ -1405,8 +1406,8 @@ class Table:
         """Like :meth:`search` providing results similar to the provided ids.
 
         This is useful for providing infinite scrolling.  Do a search
-        remembering the ids.  When you get to the end, call this
-        method with those ids.
+        remembering the rowids.  When you get to the end, call this
+        method with those rowids.
 
         :meth:`key_tokens` is used to get key tokens from rows which is
         purely statistical and has no understanding of the text.
@@ -1671,14 +1672,16 @@ class Table:
     def config(self, name: str, value: apsw.SQLiteValue = None, *, prefix: str = "x-apsw-") -> apsw.SQLiteValue:
         """Optionally sets, and gets a `config value <https://www.sqlite.org/fts5.html#configuration_options_config_table_>`__
 
-        If the value is not None, then it is changed.  It is not recommended to change SQLite's own values.
+        If the value is not None, then it is changed.  It is not
+        recommended to change SQLite's own values.
 
-        The `prefix` is to ensure your own config names don't clash with those used by SQLite.  For
-        example you could remember the Unicode version used by your tokenizer, and rebuild if the
+        The `prefix` is to ensure your own config names don't clash
+        with those used by SQLite.  For example you could remember the
+        Unicode version used by your tokenizer, and rebuild if the
         version is updated.
 
-        The advantage of using this is that the names/values will survive the fts5 table being renamed,
-        backed up, restored etc.
+        The advantage of using this is that the names/values will
+        survive the FTS5 table being renamed, backed up, restored etc.
         """
         key = prefix + name
         if value is not None:
@@ -1784,7 +1787,7 @@ class Table:
     tokens_per_column: list[int] = property(_tokens_per_column)
 
     def is_token(self, token: str) -> bool:
-        """Returns True if it is a known token"""
+        """Returns ``True`` if it is a known token"""
         return token in self.tokens
 
     def query_suggest(
@@ -1804,7 +1807,7 @@ class Table:
           indexed column name
         * Combining such as ``some thing`` to ``something``
         * Splitting such as ``noone`` to ``no one``
-        * Replacing unknown/rare worda with more popular ones
+        * Replacing unknown/rare words with more popular ones
 
         The query is parsed, tokenized, replacement tokens
         established, and original text via :meth:`text_for_token` used
@@ -2284,8 +2287,8 @@ class Table:
         :param name: name of table
         :param columns: A sequence of column names.  If you are using
            an external content table (recommended) you can supply
-           `None` and the column names will be from the table named by
-           the `content` parameter
+           ``None`` and the column names will be from the table named by
+           the ``content`` parameter
         :param schema: Which attached database the table is being
             created in
         :param unindexed: Columns that will be `unindexed
@@ -2331,7 +2334,7 @@ class Table:
             <https://www.sqlite.org/fts5.html#the_locale_option>`__ is
             available to tokenizers and stored in the table
         :param generate_triggers: If using an external content table
-            and this is `True`, then `triggers are created
+            and this is ``True``, then `triggers are created
             <https://sqlite.org/fts5.html#external_content_tables>`__
             to keep this table updated with changes to the external
             content table.  These require a table not a view.
@@ -2505,12 +2508,14 @@ def _apsw_get_match_info(api: apsw.FTS5ExtensionApi) -> str:
 
 @dataclass(frozen=True)
 class FTS5TableStructure:
-    "Table structure from SQL declaration available from :attr:`Table.structure`"
+    """Table structure from SQL declaration available as :attr:`Table.structure`
+
+    See :ref:`the example <example_fts_structure>`"""
 
     name: str
     "Table nane"
     columns: tuple[str]
-    "Column names"
+    "All column names"
     unindexed: set[str]
     "Which columns are `unindexed <https://www.sqlite.org/fts5.html#the_unindexed_column_option>`__"
     tokenize: tuple[str]
@@ -2518,13 +2523,13 @@ class FTS5TableStructure:
     prefix: set[int]
     "`Prefix <https://www.sqlite.org/fts5.html#prefix_indexes>`__ values"
     content: str | None
-    "`External content/content less <https://www.sqlite.org/fts5.html#external_content_and_contentless_tables>`__ or `None` for regular"
+    "`External content/content less <https://www.sqlite.org/fts5.html#external_content_and_contentless_tables>`__ or ``None`` for regular"
     content_rowid: str | None
-    "`Rowid <https://www.sqlite.org/fts5.html#external_content_tables>`__ if external content table else `None`"
+    "`Rowid <https://www.sqlite.org/fts5.html#external_content_tables>`__ if external content table else ``None``"
     contentless_delete: bool | None
-    "`Contentless delete option <https://www.sqlite.org/fts5.html#contentless_delete_tables>`__ if contentless table else `None`"
+    "`Contentless delete option <https://www.sqlite.org/fts5.html#contentless_delete_tables>`__ if contentless table else ``None``"
     contentless_unindexed: bool | None
-    "`Contentless unindexed option <https://www.sqlite.org/draft/fts5.html#the_contentless_unindexed_option>`__ if contentless table else `None`"
+    "`Contentless unindexed option <https://www.sqlite.org/draft/fts5.html#the_contentless_unindexed_option>`__ if contentless table else ``None``"
     columnsize: bool
     "`Columnsize option <https://www.sqlite.org/fts5.html#the_columnsize_option>`__"
     tokendata: bool

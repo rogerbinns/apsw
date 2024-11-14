@@ -483,7 +483,12 @@ pprint(
 
 
 # Make a function to show output
-def show_tokens(text, tokenizer_name, tokenizer_args=None):
+def show_tokens(
+    text,
+    tokenizer_name,
+    tokenizer_args=None,
+    reason=apsw.FTS5_TOKENIZE_DOCUMENT,
+):
     print(f"\n{text=:s}")
     print(f"{tokenizer_name=} {tokenizer_args=}")
 
@@ -494,7 +499,7 @@ def show_tokens(text, tokenizer_name, tokenizer_args=None):
     pprint(
         tokenizer(
             text.encode("utf8"),
-            apsw.FTS5_TOKENIZE_DOCUMENT,
+            reason,
             None,
             include_offsets=False,
         )
@@ -708,7 +713,7 @@ show_tokens(text, "json", ["include_keys", "1", "unicodewords"])
 # or ignored
 show_tokens(text, "json", ["include_keys", "0", "unicodewords"])
 
-### fts_synonym: Synonyms tokenizer
+### fts_synonym: Synonym tokenizer
 # :func:`~apsw.fts5.SynonymTokenizer` is useful to add colocated
 # tokens.
 
@@ -723,12 +728,19 @@ synonyms = {
 
 tokenizer = apsw.fts5.SynonymTokenizer(synonyms.get)
 
-connection.register_fts5_tokenizer("synonyms", tokenizer)
+connection.register_fts5_tokenizer(
+    "synonyms",
+    tokenizer,
+)
 
 # It is to the left of simplify so we don't have to match all the
-# different cases.
+# different cases. By default the synonyms tokenizer only applies when
+# tokenizing queries.
 show_tokens(
-    text, "synonyms", ["simplify", "casefold", "1", "unicodewords"]
+    text,
+    "synonyms",
+    ["simplify", "casefold", "1", "unicodewords"],
+    reason=apsw.FTS5_TOKENIZE_QUERY,
 )
 
 ### fts_stopwords: Stopwords tokenizer
