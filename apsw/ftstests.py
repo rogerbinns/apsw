@@ -758,7 +758,10 @@ class FTS(unittest.TestCase):
                     )
                     tok = self.db.fts5_tokenizer(tokname, args_without)
 
+                if name == "synonym":
+                    test_reason = apsw.FTS5_TOKENIZE_QUERY
                 returns.append(tok(test_data, test_reason, None))
+                test_reason = apsw.FTS5_TOKENIZE_AUX
 
             self.assertNotEqual(returns[0], test_res)
             self.assertEqual(returns[0], returns[1])
@@ -779,7 +782,7 @@ class FTS(unittest.TestCase):
         self.assertEqual(
             self.db.fts5_tokenizer("unicodewords")(test_text.encode("utf8"), apsw.FTS5_TOKENIZE_QUERY, None),
             self.db.fts5_tokenizer("synonym-reason", ["unicodewords"])(
-                test_text.encode("utf8"), apsw.FTS5_TOKENIZE_QUERY, None
+                test_text.encode("utf8"), apsw.FTS5_TOKENIZE_AUX, None
             ),
         )
 
