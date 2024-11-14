@@ -1370,10 +1370,21 @@ class Table:
         # how many times each token occurs in this row
         token_counter: collections.Counter[str] = collections.Counter()
 
-        text = self.row_by_id(rowid, columns or self.columns_indexed)
-        utf8: bytes = text.encode() if isinstance(text, str) else ("\n".join(text)).encode()
-        for token in self.tokenize(utf8, include_colocated=False, include_offsets=False):
-            token_counter[token] += 1
+        if columns is None:
+            columns = self.columns_indexed
+        elif isinstance(columns, str):
+            columns = [columns]
+
+        for column in columns:
+            text = self.row_by_id(rowid, column)
+            if not text:
+                # could be None or empty
+                continue
+            column_number = self.columns.index(self.column_named(column))
+            locale = self._db.execute(f"select fts5_get_locale({self._qname}, {column_number}) from {self.quoted_table_name} where rowid=?", (rowid,)).get
+            utf8: bytes = text.encode()
+            for token in self.tokenize(utf8, include_colocated=False, include_offsets=False, locale=locale):
+                token_counter[token] += 1
 
         try:
             row_token_count = token_counter.total()
