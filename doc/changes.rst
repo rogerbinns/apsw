@@ -15,6 +15,11 @@ APSW changes by version
 
 Support for Python 3.8 removed (:issue:`539`).
 
+The readonly database statistics virtual table (`dbstat
+<https://www.sqlite.org/dbstat.html>`__) is enabled by default for
+PyPI builds, and when ``--enable-all-extensions`` is passed to manual
+:ref:`builds <build>`.
+
 Added :func:`recursive triggers
 <apsw.bestpractice.connection_recursive_triggers>` and :func:`optimize
 <apsw.bestpractice.connection_optimize>` to :mod:`apsw.bestpractice`.
