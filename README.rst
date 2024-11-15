@@ -5,7 +5,7 @@
   :target: https://rogerbinns.github.io/apsw/
 
 APSW stands for **A**\ nother **P**\ ython **S**\ QLite **W**\ rapper.   APSW
-supports CPython 3.8 onwards.
+supports CPython 3.9 onwards.
 
 About
 =====
@@ -15,7 +15,8 @@ embedded relational database engine from Python, and the most out of
 Python from SQLite.  APSW glues together the complete `SQLite C API
 <https://sqlite.org/c3ref/intro.html>`__ and `Python's C API
 <https://docs.python.org/3/c-api/index.html>`__, staying up to date
-with both SQLite and Python.
+with both SQLite and Python.  This includes `full text search
+<https://rogerbinns.github.io/apsw/textsearch.html>`.
 
 
 It is recommended to use the builtin `sqlite3 module

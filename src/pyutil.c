@@ -39,29 +39,6 @@ Py_IsNone(const PyObject *val)
 
 #endif
 
-/* Vectorcall added in 3.9 officially and provisional in 3.8  */
-#if PY_VERSION_HEX < 0x03090000
-#undef PyObject_Vectorcall
-static PyObject *PyObject_Vectorcall(PyObject *callable, PyObject *const *args, size_t nargsf, PyObject *kwnames)
-{
-  return _PyObject_Vectorcall(callable, args, nargsf, kwnames);
-}
-
-/* The actual CPython implementation of this is a little more
-   sophisticated but doesn't matter for our usage */
-#undef PyObject_VectorcallMethod
-static PyObject *PyObject_VectorcallMethod(PyObject *name, PyObject *const *args, size_t nargsf, PyObject *kwnames)
-{
-  PyObject *res = NULL, *callable = PyObject_GetAttr(args[0], name);
-  if (callable)
-  {
-    res = PyObject_Vectorcall(callable, args + 1, PyVectorcall_NARGS(nargsf) - 1, kwnames);
-    Py_DECREF(callable);
-  }
-  return res;
-}
-#endif
-
 /* used in calls to AddTraceBackHere where O format takes non-null but
    we often have null so convert to None.  This can't be done as a portable
    macro because v would end up double evaluated */
