@@ -173,7 +173,7 @@ fossil: ## Grabs latest trunk from SQLite source control, extracts and builds in
 	-rm -rf sqlite3
 	mkdir sqlite3
 	set -e ; cd sqlite3 ; curl --output - $(FOSSIL_URL) | tar xfz - --strip-components=1
-	set -e ; cd sqlite3 ; ./configure --quiet --enable-all ; $(MAKE) sqlite3.c sqlite3
+	set -e ; cd sqlite3 ; ./configure --quiet --all --disable-tcl ; $(MAKE) sqlite3.c sqlite3
 	-mv sqlite3config.h sqlite3/
 
 # the funky test stuff is to exit successfully when grep has rc==1 since that means no lines found.
