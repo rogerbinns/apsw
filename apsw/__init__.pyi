@@ -2257,27 +2257,37 @@ class Cursor:
 
 @final
 class FTS5ExtensionApi:
-    """Wraps the `auxiliary functions API
-    <https://www.sqlite.org/fts5.html#_custom_auxiliary_functions_api_reference_>`__"""
+    """`Auxiliary functions
+    <https://www.sqlite.org/fts5.html#_auxiliary_functions_>`__  run in
+    the context of a FTS5 search, and can be used for ranking,
+    highlighting, and similar operations.  Auxiliary functions are
+    registered via :meth:`Connection.register_fts5_function`.  This wraps
+    the `auxiliary functions API
+    <https://www.sqlite.org/fts5.html#_custom_auxiliary_functions>`__
+    passed as the first parameter to auxiliary functions.
+
+    See :ref:`the example <example_fts5_auxfunc>`."""
     aux_data: Any
     """You can store an object as `auxiliary data <https://www.sqlite.org/fts5.html#xSetAuxdata>`__
     which is available across matching rows.  It starts out as :class:`None`.
 
-    An example use is to do up front calculations once, rather than on every matched row."""
+    An example use is to do up front calculations once, rather than on
+    every matched row, such as
+    :func:`fts5aux.inverse_document_frequency`."""
 
     column_count: int
     """Returns the `number of columns in the table
     <https://www.sqlite.org/fts5.html#xColumnCount>`__"""
 
     def column_locale(self, column: int) -> str | None:
-        """`Retriees the locale for a column  <https://www.sqlite.org/fts5.html#xColumnLocale>`__ on
+        """`Retrieves the locale for a column  <https://www.sqlite.org/fts5.html#xColumnLocale>`__ on
         this row."""
         ...
 
     def column_size(self, col: int = -1) -> int:
         """Returns the `total number of tokens in the current row
         <https://www.sqlite.org/fts5.html#xColumnSize>`__ for a specific
-        column, or if `col` is negative then for all columns."""
+        column, or if ``col`` is negative then for all columns."""
         ...
 
     def column_text(self, col: int) -> bytes:
@@ -2287,7 +2297,7 @@ class FTS5ExtensionApi:
     def column_total_size(self, col: int = -1) -> int:
         """Returns the `total number of tokens in the table
         <https://www.sqlite.org/fts5.html#xColumnTotalSize>`__ for a specific
-        column, or if `col` is negative then for all columns."""
+        column, or if ``col`` is negative then for all columns."""
         ...
 
     inst_count: int
@@ -2295,8 +2305,8 @@ class FTS5ExtensionApi:
     <https://www.sqlite.org/fts5.html#xInstCount>`__"""
 
     def inst_tokens(self, inst: int) -> tuple[str, ...] | None:
-        """`Access tokens of hit `inst in current row <https://www.sqlite.org/fts5.html#xInstToken>`__
-         None is returned if the call is not supported."""
+        """`Access tokens of hit inst in current row <https://www.sqlite.org/fts5.html#xInstToken>`__.
+        None is returned if the call is not supported."""
         ...
 
     def phrase_column_offsets(self, phrase: int, column: int) -> list[int]:
@@ -2335,7 +2345,8 @@ class FTS5ExtensionApi:
         The callback takes two parameters - a different :class:`apsw.FTS5ExtensionApi` and closure.
 
         An example usage for this method is to see how often the phrases occur in the table.  Setup a
-        tracking counter here, and then in the callback you can update it on each visited row."""
+        tracking counter here, and then in the callback you can update it on each visited row.  This
+        is shown in :ref:`the example <example_fts5_auxfunc>`."""
         ...
 
     row_count: int
@@ -2353,7 +2364,7 @@ class FTS5ExtensionApi:
 @final
 class FTS5Tokenizer:
     """Wraps a registered tokenizer.  Returned by :meth:`Connection.fts5_tokenizer`."""
-    args: tuple
+    args: tuple[str]
     """The arguments the tokenizer was created with."""
 
     def __call__(self, utf8: bytes, flags: int,  locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> list[tuple[int, int, str, ...]]:

@@ -2828,10 +2828,20 @@
 "You can store an object as `auxiliary data <https://www.sqlite.org/fts5.html#xSetAuxdata>`__\n" \
 "which is available across matching rows.  It starts out as :class:`None`.\n" \
 "\n" \
-"An example use is to do up front calculations once, rather than on every matched row.\n" 
+"An example use is to do up front calculations once, rather than on\n" \
+"every matched row, such as\n" \
+":func:`fts5aux.inverse_document_frequency`.\n" 
 
-#define  FTS5ExtensionApi_class_DOC "Wraps the `auxiliary functions API\n" \
-"<https://www.sqlite.org/fts5.html#_custom_auxiliary_functions_api_reference_>`__\n" 
+#define  FTS5ExtensionApi_class_DOC "`Auxiliary functions\n" \
+"<https://www.sqlite.org/fts5.html#_auxiliary_functions_>`__  run in\n" \
+"the context of a FTS5 search, and can be used for ranking,\n" \
+"highlighting, and similar operations.  Auxiliary functions are\n" \
+"registered via :meth:`Connection.register_fts5_function`.  This wraps\n" \
+"the `auxiliary functions API\n" \
+"<https://www.sqlite.org/fts5.html#_custom_auxiliary_functions>`__\n" \
+"passed as the first parameter to auxiliary functions.\n" \
+"\n" \
+"See :ref:`the example <example_fts5_auxfunc>`.\n" 
 
 #define  FTS5ExtensionApi_column_count_DOC ":type: int\n" \
 "\n" \
@@ -2839,7 +2849,7 @@
 "<https://www.sqlite.org/fts5.html#xColumnCount>`__\n" 
 
 #define  FTS5ExtensionApi_column_locale_DOC "column_locale($self,column)\n--\n\nFTS5ExtensionApi.column_locale(column: int) -> str | None\n\n" \
-"`Retriees the locale for a column  <https://www.sqlite.org/fts5.html#xColumnLocale>`__ on\n" \
+"`Retrieves the locale for a column  <https://www.sqlite.org/fts5.html#xColumnLocale>`__ on\n" \
 "this row.\n" 
 
 #define FTS5ExtensionApi_column_locale_KWNAMES "column"
@@ -2853,7 +2863,7 @@
 #define  FTS5ExtensionApi_column_size_DOC "column_size($self,col=-1)\n--\n\nFTS5ExtensionApi.column_size(col: int = -1) -> int\n\n" \
 "Returns the `total number of tokens in the current row\n" \
 "<https://www.sqlite.org/fts5.html#xColumnSize>`__ for a specific\n" \
-"column, or if `col` is negative then for all columns.\n" 
+"column, or if ``col`` is negative then for all columns.\n" 
 
 #define FTS5ExtensionApi_column_size_KWNAMES "col"
 #define FTS5ExtensionApi_column_size_USAGE "FTS5ExtensionApi.column_size(col: int = -1) -> int"
@@ -2878,7 +2888,7 @@
 #define  FTS5ExtensionApi_column_total_size_DOC "column_total_size($self,col=-1)\n--\n\nFTS5ExtensionApi.column_total_size(col: int = -1) -> int\n\n" \
 "Returns the `total number of tokens in the table\n" \
 "<https://www.sqlite.org/fts5.html#xColumnTotalSize>`__ for a specific\n" \
-"column, or if `col` is negative then for all columns.\n" 
+"column, or if ``col`` is negative then for all columns.\n" 
 
 #define FTS5ExtensionApi_column_total_size_KWNAMES "col"
 #define FTS5ExtensionApi_column_total_size_USAGE "FTS5ExtensionApi.column_total_size(col: int = -1) -> int"
@@ -2895,8 +2905,8 @@
 "<https://www.sqlite.org/fts5.html#xInstCount>`__\n" 
 
 #define  FTS5ExtensionApi_inst_tokens_DOC "inst_tokens($self,inst)\n--\n\nFTS5ExtensionApi.inst_tokens(inst: int) -> tuple[str, ...] | None\n\n" \
-"`Access tokens of hit `inst in current row <https://www.sqlite.org/fts5.html#xInstToken>`__\n" \
-" None is returned if the call is not supported.\n" 
+"`Access tokens of hit inst in current row <https://www.sqlite.org/fts5.html#xInstToken>`__.\n" \
+"None is returned if the call is not supported.\n" 
 
 #define FTS5ExtensionApi_inst_tokens_KWNAMES "inst"
 #define FTS5ExtensionApi_inst_tokens_USAGE "FTS5ExtensionApi.inst_tokens(inst: int) -> tuple[str, ...] | None"
@@ -2966,7 +2976,8 @@
 "The callback takes two parameters - a different :class:`apsw.FTS5ExtensionApi` and closure.\n" \
 "\n" \
 "An example usage for this method is to see how often the phrases occur in the table.  Setup a\n" \
-"tracking counter here, and then in the callback you can update it on each visited row.\n" 
+"tracking counter here, and then in the callback you can update it on each visited row.  This\n" \
+"is shown in :ref:`the example <example_fts5_auxfunc>`.\n" 
 
 #define FTS5ExtensionApi_query_phrase_KWNAMES "phrase", "callback", "closure"
 #define FTS5ExtensionApi_query_phrase_USAGE "FTS5ExtensionApi.query_phrase(phrase: int, callback: FTS5QueryPhrase, closure: Any) -> None"
@@ -3006,7 +3017,7 @@
 } while(0)
 
 
-#define  FTS5Tokenizer_args_DOC ":type: tuple\n" \
+#define  FTS5Tokenizer_args_DOC ":type: tuple[str]\n" \
 "\n" \
 "The arguments the tokenizer was created with.\n" 
 
