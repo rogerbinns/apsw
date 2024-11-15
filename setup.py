@@ -811,9 +811,9 @@ def get_icu_config() -> IcuConfig | None:
 
     if shutil.which("pkg-config"):
         with contextlib.suppress(subprocess.CalledProcessError):
-            cflags = subprocess.run(["pkg-config", "--cflags", "icu-uc", "icu-i18n"], **skw).stdout.strip()
+            cflags = subprocess.run(["pkg-config", "--cflags", "icu-io"], **skw).stdout.strip()
         with contextlib.suppress(subprocess.CalledProcessError):
-            ldflags = subprocess.run(["pkg-config", "--libs", "icu-uc", "icu-i18n"], **skw).stdout.strip()
+            ldflags = subprocess.run(["pkg-config", "--libs", "icu-io"], **skw).stdout.strip()
         if cflags or ldflags:
             return IcuConfig(tool="pkg-config", cflags=cflags, ldflags=ldflags)
     if shutil.which("icu-config"):
