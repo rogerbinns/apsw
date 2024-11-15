@@ -99,7 +99,7 @@ Tokens
   that they do so.  **Tokens are not shown to the user.**  Generating
   appropriate tokens for your text is the key to making searches
   effective.  FTS5 has a `tokendata
-  <https://www.sqlite.org/draft/fts5.html#the_tokendata_option>`__ to
+  <https://www.sqlite.org/fts5.html#the_tokendata_option>`__ to
   store extra information with each token.  You should consider:
 
     * Extracting meaningful tokens first.  An :ref:`example
@@ -531,7 +531,7 @@ FTS5 module
     :members:
     :undoc-members:
 
-FTS5 Query module - apsw.fts5query
+FTS5 Query module
 ==================================
 
 .. automodule:: apsw.fts5query
@@ -542,8 +542,6 @@ FTS5 Query module - apsw.fts5query
 FTS5 Auxiliary functions module
 ===============================
 
-Provided by the :mod:`apsw.fts5aux` module.
-
 .. automodule:: apsw.fts5aux
     :synopsis: Auxiliary functions for ranking and match extraction
     :members:
@@ -553,8 +551,6 @@ Provided by the :mod:`apsw.fts5aux` module.
 
 Unicode Text Handling
 =====================
-
-Provided by the :mod:`apsw.unicode` module.
 
 .. automodule:: apsw.unicode
     :members:

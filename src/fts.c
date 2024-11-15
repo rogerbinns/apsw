@@ -331,7 +331,7 @@ APSWFTS5Tokenizer_connection(APSWFTS5Tokenizer *self)
 }
 
 /** .. attribute:: args
-  :type: tuple
+  :type: tuple[str]
 
   The arguments the tokenizer was created with.
 */
@@ -633,8 +633,16 @@ static fts5_tokenizer_v2 APSWPythonTokenizer = {
 
 /** .. class:: FTS5ExtensionApi
 
-  Wraps the `auxiliary functions API
-  <https://www.sqlite.org/fts5.html#_custom_auxiliary_functions_api_reference_>`__
+`Auxiliary functions
+<https://www.sqlite.org/fts5.html#_auxiliary_functions_>`__  run in
+the context of a FTS5 search, and can be used for ranking,
+highlighting, and similar operations.  Auxiliary functions are
+registered via :meth:`Connection.register_fts5_function`.  This wraps
+the `auxiliary functions API
+<https://www.sqlite.org/fts5.html#_custom_auxiliary_functions>`__
+passed as the first parameter to auxiliary functions.
+
+See :ref:`the example <example_fts5_auxfunc>`.
 */
 
 typedef struct APSWFTS5ExtensionApi
@@ -748,7 +756,9 @@ APSWFTS5ExtensionApi_xRowid(APSWFTS5ExtensionApi *self)
   You can store an object as `auxiliary data <https://www.sqlite.org/fts5.html#xSetAuxdata>`__
   which is available across matching rows.  It starts out as :class:`None`.
 
-  An example use is to do up front calculations once, rather than on every matched row.
+  An example use is to do up front calculations once, rather than on
+  every matched row, such as
+  :func:`fts5aux.inverse_document_frequency`.
 */
 
 static void
@@ -873,7 +883,7 @@ APSWFTS5ExtensionApi_xInstCount(APSWFTS5ExtensionApi *self)
 
 /** .. method:: inst_tokens(inst: int) -> tuple[str, ...] | None
 
- `Access tokens of hit `inst in current row <https://www.sqlite.org/fts5.html#xInstToken>`__
+  `Access tokens of hit inst in current row <https://www.sqlite.org/fts5.html#xInstToken>`__.
   None is returned if the call is not supported.
 */
 static PyObject *
@@ -1124,7 +1134,7 @@ error:
 
   Returns the `total number of tokens in the table
   <https://www.sqlite.org/fts5.html#xColumnTotalSize>`__ for a specific
-  column, or if `col` is negative then for all columns.
+  column, or if ``col`` is negative then for all columns.
 */
 static PyObject *
 APSWFTS5ExtensionApi_xColumnTotalSize(APSWFTS5ExtensionApi *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
@@ -1154,7 +1164,7 @@ APSWFTS5ExtensionApi_xColumnTotalSize(APSWFTS5ExtensionApi *self, PyObject *cons
 
   Returns the `total number of tokens in the current row
   <https://www.sqlite.org/fts5.html#xColumnSize>`__ for a specific
-  column, or if `col` is negative then for all columns.
+  column, or if ``col`` is negative then for all columns.
 */
 static PyObject *
 APSWFTS5ExtensionApi_xColumnSize(APSWFTS5ExtensionApi *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
@@ -1301,7 +1311,7 @@ finally:
 
 /** .. method:: column_locale(column: int) -> str | None
 
-  `Retriees the locale for a column  <https://www.sqlite.org/fts5.html#xColumnLocale>`__ on
+  `Retrieves the locale for a column  <https://www.sqlite.org/fts5.html#xColumnLocale>`__ on
   this row.
 
 */
@@ -1365,7 +1375,8 @@ apsw_fts_query_phrase_callback(const Fts5ExtensionApi *pApi, Fts5Context *pFts, 
   The callback takes two parameters - a different :class:`apsw.FTS5ExtensionApi` and closure.
 
   An example usage for this method is to see how often the phrases occur in the table.  Setup a
-  tracking counter here, and then in the callback you can update it on each visited row.
+  tracking counter here, and then in the callback you can update it on each visited row.  This
+  is shown in :ref:`the example <example_fts5_auxfunc>`.
 */
 static PyObject *
 APSWFTS5ExtensionApi_xQueryPhrase(APSWFTS5ExtensionApi *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,

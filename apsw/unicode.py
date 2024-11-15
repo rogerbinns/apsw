@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
 """
-Up to date Unicode aware methods and lookups
+:mod:`apsw.unicode` - Up to date Unicode aware methods and lookups
 
 This module helps with :doc:`textsearch` and general Unicode,
 addressing the following:
 
-* The standand library :mod:`unicodedata` has limited information
+* The standard library :mod:`unicodedata` has limited information
   available (eg no information about emoji), and is only updated to
   new `Unicode versions
   <https://www.unicode.org/versions/enumeratedversions.html>`__ on a
@@ -78,17 +78,20 @@ how wide the text is when displayed on most terminals.
 
     * :func:`grapheme_length` to get the number of grapheme clusters
       in a string
-    * :func:`grapheme_substr` to get substrings
+    * :func:`grapheme_substr` to get substrings using grapheme cluster
+      indexing
     * :func:`grapheme_startswith` and :func:`grapheme_endswith`
     * :func:`grapheme_find` to find a substring
     * :func:`split_lines` to split text into lines using all the
       Unicode hard line break codepoints
     * :func:`text_width` to count how wide the text is
     * :func:`expand_tabs` to expand tabs using text width
-    * :func:`text_width_substr` to extract substrings based text width
+    * :func:`text_width_substr` to extract substrings based on text width
     * :func:`text_wrap` to wrap paragraphs using Unicode words, line
       breaking, and text width
-    * :func:`guess_paragraphs` to establish paragraph boundaries
+    * :func:`guess_paragraphs` to establish paragraph boundaries for
+      text that has line breaks in paragraphs like many plain text
+      and similar markup formats.
 
 Size
 
@@ -103,13 +106,13 @@ Performance
 
     There some pure Python alternatives, with less functionality.
     They take 5 to 15 times more CPU time to process the same text.
-    Use `python3 -m apsw.unicode benchmark --help`.
+    Use ``python3 -m apsw.unicode benchmark --help``.
 
 """
 
 from __future__ import annotations
 
-from typing import Generator, Iterable
+from typing import Iterator, Iterable
 
 import re
 
@@ -301,8 +304,10 @@ def split_lines(text: str, offset: int = 0) -> Generator[str, None, None]:
 def expand_tabs(text: str, tabsize: int = 8, invalid: str = ".") -> str:
     """Turns tabs into spaces aligning on tabsize boundaries, similar to :meth:`str.expandtabs`
 
-    This is aware of grapheme clusters and text width.  Codepoints that have an invalid width
-    are also replace by `invalid` and line breaks are replaced with newline
+    This is aware of grapheme clusters and text width.  Codepoints
+    that have an invalid width are also replaced by ``invalid``.
+    Control characters are an example of an invalid character.  Line
+    breaks are replaced with newline.
     """
     res: list[str] = []
     for line in split_lines(text):
@@ -338,13 +343,13 @@ def grapheme_length(text: str, offset: int = 0) -> int:
 
 
 def grapheme_substr(text: str, start: int | None = None, stop: int | None = None) -> str:
-    """Like text[str:end] but in grapheme cluster units
+    """Like ``text[start:end]`` but in grapheme cluster units
 
-    start and end can be negative to index from the end, or outside
-    the bounds of the text but are never an invalid combination (you
-    get empty string returned).
+    ``start`` and ``end`` can be negative to index from the end, or
+    outside the bounds of the text but are never an invalid
+    combination (you get empty string returned).
 
-    To get a particular grapheme cluster make stop one more than start.
+    To get one grapheme cluster, make stop one more than start.
     For example to get the 3rd last grapheme cluster::
 
         grapheme_substr(text, -3, -3 + 1)
@@ -390,7 +395,7 @@ def grapheme_startswith(text: str, substring: str) -> bool:
 
 def grapheme_find(text: str, substring: str, start: int = 0, end: int | None = None) -> int:
     """Returns the offset in text where substring can be found, being aware of grapheme clusters.
-    The beginning and end of the substring have to be at a grapheme cluster boundary.
+    The start and end of the substring have to be at a grapheme cluster boundary.
 
     :param start: Where in text to start the search (default beginning)
     :param end: Where to stop the search exclusive (default remaining text)
@@ -414,7 +419,7 @@ def text_width(text: str, offset: int = 0) -> int:
     is right the vast majority of the time, but not always.
 
     Note that web browsers do variable widths even in monospaced
-    sections like <pre> so they won't always agree with the terminal
+    sections like ``<pre>`` so they won't always agree with the terminal
     either.
     """
     # Some benchmarks in seconds running on 45MB of the UNDR
@@ -426,7 +431,9 @@ def text_width(text: str, offset: int = 0) -> int:
 
 
 def text_width_substr(text: str, width: int, offset: int = 0) -> tuple[int, str]:
-    """Extracts substring width or less wide being aware of grapheme cluster boundaries
+    """Extracts substring width or less wide being aware of grapheme cluster boundaries.
+    For example you could use this to get a substring that is 80 (or
+    less) wide.
 
     :returns: A tuple of how wide the substring is, and the substring"""
     if not isinstance(width, int) or width < 1:
@@ -448,7 +455,9 @@ def text_width_substr(text: str, width: int, offset: int = 0) -> tuple[int, str]
 
 
 def guess_paragraphs(text: str, tabsize: int = 8) -> str:
-    """Given text that contains paragraphs containing newlines, guesses where the paragraphs end
+    """Given text that contains paragraphs containing newlines, guesses where the paragraphs end.
+    The returned :class:`str` will have ``\n`` removed where it was
+    determined to not mark a paragraph end.
 
     .. code-block:: output
 
@@ -460,12 +469,13 @@ def guess_paragraphs(text: str, tabsize: int = 8) -> str:
           Indented lines that continue preserving the indent
           are considered the same paragraph, and a change of indent
           (in or out) is a new paragraph.
-        So this will be a new paragraph.
+            So this will be a new paragraph,
+        And this will be a new paragraph.
 
          * Punctuation/numbers at the start of line
            followed by indented text are considered the same
            paragraph
-        2. So this ia new paragraph, while
+        2. So this is a new paragraph, while
            this line is part of the line above
 
         3. Optional numbers followed by punctuation then space
@@ -558,22 +568,29 @@ def text_wrap(
     hyphen: str = "-",
     combine_space: bool = True,
     invalid: str = "?",
-) -> Generator[str, None, None]:
+) -> Iterator[str]:
     """Similar to :func:`textwrap.wrap` but Unicode grapheme cluster and line break aware
 
     .. note::
 
        Newlines in the text are treated as end of paragraph.  If your text has paragraphs
-       with newlines in them, then :func:`guess_paragraphs` can help.
+       with newlines in them, then call :func:`guess_paragraphs` first.
 
     :param text: string to process
     :param width: width of yielded lines, if rendered using a monospace font such as to a terminal
     :param tabsize: Tab stop spacing as tabs are expanded
-    :param hyphen: Used to show a segment was broken because it was wider than `width`
+    :param hyphen: Used to show a segment was broken because it was wider than ``width``
     :param combine_space: Leading space on each (indent) is always preserved.  Other spaces where
           multiple occur are combined into one space.
     :param invalid: If invalid codepoints are encountered such as control characters and surrogates
           then they are replaced with this.
+
+    This yields one line of :class:`str` at a time, which will be
+    exactly ``width`` when output to a terminal.  It will be right
+    padded with spaces if necessary and not have a trailing newline.
+
+    :func:`apsw.ext.format_query_table` uses this method to ensure
+    each column is the desired width.
     """
     hyphen_width = text_width(hyphen)
 
@@ -654,9 +671,11 @@ def text_wrap(
 
 
 def codepoint_name(codepoint: int | str) -> str | None:
-    """Name or None if it doesn't have one
+    """Name or ``None`` if it doesn't have one
 
-    For example codepoint 65 is named "LATIN CAPITAL LETTER A"
+    For example codepoint 65 is named ``LATIN CAPITAL LETTER A``
+    while codepoint U+D1234 is not assigned and would return
+    ``None``.
     """
     return _unicode.codepoint_name(codepoint)
 

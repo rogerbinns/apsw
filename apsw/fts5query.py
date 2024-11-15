@@ -25,16 +25,22 @@ parsed
     This is a hierarchical representation using :mod:`dataclasses`
     with all fields present.  Represented as :class:`QUERY`, it uses
     :class:`PHRASE`,  :class:`NEAR`, :class:`COLUMNFILTER`,
-    :class:`AND`, :class:`NOT`.  The string example truncated to a few
-    lines omitting defaults is::
+    :class:`AND`, :class:`NOT`, and :class:`OR`.  The string example
+    above is::
 
-      ::TODO:: regenerate this now that PHRASES is gone
-      AND(queries=[PHRASES(phrases=[PHRASE(phrase='love')]),
-             NOT(match=COLUMNFILTER(columns=['title'],
-                                    filter='include',
-                                    query=PHRASES(phrases=[PHRASE(phrase='big '
-                                                                         'world',
-                                                                  initial=True,
+        AND(queries=[PHRASE(phrase='love', initial=False, prefix=False, plus=None),
+                    NOT(match=COLUMNFILTER(columns=['title'],
+                                            filter='include',
+                                            query=PHRASE(phrase='big world',
+                                                        initial=True,
+                                                        prefix=False,
+                                                        plus=None)),
+                        no_match=COLUMNFILTER(columns=['summary'],
+                                            filter='include',
+                                            query=PHRASE(phrase='sunset cruise',
+                                                            initial=False,
+                                                            prefix=False,
+                                                            plus=None)))])
 
 
 dict
@@ -43,24 +49,26 @@ dict
     :class:`dictionaries <dict>` which is easy for logging, storing as
     JSON, and manipulating.  Fields containing default values are
     omitted.  When provided to methods in this module, you do not need
-    to provide intermediate PHRASE - just Python lists and
-    strings directly.  This is the easiest form to programmatically
-    compose and modify queries in. The string example truncated to a
-    few lines is::
+    to provide intermediate PHRASE - just Python lists and strings
+    directly.  This is the easiest form to programmatically compose
+    and modify queries in. The string example above is::
 
-      {'@': 'AND', 'queries': [
-            "love",
-            {'@': 'NOT',
-              'match': {'@': 'COLUMNFILTER',
-                        'columns': ['title'],
-                        'filter': 'include',
-                        'query': {'@': 'PHRASES',
-                                  'phrases': [{'@': 'PHRASE',
-                                               'initial': True,
-                                               'phrase': 'big world'}]}},
+        {'@': 'AND',
+        'queries': [{'@': 'PHRASE', 'phrase': 'love'},
+                    {'@': 'NOT',
+                    'match': {'@': 'COLUMNFILTER',
+                                'columns': ['title'],
+                                'filter': 'include',
+                                'query': {'@': 'PHRASE',
+                                        'initial': True,
+                                        'phrase': 'big world'}},
+                    'no_match': {'@': 'COLUMNFILTER',
+                                'columns': ['summary'],
+                                'filter': 'include',
+                                'query': {'@': 'PHRASE',
+                                            'phrase': 'sunset cruise'}}}]}
 
-    ::TODO:: show an example here of simplified form and regenerate the
-    above
+See :ref:`the example <example_fts_query>`.
 
 
 .. list-table:: Conversion functions
@@ -128,20 +136,31 @@ class QueryTokens:
     :class:`apsw.fts5.QueryTokensTokenizer` as the first tokenizer in
     the list.  If the reason for tokenizing includes
     `FTS5_TOKENIZE_QUERY` and the text to be tokenized starts with the
-    special marker, then the tokens are returned.  Calling
-    :meth:`apsw.fts5.Table.supports_query_tokens` will tell you if
+    special marker, then the tokens are returned.
+    :attr:`apsw.fts5.Table.supports_query_tokens` will tell you if
     query tokens are handled correctly.
+    :meth:`apsw.fts5.Table.create` parameter ``support_query_tokens``
+    will ensure the ``tokenize`` table option is correctly set, You
+    can get the tokens from :attr:`apsw.fts5.Table.tokens`.
 
-    You can get the tokens from :attr:`apsw.fts5.Table.tokens` with
-    helpers like :meth:`apsw.fts5.Table.closest_tokens`.
+    You can construct QueryTokens like this::
 
-    The marker format is text starting with
-    :data:`QUERY_TOKENS_MARKER` with each token being separated by
-    ``|``.  If there are colocated tokens then ``>`` is used to separate
-    them.  For example ``$!Tokens~hello|1st>first|two``"""
+        # One token
+        QueryTokens(["hello"])
+        # Token sequence
+        QueryTokens(["hello". "world", "today"])
+        # Colocated tokens use a nested list
+        QueryTokens(["hello", ["first", "1st"]])
 
-    # ::TODO:: fix doc above to be shorter and clearer showing
-    # how to wrap one token, multiple tokens, colocated etc
+    To use in a query::
+
+        {"@": "NOT", "match": QueryTokens(["hello", "world"]),
+                     "no_match": QueryTokens([["first", "1st"]])}
+
+    That would be equivalent to a query of ``"Hello World" NOT
+    "First"`` if tokens were lower cased, and a tokenizer added a
+    colocated ``1st`` on seeing ``first``.
+    """
 
     tokens: list[str | Sequence[str]]
     "The tokens"
@@ -191,9 +210,9 @@ class PHRASE:
     phrase: str | QueryTokens
     "Text of the phrase.  If + was used (eg one+two) then it will be a list of phrases"
     initial: bool = False
-    "If True then the  phrase must match the beginning of a column ('^' was used)"
+    "If True then the  phrase must match the beginning of a column (``^`` was used)"
     prefix: bool = False
-    "If True then if it is a prefix search on the last token in phrase ('*' was used)"
+    "If True then if it is a prefix search on the last token in phrase (``*`` was used)"
     plus: PHRASE | None = None
     "Additional phrase segment, joined by ``+`` in queries"
 
@@ -258,8 +277,8 @@ def to_dict(q: QUERY) -> dict[str, Any]:
     This is useful for pretty printing, logging, saving as JSON,
     modifying etc.
 
-    The dict has a key `@` with value corresponding to the dataclass
-    (eg `NEAR`, `PHRASE`, `AND`) and the same field names as the
+    The dict has a key ``@`` with value corresponding to the dataclass
+    (eg ``NEAR``, ``PHRASE``, ``AND``) and the same field names as the
     corresponding dataclasses.  Only fields with non-default values
     are emitted.
     """
@@ -525,10 +544,24 @@ def parse_query_string(query: str) -> QUERY:
 
 
 def quote(text: str | QueryTokens) -> str:
-    """Quotes text if necessary to keep as one unit
+    """Quotes text if necessary to keep it as one unit using FTS5 quoting rules
 
-    eg `hello' -> `hello`, `one two` -> `"one two"`,
-    `` -> `""`, `one"two` -> `"one""two"`
+    Some examples:
+
+    .. list-table::
+        :widths: auto
+        :header-rows: 1
+
+        * - text
+          - return
+        * - ``hello``
+          - ``hello``
+        * - ``one two``
+          - ``"one two"``
+        * - (empty string)
+          - ``""``
+        * - ``one"two``
+          - ``"one""two"``
     """
     # technically this will also apply to None and empty lists etc
     if not text:
@@ -619,9 +652,9 @@ def extract_with_column_filters(node: QUERY, start: QUERY) -> QUERY:
 
 
 def applicable_columns(node: QUERY, start: QUERY, columns: Sequence[str]) -> set[str]:
-    """Return which columns apply to `node`
+    """Return which columns apply to ``node``
 
-    You should use :meth:`apsw.fts5.Table.columns_indexed` to get
+    You can use :meth:`apsw.fts5.Table.columns_indexed` to get
     the column list for a table.  The column names are matched using
     SQLite semantics (ASCII case insensitive).
 
@@ -677,15 +710,18 @@ def _flatten(start: QUERY):
 class ParseError(Exception):
     """This exception is raised when an error parsing a query string is encountered
 
-    :ivar str query: The query that was being processed
-    :ivar str message: Description of error
-    :ivar int position: Offset in query where the error occurred
-
     A simple printer::
 
         print(exc.query)
         print(" " * exc.position + "^", exc.message)
     """
+
+    query: str
+    "The query that was being processed"
+    message: str
+    "Description of error"
+    position: int
+    "Offset in query where the error occurred"
 
     def __init__(self, query: str, message: str, position: int):
         self.query = query

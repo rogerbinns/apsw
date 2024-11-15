@@ -1,42 +1,8 @@
 """
-Implementation of FTS5 auxiliary functions in Python.  Auxiliary
-functions are used for ranking results, and for processing search
+:mod:`apsw.fts5aux` Implementation of FTS5 auxiliary functions in Python.
+
+Auxiliary functions are used for ranking results, and for processing search
 results.
-
-.. list-table::
-  :header-rows: 1
-  :widths: auto
-
-  * - Function
-    - Purpose
-  * - :func:`bm25`
-    - Python re-implementation of the FTS5 builtin default ranking
-      function.  It takes into account how rare each phrase of the
-      search is in the document, how rare it is in the collection
-      overall, how big the document is. and how big they are overall.
-
-      It uses the :attr:`~apsw.FTS5ExtensionApi.aux_data`
-      functionality to build up the collection statistical information
-      on the first visited row, and then produces a score for each row
-      using the overall statistics, and the row specific information.
-
-      If you are writing your own ranking function, this is a good
-      example to start from.
-  * - :func:`inverse_document_frequency`
-    - A helper for your own ranking function, that gives almost
-      zero for very common phrases and larger numbers for rarer
-      phrases.
-  * - :func:`position_rank`
-    - Starts with :func:`bm25` but boosts the score the earlier in
-      content the phrases occur.  For many documents the more
-      important words are at the start in titles, overviews, summaries
-      etc.
-  * - :func:`subsequence`
-    - Starts with :func:`bm25` but boosts the score when the phrases
-      occur in order and each word is closer to the others.  bm25
-      doesn't factor the order of phrases in the content, nor how
-      close together they are.
-
 
 """
 

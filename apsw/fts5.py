@@ -621,8 +621,9 @@ def StopWordsTokenizer(test: Callable[[str], bool] | None = None) -> apsw.FTS5To
 def TransformTokenizer(transform: Callable[[str], str | Sequence[str]] | None = None) -> apsw.FTS5TokenizerFactory:
     """Transforms tokens to a different token, such as stemming
 
-    To use you need a callable that takes a str, and returns one
-    or more str to replace it.
+    To use you need a callable that takes a str, and returns a list of
+    str, or just a str to use as replacements.  You can return an
+    empty list to remove the token.
 
     The following tokenizer arguments are accepted.
 
@@ -1010,7 +1011,7 @@ def RegexPreTokenizer(
 
 @dataclass
 class TokenizerArgument:
-    "Used as spec values to :func:`parse_tokenizer_args`"
+    "Used as spec values to :func:`parse_tokenizer_args` - :ref:`example <example_fts_own_2>`"
 
     default: Any = None
     "Value - set to default before parsing"
@@ -1071,6 +1072,7 @@ def parse_tokenizer_args(
         * :func:`convert_string_to_python`
         * :func:`convert_number_ranges`
 
+    See :ref:`the example <example_fts_own_2>`.
     """
     options: dict[str, Any] = {}
     ac = args[:]
@@ -1303,21 +1305,24 @@ class Table:
     def quoted_table_name(self) -> str:
         '''Provides the full table name for composing your own queries
 
+        It includes the attached database name and quotes special
+        characters like spaces.
+
         You can't use bindings for table names in queries, so use this
         when constructing a query string::
 
-           search = apsw.fts5.Table(con, 'my_table')
+           my_table = apsw.fts5.Table(con, 'my_table')
 
-           sql = f"""SELECT ... from { search.quoted_table_name }
+           sql = f"""SELECT ... FROM { my_table.quoted_table_name }
                         WHERE ...."""
         '''
         return f"{self._qschema}.{self._qname}"
 
     def search(self, query: str, locale: str | None = None) -> Iterator[MatchInfo]:
-        """Iterates matches, best match first
+        """Iterates query matches, best matches first
 
-        This is useful for simple searches avoiding the need for
-        writing SQL and auxiliary functions.
+        This avoids the need to write SQL.  See :ref:`the example
+        <example_fts_search>`.
         """
 
         if locale is not None:
@@ -1511,6 +1516,8 @@ class Table:
         * The FTS5 table is not updated - you should use triggers on
           the external content table to do that.  See the
           ``generate_triggers`` option on :meth:`create`.
+
+        See :ref:`the example <example_fts_update>`
         """
         stmt = self._upsert_sql(len(args), tuple(kwargs.keys()) if kwargs else None)
         if kwargs:
@@ -1706,7 +1713,7 @@ class Table:
 
     @functools.cached_property
     def tokenizer(self) -> apsw.FTS5Tokenizer:
-        "Tokenizer as used by this table"
+        "Tokenizer instance as used by this table"
         return self._db.fts5_tokenizer(self.structure.tokenize[0], list(self.structure.tokenize[1:]))
 
     def tokenize(
@@ -1717,7 +1724,7 @@ class Table:
         include_offsets=True,
         include_colocated=True,
     ):
-        "Tokenize supplied utf8"
+        "Tokenize the supplied utf8"
         return self.tokenizer(
             utf8, reason, locale, include_offsets=include_offsets, include_colocated=include_colocated
         )
@@ -1837,7 +1844,7 @@ class Table:
           representative text, but also increase processing time.
         :param locale: Locale used to tokenize the query.
         :returns: ``None`` if no suitable changes were found, or a replacement
-          query.
+          query string.
         """
         # the parsed structure is modified in place
         parsed = apsw.fts5query.parse_query_string(query)
@@ -2098,7 +2105,8 @@ class Table:
 
         .. seealso::
 
-            :meth:`token_doc_frequency`
+            * :meth:`token_doc_frequency`
+            * :ref:`Example <example_fts_tokens>`
         """
         n = self.fts5vocab_name("row")
         return self._db.execute(f"select term, cnt from { n } order by cnt desc limit ?", (count,)).get
@@ -2112,13 +2120,14 @@ class Table:
 
         .. seealso::
 
-            :meth:`token_frequency`
+            * :meth:`token_frequency`
+            * :ref:`Example <example_fts_tokens>`
         """
         n = self.fts5vocab_name("row")
         return self._db.execute(f"select term, doc from { n } order by doc desc limit ?", (count,)).get
 
     def text_for_token(self, token: str, doc_limit: int) -> str:
-        """Provides the original text used to produce `token`
+        """Provides the original text used to produce ``token``
 
         Different text produces the same token because case can be
         ignored, accents and punctuation removed, synonyms and other
@@ -2135,6 +2144,8 @@ class Table:
             representative the text is.
         :returns: The most popular text used to produce the token in
             the examined documents
+
+        See :ref:`the example <example_fts_tokens>`.
         """
         text_for_token_counter: collections.Counter[bytes] = collections.Counter()
 
@@ -2179,9 +2190,13 @@ class Table:
     def row_by_id(self, id: int, column: str | Sequence[str]) -> apsw.SQLiteValue | tuple[apsw.SQLiteValue]:
         """Returns the contents of the row `id`
 
-        You can request one column, or several columns.
+        You can request one column,, or several columns.  If one
+        column is requested then just that value is returned, and a
+        tuple of values for more than column.
 
         :exc:`KeyError` is raised if the row does not exist.
+
+        See :ref:`the example <example_fts_update>`.
         """
         if isinstance(column, str):
             for (row,) in self._db.execute(
@@ -2540,7 +2555,7 @@ class FTS5TableStructure:
     contentless_delete: bool | None
     "`Contentless delete option <https://www.sqlite.org/fts5.html#contentless_delete_tables>`__ if contentless table else ``None``"
     contentless_unindexed: bool | None
-    "`Contentless unindexed option <https://www.sqlite.org/draft/fts5.html#the_contentless_unindexed_option>`__ if contentless table else ``None``"
+    "`Contentless unindexed option <https://www.sqlite.org/fts5.html#the_contentless_unindexed_option>`__ if contentless table else ``None``"
     columnsize: bool
     "`Columnsize option <https://www.sqlite.org/fts5.html#the_columnsize_option>`__"
     tokendata: bool

@@ -999,7 +999,7 @@ def format_query_table(db: apsw.Connection,
                 are escaped, embedded nulls become \\0
             * - 1
               - hello \\\\  \\0{CJK UNIFIED IDEOGRAPH-65E5}{CJK UNIFIED IDEOGRAPH-672C}{CJK UNIFIED IDEOGRAPH-8A9E} world
-              - After step 0, all non-ascii characters are replaced with their :func:`apsw.unicode.codepoint_name` or \\x and hex value
+              - After step 0, all non-ascii characters are replaced with their :func:`apsw.unicode.codepoint_name`
             * - 2
               - hello.\\........world
               - All non-ascii characters and whitespace are replaced by a dot

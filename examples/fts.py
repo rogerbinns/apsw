@@ -42,7 +42,7 @@ print(connection.execute("SELECT COUNT(*) FROM recipes").get)
 ### fts_create: Create/open search table
 # Create a table containing the search index using recipes as an
 # `external content table
-# <https://www.sqlite.org/draft/fts5.html#external_content_tables>`__.
+# <https://www.sqlite.org/fts5.html#external_content_tables>`__.
 
 if not connection.table_exists("main", "search"):
     # create does all the hard work
@@ -189,7 +189,7 @@ for query in (
 # upper/lower case neutralized, punctuation removed, marks and accents
 # removed.
 
-# See what happens with our table
+# See what happens with sample text
 text = "Don't 2.245e5 Run-Down Déjà 你好世界😂❤️🤣"
 # tokenization happens on UTF8
 utf8 = text.encode()
@@ -198,7 +198,8 @@ utf8 = text.encode()
 # original.
 pprint(search_table.tokenize(utf8))
 
-# Most popular tokens, and what percent of rows they are in
+# For our table, the most popular tokens, and what percent of rows
+# they are in
 print("\nMost popular by row count")
 row_count = search_table.row_count
 for token, count in search_table.token_doc_frequency():
@@ -213,7 +214,7 @@ for token, count in search_table.token_frequency():
 # Find what text produced a token, by looking at 5 rows.
 token = "jalapeno"
 text = search_table.text_for_token(token, 5)
-print(f"\nText for {token} is {text}")
+print(f"\nText for {token=} is {text}")
 
 
 ### fts_more: Key Tokens and More Like
@@ -320,7 +321,7 @@ for query in (
 
 ### fts5_auxfunc: Auxiliary functions
 # `Auxiliary functions
-# <https://sqlite.org/fts5.html#_auxiliary_functions_>`__ are called
+# <https://sqlite.org/fts5.html#_auxiliary_functions_>__ are called
 # for each matching row.  They can be used to provide `ranking
 # (sorting)
 # <https://www.sqlite.org/fts5.html#sorting_by_auxiliary_function_results>`__`
