@@ -894,7 +894,7 @@ class ShowResourceUsage:
                     continue
                 delta = getattr(usage, k) - getattr(self._usage, k)
                 if delta >= 0.001:
-                    vals.append((self._descriptions[k], delta))
+                    vals.append((self._descriptions.get(k, k), delta))
 
         if self.db:
             self.db.trace_v2(0, None, id=self)
