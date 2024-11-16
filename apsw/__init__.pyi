@@ -2229,7 +2229,7 @@ class FTS5ExtensionApi:
     highlighting, and similar operations.  Auxiliary functions are
     registered via :meth:`Connection.register_fts5_function`.  This wraps
     the `auxiliary functions API
-    <https://www.sqlite.org/fts5.html#_custom_auxiliary_functions>`__
+    <https://www.sqlite.org/fts5.html#custom_auxiliary_functions>`__
     passed as the first parameter to auxiliary functions.
 
     See :ref:`the example <example_fts5_auxfunc>`."""

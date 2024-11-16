@@ -2838,7 +2838,7 @@
 "highlighting, and similar operations.  Auxiliary functions are\n" \
 "registered via :meth:`Connection.register_fts5_function`.  This wraps\n" \
 "the `auxiliary functions API\n" \
-"<https://www.sqlite.org/fts5.html#_custom_auxiliary_functions>`__\n" \
+"<https://www.sqlite.org/fts5.html#custom_auxiliary_functions>`__\n" \
 "passed as the first parameter to auxiliary functions.\n" \
 "\n" \
 "See :ref:`the example <example_fts5_auxfunc>`.\n" 

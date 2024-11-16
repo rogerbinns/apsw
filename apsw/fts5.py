@@ -1671,7 +1671,7 @@ class Table:
         return self._config_internal("rank", val, "bm25()")  # type: ignore
 
     def config_secure_delete(self, val: bool | None = None) -> bool:
-        """Optionally sets, and returns `secure-delete <https://www.sqlite.org/fts5.html#the_secure-delete_configuration_option>`__"""
+        """Optionally sets, and returns `secure-delete <https://www.sqlite.org/fts5.html#the_secure_delete_configuration_option>`__"""
         return bool(self._config_internal("secure-delete", val, False))  # type: ignore
 
     def config_usermerge(self, val: int | None = None) -> int:
