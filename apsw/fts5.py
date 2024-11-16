@@ -240,7 +240,7 @@ def tokenizer_test_strings(filename: str | pathlib.Path | None = None) -> tuple[
     return tuple(test_strings)
 
 
-def StringTokenizer(func: apsw.FTS5TokenizerFactory):
+def StringTokenizer(func: apsw.FTS5TokenizerFactory) ->apsw.Tokenizer:
     """Decorator for tokenizers that operate on strings
 
     FTS5 tokenizers operate on UTF8 bytes for the text and offsets.

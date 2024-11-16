@@ -1,6 +1,6 @@
 import sys
 
-from typing import Optional, Callable, Any, Iterator, Iterable, Sequence, Literal, final, Protocol, TypeAlias
+from typing import Optional, Callable, Any, Iterator, Iterable, Sequence, Literal, Protocol, TypeAlias, final
 from collections.abc import Mapping
 import array
 import types
@@ -9,7 +9,7 @@ SQLiteValue = None | int | float | bytes | str
 """SQLite supports 5 types - None (NULL), 64 bit signed int, 64 bit
 float, bytes, and str (unicode text)"""
 
-SQLiteValues = tuple[()] | tuple[SQLiteValue, ...]
+SQLiteValues = tuple[SQLiteValue, ...]
 "A sequence of zero or more SQLiteValue"
 
 Bindings = Sequence[SQLiteValue | zeroblob] | Mapping[str, SQLiteValue | zeroblob]
@@ -35,15 +35,7 @@ class AggregateClass(Protocol):
 AggregateT = Any
 "An object provided as first parameter of step and final aggregate functions"
 
-AggregateStep = (
-    Callable[[AggregateT], None]
-    | Callable[[AggregateT, SQLiteValue], None]
-    | Callable[[AggregateT, SQLiteValue, SQLiteValue], None]
-    | Callable[[AggregateT, SQLiteValue, SQLiteValue, SQLiteValue], None]
-    | Callable[[AggregateT, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], None]
-    | Callable[[AggregateT, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], None]
-    | Callable[[AggregateT, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], None]
-)
+AggregateStep = Callable[[AggregateT, *SQLiteValues], None]
 
 "AggregateStep is called on each matching row with the relevant number of SQLiteValue"
 
@@ -54,16 +46,7 @@ AggregateFactory = Callable[[], AggregateClass | tuple[AggregateT, AggregateStep
 """Called each time for the start of a new calculation using an aggregate function,
 returning an object, a step function and a final function"""
 
-ScalarProtocol = (
-    Callable[[], SQLiteValue]
-    | Callable[[SQLiteValue], SQLiteValue]
-    | Callable[[SQLiteValue, SQLiteValue], SQLiteValue]
-    | Callable[[SQLiteValue, SQLiteValue, SQLiteValue], SQLiteValue]
-    | Callable[[SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], SQLiteValue]
-    | Callable[[SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], SQLiteValue]
-    | Callable[[SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], SQLiteValue]
-    | Callable[[SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], SQLiteValue]
-)
+ScalarProtocol = Callable[[*SQLiteValues], SQLiteValue]
 
 """Scalar callbacks take zero or more SQLiteValues, and return a SQLiteValue"""
 
@@ -91,34 +74,16 @@ class WindowClass(Protocol):
 WindowT = Any
 "An object provided as first parameter of the 4 window functions, if not using class based callbacks"
 
-WindowStep = (
-    Callable[[WindowT], None]
-    | Callable[[WindowT, SQLiteValue], None]
-    | Callable[[WindowT, SQLiteValue, SQLiteValue], None]
-    | Callable[[WindowT, SQLiteValue, SQLiteValue, SQLiteValue], None]
-    | Callable[[WindowT, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], None]
-)
+WindowStep = Callable[[WindowT, *SQLiteValues], None]
 """Window function step takes zero or more SQLiteValues"""
 
-WindowFinal = (
-    Callable[[WindowT], SQLiteValue]
-    | Callable[[WindowT, SQLiteValue], SQLiteValue]
-    | Callable[[WindowT, SQLiteValue, SQLiteValue], SQLiteValue]
-    | Callable[[WindowT, SQLiteValue, SQLiteValue, SQLiteValue], SQLiteValue]
-    | Callable[[WindowT, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], SQLiteValue]
-)
+WindowFinal =    Callable[[WindowT, *SQLiteValues], SQLiteValue]
 """Window function final takes zero or more SQLiteValues, and returns a SQLiteValue"""
 
 WindowValue = Callable[[WindowT], SQLiteValue]
 """Window function value returns the current  SQLiteValue"""
 
-WindowInverse = (
-    Callable[[WindowT], None]
-    | Callable[[WindowT, SQLiteValue], None]
-    | Callable[[WindowT, SQLiteValue, SQLiteValue], None]
-    | Callable[[WindowT, SQLiteValue, SQLiteValue, SQLiteValue], None]
-    | Callable[[WindowT, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], None]
-)
+WindowInverse =  Callable[[WindowT, *SQLiteValues], None]
 """Window function inverse takes zero or more SQLiteValues"""
 
 WindowFactory = Callable[[], WindowClass | tuple[WindowT, WindowStep, WindowFinal, WindowValue, WindowInverse]]
@@ -142,8 +107,8 @@ CommitHook = Callable[[], bool]
 """Commit hook is called with no arguments and should return True to abort the commit and False
 to let it continue"""
 
-Tokenizer = Callable[[bytes, int], Iterable[str | tuple[str, ...] | tuple[int, int, str, ...]]]
-"""The tokenizer is called with int flags and UTF8 encoded bytes.  The results are
+Tokenizer = Callable[[bytes, int, str | None], Iterable[str | tuple[str, ...] | tuple[int, int, *tuple[str, ...]]]]
+"""The tokenizer is called with UTF8 encoded bytes, int flags, and a locale.  The results are
 iterated and each item should be either a str, a tuple of one or more str, or a tuple of
 int start, int end, and one or more str"""
 
@@ -151,7 +116,7 @@ FTS5TokenizerFactory = Callable[[Connection, list[str]], Tokenizer]
 """The factory is called with a list of strings as an argument and should
 return a suitably configured Tokenizer"""
 
-FTS5Function = Callable[[FTS5ExtensionApi, SQLiteValue, ...], SQLiteValue]
+FTS5Function = Callable[[FTS5ExtensionApi, *SQLiteValues], SQLiteValue]
 """The first argument is the extension API while the rest are the function parameters
 from the SQL"""
 

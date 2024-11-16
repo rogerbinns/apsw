@@ -112,7 +112,7 @@ Performance
 
 from __future__ import annotations
 
-from typing import Iterator, Iterable
+from typing import Iterator, Iterable, Any
 
 import re
 
@@ -282,10 +282,10 @@ def strip(text: str) -> str:
     return _unicode.strip(text)
 
 
-def split_lines(text: str, offset: int = 0) -> Generator[str, None, None]:
+def split_lines(text: str, offset: int = 0) -> Iterator[str]:
     """Each line, using hard line break rules
 
-    This is a generator yielding a line at a time.  The end of line
+    This is a iterator yielding a line at a time.  The end of line
     yielded will not include the hard line break characters.
     """
     lt = len(text)
@@ -746,8 +746,8 @@ def grapheme_next(text: str, offset: int = 0) -> tuple[int, int]:
     return offset, end
 
 
-def grapheme_iter(text: str, offset: int = 0) -> Generator[str, None, None]:
-    "Generator providing text of each grapheme cluster"
+def grapheme_iter(text: str, offset: int = 0) -> Iterator[str]:
+    "Iterator providing text of each grapheme cluster"
     lt = len(text)
     meth = _unicode.grapheme_next_break
     start = offset
@@ -757,8 +757,8 @@ def grapheme_iter(text: str, offset: int = 0) -> Generator[str, None, None]:
         start = offset
 
 
-def grapheme_iter_with_offsets(text: str, offset: int = 0) -> Generator[tuple[int, int, str], None, None]:
-    "Generator providing start, end, text of each grapheme cluster"
+def grapheme_iter_with_offsets(text: str, offset: int = 0) -> Iterator[tuple[int, int, str]]:
+    "Iterator providing start, end, text of each grapheme cluster"
     lt = len(text)
     meth = _unicode.grapheme_next_break
     start = offset
@@ -770,8 +770,8 @@ def grapheme_iter_with_offsets(text: str, offset: int = 0) -> Generator[tuple[in
 
 def grapheme_iter_with_offsets_filtered(
     text: str, offset: int = 0, *, categories: Iterable[str], emoji: bool = False, regional_indicator: bool = False
-) -> Generator[tuple[int, int, str], None, None]:
-    "Generator providing start, end, text of each grapheme cluster, providing it includes codepoints from categories, emoji, or regional indicator"
+) -> Iterator[tuple[int, int, str]]:
+    "Iterator providing start, end, text of each grapheme cluster, providing it includes codepoints from categories, emoji, or regional indicator"
 
     mask = _cats_to_mask(categories, emoji, regional_indicator)
     lt = len(text)
@@ -887,8 +887,8 @@ def word_iter(
     categories: Iterable[str] = word_default_categories,
     emoji: bool = False,
     regional_indicator: bool = False,
-) -> Generator[str, None, None]:
-    "Generator providing text of each word"
+) -> Iterator[str]:
+    "Iterator providing text of each word"
 
     mask = _cats_to_mask(categories, emoji, regional_indicator)
     lt = len(text)
@@ -909,8 +909,8 @@ def word_iter_with_offsets(
     categories: Iterable[str] = word_default_categories,
     emoji: bool = False,
     regional_indicator: bool = False,
-) -> Generator[str, None, None]:
-    "Generator providing start, end, text of each word"
+) -> Iterator[str]:
+    "Iterator providing start, end, text of each word"
 
     mask = _cats_to_mask(categories, emoji, regional_indicator)
     lt = len(text)
@@ -950,8 +950,8 @@ def sentence_next(text: str, offset: int = 0) -> tuple[int, int]:
     return offset, offset
 
 
-def sentence_iter(text: str, offset: int = 0) -> Generator[str, None, None]:
-    "Generator providing text of each sentence"
+def sentence_iter(text: str, offset: int = 0) -> Iterator[str]:
+    "Iterator providing text of each sentence"
     lt = len(text)
     meth = _unicode.sentence_next_break
 
@@ -961,8 +961,8 @@ def sentence_iter(text: str, offset: int = 0) -> Generator[str, None, None]:
         offset = end
 
 
-def sentence_iter_with_offsets(text: str, offset: int = 0) -> Generator[tuple[int, int, str], None, None]:
-    "Generator providing start, end, text of each sentence"
+def sentence_iter_with_offsets(text: str, offset: int = 0) -> Iterator[tuple[int, int, str]]:
+    "Iterator providing start, end, text of each sentence"
     lt = len(text)
     meth = _unicode.sentence_next_break
 
@@ -997,8 +997,8 @@ def line_break_next(text: str, offset: int = 0) -> tuple[int, int]:
     return offset, offset
 
 
-def line_break_iter(text: str, offset: int = 0) -> Generator[str, None, None]:
-    "Generator providing text of each line"
+def line_break_iter(text: str, offset: int = 0) -> Iterator[str]:
+    "Iterator providing text of each line"
     lt = len(text)
     meth = _unicode.line_next_break
 
@@ -1008,8 +1008,8 @@ def line_break_iter(text: str, offset: int = 0) -> Generator[str, None, None]:
         offset = end
 
 
-def line_break_iter_with_offsets(text: str, offset: int = 0) -> Generator[tuple[int, int, str], None, None]:
-    "Generator providing start, end, text of each line"
+def line_break_iter_with_offsets(text: str, offset: int = 0) -> Iterator[tuple[int, int, str]]:
+    "Iterator providing start, end, text of each line"
     lt = len(text)
     meth = _unicode.line_next_break
 

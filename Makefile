@@ -161,10 +161,10 @@ publish: docs
 src/apswversion.h: Makefile
 	echo "#define APSW_VERSION \"$(VERSION)\"" > src/apswversion.h
 
-stubtest: build_ext  ## Verifies type annotations with mypy
+stubtest: ## Verifies type annotations with mypy
 	-$(PYTHON) -m mypy.stubtest --allowlist tools/stubtest.allowlist apsw
-	$(PYTHON) -m mypy --allow-redefinition example-code.py
-	$(PYTHON) -m mypy --allow-redefinition --strict example-code.py
+	env PYTHONPATH=. $(PYTHON) -m mypy --allow-redefinition examples/main.py
+	env PYTHONPATH=. $(PYTHON) -m mypy --allow-redefinition examples/fts.py
 
 # set this to a commit id to grab that instead
 FOSSIL_URL="https://www.sqlite.org/src/tarball/sqlite.tar.gz"
