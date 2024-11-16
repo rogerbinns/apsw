@@ -84,7 +84,7 @@ edit the :file:`setup.apsw` file inside.
   <https://github.com/rogerbinns/apsw/releases/download/3.47.0.0/apsw-3.47.0.0.zip>`__
   (Source, includes this HTML Help)
 
-* `apsw-3.47.0.0.cosign-bundle 
+* `apsw-3.47.0.0.cosign-bundle
   <https://github.com/rogerbinns/apsw/releases/download/3.47.0.0/apsw-3.47.0.0.cosign-bundle>`__
   cosign signature
 
@@ -309,28 +309,15 @@ happen or doesn't happen again.:
 
 .. code-block:: output
 
-                  Python  /usr/bin/python3 sys.version_info(major=3, minor=11, micro=6, releaselevel='final', serial=0) 64bit ELF
-  Testing with APSW file  /space/apsw/apsw/__init__.cpython-311-x86_64-linux-gnu.so
-            APSW version  3.44.0.0
-      SQLite lib version  3.44.0
-  SQLite headers version  3044000
+                  Python  /usr/bin/python3 sys.version_info(major=3, minor=12, micro=7, releaselevel='final', serial=0) 64bit ELF
+  Testing with APSW file  /space/apsw/apsw/__init__.cpython-312-x86_64-linux-gnu.so
+            APSW version  3.47.0.0
+      SQLite lib version  3.47.0
+  SQLite headers version  3047000
       Using amalgamation  True
-  .............................................................A message due to RecursionError is possible, and what is being tested
-  object address  : 0x7fea3c94ada0
-  object refcount : 1
-  object type     : 0x9de7a0
-  object type name: TypeError
-  object repr     :
-  lost sys.stderr
-  object address  : 0x7fea3c94ad40
-  object refcount : 1
-  object type     : 0x9de7a0
-  object type name: TypeError
-  object repr     :
-  lost sys.stderr
-  ................................................................
+  .....................................................................................................................................................................
   ----------------------------------------------------------------------
-  Ran 125 tests in 26.783s
+  Ran 165 tests in 29.844s
 
   OK
 
