@@ -136,7 +136,9 @@ for f in sorted(functions):
     assert res.returncode >= 0
     if res.returncode == 0:  # found
         if f in nowrap:
-            print(f"function { f } is in nowrap, but also in source")
+            # these aren't wrapped but are used in fts.c
+            if f not in {"sqlite3_bind_pointer", "sqlite3_prepare", "sqlite3_result_error_nomem"}:
+                print(f"function { f } is in nowrap, but also in source")
         continue
     if f not in nowrap:
         print("missing", f)
