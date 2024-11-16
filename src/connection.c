@@ -1344,7 +1344,7 @@ finally:
 
 /* does sqlite3_trace_v2 call based on current tracehooks, called
    after each change */
-PyObject *
+static PyObject *
 Connection_update_trace_v2(Connection *self)
 {
   /* Our callers do CHECK_USE and CHECK_CLOSED */
