@@ -27,7 +27,8 @@ def process(module: ast.Module, source: str) -> list[tuple[str, str, str]]:
         value = ast.get_source_segment(source, body[i].value)
         i += 1
         assert isinstance(body[i], ast.Expr) and isinstance(
-            body[i].value, ast.Constant), f"Expecting constant at line { body[i].lineno }"
+            body[i].value, ast.Constant
+        ), f"Expecting constant at line { body[i].lineno }"
         descr = body[i].value.value
         assert isinstance(descr, str)
         i += 1
@@ -36,27 +37,39 @@ def process(module: ast.Module, source: str) -> list[tuple[str, str, str]]:
 
 
 # stuff defined in standard library
-std_typing = {"Union", "Callable", "Tuple", "Dict", "List", "Optional", "Any", "Sequence", "Iterable", "Mapping", "Protocol"}
-std_other = {"None", "int", "float", "bytes", "str", "dict", "tuple", "bool"}
+std_typing = {
+    "Union",
+    "Callable",
+    "Tuple",
+    "Dict",
+    "List",
+    "Optional",
+    "Any",
+    "Sequence",
+    "Iterable",
+    "Mapping",
+    "Protocol",
+}
+std_other = {"None", "int", "float", "bytes", "str", "dict", "tuple", "bool", "list"}
 
 # from apsw
-apsw_mod = {"zeroblob", "Cursor", "Connection"}
+apsw_mod = {"zeroblob", "Cursor", "Connection", "FTS5ExtensionApi"}
 
 
 def sub(m: re.Match) -> str:
     # we have to add a backslash quoted zero width space on the end, otherwise docutils
     # sees our replacement merging with the next token and claiming an error.  If a regular
     # space is used then the output has weird spaces everywhere
-    sp="\\\u200b"
+    sp = "\\\u200b"
     text: str = m.group("name")
     if text in std_typing:
-        return f"`{ text } <https://docs.python.org/3/library/typing.html#typing.{ text }>`__{sp}"
+        return f":class:`~typing.{ text }`{sp}"
     if text in std_other:
         if text in {"int", "bool", "float"}:
-            return f"`{ text } <https://docs.python.org/3/library/functions.html#{ text }>`__{sp}"
+            return f":class:`{ text }`{sp}"
         if text == "None":
-            return f"`{ text } <https://docs.python.org/3/library/constants.html#None>`__{sp}"
-        return f"`{ text } <https://docs.python.org/3/library/stdtypes.html#{ text }>`__{sp}"
+            return f":class:`{ text }`{sp}"
+        return f":class:`{ text }`{sp}"
     return f":class:`{ text }`{sp}"
 
 
@@ -81,7 +94,15 @@ def output(doc: list[tuple[str, str, str]]) -> str:
     res = ""
     for name, value, descr in doc:
         value = nomunge(pattern, sub, value)
+        # I can't find a way of making *:class:`foo` work - the *
+        # makes the :class: not be understood, even with a zero width
+        # space.  So force a real space
+        value = value.replace("*", "* ")
         descr = nomunge(pattern, sub, descr)
+        # easiest to fix in post ...
+        descr = descr.replace(
+            ":meth:`:class:`FTS5ExtensionApi`\​.query_phrase`", ":meth:`FTS5ExtensionApi.query_phrase`"
+        )
         res += f"""
 .. class:: { name }
 
@@ -97,7 +118,7 @@ def valuefmt(value: str, indent: str) -> str:
     return indent + f"\n{ indent }".join(value.split("\n"))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     source = open("src/apswtypes.py").read()
     parsed = ast.parse(source, type_comments=True)
     assert isinstance(parsed, ast.Module)
