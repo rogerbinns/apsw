@@ -36,8 +36,8 @@ Added :attr:`Connection.data_version` for getting a change counter.
 changes are made on the same connection, only others.
 
 Added :func:`apsw.ext.ShowResourceUsage` for getting resource and
-SQLite usage in a block, and also use it for the shell :ref:`timer
-<shell-cmd-timer>` command.
+SQLite usage in a context block, and also use it for the shell
+:ref:`timer <shell-cmd-timer>` command.
 
 Added :func:`apsw.ext.Trace` for tracing SQL execution, row and change
 counting, and timing per statement for use in a context block.

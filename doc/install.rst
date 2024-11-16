@@ -84,7 +84,7 @@ edit the :file:`setup.apsw` file inside.
   <https://github.com/rogerbinns/apsw/releases/download/3.47.0.0/apsw-3.47.0.0.zip>`__
   (Source, includes this HTML Help)
 
-* `apsw-3.47.0.0.cosign-bundle
+* `apsw-3.47.0.0.cosign-bundle 
   <https://github.com/rogerbinns/apsw/releases/download/3.47.0.0/apsw-3.47.0.0.cosign-bundle>`__
   cosign signature
 
